@@ -131,12 +131,13 @@ class KegBot:
       #self.cmdserver.start()
 
 
-      #self.io = KegShell(self)
-      #self.io.start()
+      self.io = KegShell(self)
+      self.io.start()
 
       # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
       self.ibs = []
       self.last_refresh = 0.0
+      self.ibs_seen = {} # store time when IB was last seen
       thread.start_new_thread(self.ibRefreshLoop,())
       time.sleep(1.0) # sleep to wait for ibrefreshloop - XXX
 
@@ -164,7 +165,8 @@ class KegBot:
       self.log('main','attempting to quit')
       self.QUIT.set()
       self.ui.stop()
-      self.aimbot.saveSessions()
+      if self.config.getboolean('AIM','use_aim'):
+         self.aimbot.saveSessions()
       #self.cmdserver.stop()
 
    def tempMonitor(self):
@@ -189,8 +191,6 @@ class KegBot:
       for target in self.ibs:
          if target.read_id() == temp_ib:
             ib = target
-         else:
-            print "%s != %s" % (target.read_id(),temp_ib)
 
       if not ib:
          self.log('tempmon','could not find temperature sensor, aborting monitor')
@@ -244,12 +244,19 @@ class KegBot:
          elif temp <= max_low:
             self.disableFreezer()
 
-         self.log('tempmon','temperature now read as: %s' % temp)
+         self.log('tempmon','temperature now read as: %s F / %s C' % (self.toF(temp),temp) )
          if temp != self.last_temp:
             self.last_temp = temp
             self.last_temp_time = time.time()
+            self.main_plate.setTemperature(temp,self.toF(temp))
       self.log('tempMonitor','quit!')
 
+
+   def toF(self,t):
+      """
+      convert celcius temperature to fahrenheit.
+      """
+      return ((9.0/5.0)*t) + 32
 
    def aimBot(self):
       sn = self.config.get('AIM','screenname')
@@ -279,10 +286,18 @@ class KegBot:
       while not self.QUIT.isSet():
          self.netlock.acquire()
          self.ibs = self.ownet.refresh()
-         self.netlock.release()
          self.last_refresh = time.time()
+         self.netlock.release()
+         for ib in self.ibs:
+            self.ibs_seen[ib.read_id()] = self.last_refresh
          time.sleep(timeout)
       self.log('ibRefreshLoop','quit!')
+
+   def lastSeen(self,ibname):
+      if self.ibs_seen.has_key(ibname):
+         return self.ibs_seen[ibname]
+      else:
+         return 0
 
    def mainEventLoop(self):
       last_refresh = 0
@@ -300,9 +315,12 @@ class KegBot:
          # now get down to business
          for ib in self.ibs:
             if self.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
-               self.log('flow','found an authorized ibutton: %s' % ib.read_id())
-               uib = ib
-               break
+               time_since_seen = time.time() - self.lastSeen(ib.read_id()) 
+               ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
+               if time_since_seen < ceiling:
+                  self.log('flow','found an authorized ibutton: %s' % ib.read_id())
+                  uib = ib
+                  break
 
          # enter this block if we have a recognized iButton. note that above
          # code will stop with the first authorized ibutton. 
@@ -342,28 +360,14 @@ class KegBot:
             ounces,last_ounces = 0.0,0.0
             last_missing = time.time()
             while 1:
-               # because of onewirenet glitches, we can define a threshhold for
-               # the amount of time we will allow the ibutton to be 'missing'.
-               # this amount is set in config->Timing->ib_missing_ceiling and
-               # config->Timing->ib_verify_timeout. the product of the two
-               # values is a rough estimate of the missing detection speed.
-               if time.time() - last_missing > 1.0:
-                  last_missing = time.time()
-                  self.netlock.acquire()
-                  online = uib.verify()
-                  self.netlock.release()
-                  if not online:
-                     ib_missing += 1
-                  else:
-                     # reset the missing counter, since the ibutton is back
-                     ib_missing = 0
+               time_since_seen = time.time() - self.lastSeen(uib.read_id()) 
+               ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
+               if time_since_seen > ceiling:
+                  self.log('flow',red('ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling)))
+                  STOP_FLOW = 1
 
                # check other credentials necessary to keep the beer flowing!
                if self.QUIT.isSet():
-                  STOP_FLOW = 1
-
-               elif ib_missing >= self.config.getint('Timing','ib_missing_ceiling'):
-                  self.log('flow',red('ib went missing, ending flow (%s,%s)'%(ib_missing,self.config.getint('Timing','ib_missing_ceiling'))) )
                   STOP_FLOW = 1
 
                elif uib.read_id() in self.timed_out:
@@ -516,13 +520,8 @@ class KegBot:
       return 1
 
    def addUser(self,username,name = None, init_ib = None, admin = 0, email = None,aim = None):
-      if self.user_db.has_key(username):
-         raise
-      nuser = User(username,name,admin,email,aim)
-      self.user_db[username] = nuser
-      if init_ib:
-         ntok = Token(init_ib,username)
-         self.token_db[init_ib] = ntok
+      uid = self.user_store.addUser(username,email,aim)
+      self.key_store.addKey(uid,str(init_ib))
 
 class KegShell(threading.Thread):
    def __init__(self,owner):
@@ -566,6 +565,7 @@ class KegShell(threading.Thread):
                print "added user successfully"
             except:
                print "failed to create user"
+               raise
 
    def prompt(self):
       try:
@@ -603,7 +603,7 @@ class KegShell(threading.Thread):
 
       if aim == "" or aim == "\n":
          aim = None
-      
+
       if key == "" or key == "\n":
          key = None
 
@@ -692,11 +692,13 @@ class Freezer:
 
 class FlowController:
    """ represents the embedded flowmeter counter microcontroller. """
-   def __init__(self,dev,rate=115200,ticks_per_liter=2200):
+   def __init__(self,dev,rate=115200,ticks_per_liter=2200, commands = ('\x81','\x82','\x83','\x84')):
       self.dev = dev
       self.rate = rate
       self.ticks_per_liter = 2200
       self._lock = threading.Lock()
+
+      self.read_cmd,self.clear_cmd,self.open_cmd,self.close_cmd = commands[:4]
 
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
       try:
@@ -722,45 +724,106 @@ class FlowController:
 
    def openValve(self):
       self._lock.acquire()
-      self._devpipe.write('\x83')
+      self._devpipe.write(self.open_cmd)
       self._lock.release()
       self.valve_open = True
 
    def closeValve(self):
       self._lock.acquire()
-      self._devpipe.write('\x84')
+      self._devpipe.write(self.close_cmd)
       self._lock.release()
       self.valve_open = False
 
    def readTicks(self):
-      self._lock.acquire()
-      self._devpipe.write('\x81')
-      # XXX - add a timer here, in case read failed
-      ticks = self._devpipe.read(2)
-      self._lock.release()
-      low,high = ticks[0],ticks[1]
-      ticks = ord(high)*256 + ord(low)
-      # returns two-byte string, like '\x01\x00'
+      try:
+         self._lock.acquire()
+         self._devpipe.write(self.read_cmd)
+         # XXX - add a timer here, in case read failed
+         ticks = self._devpipe.read(2)
+         self._lock.release()
+         low,high = ticks[0],ticks[1]
+         ticks = ord(high)*256 + ord(low)
+         # returns two-byte string, like '\x01\x00'
+      except:
+         ticks = 0
       return ticks
 
    def clearTicks(self):
       self._lock.acquire()
-      self._devpipe.write('\x82')
+      self._devpipe.write(self.clear_cmd)
       self._lock.release()
 
-class plate_kegbot_main(plate_std):
+class plate_kegbot_main(plate_multi):
    def __init__(self,owner):
-      plate_std.__init__(self,owner)
+      plate_multi.__init__(self,owner)
+      self.owner = owner
+
+      self.maininfo, self.tempinfo, self.freezerinfo  = plate_std(owner), plate_std(owner), plate_std(owner)
+      self.lastinfo = plate_std(owner)
 
       line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
       line2 = widget_line_std("|     kegbot!!     |",row=1,col=0,scroll=0)
       line3 = widget_line_std("| have good beer!! |",row=2,col=0,scroll=0)
       line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
-      self.updateObject('line1',line1)
-      self.updateObject('line2',line2)
-      self.updateObject('line3',line3)
-      self.updateObject('line4',line4)
+      self.maininfo.updateObject('line1',line1)
+      self.maininfo.updateObject('line2',line2)
+      self.maininfo.updateObject('line3',line3)
+      self.maininfo.updateObject('line4',line4)
+
+      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = widget_line_std("| current temp:    |",row=1,col=0,scroll=0)
+      line3 = widget_line_std("| unknown          |",row=2,col=0,scroll=0)
+      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+
+      self.tempinfo.updateObject('line1',line1)
+      self.tempinfo.updateObject('line2',line2)
+      self.tempinfo.updateObject('line3',line3)
+      self.tempinfo.updateObject('line4',line4)
+
+      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = widget_line_std("| freezer status:  |",row=1,col=0,scroll=0)
+      line3 = widget_line_std("| [off]            |",row=2,col=0,scroll=0)
+      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+
+      self.freezerinfo.updateObject('line1',line1)
+      self.freezerinfo.updateObject('line2',line2)
+      self.freezerinfo.updateObject('line3',line3)
+      self.freezerinfo.updateObject('line4',line4)
+
+      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = widget_line_std("| freezer status:  |",row=1,col=0,scroll=0)
+      line3 = widget_line_std("| [off]            |",row=2,col=0,scroll=0)
+      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+
+      self.freezerinfo.updateObject('line1',line1)
+      self.freezerinfo.updateObject('line2',line2)
+      self.freezerinfo.updateObject('line3',line3)
+      self.freezerinfo.updateObject('line4',line4)
+
+      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = widget_line_std("| last pour:       |",row=1,col=0,scroll=0)
+      line3 = widget_line_std("| 16.3 oz          |",row=2,col=0,scroll=0)
+      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+
+      self.lastinfo.updateObject('line1',line1)
+      self.lastinfo.updateObject('line2',line2)
+      self.lastinfo.updateObject('line3',line3)
+      self.lastinfo.updateObject('line4',line4)
+
+      self.addPlate("main",self.maininfo)
+      self.addPlate("temp",self.tempinfo)
+      self.addPlate("freezer",self.freezerinfo)
+      self.addPlate("last",self.lastinfo)
+
+      # starts the rotation
+      self.rotate_time = 5.0
+
+   def setTemperature(self,tempc,tempf):
+      inside = "%.1fc/%.1ff" % (tempc,tempf)
+      inside += " "*(16-len(inside))
+      line3 = widget_line_std("| %s |"%inside,row=2,col=0,scroll=0)
+      self.tempinfo.updateObject('line3',line3)
 
 if __name__ == '__main__':
    KegBot(config)

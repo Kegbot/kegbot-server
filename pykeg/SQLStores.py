@@ -60,6 +60,13 @@ class UserStore:
          return User(username = username, email = email, aim = im_aim)
       return None
 
+   def addUser(self, username, email, im_aim):
+      c = self.dbconn.cursor()
+      q = 'INSERT INTO %s (username, email, im_aim) VALUES ("%s", "%s", "%s")' % (self.table,username,email,im_aim)
+      print q
+      c.execute(q)
+      return c.insert_id()
+
 class KeyStore:
    """
    Storage of user info.
@@ -81,13 +88,35 @@ class KeyStore:
       else:
          return None
 
+   def addKey(self, ownerid, keyinfo):
+      c = self.dbconn.cursor()
+      q = 'INSERT INTO %s (ownerid, keyinfo) VALUES (%s, "%s")' % (self.table,ownerid,keyinfo)
+      c.execute(q)
+      return c.insert_id()
+
+
    def knownKey(self,keyinfo):
-      return False
+      c = self.dbconn.cursor()
+      q = 'SELECT ownerid FROM tokens WHERE keyinfo="%s" LIMIT 1' % (keyinfo)
+      c.execute(q)
+      return len(c.fetchall()) == 1
 
 class Key:
-   def __init__(keyinfo,ownerid):
+   def __init__(self,keyinfo,ownerid):
       self.keyinfo = keyinfo
       self.ownerid = ownerid
 
-   def getOwner():
+   def getOwner(self):
       return self.ownerid
+
+class User:
+   def __init__(self,username,email,aim):
+      self.username = username
+      self.email = email
+      self.aim = aim
+
+   def getName(self):
+      return self.username
+
+   def isAdmin(self):
+      return False

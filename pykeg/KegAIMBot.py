@@ -20,7 +20,6 @@ class KegAIMBot(TocTalk):
       self.typerate = self.owner.config.getfloat('Bot','typerate') # seconds
 
       # other stuff..
-      os.chdir(self.owner.config.get('Bot','ai_dir'))
       brainfile = self.owner.config.get('Bot','save_brain')
       startupfile = self.owner.config.get('Bot','startup_file')
       startcommand = self.owner.config.get('Bot','startup_command')
@@ -114,13 +113,11 @@ class KegAIMBot(TocTalk):
       self.do_SEND_IM(sn,msg)
 
    def makeReply(self,sn,data):
-      temp = 'unknown'
-      freezer = 'unknown'
-      if self.owner:
-         temp = self.owner.last_temp
-         freezer = self.owner.freezer.getStatus()
-      response = self.k.respond(data,sn)
+      if not self.k.sessionExists(sn):
+         self.k._addSession(sn)
+         self.k.setSessionData(sn,"name",sn)
 
+      response = self.k.respond(data,sn)
       return response
 
    def strip_html(self, text):

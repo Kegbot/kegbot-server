@@ -16,6 +16,8 @@ import time
 
 import thread
 import threading
+import traceback
+import string
 
 
 TOC_SERV_AUTH = ("login.oscar.aol.com", 5159 )
@@ -410,6 +412,10 @@ class BotManager:
 					break
 				bot._running = 0
 				time.sleep(bot._delay) # then we reconnect
+			except:
+				msg = string.join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1],sys.exc_info()[2]), "")
+				print msg
+				raise
 			else:
 				break
 		thread.exit()

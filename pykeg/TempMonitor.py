@@ -30,7 +30,6 @@ class TempMonitor(threading.Thread):
                pass
 
             if time.time() - last_time > timeout:
-               self.owner.log('tempmon','temperature now read as: %s'%currtemp)
                if currtemp != lasttemp:
                   self.owner.thermo_store.logTemp(currtemp, sensor)
                   lasttemp = currtemp
@@ -39,7 +38,9 @@ class TempMonitor(threading.Thread):
                last_time = rectime
 
 class TempSensor:
-   """ represents the embedded flowmeter counter microcontroller. """
+   """
+   class for decoding output from a quozl temperature sensor.
+   """
    def __init__(self,dev,rate=2400):
 
       self.dev = dev
@@ -61,13 +62,29 @@ class TempSensor:
       self._devpipe.flush()
 
    def getTemp(self, sensor):
+      """
+      return the temperature of a particular sensor, as the tuple (temperature,
+      time recorded)
+
+      if a sensor has not been seen, or if the sensor number is invalid, a
+      tuple of (None,0) is returned).
+      """
       if not self._times.has_key(sensor):
-         return (None,None)
+         return (None,0)
       else:
          return (self._temps[sensor],self._times[sensor])
 
    def takeReading(self):
+      """
+      read one line (one temperature reading) from the quozl sensor.
 
+      sensor readings are sent continuously to the serial port, seperated by
+      \r\n and some spaces between fields. if a line is corrupt (or the
+      decoding is out of alignment), no reading is taken. 
+
+      the first line the sensor sends on power-up is its version string. this
+      qill be read and saved if encountered.
+      """
       # gobble up the boundary characters
       while 1:
          c = self._devpipe.read(1)
@@ -76,7 +93,7 @@ class TempSensor:
          else:
             break
 
-      # handle the reset string
+      # handle the power-on reset/info string
       if c == 'R':
          vers = ""
          c = self._devpipe.read(1)
@@ -91,7 +108,14 @@ class TempSensor:
          space = self._devpipe.read(1)
          if space != ' ': return
 
+         # we believe c contains a sensor number (0-4), but things could still
+         # be misaligned. test.
+         try:
+            c = int(c)
+         except:
+            return
+
          amt = self._devpipe.read(7)
-         self._temps[int(c)] = float(amt)
-         self._times[int(c)] = time.time()
+         self._temps[c] = float(amt)
+         self._times[c] = time.time()
 

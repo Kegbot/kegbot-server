@@ -255,7 +255,7 @@ class GrantStore:
 
    def getGrants(self, user):
       c = self.dbconn.cursor()
-      q = 'SELECT * FROM %s WHERE foruid="%s"' % (self.table,user.id)
+      q = 'SELECT * FROM %s WHERE foruid="%s" AND status!="deleted"' % (self.table,user.id)
       grants = []
       if c.execute(q):
          row = c.fetchone()

@@ -161,7 +161,7 @@ class KegBot:
          self.ui = lcdui(self.lcd)
 
       # init flow meter
-      dev = self.config.get('Devices','dev')
+      dev = self.config.get('Devices','flow')
       self.log('main','new flow controller at device %s' % dev)
       self.fc = FlowController(dev)
 
@@ -343,7 +343,7 @@ class KegBot:
          self.timeoutToken(uib.read_id())
          return
 
-      print "current grant: %s" % (current_grant.policy.descr)
+      self.log('flow',"current grant: %s" % (current_grant.policy.descr))
 
       # sequence of steps that should take place:
       # - prepare counter

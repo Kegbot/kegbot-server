@@ -116,14 +116,12 @@ class KegBot:
       #self.cmdserver = KegRemoteServer(self,host,port)
       #self.cmdserver.start()
 
-
       self.io = KegShell(self)
       self.io.start()
 
       # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
       self.ibs = []
       self._allibs = []
-      self.last_refresh = 0.0
       self.ibs_seen = {} # store time when IB was last seen
       thread.start_new_thread(self.ibRefreshLoop,())
       time.sleep(1.0) # sleep to wait for ibrefreshloop - XXX
@@ -226,9 +224,8 @@ class KegBot:
          self._allibs = self.ownet.refresh()
          self.netlock.release()
          self.ibs = [ib for ib in self._allibs if ib.read_id() not in ignore_ids]
-         self.last_refresh = time.time()
          for ib in self.ibs:
-            self.ibs_seen[ib.read_id()] = self.last_refresh
+            self.ibs_seen[ib.read_id()] = time.time()
          time.sleep(timeout)
 
       self.log('ibRefreshLoop','quit!')
@@ -458,10 +455,8 @@ class KegBot:
 
       # determine how much we've really consumed
       alc_consumed = keg.getDrinkOunces(drink_ticks) * (keg.alccontent/100.0)
-      #print "alc consumed = %s" % alc_consumed
       instant_bac = alc_consumed * grams_pct
 
-      #print "BAC: %s" % instant_bac
       return instant_bac
 
    def timeoutToken(self,id):
@@ -525,17 +520,6 @@ class KegBot:
 
    def log(self,component,message):
       self.main_logger.info("%s: %s" % (component,message))
-
-   def beerAccess(self,user):
-      """
-      determine whether, at this instant, a user may have beer.
-
-      there are several factors that may be checked: what specific permissions
-      a user has, based on the date and time; the current keg status and
-      whether or not the administrator has blocked access; keg limits (ie,
-      maximum beer/pour; hardware fault detection and automatic shutdown.
-      """
-      return True
 
    def addUser(self,username,name = None, init_ib = None, admin = 0, email = None,aim = None):
       uid = self.user_store.addUser(username,email,aim)

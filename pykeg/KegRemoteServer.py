@@ -3,6 +3,7 @@ import time
 import threading
 import SimpleXMLRPCServer
 from KegRemoteFunctions import KegRemoteFunctions
+from socket import *
 
 class KegRemoteServer(threading.Thread):
    def __init__(self,kegbot,host,port):

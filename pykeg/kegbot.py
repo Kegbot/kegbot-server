@@ -86,7 +86,7 @@ def instantBAC(user,keg,drink_ticks):
 def decomposeBAC(bac,seconds_ago,rate=0.02):
    return max(0.0,bac - (rate * (seconds_ago/3600.0)))
 
-def toF(self,t):
+def toF(t):
    return ((9.0/5.0)*t) + 32
 
 # ---------------------------------------------------------------------------- #
@@ -635,10 +635,10 @@ class plate_kegbot_main(plate_multi):
 
       self.cmd_dict = {'right': (self.owner.setCurrentPlate,(self.main_menu,)) }
 
-      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = widget_line_std("|     kegbot!!     |",row=1,col=0,scroll=0)
-      line3 = widget_line_std("| have good beer!! |",row=2,col=0,scroll=0)
-      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+      line1 = widget_line_std(" ================== ",row=0,col=0,scroll=0)
+      line2 = widget_line_std("      kegbot!!      ",row=1,col=0,scroll=0)
+      line3 = widget_line_std("  have good beer!!  ",row=2,col=0,scroll=0)
+      line4 = widget_line_std(" ================== ",row=3,col=0,scroll=0)
 
       self.maininfo.updateObject('line1',line1)
       self.maininfo.updateObject('line2',line2)
@@ -694,8 +694,8 @@ class plate_kegbot_main(plate_multi):
       # starts the rotation
       self.rotate_time = 5.0
 
-   def setTemperature(self,tempc,tempf):
-      inside = "%.1fc/%.1ff" % (tempc,tempf)
+   def setTemperature(self,tempc):
+      inside = "%.1fc/%.1ff" % (tempc,toF(tempc))
       line3 = widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
       self.tempinfo.updateObject('line3',line3)
 

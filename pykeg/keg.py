@@ -12,8 +12,9 @@ import thread, threading
 import signal
 import readline
 from KegRemoteServer import KegRemoteServer
+from KegAIMBot import KegAIMBot
 
-from toc import TocTalk,BotManager
+from toc import BotManager
 
 # edit this line to point to your config file; that's all you have to do!
 config = 'keg.cfg'
@@ -33,14 +34,14 @@ class KegBot:
 
       # used for auditing between pours. see comments inline.
       self.last_flow_ticks = None
-
-      self.freezer_status = None
-      #self.disableFreezer()
+      self.freezer = Freezer(self.config)
 
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
       # button to 'go away' for awhile until it will recognize it again.
       self.timed_out = []
+
+      self.bm = BotManager()
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
       self.netlock = threading.Lock()
@@ -246,25 +247,21 @@ class KegBot:
             self.last_temp_time = time.time()
 
    def aimBot(self):
-      self.bm = BotManager()
       sn = self.config.get('AIM','screenname')
       pw = self.config.get('AIM','password')
       self.aimbot = KegAIMBot(sn,pw,self)
       self.bm.addBot(self.aimbot,"aimbot")
+      self.bm.wait()
 
    def enableFreezer(self):
-      cmd = self.config.get('Thermo','fridge_on_cmd')
-      os.system(cmd)
-      if self.freezer_status != 'on':
+      if self.freezer.status() != 'on':
          self.log('tempmon',green('activated freezer'))
-         self.freezer_status = 'on'
+      self.freezer.enable()
 
    def disableFreezer(self):
-      cmd = self.config.get('Thermo','fridge_off_cmd')
-      os.system(cmd)
-      if self.freezer_status != 'off':
+      if self.freezer.status() != 'off':
          self.log('tempmon',green('disabled freezer'))
-         self.freezer_status = 'off'
+      self.freezer.disable()
 
    def mainEventLoop(self):
       last_refresh = 0
@@ -311,7 +308,7 @@ class KegBot:
             self.initFlowCounter()
 
             # - record flow counter
-            initial_flow_ticks = self.readFlowMeter()
+            initial_flow_ticks = self.flowmeter.readTicks()
             self.log('flow','current flow ticks: %s' % initial_flow_ticks)
 
             # - turn on UI
@@ -319,7 +316,7 @@ class KegBot:
             self.ui.setCurrentPlate(user_screen,replace=1)
 
             # - turn on flow
-            self.enableFlow()
+            self.flowmeter.openValve()
 
             # - wait for ibutton release OR inaction timeout
             self.log('flow','starting flow for user %s' % current_user.getName())
@@ -369,7 +366,7 @@ class KegBot:
                if STOP_FLOW:
                   break
 
-               ticks = self.readFlowMeter() - initial_flow_ticks
+               ticks = self.flowmeter.readTicks() - initial_flow_ticks
                # 1041 ticks = 16 oz
                # 520.5 ticks = 8 oz
                progbars = user_screen.write_dict['progbar'].proglen - 2
@@ -400,11 +397,11 @@ class KegBot:
 
             # - turn off flow
             self.log('flow','user is gone; flow ending')
-            self.disableFlow()
+            self.flowmeter.closeValve()
             self.ui.setCurrentPlate(self.main_plate,replace=1)
 
             # - record flow totals; save to user database
-            flow_ticks = self.readFlowMeter() - initial_flow_ticks
+            flow_ticks = self.flowmeter.readTicks() - initial_flow_ticks
             if flow_ticks > 0:
                self.history_db.logDrink(current_user,flow_ticks)
                self.log('flow','drink tick total: %i' % flow_ticks)
@@ -433,10 +430,6 @@ class KegBot:
          if id == ib.read_id():
             ownerid = self.token_db[id].owner
             return self.user_db[ownerid]
-
-   def readFlowMeter(self):
-      ticks = self.flowmeter.readTicks()
-      return ticks
 
    def makeUserScreen(self,user):
       scr = plate_std(self.ui)
@@ -470,12 +463,6 @@ class KegBot:
 
       return scr
 
-   def enableFlow(self):
-      self.flowmeter.openValve()
-
-   def disableFlow(self):
-      self.flowmeter.closeValve()
-
    def debug(self,msg):
       print "[debug] %s" % (msg,)
 
@@ -483,7 +470,7 @@ class KegBot:
       """ this function is to be called whenever the flow is about to be enabled.
       it may also log any deviation that is noticed. """
       if self.last_flow_ticks:
-         curr_ticks = self.readFlowMeter()
+         curr_ticks = self.flowmeter.readTicks()
          if self.last_flow_ticks != curr_ticks:
             self.log('security','last recorded flow count (%s) does not match currently observed flow count (%s)' % (self.last_flow_ticks,curr_ticks))
       self.flowmeter.clearTicks()
@@ -712,6 +699,23 @@ class CalendarGrant(Grant):
       if Grant.evalAccess(self,user,kegbot):
          return 1
 
+class Freezer:
+   def __init__(self,config):
+      self.on_cmd = config.get('Thermo','fridge_on_cmd')
+      self.off_cmd = config.get('Thermo','fridge_off_cmd')
+      self.status = 'unknown'
+
+   def enable(self):
+      os.system(self.on_cmd)
+      self.status = 'on'
+   
+   def disable(self):
+      os.system(self.off_cmd)
+      self.status = 'off'
+
+   def status(self):
+      return self.status
+
 class FlowController:
    """ represents the embedded flowmeter counter microcontroller. """
    def __init__(self,dev,rate=115200,ticks_per_liter=2200):
@@ -769,29 +773,6 @@ class FlowController:
       self._lock.acquire()
       self._devpipe.write('\x82')
       self._lock.release()
-
-class KegAIMBot(TocTalk):
-   def __init__(self, sn, pw, owner):
-      TocTalk.__init__(self,sn,pw)
-      self.owner = owner
-      self._info = "hello, i am a kegerator."
-      self._debug = 1 # critical debug messages
-      self._logfd = open('botlog.txt','a',0)
-
-   def on_IM_IN(self,data):
-      in_sn, in_flag, in_msg = data.split(":")[0:3]
-      reply = self.makeReply(in_msg)
-      if reply:
-         self.do_SEND_IM(in_sn,reply)
-
-   def makeReply(self,data):
-      temp = 'unknown'
-      freezer = 'unknown'
-      if self.owner:
-         temp = self.owner.last_temp
-         freezer = self.owner.freezer_status
-      reply = "i am dumb. my last recorded temperature is %s and the freezer is believed to be %s." % (temp,freezer)
-      return reply
 
 class plate_kegbot_main(plate_std):
    def __init__(self,owner):

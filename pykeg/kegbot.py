@@ -626,6 +626,15 @@ class plate_kegbot_main(plate_multi):
       self.maininfo, self.tempinfo, self.freezerinfo  = plate_std(owner), plate_std(owner), plate_std(owner)
       self.lastinfo, self.drinker  = plate_std(owner), plate_std(owner)
 
+      self.main_menu = plate_select_menu(owner,header="kegbot menu")
+      self.main_menu.insert(("show history",None,()))
+      self.main_menu.insert(("add user",None,()))
+      self.main_menu.insert(("squelch user",None,()))
+      self.main_menu.insert(("lock kegbot",None,()))
+      #self.main_menu.insert(("exit",owner.setCurrentPlate,(self,)))
+
+      self.cmd_dict = {'right': (self.owner.setCurrentPlate,(self.main_menu,)) }
+
       line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
       line2 = widget_line_std("|     kegbot!!     |",row=1,col=0,scroll=0)
       line3 = widget_line_std("| have good beer!! |",row=2,col=0,scroll=0)
@@ -702,8 +711,7 @@ class plate_kegbot_main(plate_multi):
       self.drinker.updateObject('line3',line3)
 
    def gotKey(self,key):
-      print "got key: [%s]" % key
-      plate_multi.got_key(self,key)
+      plate_multi.gotKey(self,key)
 
 # start a new kehbot instance, if we are called from the command line
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ class TempMonitor(threading.Thread):
       max_high = self.owner.config.getfloat('Thermo','temp_max_high')
       timeout = self.owner.config.getfloat('Thermo','logging_timeout')
       sensor = self.owner.config.getint('Thermo','main_sensor')
-      last_temp = -100.0
+      lasttemp = -100.0
       last_time = 0
       while not self.QUIT.isSet():
          self.sensor.takeReading()
@@ -31,7 +31,11 @@ class TempMonitor(threading.Thread):
 
             if time.time() - last_time > timeout:
                self.owner.log('tempmon','temperature now read as: %s'%currtemp)
-               self.owner.thermo_store.logTemp(currtemp, sensor)
+               if currtemp != lasttemp:
+                  self.owner.thermo_store.logTemp(currtemp, sensor)
+                  lasttemp = currtemp
+               else:
+                  self.owner.thermo_store.updateLastTemp()
                last_time = rectime
 
 class TempSensor:

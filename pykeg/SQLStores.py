@@ -194,6 +194,20 @@ class ThermoStore:
       q = "INSERT INTO %s (`rectime`,`sensor`,`temp`) VALUES ('%s','%s','%s')" % (self.table,time.time(),sensor,temp)
       c.execute(q)
 
+   def updateLastTemp(self):
+      """
+      update the last entry in the database with the current time.
+
+      this function will update the last row in the table with the current
+      time. this is meant to save table space when, at some interval, a new
+      temperature reading returns the same temperature as last recorded. the
+      purpose is to update the timestamp to show we actually took a measurement
+      at this time.
+      """
+      c = self.dbconn.cursor()
+      q = "UPDATE `%s` SET `rectime`='%s' ORDER BY `rectime` DESC LIMIT 1" % (self.table,int(time.time()))
+      c.execute(q)
+
 class Keg:
    def __init__(self,id,tickmetric,startounces,startdate,enddate,status,beername,alccontent,description,origcost,beerpalid):
       self.id = id

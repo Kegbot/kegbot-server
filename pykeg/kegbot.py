@@ -21,6 +21,7 @@ from SQLStores import *
 from SQLHandler import *
 from FlowController import FC2 as FlowController
 from TempMonitor import *
+import kbevent
 
 # edit this line to point to your config file; that's all you have to do!
 config = '/home/kegbot/svnbox/pykeg/keg.cfg'
@@ -169,7 +170,10 @@ class KegBot:
          dev = self.config.get('Devices','lcd')
          self.info('main','new LCD at device %s' % dev)
          self.lcd = Display(dev,model=self.config.get('UI','lcd_model'))
-         self.ui = lcdui(self.lcd)
+         self.ui = lcdui(self.lcd,self.config.get('UI','translation_file'))
+
+         self.keypad_fp = open(self.config.get('UI','keypad_pipe'))
+         thread.start_new_thread(self.keypadThread,())
       else:
          self.lcd = Display('/dev/null')
          self.ui = lcdui(self.lcd)
@@ -183,7 +187,7 @@ class KegBot:
       # set up the default 'screen'. for now, it is just a boring standard
       self.main_plate = plate_kegbot_main(self.ui)
       self.ui.setCurrentPlate(self.main_plate)
-      self.ui.start()
+      self.ui.start(with_keycmdhandler=True)
       self.ui.activity()
 
       # set up the remote call server, for anything that wants to monitor the keg
@@ -259,7 +263,7 @@ class KegBot:
          ret.addHandler(hdlr)
 
       # add tty handler
-      if self.config.getboolean('Logging','use_stream'):
+      if len(sys.argv) >= 2 and sys.argv[1] == "--fg":
          hdlr = logging.StreamHandler(sys.stdout)
          formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
          hdlr.setFormatter(formatter)
@@ -305,6 +309,7 @@ class KegBot:
       self.info('fc','status loop starting')
       self.last_pkt_time = 0
       timeout = self.config.getfloat('Timing','fc_status_timeout')
+      self.fc.getStatus()
       while not self.QUIT.isSet():
          (rr,wr,xr) = select.select([self.fc._devpipe],[],[],0.0)
          if len(rr):
@@ -316,6 +321,23 @@ class KegBot:
          time.sleep(timeout)
       self.info('fc','status loop exiting')
 
+
+   def keypadThread(self):
+      """
+      read commands from the USB keypad and send them off to our UI
+      """
+      self.info('keypad','keypad thread starting')
+      while not self.QUIT.isSet():
+         time.sleep(0.01)
+         try:
+            e = kbevent.read_event(self.keypad_fp)
+            #self.info('keypad','got event: %s' % (str(e)))
+            if e[3] == 1:
+               # the lcdui object may transform this key based on any
+               # translation dictionary it has, eg, "KP5 = 'up', KP2 = 'down'"
+               self.ui.cmd_queue.put(('usb',self.ui.translateKey(e[2])))
+         except:
+            pass
 
    def ibRefreshLoop(self):
       """
@@ -679,7 +701,14 @@ class plate_kegbot_main(plate_multi):
       line3 = widget_line_std("%s"%user,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
       self.drinker.updateObject('line3',line3)
 
+   def gotKey(self,key):
+      print "got key: [%s]" % key
+      plate_multi.got_key(self,key)
+
 # start a new kehbot instance, if we are called from the command line
 if __name__ == '__main__':
-   daemonize()
+   if len(sys.argv) < 2 or sys.argv[1] != '--fg':
+      daemonize()
+   else:
+      print "Running in foreground"
    KegBot(config)

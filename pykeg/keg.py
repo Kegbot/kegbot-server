@@ -346,32 +346,19 @@ class KegBot:
                ticks = self.readFlowMeter() - initial_flow_ticks
                # 1041 ticks = 16 oz
                # 520.5 ticks = 8 oz
-               prog_ticks = (ticks / (520/6)) % 6 
-               #print "raw  : %s" % ticks
-               #print "ticks: %s" % prog_ticks
-               #print "div  : %s" % ((ticks/(520/6))%6)
-               #prog_ticks = 5
-               ounces = (16.0*ticks)/1041.1
-               ounces = round(ounces,1)
+               progbars = user_screen.write_dict['progbar'].proglen - 2
+               TICKS_PER_8_OZ = self.flowmeter.ouncesToTicks(8.0)
+               prog_ticks = (ticks / (TICKS_PER_8_OZ/progbars)) % progbars
+               ounces = round(self.flowmeter.ticksToOunces(ticks),1)
+               oz = "%s oz" % (ounces,)
+               oz = oz + "    "
                if ounces != last_ounces or prog_ticks != last_prog_ticks:
-                  user_screen.write_dict['progbar'].progress = (ticks/520.0) % 1
-                  oz = "%s oz" % (ounces,)
-                  oz = oz + "    "
+                  user_screen.write_dict['progbar'].progress = (ticks/TICKS_PER_8_OZ) % 1
                   user_screen.write_dict['ounces'].setData(oz[:6])
-                  #postfix = "] %s |" % (oz[:6],)
-                  #user_screen.write_dict['progbar'].postfix = postfix
-                  #self.log('flow',red('updaing progbar'))
+
                   last_prog_ticks = prog_ticks
                   last_ounces = ounces
-                  #tickbox = "[" + "*"*prog_ticks + " "*(6-prog_ticks) + "]"
-                  #tickbox = "%s %s oz" % (tickbox,ounces)
-                  #tickbox = "| %s" % tickbox
-                  #while len(tickbox) <19:
-                  #   tickbox = tickbox + " "
-                  #tickbox = tickbox + "|"
-                  #line3 = widget_line_std(tickbox,row=2,col=0,scroll=0)
-                  #user_screen.updateObject('line3',line3)
-                  self.ui.setCurrentPlate(user_screen,replace=1)
+                  user_screen.refreshAll()
 
                # otherwise, timeout for a bit before we check all this stuff
                # again
@@ -588,9 +575,10 @@ class CalendarGrant(Grant):
 
 class FlowController:
    """ represents the embedded flowmeter counter microcontroller. """
-   def __init__(self,dev,rate=115200):
+   def __init__(self,dev,rate=115200,ticks_per_liter=2200):
       self.dev = dev
       self.rate = rate
+      self.ticks_per_liter = 2200
       self._lock = threading.Lock()
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
 
@@ -600,6 +588,16 @@ class FlowController:
       except:
          print "error setting raw"
          pass
+
+   def ticksToOunces(self,ticks):
+      # one liter is 32 ounces.
+      ticks_per_ounce = float(self.ticks_per_liter)/32.0
+      return ticks/ticks_per_ounce
+
+   def ouncesToTicks(self,oz):
+      # one liter is 32 ounces.
+      ticks_per_ounce = float(self.ticks_per_liter)/32.0
+      return oz*ticks_per_ounce
 
    def openValve(self):
       self._lock.acquire()

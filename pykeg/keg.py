@@ -28,6 +28,8 @@ class KegBot:
       self.config = ConfigParser()
       self.config.read(config)
 
+      self.verbose = 0
+
       # used for auditing between pours. see comments inline.
       self.last_flow_ticks = None
 
@@ -478,7 +480,8 @@ class KegBot:
 
    def log(self,component,message):
       timelog = time.strftime("%b %d %H:%M:%S", time.localtime())
-      print '%s [%s] %s' % (green(timelog),blue('%8s' % component),message)
+      if self.verbose == 1:
+         print '%s [%s] %s' % (green(timelog),blue('%8s' % component),message)
 
    def beerAccess(self,user):
       """ determine whether, at this instant, a user may have beer.
@@ -517,7 +520,7 @@ class KegShell(threading.Thread):
    def __init__(self,owner):
       threading.Thread.__init__(self)
       self.owner = owner
-      self.commands = ['quit','adduser']
+      self.commands = ['quit','adduser','showlog','hidelog']
 
       # setup readline to do fancy tab completion!
       self.completer = Completer()
@@ -538,11 +541,17 @@ class KegShell(threading.Thread):
             self.owner.quit()
             return
 
+         if cmd == 'showlog':
+            self.owner.verbose = 1
+
+         if cmd == 'hidelog':
+            self.owner.verbose = 0
+
          if cmd == 'adduser':
             user = self.adduser()
             username,admin,aim,initib = user
 
-            print "got user: %s" % user
+            print "got user: %s" % str(username)
 
             try:
                self.owner.addUser(username,init_ib = initib,admin=admin,aim=aim)
@@ -566,10 +575,23 @@ class KegShell(threading.Thread):
       print "please type the user's aim name, if known"
       aim = raw_input("aim name [none]: ")
       print "would you like to associate a particular beerkey with this user?"
-      key = raw_input("beer key id [none]: ")
-      key = key.upper()
+      print "here are the buttons i see on the network:"
+      self.owner.netlock.acquire()
+      ibs = self.owner.ownet.refresh()
+      self.owner.netlock.release()
+      count = 0
+      for ib in ibs:
+         print "[%i] %s (%s)" % (count,ib.name,ib.read_id())
+         count = count+1
+      key = raw_input("key number [none]: ")
+      try:
+         ib = ibs[int(key)]
+         key = ib.read_id()
+         print "selected %s" % key
+      except:
+         key = None
 
-      if string.lower(admin)[0] == y:
+      if string.lower(admin)[0] == 'y':
          admin = 1
       else:
          admin = 0

@@ -25,6 +25,56 @@ from TempMonitor import *
 # edit this line to point to your config file; that's all you have to do!
 config = 'keg.cfg'
 
+# ---------------------------------------------------------------------------- #
+# Helper functions -- available to all classes
+# ---------------------------------------------------------------------------- #
+def instantBAC(user,keg,drink_ticks):
+   # calculate weight in metric KGs
+   if user.weight <= 0:
+      return 0.0
+   kg_weight = user.weight/2.2046
+   ounces = keg.getDrinkOunces(drink_ticks)
+   #print "BAC for %s-pound (%s-kg) user" % (user.weight,kg_weight)
+   #print "for a %s -ounce drink of %s percent alcohol" % (ounces,keg.alccontent)
+
+   # gender based water-weight
+   if user.gender == 'male':
+      waterp = 0.58
+   else:
+      waterp = 0.49
+
+   # find total body water (in milliliters)
+   bodywater = kg_weight * waterp * 1000.0
+
+   # weight in grams of 1 oz alcohol
+   alcweight = 29.57*0.79;
+
+   # rate of alcohol per subject's total body water
+   alc_per_body_ml = alcweight/bodywater
+
+   # find alcohol concentration in blood (80.6% water)
+   alc_per_blood_ml = alc_per_body_ml * 0.806
+
+   # switch to "grams percent"
+   grams_pct = alc_per_blood_ml * 100.0
+   #print "grams pct: %s" % grams_pct
+
+   # determine how much we've really consumed
+   alc_consumed = keg.getDrinkOunces(drink_ticks) * (keg.alccontent/100.0)
+   instant_bac = alc_consumed * grams_pct
+
+   return instant_bac
+
+def decomposeBAC(bac,seconds_ago,rate=0.02):
+   return max(0.0,bac - (rate * (seconds_ago/3600.0)))
+
+def toF(self,t):
+   return ((9.0/5.0)*t) + 32
+
+# ---------------------------------------------------------------------------- #
+# Main classes
+# ---------------------------------------------------------------------------- #
+
 class KegBot:
    """ the thinking kegerator! """
    def __init__(self,config):
@@ -60,12 +110,12 @@ class KegBot:
       # and the table name to form the init tuple
       db_tuple = (self.dbhost,self.dbuser,self.dbpassword,self.dbdb)
 
-      self.drink_store   = DrinkStore( db_tuple, self.config.get('DB','drink_table') )
-      self.user_store    = UserStore( db_tuple, self.config.get('DB','user_table') )
-      self.key_store     = KeyStore( db_tuple, self.config.get('DB','key_table') )
+      self.drink_store   = DrinkStore(  db_tuple, self.config.get('DB','drink_table') )
+      self.user_store    = UserStore(   db_tuple, self.config.get('DB','user_table') )
+      self.key_store     = KeyStore(    db_tuple, self.config.get('DB','key_table') )
       self.policy_store  = PolicyStore( db_tuple, self.config.get('DB','policy_table') )
-      self.grant_store   = GrantStore( db_tuple, self.config.get('DB','grant_table') , self.policy_store)
-      self.keg_store     = KegStore( db_tuple, self.config.get('DB','keg_table') )
+      self.grant_store   = GrantStore(  db_tuple, self.config.get('DB','grant_table') , self.policy_store)
+      self.keg_store     = KegStore(    db_tuple, self.config.get('DB','keg_table') )
       self.thermo_store  = ThermoStore( db_tuple, self.config.get('DB','thermo_table') )
 
       # a list of buttons (probably just zero or one) that have been connected
@@ -74,9 +124,6 @@ class KegBot:
       # other things, this keeps a normally-closed solenoid valve from burning
       # out
       self.timed_out = []
-
-      # start a bot manager for AIM use
-      self.bm = BotManager()
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
       self.netlock = threading.Lock()
@@ -134,12 +181,12 @@ class KegBot:
          self.tempmon.start()
 
       # start the aim bot
-      sn = self.config.get('AIM','screenname')
-      pw = self.config.get('AIM','password')
-      self.aimbot = KegAIMBot(sn,pw,self)
-      self.bm.addBot(self.aimbot,"aimbot",go=0)
       if self.config.getboolean('AIM','use_aim'):
-         self.bm.botGo("aimbot")
+         sn = self.config.get('AIM','screenname')
+         pw = self.config.get('AIM','password')
+         self.aimbot = KegAIMBot(sn,pw,self)
+         self.bm = BotManager()
+         self.bm.addBot(self.aimbot,"aimbot",go=1)
 
       self.mainEventLoop()
 
@@ -190,12 +237,6 @@ class KegBot:
          ret.addHandler(hdlr)
 
       return ret
-
-   def toF(self,t):
-      """
-      convert celcius temperature to fahrenheit.
-      """
-      return ((9.0/5.0)*t) + 32
 
    def enableFreezer(self):
       if self.fc.fridgeStatus() == False: 
@@ -402,8 +443,8 @@ class KegBot:
 
       # add the final total to the record
       old_drink = self.drink_store.getLastDrink(current_user.id)
-      bac = self.instantBAC(current_user,current_keg,flow_ticks)
-      bac += self.decomposeBAC(old_drink[0],time.time()-old_drink[1])
+      bac = instantBAC(current_user,current_keg,flow_ticks)
+      bac += decomposeBAC(old_drink[0],time.time()-old_drink[1])
       rec.emit(flow_ticks,current_grant,grant_ticks,bac)
 
       ounces = round(self.fc.ticksToOunces(flow_ticks),1)
@@ -420,47 +461,6 @@ class KegBot:
       self.log('flow','flow ended with %s ticks' % flow_ticks)
 
       # - back to idle UI
-
-   def decomposeBAC(self,bac,seconds_ago):
-      rate = 0.02 # rate of loss per hour
-      return max(0.0,bac - (rate * (seconds_ago/3600.0)))
-
-   def instantBAC(self,user,keg,drink_ticks):
-      # calculate weight in metric KGs
-      if user.weight <= 0:
-         return 0.0
-      kg_weight = user.weight/2.2046
-      ounces = keg.getDrinkOunces(drink_ticks)
-      #print "BAC for %s-pound (%s-kg) user" % (user.weight,kg_weight)
-      #print "for a %s -ounce drink of %s percent alcohol" % (ounces,keg.alccontent)
-
-      # gender based water-weight
-      if user.gender == 'male':
-         waterp = 0.58
-      else:
-         waterp = 0.49
-
-      # find total body water (in milliliters)
-      bodywater = kg_weight * waterp * 1000.0
-
-      # weight in grams of 1 oz alcohol
-      alcweight = 29.57*0.79;
-
-      # rate of alcohol per subject's total body water
-      alc_per_body_ml = alcweight/bodywater
-
-      # find alcohol concentration in blood (80.6% water)
-      alc_per_blood_ml = alc_per_body_ml * 0.806
-
-      # switch to "grams percent"
-      grams_pct = alc_per_blood_ml * 100.0
-      #print "grams pct: %s" % grams_pct
-
-      # determine how much we've really consumed
-      alc_consumed = keg.getDrinkOunces(drink_ticks) * (keg.alccontent/100.0)
-      instant_bac = alc_consumed * grams_pct
-
-      return instant_bac
 
    def timeoutToken(self,id):
       self.log('timeout','timing out id %s' % id)
@@ -576,8 +576,7 @@ class KegShell(threading.Thread):
          if cmd == 'showtemp':
             try:
                temp = self.owner.tempsensor._temps[1]
-               tempf = self.owner.toF(temp)
-               print "last temp: %.2i C / %.2i F" % (temp,tempf)
+               print "last temp: %.2i C / %.2i F" % (temp,toF(temp))
             except:
                pass
 

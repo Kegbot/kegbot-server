@@ -17,7 +17,7 @@ import traceback
 from KegRemoteServer import KegRemoteServer
 from KegAIMBot import KegAIMBot
 from toc import BotManager
-from SQLStores import DrinkStore, KeyStore, UserStore
+from SQLStores import *
 from SQLHandler import *
 
 # edit this line to point to your config file; that's all you have to do!
@@ -80,6 +80,9 @@ class KegBot:
       self.drink_store = DrinkStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','drink_table') ))
       self.user_store  = UserStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','user_table') ))
       self.key_store   = KeyStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','key_table') ))
+      self.grant_store  = GrantStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','grant_table') ))
+      self.policy_store  = PolicyStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','policy_table') ))
+      self.keg_store  = KegStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','keg_table') ))
 
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
@@ -146,9 +149,12 @@ class KegBot:
          thread.start_new_thread(self.tempMonitor,())
 
       # start the aim bot
+      sn = self.config.get('AIM','screenname')
+      pw = self.config.get('AIM','password')
+      self.aimbot = KegAIMBot(sn,pw,self)
+      self.bm.addBot(self.aimbot,"aimbot",go=0)
       if self.config.getboolean('AIM','use_aim'):
-         self.aimBot()
-         #thread.start_new_thread(self.aimBot,())
+         self.bm.botGo("aimbot")
 
       self.mainEventLoop()
 
@@ -244,8 +250,8 @@ class KegBot:
          elif temp <= max_low:
             self.disableFreezer()
 
-         self.log('tempmon','temperature now read as: %s F / %s C' % (self.toF(temp),temp) )
          if temp != self.last_temp:
+            self.log('tempmon','temperature now read as: %s F / %s C' % (self.toF(temp),temp) )
             self.last_temp = temp
             self.last_temp_time = time.time()
             self.main_plate.setTemperature(temp,self.toF(temp))
@@ -258,20 +264,16 @@ class KegBot:
       """
       return ((9.0/5.0)*t) + 32
 
-   def aimBot(self):
-      sn = self.config.get('AIM','screenname')
-      pw = self.config.get('AIM','password')
-      self.aimbot = KegAIMBot(sn,pw,self)
-      self.bm.addBot(self.aimbot,"aimbot")
-
    def enableFreezer(self):
       if self.freezer.getStatus() != 'on':
          self.log('tempmon','activated freezer')
+         self.main_plate.setFreezer('on ')
       self.freezer.enable()
 
    def disableFreezer(self):
       if self.freezer.getStatus() != 'off':
          self.log('tempmon','disabled freezer')
+         self.main_plate.setFreezer('off')
       self.freezer.disable()
 
    def ibRefreshLoop(self):
@@ -299,8 +301,12 @@ class KegBot:
       else:
          return 0
 
+   def getBestGrant(self,grants):
+      try:
+         return grants[0]
+      except: return grants
+
    def mainEventLoop(self):
-      last_refresh = 0
       while not self.QUIT.isSet():
          time.sleep(0.5)
          uib = None
@@ -321,115 +327,151 @@ class KegBot:
                   self.log('flow','found an authorized ibutton: %s' % ib.read_id())
                   uib = ib
                   break
-
-         # enter this block if we have a recognized iButton. note that above
-         # code will stop with the first authorized ibutton. 
          if uib:
-            self.ui.activity()
+            self.handleFlow(uib)
 
-            current_user = self.getUser(uib)
-            #grants = self.getGrants(uib.ID)
+   def handleFlow(self,uib):
+      self.ui.activity()
+      current_keg = self.keg_store.getCurrentKeg()
 
-            # sequence of steps that should take place:
-            # - prepare counter
-            self.initFlowCounter()
+      current_user = self.getUser(uib)
+      grants = self.grant_store.getGrants(current_user)
 
-            # - record flow counter
-            initial_flow_ticks = self.flowmeter.readTicks()
-            self.log('flow','current flow ticks: %s' % initial_flow_ticks)
+      if self.getBestGrant(grants) == []:
+         self.log('flow','no valid grants found; not starting flow')
+         return
+      else:
+         current_grant = self.getBestGrant(grants)
+         current_policy = self.policy_store.getPolicy(current_grant.forpolicy)
 
-            # - turn on UI
-            user_screen = self.makeUserScreen(current_user)
-            self.ui.setCurrentPlate(user_screen,replace=1)
+      # sequence of steps that should take place:
+      # - prepare counter
+      self.initFlowCounter()
 
-            # - turn on flow
-            self.flowmeter.openValve()
+      # - record flow counter
+      initial_flow_ticks = self.flowmeter.readTicks()
+      self.log('flow','current flow ticks: %s' % initial_flow_ticks)
 
-            # - wait for ibutton release OR inaction timeout
-            self.log('flow','starting flow for user %s' % current_user.getName())
-            ib_missing = 0
-            STOP_FLOW = 0
+      # - turn on UI
+      user_screen = self.makeUserScreen(current_user)
+      self.ui.setCurrentPlate(user_screen,replace=1)
 
-            # handle an idle timeout
-            idle_timeout = self.config.getfloat('Timing','ib_idle_timeout')
-            t = threading.Timer(idle_timeout,self.timeoutToken,(uib.read_id(),))
-            if 1 or not current_user.isAdmin():
-               t.start()
+      # - turn on flow
+      self.flowmeter.openValve()
+      drink_start = time.time()
 
-            prog_ticks,last_prog_ticks = 0,0
-            ounces,last_ounces = 0.0,0.0
-            last_missing = time.time()
-            while 1:
-               time_since_seen = time.time() - self.lastSeen(uib.read_id()) 
-               ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
-               if time_since_seen > ceiling:
-                  self.log('flow',red('ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling)))
-                  STOP_FLOW = 1
+      # - wait for ibutton release OR inaction timeout
+      self.log('flow','starting flow for user %s' % current_user.getName())
+      ib_missing = 0
+      STOP_FLOW = 0
 
-               # check other credentials necessary to keep the beer flowing!
-               if self.QUIT.isSet():
-                  STOP_FLOW = 1
+      # - start the timout counter
+      idle_timeout = self.config.getfloat('Timing','ib_idle_timeout')
+      t = threading.Timer(idle_timeout,self.timeoutToken,(uib.read_id(),))
+      t.start()
 
-               elif uib.read_id() in self.timed_out:
-                  STOP_FLOW = 1
+      prog_ticks,last_prog_ticks = 0,0
+      ounces,last_ounces = 0.0,-1
+      ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
 
-               elif not self.beerAccess(current_user):
-                  STOP_FLOW = 1
+      # set up the record for logging
+      rec = DrinkRecord(self.drink_store,current_user.id,current_keg)
 
-               if STOP_FLOW:
-                  break
+      #
+      # flow maintenance loop
+      #
+      last_loop_time = time.time()
+      last_flow_time = 0
+      ticks,grant_ticks = 0,0
 
-               ticks = self.flowmeter.readTicks() - initial_flow_ticks
-               # 1041 ticks = 16 oz
-               # 520.5 ticks = 8 oz
-               progbars = user_screen.write_dict['progbar'].proglen - 2
-               TICKS_PER_8_OZ = self.flowmeter.ouncesToTicks(8.0)
-               prog_ticks = (ticks / (TICKS_PER_8_OZ/progbars)) % progbars
-               ounces = round(self.flowmeter.ticksToOunces(ticks),1)
-               oz = "%s oz" % (ounces,)
-               oz = oz + "    "
-               if ounces != last_ounces or prog_ticks != last_prog_ticks:
-                  user_screen.write_dict['progbar'].progress = (ticks/TICKS_PER_8_OZ) % 1
-                  user_screen.write_dict['ounces'].setData(oz[:6])
+      while 1:
+         # if we've expired the grant, log it
+         if current_grant.isExpired():
+            rec.addFragment(current_grant.id,grant_ticks)
+            grant_ticks = 0
+            current_grant = self.getBestGrant(grants)
+            current_policy = self.policy_store.getPolicy(current_grant.forpolicy)
 
-                  last_prog_ticks = prog_ticks
-                  last_ounces = ounces
-                  user_screen.refreshAll() # XXX -- is this necessary anymore?
+         if not current_grant:
+            self.log('flow','no more valid grants; ending flow')
+            STOP_FLOW = 1
 
-               # otherwise, timeout for a bit before we check all this stuff
-               # again
-               sleep_amt = self.config.getfloat('Timing','ib_verify_timeout')
-               time.sleep(sleep_amt)
+         # if the token has been gone awhile, end
+         time_since_seen = time.time() - self.lastSeen(uib.read_id())
+         if time_since_seen > ceiling:
+            self.log('flow',red('ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling)))
+            STOP_FLOW = 1
 
-            # at this point, the flow maintenance loop has exited. this means
-            # we must quickly disable the beer flow and kick the user off the
-            # system
+         # check other credentials necessary to keep the beer flowing!
+         if self.QUIT.isSet():
+            STOP_FLOW = 1
 
-            # cancel the idle timeout
-            t.cancel()
+         elif uib.read_id() in self.timed_out:
+            STOP_FLOW = 1
 
-            # - turn off flow
-            self.log('flow','user is gone; flow ending')
-            self.flowmeter.closeValve()
-            self.ui.setCurrentPlate(self.main_plate,replace=1)
+         elif not self.beerAccess(current_user):
+            STOP_FLOW = 1
 
-            # - record flow totals; save to user database
-            flow_ticks = self.flowmeter.readTicks() - initial_flow_ticks
-            if flow_ticks > 0:
-               self.drink_store.logDrink(current_user,flow_ticks)
-               self.log('flow','drink tick total: %i' % flow_ticks)
-            #current_user.addFlowTicks(flow_ticks)
+         if STOP_FLOW:
+            break
 
-            # - audit the current flow meter reading
-            # this amount, self.last_flow_ticks, is used by initFlowCounter.
-            # when the next person pours beer, this amount can be compared to
-            # the FlowController's tick reading. if the two readings are off by
-            # much, then this may be indicitive of a leak, stolen beer, or
-            # another serious problem.
-            self.last_flow_ticks = flow_ticks
-            self.log('flow','flow ended with %s ticks' % flow_ticks)
+         if time.time() - last_flow_time > self.config.getfloat("Flow","polltime"):
+            ticks = self.flowmeter.readTicks() - initial_flow_ticks
 
-            # - back to idle UI
+            last_flow_time = time.time()
+            # 1041 ticks = 16 oz
+            # 520.5 ticks = 8 oz
+            progbars = user_screen.write_dict['progbar'].proglen - 2
+            TICKS_PER_8_OZ = self.flowmeter.ouncesToTicks(8.0)
+            prog_ticks = (ticks / (TICKS_PER_8_OZ/progbars)) % progbars
+            ounces = round(self.flowmeter.ticksToOunces(ticks),1)
+            oz = "%s oz" % (ounces,)
+            oz = oz + "    "
+            if ounces != last_ounces or prog_ticks != last_prog_ticks:
+               user_screen.write_dict['progbar'].progress = (ticks/TICKS_PER_8_OZ) % 1
+               user_screen.write_dict['ounces'].setData(oz[:6])
+
+               last_prog_ticks = prog_ticks
+               last_ounces = ounces
+               user_screen.refreshAll() # XXX -- is this necessary anymore?
+
+         # otherwise, timeout for a bit before we check all this stuff
+         # again
+         #sleep_amt = self.config.getfloat('Timing','ib_verify_timeout')
+         #time.sleep(sleep_amt)
+
+      # at this point, the flow maintenance loop has exited. this means
+      # we must quickly disable the beer flow and kick the user off the
+      # system
+
+      # cancel the idle timeout
+      t.cancel()
+
+      # - turn off flow
+      self.log('flow','user is gone; flow ending')
+      self.flowmeter.closeValve()
+      self.ui.setCurrentPlate(self.main_plate,replace=1)
+
+      # - record flow totals; save to user database
+      flow_ticks = self.flowmeter.readTicks() - initial_flow_ticks
+
+      # add the final total to the record
+      rec.done(flow_ticks,current_grant.id,grant_ticks)
+
+      ounces = round(self.flowmeter.ticksToOunces(flow_ticks),1)
+      self.main_plate.setLastDrink(current_user.getName(),ounces)
+      self.log('flow','drink tick total: %i' % flow_ticks)
+
+      # - audit the current flow meter reading
+      # this amount, self.last_flow_ticks, is used by initFlowCounter.
+      # when the next person pours beer, this amount can be compared to
+      # the FlowController's tick reading. if the two readings are off by
+      # much, then this may be indicitive of a leak, stolen beer, or
+      # another serious problem.
+      self.last_flow_ticks = flow_ticks
+      self.log('flow','flow ended with %s ticks' % flow_ticks)
+
+      # - back to idle UI
 
    def timeoutToken(self,id):
       self.log('timeout','timing out id %s' % id)
@@ -527,7 +569,7 @@ class KegShell(threading.Thread):
    def __init__(self,owner):
       threading.Thread.__init__(self)
       self.owner = owner
-      self.commands = ['quit','adduser','showlog','hidelog']
+      self.commands = ['quit','adduser','showlog','hidelog', 'bot']
 
       # setup readline to do fancy tab completion!
       self.completer = Completer()
@@ -553,6 +595,21 @@ class KegShell(threading.Thread):
 
          if cmd == 'hidelog':
             self.owner.verbose = 0
+
+         if cmd == 'bot':
+            try:
+               subcmd = tokens[1]
+               if subcmd == 'go':
+                  self.owner.bm.botGo("aimbot")
+               elif subcmd == 'stop':
+                  self.owner.bm.botStop("aimbot")
+               elif subcmd == 'say':
+                  user  = tokens[2]
+                  msg = raw_input('message: ')
+                  self.owner.aimbot.do_SEND_IM(user,msg)
+            except:
+               pass
+
 
          if cmd == 'adduser':
             user = self.adduser()
@@ -692,13 +749,13 @@ class Freezer:
 
 class FlowController:
    """ represents the embedded flowmeter counter microcontroller. """
-   def __init__(self,dev,rate=115200,ticks_per_liter=2200, commands = ('\x81','\x82','\x83','\x84')):
+   def __init__(self,dev,rate=115200,ticks_per_liter=2200, commands = ('\x81','\x82','\x83','\x84','\x85','\x86')):
       self.dev = dev
       self.rate = rate
       self.ticks_per_liter = 2200
       self._lock = threading.Lock()
 
-      self.read_cmd,self.clear_cmd,self.open_cmd,self.close_cmd = commands[:4]
+      self.read_cmd,self.clear_cmd,self.open_cmd,self.close_cmd, self.timer_cmd, self.status_cmd  = commands[:6]
 
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
       try:
@@ -734,6 +791,33 @@ class FlowController:
       self._lock.release()
       self.valve_open = False
 
+   def valveStatus(self):
+      try:
+         self._lock.acquire()
+         self._devpipe.write(self.status_cmd)
+         # XXX - add a timer here, in case read failed
+         status = self._devpipe.read(1)
+         self._lock.release()
+         status = ord(high)*256 + ord(low)
+         # returns two-byte string, like '\x01\x00'
+      except:
+         pass
+      return status == '\x01'
+
+   def readTimer(self):
+      try:
+         self._lock.acquire()
+         self._devpipe.write(self.timer_cmd)
+         # XXX - add a timer here, in case read failed
+         ticks = self._devpipe.read(3)
+         self._lock.release()
+         low,mid,high = ticks[0],ticks[1],ticks[2]
+         ticks = ord(high)*256 + ord(low)
+         # returns two-byte string, like '\x01\x00'
+      except:
+         ticks = 0
+      return "%i %i %i" % (ord(high), ord(mid), ord(low))
+
    def readTicks(self):
       try:
          self._lock.acquire()
@@ -759,7 +843,7 @@ class plate_kegbot_main(plate_multi):
       self.owner = owner
 
       self.maininfo, self.tempinfo, self.freezerinfo  = plate_std(owner), plate_std(owner), plate_std(owner)
-      self.lastinfo = plate_std(owner)
+      self.lastinfo, self.drinker  = plate_std(owner), plate_std(owner)
 
       line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
       line2 = widget_line_std("|     kegbot!!     |",row=1,col=0,scroll=0)
@@ -792,18 +876,8 @@ class plate_kegbot_main(plate_multi):
       self.freezerinfo.updateObject('line4',line4)
 
       line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = widget_line_std("| freezer status:  |",row=1,col=0,scroll=0)
-      line3 = widget_line_std("| [off]            |",row=2,col=0,scroll=0)
-      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
-
-      self.freezerinfo.updateObject('line1',line1)
-      self.freezerinfo.updateObject('line2',line2)
-      self.freezerinfo.updateObject('line3',line3)
-      self.freezerinfo.updateObject('line4',line4)
-
-      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
       line2 = widget_line_std("| last pour:       |",row=1,col=0,scroll=0)
-      line3 = widget_line_std("| 16.3 oz          |",row=2,col=0,scroll=0)
+      line3 = widget_line_std("| 0.0 oz           |",row=2,col=0,scroll=0)
       line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
       self.lastinfo.updateObject('line1',line1)
@@ -811,19 +885,41 @@ class plate_kegbot_main(plate_multi):
       self.lastinfo.updateObject('line3',line3)
       self.lastinfo.updateObject('line4',line4)
 
+      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = widget_line_std("| last drinker:    |",row=1,col=0,scroll=0)
+      line3 = widget_line_std("| unknown          |",row=2,col=0,scroll=0)
+      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+
+      self.drinker.updateObject('line1',line1)
+      self.drinker.updateObject('line2',line2)
+      self.drinker.updateObject('line3',line3)
+      self.drinker.updateObject('line4',line4)
+
       self.addPlate("main",self.maininfo)
       self.addPlate("temp",self.tempinfo)
       self.addPlate("freezer",self.freezerinfo)
       self.addPlate("last",self.lastinfo)
+      self.addPlate("drinker",self.drinker)
 
       # starts the rotation
       self.rotate_time = 5.0
 
    def setTemperature(self,tempc,tempf):
       inside = "%.1fc/%.1ff" % (tempc,tempf)
-      inside += " "*(16-len(inside))
-      line3 = widget_line_std("| %s |"%inside,row=2,col=0,scroll=0)
+      line3 = widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
       self.tempinfo.updateObject('line3',line3)
+
+   def setFreezer(self,status):
+      inside = "[%s]" % status
+      line3 = widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
+      self.freezerinfo.updateObject('line3',line3)
+
+   def setLastDrink(self,user,ounces):
+      line3 = widget_line_std("%s oz"%ounces,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
+      self.lastinfo.updateObject('line3',line3)
+      line3 = widget_line_std("%s"%user,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
+      self.drinker.updateObject('line3',line3)
+
 
 if __name__ == '__main__':
    KegBot(config)

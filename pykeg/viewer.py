@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# coding: iso-8859-1
+
 import xmlrpclib
 import socket
 import thread
@@ -102,6 +105,7 @@ class BrowserFrame(wx.Frame):
       wx.Frame.__init__(self, parent, ID, title, wx.DefaultPosition, wx.Size(300, 300))
 
       self.host = "192.168.1.50" # alias for 192.168.0.110
+      self.host = "localhost"
       self.port = 8337
       self.parent = parent
 

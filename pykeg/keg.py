@@ -2,6 +2,8 @@
 # by mike wakerly; mike@wakerly.com
 
 import os, cPickle, time
+import logging, MySQLdb
+from SQLHandler import *
 from onewirenet import *
 from ibutton import *
 from mtxorb import *
@@ -36,11 +38,41 @@ class KegBot:
       self.last_flow_ticks = None
       self.freezer = Freezer(self.config)
 
+      # set up logging, using the python 2.3 logging module
+      self.main_logger = logging.getLogger('kegbot')
+      self.main_logger.setLevel(logging.INFO)
+      self.dbhost = self.config.get('DB','host')
+      self.dbuser = self.config.get('DB','user')
+      self.dbdb = self.config.get('DB','db')
+      self.logtable = self.config.get('Logging','logtable')
+      self.dbpassword = self.config.get('DB','password')
+
+      # add a file-output handler
+      if self.config.getboolean('Logging','use_logfile'):
+         hdlr = logging.FileHandler(self.config.get('Logging','logfile'))
+         formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
+         hdlr.setFormatter(formatter)
+         self.main_logger.addHandler(hdlr)
+
+      # add sql handler
+      if self.config.getboolean('Logging','use_sql'):
+         try:
+            hdlr = SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.logtable,self.dbpassword)
+            formatter = SQLVerboseFormatter()
+            hdlr.setFormatter(formatter)
+            self.main_logger.addHandler(hdlr)
+         except:
+            self.main_logger.warning("Could not start SQL Handler")
+
+      # finally, add a shortened alias for the logger
+      #self.log = self.main_logger
+
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
       # button to 'go away' for awhile until it will recognize it again.
       self.timed_out = []
 
+      # start a bot manager for AIM use
       self.bm = BotManager()
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
@@ -83,10 +115,12 @@ class KegBot:
       self.io.start()
 
       # start the temperature monitor
-      thread.start_new_thread(self.tempMonitor,())
+      if self.config.getboolean('Thermo','use_thermo'):
+         thread.start_new_thread(self.tempMonitor,())
 
       # start the aim bot
-      thread.start_new_thread(self.aimBot,())
+      if self.config.getboolean('AIM','use_aim'):
+         thread.start_new_thread(self.aimBot,())
 
       self.mainEventLoop()
 
@@ -476,6 +510,8 @@ class KegBot:
       self.flowmeter.clearTicks()
 
    def log(self,component,message):
+      self.main_logger.info("%s: %s" % (component,message))
+   def tty_log(self,component,message):
       timelog = time.strftime("%b %d %H:%M:%S", time.localtime())
       if self.verbose == 1:
          print '%s [%s] %s' % (green(timelog),blue('%8s' % component),message)

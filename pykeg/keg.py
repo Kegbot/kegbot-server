@@ -11,6 +11,7 @@ from ConfigParser import ConfigParser
 import thread, threading
 import signal
 import readline
+from KegRemoteServer import KegRemoteServer
 
 from toc import TocTalk,BotManager
 
@@ -54,6 +55,7 @@ class KegBot:
       self.lcd = Display(lcd_dev,model=self.config.get('UI','lcd_model'))
       self.ui = lcdui(self.lcd)
       self.last_temp = -100.0
+      self.last_temp_time = 0
 
       # restore the databases
       self.loadDBs()
@@ -69,6 +71,12 @@ class KegBot:
       self.ui.setCurrentPlate(self.main_plate)
       self.ui.start()
       self.ui.activity()
+
+      # set up the remote call server, for anything that wants to monitor the keg
+      host = self.config.get('Remote','host')
+      port = self.config.get('Remote','port')
+      self.cmdserver = KegRemoteServer(self,host,port)
+      self.cmdserver.start()
 
       self.io = KegShell(self)
       self.io.start()
@@ -93,6 +101,7 @@ class KegBot:
    def quit(self):
       self.QUIT.set()
       self.ui.stop()
+      self.cmdserver.stop()
       self.saveDBs()
 
    def loadDBs(self):
@@ -234,6 +243,7 @@ class KegBot:
          if temp != self.last_temp:
             self.log('tempmon','temperature now read as: %s' % temp)
             self.last_temp = temp
+            self.last_temp_time = time.time()
 
    def aimBot(self):
       self.bm = BotManager()
@@ -710,13 +720,17 @@ class FlowController:
       self.ticks_per_liter = 2200
       self._lock = threading.Lock()
 
+      self._devpipe = open(dev,'w+',0) # unbuffered is zero
       try:
-         self._devpipe = open(dev,'w+',0) # unbuffered is zero
          os.system("stty %s raw < %s" % (self.rate, self.dev))
          pass
       except:
          print "error setting raw"
          pass
+
+      self.valve_open = None
+      self.closeValve()
+      #self.clearTicks()
 
    def ticksToOunces(self,ticks):
       # one liter is 32 ounces.
@@ -732,11 +746,13 @@ class FlowController:
       self._lock.acquire()
       self._devpipe.write('\x83')
       self._lock.release()
+      self.valve_open = True
    
    def closeValve(self):
       self._lock.acquire()
       self._devpipe.write('\x84')
       self._lock.release()
+      self.valve_open = False
 
    def readTicks(self):
       self._lock.acquire()

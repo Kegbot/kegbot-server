@@ -297,6 +297,7 @@ class KegBot:
             if 1 or not current_user.isAdmin():
                t.start()
 
+            prog_ticks,last_prog_ticks = 0,0
             while 1:
                # because of onewirenet glitches, we can define a threshhold for
                # the amount of time we will allow the ibutton to be 'missing'.
@@ -324,6 +325,16 @@ class KegBot:
 
                if STOP_FLOW:
                   break
+               
+               ticks = self.readFlowMeter() - initial_flow_ticks
+               # 1041 ticks = 16 oz
+               # 520.5 ticks = 8 oz
+               prog_ticks = ticks % (520/14)
+               if prog_ticks != last_prog_ticks:
+                  last_prog_ticks = prog_ticks
+                  tickbox = "*"*prog_ticks + " "*(14-prog_ticks)
+                  line3 = widget_line_std("| [%s] |"%(tickbox,),row=2,col=0,scroll=0)
+                  user_screen.updateObject('line3',line3)
 
                # otherwise, timeout for a bit before we check all this stuff
                # again

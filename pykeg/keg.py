@@ -351,7 +351,6 @@ class KegBot:
                   self.log('flow',red('updaing progbar'))
                   last_prog_ticks = prog_ticks
                   tickbox = "*"*prog_ticks + " "*(14-prog_ticks)
-                  print "tickbox: %s" % tickbox
                   line3 = widget_line_std("| [%s] |"%(tickbox,),row=2,col=0,scroll=0)
                   user_screen.updateObject('line3',line3)
                   self.ui.setCurrentPlate(user_screen,replace=1)

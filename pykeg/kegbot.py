@@ -144,38 +144,37 @@ class KegBot:
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
       self.netlock = threading.Lock()
-      onewire_dev = self.config.get('UI','onewire_dev')
+      dev = self.config.get('Devices','onewire')
       try:
-         self.ownet = onewirenet(onewire_dev)
-         self.log('main','new onewire net at device %s' % onewire_dev)
+         self.ownet = onewirenet(dev)
+         self.log('main','new onewire net at device %s' % dev)
       except:
          self.log('main','not connected to onewirenet')
 
       # load the LCD-UI stuff
       if self.config.getboolean('UI','use_lcd'):
-         lcd_dev = self.config.get('UI','lcd_dev')
-         self.log('main','new LCD at device %s' % lcd_dev)
-         self.lcd = Display(lcd_dev,model=self.config.get('UI','lcd_model'))
+         dev = self.config.get('Devices','lcd')
+         self.log('main','new LCD at device %s' % dev)
+         self.lcd = Display(dev,model=self.config.get('UI','lcd_model'))
          self.ui = lcdui(self.lcd)
       else:
          self.lcd = Display('/dev/null')
          self.ui = lcdui(self.lcd)
 
       # init flow meter
-      flowdev = self.config.get('Flow','flowdev')
-      self.log('main','new flow controller at device %s' % flowdev)
-      self.fc = FlowController(flowdev)
+      dev = self.config.get('Devices','dev')
+      self.log('main','new flow controller at device %s' % dev)
+      self.fc = FlowController(dev)
 
       # set up the default 'screen'. for now, it is just a boring standard
-      # plate. but soon we will define a custom cycling plate.. (TODO)
       self.main_plate = plate_kegbot_main(self.ui)
       self.ui.setCurrentPlate(self.main_plate)
       self.ui.start()
       self.ui.activity()
 
       # set up the remote call server, for anything that wants to monitor the keg
-      host = self.config.get('Remote','host')
-      port = self.config.get('Remote','port')
+      #host = self.config.get('Remote','host')
+      #port = self.config.get('Remote','port')
       #self.cmdserver = KegRemoteServer(self,host,port)
       #self.cmdserver.start()
 
@@ -188,7 +187,7 @@ class KegBot:
 
       # start the temperature monitor
       if self.config.getboolean('Thermo','use_thermo'):
-         self.tempsensor = TempSensor(self.config.get('Thermo','device'))
+         self.tempsensor = TempSensor(self.config.get('Devices','thermo'))
          self.tempmon = TempMonitor(self,self.tempsensor,self.QUIT)
          self.tempmon.start()
 
@@ -249,7 +248,7 @@ class KegBot:
       return ret
 
    def enableFreezer(self):
-      curr = self.tempmon.sensor.getTemp(1)
+      curr = self.tempmon.sensor.getTemp(1) # XXX - sensor index is hardcoded! add to .config
       max = self.config.getfloat('Thermo','temp_max_high')
       if self.fc.fridgeStatus() == False: 
          self.log('tempmon','activated freezer curr=%s max=%s'%(curr,max))
@@ -271,6 +270,10 @@ class KegBot:
       Because there are at least two threads (temperature monitor, main event
       loop) that require fresh status of the onewirenetwork, it is useful to
       simply refresh them constantly.
+
+      Note that the config file may specify IB IDs to ignore (such as the
+      serial controller ID or other persistent IBs). These IDs will be sored in
+      _allibs but not self.ibs, and that is the only difference.
       """
       timeout = self.config.getfloat('Timing','ib_refresh_timeout')
       ignore_ids = self.config.get('Users','ignoreids').split(" ")
@@ -303,14 +306,16 @@ class KegBot:
          # button to have been seen 5 or more seconds ago. (eg, not seen in
          # last 5 seconds).
          cutoff = time.time() - self.config.getint('Timing','ib_idle_min_disconnected')
-         for kicked in self.timed_out:
-            if self.lastSeen(kicked.read_id()) <= cutoff:
-               self.log('flow','removed %s from timeout list' % kicked)
-               self.timed_out.remove(kicked)
+         self.timed_out = [x for x in self.timed_out if self.lastSeen(x) > cutoff]
+
+         #for kicked in self.timed_out:
+         #   if self.lastSeen(kicked.read_id()) <= cutoff:
+         #      self.log('flow','removed %s from timeout list' % kicked)
+         #      self.timed_out.remove(kicked)
 
          # now get down to business. 
          for ib in self.ibs:
-            if self.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
+            if self.key_store.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
                time_since_seen = time.time() - self.lastSeen(ib.read_id()) 
                ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
                if time_since_seen < ceiling:
@@ -365,8 +370,7 @@ class KegBot:
       t = threading.Timer(idle_timeout,self.timeoutToken,(uib.read_id(),))
       t.start()
 
-      prog_ticks,last_prog_ticks = 0,0
-      ounces,last_ounces = 0.0,-1
+      ounces = 0.0
       ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
 
       # set up the record for logging
@@ -375,7 +379,6 @@ class KegBot:
       #
       # flow maintenance loop
       #
-      last_loop_time = time.time()
       last_flow_time = 0
       ticks,grant_ticks = 0,0
       old_grant = None
@@ -395,6 +398,7 @@ class KegBot:
          # if no more grants, no more beer
          if not current_grant:
             self.log('flow','no more valid grants; ending flow')
+            self.timeoutToken(uib.read_id())
             STOP_FLOW = 1
          else:
             old_grant = current_grant
@@ -412,31 +416,18 @@ class KegBot:
          elif uib.read_id() in self.timed_out:
             STOP_FLOW = 1
 
-         #elif not self.beerAccess(current_user):
-         #   STOP_FLOW = 1
-
          if STOP_FLOW:
             break
 
          if time.time() - last_flow_time > self.config.getfloat("Flow","polltime"):
-            ticks = self.fc.readTicks() - initial_flow_ticks
-
             last_flow_time = time.time()
-            # 1041 ticks = 16 oz
-            # 520.5 ticks = 8 oz
-            progbars = user_screen.write_dict['progbar'].proglen - 2
-            TICKS_PER_8_OZ = self.fc.ouncesToTicks(8.0)
-            prog_ticks = (ticks / (TICKS_PER_8_OZ/progbars)) % progbars
-            ounces = round(self.fc.ticksToOunces(ticks),1)
-            oz = "%s oz" % (ounces,)
-            oz = oz + "    "
-            if ounces != last_ounces or prog_ticks != last_prog_ticks:
-               user_screen.write_dict['progbar'].progress = (ticks/TICKS_PER_8_OZ) % 1
-               user_screen.write_dict['ounces'].setData(oz[:6])
+            ticks = self.fc.readTicks() - initial_flow_ticks
+            oz = "%s oz    " % round(self.fc.ticksToOunces(ticks),1)
 
-               last_prog_ticks = prog_ticks
-               last_ounces = ounces
-               user_screen.refreshAll() # XXX -- is this necessary anymore?
+            user_screen.write_dict['progbar'].setProgress(self.fc.ouncesToTicks(ticks)/8.0 % 1)
+            user_screen.write_dict['ounces'].setData(oz[:6])
+
+            #user_screen.refreshAll() # XXX -- is this necessary anymore?
 
       # at this point, the flow maintenance loop has exited. this means
       # we must quickly disable the beer flow and kick the user off the
@@ -478,9 +469,6 @@ class KegBot:
    def timeoutToken(self,id):
       self.log('timeout','timing out id %s' % id)
       self.timed_out.append(id)
-
-   def knownKey(self,keyinfo):
-      return self.key_store.knownKey(keyinfo)
 
    def getUser(self,ib):
       key = self.key_store.getKey(ib.read_id())

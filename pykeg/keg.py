@@ -31,7 +31,7 @@ class KegBot:
       self.last_flow_ticks = None
 
       self.freezer_status = None
-      self.disableFreezer()
+      #self.disableFreezer()
 
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
@@ -339,10 +339,10 @@ class KegBot:
                if STOP_FLOW:
                   break
                
-               #ticks = self.readFlowMeter() - initial_flow_ticks
+               ticks = self.readFlowMeter() - initial_flow_ticks
                # 1041 ticks = 16 oz
                # 520.5 ticks = 8 oz
-               #prog_ticks = (ticks / (520/14)) % 14 
+               prog_ticks = (ticks / (520/14)) % 14 
                #print "raw  : %s" % ticks
                #print "ticks: %s" % prog_ticks
                #print "div  : %s" % ((ticks/(520/14))%14)
@@ -351,8 +351,10 @@ class KegBot:
                   self.log('flow',red('updaing progbar'))
                   last_prog_ticks = prog_ticks
                   tickbox = "*"*prog_ticks + " "*(14-prog_ticks)
+                  print "tickbox: %s" % tickbox
                   line3 = widget_line_std("| [%s] |"%(tickbox,),row=2,col=0,scroll=0)
                   user_screen.updateObject('line3',line3)
+                  self.ui.setCurrentPlate(user_screen,replace=1)
 
                # otherwise, timeout for a bit before we check all this stuff
                # again
@@ -603,7 +605,8 @@ class KegAIMBot(TocTalk):
    def __init__(self, sn, pw, owner):
       TocTalk.__init__(self,sn,pw)
       self.owner = owner
-      self._info = "i am the beertender!"
+      self._info = "hello, i am a kegerator."
+      self._debug = 0 # silence debug messages
 
    def on_IM_IN(self,data):
       in_sn, in_flag, in_msg = data.split(":")[0:3]
@@ -617,7 +620,7 @@ class KegAIMBot(TocTalk):
       if self.owner:
          temp = self.owner.last_temp
          freezer = self.owner.freezer_status
-      reply = "My last recorded temperature is %s and the freezer is believed to be %s." % temp
+      reply = "i am dumb. my last recorded temperature is %s and the freezer is believed to be %s." % (temp,freezer)
       return reply
 
 class plate_kegbot_main(plate_std):

@@ -3,7 +3,7 @@ import time
 import threading
 import SimpleXMLRPCServer
 from KegRemoteFunctions import KegRemoteFunctions
-from socket import *
+import socket
 
 class KegRemoteServer(threading.Thread):
    def __init__(self,kegbot,host,port):
@@ -12,6 +12,8 @@ class KegRemoteServer(threading.Thread):
       self.port = port
       self.QUIT = threading.Event()
       threading.Thread.__init__(self)
+
+      self.kegbot.log('rserver',"remote server started on http://%s:%s" % (host,port))
 
       # set up xml-rpc server
       self.functions = KegRemoteFunctions(kegbot,self)
@@ -36,7 +38,7 @@ class KegRemoteServer(threading.Thread):
 class ReusableServer(SimpleXMLRPCServer.SimpleXMLRPCServer):
    """ an XMLRPC Server class that recovers nicely when previously terminated. """
    def server_bind(self):
-      self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+      self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
       try:
          self.socket.bind(self.server_address)
       except: pass

@@ -63,7 +63,7 @@ class FC2:
       failing this simple size and boundary check qill be discarded
    
    """
-   def __init__(self,dev,rate=115200,ticks_per_liter=550):
+   def __init__(self,dev,rate=115200,ticks_per_liter=1100):
 
       # commands
       self.CMD_STATUS      = '\x81'
@@ -164,7 +164,7 @@ class FC2:
       self.status['fridge'] = pkt[1]
       self.status['valve']  = pkt[2]
       newticks = pkt[3]*256 + pkt[4]
-      newticks *= 4
+      #newticks *= 4
       self.status['ticks'] += newticks
       return pkt
 

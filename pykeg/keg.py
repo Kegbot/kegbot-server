@@ -11,6 +11,8 @@ from ConfigParser import ConfigParser
 import thread, threading
 import signal
 
+from toc import TocTalk,BotManager
+
 # edit this line to point to your config file; that's all you have to do!
 config = 'keg.cfg'
 
@@ -45,6 +47,7 @@ class KegBot:
       self.log('main','new LCD at device %s' % lcd_dev)
       self.lcd = Display(lcd_dev,model=self.config.get('UI','lcd_model'))
       self.ui = lcdui(self.lcd)
+      self.last_temp = -100.0
 
       # restore the databases
       self.loadDBs()
@@ -55,22 +58,17 @@ class KegBot:
       self.flowmeter = FlowController(flowdev)
 
       # set up the default 'screen'. for now, it is just a boring standard
-      # plate. but soon we will define a custom cycling plate..
-      #self.main_plate = plate_std(self.ui)
+      # plate. but soon we will define a custom cycling plate.. (TODO)
       self.main_plate = plate_kegbot_main(self.ui)
-      #line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      #line2 = widget_line_std("|     kegbot!!     |",row=1,col=0,scroll=0)
-      #line3 = widget_line_std("| by mike wakerly! |",row=2,col=0,scroll=0)
-      #line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
-      #self.main_plate.updateObject('line1',line1)
-      #self.main_plate.updateObject('line2',line2)
-      #self.main_plate.updateObject('line3',line3)
-      #self.main_plate.updateObject('line4',line4)
       self.ui.setCurrentPlate(self.main_plate)
       self.ui.start()
       self.ui.activity()
 
+      # start the temperature monitor
       thread.start_new_thread(self.tempMonitor,())
+
+      # start the aim bot
+      thread.start_new_thread(self.aimBot,())
 
       self.mainEventLoop()
 
@@ -145,6 +143,8 @@ class KegBot:
       history_file.close()
 
    def tempMonitor(self):
+
+      # constants for the monitor
       temp_ib = self.config.get('Thermo','temperature_ib_id')
       timeout = self.config.getfloat('Thermo','reading_timeout')
       max_low = self.config.getfloat('Thermo','temp_max_low')
@@ -154,12 +154,13 @@ class KegBot:
 
       temp,last_temp = -100.0, -100.0
       bogus_count = 0
-      bogus_temp = 1
       last_reading_time = 0
 
       ib = None
       read_count,found = 0,0
 
+      # get the temperature ibutton. XXX/TODO -- should allow for multiple
+      # sensors and read from the net in a sane way.
       self.netlock.acquire()
       for ib in self.ownet.refresh():
          if ib.read_id() == temp_ib:
@@ -195,10 +196,9 @@ class KegBot:
          temp = round(temp,6)
 
          # deal with a bogus reading
-         if abs(temp - last_temp) > max_variation and last_temp != -100.0:
+         if abs(temp - self.last_temp) > max_variation and self.last_temp != -100.0:
             if temp == 0.0:
                bogus_count += 1
-               bogus_temp = temp
                msg = bold(red('read bogus temperature: ')) + red(str(temp))
                self.log('tempmon',msg)
                if bogus_count >= max_bogus:
@@ -219,9 +219,16 @@ class KegBot:
          elif temp <= max_low:
             self.disableFreezer()
 
-         if temp != last_temp:
+         if temp != self.last_temp:
             self.log('tempmon','temperature now read as: %s' % temp)
-            last_temp = temp
+            self.last_temp = temp
+
+   def aimBot(self):
+      self.bm = BotManager()
+      sn = self.config.get('AIM','screenname')
+      pw = self.config.get('AIM','password')
+      self.aimbot = KegAIMBot(sn,pw,self)
+      self.bm.addBot(self.aimbot,"aimbot")
 
    def enableFreezer(self):
       cmd = self.config.get('Thermo','fridge_on_cmd')
@@ -239,10 +246,8 @@ class KegBot:
 
    def mainEventLoop(self):
       last_refresh = 0
-      while 1:
+      while not self.QUIT.isSet():
          time.sleep(0.5)
-         if self.QUIT.isSet():
-            return
 
          # XXX - this bit is necessary, because calls to refresh are _very_
          # expensive: it appears that all threads block while python makes a
@@ -593,6 +598,27 @@ class FlowController:
       self._lock.acquire()
       self._devpipe.write('\x82')
       self._lock.release()
+
+class KegAIMBot(TocTalk):
+   def __init__(self, sn, pw, owner):
+      TocTalk.__init__(self,sn,pw)
+      self.owner = owner
+      self._info = "i am the beertender!"
+
+   def on_IM_IN(self,data):
+      in_sn, in_flag, in_msg = data.split(":")[0:3]
+      reply = self.makeReply(in_msg)
+      if reply:
+         self.do_SEND_IM(in_sn,reply)
+
+   def makeReply(self,data):
+      temp = 'unknown'
+      freezer = 'unknown'
+      if self.owner:
+         temp = self.owner.last_temp
+         freezer = self.owner.freezer_status
+      reply = "My last recorded temperature is %s and the freezer is believed to be %s." % temp
+      return reply
 
 class plate_kegbot_main(plate_std):
    def __init__(self,owner):

@@ -257,11 +257,9 @@ class KegBot:
          # C-level call. this is unfortunate. i think there is a way to make
          # the ownet call 'unblock' threads; will see..
          # XXX - update: fixed? added Py_BEGIN_ALLOW_THREADS macros around owFirst, owNext
-         if time.time() - last_refresh >= 0.6:
-            self.netlock.acquire()
-            ibs = self.ownet.refresh()
-            self.netlock.release()
-            last_refresh = time.time()
+         self.netlock.acquire()
+         ibs = self.ownet.refresh()
+         last_refresh = time.time()
          uib = None
 
          # remove any tokens from the 'idle' list
@@ -280,6 +278,8 @@ class KegBot:
                   break
 
          # enter this block if we have a recognized iButton. note that above
+         self.netlock.release()
+
          # code will stop with the first authorized ibutton. 
          if uib:
             self.ui.activity()
@@ -315,23 +315,30 @@ class KegBot:
 
             prog_ticks,last_prog_ticks = 0,0
             ounces,last_ounces = 0.0,0.0
+            last_missing = time.time()
             while 1:
                # because of onewirenet glitches, we can define a threshhold for
                # the amount of time we will allow the ibutton to be 'missing'.
                # this amount is set in config->Timing->ib_missing_ceiling and
                # config->Timing->ib_verify_timeout. the product of the two
                # values is a rough estimate of the missing detection speed.
-               if not uib.verify():
-                  ib_missing += 1
-               else:
-                  # reset the missing counter, since the ibutton is back
-                  ib_missing = 0
+               if time.time() - last_missing > 1.0:
+                  last_missing = time.time()
+                  self.netlock.acquire()
+                  online = uib.verify()
+                  self.netlock.release()
+                  if not online:
+                     ib_missing += 1
+                  else:
+                     # reset the missing counter, since the ibutton is back
+                     ib_missing = 0
 
                # check other credentials necessary to keep the beer flowing!
                if self.QUIT.isSet():
                   STOP_FLOW = 1
 
                elif ib_missing >= self.config.getint('Timing','ib_missing_ceiling'):
+                  self.log('flow',red('ib went missing, ending flow (%s,%s)'%(ib_missing,self.config.getint('Timing','ib_missing_ceiling'))) )
                   STOP_FLOW = 1
 
                elif uib.read_id() in self.timed_out:

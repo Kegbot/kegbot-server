@@ -2,8 +2,7 @@
 # by mike wakerly; mike@wakerly.com
 
 import os, cPickle, time
-import logging, MySQLdb
-from SQLHandler import *
+import logging
 from onewirenet import *
 from ibutton import *
 from mtxorb import *
@@ -13,89 +12,15 @@ from ConfigParser import ConfigParser
 import thread, threading
 import signal
 import readline
+
 from KegRemoteServer import KegRemoteServer
 from KegAIMBot import KegAIMBot
-
 from toc import BotManager
+from SQLStores import DrinkStore, KeyStore, UserStore
+from SQLHandler import *
 
 # edit this line to point to your config file; that's all you have to do!
 config = 'keg.cfg'
-
-class DrinkStore:
-   """
-   Storage of drink events.
-
-   This class is used to store, lookup, and read individual drink events. This
-   is used to abstract the backend from the keg system. This implementation
-   provides SQL storage.
-   """
-
-   def __init__(self, dbinfo, minticks = 0):
-      (host,user,password,db,table) = dbinfo
-      self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
-      self.table = table
-      self.minticks = minticks
-
-   def setMinTicks(self,min):
-      """
-      Set the minimum number of ticks necessary for log/read operations.
-      """
-      self.minticks = min
-
-   def writeDrink(self, ticks, start, end, userid):
-      """
-      Record a drink event.
-
-      Save the ticks, start time, end time, and user id that are passed in with
-      a drink event.
-      """
-      c = self.dbconn.cursor()
-
-      # only record ticks matching our minim threshhold
-      if ticks >= self.minticks:
-         c.execute(""" INSERT INTO %s (ticks, starttime, endtime, user_id) VALUES (%s,%s,%s,%s) """, (self.table, ticks, start, end, userid)))
-
-   def readDrink(self, readinfo):
-      """
-      Find a drink, or multiple drink, with fields matching the dictionary readinfo.
-      """
-      pass
-
-class UserStore:
-   """
-   Storage of user info.
-   """
-   def __init__(self, dbinfo):
-      (host,user,password,db,table) = dbinfo
-      self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
-      self.table = table
-
-   def getUser(self, uid):
-      """
-      Get a User() object for a given uid.
-      """
-      c = self.dbconn.cursor()
-      q = "SELECT (uid,username,email,im_aim) FROM %s WHERE uid='%s' LIMIT 1" % (self.table,uid)
-      c.execute(q)
-      return c.fetchone()
-
-class KeyStore:
-   """
-   Storage of user info.
-   """
-   def __init__(self, dbinfo):
-      (host,user,password,db,table) = dbinfo
-      self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
-      self.table = table
-
-   def getKey(self,keyinfo):
-      """
-      Return a Key() object, based on an exact match for keyinfo. Returns only one match.
-      """
-      c = self.dbconn.cursor()
-      q = "SELECT (id,owenerid,created) FROM %s WHERE keyinfo='%s' LIMIT 1" % (self.table,MySQLdb.escape_string(keyinfo))
-      c.execute(q)
-      return c.fetchone()
 
 class KegBot:
    """ the thinking kegerator! """
@@ -172,9 +97,6 @@ class KegBot:
       self.last_temp = -100.0
       self.last_temp_time = 0
 
-      # restore the databases
-      self.loadDBs()
-
       # init flow meter
       flowdev = self.config.get('Flow','flowdev')
       self.log('main','new flow controller at device %s' % flowdev)
@@ -224,66 +146,6 @@ class KegBot:
       self.QUIT.set()
       self.ui.stop()
       self.cmdserver.stop()
-      self.saveDBs()
-
-   def loadDBs(self):
-      """ populate the internal representations of users, etc, based on a
-      previously saved execution. """
-
-      try:
-         user_file = open(self.config.get('DB','user_file'),'w+')
-         self.user_db = cPickle.Unpickler(user_file).load()
-         user_file.close()
-      except EOFError:
-         self.user_db = {}
-
-      try:
-         token_file = open(self.config.get('DB','token_file'),'r')
-         self.token_db = cPickle.Unpickler(token_file).load()
-         token_file.close()
-      except EOFError:
-         self.token_db = {}
-
-      try:
-         grant_file = open(self.config.get('DB','grant_file'),'r')
-         self.grant_db = cPickle.Unpickler(grant_file).load()
-         grant_file.close()
-      except EOFError:
-         self.grant_db = {}
-
-      try:
-         history_file = open(self.config.get('DB','history_file'),'r')
-         self.history_db = cPickle.Unpickler(history_file).load()
-         history_file.close()
-      except EOFError:
-         self.log('db','could not open history file!!')
-         self.history_db = History()
-
-      admin_uname = self.config.get('Admin','username')
-      admin_ib = self.config.get('Admin','ib_id')
-      if not self.user_db.has_key(admin_uname):
-         self.addUser(username = admin_uname,init_ib = admin_ib, admin = 1)
-         #self.user_db[admin_uname] = User(admin_uname,admin=1)
-         #self.token_db[admin_ib] = Token(admin_ib,admin_uname)
-
-   def saveDBs(self):
-      user_file = open(self.config.get('DB','user_file'),'w')
-      cPickle.Pickler(user_file).dump(self.user_db)
-      user_file.close()
-
-      grant_file = open(self.config.get('DB','grant_file'),'w')
-      cPickle.Pickler(grant_file).dump(self.grant_db)
-      grant_file.close()
-
-      token_file = open(self.config.get('DB','token_file'),'w')
-      cPickle.Pickler(token_file).dump(self.token_db)
-      self.log('db','saved token file')
-      token_file.close()
-
-      history_file = open(self.config.get('DB','history_file'),'w')
-      cPickle.Pickler(history_file).dump(self.history_db)
-      self.log('db','saved history file')
-      history_file.close()
 
    def tempMonitor(self):
 
@@ -774,6 +636,15 @@ class User:
    def isActive(self):
       return self.active
 
+class Key:
+   def __init__(self,keyinfo,owner_id,guest = 0):
+      self.keyinfo = keyinfo
+      self.owner_id = owner_id
+      self.guest = guest
+
+   def isGuestToken(self):
+      return self.guest == 1
+
 class Token:
    def __init__(self,id,owner,guest = 0):
       self.ID = id
@@ -782,49 +653,6 @@ class Token:
 
    def isGuestToken(self):
       return self.guest == 1
-
-class History:
-   def __init__(self):
-      self.STARTED = time.time()
-      self.hist = []
-
-   def logDrink(self,user,amt):
-      self.hist.append((time.time(),user.getId(),amt))
-
-class Grant:
-   """ the basic grant class.
-   it provides a getAccess() function, which returns true for all states.
-   possible state data to be inspected: date and time, beer keg status, user's
-   past debt, etc."""
-   def __init__(self,evaltype = "normal"):
-
-      # evaltype: specifies the evaluation priority given to a grant, with
-      # respect to its evalAccess function. see the KegBot::BeerAccess routine
-      # for more info.
-      self.evaltype = evaltype
-      self.expired = 0
-   
-   def evalAccess(self,user,kegbot):
-      return user.isActive()
-
-class ExpirationGrant(Grant):
-   def __init__(self,exptime):
-      Grant.__init__(self)
-      self.exptime = exptime
-
-   def evalAccess(self,user,kegbot):
-      if Grant.evalAccess(self,user,kegbot):
-         if time.time() >= self.exptime:
-            self.expired = 1 # auto-expire
-         return time.time() < self.exptime
-
-class CalendarGrant(Grant):
-   def __init__(self,default = "deny",acllist = None):
-      Grant.__init__(self)
-
-   def evalAccess(self,user,kegbot):
-      if Grant.evalAccess(self,user,kegbot):
-         return 1
 
 class Freezer:
    def __init__(self,config):
@@ -878,7 +706,7 @@ class FlowController:
       self._devpipe.write('\x83')
       self._lock.release()
       self.valve_open = True
-   
+
    def closeValve(self):
       self._lock.acquire()
       self._devpipe.write('\x84')

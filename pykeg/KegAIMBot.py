@@ -12,7 +12,8 @@ class KegAIMBot(TocTalk):
       self.owner = owner
 
       self._info = self.owner.config.get('AIM','profile') # (py-toc parameter)
-      self._debug = 0 # critical debug messages (py-toc parameter)
+      self._debug = 1 # critical debug messages (py-toc parameter)
+      self._logger = self.owner.makeLogger('aimbot',level=logging.INFO)
 
       self.k = aiml.Kernel()
 
@@ -43,6 +44,12 @@ class KegAIMBot(TocTalk):
          self.loadSessions()
       except:
          pass
+
+   def werror(self,errorstr):
+      self._logger.error(errorstr)
+
+   def derror(self,errorstr):
+      self._logger.warning(errorstr)
 
    def loadDefaults(self):
       """
@@ -81,10 +88,10 @@ class KegAIMBot(TocTalk):
    def on_IM_IN(self,data):
       in_sn, in_flag, in_msg = data.split(":")[0:3]
       msg = self.strip_html(in_msg)
-      self.log(in_sn + ": " + msg)
+      self._logger.info(in_sn + "->" + msg)
       reply = self.makeReply(in_sn,msg)
       if reply:
-         self.log("reply: " + reply)
+         self._logger.info(in_sn + "<-" + reply)
 
          # split up replies that have two distinct thoughts in it, ie, send
          # more messages instead of all at once. (more human like, in my

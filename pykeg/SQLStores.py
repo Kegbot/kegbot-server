@@ -10,8 +10,8 @@ class DrinkStore:
    provides SQL storage.
    """
 
-   def __init__(self, dbinfo, minticks = 0):
-      (host,user,password,db,table) = dbinfo
+   def __init__(self, dbinfo, table, minticks = 0):
+      (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
       self.minticks = minticks
@@ -36,18 +36,35 @@ class DrinkStore:
         q = 'INSERT INTO %s (ticks, starttime, endtime, user_id) VALUES ("%s",FROM_UNIXTIME(%s),FROM_UNIXTIME(%s),"%s")' % (self.table, ticks, int(start), int(end), uid)
         c.execute(q)
 
-   def logFragment(self, drink_id, userid, bac, kegid, starttime, endtime, ticks, frag, grantid, grantticks):
+   def logFragment(self, drink_id, userid, bac, keg, starttime, endtime, ticks, frag, grant, grantticks):
       c = self.dbconn.cursor()
       if drink_id:
          q = ' INSERT INTO %s (id,frag,ticks,totalticks,starttime,endtime,bac,user_id,keg_id,grant_id) ' % (self.table,)
-         q += 'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % (drink_id,frag,grantticks,ticks,starttime,endtime,bac,userid,kegid,grantid)
+         q += 'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % (drink_id,frag,grantticks,ticks,starttime,endtime,bac,userid,keg.id,grant.id)
       else:
          q = ' INSERT INTO %s (frag,ticks,totalticks,starttime,endtime,bac,user_id,keg_id,grant_id) ' % (self.table,)
-         q += 'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)' % (frag,grantticks,ticks,starttime,endtime,bac,userid,kegid,grantid)
+         q += 'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)' % (frag,grantticks,ticks,starttime,endtime,bac,userid,keg.id,grant.id)
 
       c.execute(q)
+      drink_id = c.insert_id()
 
-      return c.insert_id()
+      # also save the ounces poured with the grant
+      ounces_for_grant = keg.getDrinkOunces(grantticks)
+      q = "UPDATE `grants` SET `total_ounces` = `total_ounces`+'%s' WHERE `id`='%s' LIMIT 1" % (ounces_for_grant,grant.id)
+      c.execute(q);
+
+      return drink_id
+
+   def getLastDrink(self,userid):
+      c = self.dbconn.cursor()
+      q = 'SELECT bac,endtime from %s WHERE user_id=%s AND frag=0 ORDER BY endtime DESC' % (self.table,userid)
+      c.execute(q)
+      row = c.fetchone()
+      drinks = []
+
+      if row:
+         return( (row[0],row[1]) )
+      return (0.0,0.0)
 
    def readDrink(self, readinfo):
       """
@@ -59,8 +76,8 @@ class UserStore:
    """
    Storage of user info.
    """
-   def __init__(self, dbinfo):
-      (host,user,password,db,table) = dbinfo
+   def __init__(self, dbinfo, table):
+      (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
 
@@ -69,15 +86,15 @@ class UserStore:
       Get a User() object for a given uid.
       """
       c = self.dbconn.cursor()
-      q = "SELECT uid,username,email,im_aim FROM %s WHERE uid='%s' LIMIT 1" % (self.table,uid)
+      q = "SELECT id,username,email,im_aim,gender,weight FROM %s WHERE id='%s' LIMIT 1" % (self.table,uid)
       if c.execute(q):
-         (uid,username,email,im_aim) = c.fetchone()
-         return User(id = uid, username = username, email = email, aim = im_aim)
+         (uid,username,email,im_aim,gender,weight) = c.fetchone()
+         return User(id = uid, username = username, email = email, aim = im_aim, gender = gender, weight = weight)
       return None
 
    def getUid(self, username):
       c = self.dbconn.cursor()
-      q = 'SELECT uid FROM %s WHERE username="%s" LIMIT 1' % (self.table,username)
+      q = 'SELECT id FROM %s WHERE username="%s" LIMIT 1' % (self.table,username)
       c.execute(q)
       return c.fetchone()[0]
 
@@ -88,16 +105,26 @@ class UserStore:
       return c.insert_id()
 
 class PolicyStore:
-   def __init__(self, dbinfo):
-      (host,user,password,db,table) = dbinfo
+   def __init__(self, dbinfo, table):
+      (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
+
+   def newPolicy(self, type="fixed-cost", unitcost="0.0", unitounces="0.0", description="unknown"):
+      c = self.dbconn.cursor()
+      q = "INSERT INTO `%s` (`type`,`unitcost`,`unitounces`,`description`) VALUES ('%s','%s','%s','%s')" % (self.table,type,unitcost,unitounces,description)
+      c.execute(q)
+      return self.getPolicy(c.insert_id())
+
    def getPolicy(self, policyid):
       c = self.dbconn.cursor()
       q = 'SELECT * FROM %s WHERE id=%s' % (self.table,policyid)
       c.execute(q)
-      (id, type, unitcost, unitticks, descr) = c.fetchone()
-      return Policy(id,type,unitcost,unitticks,descr)
+      try:
+         (id, type, unitcost, unitounces, descr) = c.fetchone()
+         return Policy(id,type,unitcost,unitounces,descr)
+      except:
+         return None
 
 class Policy:
    def __init__(self,id,type,unitcost,unitounces,descr):
@@ -111,28 +138,105 @@ class KegStore:
    """
    Storage of keg info
    """
-   def __init__(self, dbinfo):
-      (host,user,password,db,table) = dbinfo
+   def __init__(self, dbinfo, table):
+      (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
-   def getCurrentKeg(self):
+
+   def newKeg(self,tickmetric=68.08,startounces=1984.0,status="offline",beername="unknown",alccontent=0.0,description="unknown",origcost=0.0,beerpalid=0):
       c = self.dbconn.cursor()
-      q = "SELECT id FROM %s WHERE status='online' ORDER BY id DESC LIMIT 1" % (self.table,)
+      q = "INSERT INTO `%s` (`tickmetric`,`startounces`,`status`,`beername`,`alccontent`,`description`,`origcost`,`beerpalid`) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')" % (self.table,tickmetric,startounces,status,beername,alccontent,description,origcost,beerpalid)
+      c.execute(q)
+      return self.getKeg(c.insert_id())
+
+   def activateKeg(self,id):
+      c = self.dbconn.cursor()
+      q = "UPDATE `%s` SET `status`='offline' WHERE `id` != '%s'" % (self.table,id)
+      c.execute(q)
+      q = "UPDATE `%s` SET `status`='online' WHERE `id` = '%s'" % (self.table,id)
+      c.execute(q)
+
+   def getKeg(self,id):
+      c = self.dbconn.cursor()
+      q = "SELECT * FROM %s WHERE `id`='%s'" % (self.table,id)
       c.execute(q)
       try:
-         return c.fetchone()[0]
+         row = c.fetchone()
+         return apply(Keg,row)
       except:
          return 0
+
+   def getCurrentKeg(self):
+      c = self.dbconn.cursor()
+      q = "SELECT * FROM %s WHERE status='online' ORDER BY id DESC LIMIT 1" % (self.table,)
+      c.execute(q)
+      try:
+         row = c.fetchone()
+         return apply(Keg,row)
+      except:
+         return 0
+
+class ThermoStore:
+   """
+   Storage of temperature sensor data.
+
+   This sort of data is probably best stored in a round-robin database. We're
+   probably only interested in recent temperatures for the day, and averages
+   for the week, month, year.
+   """
+   def __init__(self, dbinfo, table):
+      (host,user,password,db) = dbinfo
+      self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
+      self.table = table
+
+   def logTemp(self, temp, sensor):
+      c = self.dbconn.cursor()
+      q = "INSERT INTO %s (`rectime`,`sensor`,`temp`) VALUES ('%s','%s','%s')" % (self.table,time.time(),sensor,temp)
+      c.execute(q)
+
+class Keg:
+   def __init__(self,id,tickmetric,startounces,startdate,enddate,status,beername,alccontent,description,origcost,beerpalid):
+      self.id = id
+      self.tickmetric = tickmetric
+      self.startounces = startounces
+      self.startdate = startdate
+      self.enddate = enddate
+      self.beername = beername
+      self.alccontent = alccontent
+      self.description = description
+      self.origcost = origcost
+      self.beerpalid = beerpalid
+
+   def getDrinkOunces(self,ticks):
+      return float(ticks)/self.tickmetric
+
+   def getDrinkTicks(self,ounces):
+      return int(ounces*self.tickmetric)
 
 class GrantStore:
    """
    Storage of user info.
    """
-   def __init__(self, dbinfo, pstore):
-      (host,user,password,db,table) = dbinfo
+   def __init__(self, dbinfo, table, pstore):
+      (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.pstore = pstore
       self.table = table
+
+   def newGrant(self, foruid = 0, expiration = "none", status = "active", forpolicy=0,exp_ounces = 0,exp_time=0,exp_drinks=0,total_ounces=0,total_drinks=0):
+      c = self.dbconn.cursor()
+      q = "INSERT INTO `%s` (foruid,expiration,status,forpolicy,exp_ounces,exp_time,exp_drinks,total_ounces,total_drinks) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (self.table,foruid,expiration,status,forpolicy,exp_ounces,exp_time,exp_drinks,total_ounces,total_drinks)
+      c.execute(q)
+      return self.getGrant(c.insert_id())
+
+   def getGrant(self,id):
+      c = self.dbconn.cursor()
+      q = 'SELECT * FROM %s WHERE id ="%s"' % (self.table,id)
+      c.execute(q)
+      row = c.fetchone()
+      g = apply(Grant,row)
+      g.setPolicy(self.pstore.getPolicy(g.forpolicy))
+      return g
 
    def getGrants(self, user):
       c = self.dbconn.cursor()
@@ -147,6 +251,59 @@ class GrantStore:
             grants.append(newgrant)
             row = c.fetchone()
       return grants
+
+   def orderGrants(self,grants):
+      # priorities:
+      #   - select grants with least cost
+      #   - among those grants, select the one whose expiration comes soonest
+
+      costtable = {}
+
+      # first, organize the grants 
+      for grant in grants:
+         if not grant.policy or grant.status != 'active':
+            continue
+
+         curouncecost = round(grant.policy.unitcost / grant.policy.unitounces,3)
+
+         # see if we already have a space in this list for this ouncecost (unlikely, but possible)
+         if not costtable.has_key(curouncecost):
+            costtable[curouncecost] = []
+
+         # add this grant to that cost bracket. (later, we will
+         # figure out which grant, in this cost bracket, is best to use
+         # first)
+         costtable[curouncecost].append(grant)
+
+      # now, we have a hash table with several lists of grants, indexed by
+      # "cost per ounce". we need to flatten this out. so, for every "cost per
+      # ounce" list (starting with the cheapest), select the best grant and add
+      # it to our return list
+      # for example:
+      # costtable =  {  0.0: [g1, g4],
+      #                 0.5: [g3]
+      #                 0.1: [g2]
+      #              }
+      # supposing g4 expires before g1, the desired return would be:
+      # retlist = [g4, g1, g2, g3]
+      keys = costtable.keys()
+      keys.sort()
+      ret = []
+      for key in keys:
+         grants = costtable[key]
+         grants.sort(self.grantExpCmp)
+         for grant in grants:
+            ret.append(grant)
+
+      return ret
+
+   def grantExpCmp(self,a,b):
+      if a.expiresBefore(b):
+         return 1
+      elif b.expiresBefore(a):
+         return -1
+      else:
+         return 0
 
 class Grant:
    def __init__(self,id,foruid,expiration,status,forpolicy,exp_ounces,exp_time,exp_drinks,total_ounces,total_drinks):
@@ -163,19 +320,24 @@ class Grant:
 
       self.policy = None
 
+   def __str__(self):
+      return "id: %s, exp: %s, status: %s, forpolicy: %s, exp_ounces: %s, exp_time: %s, exp_drinks: %s, total_ounces: %s, total_drinks: %s" % (self.id,self.expiration,self.status,self.forpolicy,self.exp_ounces,self.exp_time,self.exp_drinks,self.total_ounces,self.total_drinks)
+
    def setPolicy(self,p):
       self.policy = p
 
    def incrementTicks(self,amt):
       self.total_ounces += amt
 
-   def isExpired(self, extraticks = 0):
+   def isExpired(self, extraounces = 0):
+      if self.status != 'active':
+         return True
       if self.expiration == "none":
          return False
       elif self.expiration == "time":
          return self.exp_time < time.time()
-      elif self.expiration == "ticks":
-         return (extraticks + self.total_ounces) >= self.exp_ounces
+      elif self.expiration == "ounces":
+         return (extraounces + self.total_ounces) >= self.exp_ounces
       else:
          return True
 
@@ -201,8 +363,8 @@ class KeyStore:
    """
    Storage of user info.
    """
-   def __init__(self, dbinfo):
-      (host,user,password,db,table) = dbinfo
+   def __init__(self, dbinfo, table):
+      (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
 
@@ -323,45 +485,51 @@ class DrinkRecord:
    """
    store and save a record of a drink.
    """
-   def __init__(self,ds,userid,kegid):
+   def __init__(self,ds,userid,keg):
       self.drink_store = ds
       self.userid = userid
-      self.kegid = kegid
+      self.keg = keg
       self.frags = []
       self.start = time.time()
+      self.logged = False
 
-   def addFragment(self, grantid, grant_ticks):
-      last_record = self.frags[-1:]
-      self.frags.append((grantid,grant_ticks))
+   def addFragment(self, grant, grant_ticks):
+      """
+      assumption: addFragment will always be called with unique grant_ids. two
+      consecutive calls with the same grant_id indicates an update to the last
+      fragment
+      """
+      # maybe this is an "update" call...?
+      if len(self.frags) != 0:
+         if self.frags[-1][0].id == grant.id:
+            self.frags[-1] = (grant,grant_ticks)
+            return
+      # otherwise...
+      self.frags.append((grant,grant_ticks))
 
-   def done(self, final_ticks, grantid, grant_ticks):
-      endtime = time.time()
-      if len(self.frags) == 0:
-         self.frags.append((grantid,final_ticks))
-      elif self.frags[-1] == grantid:
-         # replace the last record with this one
-         # this could happen, say, if a grant has expired, we've logged it, and
-         # a few more ticks have been recorded since
-         self.frags[-1] = (grantid, grant_ticks)
+   def emit(self, final_ticks, grant, grant_ticks, bac):
+      if self.logged:
+         return
       else:
-         self.frags.append((grandid,grant_ticks))
+         self.logged = True
+
+      endtime = time.time()
 
       drink_id = None
-      bac = 0.0
       for frag in range(0,len(self.frags)):
-         (grantid, gticks) = self.frags[frag]
-         res = self.drink_store.logFragment(drink_id, self.userid, bac, self.kegid, self.start, endtime, final_ticks, frag, grantid, gticks)
+         (grant, gticks) = self.frags[frag]
+         res = self.drink_store.logFragment(drink_id, self.userid, bac, self.keg, self.start, endtime, final_ticks, frag, grant, gticks)
          if frag == 0:
             drink_id = res
 
-      #self.drink_store.logDrink(self.userid, final_ticks, drink_start, time.time())
-
 class User:
-   def __init__(self,id,username,email,aim):
+   def __init__(self,id,username,email,aim,weight=0.0,gender='male'):
       self.id = id
       self.username = username
       self.email = email
       self.aim = aim
+      self.weight = weight
+      self.gender = gender
 
    def getName(self):
       return self.username

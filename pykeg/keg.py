@@ -38,8 +38,12 @@ class KegBot:
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
       self.netlock = threading.Lock()
-      self.ownet = onewirenet(self.config.get('UI','onewire_dev'))
-      self.lcd = Display(self.config.get('UI','lcd_dev'),model=self.config.get('UI','lcd_model'))
+      onewire_dev = self.config.get('UI','onewire_dev')
+      self.ownet = onewirenet(onewire_dev)
+      self.log('main','new onewire net at device %s' % onewire_dev)
+      lcd_dev = self.config.get('UI','lcd_dev')
+      self.log('main','new LCD at device %s' % lcd_dev)
+      self.lcd = Display(lcd_dev,model=self.config.get('UI','lcd_model'))
       self.ui = lcdui(self.lcd)
 
       # restore the databases
@@ -164,7 +168,16 @@ class KegBot:
          idx = 0
          for ib in self.ownet.refresh():
             if ib.read_id() == temp_ib:
-               temp = self.ownet.ReadTemperature(self.ownet[idx].ID)
+               count = 0
+               while count < 6:
+                  ret = self.ownet.ReadTemperature(self.ownet[idx].ID)
+                  if not ret:
+                     self.log('tempmon',yellow('temperature reading returned zero, retrying'))
+                     count = count+1
+                     time.sleep(0.1)
+                  else:
+                     temp = ret
+                     break
             idx += 1
          self.netlock.release()
          temp = round(temp,6)
@@ -343,6 +356,7 @@ class KegBot:
             # much, then this may be indicitive of a leak, stolen beer, or
             # another serious problem.
             self.last_flow_ticks = flow_ticks
+            self.log('flow','flow ended with %s ticks' % flow_ticks)
 
             # - back to idle UI
 

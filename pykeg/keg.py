@@ -98,24 +98,25 @@ class KegBot:
          self.user_db = {}
 
       try:
-         token_file = open(self.config.get('DB','token_file'),'w+')
+         token_file = open(self.config.get('DB','token_file'),'r')
          self.token_db = cPickle.Unpickler(token_file).load()
          token_file.close()
       except EOFError:
          self.token_db = {}
 
       try:
-         grant_file = open(self.config.get('DB','grant_file'),'w+')
+         grant_file = open(self.config.get('DB','grant_file'),'r')
          self.grant_db = cPickle.Unpickler(grant_file).load()
          grant_file.close()
       except EOFError:
          self.grant_db = {}
 
       try:
-         history_file = open(self.config.get('DB','history_file'),'w+')
+         history_file = open(self.config.get('DB','history_file'),'r')
          self.history_db = cPickle.Unpickler(history_file).load()
          history_file.close()
       except EOFError:
+         self.log('db','could not open history file!!')
          self.history_db = History()
 
       admin_uname = self.config.get('Admin','username')
@@ -136,10 +137,12 @@ class KegBot:
 
       token_file = open(self.config.get('DB','token_file'),'w')
       cPickle.Pickler(token_file).dump(self.token_db)
+      self.log('db','saved token file')
       token_file.close()
 
       history_file = open(self.config.get('DB','history_file'),'w')
       cPickle.Pickler(history_file).dump(self.history_db)
+      self.log('db','saved history file')
       history_file.close()
 
    def tempMonitor(self):
@@ -311,6 +314,7 @@ class KegBot:
                t.start()
 
             prog_ticks,last_prog_ticks = 0,0
+            ounces,last_ounces = 0.0,0.0
             while 1:
                # because of onewirenet glitches, we can define a threshhold for
                # the amount of time we will allow the ibutton to be 'missing'.
@@ -338,20 +342,28 @@ class KegBot:
 
                if STOP_FLOW:
                   break
-               
+
                ticks = self.readFlowMeter() - initial_flow_ticks
                # 1041 ticks = 16 oz
                # 520.5 ticks = 8 oz
-               prog_ticks = (ticks / (520/14)) % 14 
+               prog_ticks = (ticks / (520/6)) % 6 
                #print "raw  : %s" % ticks
                #print "ticks: %s" % prog_ticks
-               #print "div  : %s" % ((ticks/(520/14))%14)
+               #print "div  : %s" % ((ticks/(520/6))%6)
                #prog_ticks = 5
-               if prog_ticks != last_prog_ticks:
-                  self.log('flow',red('updaing progbar'))
+               ounces = (16.0*ticks)/1041.1
+               ounces = round(ounces,1)
+               if ounces != last_ounces or prog_ticks != last_prog_ticks:
+                  #self.log('flow',red('updaing progbar'))
                   last_prog_ticks = prog_ticks
-                  tickbox = "*"*prog_ticks + " "*(14-prog_ticks)
-                  line3 = widget_line_std("| [%s] |"%(tickbox,),row=2,col=0,scroll=0)
+                  last_ounces = ounces
+                  tickbox = "[" + "*"*prog_ticks + " "*(6-prog_ticks) + "]"
+                  tickbox = "%s %s oz" % (tickbox,ounces)
+                  tickbox = "| %s" % tickbox
+                  while len(tickbox) <19:
+                     tickbox = tickbox + " "
+                  tickbox = tickbox + "|"
+                  line3 = widget_line_std(tickbox,row=2,col=0,scroll=0)
                   user_screen.updateObject('line3',line3)
                   self.ui.setCurrentPlate(user_screen,replace=1)
 
@@ -376,7 +388,7 @@ class KegBot:
             flow_ticks = self.readFlowMeter() - initial_flow_ticks
             if flow_ticks > 0:
                self.history_db.logDrink(current_user,flow_ticks)
-               self.log('flow','drink tick total: %s' % flow_ticks)
+               self.log('flow','drink tick total: %i' % flow_ticks)
             #current_user.addFlowTicks(flow_ticks)
 
             # - audit the current flow meter reading

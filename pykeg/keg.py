@@ -164,6 +164,7 @@ class KegBot:
          if abs(temp - last_temp) > max_variation and last_temp != -100.0:
             bogus_count += 1
             bogus_temp = temp
+            self.log('tempmon','read bogus temperature: %s' % temp)
             if bogus_count >= 3:
                bogus_count = 0
                last_temp = bogus_temp

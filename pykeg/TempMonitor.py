@@ -26,6 +26,7 @@ class TempMonitor(threading.Thread):
             elif currtemp <= max_low:
                self.owner.disableFreezer()
 
+            self.owner.main_plate.setTemperature(currtemp)
             if time.time() - last_time > timeout:
                if currtemp != lasttemp:
                   fs = 0

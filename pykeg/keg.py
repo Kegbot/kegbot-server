@@ -354,11 +354,12 @@ class KegBot:
                ounces = (16.0*ticks)/1041.1
                ounces = round(ounces,1)
                if ounces != last_ounces or prog_ticks != last_prog_ticks:
-                  user_screen.write_dict['progbar'].progress = (ticks/520) % 1
+                  user_screen.write_dict['progbar'].progress = (ticks/520.0) % 1
                   oz = "%s oz" % (ounces,)
                   oz = oz + "    "
-                  postfix = "] %s |" % (oz[:6],)
-                  user_screen.write_dict['progbar'].postfix = postfix
+                  user_screen.write_dict['ounces'].setData(oz[:6])
+                  #postfix = "] %s |" % (oz[:6],)
+                  #user_screen.write_dict['progbar'].postfix = postfix
                   #self.log('flow',red('updaing progbar'))
                   last_prog_ticks = prog_ticks
                   last_ounces = ounces
@@ -437,14 +438,21 @@ class KegBot:
 
       line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
       line2 = widget_line_std("| %s |"%namestr,      row=1,col=0,scroll=0)
-      progbar = widget_progbar(row = 2, col = 0, prefix ="| [", proglen = 8, postfix= "] |")
+      progbar = widget_progbar(row = 2, col = 2, prefix ='[', postfix=']', proglen = 9)
       #line3 = widget_line_std("| [              ] |",row=2,col=0,scroll=0)
       line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+
+      pipe1 = widget_line_std("|", row=2,col=0,scroll=0,fat=0)
+      pipe2 = widget_line_std("|", row=2,col=19,scroll=0,fat=0)
+      ounces = widget_line_std("", row=2,col=12,scroll=0,fat=0)
 
       scr.updateObject('line1',line1)
       scr.updateObject('line2',line2)
       #scr.updateObject('line3',line3)
       scr.updateObject('progbar',progbar)
+      scr.updateObject('pipe1',pipe1)
+      scr.updateObject('pipe2',pipe2)
+      scr.updateObject('ounces',ounces)
       scr.updateObject('line4',line4)
 
       return scr

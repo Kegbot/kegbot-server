@@ -146,14 +146,14 @@ class KegBot:
       dev = self.config.get('Devices','onewire')
       try:
          self.ownet = onewirenet(dev)
-         self.log('main','new onewire net at device %s' % dev)
+         self.info('main','new onewire net at device %s' % dev)
       except:
-         self.log('main','not connected to onewirenet')
+         self.error('main','not connected to onewirenet')
 
       # load the LCD-UI stuff
       if self.config.getboolean('UI','use_lcd'):
          dev = self.config.get('Devices','lcd')
-         self.log('main','new LCD at device %s' % dev)
+         self.info('main','new LCD at device %s' % dev)
          self.lcd = Display(dev,model=self.config.get('UI','lcd_model'))
          self.ui = lcdui(self.lcd)
       else:
@@ -162,8 +162,9 @@ class KegBot:
 
       # init flow meter
       dev = self.config.get('Devices','flow')
-      self.log('main','new flow controller at device %s' % dev)
+      self.info('main','new flow controller at device %s' % dev)
       self.fc = FlowController(dev)
+      self.last_fridge_time = 0 # time since fridge event (relay trigger)
 
       # set up the default 'screen'. for now, it is just a boring standard
       self.main_plate = plate_kegbot_main(self.ui)
@@ -209,7 +210,7 @@ class KegBot:
       self.quit()
 
    def quit(self):
-      self.log('main','attempting to quit')
+      self.info('main','attempting to quit')
       self.QUIT.set()
       self.ui.stop()
       if self.config.getboolean('AIM','use_aim'):
@@ -250,18 +251,34 @@ class KegBot:
    def enableFreezer(self):
       curr = self.tempmon.sensor.getTemp(1) # XXX - sensor index is hardcoded! add to .config
       max = self.config.getfloat('Thermo','temp_max_high')
+
+      # refuse to enable the fridge if we just disabled it. (we don't do this
+      # in the disableFreezer routine, because we should always be allowed to
+      # disable it.)
+      min_diff = self.config.getint('Timing','freezer_event_min')
+      diff = time.time() - self.last_fridge_time
+
       if self.fc.UNKNOWN or self.fc.fridgeStatus() == False: 
+         if diff < min_diff:
+            self.warning('tempmon','fridge event requested less than %i seconds after last, ignored (%i)' % (min_diff,diff))
+            return
+         self.last_fridge_time = time.time()
          self.fc.UNKNOWN = False
-         self.log('tempmon','activated freezer curr=%s max=%s'%(curr[0],max))
+         self.info('tempmon','activated freezer curr=%s max=%s'%(curr[0],max))
          self.main_plate.setFreezer('on ')
          self.fc.enableFridge()
 
    def disableFreezer(self):
       curr = self.tempmon.sensor.getTemp(1)
       min = self.config.getfloat('Thermo','temp_max_low')
+
+      # note: no check here for recent fridge event, because we will always
+      # allow the fridge to be disabled.
+      self.last_fridge_time = time.time()
+
       if self.fc.UNKNOWN or self.fc.fridgeStatus() == True:
          self.fc.UNKNOWN = False
-         self.log('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min))
+         self.info('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min))
          self.main_plate.setFreezer('off')
          self.fc.disableFridge()
 
@@ -290,7 +307,7 @@ class KegBot:
             self.ibs_seen[ib.read_id()] = now
          time.sleep(timeout)
 
-      self.log('ibRefreshLoop','quit!')
+      self.info('ibRefreshLoop','quit!')
 
    def lastSeen(self,ibname):
       if self.ibs_seen.has_key(ibname):
@@ -310,18 +327,13 @@ class KegBot:
          cutoff = time.time() - self.config.getint('Timing','ib_idle_min_disconnected')
          self.timed_out = [x for x in self.timed_out if self.lastSeen(x) > cutoff]
 
-         #for kicked in self.timed_out:
-         #   if self.lastSeen(kicked.read_id()) <= cutoff:
-         #      self.log('flow','removed %s from timeout list' % kicked)
-         #      self.timed_out.remove(kicked)
-
-         # now get down to business. 
+         # now get down to business.
          for ib in self.ibs:
             if self.key_store.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
-               time_since_seen = time.time() - self.lastSeen(ib.read_id()) 
+               time_since_seen = time.time() - self.lastSeen(ib.read_id())
                ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
                if time_since_seen < ceiling:
-                  self.log('flow','found an authorized ibutton: %s' % ib.read_id())
+                  self.info('flow','found an authorized ibutton: %s' % ib.read_id())
 
                   # note: break call at the end of this block ensures that,
                   # after a flow is handled, this mainEventLoop re-starts with
@@ -330,22 +342,26 @@ class KegBot:
                   break
 
    def handleFlow(self,uib):
-      self.log('flow','starting flow handling')
+      self.info('flow','starting flow handling')
       self.ui.activity()
       current_keg = self.keg_store.getCurrentKeg()
 
       current_user = self.getUser(uib)
+      if not current_user:
+         self.error('flow','no valid user for this key; how did we get here?')
+         return
+
       grants = self.grant_store.getGrants(current_user)
       ordered = self.grant_store.orderGrants(grants)
 
       try:
          current_grant = ordered.pop(0)
       except IndexError:
-         self.log('flow','no valid grants found; not starting flow')
+         self.info('flow','no valid grants found; not starting flow')
          self.timeoutToken(uib.read_id())
          return
 
-      self.log('flow',"current grant: %s" % (current_grant.policy.descr))
+      self.info('flow',"current grant: %s" % (current_grant.policy.descr))
 
       # sequence of steps that should take place:
       # - prepare counter
@@ -354,7 +370,7 @@ class KegBot:
       # - record flow counter
       initial_flow_ticks = self.fc.readTicks()
       last_reading = initial_flow_ticks
-      self.log('flow','current flow ticks: %s' % initial_flow_ticks)
+      self.info('flow','current flow ticks: %s' % initial_flow_ticks)
 
       # - turn on UI
       user_screen = self.makeUserScreen(current_user)
@@ -365,7 +381,7 @@ class KegBot:
       drink_start = time.time()
 
       # - wait for ibutton release OR inaction timeout
-      self.log('flow','starting flow for user %s' % current_user.getName())
+      self.info('flow','starting flow for user %s' % current_user.getName())
       STOP_FLOW = 0
 
       # - start the timout counter
@@ -400,7 +416,7 @@ class KegBot:
 
          # if no more grants, no more beer
          if not current_grant:
-            self.log('flow','no more valid grants; ending flow')
+            self.info('flow','no more valid grants; ending flow')
             self.timeoutToken(uib.read_id())
             STOP_FLOW = 1
          else:
@@ -409,7 +425,7 @@ class KegBot:
          # if the token has been gone awhile, end
          time_since_seen = time.time() - self.lastSeen(uib.read_id())
          if time_since_seen > ceiling:
-            self.log('flow',red('ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling)))
+            self.info('flow',red('ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling)))
             STOP_FLOW = 1
 
          # check other credentials necessary to keep the beer flowing!
@@ -429,7 +445,7 @@ class KegBot:
             nowticks = self.fc.readTicks()
             delta = nowticks - last_reading
             if delta < 0 or delta > 500: # XXX better estimate
-               self.log('flow','CAUTION: observed tick delta is %i' % delta)
+               self.warning('flow','CAUTION: observed tick delta is %i' % delta)
             else:
                ticks += delta
                grant_ticks += delta
@@ -447,7 +463,7 @@ class KegBot:
       t.cancel()
 
       # - turn off flow
-      self.log('flow','user is gone; flow ending')
+      self.info('flow','user is gone; flow ending')
       self.fc.closeValve()
       self.ui.setCurrentPlate(self.main_plate,replace=1)
 
@@ -456,7 +472,7 @@ class KegBot:
       nowticks = self.fc.readTicks()
       delta = nowticks - last_reading
       if delta < 0 or delta > 500: # XXX better estimate
-         self.log('flow','CAUTION: observed tick delta is %i' % delta)
+         self.warning('flow','CAUTION: observed tick delta is %i' % delta)
       else:
          ticks += delta
          grant_ticks += delta
@@ -471,7 +487,7 @@ class KegBot:
 
       ounces = round(self.fc.ticksToOunces(ticks),1)
       self.main_plate.setLastDrink(current_user.getName(),ounces)
-      self.log('flow','drink tick total: %i' % ticks)
+      self.info('flow','drink total: %i ticks, %.2f ounces' % (ticks, ounces))
 
       # - audit the current flow meter reading
       # this amount, self.last_flow_ticks, is used by initFlowCounter.
@@ -480,18 +496,19 @@ class KegBot:
       # much, then this may be indicitive of a leak, stolen beer, or
       # another serious problem.
       self.last_flow_ticks = ticks
-      self.log('flow','flow ended with %s ticks' % ticks)
+      self.info('flow','flow ended with %s ticks' % ticks)
 
       # - back to idle UI
 
    def timeoutToken(self,id):
-      self.log('timeout','timing out id %s' % id)
+      self.info('timeout','timing out id %s' % id)
       self.timed_out.append(id)
 
    def getUser(self,ib):
       key = self.key_store.getKey(ib.read_id())
       if key:
          return self.user_store.getUser(key.getOwner())
+      return None
 
    def makeUserScreen(self,user):
       scr = plate_std(self.ui)
@@ -537,11 +554,23 @@ class KegBot:
       if self.last_flow_ticks:
          curr_ticks = self.fc.readTicks()
          if self.last_flow_ticks != curr_ticks:
-            self.log('security','last recorded flow count (%s) does not match currently observed flow count (%s)' % (self.last_flow_ticks,curr_ticks))
+            self.warning('security','last recorded flow count (%s) does not match currently observed flow count (%s)' % (self.last_flow_ticks,curr_ticks))
       self.fc.clearTicks()
 
    def log(self,component,message):
       self.main_logger.info("%s: %s" % (component,message))
+
+   def info(self,component,message):
+      self.main_logger.info("%s: %s" % (component,message))
+
+   def warning(self,component,message):
+      self.main_logger.warning("%s: %s" % (component,message))
+
+   def error(self,component,message):
+      self.main_logger.error("%s: %s" % (component,message))
+
+   def critical(self,component,message):
+      self.main_logger.critical("%s: %s" % (component,message))
 
    def addUser(self,username,name = None, init_ib = None, admin = 0, email = None,aim = None):
       uid = self.user_store.addUser(username,email,aim)

@@ -74,10 +74,20 @@ class KeyStore:
       Return a Key() object, based on an exact match for keyinfo. Returns only one match.
       """
       c = self.dbconn.cursor()
-      q = "SELECT id,owenerid,keyinfo,created FROM %s WHERE keyinfo='%s' LIMIT 1" % (self.table,MySQLdb.escape_string(keyinfo))
+      q = "SELECT id, ownerid, keyinfo, created FROM %s WHERE keyinfo='%s' LIMIT 1" % (self.table,MySQLdb.escape_string(keyinfo))
       if c.execute(q):
          (id,ownerid,keyinfo,created) = c.fetchone()
          return Key(keyinfo,ownerid)
+      else:
+         return None
 
    def knownKey(self,keyinfo):
-      return True
+      return False
+
+class Key:
+   def __init__(keyinfo,ownerid):
+      self.keyinfo = keyinfo
+      self.ownerid = ownerid
+
+   def getOwner():
+      return self.ownerid

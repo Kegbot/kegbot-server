@@ -529,7 +529,7 @@ class KegShell(threading.Thread):
    def __init__(self,owner):
       threading.Thread.__init__(self)
       self.owner = owner
-      self.commands = ['quit','adduser','showlog','hidelog', 'bot']
+      self.commands = ['quit','adduser','showlog','hidelog', 'bot', 'showtemp']
 
       # setup readline to do fancy tab completion!
       self.completer = Completer()
@@ -570,6 +570,13 @@ class KegShell(threading.Thread):
             except:
                pass
 
+         if cmd == 'showtemp':
+            try:
+               temp = self.owner.tempsensor._temps[1]
+               tempf = self.owner.toF(temp)
+               print "last temp: %.2i C / %.2i F" % (temp,tempf)
+            except:
+               pass
 
          if cmd == 'adduser':
             user = self.adduser()

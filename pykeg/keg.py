@@ -21,6 +21,82 @@ from toc import BotManager
 # edit this line to point to your config file; that's all you have to do!
 config = 'keg.cfg'
 
+class DrinkStore:
+   """
+   Storage of drink events.
+
+   This class is used to store, lookup, and read individual drink events. This
+   is used to abstract the backend from the keg system. This implementation
+   provides SQL storage.
+   """
+
+   def __init__(self, dbinfo, minticks = 0):
+      (host,user,password,db,table) = dbinfo
+      self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
+      self.table = table
+      self.minticks = minticks
+
+   def setMinTicks(self,min):
+      """
+      Set the minimum number of ticks necessary for log/read operations.
+      """
+      self.minticks = min
+
+   def writeDrink(self, ticks, start, end, userid):
+      """
+      Record a drink event.
+
+      Save the ticks, start time, end time, and user id that are passed in with
+      a drink event.
+      """
+      c = self.dbconn.cursor()
+
+      # only record ticks matching our minim threshhold
+      if ticks >= self.minticks:
+         c.execute(""" INSERT INTO %s (ticks, starttime, endtime, user_id) VALUES (%s,%s,%s,%s) """, (self.table, ticks, start, end, userid)))
+
+   def readDrink(self, readinfo):
+      """
+      Find a drink, or multiple drink, with fields matching the dictionary readinfo.
+      """
+      pass
+
+class UserStore:
+   """
+   Storage of user info.
+   """
+   def __init__(self, dbinfo):
+      (host,user,password,db,table) = dbinfo
+      self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
+      self.table = table
+
+   def getUser(self, uid):
+      """
+      Get a User() object for a given uid.
+      """
+      c = self.dbconn.cursor()
+      q = "SELECT (uid,username,email,im_aim) FROM %s WHERE uid='%s' LIMIT 1" % (self.table,uid)
+      c.execute(q)
+      return c.fetchone()
+
+class KeyStore:
+   """
+   Storage of user info.
+   """
+   def __init__(self, dbinfo):
+      (host,user,password,db,table) = dbinfo
+      self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
+      self.table = table
+
+   def getKey(self,keyinfo):
+      """
+      Return a Key() object, based on an exact match for keyinfo. Returns only one match.
+      """
+      c = self.dbconn.cursor()
+      q = "SELECT (id,owenerid,created) FROM %s WHERE keyinfo='%s' LIMIT 1" % (self.table,MySQLdb.escape_string(keyinfo))
+      c.execute(q)
+      return c.fetchone()
+
 class KegBot:
    """ the thinking kegerator! """
    def __init__(self,config):
@@ -64,12 +140,18 @@ class KegBot:
          except:
             self.main_logger.warning("Could not start SQL Handler")
 
-      # finally, add a shortened alias for the logger
-      #self.log = self.main_logger
+      # set up the drink, user, and key stores. these classes provide read,
+      # write, and search access to information that the keg needs to know
+      # about.
+      self.drink_store = DrinkStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','drink_table') )
+      self.user_store  = UserStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','user_table') )
+      self.key_store   = KeyStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','key_table') )
 
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
-      # button to 'go away' for awhile until it will recognize it again.
+      # button to 'go away' for awhile until it will recognize it again. among
+      # other things, this keeps a normally-closed solenoid valve from burning
+      # out
       self.timed_out = []
 
       # start a bot manager for AIM use
@@ -113,6 +195,11 @@ class KegBot:
 
       self.io = KegShell(self)
       self.io.start()
+
+      # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
+      self.ibs = []
+      self.last_refresh = 0.0
+      thread.start_new_thread(self.ibRefreshLoop,())
 
       # start the temperature monitor
       if self.config.getboolean('Thermo','use_thermo'):
@@ -242,7 +329,7 @@ class KegBot:
          while count < 6:
             ret = ib.readTemperature()
             if not ret:
-               self.log('tempmon',yellow('temperature reading returned zero, retrying'))
+               self.log('tempmon','temperature reading returned zero, retrying')
                count = count+1
                time.sleep(0.1)
             else:
@@ -266,7 +353,7 @@ class KegBot:
                self.log('tempmon',bold(red('strange temperature read, not treating as bogus: %s'% temp)))
          else:
             if bogus_count > 0:
-               self.log('tempmon',yellow('bogus count reset'))
+               self.log('tempmon','bogus count reset')
                bogus_count = 0
 
          # now, decide what to do based on the temperature
@@ -289,38 +376,45 @@ class KegBot:
 
    def enableFreezer(self):
       if self.freezer.status() != 'on':
-         self.log('tempmon',green('activated freezer'))
+         self.log('tempmon','activated freezer')
       self.freezer.enable()
 
    def disableFreezer(self):
       if self.freezer.status() != 'off':
-         self.log('tempmon',green('disabled freezer'))
+         self.log('tempmon','disabled freezer')
       self.freezer.disable()
+
+   def ibRefreshLoop(self):
+      """
+      Periodically update self.ibs with the current ibutton list.
+
+      Because there are at least two threads (temperature monitor, main event
+      loop) that require fresh status of the onewirenetwork, it is useful to
+      simply refresh them constantly.
+      """
+      timeout = self.config.getfloat('Timing','ib_refresh_timeout')
+      while not self.QUIT.isSet():
+         self.netlock.acquire()
+         self.ibs = self.ownet.refresh()
+         self.netlock.release()
+         self.last_refresh = time.time()
+         time.sleep(timeout)
 
    def mainEventLoop(self):
       last_refresh = 0
       while not self.QUIT.isSet():
          time.sleep(0.5)
-
-         # XXX - this bit is necessary, because calls to refresh are _very_
-         # expensive: it appears that all threads block while python makes a
-         # C-level call. this is unfortunate. i think there is a way to make
-         # the ownet call 'unblock' threads; will see..
-         # XXX - update: fixed? added Py_BEGIN_ALLOW_THREADS macros around owFirst, owNext
-         self.netlock.acquire()
-         ibs = self.ownet.refresh()
-         last_refresh = time.time()
          uib = None
 
          # remove any tokens from the 'idle' list
-         present = [x.read_id() for x in ibs]
+         present = [x.read_id() for x in self.ibs]
          for kicked in self.timed_out:
             if not kicked in present:
                self.log('flow','removed %s from timeout list' % kicked)
                self.timed_out.remove(kicked)
 
          # now get down to business
-         for ib in ibs:
+         for ib in self.ibs:
             if self.knownToken(ib) and ib.read_id() not in self.timed_out:
                if ib.verify():
                   self.log('flow','found an authorized ibutton: %s' % ib.read_id())
@@ -415,7 +509,7 @@ class KegBot:
 
                   last_prog_ticks = prog_ticks
                   last_ounces = ounces
-                  user_screen.refreshAll()
+                  user_screen.refreshAll() # XXX -- is this necessary anymore?
 
                # otherwise, timeout for a bit before we check all this stuff
                # again
@@ -609,16 +703,13 @@ class KegShell(threading.Thread):
       aim = raw_input("aim name [none]: ")
       print "would you like to associate a particular beerkey with this user?"
       print "here are the buttons i see on the network:"
-      self.owner.netlock.acquire()
-      ibs = self.owner.ownet.refresh()
-      self.owner.netlock.release()
       count = 0
-      for ib in ibs:
+      for ib in self.owner.ibs:
          print "[%i] %s (%s)" % (count,ib.name,ib.read_id())
          count = count+1
       key = raw_input("key number [none]: ")
       try:
-         ib = ibs[int(key)]
+         ib = self.owner.ibs[int(key)]
          key = ib.read_id()
          print "selected %s" % key
       except:

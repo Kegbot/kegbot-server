@@ -156,6 +156,22 @@ class KegBot:
       bogus_count = 0
       bogus_temp = 1
       last_reading_time = 0
+
+      ib = None
+      read_count,found = 0,0
+
+      self.netlock.acquire()
+      for ib in self.ownet.refresh():
+         if ib.read_id() == temp_ib:
+            break
+      self.netlock.release()
+
+      if not ib:
+         self.log('tempmon','could not find temperature sensor, aborting monitor')
+         return
+      else:
+         self.log('tempmon','got sensor..')
+
       while not self.QUIT.isSet():
          while time.time() - last_reading_time < timeout:
             if self.QUIT.isSet():
@@ -165,20 +181,16 @@ class KegBot:
 
          # XXX -- need a cleaner way to do this. require some pyonewire revisions
          self.netlock.acquire()
-         idx = 0
-         for ib in self.ownet.refresh():
-            if ib.read_id() == temp_ib:
-               count = 0
-               while count < 6:
-                  ret = self.ownet.ReadTemperature(self.ownet[idx].ID)
-                  if not ret:
-                     self.log('tempmon',yellow('temperature reading returned zero, retrying'))
-                     count = count+1
-                     time.sleep(0.1)
-                  else:
-                     temp = ret
-                     break
-            idx += 1
+         count = 0
+         while count < 6:
+            ret = ib.readTemperature()
+            if not ret:
+               self.log('tempmon',yellow('temperature reading returned zero, retrying'))
+               count = count+1
+               time.sleep(0.1)
+            else:
+               temp = ret
+               break
          self.netlock.release()
          temp = round(temp,6)
 
@@ -203,31 +215,27 @@ class KegBot:
 
          # now, decide what to do based on the temperature
          if temp >= max_high:
-            self.netlock.acquire()
             self.enableFreezer()
-            self.netlock.release()
          elif temp <= max_low:
-            self.netlock.acquire()
             self.disableFreezer()
-            self.netlock.release()
 
          if temp != last_temp:
             self.log('tempmon','temperature now read as: %s' % temp)
             last_temp = temp
 
    def enableFreezer(self):
+      cmd = self.config.get('Thermo','fridge_on_cmd')
+      os.system(cmd)
       if self.freezer_status != 'on':
-         cmd = self.config.get('Thermo','fridge_on_cmd')
-         os.system(cmd)
-         self.freezer_status = 'on'
          self.log('tempmon',green('activated freezer'))
+         self.freezer_status = 'on'
 
    def disableFreezer(self):
+      cmd = self.config.get('Thermo','fridge_off_cmd')
+      os.system(cmd)
       if self.freezer_status != 'off':
-         cmd = self.config.get('Thermo','fridge_off_cmd')
-         os.system(cmd)
-         self.freezer_status = 'off'
          self.log('tempmon',green('disabled freezer'))
+         self.freezer_status = 'off'
 
    def mainEventLoop(self):
       last_refresh = 0
@@ -272,6 +280,9 @@ class KegBot:
             #grants = self.getGrants(uib.ID)
 
             # sequence of steps that should take place:
+            # - prepare counter
+            self.initFlowCounter()
+
             # - record flow counter
             initial_flow_ticks = self.readFlowMeter()
             self.log('flow','current flow ticks: %s' % initial_flow_ticks)
@@ -279,9 +290,6 @@ class KegBot:
             # - turn on UI
             user_screen = self.makeUserScreen(current_user)
             self.ui.setCurrentPlate(user_screen,replace=1)
-
-            # - prepare counter
-            self.initFlowCounter()
 
             # - turn on flow
             self.enableFlow()
@@ -326,11 +334,16 @@ class KegBot:
                if STOP_FLOW:
                   break
                
-               ticks = self.readFlowMeter() - initial_flow_ticks
+               #ticks = self.readFlowMeter() - initial_flow_ticks
                # 1041 ticks = 16 oz
                # 520.5 ticks = 8 oz
-               prog_ticks = ticks % (520/14)
+               #prog_ticks = (ticks / (520/14)) % 14 
+               #print "raw  : %s" % ticks
+               #print "ticks: %s" % prog_ticks
+               #print "div  : %s" % ((ticks/(520/14))%14)
+               #prog_ticks = 5
                if prog_ticks != last_prog_ticks:
+                  self.log('flow',red('updaing progbar'))
                   last_prog_ticks = prog_ticks
                   tickbox = "*"*prog_ticks + " "*(14-prog_ticks)
                   line3 = widget_line_std("| [%s] |"%(tickbox,),row=2,col=0,scroll=0)
@@ -427,6 +440,7 @@ class KegBot:
          curr_ticks = self.readFlowMeter()
          if self.last_flow_ticks != curr_ticks:
             self.log('security','last recorded flow count (%s) does not match currently observed flow count (%s)' % (self.last_flow_ticks,curr_ticks))
+      self.flowmeter.clearTicks()
 
    def log(self,component,message):
       timelog = time.strftime("%b %d %H:%M:%S", time.localtime())
@@ -544,31 +558,41 @@ class FlowController:
    def __init__(self,dev,rate=115200):
       self.dev = dev
       self.rate = rate
+      self._lock = threading.Lock()
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
 
       try:
          os.system("stty %s raw < %s" % (self.rate, self.dev))
+         pass
       except:
          print "error setting raw"
          pass
 
    def openValve(self):
+      self._lock.acquire()
       self._devpipe.write('\x83')
+      self._lock.release()
    
    def closeValve(self):
+      self._lock.acquire()
       self._devpipe.write('\x84')
+      self._lock.release()
 
    def readTicks(self):
+      self._lock.acquire()
       self._devpipe.write('\x81')
       # XXX - add a timer here, in case read failed
       ticks = self._devpipe.read(2)
+      self._lock.release()
       low,high = ticks[0],ticks[1]
       ticks = ord(high)*256 + ord(low)
       # returns two-byte string, like '\x01\x00'
       return ticks
 
    def clearTicks(self):
+      self._lock.acquire()
       self._devpipe.write('\x82')
+      self._lock.release()
 
 class plate_kegbot_main(plate_std):
    def __init__(self,owner):

@@ -17,7 +17,6 @@ import readline
 import traceback
 
 from KegRemoteServer import KegRemoteServer
-from KegAIMBot import KegAIMBot
 from toc import BotManager
 from SQLStores import *
 from SQLHandler import *
@@ -193,6 +192,7 @@ class KegBot:
 
       # start the aim bot
       if self.config.getboolean('AIM','use_aim'):
+         from KegAIMBot import KegAIMBot
          sn = self.config.get('AIM','screenname')
          pw = self.config.get('AIM','password')
          self.aimbot = KegAIMBot(sn,pw,self)

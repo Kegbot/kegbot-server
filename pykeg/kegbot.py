@@ -13,7 +13,6 @@ from output import *
 from ConfigParser import ConfigParser
 import thread, threading
 import signal
-import readline
 import traceback
 
 from KegRemoteServer import KegRemoteServer
@@ -24,11 +23,29 @@ from FlowController import FC2 as FlowController
 from TempMonitor import *
 
 # edit this line to point to your config file; that's all you have to do!
-config = 'keg.cfg'
+config = '/home/kegbot/svnbox/pykeg/keg.cfg'
 
 # ---------------------------------------------------------------------------- #
 # Helper functions -- available to all classes
 # ---------------------------------------------------------------------------- #
+def daemonize():
+   # Fork once
+   if os.fork() != 0:
+      os._exit(0)
+   os.setsid()  # Create new session
+   # Fork twice
+   if os.fork() != 0:
+      os._exit(0)
+   os.chdir("/")
+   os.umask(0)
+
+   os.close(sys.__stdin__.fileno())
+   os.close(sys.__stdout__.fileno())
+   os.close(sys.__stderr__.fileno())
+   os.open('/dev/null', 0)
+   os.dup(0)
+   os.dup(0)
+
 def instantBAC(user,keg,drink_ticks):
    # calculate weight in metric KGs
    if user.weight <= 0:
@@ -39,7 +56,7 @@ def instantBAC(user,keg,drink_ticks):
 
    # gender based water-weight
    if user.gender == 'male':
-      waterp = 0.58
+         waterp = 0.58
    else:
       waterp = 0.49
 
@@ -175,8 +192,8 @@ class KegBot:
       #self.cmdserver = KegRemoteServer(self,host,port)
       #self.cmdserver.start()
 
-      self.io = KegShell(self)
-      self.io.start()
+      #self.io = KegShell(self)
+      #self.io.start()
 
       # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
       thread.start_new_thread(self.ibRefreshLoop,())
@@ -287,22 +304,18 @@ class KegBot:
    def fcStatusLoop(self):
       self.info('fc','status loop starting')
       self.last_pkt_time = 0
+      timeout = self.config.getfloat('Timing','fc_status_timeout')
       while not self.QUIT.isSet():
          (rr,wr,xr) = select.select([self.fc._devpipe],[],[],0.0)
          if len(rr):
             try:
                p = self.fc.recvPacket()
-               #print "got pkt"
+               self.info('fc',"read status packet " + str(p))
             except:
-               print "Error recving packet!!"
-            self.last_pkt_time = time.time()
-            time.sleep(0.25)
-         else:
-            if time.time() - self.last_pkt_time >= 1.0:
-               #print "get status"
-               self.fc.getStatus()
-            time.sleep(0.25)
+               self.warning('fc','packet read error')
+         time.sleep(timeout)
       self.info('fc','status loop exiting')
+
 
    def ibRefreshLoop(self):
       """
@@ -440,6 +453,10 @@ class KegBot:
             except:
                current_grant = None
 
+         if time.time() - self.last_pkt_time >= 1:
+            self.fc.getStatus()
+            self.last_pkt_time = time.time()
+
          # if no more grants, no more beer
          if not current_grant:
             self.info('flow','no more valid grants; ending flow')
@@ -469,7 +486,6 @@ class KegBot:
 
             # tick-incrementing block
             nowticks    = self.fc.readTicks()
-            print "nowticks, start ticks: %i,%i" % (nowticks,start_ticks_flow)
             flow_ticks  = nowticks - start_ticks_flow
             grant_ticks = nowticks - start_ticks_grant
             oz = "%s oz    " % round(self.fc.ticksToOunces(flow_ticks),1)
@@ -545,7 +561,6 @@ class KegBot:
 
       scr.updateObject('line1',line1)
       scr.updateObject('line2',line2)
-      #scr.updateObject('line3',line3)
       scr.updateObject('progbar',progbar)
       scr.updateObject('pipe1',pipe1)
       scr.updateObject('pipe2',pipe2)
@@ -553,9 +568,6 @@ class KegBot:
       scr.updateObject('line4',line4)
 
       return scr
-
-   def debug(self,msg):
-      print "[debug] %s" % (msg,)
 
    def log(self,component,message):
       self.main_logger.info("%s: %s" % (component,message))
@@ -572,145 +584,14 @@ class KegBot:
    def critical(self,component,message):
       self.main_logger.critical("%s: %s" % (component,message))
 
+   # DB Helper functions (for use with CMD line)
+   # TODO: eventually we will have a suite of "public" functons that are called
+   # by the external API (ie an XML-RPC delegate)
    def addUser(self,username,name = None, init_ib = None, admin = 0, email = None,aim = None):
       uid = self.user_store.addUser(username,email,aim)
       self.key_store.addKey(uid,str(init_ib))
 
-class KegShell(threading.Thread):
-   def __init__(self,owner):
-      threading.Thread.__init__(self)
-      self.owner = owner
-      self.commands = ['status','quit','adduser','showlog','hidelog', 'bot', 'showtemp']
 
-      # setup readline to do fancy tab completion!
-      self.completer = Completer()
-      self.completer.set_choices(self.commands)
-      readline.parse_and_bind("tab: complete")
-      readline.set_completer(self.completer.complete)
-
-   def run(self):
-      while 1:
-         try:
-            input = self.prompt()
-            tokens = string.split(input,' ')
-            cmd = string.lower(tokens[0])
-         except:
-            raise
-
-         if cmd == 'quit':
-            self.owner.quit()
-            return
-
-         if cmd == 'showlog':
-            self.owner.verbose = 1
-
-         if cmd == 'status':
-            print self.owner.fc.status
-
-         if cmd == 'hidelog':
-            self.owner.verbose = 0
-
-         if cmd == 'bot':
-            try:
-               subcmd = tokens[1]
-               if subcmd == 'go':
-                  self.owner.bm.botGo("aimbot")
-               elif subcmd == 'stop':
-                  self.owner.bm.botStop("aimbot")
-               elif subcmd == 'say':
-                  user  = tokens[2]
-                  msg = raw_input('message: ')
-                  self.owner.aimbot.do_SEND_IM(user,msg)
-            except:
-               pass
-
-         if cmd == 'showtemp':
-            try:
-               temp = self.owner.tempsensor._temps[1]
-               print "last temp: %.2i C / %.2i F" % (temp,toF(temp))
-            except:
-               pass
-
-         if cmd == 'adduser':
-            user = self.adduser()
-            username,admin,aim,initib = user
-
-            print "got user: %s" % str(username)
-
-            try:
-               self.owner.addUser(username,init_ib = initib,admin=admin,aim=aim)
-               print "added user successfully"
-            except:
-               print "failed to create user"
-               raise
-
-   def prompt(self):
-      try:
-         prompt = "[KEGBOT] "
-         cmd = raw_input(prompt)
-      except:
-         cmd = ""
-         time.sleep(0.75)
-      return cmd
-
-   def adduser(self):
-      print "please type the unique username for this user."
-      username = raw_input("username: ")
-      print "will this user have admin privileges?"
-      admin = raw_input("admin [y/N]: ")
-      print "please type the user's aim name, if known"
-      aim = raw_input("aim name [none]: ")
-      print "would you like to associate a particular beerkey with this user?"
-      print "here are the buttons i see on the network:"
-      count = 0
-      for ib in self.owner.ibs:
-         print "[%i] %s (%s)" % (count,ib.name,ib.read_id())
-         count = count+1
-      key = raw_input("key number [none]: ")
-      try:
-         ib = self.owner.ibs[int(key)]
-         key = ib.read_id()
-         print "selected %s" % key
-      except:
-         key = None
-
-      if string.lower(admin)[0] == 'y':
-         admin = 1
-      else:
-         admin = 0
-
-      if aim == "" or aim == "\n":
-         aim = None
-
-      if key == "" or key == "\n":
-         key = None
-
-      return (username,admin,aim,key)
-
-
-class Completer:
-   def __init__(self):
-      self.list = []
-
-   def complete(self, text, state):
-      if state == 0:
-         self.matches = self.get_matches(text)
-      try:
-         return self.matches[state]
-      except IndexError:
-         return None
-
-   def set_choices(self, list):
-       self.list = list
-
-   def get_matches(self, text):
-      matches = []
-      for x in self.list:
-         if string.find(x, text) == 0:
-            matches.append(x)
-      return matches
-
-#
 # ui stuff
 # the next sections of code contain UI widgets and plates used by the main keg
 # class.
@@ -800,4 +681,5 @@ class plate_kegbot_main(plate_multi):
 
 # start a new kehbot instance, if we are called from the command line
 if __name__ == '__main__':
+   daemonize()
    KegBot(config)

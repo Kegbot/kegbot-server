@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # keg control system
 # by mike wakerly; mike@wakerly.com
 
@@ -32,10 +34,9 @@ def instantBAC(user,keg,drink_ticks):
    # calculate weight in metric KGs
    if user.weight <= 0:
       return 0.0
+
    kg_weight = user.weight/2.2046
    ounces = keg.getDrinkOunces(drink_ticks)
-   #print "BAC for %s-pound (%s-kg) user" % (user.weight,kg_weight)
-   #print "for a %s -ounce drink of %s percent alcohol" % (ounces,keg.alccontent)
 
    # gender based water-weight
    if user.gender == 'male':
@@ -88,7 +89,6 @@ class KegBot:
       self.config = ConfigParser()
 
       self.verbose = 0
-      self.fridge_on = False
       self.last_temp = -100.0
       self.last_temp_time = 0
       self.ibs = []
@@ -249,18 +249,20 @@ class KegBot:
       return ret
 
    def enableFreezer(self):
+      curr = self.tempmon.sensor.getTemp(1)
+      max = self.config.getfloat('Thermo','temp_max_high')
       if self.fc.fridgeStatus() == False: 
-         self.log('tempmon','activated freezer')
+         self.log('tempmon','activated freezer curr=%s max=%s'%(curr,max))
          #self.main_plate.setFreezer('on ')
-         #self.fc.enableFridge()
-      self.fridge_on = True
+         self.fc.enableFridge()
 
    def disableFreezer(self):
+      curr = self.tempmon.sensor.getTemp(1)
+      min = self.config.getfloat('Thermo','temp_max_low')
       if self.fc.fridgeStatus() == True:
-         self.log('tempmon','disabled freezer')
+         self.log('tempmon','disabled freezer curr=%s min=%s'%(curr,min))
          #self.main_plate.setFreezer('off')
-         #self.fc.disableFridge()
-      self.fridge_on = False
+         self.fc.disableFridge()
 
    def ibRefreshLoop(self):
       """
@@ -321,6 +323,7 @@ class KegBot:
                   break
 
    def handleFlow(self,uib):
+      self.log('flow','starting flow handling')
       self.ui.activity()
       current_keg = self.keg_store.getCurrentKeg()
 
@@ -409,8 +412,8 @@ class KegBot:
          elif uib.read_id() in self.timed_out:
             STOP_FLOW = 1
 
-         elif not self.beerAccess(current_user):
-            STOP_FLOW = 1
+         #elif not self.beerAccess(current_user):
+         #   STOP_FLOW = 1
 
          if STOP_FLOW:
             break

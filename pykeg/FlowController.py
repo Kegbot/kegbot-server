@@ -8,6 +8,8 @@ class FlowController:
       self.ticks_per_liter = 2200
       self._lock = threading.Lock()
 
+      self.fridge_status = False
+
       self.read_cmd,self.clear_cmd,self.open_cmd,self.close_cmd, self.timer_cmd, self.status_cmd, self.fridgeon_cmd, self.fridgeoff_cmd, self.fridgestatus_cmd = commands[:9]
 
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
@@ -61,13 +63,17 @@ class FlowController:
       self._lock.acquire()
       self._devpipe.write(self.fridgeon_cmd)
       self._lock.release()
+      self.fridge_status = True
 
    def disableFridge(self):
       self._lock.acquire()
       self._devpipe.write(self.fridgeoff_cmd)
       self._lock.release()
+      self.fridge_status = False
 
    def fridgeStatus(self):
+      if 1:
+         return self.fridge_status
       try:
          raise
          self._lock.acquire()

@@ -10,6 +10,7 @@ from output import *
 from ConfigParser import ConfigParser
 import thread, threading
 import signal
+import readline
 
 from toc import TocTalk,BotManager
 
@@ -41,8 +42,11 @@ class KegBot:
       # set up the import stuff: the ibutton onewire network, and the LCD UI
       self.netlock = threading.Lock()
       onewire_dev = self.config.get('UI','onewire_dev')
-      self.ownet = onewirenet(onewire_dev)
-      self.log('main','new onewire net at device %s' % onewire_dev)
+      try:
+         self.ownet = onewirenet(onewire_dev)
+         self.log('main','new onewire net at device %s' % onewire_dev)
+      except:
+         self.log('main','not connected to onewirenet')
       lcd_dev = self.config.get('UI','lcd_dev')
       self.log('main','new LCD at device %s' % lcd_dev)
       self.lcd = Display(lcd_dev,model=self.config.get('UI','lcd_model'))
@@ -63,6 +67,9 @@ class KegBot:
       self.ui.setCurrentPlate(self.main_plate)
       self.ui.start()
       self.ui.activity()
+
+      self.io = KegShell(self)
+      self.io.start()
 
       # start the temperature monitor
       thread.start_new_thread(self.tempMonitor,())
@@ -497,22 +504,115 @@ class KegBot:
                return 1
       return 1
 
-   def addUser(self,username,name = None, init_ib = None, admin = 0, email = None):
+   def addUser(self,username,name = None, init_ib = None, admin = 0, email = None,aim = None):
       if self.user_db.has_key(username):
          raise
-      nuser = User(username,name,admin,email)
+      nuser = User(username,name,admin,email,aim)
       self.user_db[username] = nuser
       if init_ib:
          ntok = Token(init_ib,username)
          self.token_db[init_ib] = ntok
 
+class KegShell(threading.Thread):
+   def __init__(self,owner):
+      threading.Thread.__init__(self)
+      self.owner = owner
+      self.commands = ['quit','adduser']
+
+      # setup readline to do fancy tab completion!
+      self.completer = Completer()
+      self.completer.set_choices(self.commands)
+      readline.parse_and_bind("tab: complete")
+      readline.set_completer(self.completer.complete)
+
+   def run(self):
+      while 1:
+         try:
+            input = self.prompt()
+            tokens = string.split(input,' ')
+            cmd = string.lower(tokens[0])
+         except:
+            raise
+
+         if cmd == 'quit':
+            self.owner.quit()
+            return
+
+         if cmd == 'adduser':
+            user = self.adduser()
+            username,admin,aim,initib = user
+
+            print "got user: %s" % user
+
+            try:
+               self.owner.addUser(username,init_ib = initib,admin=admin,aim=aim)
+               print "added user successfully"
+            except:
+               print "failed to create user"
+
+   def prompt(self):
+      try:
+         prompt = "[KEGBOT] "
+         cmd = raw_input(prompt)
+      except:
+         cmd = ""
+      return cmd
+
+   def adduser(self):
+      print "please type the unique username for this user."
+      username = raw_input("username: ")
+      print "will this user have admin privileges?"
+      admin = raw_input("admin [y/N]: ")
+      print "please type the user's aim name, if known"
+      aim = raw_input("aim name [none]: ")
+      print "would you like to associate a particular beerkey with this user?"
+      key = raw_input("beer key id [none]: ")
+      key = key.upper()
+
+      if string.lower(admin)[0] == y:
+         admin = 1
+      else:
+         admin = 0
+
+      if aim == "" or aim == "\n":
+         aim = None
+      
+      if key == "" or key == "\n":
+         key = None
+
+      return (username,admin,aim,key)
+
+
+class Completer:
+   def __init__(self):
+      self.list = []
+
+   def complete(self, text, state):
+      if state == 0:
+         self.matches = self.get_matches(text)
+      try:
+         return self.matches[state]
+      except IndexError:
+         return None
+
+   def set_choices(self, list):
+       self.list = list
+
+   def get_matches(self, text):
+      matches = []
+      for x in self.list:
+         if string.find(x, text) == 0:
+            matches.append(x)
+      return matches
+
 class User:
-   def __init__(self,username,name = None,admin = 0,email = None):
+   def __init__(self,username,name = None,admin = 0,email = None, aim = None):
       self.username = username
       self.admin = admin
       self.name = name
       self.email = email
       self.active = 1
+      self.aim = aim
 
    def getName(self):
       if self.name:
@@ -587,9 +687,9 @@ class FlowController:
       self.rate = rate
       self.ticks_per_liter = 2200
       self._lock = threading.Lock()
-      self._devpipe = open(dev,'w+',0) # unbuffered is zero
 
       try:
+         self._devpipe = open(dev,'w+',0) # unbuffered is zero
          os.system("stty %s raw < %s" % (self.rate, self.dev))
          pass
       except:

@@ -29,7 +29,7 @@ class TempMonitor(threading.Thread):
             if time.time() - last_time > timeout:
                if currtemp != lasttemp:
                   fs = 0
-                  if self.owner.fc.fridge_status:
+                  if self.owner.fc.fridgeStatus():
                      fs = 1
                   self.owner.thermo_store.logTemp(currtemp, sensor, fs)
                   lasttemp = currtemp

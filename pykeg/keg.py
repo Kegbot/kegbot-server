@@ -6,6 +6,7 @@ from onewirenet import *
 from ibutton import *
 from mtxorb import *
 from lcdui import *
+from output import *
 from ConfigParser import ConfigParser
 import thread, threading
 import signal
@@ -27,7 +28,8 @@ class KegBot:
       # used for auditing between pours. see comments inline.
       self.last_flow_ticks = None
 
-      self.freezer_status = 'off'
+      self.freezer_status = None
+      self.disableFreezer()
 
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
@@ -42,6 +44,11 @@ class KegBot:
 
       # restore the databases
       self.loadDBs()
+
+      # init flow meter
+      flowdev = self.config.get('Flow','flowdev')
+      self.log('main','new flow controller at device %s' % flowdev)
+      self.flowmeter = FlowController(flowdev)
 
       # set up the default 'screen'. for now, it is just a boring standard
       # plate. but soon we will define a custom cycling plate..
@@ -139,6 +146,7 @@ class KegBot:
       max_low = self.config.getfloat('Thermo','temp_max_low')
       max_high = self.config.getfloat('Thermo','temp_max_high')
       max_variation = self.config.getfloat('Thermo','max_variation')
+      max_bogus = self.config.getint('Thermo','max_bogus')
 
       temp,last_temp = -100.0, -100.0
       bogus_count = 0
@@ -159,41 +167,54 @@ class KegBot:
                temp = self.ownet.ReadTemperature(self.ownet[idx].ID)
             idx += 1
          self.netlock.release()
+         temp = round(temp,6)
 
          # deal with a bogus reading
          if abs(temp - last_temp) > max_variation and last_temp != -100.0:
-            bogus_count += 1
-            bogus_temp = temp
-            self.log('tempmon','read bogus temperature: %s' % temp)
-            if bogus_count >= 3:
+            if temp == 0.0:
+               bogus_count += 1
+               bogus_temp = temp
+               msg = bold(red('read bogus temperature: ')) + red(str(temp))
+               self.log('tempmon',msg)
+               if bogus_count >= max_bogus:
+                  self.log('tempmon',bold(red('bogus readings exceed maximum of %s; current reading of %s now valid' %(max_bogus,temp))))
+                  bogus_count = 0
+               else:
+                  continue
+            else:
+               self.log('tempmon',bold(red('strange temperature read, not treating as bogus: %s'% temp)))
+         else:
+            if bogus_count > 0:
+               self.log('tempmon',yellow('bogus count reset'))
                bogus_count = 0
-               last_temp = bogus_temp
-            continue
 
          # now, decide what to do based on the temperature
-         if temp > max_high:
+         if temp >= max_high:
+            self.netlock.acquire()
             self.enableFreezer()
+            self.netlock.release()
          elif temp <= max_low:
+            self.netlock.acquire()
             self.disableFreezer()
+            self.netlock.release()
 
          if temp != last_temp:
             self.log('tempmon','temperature now read as: %s' % temp)
-
-         last_temp = temp
+            last_temp = temp
 
    def enableFreezer(self):
       if self.freezer_status != 'on':
          cmd = self.config.get('Thermo','fridge_on_cmd')
          os.system(cmd)
          self.freezer_status = 'on'
-         self.log('tempmon','activated freezer')
+         self.log('tempmon',green('activated freezer'))
 
    def disableFreezer(self):
       if self.freezer_status != 'off':
          cmd = self.config.get('Thermo','fridge_off_cmd')
          os.system(cmd)
          self.freezer_status = 'off'
-         self.log('tempmon','disabled freezer')
+         self.log('tempmon',green('disabled freezer'))
 
    def mainEventLoop(self):
       last_refresh = 0
@@ -218,14 +239,14 @@ class KegBot:
          present = [x.read_id() for x in ibs]
          for kicked in self.timed_out:
             if not kicked in present:
-               self.debug('removed %s from timeout list' % kicked)
+               self.log('flow','removed %s from timeout list' % kicked)
                self.timed_out.remove(kicked)
 
          # now get down to business
          for ib in ibs:
             if self.knownToken(ib) and ib.read_id() not in self.timed_out:
                if ib.verify():
-                  self.debug('found an authorized ibutton: %s' % ib.read_id())
+                  self.log('flow','found an authorized ibutton: %s' % ib.read_id())
                   uib = ib
                   break
 
@@ -240,6 +261,7 @@ class KegBot:
             # sequence of steps that should take place:
             # - record flow counter
             initial_flow_ticks = self.readFlowMeter()
+            self.log('flow','current flow ticks: %s' % initial_flow_ticks)
 
             # - turn on UI
             user_screen = self.makeUserScreen(current_user)
@@ -252,14 +274,14 @@ class KegBot:
             self.enableFlow()
 
             # - wait for ibutton release OR inaction timeout
-            self.debug('starting flow for user %s' % current_user.getName())
+            self.log('flow','starting flow for user %s' % current_user.getName())
             ib_missing = 0
             STOP_FLOW = 0
 
             # handle an idle timeout
             idle_timeout = self.config.getfloat('Timing','ib_idle_timeout')
             t = threading.Timer(idle_timeout,self.timeoutToken,(uib.read_id(),))
-            if not current_user.isAdmin():
+            if 1 or not current_user.isAdmin():
                t.start()
 
             while 1:
@@ -303,7 +325,7 @@ class KegBot:
             t.cancel()
 
             # - turn off flow
-            self.debug('user is gone; flow ending')
+            self.log('flow','user is gone; flow ending')
             self.disableFlow()
             self.ui.setCurrentPlate(self.main_plate,replace=1)
 
@@ -311,6 +333,7 @@ class KegBot:
             flow_ticks = self.readFlowMeter() - initial_flow_ticks
             if flow_ticks > 0:
                self.history_db.logDrink(current_user,flow_ticks)
+               self.log('flow','drink tick total: %s' % flow_ticks)
             #current_user.addFlowTicks(flow_ticks)
 
             # - audit the current flow meter reading
@@ -324,7 +347,7 @@ class KegBot:
             # - back to idle UI
 
    def timeoutToken(self,id):
-      self.debug('timing out id %s' % id)
+      self.log('timeout','timing out id %s' % id)
       self.timed_out.append(id)
 
    def knownToken(self,ib):
@@ -337,7 +360,8 @@ class KegBot:
             return self.user_db[ownerid]
 
    def readFlowMeter(self):
-      return 1
+      ticks = self.flowmeter.readTicks()
+      return ticks
 
    def makeUserScreen(self,user):
       scr = plate_std(self.ui)
@@ -351,7 +375,7 @@ class KegBot:
       namestr = namestr[:16]
 
       line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = widget_line_std("| %s |"%namestr,row=1,col=0,scroll=0)
+      line2 = widget_line_std("| %s |"%namestr,      row=1,col=0,scroll=0)
       line3 = widget_line_std("| [              ] |",row=2,col=0,scroll=0)
       line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
@@ -363,10 +387,10 @@ class KegBot:
       return scr
 
    def enableFlow(self):
-      pass
+      self.flowmeter.openValve()
 
    def disableFlow(self):
-      pass
+      self.flowmeter.closeValve()
 
    def debug(self,msg):
       print "[debug] %s" % (msg,)
@@ -375,13 +399,13 @@ class KegBot:
       """ this function is to be called whenever the flow is about to be enabled.
       it may also log any deviation that is noticed. """
       if self.last_flow_ticks:
-         curr_ticks = self.flowchip.readCounter()
+         curr_ticks = self.readFlowMeter()
          if self.last_flow_ticks != curr_ticks:
-            self.log('security','last recorded flow count (%s) does not match currently observed flow count (%s)' % (self.last_flow_ficks,curr_ticks))
+            self.log('security','last recorded flow count (%s) does not match currently observed flow count (%s)' % (self.last_flow_ticks,curr_ticks))
 
    def log(self,component,message):
       timelog = time.strftime("%b %d %H:%M:%S", time.localtime())
-      print '%s [%s] %s' % (timelog,component,message)
+      print '%s [%s] %s' % (green(timelog),blue('%8s' % component),message)
 
    def beerAccess(self,user):
       """ determine whether, at this instant, a user may have beer.
@@ -391,9 +415,10 @@ class KegBot:
       whether or not the administrator has blocked access; keg limits (ie,
       maximum beer/pour; hardware fault detection and automatic shutdown.
       """
-      grants = self.getUserGrants(user)
-      GRANTED = 1
+      #grants = self.getUserGrants(user)
+      #GRANTED = 1
 
+      grants = []
       for grant in grants:
          access = grant.evalAccess(user,self)
          evaltype = grant.evaltype
@@ -404,7 +429,7 @@ class KegBot:
          elif evaltype == 'normal':
             if access == 1:
                return 1
-      return 0
+      return 1
 
    def addUser(self,username,name = None, init_ib = None, admin = 0, email = None):
       if self.user_db.has_key(username):
@@ -491,8 +516,34 @@ class CalendarGrant(Grant):
 
 class FlowController:
    """ represents the embedded flowmeter counter microcontroller. """
-   def __init__(self,dev):
+   def __init__(self,dev,rate=115200):
       self.dev = dev
+      self.rate = rate
+      self._devpipe = open(dev,'w+',0) # unbuffered is zero
+
+      try:
+         os.system("stty %s raw < %s" % (self.rate, self.dev))
+      except:
+         print "error setting raw"
+         pass
+
+   def openValve(self):
+      self._devpipe.write('\x83')
+   
+   def closeValve(self):
+      self._devpipe.write('\x84')
+
+   def readTicks(self):
+      self._devpipe.write('\x81')
+      # XXX - add a timer here, in case read failed
+      ticks = self._devpipe.read(2)
+      low,high = ticks[0],ticks[1]
+      ticks = ord(high)*256 + ord(low)
+      # returns two-byte string, like '\x01\x00'
+      return ticks
+
+   def clearTicks(self):
+      self._devpipe.write('\x82')
 
 class plate_kegbot_main(plate_std):
    def __init__(self,owner):

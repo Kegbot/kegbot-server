@@ -250,17 +250,19 @@ class KegBot:
    def enableFreezer(self):
       curr = self.tempmon.sensor.getTemp(1) # XXX - sensor index is hardcoded! add to .config
       max = self.config.getfloat('Thermo','temp_max_high')
-      if self.fc.fridgeStatus() == False: 
-         self.log('tempmon','activated freezer curr=%s max=%s'%(curr,max))
-         #self.main_plate.setFreezer('on ')
+      if self.fc.UNKNOWN or self.fc.fridgeStatus() == False: 
+         self.fc.UNKNOWN = False
+         self.log('tempmon','activated freezer curr=%s max=%s'%(curr[0],max))
+         self.main_plate.setFreezer('on ')
          self.fc.enableFridge()
 
    def disableFreezer(self):
       curr = self.tempmon.sensor.getTemp(1)
       min = self.config.getfloat('Thermo','temp_max_low')
-      if self.fc.fridgeStatus() == True:
-         self.log('tempmon','disabled freezer curr=%s min=%s'%(curr,min))
-         #self.main_plate.setFreezer('off')
+      if self.fc.UNKNOWN or self.fc.fridgeStatus() == True:
+         self.fc.UNKNOWN = False
+         self.log('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min))
+         self.main_plate.setFreezer('off')
          self.fc.disableFridge()
 
    def ibRefreshLoop(self):
@@ -351,6 +353,7 @@ class KegBot:
 
       # - record flow counter
       initial_flow_ticks = self.fc.readTicks()
+      last_reading = initial_flow_ticks
       self.log('flow','current flow ticks: %s' % initial_flow_ticks)
 
       # - turn on UI
@@ -421,13 +424,20 @@ class KegBot:
 
          if time.time() - last_flow_time > self.config.getfloat("Flow","polltime"):
             last_flow_time = time.time()
-            ticks = self.fc.readTicks() - initial_flow_ticks
+
+            # tick-incrementing block
+            nowticks = self.fc.readTicks()
+            delta = nowticks - last_reading
+            if delta < 0 or delta > 500: # XXX better estimate
+               self.log('flow','CAUTION: observed tick delta is %i' % delta)
+            else:
+               ticks += delta
+               grant_ticks += delta
+            last_reading = max(0,nowticks) # XXX takes 3 readings to normalize assuming 2 errors in a row
             oz = "%s oz    " % round(self.fc.ticksToOunces(ticks),1)
 
-            user_screen.write_dict['progbar'].setProgress(self.fc.ouncesToTicks(ticks)/8.0 % 1)
+            user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(ticks)/8.0 % 1)
             user_screen.write_dict['ounces'].setData(oz[:6])
-
-            #user_screen.refreshAll() # XXX -- is this necessary anymore?
 
       # at this point, the flow maintenance loop has exited. this means
       # we must quickly disable the beer flow and kick the user off the
@@ -442,18 +452,26 @@ class KegBot:
       self.ui.setCurrentPlate(self.main_plate,replace=1)
 
       # - record flow totals; save to user database
-      flow_ticks = self.fc.readTicks() - initial_flow_ticks
+      # tick-incrementing block
+      nowticks = self.fc.readTicks()
+      delta = nowticks - last_reading
+      if delta < 0 or delta > 500: # XXX better estimate
+         self.log('flow','CAUTION: observed tick delta is %i' % delta)
+      else:
+         ticks += delta
+         grant_ticks += delta
+
       rec.addFragment(old_grant,grant_ticks)
 
       # add the final total to the record
       old_drink = self.drink_store.getLastDrink(current_user.id)
-      bac = instantBAC(current_user,current_keg,flow_ticks)
+      bac = instantBAC(current_user,current_keg,ticks)
       bac += decomposeBAC(old_drink[0],time.time()-old_drink[1])
-      rec.emit(flow_ticks,current_grant,grant_ticks,bac)
+      rec.emit(ticks,current_grant,grant_ticks,bac)
 
-      ounces = round(self.fc.ticksToOunces(flow_ticks),1)
+      ounces = round(self.fc.ticksToOunces(ticks),1)
       self.main_plate.setLastDrink(current_user.getName(),ounces)
-      self.log('flow','drink tick total: %i' % flow_ticks)
+      self.log('flow','drink tick total: %i' % ticks)
 
       # - audit the current flow meter reading
       # this amount, self.last_flow_ticks, is used by initFlowCounter.
@@ -461,8 +479,8 @@ class KegBot:
       # the FlowController's tick reading. if the two readings are off by
       # much, then this may be indicitive of a leak, stolen beer, or
       # another serious problem.
-      self.last_flow_ticks = flow_ticks
-      self.log('flow','flow ended with %s ticks' % flow_ticks)
+      self.last_flow_ticks = ticks
+      self.log('flow','flow ended with %s ticks' % ticks)
 
       # - back to idle UI
 

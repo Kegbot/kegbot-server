@@ -354,12 +354,17 @@ class KegBot:
       grants = self.grant_store.getGrants(current_user)
       ordered = self.grant_store.orderGrants(grants)
 
-      try:
-         current_grant = ordered.pop(0)
-      except IndexError:
-         self.info('flow','no valid grants found; not starting flow')
-         self.timeoutToken(uib.read_id())
-         return
+      current_grant = None
+      while 1:
+         try:
+            test = ordered.pop(0)
+            if not test.isExpired(0):
+               current_grant = test
+               break
+         except IndexError:
+            self.info('flow','no valid grants found; not starting flow')
+            self.timeoutToken(uib.read_id())
+            return
 
       self.info('flow',"current grant: %s" % (current_grant.policy.descr))
 
@@ -477,7 +482,10 @@ class KegBot:
          ticks += delta
          grant_ticks += delta
 
-      rec.addFragment(old_grant,grant_ticks)
+      if old_grant: # XXX - sometimes, it is None. why?
+         rec.addFragment(old_grant,grant_ticks)
+      else:
+         self.error('flow','BUG: no old_grant, yet we\'re in the flow loop?')
 
       # add the final total to the record
       old_drink = self.drink_store.getLastDrink(current_user.id)

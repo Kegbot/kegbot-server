@@ -42,15 +42,23 @@ class KegBot:
       # set up logging, using the python 2.3 logging module
       self.main_logger = logging.getLogger('kegbot')
       self.main_logger.setLevel(logging.INFO)
+
       self.dbhost = self.config.get('DB','host')
       self.dbuser = self.config.get('DB','user')
       self.dbdb = self.config.get('DB','db')
-      self.logtable = self.config.get('Logging','logtable')
       self.dbpassword = self.config.get('DB','password')
+      self.logtable = self.config.get('Logging','logtable')
 
       # add a file-output handler
       if self.config.getboolean('Logging','use_logfile'):
          hdlr = logging.FileHandler(self.config.get('Logging','logfile'))
+         formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
+         hdlr.setFormatter(formatter)
+         self.main_logger.addHandler(hdlr)
+
+      # add tty handler
+      if self.config.getboolean('Logging','use_stream'):
+         hdlr = logging.StreamHandler(sys.stdout)
          formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
          hdlr.setFormatter(formatter)
          self.main_logger.addHandler(hdlr)
@@ -68,9 +76,9 @@ class KegBot:
       # set up the drink, user, and key stores. these classes provide read,
       # write, and search access to information that the keg needs to know
       # about.
-      self.drink_store = DrinkStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','drink_table') )
-      self.user_store  = UserStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','user_table') )
-      self.key_store   = KeyStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','key_table') )
+      self.drink_store = DrinkStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','drink_table') ))
+      self.user_store  = UserStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','user_table') ))
+      self.key_store   = KeyStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','key_table') ))
 
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
@@ -90,10 +98,16 @@ class KegBot:
          self.log('main','new onewire net at device %s' % onewire_dev)
       except:
          self.log('main','not connected to onewirenet')
-      lcd_dev = self.config.get('UI','lcd_dev')
-      self.log('main','new LCD at device %s' % lcd_dev)
-      self.lcd = Display(lcd_dev,model=self.config.get('UI','lcd_model'))
-      self.ui = lcdui(self.lcd)
+
+      # load the LCD-UI stuff
+      if self.config.getboolean('UI','use_lcd'):
+         lcd_dev = self.config.get('UI','lcd_dev')
+         self.log('main','new LCD at device %s' % lcd_dev)
+         self.lcd = Display(lcd_dev,model=self.config.get('UI','lcd_model'))
+         self.ui = lcdui(self.lcd)
+      else:
+         self.lcd = Display('/dev/null')
+         self.ui = lcdui(self.lcd)
       self.last_temp = -100.0
       self.last_temp_time = 0
 
@@ -112,11 +126,12 @@ class KegBot:
       # set up the remote call server, for anything that wants to monitor the keg
       host = self.config.get('Remote','host')
       port = self.config.get('Remote','port')
-      self.cmdserver = KegRemoteServer(self,host,port)
-      self.cmdserver.start()
+      #self.cmdserver = KegRemoteServer(self,host,port)
+      #self.cmdserver.start()
 
-      self.io = KegShell(self)
-      self.io.start()
+
+      #self.io = KegShell(self)
+      #self.io.start()
 
       # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
       self.ibs = []
@@ -143,9 +158,10 @@ class KegBot:
       self.quit()
 
    def quit(self):
+      self.log('main','attempting to quit')
       self.QUIT.set()
       self.ui.stop()
-      self.cmdserver.stop()
+      #self.cmdserver.stop()
 
    def tempMonitor(self):
 
@@ -166,11 +182,9 @@ class KegBot:
 
       # get the temperature ibutton. XXX/TODO -- should allow for multiple
       # sensors and read from the net in a sane way.
-      self.netlock.acquire()
-      for ib in self.ownet.refresh():
-         if ib.read_id() == temp_ib:
-            break
-      self.netlock.release()
+      for target in self.ibs:
+         if target.read_id() == temp_ib:
+            ib = target
 
       if not ib:
          self.log('tempmon','could not find temperature sensor, aborting monitor')
@@ -228,6 +242,8 @@ class KegBot:
             self.log('tempmon','temperature now read as: %s' % temp)
             self.last_temp = temp
             self.last_temp_time = time.time()
+      self.log('tempMonitor','quit!')
+
 
    def aimBot(self):
       sn = self.config.get('AIM','screenname')
@@ -261,6 +277,7 @@ class KegBot:
          self.netlock.release()
          self.last_refresh = time.time()
          time.sleep(timeout)
+      self.log('ibRefreshLoop','quit!')
 
    def mainEventLoop(self):
       last_refresh = 0
@@ -277,15 +294,13 @@ class KegBot:
 
          # now get down to business
          for ib in self.ibs:
-            if self.knownToken(ib) and ib.read_id() not in self.timed_out:
+            if self.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
                if ib.verify():
                   self.log('flow','found an authorized ibutton: %s' % ib.read_id())
                   uib = ib
                   break
 
          # enter this block if we have a recognized iButton. note that above
-         self.netlock.release()
-
          # code will stop with the first authorized ibutton. 
          if uib:
             self.ui.activity()
@@ -393,7 +408,7 @@ class KegBot:
             # - record flow totals; save to user database
             flow_ticks = self.flowmeter.readTicks() - initial_flow_ticks
             if flow_ticks > 0:
-               self.history_db.logDrink(current_user,flow_ticks)
+               self.drink_store.logDrink(current_user,flow_ticks)
                self.log('flow','drink tick total: %i' % flow_ticks)
             #current_user.addFlowTicks(flow_ticks)
 
@@ -412,8 +427,8 @@ class KegBot:
       self.log('timeout','timing out id %s' % id)
       self.timed_out.append(id)
 
-   def knownToken(self,ib):
-      return ib.read_id() in self.token_db.keys()
+   def knownKey(self,keyinfo):
+      return self.key_store.knownKey(keyinfo)
 
    def getUser(self,ib):
       for id in self.token_db.keys():
@@ -467,6 +482,7 @@ class KegBot:
 
    def log(self,component,message):
       self.main_logger.info("%s: %s" % (component,message))
+
    def tty_log(self,component,message):
       timelog = time.strftime("%b %d %H:%M:%S", time.localtime())
       if self.verbose == 1:

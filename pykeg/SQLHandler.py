@@ -3,6 +3,9 @@ import MySQLdb
 import time
 
 class SQLHandler(logging.Handler):
+   """
+   A logging handler for use with a MySQLdb backend.
+   """
    def __init__(self, dbhost, dbuser, dbdb, dbtable, dbpassword):
       logging.Handler.__init__(self)
       self.dbconn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpassword, db=dbdb)

@@ -32,7 +32,7 @@ class DrinkStore:
 
       # only record ticks matching our minim threshhold
       if ticks >= self.minticks:
-         c.execute(""" INSERT INTO %s (ticks, starttime, endtime, user_id) VALUES (%s,%s,%s,%s) """, (self.table, ticks, start, end, userid)))
+         c.execute(""" INSERT INTO %s (ticks, starttime, endtime, user_id) VALUES (%s,%s,%s,%s) """, (self.table, ticks, start, end, userid))
 
    def readDrink(self, readinfo):
       """
@@ -79,4 +79,5 @@ class KeyStore:
          (id,ownerid,keyinfo,created) = c.fetchone()
          return Key(keyinfo,ownerid)
 
-
+   def knownKey(self,keyinfo):
+      return True

@@ -209,7 +209,7 @@ class ThermoStore:
       c.execute(q)
 
 class Keg:
-   def __init__(self,id,tickmetric,startounces,startdate,enddate,status,beername,alccontent,description,origcost,beerpalid):
+   def __init__(self,id,tickmetric,startounces,startdate,enddate,status,beername,alccontent,description,origcost,beerpalid,calories_oz):
       self.id = id
       self.tickmetric = tickmetric
       self.startounces = startounces
@@ -220,6 +220,7 @@ class Keg:
       self.description = description
       self.origcost = origcost
       self.beerpalid = beerpalid
+      self.calories_oz = calories_oz
 
    def getDrinkOunces(self,ticks):
       return float(ticks)/self.tickmetric

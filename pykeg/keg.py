@@ -7,6 +7,7 @@ from ibutton import *
 from mtxorb import *
 from lcdui import *
 from ConfigParser import ConfigParser
+import thread, threading
 import signal
 
 # edit this line to point to your config file; that's all you have to do!
@@ -26,12 +27,15 @@ class KegBot:
       # used for auditing between pours. see comments inline.
       self.last_flow_ticks = None
 
+      self.freezer_status = 'off'
+
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
       # button to 'go away' for awhile until it will recognize it again.
       self.timed_out = []
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
+      self.netlock = threading.Lock()
       self.ownet = onewirenet(self.config.get('UI','onewire_dev'))
       self.lcd = Display(self.config.get('UI','lcd_dev'),model=self.config.get('UI','lcd_model'))
       self.ui = lcdui(self.lcd)
@@ -54,6 +58,8 @@ class KegBot:
       self.ui.setCurrentPlate(self.main_plate)
       self.ui.start()
       self.ui.activity()
+
+      thread.start_new_thread(self.tempMonitor,())
 
       self.mainEventLoop()
 
@@ -127,6 +133,67 @@ class KegBot:
       cPickle.Pickler(history_file).dump(self.history_db)
       history_file.close()
 
+   def tempMonitor(self):
+      temp_ib = self.config.get('Thermo','temperature_ib_id')
+      timeout = self.config.getfloat('Thermo','reading_timeout')
+      max_low = self.config.getfloat('Thermo','temp_max_low')
+      max_high = self.config.getfloat('Thermo','temp_max_high')
+      max_variation = self.config.getfloat('Thermo','max_variation')
+
+      temp,last_temp = -100.0, -100.0
+      bogus_count = 0
+      bogus_temp = 1
+      last_reading_time = 0
+      while not self.QUIT.isSet():
+         while time.time() - last_reading_time < timeout:
+            if self.QUIT.isSet():
+               return
+            time.sleep(0.1)
+         last_reading_time = time.time()
+
+         # XXX -- need a cleaner way to do this. require some pyonewire revisions
+         self.netlock.acquire()
+         idx = 0
+         for ib in self.ownet.refresh():
+            if ib.read_id() == temp_ib:
+               temp = self.ownet.ReadTemperature(self.ownet[idx].ID)
+            idx += 1
+         self.netlock.release()
+
+         # deal with a bogus reading
+         if abs(temp - last_temp) > max_variation and last_temp != -100.0:
+            bogus_count += 1
+            bogus_temp = temp
+            if bogus_count >= 3:
+               bogus_count = 0
+               last_temp = bogus_temp
+            continue
+
+         # now, decide what to do based on the temperature
+         if temp > max_high:
+            self.enableFreezer()
+         elif temp <= max_low:
+            self.disableFreezer()
+
+         if temp != last_temp:
+            self.log('tempmon','temperature now read as: %s' % temp)
+
+         last_temp = temp
+
+   def enableFreezer(self):
+      if self.freezer_status != 'on':
+         cmd = self.config.get('Thermo','fridge_on_cmd')
+         os.system(cmd)
+         self.freezer_status = 'on'
+         self.log('tempmon','activated freezer')
+
+   def disableFreezer(self):
+      if self.freezer_status != 'off':
+         cmd = self.config.get('Thermo','fridge_off_cmd')
+         os.system(cmd)
+         self.freezer_status = 'off'
+         self.log('tempmon','disabled freezer')
+
    def mainEventLoop(self):
       last_refresh = 0
       while 1:
@@ -140,7 +207,9 @@ class KegBot:
          # the ownet call 'unblock' threads; will see..
          # XXX - update: fixed? added Py_BEGIN_ALLOW_THREADS macros around owFirst, owNext
          if time.time() - last_refresh >= 0.6:
+            self.netlock.acquire()
             ibs = self.ownet.refresh()
+            self.netlock.release()
             last_refresh = time.time()
          uib = None
 
@@ -310,7 +379,8 @@ class KegBot:
             self.log('security','last recorded flow count (%s) does not match currently observed flow count (%s)' % (self.last_flow_ficks,curr_ticks))
 
    def log(self,component,message):
-      self.debug('[%s] %s' % (component,message))
+      timelog = time.strftime("%b %d %H:%M:%S", time.localtime())
+      print '%s [%s] %s' % (timelog,component,message)
 
    def beerAccess(self,user):
       """ determine whether, at this instant, a user may have beer.

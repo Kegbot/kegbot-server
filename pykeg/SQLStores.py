@@ -189,9 +189,9 @@ class ThermoStore:
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
 
-   def logTemp(self, temp, sensor):
+   def logTemp(self, temp, sensor, fs):
       c = self.dbconn.cursor()
-      q = "INSERT INTO %s (`rectime`,`sensor`,`temp`) VALUES ('%s','%s','%s')" % (self.table,time.time(),sensor,temp)
+      q = "INSERT INTO %s (`rectime`,`sensor`,`temp`,`fridgestatus`) VALUES ('%s','%s','%s','%s')" % (self.table,time.time(),sensor,temp,fs)
       c.execute(q)
 
    def updateLastTemp(self):

@@ -23,15 +23,18 @@ class TempMonitor(threading.Thread):
 
          if currtemp:
             if currtemp >= max_high:
-               #self.owner.enableFreezer()
+               self.owner.enableFreezer()
                pass
             elif currtemp <= max_low:
-               #self.owner.disableFreezer()
+               self.owner.disableFreezer()
                pass
 
             if time.time() - last_time > timeout:
                if currtemp != lasttemp:
-                  self.owner.thermo_store.logTemp(currtemp, sensor)
+                  fs = 0
+                  if self.owner.fridge_on:
+                     fs = 1
+                  self.owner.thermo_store.logTemp(currtemp, sensor, fs)
                   lasttemp = currtemp
                else:
                   self.owner.thermo_store.updateLastTemp()

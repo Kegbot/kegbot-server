@@ -69,6 +69,7 @@ class FlowController:
 
    def fridgeStatus(self):
       try:
+         raise
          self._lock.acquire()
          self._devpipe.write(self.fridgestatus_cmd)
          # XXX - add a timer here, in case read failed

@@ -4,6 +4,7 @@ import os.path
 import re
 import time
 import marshal
+import logging
 from ConfigParser import ConfigParser
 
 class KegAIMBot(TocTalk):
@@ -12,7 +13,7 @@ class KegAIMBot(TocTalk):
       self.owner = owner
 
       self._info = self.owner.config.get('AIM','profile') # (py-toc parameter)
-      self._debug = 1 # critical debug messages (py-toc parameter)
+      self._debug = 2 # critical debug messages (py-toc parameter)
       self._logger = self.owner.makeLogger('aimbot',level=logging.INFO)
 
       self.k = aiml.Kernel()
@@ -46,10 +47,12 @@ class KegAIMBot(TocTalk):
          pass
 
    def werror(self,errorstr):
-      self._logger.error(errorstr)
+      if self._debug:
+         self._logger.error(errorstr)
 
    def derror(self,errorstr):
-      self._logger.warning(errorstr)
+      if self._debug > 1:
+         self._logger.warning(errorstr)
 
    def loadDefaults(self):
       """
@@ -90,6 +93,7 @@ class KegAIMBot(TocTalk):
       msg = self.strip_html(in_msg)
       self._logger.info(in_sn + "->" + msg)
       reply = self.makeReply(in_sn,msg)
+      reply = re.sub(" +", " ",reply)
       if reply:
          self._logger.info(in_sn + "<-" + reply)
 

@@ -37,6 +37,7 @@ class KegBot:
       self.config.read(config)
 
       self.verbose = 0
+      self.fridge_on = False
 
       # used for auditing between pours. see comments inline.
       self.last_flow_ticks = None
@@ -199,14 +200,16 @@ class KegBot:
    def enableFreezer(self):
       if self.fc.fridgeStatus() == False: 
          self.log('tempmon','activated freezer')
-         self.main_plate.setFreezer('on ')
-         self.fc.enableFridge()
+         #self.main_plate.setFreezer('on ')
+         #self.fc.enableFridge()
+      self.fridge_on = True
 
    def disableFreezer(self):
-      if self.fc.fridgeStatus == True:
+      if self.fc.fridgeStatus() == True:
          self.log('tempmon','disabled freezer')
-         self.main_plate.setFreezer('off')
-         self.fc.disableFridge()
+         #self.main_plate.setFreezer('off')
+         #self.fc.disableFridge()
+      self.fridge_on = False
 
    def ibRefreshLoop(self):
       """

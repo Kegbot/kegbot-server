@@ -100,11 +100,11 @@ class PolicyStore:
       return Policy(id,type,unitcost,unitticks,descr)
 
 class Policy:
-   def __init__(self,id,type,unitcost,unitticks,descr):
+   def __init__(self,id,type,unitcost,unitounces,descr):
       self.id = id
-      self.type = type
+      self.ptype = type
       self.unitcost = unitcost
-      self.unitticks = unitticks
+      self.unitounces = unitounces
       self.descr = descr
 
 class KegStore:
@@ -128,10 +128,12 @@ class GrantStore:
    """
    Storage of user info.
    """
-   def __init__(self, dbinfo):
+   def __init__(self, dbinfo, pstore):
       (host,user,password,db,table) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
+      self.pstore = pstore
       self.table = table
+
    def getGrants(self, user):
       c = self.dbconn.cursor()
       q = 'SELECT * FROM %s WHERE foruid="%s"' % (self.table,user.id)
@@ -139,27 +141,33 @@ class GrantStore:
       if c.execute(q):
          row = c.fetchone()
          while row:
-            ( id,foruid,expiration,status,forpolicy,exp_ticks,exp_time,exp_drinks,total_ticks,total_drinks)= row
+            ( id,foruid,expiration,status,forpolicy,exp_ounces,exp_time,exp_drinks,total_ounces,total_drinks) = row
             newgrant = apply(Grant,row) # grant constructor takes those parameters above, in order
+            newgrant.setPolicy(self.pstore.getPolicy(forpolicy))
             grants.append(newgrant)
             row = c.fetchone()
       return grants
 
 class Grant:
-   def __init__(self,id,foruid,expiration,status,forpolicy,exp_ticks,exp_time,exp_drinks,total_ticks,total_drinks):
+   def __init__(self,id,foruid,expiration,status,forpolicy,exp_ounces,exp_time,exp_drinks,total_ounces,total_drinks):
       self.id = id
       self.foruid = foruid
       self.expiration = expiration
       self.status = status
       self.forpolicy = forpolicy
-      self.exp_ticks = exp_ticks
+      self.exp_ounces = exp_ounces
       self.exp_time = exp_time
       self.exp_drinks = exp_drinks
-      self.total_ticks = total_ticks
+      self.total_ounces = total_ounces
       self.total_drinks = total_drinks
 
+      self.policy = None
+
+   def setPolicy(self,p):
+      self.policy = p
+
    def incrementTicks(self,amt):
-      self.total_ticks += amt
+      self.total_ounces += amt
 
    def isExpired(self, extraticks = 0):
       if self.expiration == "none":
@@ -167,9 +175,27 @@ class Grant:
       elif self.expiration == "time":
          return self.exp_time < time.time()
       elif self.expiration == "ticks":
-         return (extraticks + self.total_ticks) >= self.exp_ticks
+         return (extraticks + self.total_ounces) >= self.exp_ounces
       else:
          return True
+
+   def expiresBefore(self,other):
+      """
+      determine if this grant will expire sooner than the given one.
+
+      intuitively, this should return 'true' if this grant should be used
+      BEFORE the other one (ie, it expires sooner)
+      """
+      if self.expiration == 'time':
+         if other.expiration == 'time':
+            return self.exp_time < other.exp_time
+         elif other.expiration == 'none':
+            return True
+      elif self.expiration == 'none':
+         return False
+
+      # fall-thru, XXX
+      return False
 
 class KeyStore:
    """
@@ -294,6 +320,9 @@ class Grant2:
       pass
 
 class DrinkRecord:
+   """
+   store and save a record of a drink.
+   """
    def __init__(self,ds,userid,kegid):
       self.drink_store = ds
       self.userid = userid

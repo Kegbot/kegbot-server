@@ -1,7 +1,7 @@
 # keg control system
 # by mike wakerly; mike@wakerly.com
 
-import os, cPickle, time
+import os, time
 import logging
 from onewirenet import *
 from ibutton import *
@@ -40,49 +40,30 @@ class KegBot:
       self.last_flow_ticks = None
       self.freezer = Freezer(self.config)
 
-      # set up logging, using the python 2.3 logging module
-      self.main_logger = logging.getLogger('kegbot')
-      self.main_logger.setLevel(logging.INFO)
-
+      # load the db info, because we will use it often enough
       self.dbhost = self.config.get('DB','host')
       self.dbuser = self.config.get('DB','user')
       self.dbdb = self.config.get('DB','db')
       self.dbpassword = self.config.get('DB','password')
       self.logtable = self.config.get('Logging','logtable')
 
-      # add a file-output handler
-      if self.config.getboolean('Logging','use_logfile'):
-         hdlr = logging.FileHandler(self.config.get('Logging','logfile'))
-         formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
-         hdlr.setFormatter(formatter)
-         self.main_logger.addHandler(hdlr)
-
-      # add tty handler
-      if self.config.getboolean('Logging','use_stream'):
-         hdlr = logging.StreamHandler(sys.stdout)
-         formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
-         hdlr.setFormatter(formatter)
-         self.main_logger.addHandler(hdlr)
-
-      # add sql handler
-      if self.config.getboolean('Logging','use_sql'):
-         try:
-            hdlr = SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.logtable,self.dbpassword)
-            formatter = SQLVerboseFormatter()
-            hdlr.setFormatter(formatter)
-            self.main_logger.addHandler(hdlr)
-         except:
-            self.main_logger.warning("Could not start SQL Handler")
+      # set up logging, using the python 2.3 logging module
+      self.main_logger = self.makeLogger('main',logging.INFO)
 
       # set up the drink, user, and key stores. these classes provide read,
       # write, and search access to information that the keg needs to know
       # about.
-      self.drink_store = DrinkStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','drink_table') ))
-      self.user_store  = UserStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','user_table') ))
-      self.key_store   = KeyStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','key_table') ))
-      self.grant_store  = GrantStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','grant_table') ))
-      self.policy_store  = PolicyStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','policy_table') ))
-      self.keg_store  = KegStore( (self.dbhost,self.dbuser,self.dbpassword,self.dbdb,self.config.get('DB','keg_table') ))
+
+      # rather than retyping this stuff on each init line, just add this tuple
+      # and the table name to form the init tuple
+      db_tuple = (self.dbhost,self.dbuser,self.dbpassword,self.dbdb)
+
+      self.drink_store = DrinkStore( db_tuple + tuple(self.config.get('DB','drink_table') ))
+      self.user_store  = UserStore( db_tuple + tuple(self.config.get('DB','user_table') ))
+      self.key_store   = KeyStore( db_tuple + tuple(self.config.get('DB','key_table') ))
+      self.policy_store  = PolicyStore( db_tuple + tuple(self.config.get('DB','policy_table') ))
+      self.grant_store  = GrantStore( db_tuple + tuple(self.config.get('DB','grant_table') ), self.policy_store)
+      self.keg_store  = KegStore( db_tuple + tuple(self.config.get('DB','keg_table') ))
 
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
@@ -174,6 +155,37 @@ class KegBot:
       if self.config.getboolean('AIM','use_aim'):
          self.aimbot.saveSessions()
       #self.cmdserver.stop()
+
+   def makeLogger(self,compname,level=logging.INFO):
+      """ set up a logging logger, given the component name """
+      ret = logging.getLogger(compname)
+      ret.setLevel(level)
+
+      # add sql handler
+      if self.config.getboolean('Logging','use_sql'):
+         try:
+            hdlr = SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.logtable,self.dbpassword)
+            formatter = SQLVerboseFormatter()
+            hdlr.setFormatter(formatter)
+            ret.addHandler(hdlr)
+         except:
+            ret.warning("Could not start SQL Handler")
+
+      # add a file-output handler
+      if self.config.getboolean('Logging','use_logfile'):
+         hdlr = logging.FileHandler(self.config.get('Logging','logfile'))
+         formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
+         hdlr.setFormatter(formatter)
+         ret.addHandler(hdlr)
+
+      # add tty handler
+      if self.config.getboolean('Logging','use_stream'):
+         hdlr = logging.StreamHandler(sys.stdout)
+         formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
+         hdlr.setFormatter(formatter)
+         ret.addHandler(hdlr)
+
+      return ret
 
    def tempMonitor(self):
 
@@ -302,9 +314,31 @@ class KegBot:
          return 0
 
    def getBestGrant(self,grants):
-      try:
-         return grants[0]
-      except: return grants
+      # priorities:
+      #   - select grants with least cost
+      #   - among those grants, select the one whose expiration comes soonest
+
+      # costs:
+      #   1: free (best)
+      #   2: lowest price/oz
+      #      - cheapest first
+
+      bestgrant = None
+      bestouncecost = None
+      for grant in grants:
+         if not grant.policy or grant.status != 'active':
+            continue
+
+         curouncecost = grant.policy.unitcost / grant.policy.unitounces
+         if not bestouncecost or curouncecost <= bestouncecost:
+            if not bestgrant:
+               bestgrant = grant
+               bestouncecost = curouncecost
+            else:
+               if grant.expiresBefore(bestgrant):
+                  bestgrant = grant
+                  bestouncecost = curouncecost
+      return bestgrant
 
    def mainEventLoop(self):
       while not self.QUIT.isSet():
@@ -339,10 +373,10 @@ class KegBot:
 
       if self.getBestGrant(grants) == []:
          self.log('flow','no valid grants found; not starting flow')
+         self.timeoutToken(uib.read_id())
          return
       else:
          current_grant = self.getBestGrant(grants)
-         current_policy = self.policy_store.getPolicy(current_grant.forpolicy)
 
       # sequence of steps that should take place:
       # - prepare counter
@@ -390,8 +424,8 @@ class KegBot:
             rec.addFragment(current_grant.id,grant_ticks)
             grant_ticks = 0
             current_grant = self.getBestGrant(grants)
-            current_policy = self.policy_store.getPolicy(current_grant.forpolicy)
 
+         # if no more grants, no more beer
          if not current_grant:
             self.log('flow','no more valid grants; ending flow')
             STOP_FLOW = 1
@@ -531,11 +565,6 @@ class KegBot:
 
    def log(self,component,message):
       self.main_logger.info("%s: %s" % (component,message))
-
-   def tty_log(self,component,message):
-      timelog = time.strftime("%b %d %H:%M:%S", time.localtime())
-      if self.verbose == 1:
-         print '%s [%s] %s' % (green(timelog),blue('%8s' % component),message)
 
    def beerAccess(self,user):
       """ determine whether, at this instant, a user may have beer.

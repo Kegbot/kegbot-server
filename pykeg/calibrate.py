@@ -106,3 +106,6 @@ print "\tmethod:  \t%s" % method
 if method.lower() == 'static':
    print "\tpourvol:\t%s" % pourvol
 print ''
+print "press enter to run the test, or type any key to quit"
+x = raw_input("start test? [YES/quit]")
+runTest(readings,method,pourvol)

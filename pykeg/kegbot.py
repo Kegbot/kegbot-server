@@ -79,18 +79,42 @@ class KegBot:
    """ the thinking kegerator! """
    def __init__(self,config):
 
-      # first, handle control-C's and stuff
-      self.QUIT = threading.Event()
-      self.setsigs()
+      # this init function is now split in to two sections, to support online
+      # reloading of compiled component code.
+
+      self.QUIT = threading.Event() # event to set when we want everything to quit
+      self.setsigs() # set up handlers for control-c, kill signals
 
       self.config = ConfigParser()
-      self.config.read(config)
 
       self.verbose = 0
       self.fridge_on = False
+      self.last_temp = -100.0
+      self.last_temp_time = 0
+      self.ibs = []
+      self._allibs = []
+      self.ibs_seen = {} # store time when IB was last seen
+
+      # a list of buttons (probably just zero or one) that have been connected
+      # for too long. if in this list, the mainEventLoop will wait for the
+      # button to 'go away' for awhile until it will recognize it again. among
+      # other things, this keeps a normally-closed solenoid valve from burning
+      # out
+      self.timed_out = []
 
       # used for auditing between pours. see comments inline.
       self.last_flow_ticks = None
+
+      # ready to perform second stage of initialization
+      self._setup()
+
+      # start everything up
+      self.mainEventLoop()
+
+   def _setup(self):
+
+      # read the config
+      self.config.read(config)
 
       # load the db info, because we will use it often enough
       self.dbhost = self.config.get('DB','host')
@@ -118,13 +142,6 @@ class KegBot:
       self.keg_store     = KegStore(    db_tuple, self.config.get('DB','keg_table') )
       self.thermo_store  = ThermoStore( db_tuple, self.config.get('DB','thermo_table') )
 
-      # a list of buttons (probably just zero or one) that have been connected
-      # for too long. if in this list, the mainEventLoop will wait for the
-      # button to 'go away' for awhile until it will recognize it again. among
-      # other things, this keeps a normally-closed solenoid valve from burning
-      # out
-      self.timed_out = []
-
       # set up the import stuff: the ibutton onewire network, and the LCD UI
       self.netlock = threading.Lock()
       onewire_dev = self.config.get('UI','onewire_dev')
@@ -143,8 +160,6 @@ class KegBot:
       else:
          self.lcd = Display('/dev/null')
          self.ui = lcdui(self.lcd)
-      self.last_temp = -100.0
-      self.last_temp_time = 0
 
       # init flow meter
       flowdev = self.config.get('Flow','flowdev')
@@ -168,9 +183,6 @@ class KegBot:
       self.io.start()
 
       # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
-      self.ibs = []
-      self._allibs = []
-      self.ibs_seen = {} # store time when IB was last seen
       thread.start_new_thread(self.ibRefreshLoop,())
       time.sleep(1.0) # sleep to wait for ibrefreshloop - XXX
 
@@ -187,8 +199,6 @@ class KegBot:
          self.aimbot = KegAIMBot(sn,pw,self)
          self.bm = BotManager()
          self.bm.addBot(self.aimbot,"aimbot",go=1)
-
-      self.mainEventLoop()
 
    def setsigs(self):
       signal.signal(signal.SIGHUP, self.handler)
@@ -268,8 +278,9 @@ class KegBot:
          self._allibs = self.ownet.refresh()
          self.netlock.release()
          self.ibs = [ib for ib in self._allibs if ib.read_id() not in ignore_ids]
+         now = time.time()
          for ib in self.ibs:
-            self.ibs_seen[ib.read_id()] = time.time()
+            self.ibs_seen[ib.read_id()] = now
          time.sleep(timeout)
 
       self.log('ibRefreshLoop','quit!')
@@ -285,24 +296,29 @@ class KegBot:
          time.sleep(0.5)
          uib = None
 
-         # remove any tokens from the 'idle' list
-         present = [x.read_id() for x in self.ibs]
+         # remove any tokens from the 'idle' list. assume the config value
+         # ib_idle_min_disconnected is set to 5 seconds. require each kicked
+         # button to have been seen 5 or more seconds ago. (eg, not seen in
+         # last 5 seconds).
+         cutoff = time.time() - self.config.getint('Timing','ib_idle_min_disconnected')
          for kicked in self.timed_out:
-            if not kicked in present:
+            if self.lastSeen(kicked.read_id()) <= cutoff:
                self.log('flow','removed %s from timeout list' % kicked)
                self.timed_out.remove(kicked)
 
-         # now get down to business
+         # now get down to business. 
          for ib in self.ibs:
             if self.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
                time_since_seen = time.time() - self.lastSeen(ib.read_id()) 
                ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
                if time_since_seen < ceiling:
                   self.log('flow','found an authorized ibutton: %s' % ib.read_id())
-                  uib = ib
+
+                  # note: break call at the end of this block ensures that,
+                  # after a flow is handled, this mainEventLoop re-starts with
+                  # fresh data (eg self.ibs)
+                  self.handleFlow(ib)
                   break
-         if uib:
-            self.handleFlow(uib)
 
    def handleFlow(self,uib):
       self.ui.activity()
@@ -339,7 +355,6 @@ class KegBot:
 
       # - wait for ibutton release OR inaction timeout
       self.log('flow','starting flow for user %s' % current_user.getName())
-      ib_missing = 0
       STOP_FLOW = 0
 
       # - start the timout counter
@@ -419,11 +434,6 @@ class KegBot:
                last_prog_ticks = prog_ticks
                last_ounces = ounces
                user_screen.refreshAll() # XXX -- is this necessary anymore?
-
-         # otherwise, timeout for a bit before we check all this stuff
-         # again
-         #sleep_amt = self.config.getfloat('Timing','ib_verify_timeout')
-         #time.sleep(sleep_amt)
 
       # at this point, the flow maintenance loop has exited. this means
       # we must quickly disable the beer flow and kick the user off the

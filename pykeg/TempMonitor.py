@@ -18,7 +18,6 @@ class TempMonitor(threading.Thread):
       last_time = 0
       while not self.QUIT.isSet():
          self.sensor.takeReading()
-
          currtemp,rectime = self.sensor.getTemp(sensor)
 
          if currtemp:
@@ -38,11 +37,16 @@ class TempMonitor(threading.Thread):
                   lasttemp = currtemp
                else:
                   self.owner.thermo_store.updateLastTemp()
+
                last_time = rectime
 
 class TempSensor:
    """
    class for decoding output from a quozl temperature sensor.
+
+   despite the confusing name, the tempsensor class does NOT represent a DS1820
+   temperature sensor. it represents the quozl PIC device, which may have up to
+   4 DS1820 sensors connected.
    """
    def __init__(self,dev,rate=2400):
 
@@ -62,6 +66,8 @@ class TempSensor:
          print "error setting raw"
          pass
 
+      # get rid of any data in the serial buffer; i'm only interested in the
+      # most recent temperature
       self._devpipe.flush()
 
    def getTemp(self, sensor):

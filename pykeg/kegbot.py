@@ -3,7 +3,7 @@
 # keg control system
 # by mike wakerly; mike@wakerly.com
 
-import os, time
+import os, time, select
 import logging
 from onewirenet import *
 from ibutton import *
@@ -20,7 +20,7 @@ from KegRemoteServer import KegRemoteServer
 from toc import BotManager
 from SQLStores import *
 from SQLHandler import *
-from FlowController import *
+from FlowController import FC2 as FlowController
 from TempMonitor import *
 
 # edit this line to point to your config file; that's all you have to do!
@@ -100,9 +100,6 @@ class KegBot:
       # other things, this keeps a normally-closed solenoid valve from burning
       # out
       self.timed_out = []
-
-      # used for auditing between pours. see comments inline.
-      self.last_flow_ticks = None
 
       # ready to perform second stage of initialization
       self._setup()
@@ -185,6 +182,10 @@ class KegBot:
       thread.start_new_thread(self.ibRefreshLoop,())
       time.sleep(1.0) # sleep to wait for ibrefreshloop - XXX
 
+      # start the flow controller status monitor
+      thread.start_new_thread(self.fcStatusLoop,())
+      time.sleep(1.0)
+
       # start the temperature monitor
       if self.config.getboolean('Thermo','use_thermo'):
          self.tempsensor = TempSensor(self.config.get('Devices','thermo'))
@@ -211,6 +212,7 @@ class KegBot:
 
    def quit(self):
       self.info('main','attempting to quit')
+      self.fc.getStatus()
       self.QUIT.set()
       self.ui.stop()
       if self.config.getboolean('AIM','use_aim'):
@@ -281,6 +283,26 @@ class KegBot:
          self.info('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min))
          self.main_plate.setFreezer('off')
          self.fc.disableFridge()
+
+   def fcStatusLoop(self):
+      self.info('fc','status loop starting')
+      self.last_pkt_time = 0
+      while not self.QUIT.isSet():
+         (rr,wr,xr) = select.select([self.fc._devpipe],[],[],0.0)
+         if len(rr):
+            try:
+               p = self.fc.recvPacket()
+               #print "got pkt"
+            except:
+               print "Error recving packet!!"
+            self.last_pkt_time = time.time()
+            time.sleep(0.25)
+         else:
+            if time.time() - self.last_pkt_time >= 1.0:
+               #print "get status"
+               self.fc.getStatus()
+            time.sleep(0.25)
+      self.info('fc','status loop exiting')
 
    def ibRefreshLoop(self):
       """
@@ -369,13 +391,11 @@ class KegBot:
       self.info('flow',"current grant: %s" % (current_grant.policy.descr))
 
       # sequence of steps that should take place:
-      # - prepare counter
-      self.initFlowCounter()
 
       # - record flow counter
-      initial_flow_ticks = self.fc.readTicks()
-      last_reading = initial_flow_ticks
-      self.info('flow','current flow ticks: %s' % initial_flow_ticks)
+      start_ticks_flow = self.fc.readTicks()
+      start_ticks_grant = start_ticks_flow
+      self.info('flow','current flow ticks: %s' % start_ticks_flow)
 
       # - turn on UI
       user_screen = self.makeUserScreen(current_user)
@@ -404,7 +424,7 @@ class KegBot:
       # flow maintenance loop
       #
       last_flow_time = 0
-      ticks,grant_ticks = 0,0
+      flow_ticks,grant_ticks = 0,0
       old_grant = None
 
       while 1:
@@ -416,6 +436,7 @@ class KegBot:
                current_grant = ordered.pop(0)
                while current_grant.isExpired():
                   current_grant = ordered.pop(0)
+               start_ticks_grant = self.fc.readTicks()
             except:
                current_grant = None
 
@@ -447,17 +468,13 @@ class KegBot:
             last_flow_time = time.time()
 
             # tick-incrementing block
-            nowticks = self.fc.readTicks()
-            delta = nowticks - last_reading
-            if delta < 0 or delta > 500: # XXX better estimate
-               self.warning('flow','CAUTION: observed tick delta is %i' % delta)
-            else:
-               ticks += delta
-               grant_ticks += delta
-            last_reading = max(0,nowticks) # XXX takes 3 readings to normalize assuming 2 errors in a row
-            oz = "%s oz    " % round(self.fc.ticksToOunces(ticks),1)
+            nowticks    = self.fc.readTicks()
+            print "nowticks, start ticks: %i,%i" % (nowticks,start_ticks_flow)
+            flow_ticks  = nowticks - start_ticks_flow
+            grant_ticks = nowticks - start_ticks_grant
+            oz = "%s oz    " % round(self.fc.ticksToOunces(flow_ticks),1)
 
-            user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(ticks)/8.0 % 1)
+            user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0 % 1)
             user_screen.write_dict['ounces'].setData(oz[:6])
 
       # at this point, the flow maintenance loop has exited. this means
@@ -474,13 +491,9 @@ class KegBot:
 
       # - record flow totals; save to user database
       # tick-incrementing block
-      nowticks = self.fc.readTicks()
-      delta = nowticks - last_reading
-      if delta < 0 or delta > 500: # XXX better estimate
-         self.warning('flow','CAUTION: observed tick delta is %i' % delta)
-      else:
-         ticks += delta
-         grant_ticks += delta
+      nowticks    = self.fc.readTicks()
+      flow_ticks  = nowticks - start_ticks_flow
+      grant_ticks = nowticks - start_ticks_grant
 
       if old_grant: # XXX - sometimes, it is None. why?
          rec.addFragment(old_grant,grant_ticks)
@@ -489,22 +502,13 @@ class KegBot:
 
       # add the final total to the record
       old_drink = self.drink_store.getLastDrink(current_user.id)
-      bac = instantBAC(current_user,current_keg,ticks)
+      bac = instantBAC(current_user,current_keg,flow_ticks)
       bac += decomposeBAC(old_drink[0],time.time()-old_drink[1])
-      rec.emit(ticks,current_grant,grant_ticks,bac)
+      rec.emit(flow_ticks,current_grant,grant_ticks,bac)
 
-      ounces = round(self.fc.ticksToOunces(ticks),1)
+      ounces = round(self.fc.ticksToOunces(flow_ticks),1)
       self.main_plate.setLastDrink(current_user.getName(),ounces)
-      self.info('flow','drink total: %i ticks, %.2f ounces' % (ticks, ounces))
-
-      # - audit the current flow meter reading
-      # this amount, self.last_flow_ticks, is used by initFlowCounter.
-      # when the next person pours beer, this amount can be compared to
-      # the FlowController's tick reading. if the two readings are off by
-      # much, then this may be indicitive of a leak, stolen beer, or
-      # another serious problem.
-      self.last_flow_ticks = ticks
-      self.info('flow','flow ended with %s ticks' % ticks)
+      self.info('flow','drink total: %i ticks, %.2f ounces' % (flow_ticks, ounces))
 
       # - back to idle UI
 
@@ -553,18 +557,6 @@ class KegBot:
    def debug(self,msg):
       print "[debug] %s" % (msg,)
 
-   def initFlowCounter(self):
-      """
-      this function is to be called whenever the flow is about to be enabled.
-
-      it may also log any deviation that is noticed.
-      """
-      if self.last_flow_ticks:
-         curr_ticks = self.fc.readTicks()
-         if self.last_flow_ticks != curr_ticks:
-            self.warning('security','last recorded flow count (%s) does not match currently observed flow count (%s)' % (self.last_flow_ticks,curr_ticks))
-      self.fc.clearTicks()
-
    def log(self,component,message):
       self.main_logger.info("%s: %s" % (component,message))
 
@@ -588,7 +580,7 @@ class KegShell(threading.Thread):
    def __init__(self,owner):
       threading.Thread.__init__(self)
       self.owner = owner
-      self.commands = ['quit','adduser','showlog','hidelog', 'bot', 'showtemp']
+      self.commands = ['status','quit','adduser','showlog','hidelog', 'bot', 'showtemp']
 
       # setup readline to do fancy tab completion!
       self.completer = Completer()
@@ -611,6 +603,9 @@ class KegShell(threading.Thread):
 
          if cmd == 'showlog':
             self.owner.verbose = 1
+
+         if cmd == 'status':
+            print self.owner.fc.status
 
          if cmd == 'hidelog':
             self.owner.verbose = 0
@@ -655,6 +650,7 @@ class KegShell(threading.Thread):
          cmd = raw_input(prompt)
       except:
          cmd = ""
+         time.sleep(0.75)
       return cmd
 
    def adduser(self):

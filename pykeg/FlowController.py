@@ -107,6 +107,13 @@ class FC2:
       ticks_per_ounce = float(self.ticks_per_liter)/32.0
       return oz*ticks_per_ounce
 
+   # helpers for FC1 compatibility
+   def fridgeStatus(self):
+      return self.status['fridge'] == 1
+
+   def readTicks(self):
+      return self.status['ticks']
+
    def openValve(self):
       self._lock.acquire()
       self._devpipe.write(self.CMD_VALVEON)
@@ -133,31 +140,33 @@ class FC2:
 
    def recvPacket(self):
       #self._lock.acquire()
+      fd = self._devpipe.fileno()
 
       # gobble up ending boundary
-      c = self._devpipe.read(2)
+      c = os.read(fd,2)
       if c != "M:":
          print "no message start found, gobbling"
          while 1:
-            c = self._devpipe.read(1)
+            c = os.read(fd,1)
             if c != '\n':
                continue
             else:
+               #self._lock.release()
                print "end of bad packet; returning"
                return
 
       # now, c should contain the start of a packet
-      pkt = self._devpipe.read(7)
+      pkt = os.read(fd,7)
+      #self._lock.release()
       pkt = map(ord,pkt)
 
-      print "got status packet: %s" % (str(pkt),)
+      #print "got status packet: %s" % (str(pkt),)
       self.status['fridge'] = pkt[1]
       self.status['valve']  = pkt[2]
       newticks = pkt[3]*256 + pkt[4]
       newticks *= 4
       self.status['ticks'] += newticks
-
-      #self._lock.release()
+      return pkt
 
    def getStatus(self):
       self._lock.acquire()

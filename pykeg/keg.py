@@ -164,6 +164,7 @@ class KegBot:
       self.log('main','attempting to quit')
       self.QUIT.set()
       self.ui.stop()
+      self.aimbot.saveSessions()
       #self.cmdserver.stop()
 
    def tempMonitor(self):

@@ -12,6 +12,7 @@ from ConfigParser import ConfigParser
 import thread, threading
 import signal
 import readline
+import traceback
 
 from KegRemoteServer import KegRemoteServer
 from KegAIMBot import KegAIMBot
@@ -137,6 +138,7 @@ class KegBot:
       self.ibs = []
       self.last_refresh = 0.0
       thread.start_new_thread(self.ibRefreshLoop,())
+      time.sleep(1.0) # sleep to wait for ibrefreshloop - XXX
 
       # start the temperature monitor
       if self.config.getboolean('Thermo','use_thermo'):
@@ -144,7 +146,8 @@ class KegBot:
 
       # start the aim bot
       if self.config.getboolean('AIM','use_aim'):
-         thread.start_new_thread(self.aimBot,())
+         self.aimBot()
+         #thread.start_new_thread(self.aimBot,())
 
       self.mainEventLoop()
 
@@ -185,6 +188,8 @@ class KegBot:
       for target in self.ibs:
          if target.read_id() == temp_ib:
             ib = target
+         else:
+            print "%s != %s" % (target.read_id(),temp_ib)
 
       if not ib:
          self.log('tempmon','could not find temperature sensor, aborting monitor')
@@ -238,8 +243,8 @@ class KegBot:
          elif temp <= max_low:
             self.disableFreezer()
 
+         self.log('tempmon','temperature now read as: %s' % temp)
          if temp != self.last_temp:
-            self.log('tempmon','temperature now read as: %s' % temp)
             self.last_temp = temp
             self.last_temp_time = time.time()
       self.log('tempMonitor','quit!')
@@ -250,15 +255,14 @@ class KegBot:
       pw = self.config.get('AIM','password')
       self.aimbot = KegAIMBot(sn,pw,self)
       self.bm.addBot(self.aimbot,"aimbot")
-      self.bm.wait()
 
    def enableFreezer(self):
-      if self.freezer.status() != 'on':
+      if self.freezer.getStatus() != 'on':
          self.log('tempmon','activated freezer')
       self.freezer.enable()
 
    def disableFreezer(self):
-      if self.freezer.status() != 'off':
+      if self.freezer.getStatus() != 'off':
          self.log('tempmon','disabled freezer')
       self.freezer.disable()
 
@@ -295,10 +299,9 @@ class KegBot:
          # now get down to business
          for ib in self.ibs:
             if self.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
-               if ib.verify():
-                  self.log('flow','found an authorized ibutton: %s' % ib.read_id())
-                  uib = ib
-                  break
+               self.log('flow','found an authorized ibutton: %s' % ib.read_id())
+               uib = ib
+               break
 
          # enter this block if we have a recognized iButton. note that above
          # code will stop with the first authorized ibutton. 
@@ -431,10 +434,9 @@ class KegBot:
       return self.key_store.knownKey(keyinfo)
 
    def getUser(self,ib):
-      for id in self.token_db.keys():
-         if id == ib.read_id():
-            ownerid = self.token_db[id].owner
-            return self.user_db[ownerid]
+      key = self.key_store.getKey(ib.read_id())
+      if key:
+         return self.user_store.getUser(key.getOwner())
 
    def makeUserScreen(self,user):
       scr = plate_std(self.ui)
@@ -684,7 +686,7 @@ class Freezer:
       os.system(self.off_cmd)
       self.status = 'off'
 
-   def status(self):
+   def getStatus(self):
       return self.status
 
 class FlowController:

@@ -638,8 +638,6 @@ class plate_kegbot_main(plate_std):
    def __init__(self,owner):
       plate_std.__init__(self,owner)
 
-      self.last_updated = 0
-
       line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
       line2 = widget_line_std("|     kegbot!!     |",row=1,col=0,scroll=0)
       line3 = widget_line_std("| have good beer!! |",row=2,col=0,scroll=0)
@@ -649,10 +647,6 @@ class plate_kegbot_main(plate_std):
       self.updateObject('line2',line2)
       self.updateObject('line3',line3)
       self.updateObject('line4',line4)
-      
-   #def refreshObjects(self,countn):
-   #   self.last_updated = time.time()
-   #   return plate_std.refreshObjects(self,countn)
 
 if __name__ == '__main__':
    KegBot(config)

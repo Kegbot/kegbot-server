@@ -354,17 +354,22 @@ class KegBot:
                ounces = (16.0*ticks)/1041.1
                ounces = round(ounces,1)
                if ounces != last_ounces or prog_ticks != last_prog_ticks:
+                  user_screen.write_dict['progbar'].progress = (ticks/520) % 1
+                  oz = "%s oz" % (ounces,)
+                  oz = oz + "    "
+                  postfix = "] %s |" % (oz[:6],)
+                  user_screen.write_dict['progbar'].postfix = postfix
                   #self.log('flow',red('updaing progbar'))
                   last_prog_ticks = prog_ticks
                   last_ounces = ounces
-                  tickbox = "[" + "*"*prog_ticks + " "*(6-prog_ticks) + "]"
-                  tickbox = "%s %s oz" % (tickbox,ounces)
-                  tickbox = "| %s" % tickbox
-                  while len(tickbox) <19:
-                     tickbox = tickbox + " "
-                  tickbox = tickbox + "|"
-                  line3 = widget_line_std(tickbox,row=2,col=0,scroll=0)
-                  user_screen.updateObject('line3',line3)
+                  #tickbox = "[" + "*"*prog_ticks + " "*(6-prog_ticks) + "]"
+                  #tickbox = "%s %s oz" % (tickbox,ounces)
+                  #tickbox = "| %s" % tickbox
+                  #while len(tickbox) <19:
+                  #   tickbox = tickbox + " "
+                  #tickbox = tickbox + "|"
+                  #line3 = widget_line_std(tickbox,row=2,col=0,scroll=0)
+                  #user_screen.updateObject('line3',line3)
                   self.ui.setCurrentPlate(user_screen,replace=1)
 
                # otherwise, timeout for a bit before we check all this stuff
@@ -432,12 +437,14 @@ class KegBot:
 
       line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
       line2 = widget_line_std("| %s |"%namestr,      row=1,col=0,scroll=0)
-      line3 = widget_line_std("| [              ] |",row=2,col=0,scroll=0)
+      progbar = widget_progbar(row = 2, col = 0, prefix ="| [", proglen = 8, postfix= "] |")
+      #line3 = widget_line_std("| [              ] |",row=2,col=0,scroll=0)
       line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
       scr.updateObject('line1',line1)
       scr.updateObject('line2',line2)
-      scr.updateObject('line3',line3)
+      #scr.updateObject('line3',line3)
+      scr.updateObject('progbar',progbar)
       scr.updateObject('line4',line4)
 
       return scr

@@ -633,7 +633,7 @@ class KegAIMBot(TocTalk):
       self.owner = owner
       self._info = "hello, i am a kegerator."
       self._debug = 1 # critical debug messages
-      self._logfd = open('botlog.txt',a,0)
+      self._logfd = open('botlog.txt','a',0)
 
    def on_IM_IN(self,data):
       in_sn, in_flag, in_msg = data.split(":")[0:3]

@@ -19,7 +19,7 @@ class KegAIMBot(TocTalk):
       freezer = 'unknown'
       if self.owner:
          temp = self.owner.last_temp
-         freezer = self.owner.freezer_status
+         freezer = self.owner.freezer.getStatus()
       reply = "i am dumb. my last recorded temperature is %s and the freezer is believed to be %s." % (temp,freezer)
       return reply
 

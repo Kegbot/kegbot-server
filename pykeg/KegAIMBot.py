@@ -1,6 +1,6 @@
 from toc import TocTalk, BotManager
 import aiml
-import os.path
+import os.path,sys
 import re
 import time
 import marshal
@@ -8,23 +8,24 @@ import logging
 from ConfigParser import ConfigParser
 
 class KegAIMBot(TocTalk):
-   def __init__(self, sn, pw, owner):
+   def __init__(self, config):
+      sn = config.get('AIM','screenname')
+      pw = config.get('AIM','password')
+      self.config = config
+      self.logfp = open('aim.log','w')
       TocTalk.__init__(self,sn,pw)
-      self.owner = owner
 
-      self._info = self.owner.config.get('AIM','profile') # (py-toc parameter)
-      self._debug = 2 # critical debug messages (py-toc parameter)
-      self._logger = self.owner.makeLogger('aimbot',level=logging.INFO)
-
+      self._info = self.config.get('AIM','profile') # (py-toc parameter)
+      self._debug = 0 # no debugging
       self.k = aiml.Kernel()
 
       # parameters
-      self.typerate = self.owner.config.getfloat('Bot','typerate') # seconds
+      self.typerate = self.config.getfloat('Bot','typerate') # seconds
 
       # other stuff..
-      brainfile = self.owner.config.get('Bot','save_brain')
-      startupfile = self.owner.config.get('Bot','startup_file')
-      startcommand = self.owner.config.get('Bot','startup_command')
+      brainfile = self.config.get('Bot','save_brain')
+      startupfile = self.config.get('Bot','startup_file')
+      startcommand = self.config.get('Bot','startup_command')
 
       # bootstrap the brain: attempt to load a saved brain, else create (and
       # save) a new one
@@ -32,7 +33,7 @@ class KegAIMBot(TocTalk):
          self.k.bootstrap(brainFile = brainfile)
       else:
          self.k.bootstrap(learnFiles = startupfile, commands = startcommand)
-         if self.owner.config.getboolean('Bot','do_save_brain'):
+         if self.config.getboolean('Bot','do_save_brain'):
             self.k.saveBrain(brainfile)
 
       # load the defaults (eg, name). do this after the brain is loaded, just
@@ -48,17 +49,17 @@ class KegAIMBot(TocTalk):
 
    def werror(self,errorstr):
       if self._debug:
-         self._logger.error(errorstr)
+         self.log(errorstr)
 
    def derror(self,errorstr):
       if self._debug > 1:
-         self._logger.warning(errorstr)
+         self.log(errorstr)
 
    def loadDefaults(self):
       """
       set bot defaults (such as personality fields) based on a configuration file
       """
-      cfile = self.owner.config.get('Bot','defaults')
+      cfile = self.config.get('Bot','defaults')
       cfg = ConfigParser()
       cfg.read(cfile)
 
@@ -66,7 +67,9 @@ class KegAIMBot(TocTalk):
          self.k.setBotPredicate(name,value)
 
    def log(self, message):
-      self.owner.log('aimbot',message)
+      print message
+      self.logfp.write(message + '\n')
+      self.logfp.flush()
 
    def saveSessions(self):
       """
@@ -91,17 +94,20 @@ class KegAIMBot(TocTalk):
    def on_IM_IN(self,data):
       in_sn, in_flag, in_msg = data.split(":")[0:3]
       msg = self.strip_html(in_msg)
-      self._logger.info(in_sn + "->" + msg)
-      reply = self.makeReply(in_sn,msg)
+      self.log(in_sn + "->" + msg)
+      try:
+         reply = self.makeReply(in_sn,msg)
+      except:
+         return
       reply = re.sub(" +", " ",reply)
       if reply:
-         self._logger.info(in_sn + "<-" + reply)
+         self.log(in_sn + "<-" + reply)
 
          # split up replies that have two distinct thoughts in it, ie, send
          # more messages instead of all at once. (more human like, in my
          # opinion)
          for sentence in reply.split("\n\n"):
-            self.sendReply(in_sn,sentence)
+            self.sendReply(in_sn,str(sentence)) # XXX - unicode killer hack
 
    def sendReply(self, sn, msg):
       """
@@ -123,10 +129,13 @@ class KegAIMBot(TocTalk):
 
       self.do_SEND_IM(sn,msg)
 
+   def sessionExists(self,sn):
+      return self.k.getSessionData(sn) == {}
+
    def makeReply(self,sn,data):
-      if not self.k.sessionExists(sn):
+      if not self.sessionExists(sn):
          self.k._addSession(sn)
-         self.k.setSessionData(sn,"name",sn)
+         self.k.setPredicate("name",sn,sn)
 
       response = self.k.respond(data,sn)
       return response
@@ -159,5 +168,15 @@ class KegAIMBot(TocTalk):
            return text # leave as is
        return re.sub("(?s)<[^>]*>|&#?\w+;", fixup, text)
 
+def RunBot():
+   cfg = ConfigParser()
+   cfg.read(sys.argv[1])
+   bm = BotManager()
+   print "starting bot."
+   bm.addBot(KegAIMBot(cfg),"aimbot",go=1)
+   print "cfg: %s" % cfg
+   bm.wait()
 
+if __name__ == "__main__":
+   RunBot()
 

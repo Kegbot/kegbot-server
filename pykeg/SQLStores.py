@@ -1,5 +1,7 @@
 import MySQLdb
 import time
+import Queue
+import thread
 
 class DrinkStore:
    """
@@ -10,7 +12,8 @@ class DrinkStore:
    provides SQL storage.
    """
 
-   def __init__(self, dbinfo, table, minticks = 0):
+   def __init__(self, owner, dbinfo, table, minticks = 0):
+      self.owner = owner
       (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
@@ -76,7 +79,8 @@ class UserStore:
    """
    Storage of user info.
    """
-   def __init__(self, dbinfo, table):
+   def __init__(self, owner, dbinfo, table):
+      self.owner = owner
       (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
@@ -105,7 +109,8 @@ class UserStore:
       return c.insert_id()
 
 class PolicyStore:
-   def __init__(self, dbinfo, table):
+   def __init__(self, owner, dbinfo, table):
+      self.owner = owner
       (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
@@ -138,7 +143,8 @@ class KegStore:
    """
    Storage of keg info
    """
-   def __init__(self, dbinfo, table):
+   def __init__(self, owner, dbinfo, table):
+      self.owner = owner
       (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
@@ -184,14 +190,29 @@ class ThermoStore:
    probably only interested in recent temperatures for the day, and averages
    for the week, month, year.
    """
-   def __init__(self, dbinfo, table):
+   def __init__(self, owner, dbinfo, table):
+      self.owner = owner
       (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
+      self.actions = Queue.Queue()
+      thread.start_new_thread(self.logger,())
+
+   def logger(self):
+      while 1:
+         q = self.actions.get()
+         c = self.dbconn.cursor()
+         c.execute(q)
+         self.owner.info('ThermoStore',q)
+         self.purgeOld()
 
    def logTemp(self, temp, sensor, fs):
-      c = self.dbconn.cursor()
       q = "INSERT INTO %s (`rectime`,`sensor`,`temp`,`fridgestatus`) VALUES ('%s','%s','%s','%s')" % (self.table,time.time(),sensor,temp,fs)
+      self.actions.put(q)
+
+   def purgeOld(self,hours=6):
+      c = self.dbconn.cursor()
+      q = "DELETE FROM %s WHERE `rectime` < UNIX_TIMESTAMP(NOW()) - 60*60*%i" % (self.table,hours)
       c.execute(q)
 
    def updateLastTemp(self):
@@ -204,9 +225,8 @@ class ThermoStore:
       purpose is to update the timestamp to show we actually took a measurement
       at this time.
       """
-      c = self.dbconn.cursor()
       q = "UPDATE `%s` SET `rectime`='%s' ORDER BY `rectime` DESC LIMIT 1" % (self.table,int(time.time()))
-      c.execute(q)
+      self.actions.put(q)
 
 class Keg:
    def __init__(self,id,tickmetric,startounces,startdate,enddate,status,beername,alccontent,description,origcost,beerpalid,ratebeerid,calories_oz):
@@ -233,7 +253,8 @@ class GrantStore:
    """
    Storage of user info.
    """
-   def __init__(self, dbinfo, table, pstore):
+   def __init__(self, owner, dbinfo, table, pstore):
+      self.owner = owner
       (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.pstore = pstore
@@ -379,7 +400,8 @@ class KeyStore:
    """
    Storage of user info.
    """
-   def __init__(self, dbinfo, table):
+   def __init__(self, owner, dbinfo, table):
+      self.owner = owner
       (host,user,password,db) = dbinfo
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table

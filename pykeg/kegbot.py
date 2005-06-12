@@ -16,6 +16,7 @@ import signal
 import traceback
 
 from KegRemoteServer import KegRemoteServer
+from SoundServer import *
 from toc import BotManager
 from SQLStores import *
 from SQLHandler import *
@@ -75,7 +76,6 @@ def instantBAC(user,keg,drink_ticks):
 
    # switch to "grams percent"
    grams_pct = alc_per_blood_ml * 100.0
-   #print "grams pct: %s" % grams_pct
 
    # determine how much we've really consumed
    alc_consumed = keg.getDrinkOunces(drink_ticks) * (keg.alccontent/100.0)
@@ -148,13 +148,13 @@ class KegBot:
       # and the table name to form the init tuple
       db_tuple = (self.dbhost,self.dbuser,self.dbpassword,self.dbdb)
 
-      self.drink_store   = DrinkStore(  db_tuple, self.config.get('DB','drink_table') )
-      self.user_store    = UserStore(   db_tuple, self.config.get('DB','user_table') )
-      self.key_store     = KeyStore(    db_tuple, self.config.get('DB','key_table') )
-      self.policy_store  = PolicyStore( db_tuple, self.config.get('DB','policy_table') )
-      self.grant_store   = GrantStore(  db_tuple, self.config.get('DB','grant_table') , self.policy_store)
-      self.keg_store     = KegStore(    db_tuple, self.config.get('DB','keg_table') )
-      self.thermo_store  = ThermoStore( db_tuple, self.config.get('DB','thermo_table') )
+      self.drink_store   = DrinkStore(  self, db_tuple, self.config.get('DB','drink_table') )
+      self.user_store    = UserStore(   self, db_tuple, self.config.get('DB','user_table') )
+      self.key_store     = KeyStore(    self, db_tuple, self.config.get('DB','key_table') )
+      self.policy_store  = PolicyStore( self, db_tuple, self.config.get('DB','policy_table') )
+      self.grant_store   = GrantStore(  self, db_tuple, self.config.get('DB','grant_table') , self.policy_store)
+      self.keg_store     = KegStore(    self, db_tuple, self.config.get('DB','keg_table') )
+      self.thermo_store  = ThermoStore( self, db_tuple, self.config.get('DB','thermo_table') )
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
       self.netlock = threading.Lock()
@@ -164,6 +164,10 @@ class KegBot:
          self.info('main','new onewire net at device %s' % dev)
       except:
          self.error('main','not connected to onewirenet')
+
+      # start the sound server
+      self.sounds = SoundServer(self,self.config.get('Sounds','sound_dir'))
+      self.sounds.start()
 
       # load the LCD-UI stuff
       if self.config.getboolean('UI','use_lcd'):
@@ -181,7 +185,9 @@ class KegBot:
       # init flow meter
       dev = self.config.get('Devices','flow')
       self.info('main','new flow controller at device %s' % dev)
-      self.fc = FlowController(dev)
+      tickmetric = self.config.getint('Flow','tick_metric')
+      tick_skew = self.config.getfloat('Flow','tick_skew')
+      self.fc = FlowController(dev,ticks_per_liter = tickmetric,tick_skew = tick_skew)
       self.last_fridge_time = 0 # time since fridge event (relay trigger)
 
       # set up the default 'screen'. for now, it is just a boring standard
@@ -214,13 +220,13 @@ class KegBot:
          self.tempmon.start()
 
       # start the aim bot
-      if self.config.getboolean('AIM','use_aim'):
-         from KegAIMBot import KegAIMBot
-         sn = self.config.get('AIM','screenname')
-         pw = self.config.get('AIM','password')
-         self.aimbot = KegAIMBot(sn,pw,self)
-         self.bm = BotManager()
-         self.bm.addBot(self.aimbot,"aimbot",go=1)
+      #if self.config.getboolean('AIM','use_aim'):
+      #   from KegAIMBot import KegAIMBot
+      #   sn = self.config.get('AIM','screenname')
+      #   pw = self.config.get('AIM','password')
+      #   self.aimbot = KegAIMBot(sn,pw,self)
+      #   self.bm = BotManager()
+      #   self.bm.addBot(self.aimbot,"aimbot",go=1)
 
    def setsigs(self):
       signal.signal(signal.SIGHUP, self.handler)
@@ -233,11 +239,16 @@ class KegBot:
 
    def quit(self):
       self.info('main','attempting to quit')
+
+      # hacks for blocking threads..
       self.fc.getStatus()
+      self.sounds.quit()
+
+      # other quitting
       self.QUIT.set()
       self.ui.stop()
-      if self.config.getboolean('AIM','use_aim'):
-         self.aimbot.saveSessions()
+      #if self.config.getboolean('AIM','use_aim'):
+      #   self.aimbot.saveSessions()
       #self.cmdserver.stop()
 
    def makeLogger(self,compname,level=logging.INFO):
@@ -249,6 +260,7 @@ class KegBot:
       if self.config.getboolean('Logging','use_sql'):
          try:
             hdlr = SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.logtable,self.dbpassword)
+            hdlr.setLevel(logging.WARNING)
             formatter = SQLVerboseFormatter()
             hdlr.setFormatter(formatter)
             ret.addHandler(hdlr)
@@ -395,6 +407,8 @@ class KegBot:
                   # note: break call at the end of this block ensures that,
                   # after a flow is handled, this mainEventLoop re-starts with
                   # fresh data (eg self.ibs)
+                  self.fc.getStatus()
+                  time.sleep(0.1)
                   self.handleFlow(ib)
                   break
 
@@ -462,6 +476,9 @@ class KegBot:
       flow_ticks,grant_ticks = 0,0
       old_grant = None
 
+      marker1 = False
+      marker2 = False
+
       while 1:
          # if we've expired the grant, log it
          if current_grant.isExpired(current_keg.getDrinkOunces(grant_ticks)):
@@ -475,7 +492,7 @@ class KegBot:
             except:
                current_grant = None
 
-         if time.time() - self.last_pkt_time >= 1:
+         if time.time() - self.last_pkt_time >= 0.5:
             self.fc.getStatus()
             self.last_pkt_time = time.time()
 
@@ -510,7 +527,16 @@ class KegBot:
             nowticks    = self.fc.readTicks()
             flow_ticks  = nowticks - start_ticks_flow
             grant_ticks = nowticks - start_ticks_grant
-            oz = "%s oz    " % round(self.fc.ticksToOunces(flow_ticks),1)
+            ounces = round(self.fc.ticksToOunces(flow_ticks),1)
+            oz = "%s oz    " % ounces
+
+            # hack... play the marker sound
+            if not marker1 and ounces >= self.config.getfloat('Sounds','marker1_size'):
+               marker1 = True
+               self.sounds.play_now(self.config.get('Sounds','marker1_sound'))
+            if not marker2 and ounces >= self.config.getfloat('Sounds','marker2_size'):
+               marker2 = True
+               self.sounds.play_now(self.config.get('Sounds','marker2_sound'))
 
             user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0 % 1)
             user_screen.write_dict['ounces'].setData(oz[:6])

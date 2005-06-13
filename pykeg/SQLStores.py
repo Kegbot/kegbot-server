@@ -203,12 +203,12 @@ class ThermoStore:
          q = self.actions.get()
          c = self.dbconn.cursor()
          c.execute(q)
-         self.owner.info('ThermoStore',q)
          self.purgeOld()
 
    def logTemp(self, temp, sensor, fs):
       q = "INSERT INTO %s (`rectime`,`sensor`,`temp`,`fridgestatus`) VALUES ('%s','%s','%s','%s')" % (self.table,time.time(),sensor,temp,fs)
       self.actions.put(q)
+      self.owner.info('ThermoStore','temperature now %.2f' % temp)
 
    def purgeOld(self,hours=6):
       c = self.dbconn.cursor()

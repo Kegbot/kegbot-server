@@ -3,21 +3,23 @@
 # keg control system
 # by mike wakerly; mike@wakerly.com
 
-import os, time, select
+import os
+import time
+import select
 import logging
+import thread
+import threading
+import signal
+import traceback
+from optparse import OptionParser
+from ConfigParser import ConfigParser
+
 from onewirenet import *
 from ibutton import *
 from mtxorb import *
 from lcdui import *
-from output import *
-from ConfigParser import ConfigParser
-import thread, threading
-import signal
-import traceback
-
 from KegRemoteServer import KegRemoteServer
 from SoundServer import *
-from toc import BotManager
 from SQLStores import *
 from SQLHandler import *
 from FlowController import FC2 as FlowController
@@ -25,7 +27,13 @@ from TempMonitor import *
 import kbevent
 
 # edit this line to point to your config file; that's all you have to do!
-config = '/home/kegbot/svnbox/pykeg/keg.cfg'
+config = 'keg.cfg'
+
+# command line parser are defined here
+parser = OptionParser()
+parser.add_option('-D','--daemon',dest='daemon',action='store_true',help='run kegbot in daemon mode')
+parser.set_defaults(daemon=False)
+(flags, args) = parser.parse_args()
 
 # ---------------------------------------------------------------------------- #
 # Helper functions -- available to all classes
@@ -78,7 +86,7 @@ def instantBAC(user,keg,drink_ticks):
    grams_pct = alc_per_blood_ml * 100.0
 
    # determine how much we've really consumed
-   alc_consumed = keg.getDrinkOunces(drink_ticks) * (keg.alccontent/100.0)
+   alc_consumed = ounces * (keg.alccontent/100.0)
    instant_bac = alc_consumed * grams_pct
 
    return instant_bac
@@ -95,7 +103,7 @@ def toF(t):
 
 class KegBot:
    """ the thinking kegerator! """
-   def __init__(self,config):
+   def __init__(self):
 
       # this init function is now split in to two sections, to support online
       # reloading of compiled component code.
@@ -105,7 +113,6 @@ class KegBot:
 
       self.config = ConfigParser()
 
-      self.verbose = 0
       self.last_temp = -100.0
       self.last_temp_time = 0
       self.ibs = []
@@ -157,7 +164,6 @@ class KegBot:
       self.thermo_store  = ThermoStore( self, db_tuple, self.config.get('DB','thermo_table') )
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
-      self.netlock = threading.Lock()
       dev = self.config.get('Devices','onewire')
       try:
          self.ownet = onewirenet(dev)
@@ -196,15 +202,6 @@ class KegBot:
       self.ui.start(with_keycmdhandler=True)
       self.ui.activity()
 
-      # set up the remote call server, for anything that wants to monitor the keg
-      #host = self.config.get('Remote','host')
-      #port = self.config.get('Remote','port')
-      #self.cmdserver = KegRemoteServer(self,host,port)
-      #self.cmdserver.start()
-
-      #self.io = KegShell(self)
-      #self.io.start()
-
       # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
       thread.start_new_thread(self.ibRefreshLoop,())
       time.sleep(1.0) # sleep to wait for ibrefreshloop - XXX
@@ -218,15 +215,6 @@ class KegBot:
          self.tempsensor = TempSensor(self.config.get('Devices','thermo'))
          self.tempmon = TempMonitor(self,self.tempsensor,self.QUIT)
          self.tempmon.start()
-
-      # start the aim bot
-      #if self.config.getboolean('AIM','use_aim'):
-      #   from KegAIMBot import KegAIMBot
-      #   sn = self.config.get('AIM','screenname')
-      #   pw = self.config.get('AIM','password')
-      #   self.aimbot = KegAIMBot(sn,pw,self)
-      #   self.bm = BotManager()
-      #   self.bm.addBot(self.aimbot,"aimbot",go=1)
 
    def setsigs(self):
       signal.signal(signal.SIGHUP, self.handler)
@@ -247,9 +235,6 @@ class KegBot:
       # other quitting
       self.QUIT.set()
       self.ui.stop()
-      #if self.config.getboolean('AIM','use_aim'):
-      #   self.aimbot.saveSessions()
-      #self.cmdserver.stop()
 
    def makeLogger(self,compname,level=logging.INFO):
       """ set up a logging logger, given the component name """
@@ -285,7 +270,7 @@ class KegBot:
 
    def enableFreezer(self):
       curr = self.tempmon.sensor.getTemp(1) # XXX - sensor index is hardcoded! add to .config
-      max = self.config.getfloat('Thermo','temp_max_high')
+      max_t = self.config.getfloat('Thermo','temp_max_high')
 
       # refuse to enable the fridge if we just disabled it. (we don't do this
       # in the disableFreezer routine, because we should always be allowed to
@@ -293,27 +278,27 @@ class KegBot:
       min_diff = self.config.getint('Timing','freezer_event_min')
       diff = time.time() - self.last_fridge_time
 
-      if self.fc.UNKNOWN or self.fc.fridgeStatus() == False: 
+      if self.fc.UNKNOWN or not self.fc.fridgeStatus():
          if diff < min_diff:
             self.warning('tempmon','fridge event requested less than %i seconds after last, ignored (%i)' % (min_diff,diff))
             return
          self.last_fridge_time = time.time()
          self.fc.UNKNOWN = False
-         self.info('tempmon','activated freezer curr=%s max=%s'%(curr[0],max))
+         self.info('tempmon','activated freezer curr=%s max=%s'%(curr[0],max_t))
          self.main_plate.setFreezer('on ')
          self.fc.enableFridge()
 
    def disableFreezer(self):
       curr = self.tempmon.sensor.getTemp(1)
-      min = self.config.getfloat('Thermo','temp_max_low')
+      min_t = self.config.getfloat('Thermo','temp_max_low')
 
       # note: no check here for recent fridge event, because we will always
       # allow the fridge to be disabled.
       self.last_fridge_time = time.time()
 
-      if self.fc.UNKNOWN or self.fc.fridgeStatus() == True:
+      if self.fc.UNKNOWN or self.fc.fridgeStatus():
          self.fc.UNKNOWN = False
-         self.info('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min))
+         self.info('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min_t))
          self.main_plate.setFreezer('off')
          self.fc.disableFridge()
 
@@ -367,9 +352,7 @@ class KegBot:
       ignore_ids = self.config.get('Users','ignoreids').split(" ")
 
       while not self.QUIT.isSet():
-         self.netlock.acquire()
          self._allibs = self.ownet.refresh()
-         self.netlock.release()
          self.ibs = [ib for ib in self._allibs if ib.read_id() not in ignore_ids]
          now = time.time()
          for ib in self.ibs:
@@ -387,7 +370,6 @@ class KegBot:
    def mainEventLoop(self):
       while not self.QUIT.isSet():
          time.sleep(0.5)
-         uib = None
 
          # remove any tokens from the 'idle' list. assume the config value
          # ib_idle_min_disconnected is set to 5 seconds. require each kicked
@@ -452,18 +434,12 @@ class KegBot:
 
       # - turn on flow
       self.fc.openValve()
-      drink_start = time.time()
 
       # - wait for ibutton release OR inaction timeout
       self.info('flow','starting flow for user %s' % current_user.getName())
       STOP_FLOW = 0
 
-      # - start the timout counter
       idle_timeout = self.config.getfloat('Timing','ib_idle_timeout')
-      t = threading.Timer(idle_timeout,self.timeoutToken,(uib.read_id(),))
-      t.start()
-
-      ounces = 0.0
       ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
 
       # set up the record for logging
@@ -474,7 +450,9 @@ class KegBot:
       #
       last_flow_time = 0
       flow_ticks,grant_ticks = 0,0
+      lastticks = 0
       old_grant = None
+      idle_time = 0
 
       marker1 = False
       marker2 = False
@@ -507,7 +485,11 @@ class KegBot:
          # if the token has been gone awhile, end
          time_since_seen = time.time() - self.lastSeen(uib.read_id())
          if time_since_seen > ceiling:
-            self.info('flow',red('ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling)))
+            self.info('flow','ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling))
+            STOP_FLOW = 1
+
+         if idle_time >= idle_timeout:
+            self.timeoutToken(uib.read_id())
             STOP_FLOW = 1
 
          # check other credentials necessary to keep the beer flowing!
@@ -521,7 +503,6 @@ class KegBot:
             break
 
          if time.time() - last_flow_time > self.config.getfloat("Flow","polltime"):
-            last_flow_time = time.time()
 
             # tick-incrementing block
             nowticks    = self.fc.readTicks()
@@ -538,15 +519,21 @@ class KegBot:
                marker2 = True
                self.sounds.play_now(self.config.get('Sounds','marker2_sound'))
 
-            user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0 % 1)
+            user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0)
             user_screen.write_dict['ounces'].setData(oz[:6])
+
+            # record how long we have been idle in idle_time
+            if lastticks == nowticks:
+               idle_time += time.time() - last_flow_time
+            else:
+               idle_time = 0
+
+            last_flow_time = time.time()
+            lastticks = nowticks
 
       # at this point, the flow maintenance loop has exited. this means
       # we must quickly disable the beer flow and kick the user off the
       # system
-
-      # cancel the idle timeout
-      t.cancel()
 
       # - turn off flow
       self.info('flow','user is gone; flow ending')
@@ -741,8 +728,8 @@ class plate_kegbot_main(plate_multi):
 
 # start a new kehbot instance, if we are called from the command line
 if __name__ == '__main__':
-   if len(sys.argv) < 2 or sys.argv[1] != '--fg':
+   if flags.daemon:
       daemonize()
    else:
       print "Running in foreground"
-   KegBot(config)
+   KegBot()

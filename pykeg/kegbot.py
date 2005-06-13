@@ -260,7 +260,7 @@ class KegBot:
          ret.addHandler(hdlr)
 
       # add tty handler
-      if len(sys.argv) >= 2 and sys.argv[1] == "--fg":
+      if not flags.daemon:
          hdlr = logging.StreamHandler(sys.stdout)
          formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
          hdlr.setFormatter(formatter)

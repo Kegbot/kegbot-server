@@ -172,8 +172,9 @@ class KegBot:
          self.error('main','not connected to onewirenet')
 
       # start the sound server
-      self.sounds = SoundServer(self,self.config.get('Sounds','sound_dir'))
-      self.sounds.start()
+      if self.config.getboolean('Sounds','use_sounds'):
+         self.sounds = SoundServer(self,self.config.get('Sounds','sound_dir'))
+         self.sounds.start()
 
       # load the LCD-UI stuff
       if self.config.getboolean('UI','use_lcd'):
@@ -230,7 +231,8 @@ class KegBot:
 
       # hacks for blocking threads..
       self.fc.getStatus()
-      self.sounds.quit()
+      if self.config.getboolean('Sounds','use_sounds'):
+         self.sounds.quit()
 
       # other quitting
       self.QUIT.set()
@@ -512,12 +514,13 @@ class KegBot:
             oz = "%s oz    " % ounces
 
             # hack... play the marker sound
-            if not marker1 and ounces >= self.config.getfloat('Sounds','marker1_size'):
-               marker1 = True
-               self.sounds.play_now(self.config.get('Sounds','marker1_sound'))
-            if not marker2 and ounces >= self.config.getfloat('Sounds','marker2_size'):
-               marker2 = True
-               self.sounds.play_now(self.config.get('Sounds','marker2_sound'))
+            if self.config.getboolean('Sounds','use_sounds'):
+               if not marker1 and ounces >= self.config.getfloat('Sounds','marker1_size'):
+                  marker1 = True
+                  self.sounds.play_now(self.config.get('Sounds','marker1_sound'))
+               if not marker2 and ounces >= self.config.getfloat('Sounds','marker2_size'):
+                  marker2 = True
+                  self.sounds.play_now(self.config.get('Sounds','marker2_sound'))
 
             user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0)
             user_screen.write_dict['ounces'].setData(oz[:6])

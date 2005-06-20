@@ -27,7 +27,7 @@ from TempMonitor import *
 import kbevent
 
 # edit this line to point to your config file; that's all you have to do!
-config = 'keg.cfg'
+config = '/home/kegbot/svnbox2/pykeg/keg.cfg'
 
 # command line parser are defined here
 parser = OptionParser()
@@ -49,12 +49,20 @@ def daemonize():
    os.chdir("/")
    os.umask(0)
 
-   os.close(sys.__stdin__.fileno())
-   os.close(sys.__stdout__.fileno())
-   os.close(sys.__stderr__.fileno())
-   os.open('/dev/null', 0)
-   os.dup(0)
-   os.dup(0)
+   try:
+      maxfd = os.sysconf("SC_OPEN_MAX")
+   except (AttributeError, ValueError):
+      maxfd = 256
+
+   for fd in range(0, maxfd):
+      try:
+         os.close(fd)
+      except OSError:
+         pass
+
+   os.open('/dev/null', os.O_RDONLY)
+   os.open('/dev/null', os.O_RDWR)
+   os.open('/dev/null', os.O_RDWR)
 
 def instantBAC(user,keg,drink_ticks):
    # calculate weight in metric KGs
@@ -450,7 +458,7 @@ class KegBot:
       #
       # flow maintenance loop
       #
-      last_flow_time = 0
+      last_flow_time = time.time()
       flow_ticks,grant_ticks = 0,0
       lastticks = 0
       old_grant = None

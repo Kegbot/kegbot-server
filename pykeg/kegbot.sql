@@ -1,7 +1,7 @@
 -- KEGBOT_SCHEMA_VERSION=1
 -- NOTE: do not modify the above line
 
-- 
+-- 
 -- Table structure for table `beerinfo`
 -- 
 

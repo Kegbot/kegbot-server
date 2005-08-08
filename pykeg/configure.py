@@ -105,8 +105,6 @@ def Main():
       print ''
       raise
 
-   print ''
-
    print "Now, let's start by configuring some default devices. I'm going to need"
    print "to know where the various devices you may have attached live."
    print ''
@@ -146,6 +144,67 @@ def Main():
       c.execute(q)
       print 'done!'
 
+   print ''
+
+   print 'Now, we can set up the first user. By default, a user named "admin"'
+   print 'ships with the code. We can change that to your name now, and assign'
+   print 'it an iButton number (if you have one).'
+
+   print ''
+   prompt_if_ok('Continue with additional setup?')
+   print ''
+
+   print 'OK, lets get some information about you. First, select a drinker name.'
+   print 'You can always change this later, but for now, this will be how you log'
+   print 'in to the kegbot over the web, and so on.'
+
+   print ''
+   drinker_name = prompt('Drinker name? [admin]: ') or 'admin'
+   print ''
+   print ''
+
+   print 'Hi there, %s!' % (drinker_name,)
+   print 'Now, lets select a password for you. The default password is'
+   print '"kegbotadmin", but you should probably change that.'
+   
+   print ''
+   password = prompt('New admin password? [kegbotadmin]: ') or 'kegbotadmin'
+   print ''
+   print ''
+
+   print 'Finally, we will add a token for the admin user. If you do not have an'
+   print 'iButton system, or don\'t yet have an iButton, you can leave the default.'
+
+   print ''
+   ibid = prompt('iButton ID for admin? []: ') or ''
+   print ''
+   print ''
+
+   print 'Before I save the new user, please check below to make sure it is right.'
+   print ''
+   print 'drinker name : %s' % (drinker_name,)
+   print '    password : %s' % (password, )
+   print '  ibutton id : %s' % (ibid,)
+
+   print ''
+   prompt_if_ok('OK to update the admin user?')
+   print ''
+
+   c = dbconn.cursor()
+   q = """ UPDATE `users` SET `username`='%s', password=MD5('%s') WHERE `id`='1' LIMIT 1 """ % (MySQLdb.escape_string(drinker_name), MySQLdb.escape_string(password) )
+
+   print 'Updating admin user...',
+   c.execute(q)
+   print 'done!'
+
+   q = """ INSERT INTO `tokens` (`ownerid`,`keyinfo`) VALUES ('1','%s') """ % (MySQLdb.escape_string(ibid),)
+   print 'Adding admin token...',
+   c.execute(q)
+   print 'done!'
+
+   print ''
+
+   print 'All set!'
 
 
 if __name__ == '__main__':

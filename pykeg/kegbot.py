@@ -410,6 +410,9 @@ class KegBot:
       self.info('flow','starting flow handling')
       self.ui.activity()
       current_keg = self.keg_store.getCurrentKeg()
+      if not current_keg:
+         self.error('flow','no keg currently active; what are you trying to pour?')
+         return
 
       current_user = self.getUser(uib)
       if not current_user:

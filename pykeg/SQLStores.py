@@ -180,7 +180,7 @@ class KegStore:
          row = c.fetchone()
          return apply(Keg,row)
       except:
-         return 0
+         return None
 
 class ThermoStore:
    """

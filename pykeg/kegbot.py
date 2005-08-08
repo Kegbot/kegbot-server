@@ -13,6 +13,7 @@ import signal
 import traceback
 from optparse import OptionParser
 from ConfigParser import ConfigParser
+from SQLConfigParser import SQLConfigParser
 
 from onewirenet import *
 from ibutton import *
@@ -27,7 +28,7 @@ from TempMonitor import *
 import kbevent
 
 # edit this line to point to your config file; that's all you have to do!
-config = '/home/kegbot/svnbox2/pykeg/keg.cfg'
+config = 'keg.cfg'
 
 # command line parser are defined here
 parser = OptionParser()
@@ -119,7 +120,7 @@ class KegBot:
       self.QUIT = threading.Event() # event to set when we want everything to quit
       self.setsigs() # set up handlers for control-c, kill signals
 
-      self.config = ConfigParser()
+      self.config = SQLConfigParser()
 
       self.last_temp = -100.0
       self.last_temp_time = 0
@@ -143,14 +144,16 @@ class KegBot:
    def _setup(self):
 
       # read the config
-      self.config.read(config)
+      dbcfg = ConfigParser()
+      dbcfg.read(config)
 
       # load the db info, because we will use it often enough
-      self.dbhost = self.config.get('DB','host')
-      self.dbuser = self.config.get('DB','user')
-      self.dbdb = self.config.get('DB','db')
-      self.dbpassword = self.config.get('DB','password')
-      self.logtable = self.config.get('Logging','logtable')
+      self.dbhost     = dbcfg.get('DB','host')
+      self.dbuser     = dbcfg.get('DB','user')
+      self.dbdb       = dbcfg.get('DB','db')
+      self.dbpassword = dbcfg.get('DB','password')
+
+      self.config.read(MySQLdb.connect(host=self.dbhost,user=self.dbuser,passwd=self.dbpassword,db=self.dbdb), dbcfg.get('DB','config_table'))
 
       # set up logging, using the python 2.3 logging module
       self.main_logger = self.makeLogger('main',logging.INFO)
@@ -163,16 +166,16 @@ class KegBot:
       # and the table name to form the init tuple
       db_tuple = (self.dbhost,self.dbuser,self.dbpassword,self.dbdb)
 
-      self.drink_store   = DrinkStore(  self, db_tuple, self.config.get('DB','drink_table') )
-      self.user_store    = UserStore(   self, db_tuple, self.config.get('DB','user_table') )
-      self.key_store     = KeyStore(    self, db_tuple, self.config.get('DB','key_table') )
-      self.policy_store  = PolicyStore( self, db_tuple, self.config.get('DB','policy_table') )
-      self.grant_store   = GrantStore(  self, db_tuple, self.config.get('DB','grant_table') , self.policy_store)
-      self.keg_store     = KegStore(    self, db_tuple, self.config.get('DB','keg_table') )
-      self.thermo_store  = ThermoStore( self, db_tuple, self.config.get('DB','thermo_table') )
+      self.drink_store   = DrinkStore(  self, db_tuple, 'drinks' )
+      self.user_store    = UserStore(   self, db_tuple, 'users' )
+      self.key_store     = KeyStore(    self, db_tuple, 'tokens' )
+      self.policy_store  = PolicyStore( self, db_tuple, 'policies' )
+      self.grant_store   = GrantStore(  self, db_tuple, 'grants' , self.policy_store)
+      self.keg_store     = KegStore(    self, db_tuple, 'kegs' )
+      self.thermo_store  = ThermoStore( self, db_tuple, 'thermolog' )
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
-      dev = self.config.get('Devices','onewire')
+      dev = self.config.get('devices','onewire')
       try:
          self.ownet = onewirenet(dev)
          self.info('main','new onewire net at device %s' % dev)
@@ -180,28 +183,28 @@ class KegBot:
          self.error('main','not connected to onewirenet')
 
       # start the sound server
-      if self.config.getboolean('Sounds','use_sounds'):
-         self.sounds = SoundServer(self,self.config.get('Sounds','sound_dir'))
+      if self.config.getboolean('sounds','use_sounds'):
+         self.sounds = SoundServer(self,self.config.get('sounds','sound_dir'))
          self.sounds.start()
 
       # load the LCD-UI stuff
-      if self.config.getboolean('UI','use_lcd'):
-         dev = self.config.get('Devices','lcd')
+      if self.config.getboolean('ui','use_lcd'):
+         dev = self.config.get('devices','lcd')
          self.info('main','new LCD at device %s' % dev)
-         self.lcd = Display(dev,model=self.config.get('UI','lcd_model'))
-         self.ui = lcdui(self.lcd,self.config.get('UI','translation_file'))
+         self.lcd = Display(dev,model=self.config.get('ui','lcd_model'))
+         self.ui = lcdui(self.lcd,self.config.get('ui','translation_file'))
 
-         self.keypad_fp = open(self.config.get('UI','keypad_pipe'))
+         self.keypad_fp = open(self.config.get('ui','keypad_pipe'))
          thread.start_new_thread(self.keypadThread,())
       else:
          self.lcd = Display('/dev/null')
          self.ui = lcdui(self.lcd)
 
       # init flow meter
-      dev = self.config.get('Devices','flow')
+      dev = self.config.get('devices','flow')
       self.info('main','new flow controller at device %s' % dev)
-      tickmetric = self.config.getint('Flow','tick_metric')
-      tick_skew = self.config.getfloat('Flow','tick_skew')
+      tickmetric = self.config.getint('flow','tick_metric')
+      tick_skew = self.config.getfloat('flow','tick_skew')
       self.fc = FlowController(dev,ticks_per_liter = tickmetric,tick_skew = tick_skew)
       self.last_fridge_time = 0 # time since fridge event (relay trigger)
 
@@ -220,8 +223,8 @@ class KegBot:
       time.sleep(1.0)
 
       # start the temperature monitor
-      if self.config.getboolean('Thermo','use_thermo'):
-         self.tempsensor = TempSensor(self.config.get('Devices','thermo'))
+      if self.config.getboolean('thermo','use_thermo'):
+         self.tempsensor = TempSensor(self.config.get('devices','thermo'))
          self.tempmon = TempMonitor(self,self.tempsensor,self.QUIT)
          self.tempmon.start()
 
@@ -239,7 +242,7 @@ class KegBot:
 
       # hacks for blocking threads..
       self.fc.getStatus()
-      if self.config.getboolean('Sounds','use_sounds'):
+      if self.config.getboolean('sounds','use_sounds'):
          self.sounds.quit()
 
       # other quitting
@@ -252,9 +255,9 @@ class KegBot:
       ret.setLevel(level)
 
       # add sql handler
-      if self.config.getboolean('Logging','use_sql'):
+      if self.config.getboolean('logging','use_sql'):
          try:
-            hdlr = SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.logtable,self.dbpassword)
+            hdlr = SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.config.get('logging','logtable'),self.dbpassword)
             hdlr.setLevel(logging.WARNING)
             formatter = SQLVerboseFormatter()
             hdlr.setFormatter(formatter)
@@ -263,16 +266,16 @@ class KegBot:
             ret.warning("Could not start SQL Handler")
 
       # add a file-output handler
-      if self.config.getboolean('Logging','use_logfile'):
-         hdlr = logging.FileHandler(self.config.get('Logging','logfile'))
-         formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
+      if self.config.getboolean('logging','use_logfile'):
+         hdlr = logging.FileHandler(self.config.get('logging','logfile'))
+         formatter = logging.Formatter(self.config.get('logging','logformat'))
          hdlr.setFormatter(formatter)
          ret.addHandler(hdlr)
 
       # add tty handler
       if not flags.daemon:
          hdlr = logging.StreamHandler(sys.stdout)
-         formatter = logging.Formatter(self.config.get('Logging','logformat',raw=1))
+         formatter = logging.Formatter(self.config.get('logging','logformat'))
          hdlr.setFormatter(formatter)
          ret.addHandler(hdlr)
 
@@ -280,12 +283,12 @@ class KegBot:
 
    def enableFreezer(self):
       curr = self.tempmon.sensor.getTemp(1) # XXX - sensor index is hardcoded! add to .config
-      max_t = self.config.getfloat('Thermo','temp_max_high')
+      max_t = self.config.getfloat('thermo','temp_max_high')
 
       # refuse to enable the fridge if we just disabled it. (we don't do this
       # in the disableFreezer routine, because we should always be allowed to
       # disable it.)
-      min_diff = self.config.getint('Timing','freezer_event_min')
+      min_diff = self.config.getint('timing','freezer_event_min')
       diff = time.time() - self.last_fridge_time
 
       if self.fc.UNKNOWN or not self.fc.fridgeStatus():
@@ -300,7 +303,7 @@ class KegBot:
 
    def disableFreezer(self):
       curr = self.tempmon.sensor.getTemp(1)
-      min_t = self.config.getfloat('Thermo','temp_max_low')
+      min_t = self.config.getfloat('thermo','temp_max_low')
 
       # note: no check here for recent fridge event, because we will always
       # allow the fridge to be disabled.
@@ -315,7 +318,7 @@ class KegBot:
    def fcStatusLoop(self):
       self.info('fc','status loop starting')
       self.last_pkt_time = 0
-      timeout = self.config.getfloat('Timing','fc_status_timeout')
+      timeout = self.config.getfloat('timing','fc_status_timeout')
       self.fc.getStatus()
       while not self.QUIT.isSet():
          (rr,wr,xr) = select.select([self.fc._devpipe],[],[],0.0)
@@ -358,12 +361,11 @@ class KegBot:
       serial controller ID or other persistent IBs). These IDs will be sored in
       _allibs but not self.ibs, and that is the only difference.
       """
-      timeout = self.config.getfloat('Timing','ib_refresh_timeout')
-      ignore_ids = self.config.get('Users','ignoreids').split(" ")
+      timeout = self.config.getfloat('timing','ib_refresh_timeout')
 
       while not self.QUIT.isSet():
          self._allibs = self.ownet.refresh()
-         self.ibs = [ib for ib in self._allibs if ib.read_id() not in ignore_ids]
+         self.ibs = [ib for ib in self._allibs] # XXX deal with ibs to ignore
          now = time.time()
          for ib in self.ibs:
             self.ibs_seen[ib.read_id()] = now
@@ -385,14 +387,14 @@ class KegBot:
          # ib_idle_min_disconnected is set to 5 seconds. require each kicked
          # button to have been seen 5 or more seconds ago. (eg, not seen in
          # last 5 seconds).
-         cutoff = time.time() - self.config.getint('Timing','ib_idle_min_disconnected')
+         cutoff = time.time() - self.config.getint('timing','ib_idle_min_disconnected')
          self.timed_out = [x for x in self.timed_out if self.lastSeen(x) > cutoff]
 
          # now get down to business.
          for ib in self.ibs:
             if self.key_store.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
                time_since_seen = time.time() - self.lastSeen(ib.read_id())
-               ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
+               ceiling = self.config.getfloat('timing','ib_missing_ceiling')
                if time_since_seen < ceiling:
                   self.info('flow','found an authorized ibutton: %s' % ib.read_id())
 
@@ -449,8 +451,8 @@ class KegBot:
       self.info('flow','starting flow for user %s' % current_user.getName())
       STOP_FLOW = 0
 
-      idle_timeout = self.config.getfloat('Timing','ib_idle_timeout')
-      ceiling = self.config.getfloat('Timing','ib_missing_ceiling')
+      idle_timeout = self.config.getfloat('timing','ib_idle_timeout')
+      ceiling = self.config.getfloat('timing','ib_missing_ceiling')
 
       # set up the record for logging
       rec = DrinkRecord(self.drink_store,current_user.id,current_keg)
@@ -512,7 +514,7 @@ class KegBot:
          if STOP_FLOW:
             break
 
-         if time.time() - last_flow_time > self.config.getfloat("Flow","polltime"):
+         if time.time() - last_flow_time > self.config.getfloat("flow","polltime"):
 
             # tick-incrementing block
             nowticks    = self.fc.readTicks()
@@ -522,13 +524,13 @@ class KegBot:
             oz = "%s oz    " % ounces
 
             # hack... play the marker sound
-            if self.config.getboolean('Sounds','use_sounds'):
-               if not marker1 and ounces >= self.config.getfloat('Sounds','marker1_size'):
+            if self.config.getboolean('sounds','use_sounds'):
+               if not marker1 and ounces >= self.config.getfloat('sounds','marker1_size'):
                   marker1 = True
-                  self.sounds.play_now(self.config.get('Sounds','marker1_sound'))
+                  self.sounds.play_now(self.config.get('sounds','marker1_sound'))
                if not marker2 and ounces >= self.config.getfloat('Sounds','marker2_size'):
                   marker2 = True
-                  self.sounds.play_now(self.config.get('Sounds','marker2_sound'))
+                  self.sounds.play_now(self.config.get('sounds','marker2_sound'))
 
             user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0)
             user_screen.write_dict['ounces'].setData(oz[:6])

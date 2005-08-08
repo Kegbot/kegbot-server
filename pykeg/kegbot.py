@@ -466,9 +466,6 @@ class KegBot:
       old_grant = None
       idle_time = 0
 
-      marker1 = False
-      marker2 = False
-
       while 1:
          # if we've expired the grant, log it
          if current_grant.isExpired(current_keg.getDrinkOunces(grant_ticks)):
@@ -522,15 +519,6 @@ class KegBot:
             grant_ticks = nowticks - start_ticks_grant
             ounces = round(self.fc.ticksToOunces(flow_ticks),1)
             oz = "%s oz    " % ounces
-
-            # hack... play the marker sound
-            if self.config.getboolean('sounds','use_sounds'):
-               if not marker1 and ounces >= self.config.getfloat('sounds','marker1_size'):
-                  marker1 = True
-                  self.sounds.play_now(self.config.get('sounds','marker1_sound'))
-               if not marker2 and ounces >= self.config.getfloat('Sounds','marker2_size'):
-                  marker2 = True
-                  self.sounds.play_now(self.config.get('sounds','marker2_sound'))
 
             user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0)
             user_screen.write_dict['ounces'].setData(oz[:6])

@@ -121,9 +121,6 @@ class KegBot:
       self.setsigs() # set up handlers for control-c, kill signals
 
       self.config = SQLConfigParser()
-
-      self.last_temp = -100.0
-      self.last_temp_time = 0
       self.ibs = []
       self._allibs = []
       self.ibs_seen = {} # store time when IB was last seen

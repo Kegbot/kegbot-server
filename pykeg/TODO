@@ -1,0 +1,18 @@
+kegbot TODO
+
+HIGH PRIORITY
+   - get rid of drink fragments and change the flow loop so that the maximum
+     amount pourable is calculated a priori; calculate the cost later or offline
+   - unify keg.tick_metric and config.tick_metric so that only one is used.
+   - add hooks to the main flow sequence so it is easier to hook in other
+     authentication modules or steps
+
+AVERAGE PRIORITY
+   - rework calibration script and make it easier to apply to current keg/pours
+   - add 'invalidate last pour' menu to LCD ui
+   - fix BAC values so they can be recalculated if configuration changes
+   - (ongoing) clean up and document stuff
+
+LOW PRIORITY
+   - (frontend) move functionality to smarty registered functions
+

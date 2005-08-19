@@ -10,10 +10,10 @@ class TempMonitor(threading.Thread):
       self.QUIT = quit_ev # event to kill us
 
    def run(self):
-      max_low = self.owner.config.getfloat('Thermo','temp_max_low')
-      max_high = self.owner.config.getfloat('Thermo','temp_max_high')
-      timeout = self.owner.config.getfloat('Thermo','logging_timeout')
-      sensor = self.owner.config.getint('Thermo','main_sensor')
+      max_low = self.owner.config.getfloat('thermo','temp_max_low')
+      max_high = self.owner.config.getfloat('thermo','temp_max_high')
+      timeout = self.owner.config.getfloat('thermo','logging_timeout')
+      sensor = self.owner.config.getint('thermo','main_sensor')
       lasttemp = -100.0
       last_time = 0
       while not self.QUIT.isSet():

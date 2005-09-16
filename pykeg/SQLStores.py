@@ -49,7 +49,7 @@ class DrinkStore:
          q += 'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)' % (frag,grantticks,ticks,starttime,endtime,bac,userid,keg.id,grant.id)
 
       c.execute(q)
-      drink_id = c.insert_id()
+      drink_id = self.dbconn.insert_id()
 
       # also save the ounces poured with the grant
       ounces_for_grant = keg.getDrinkOunces(grantticks)
@@ -106,7 +106,7 @@ class UserStore:
       c = self.dbconn.cursor()
       q = 'INSERT INTO %s (username, email, im_aim) VALUES ("%s", "%s", "%s")' % (self.table,username,email,im_aim)
       c.execute(q)
-      return c.insert_id()
+      return self.dbconn.insert_id()
 
 class PolicyStore:
    def __init__(self, owner, dbinfo, table):
@@ -119,7 +119,7 @@ class PolicyStore:
       c = self.dbconn.cursor()
       q = "INSERT INTO `%s` (`type`,`unitcost`,`unitounces`,`description`) VALUES ('%s','%s','%s','%s')" % (self.table,type,unitcost,unitounces,description)
       c.execute(q)
-      return self.getPolicy(c.insert_id())
+      return self.getPolicy(self.dbconn.insert_id())
 
    def getPolicy(self, policyid):
       c = self.dbconn.cursor()
@@ -153,7 +153,7 @@ class KegStore:
       c = self.dbconn.cursor()
       q = "INSERT INTO `%s` (`tickmetric`,`startounces`,`status`,`beername`,`alccontent`,`description`,`origcost`,`beerpalid`) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')" % (self.table,tickmetric,startounces,status,beername,alccontent,description,origcost,beerpalid)
       c.execute(q)
-      return self.getKeg(c.insert_id())
+      return self.getKeg(self.dbconn.insert_id())
 
    def activateKeg(self,id):
       c = self.dbconn.cursor()
@@ -264,7 +264,7 @@ class GrantStore:
       c = self.dbconn.cursor()
       q = "INSERT INTO `%s` (foruid,expiration,status,forpolicy,exp_ounces,exp_time,exp_drinks,total_ounces,total_drinks) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (self.table,foruid,expiration,status,forpolicy,exp_ounces,exp_time,exp_drinks,total_ounces,total_drinks)
       c.execute(q)
-      return self.getGrant(c.insert_id())
+      return self.getGrant(self.dbconn.insert_id())
 
    def getGrant(self,id):
       c = self.dbconn.cursor()
@@ -422,7 +422,7 @@ class KeyStore:
       c = self.dbconn.cursor()
       q = 'INSERT INTO %s (ownerid, keyinfo) VALUES (%s, "%s")' % (self.table,ownerid,keyinfo)
       c.execute(q)
-      return c.insert_id()
+      return self.dbconn.insert_id()
 
 
    def knownKey(self,keyinfo):

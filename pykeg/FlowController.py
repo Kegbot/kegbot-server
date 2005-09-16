@@ -95,6 +95,7 @@ class FC2:
 
       self._devpipe.flush()
       self.valve_open = None
+      self.disableFridge()
       #self.closeValve()
       #self.clearTicks()
 

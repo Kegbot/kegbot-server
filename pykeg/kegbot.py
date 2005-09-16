@@ -11,6 +11,7 @@ import thread
 import threading
 import signal
 import traceback
+import Queue
 from optparse import OptionParser
 from ConfigParser import ConfigParser
 from SQLConfigParser import SQLConfigParser
@@ -124,6 +125,7 @@ class KegBot:
       self.ibs = []
       self._allibs = []
       self.ibs_seen = {} # store time when IB was last seen
+      self.drinker_queue = Queue.Queue()
 
       # a list of buttons (probably just zero or one) that have been connected
       # for too long. if in this list, the mainEventLoop will wait for the
@@ -184,6 +186,10 @@ class KegBot:
          self.sounds = SoundServer(self,self.config.get('sounds','sound_dir'))
          self.sounds.start()
 
+      # start the remote server
+      self.server = KegRemoteServer(self,'',9966)
+      self.server.start()
+
       # load the LCD-UI stuff
       if self.config.getboolean('ui','use_lcd'):
          dev = self.config.get('devices','lcd')
@@ -238,6 +244,7 @@ class KegBot:
       self.info('main','attempting to quit')
 
       # hacks for blocking threads..
+      self.server.stop()
       self.fc.getStatus()
       if self.config.getboolean('sounds','use_sounds'):
          self.sounds.quit()
@@ -388,6 +395,17 @@ class KegBot:
          self.timed_out = [x for x in self.timed_out if self.lastSeen(x) > cutoff]
 
          # now get down to business.
+         try:
+            username = self.drinker_queue.get_nowait()
+            self.info('flow','api call to start user for %s' % username)
+            uid = self.user_store.getUid(username)
+            user = self.user_store.getUser(uid)
+            self.handleFlow(user)
+            continue
+         except Queue.Empty:
+            pass
+         except:
+            continue
          for ib in self.ibs:
             if self.key_store.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
                time_since_seen = time.time() - self.lastSeen(ib.read_id())
@@ -403,15 +421,24 @@ class KegBot:
                   self.handleFlow(ib)
                   break
 
-   def handleFlow(self,uib):
+   def handleDrinker(self,username):
+      self.drinker_queue.put_nowait(username)
+      return 1
+
+   def stopFlow(self):
+      self.STOP_FLOW = 1
+      return 1
+
+   def handleFlow(self,current_user):
       self.info('flow','starting flow handling')
       self.ui.activity()
+      self.STOP_FLOW = 0
+
       current_keg = self.keg_store.getCurrentKeg()
       if not current_keg:
          self.error('flow','no keg currently active; what are you trying to pour?')
          return
 
-      current_user = self.getUser(uib)
       if not current_user:
          self.error('flow','no valid user for this key; how did we get here?')
          return
@@ -428,7 +455,7 @@ class KegBot:
                break
          except IndexError:
             self.info('flow','no valid grants found; not starting flow')
-            self.timeoutToken(uib.read_id())
+            self.timeoutToken(current_user)
             return
 
       self.info('flow',"current grant: %s" % (current_grant.policy.descr))
@@ -486,26 +513,29 @@ class KegBot:
          # if no more grants, no more beer
          if not current_grant:
             self.info('flow','no more valid grants; ending flow')
-            self.timeoutToken(uib.read_id())
+            self.timeoutToken(current_user)
             STOP_FLOW = 1
          else:
             old_grant = current_grant
 
          # if the token has been gone awhile, end
-         time_since_seen = time.time() - self.lastSeen(uib.read_id())
-         if time_since_seen > ceiling:
-            self.info('flow','ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling))
-            STOP_FLOW = 1
+         time_since_seen = time.time() - self.lastSeen(current_user)
+         #if time_since_seen > ceiling:
+         #   self.info('flow','ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling))
+         #   STOP_FLOW = 0
 
          if idle_time >= idle_timeout:
-            self.timeoutToken(uib.read_id())
+            self.timeoutToken(current_user)
             STOP_FLOW = 1
 
          # check other credentials necessary to keep the beer flowing!
          if self.QUIT.isSet():
             STOP_FLOW = 1
+         if self.STOP_FLOW:
+            self.STOP_FLOW = 0
+            STOP_FLOW = 1
 
-         elif uib.read_id() in self.timed_out:
+         elif current_user in self.timed_out:
             STOP_FLOW = 1
 
          if STOP_FLOW:

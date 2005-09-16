@@ -18,5 +18,10 @@ class KegRemoteFunctions:
    def isValveOpen(self):
       return self.kegbot.flowmeter.valve_open
 
+   def authFlow(self, username):
+      return self.kegbot.handleDrinker(username)
+   def stopFlow(self):
+      return self.kegbot.stopFlow()
+
    def quit(self):
       self.kegbot.quit()

@@ -18,7 +18,7 @@ from SQLConfigParser import SQLConfigParser
 
 from onewirenet import *
 from ibutton import *
-from mtxorb import *
+from pycfz import *
 from lcdui import *
 from KegRemoteServer import KegRemoteServer
 from SoundServer import *
@@ -194,8 +194,8 @@ class KegBot:
       if self.config.getboolean('ui','use_lcd'):
          dev = self.config.get('devices','lcd')
          self.info('main','new LCD at device %s' % dev)
-         self.lcd = Display(dev,model=self.config.get('ui','lcd_model'))
-         self.ui = lcdui(self.lcd,self.config.get('ui','translation_file'))
+         self.lcd = Display(dev)
+         self.ui = lcdui(self.lcd)
 
          self.keypad_fp = open(self.config.get('ui','keypad_pipe'))
          thread.start_new_thread(self.keypadThread,())
@@ -214,7 +214,7 @@ class KegBot:
       # set up the default 'screen'. for now, it is just a boring standard
       self.main_plate = plate_kegbot_main(self.ui)
       self.ui.setCurrentPlate(self.main_plate)
-      self.ui.start(with_keycmdhandler=True)
+      self.ui.start()
       self.ui.activity()
 
       # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.

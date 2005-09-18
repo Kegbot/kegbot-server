@@ -1,9 +1,9 @@
 import os,threading
 
-class FC2:
+class FlowController:
    """
    represents the embedded flowmeter counter microcontroller.
-   
+
    the controller board communicates via rs232. communication to the controller
    consists of single-byte command packets. currently the following commands
    are defined:

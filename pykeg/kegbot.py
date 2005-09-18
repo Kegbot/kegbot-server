@@ -15,18 +15,16 @@ import time
 import traceback
 import Queue
 
-# TODO: kill these star-imports
-from FlowController import FC2 as FlowController
-from ibutton import *
-from KegRemoteServer import KegRemoteServer
-from lcdui import *
-from onewirenet import *
-from pycfz import *
-from SoundServer import *
+import FlowController
+import KegRemoteServer
+import lcdui
+import onewirenet
+import pycfz as lcddriver
+import SoundServer
 import SQLConfigParser
-from SQLHandler import *
-from SQLStores import *
-from TempMonitor import *
+import SQLHandler
+import SQLStores as backend
+import TempMonitor
 import usbkeyboard
 
 # edit this line to point to your config file; that's all you have to do!
@@ -166,36 +164,36 @@ class KegBot:
       # and the table name to form the init tuple
       db_tuple = (self.dbhost,self.dbuser,self.dbpassword,self.dbdb)
 
-      self.drink_store   = DrinkStore(  self, db_tuple, 'drinks' )
-      self.user_store    = UserStore(   self, db_tuple, 'users' )
-      self.key_store     = KeyStore(    self, db_tuple, 'tokens' )
-      self.policy_store  = PolicyStore( self, db_tuple, 'policies' )
-      self.grant_store   = GrantStore(  self, db_tuple, 'grants' , self.policy_store)
-      self.keg_store     = KegStore(    self, db_tuple, 'kegs' )
-      self.thermo_store  = ThermoStore( self, db_tuple, 'thermolog' )
+      self.drink_store   = backend.DrinkStore(  self, db_tuple, 'drinks' )
+      self.user_store    = backend.UserStore(   self, db_tuple, 'users' )
+      self.key_store     = backend.KeyStore(    self, db_tuple, 'tokens' )
+      self.policy_store  = backend.PolicyStore( self, db_tuple, 'policies' )
+      self.grant_store   = backend.GrantStore(  self, db_tuple, 'grants' , self.policy_store)
+      self.keg_store     = backend.KegStore(    self, db_tuple, 'kegs' )
+      self.thermo_store  = backend.ThermoStore( self, db_tuple, 'thermolog' )
 
       # set up the import stuff: the ibutton onewire network, and the LCD UI
       dev = self.config.get('devices','onewire')
       try:
-         self.ownet = onewirenet(dev)
+         self.ownet = onewirenet.onewirenet(dev)
          self.info('main','new onewire net at device %s' % dev)
       except:
          self.error('main','not connected to onewirenet')
 
       # start the sound server
       if self.config.getboolean('sounds','use_sounds'):
-         self.sounds = SoundServer(self,self.config.get('sounds','sound_dir'))
+         self.sounds = SoundServer.SoundServer(self,self.config.get('sounds','sound_dir'))
          self.sounds.start()
 
       # start the remote server
-      self.server = KegRemoteServer(self,'',9966)
+      self.server = KegRemoteServer.KegRemoteServer(self,'',9966)
       self.server.start()
 
       # load the LCD-UI stuff
       if self.config.getboolean('ui','use_lcd'):
          dev = self.config.get('devices','lcd')
          self.info('main','new LCD at device %s' % dev)
-         self.lcd = Display(dev)
+         self.lcd = lcddriver.Display(dev)
          self.ui = lcdui(self.lcd)
 
          self.keypad_fp = open(self.config.get('ui','keypad_pipe'))
@@ -209,7 +207,7 @@ class KegBot:
       self.info('main','new flow controller at device %s' % dev)
       tickmetric = self.config.getint('flow','tick_metric')
       tick_skew = self.config.getfloat('flow','tick_skew')
-      self.fc = FlowController(dev,ticks_per_liter = tickmetric,tick_skew = tick_skew)
+      self.fc = FlowController.FlowController(dev,ticks_per_liter = tickmetric,tick_skew = tick_skew)
       self.last_fridge_time = 0 # time since fridge event (relay trigger)
 
       # set up the default 'screen'. for now, it is just a boring standard
@@ -228,8 +226,8 @@ class KegBot:
 
       # start the temperature monitor
       if self.config.getboolean('thermo','use_thermo'):
-         self.tempsensor = TempSensor(self.config.get('devices','thermo'))
-         self.tempmon = TempMonitor(self,self.tempsensor,self.QUIT)
+         self.tempsensor = TempMonitor.TempSensor(self.config.get('devices','thermo'))
+         self.tempmon = TempMonitor.TempMonitor(self,self.tempsensor,self.QUIT)
          self.tempmon.start()
 
    def setsigs(self):
@@ -262,9 +260,9 @@ class KegBot:
       # add sql handler
       if self.config.getboolean('logging','use_sql'):
          try:
-            hdlr = SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.config.get('logging','logtable'),self.dbpassword)
+            hdlr = SQLHandler.SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.config.get('logging','logtable'),self.dbpassword)
             hdlr.setLevel(logging.WARNING)
-            formatter = SQLVerboseFormatter()
+            formatter = SQLHandler.SQLVerboseFormatter()
             hdlr.setFormatter(formatter)
             ret.addHandler(hdlr)
          except:
@@ -606,7 +604,7 @@ class KegBot:
       return None
 
    def makeUserScreen(self,user):
-      scr = plate_std(self.ui)
+      scr = lcdui.plate_std(self.ui)
 
       namestr = "hello %s" % user.getName()
       while len(namestr) < 16:
@@ -616,15 +614,15 @@ class KegBot:
             namestr = ' ' + namestr
       namestr = namestr[:16]
 
-      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = widget_line_std("| %s |"%namestr,      row=1,col=0,scroll=0)
-      progbar = widget_progbar(row = 2, col = 2, prefix ='[', postfix=']', proglen = 9)
-      #line3 = widget_line_std("| [              ] |",row=2,col=0,scroll=0)
-      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = lcdui.widget_line_std("| %s |"%namestr,      row=1,col=0,scroll=0)
+      progbar = lcdui.widget_progbar(row = 2, col = 2, prefix ='[', postfix=']', proglen = 9)
+      #line3 = lcdui.widget_line_std("| [              ] |",row=2,col=0,scroll=0)
+      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
-      pipe1 = widget_line_std("|", row=2,col=0,scroll=0,fat=0)
-      pipe2 = widget_line_std("|", row=2,col=19,scroll=0,fat=0)
-      ounces = widget_line_std("", row=2,col=12,scroll=0,fat=0)
+      pipe1 = lcdui.widget_line_std("|", row=2,col=0,scroll=0,fat=0)
+      pipe2 = lcdui.widget_line_std("|", row=2,col=19,scroll=0,fat=0)
+      ounces = lcdui.widget_line_std("", row=2,col=12,scroll=0,fat=0)
 
       scr.updateObject('line1',line1)
       scr.updateObject('line2',line2)
@@ -663,15 +661,15 @@ class KegBot:
 # the next sections of code contain UI widgets and plates used by the main keg
 # class.
 #
-class plate_kegbot_main(plate_multi):
+class plate_kegbot_main(lcdui.plate_multi):
    def __init__(self,owner):
-      plate_multi.__init__(self,owner)
+      lcdui.plate_multi.__init__(self,owner)
       self.owner = owner
 
-      self.maininfo, self.tempinfo, self.freezerinfo  = plate_std(owner), plate_std(owner), plate_std(owner)
-      self.lastinfo, self.drinker  = plate_std(owner), plate_std(owner)
+      self.maininfo, self.tempinfo, self.freezerinfo  = lcdui.plate_std(owner), lcdui.plate_std(owner), lcdui.plate_std(owner)
+      self.lastinfo, self.drinker  = lcdui.plate_std(owner), lcdui.plate_std(owner)
 
-      self.main_menu = plate_select_menu(owner,header="kegbot menu")
+      self.main_menu = lcdui.plate_select_menu(owner,header="kegbot menu")
       self.main_menu.insert(("show history",None,()))
       self.main_menu.insert(("add user",None,()))
       self.main_menu.insert(("squelch user",None,()))
@@ -680,50 +678,50 @@ class plate_kegbot_main(plate_multi):
 
       self.cmd_dict = {'right': (self.owner.setCurrentPlate,(self.main_menu,)) }
 
-      line1 = widget_line_std(" ================== ",row=0,col=0,scroll=0)
-      line2 = widget_line_std("      kegbot!!      ",row=1,col=0,scroll=0)
-      line3 = widget_line_std("  have good beer!!  ",row=2,col=0,scroll=0)
-      line4 = widget_line_std(" ================== ",row=3,col=0,scroll=0)
+      line1 = lcdui.widget_line_std(" ================== ",row=0,col=0,scroll=0)
+      line2 = lcdui.widget_line_std("      kegbot!!      ",row=1,col=0,scroll=0)
+      line3 = lcdui.widget_line_std("  have good beer!!  ",row=2,col=0,scroll=0)
+      line4 = lcdui.widget_line_std(" ================== ",row=3,col=0,scroll=0)
 
       self.maininfo.updateObject('line1',line1)
       self.maininfo.updateObject('line2',line2)
       self.maininfo.updateObject('line3',line3)
       self.maininfo.updateObject('line4',line4)
 
-      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = widget_line_std("| current temp:    |",row=1,col=0,scroll=0)
-      line3 = widget_line_std("| unknown          |",row=2,col=0,scroll=0)
-      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = lcdui.widget_line_std("| current temp:    |",row=1,col=0,scroll=0)
+      line3 = lcdui.widget_line_std("| unknown          |",row=2,col=0,scroll=0)
+      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
       self.tempinfo.updateObject('line1',line1)
       self.tempinfo.updateObject('line2',line2)
       self.tempinfo.updateObject('line3',line3)
       self.tempinfo.updateObject('line4',line4)
 
-      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = widget_line_std("| freezer status:  |",row=1,col=0,scroll=0)
-      line3 = widget_line_std("| [off]            |",row=2,col=0,scroll=0)
-      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = lcdui.widget_line_std("| freezer status:  |",row=1,col=0,scroll=0)
+      line3 = lcdui.widget_line_std("| [off]            |",row=2,col=0,scroll=0)
+      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
       self.freezerinfo.updateObject('line1',line1)
       self.freezerinfo.updateObject('line2',line2)
       self.freezerinfo.updateObject('line3',line3)
       self.freezerinfo.updateObject('line4',line4)
 
-      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = widget_line_std("| last pour:       |",row=1,col=0,scroll=0)
-      line3 = widget_line_std("| 0.0 oz           |",row=2,col=0,scroll=0)
-      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = lcdui.widget_line_std("| last pour:       |",row=1,col=0,scroll=0)
+      line3 = lcdui.widget_line_std("| 0.0 oz           |",row=2,col=0,scroll=0)
+      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
       self.lastinfo.updateObject('line1',line1)
       self.lastinfo.updateObject('line2',line2)
       self.lastinfo.updateObject('line3',line3)
       self.lastinfo.updateObject('line4',line4)
 
-      line1 = widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = widget_line_std("| last drinker:    |",row=1,col=0,scroll=0)
-      line3 = widget_line_std("| unknown          |",row=2,col=0,scroll=0)
-      line4 = widget_line_std("*------------------*",row=3,col=0,scroll=0)
+      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      line2 = lcdui.widget_line_std("| last drinker:    |",row=1,col=0,scroll=0)
+      line3 = lcdui.widget_line_std("| unknown          |",row=2,col=0,scroll=0)
+      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
       self.drinker.updateObject('line1',line1)
       self.drinker.updateObject('line2',line2)
@@ -741,22 +739,22 @@ class plate_kegbot_main(plate_multi):
 
    def setTemperature(self,tempc):
       inside = "%.1fc/%.1ff" % (tempc,toF(tempc))
-      line3 = widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
+      line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
       self.tempinfo.updateObject('line3',line3)
 
    def setFreezer(self,status):
       inside = "[%s]" % status
-      line3 = widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
+      line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
       self.freezerinfo.updateObject('line3',line3)
 
    def setLastDrink(self,user,ounces):
-      line3 = widget_line_std("%s oz"%ounces,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
+      line3 = lcdui.widget_line_std("%s oz"%ounces,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
       self.lastinfo.updateObject('line3',line3)
-      line3 = widget_line_std("%s"%user,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
+      line3 = lcdui.widget_line_std("%s"%user,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
       self.drinker.updateObject('line3',line3)
 
    def gotKey(self,key):
-      plate_multi.gotKey(self,key)
+      lcdui.plate_multi.gotKey(self,key)
 
 # start a new kehbot instance, if we are called from the command line
 if __name__ == '__main__':

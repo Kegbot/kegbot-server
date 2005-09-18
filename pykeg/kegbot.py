@@ -3,36 +3,37 @@
 # keg control system
 # by mike wakerly; mike@wakerly.com
 
-import os
-import time
-import select
+import ConfigParser
 import logging
+import optparse
+import os
+import select
+import signal
 import thread
 import threading
-import signal
+import time
 import traceback
 import Queue
-from optparse import OptionParser
-from ConfigParser import ConfigParser
-from SQLConfigParser import SQLConfigParser
 
-from onewirenet import *
-from ibutton import *
-from pycfz import *
-from lcdui import *
-from KegRemoteServer import KegRemoteServer
-from SoundServer import *
-from SQLStores import *
-from SQLHandler import *
+# TODO: kill these star-imports
 from FlowController import FC2 as FlowController
+from ibutton import *
+from KegRemoteServer import KegRemoteServer
+from lcdui import *
+from onewirenet import *
+from pycfz import *
+from SoundServer import *
+import SQLConfigParser
+from SQLHandler import *
+from SQLStores import *
 from TempMonitor import *
-import kbevent
+import usbkeyboard
 
 # edit this line to point to your config file; that's all you have to do!
 config = 'keg.cfg'
 
 # command line parser are defined here
-parser = OptionParser()
+parser = optparse.OptionParser()
 parser.add_option('-D','--daemon',dest='daemon',action='store_true',help='run kegbot in daemon mode')
 parser.set_defaults(daemon=False)
 (flags, args) = parser.parse_args()
@@ -121,7 +122,7 @@ class KegBot:
       self.QUIT = threading.Event() # event to set when we want everything to quit
       self.setsigs() # set up handlers for control-c, kill signals
 
-      self.config = SQLConfigParser()
+      self.config = SQLConfigParser.SQLConfigParser()
       self.ibs = []
       self._allibs = []
       self.ibs_seen = {} # store time when IB was last seen
@@ -143,7 +144,7 @@ class KegBot:
    def _setup(self):
 
       # read the config
-      dbcfg = ConfigParser()
+      dbcfg = ConfigParser.ConfigParser()
       dbcfg.read(config)
 
       # load the db info, because we will use it often enough
@@ -344,7 +345,7 @@ class KegBot:
       while not self.QUIT.isSet():
          time.sleep(0.01)
          try:
-            e = kbevent.read_event(self.keypad_fp)
+            e = usbkeyboard.read_event(self.keypad_fp)
             #self.info('keypad','got event: %s' % (str(e)))
             if e[3] == 1:
                # the lcdui object may transform this key based on any

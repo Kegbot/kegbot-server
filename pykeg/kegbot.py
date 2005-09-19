@@ -5,10 +5,12 @@
 
 import ConfigParser
 import logging
+import MySQLdb
 import optparse
 import os
 import select
 import signal
+import sys
 import thread
 import threading
 import time
@@ -402,7 +404,7 @@ class KegBot:
       self.info('flow','current flow ticks: %s' % start_ticks_flow)
 
       # - turn on UI
-      self.ui.plate_pour.set_drinker(current_user.getName())
+      self.ui.plate_pour.setDrinker(current_user.getName())
       self.ui.setCurrentPlate(self.ui.plate_pour,replace=1)
 
       # - turn on flow

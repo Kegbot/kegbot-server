@@ -106,11 +106,11 @@ class plate_kegbot_main(lcdui.plate_multi):
 
 class plate_kegbot_pour(lcdui.plate_std):
    def __init__(self, owner):
-      lcdui.plate_multi.__init__(self,owner)
+      lcdui.plate_std.__init__(self,owner)
       self.owner = owner
 
       line1 = lcdui.widget_line_std("*------------------*", row=0, col=0, scroll=0)
-      self.line2 = lcdui.widget_line_std("", row=1, col=0, scroll=0, prefix='|', postfix='|')
+      self.line2 = lcdui.widget_line_std("", row=1, col=0, scroll=0, prefix='| ', postfix=' |')
       line3 = lcdui.widget_progbar(row = 2, col = 2, prefix ='[', postfix=']', proglen = 9)
       line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
@@ -119,13 +119,13 @@ class plate_kegbot_pour(lcdui.plate_std):
       ounces = lcdui.widget_line_std("", row=2,col=12,scroll=0,fat=0)
 
       self.updateObject('line1',line1)
-      self.updateObject('line2',line2)
-      self.updateObject('line3',progbar)
+      self.updateObject('line2',self.line2)
+      self.updateObject('line3',line3)
       self.updateObject('line4',line4)
       self.updateObject('pipe1',pipe1)
       self.updateObject('pipe2',pipe2)
       self.updateObject('ounces',ounces)
 
    def setDrinker(self, name):
-      self.line2.setData(name)
+      self.line2.setData('hello, ' + name)
 

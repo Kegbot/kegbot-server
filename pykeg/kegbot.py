@@ -17,6 +17,7 @@ import Queue
 
 import FlowController
 import KegRemoteServer
+import KegUI
 import lcdui
 import onewirenet
 import pycfz as lcddriver
@@ -26,6 +27,7 @@ import SQLHandler
 import SQLStores as backend
 import TempMonitor
 import usbkeyboard
+import util
 
 # edit this line to point to your config file; that's all you have to do!
 config = 'keg.cfg'
@@ -35,76 +37,6 @@ parser = optparse.OptionParser()
 parser.add_option('-D','--daemon',dest='daemon',action='store_true',help='run kegbot in daemon mode')
 parser.set_defaults(daemon=False)
 (flags, args) = parser.parse_args()
-
-# ---------------------------------------------------------------------------- #
-# Helper functions -- available to all classes
-# ---------------------------------------------------------------------------- #
-def daemonize():
-   # Fork once
-   if os.fork() != 0:
-      os._exit(0)
-   os.setsid()  # Create new session
-   # Fork twice
-   if os.fork() != 0:
-      os._exit(0)
-   os.chdir("/")
-   os.umask(0)
-
-   try:
-      maxfd = os.sysconf("SC_OPEN_MAX")
-   except (AttributeError, ValueError):
-      maxfd = 256
-
-   for fd in range(0, maxfd):
-      try:
-         os.close(fd)
-      except OSError:
-         pass
-
-   os.open('/dev/null', os.O_RDONLY)
-   os.open('/dev/null', os.O_RDWR)
-   os.open('/dev/null', os.O_RDWR)
-
-def instantBAC(user,keg,drink_ticks):
-   # calculate weight in metric KGs
-   if user.weight <= 0:
-      return 0.0
-
-   kg_weight = user.weight/2.2046
-   ounces = keg.getDrinkOunces(drink_ticks)
-
-   # gender based water-weight
-   if user.gender == 'male':
-         waterp = 0.58
-   else:
-      waterp = 0.49
-
-   # find total body water (in milliliters)
-   bodywater = kg_weight * waterp * 1000.0
-
-   # weight in grams of 1 oz alcohol
-   alcweight = 29.57*0.79;
-
-   # rate of alcohol per subject's total body water
-   alc_per_body_ml = alcweight/bodywater
-
-   # find alcohol concentration in blood (80.6% water)
-   alc_per_blood_ml = alc_per_body_ml * 0.806
-
-   # switch to "grams percent"
-   grams_pct = alc_per_blood_ml * 100.0
-
-   # determine how much we've really consumed
-   alc_consumed = ounces * (keg.alccontent/100.0)
-   instant_bac = alc_consumed * grams_pct
-
-   return instant_bac
-
-def decomposeBAC(bac,seconds_ago,rate=0.02):
-   return max(0.0,bac - (rate * (seconds_ago/3600.0)))
-
-def toF(t):
-   return ((9.0/5.0)*t) + 32
 
 # ---------------------------------------------------------------------------- #
 # Main classes
@@ -194,13 +126,13 @@ class KegBot:
          dev = self.config.get('devices','lcd')
          self.info('main','new LCD at device %s' % dev)
          self.lcd = lcddriver.Display(dev)
-         self.ui = lcdui(self.lcd)
+         self.ui = KegUI.KegUI(self.lcd)
 
          self.keypad_fp = open(self.config.get('ui','keypad_pipe'))
          thread.start_new_thread(self.keypadThread,())
       else:
          self.lcd = Display('/dev/null')
-         self.ui = lcdui(self.lcd)
+         self.ui = KegUI.KegUI(self.lcd)
 
       # init flow meter
       dev = self.config.get('devices','flow')
@@ -211,8 +143,7 @@ class KegBot:
       self.last_fridge_time = 0 # time since fridge event (relay trigger)
 
       # set up the default 'screen'. for now, it is just a boring standard
-      self.main_plate = plate_kegbot_main(self.ui)
-      self.ui.setCurrentPlate(self.main_plate)
+      self.ui.setCurrentPlate(self.ui.plate_main)
       self.ui.start()
       self.ui.activity()
 
@@ -301,7 +232,7 @@ class KegBot:
          self.last_fridge_time = time.time()
          self.fc.UNKNOWN = False
          self.info('tempmon','activated freezer curr=%s max=%s'%(curr[0],max_t))
-         self.main_plate.setFreezer('on ')
+         self.ui.plate_main.setFreezer('on ')
          self.fc.enableFridge()
 
    def disableFreezer(self):
@@ -315,7 +246,7 @@ class KegBot:
       if self.fc.UNKNOWN or self.fc.fridgeStatus():
          self.fc.UNKNOWN = False
          self.info('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min_t))
-         self.main_plate.setFreezer('off')
+         self.ui.plate_main.setFreezer('off')
          self.fc.disableFridge()
 
    def fcStatusLoop(self):
@@ -445,6 +376,10 @@ class KegBot:
       grants = self.grant_store.getGrants(current_user)
       ordered = self.grant_store.orderGrants(grants)
 
+      # determine how many ounces [zero, inf) the user is allowed to pour
+      # before we cut him off. (TODO: implement.)
+      #max_ounces = self.getMaxOunces(grants)
+
       current_grant = None
       while 1:
          try:
@@ -467,8 +402,8 @@ class KegBot:
       self.info('flow','current flow ticks: %s' % start_ticks_flow)
 
       # - turn on UI
-      user_screen = self.makeUserScreen(current_user)
-      self.ui.setCurrentPlate(user_screen,replace=1)
+      self.ui.plate_pour.set_drinker(current_user.getName())
+      self.ui.setCurrentPlate(self.ui.plate_pour,replace=1)
 
       # - turn on flow
       self.fc.openValve()
@@ -568,7 +503,7 @@ class KegBot:
       # - turn off flow
       self.info('flow','user is gone; flow ending')
       self.fc.closeValve()
-      self.ui.setCurrentPlate(self.main_plate,replace=1)
+      self.ui.setCurrentPlate(self.ui.plate_main,replace=1)
 
       # - record flow totals; save to user database
       # tick-incrementing block
@@ -583,12 +518,12 @@ class KegBot:
 
       # add the final total to the record
       old_drink = self.drink_store.getLastDrink(current_user.id)
-      bac = instantBAC(current_user,current_keg,flow_ticks)
-      bac += decomposeBAC(old_drink[0],time.time()-old_drink[1])
+      bac = util.instantBAC(current_user,current_keg,flow_ticks)
+      bac += util.decomposeBAC(old_drink[0],time.time()-old_drink[1])
       rec.emit(flow_ticks,current_grant,grant_ticks,bac)
 
       ounces = round(self.fc.ticksToOunces(flow_ticks),1)
-      self.main_plate.setLastDrink(current_user.getName(),ounces)
+      self.ui.plate_main.setLastDrink(current_user.getName(),ounces)
       self.info('flow','drink total: %i ticks, %.2f ounces' % (flow_ticks, ounces))
 
       # - back to idle UI
@@ -602,37 +537,6 @@ class KegBot:
       if key:
          return self.user_store.getUser(key.getOwner())
       return None
-
-   def makeUserScreen(self,user):
-      scr = lcdui.plate_std(self.ui)
-
-      namestr = "hello %s" % user.getName()
-      while len(namestr) < 16:
-         if len(namestr)%2 == 0:
-            namestr = namestr + ' '
-         else:
-            namestr = ' ' + namestr
-      namestr = namestr[:16]
-
-      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("| %s |"%namestr,      row=1,col=0,scroll=0)
-      progbar = lcdui.widget_progbar(row = 2, col = 2, prefix ='[', postfix=']', proglen = 9)
-      #line3 = lcdui.widget_line_std("| [              ] |",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
-
-      pipe1 = lcdui.widget_line_std("|", row=2,col=0,scroll=0,fat=0)
-      pipe2 = lcdui.widget_line_std("|", row=2,col=19,scroll=0,fat=0)
-      ounces = lcdui.widget_line_std("", row=2,col=12,scroll=0,fat=0)
-
-      scr.updateObject('line1',line1)
-      scr.updateObject('line2',line2)
-      scr.updateObject('progbar',progbar)
-      scr.updateObject('pipe1',pipe1)
-      scr.updateObject('pipe2',pipe2)
-      scr.updateObject('ounces',ounces)
-      scr.updateObject('line4',line4)
-
-      return scr
 
    def log(self,component,message):
       self.main_logger.info("%s: %s" % (component,message))
@@ -657,109 +561,11 @@ class KegBot:
       self.key_store.addKey(uid,str(init_ib))
 
 
-# ui stuff
-# the next sections of code contain UI widgets and plates used by the main keg
-# class.
-#
-class plate_kegbot_main(lcdui.plate_multi):
-   def __init__(self,owner):
-      lcdui.plate_multi.__init__(self,owner)
-      self.owner = owner
-
-      self.maininfo, self.tempinfo, self.freezerinfo  = lcdui.plate_std(owner), lcdui.plate_std(owner), lcdui.plate_std(owner)
-      self.lastinfo, self.drinker  = lcdui.plate_std(owner), lcdui.plate_std(owner)
-
-      self.main_menu = lcdui.plate_select_menu(owner,header="kegbot menu")
-      self.main_menu.insert(("show history",None,()))
-      self.main_menu.insert(("add user",None,()))
-      self.main_menu.insert(("squelch user",None,()))
-      self.main_menu.insert(("lock kegbot",None,()))
-      #self.main_menu.insert(("exit",owner.setCurrentPlate,(self,)))
-
-      self.cmd_dict = {'right': (self.owner.setCurrentPlate,(self.main_menu,)) }
-
-      line1 = lcdui.widget_line_std(" ================== ",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("      kegbot!!      ",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("  have good beer!!  ",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std(" ================== ",row=3,col=0,scroll=0)
-
-      self.maininfo.updateObject('line1',line1)
-      self.maininfo.updateObject('line2',line2)
-      self.maininfo.updateObject('line3',line3)
-      self.maininfo.updateObject('line4',line4)
-
-      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("| current temp:    |",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("| unknown          |",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
-
-      self.tempinfo.updateObject('line1',line1)
-      self.tempinfo.updateObject('line2',line2)
-      self.tempinfo.updateObject('line3',line3)
-      self.tempinfo.updateObject('line4',line4)
-
-      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("| freezer status:  |",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("| [off]            |",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
-
-      self.freezerinfo.updateObject('line1',line1)
-      self.freezerinfo.updateObject('line2',line2)
-      self.freezerinfo.updateObject('line3',line3)
-      self.freezerinfo.updateObject('line4',line4)
-
-      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("| last pour:       |",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("| 0.0 oz           |",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
-
-      self.lastinfo.updateObject('line1',line1)
-      self.lastinfo.updateObject('line2',line2)
-      self.lastinfo.updateObject('line3',line3)
-      self.lastinfo.updateObject('line4',line4)
-
-      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("| last drinker:    |",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("| unknown          |",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
-
-      self.drinker.updateObject('line1',line1)
-      self.drinker.updateObject('line2',line2)
-      self.drinker.updateObject('line3',line3)
-      self.drinker.updateObject('line4',line4)
-
-      self.addPlate("main",self.maininfo)
-      self.addPlate("temp",self.tempinfo)
-      self.addPlate("freezer",self.freezerinfo)
-      self.addPlate("last",self.lastinfo)
-      self.addPlate("drinker",self.drinker)
-
-      # starts the rotation
-      self.rotate_time = 5.0
-
-   def setTemperature(self,tempc):
-      inside = "%.1fc/%.1ff" % (tempc,toF(tempc))
-      line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
-      self.tempinfo.updateObject('line3',line3)
-
-   def setFreezer(self,status):
-      inside = "[%s]" % status
-      line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
-      self.freezerinfo.updateObject('line3',line3)
-
-   def setLastDrink(self,user,ounces):
-      line3 = lcdui.widget_line_std("%s oz"%ounces,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
-      self.lastinfo.updateObject('line3',line3)
-      line3 = lcdui.widget_line_std("%s"%user,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
-      self.drinker.updateObject('line3',line3)
-
-   def gotKey(self,key):
-      lcdui.plate_multi.gotKey(self,key)
-
-# start a new kehbot instance, if we are called from the command line
+# start a new kegbot instance, if we are called from the command line
 if __name__ == '__main__':
    if flags.daemon:
-      daemonize()
+      util.daemonize()
    else:
       print "Running in foreground"
    KegBot()
+

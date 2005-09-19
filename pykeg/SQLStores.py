@@ -85,6 +85,16 @@ class UserStore:
       self.dbconn = MySQLdb.connect(host=host,user=user,passwd=password,db=db)
       self.table = table
 
+   def getAllUsers(self):
+      c = self.dbconn.cursor()
+      q = "SELECT id FROM %s" % (self.table,)
+      c.execute(q)
+
+      ret = []
+      for row in c.fetchall():
+         ret.append(self.getUser(row[0]))
+      return ret
+
    def getUser(self, uid):
       """
       Get a User() object for a given uid.
@@ -365,6 +375,17 @@ class Grant:
 
    def incrementTicks(self,amt):
       self.total_ounces += amt
+
+   def availableOunces(self):
+      """
+      return how many ounces are available with this grant, at this instant.
+      """
+      if self.isExpired():
+         return 0
+      if self.expiration == 'ounces':
+         return max(0, self.exp_ounces - self.total_ounces)
+      else:
+         return -1
 
    def isExpired(self, extraounces = 0):
       if self.status != 'active':

@@ -1,10 +1,14 @@
 import lcdui
 
 class KegUI(lcdui.lcdui):
-   def __init__(self, device):
+   def __init__(self, device, kb):
+      self.kb = kb
       lcdui.lcdui.__init__(self, device)
       self.plate_main = plate_kegbot_main(self)
       self.plate_pour = plate_kegbot_pour(self)
+
+   def startPour(self, user):
+      self.kb.handleDrinker(user.getName())
 
 class plate_kegbot_main(lcdui.plate_multi):
    def __init__(self, owner):
@@ -16,8 +20,10 @@ class plate_kegbot_main(lcdui.plate_multi):
       self.freezerinfo = lcdui.plate_std(owner)
       self.lastinfo    = lcdui.plate_std(owner)
       self.drinker     = lcdui.plate_std(owner)
+      self.drinkers    = plate_kegbot_drinker_menu(owner, header = "select drinker", default_ptr = self.owner.startPour)
 
       self.main_menu = lcdui.plate_select_menu(owner,header="kegbot menu")
+      self.main_menu.insert(("pour a drink",owner.setCurrentPlate,(self.drinkers,)))
       self.main_menu.insert(("show history",None,()))
       self.main_menu.insert(("add user",None,()))
       self.main_menu.insert(("squelch user",None,()))
@@ -109,9 +115,12 @@ class plate_kegbot_pour(lcdui.plate_std):
       lcdui.plate_std.__init__(self,owner)
       self.owner = owner
 
+      self.cmd_dict['enter'] = (self.owner.kb.stopFlow, ())
+      self.cmd_dict['exit'] = (self.owner.kb.stopFlow, ())
+
       line1 = lcdui.widget_line_std("*------------------*", row=0, col=0, scroll=0)
       self.line2 = lcdui.widget_line_std("", row=1, col=0, scroll=0, prefix='| ', postfix=' |')
-      line3 = lcdui.widget_progbar(row = 2, col = 2, prefix ='[', postfix=']', proglen = 9)
+      self.line3 = lcdui.widget_progbar(row = 2, col = 2, prefix ='[', postfix=']', proglen = 9)
       line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
       pipe1 = lcdui.widget_line_std("|", row=2,col=0,scroll=0,fat=0)
@@ -120,7 +129,7 @@ class plate_kegbot_pour(lcdui.plate_std):
 
       self.updateObject('line1',line1)
       self.updateObject('line2',self.line2)
-      self.updateObject('line3',line3)
+      self.updateObject('progbar',self.line3)
       self.updateObject('line4',line4)
       self.updateObject('pipe1',pipe1)
       self.updateObject('pipe2',pipe2)
@@ -128,4 +137,15 @@ class plate_kegbot_pour(lcdui.plate_std):
 
    def setDrinker(self, name):
       self.line2.setData('hello, ' + name)
+
+class plate_kegbot_drinker_menu(lcdui.plate_select_menu):
+   def onSwitchIn(self):
+      users = self.owner.kb.user_store.getAllUsers()
+      if self.cursor + self.offset >= users:
+         self.reset()
+      self.menu = []
+      for u in users:
+         self.menu.append((u.getName(), self.owner.startPour, (u,)))
+      self.refreshMenu()
+
 

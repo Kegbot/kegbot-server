@@ -128,13 +128,13 @@ class KegBot:
          dev = self.config.get('devices','lcd')
          self.info('main','new LCD at device %s' % dev)
          self.lcd = lcddriver.Display(dev)
-         self.ui = KegUI.KegUI(self.lcd)
+         self.ui = KegUI.KegUI(self.lcd, self)
 
          self.keypad_fp = open(self.config.get('ui','keypad_pipe'))
          thread.start_new_thread(self.keypadThread,())
       else:
          self.lcd = Display('/dev/null')
-         self.ui = KegUI.KegUI(self.lcd)
+         self.ui = KegUI.KegUI(self.lcd, self)
 
       # init flow meter
       dev = self.config.get('devices','flow')
@@ -273,6 +273,9 @@ class KegBot:
       read commands from the USB keypad and send them off to our UI
       """
       self.info('keypad','keypad thread starting')
+      #while not self.QUIT.isSet():
+      #   e = self.ui.cmd_queue.get()
+
       while not self.QUIT.isSet():
          time.sleep(0.01)
          try:
@@ -332,7 +335,11 @@ class KegBot:
             self.info('flow','api call to start user for %s' % username)
             uid = self.user_store.getUid(username)
             user = self.user_store.getUser(uid)
-            self.handleFlow(user)
+            try:
+               self.handleFlow(user)
+            except:
+               import traceback
+               traceback.print_exc()
             continue
          except Queue.Empty:
             pass
@@ -359,7 +366,20 @@ class KegBot:
 
    def stopFlow(self):
       self.STOP_FLOW = 1
+      self.ui.plate_main.gotoPlate('last')
       return 1
+
+   def getMaxOunces(self, grants):
+      tot = 0
+      for g in grants:
+         oz = g.availableOunces()
+         if oz == -1:
+            return -1
+         elif oz == 0:
+            continue
+         else:
+            tot += oz
+      return tot
 
    def handleFlow(self,current_user):
       self.info('flow','starting flow handling')
@@ -380,7 +400,15 @@ class KegBot:
 
       # determine how many ounces [zero, inf) the user is allowed to pour
       # before we cut him off. (TODO: implement.)
-      #max_ounces = self.getMaxOunces(grants)
+      max_ounces = self.getMaxOunces(ordered)
+      if max_ounces == 0:
+         self.info('flow', 'user does not have any credit')
+         self.timeoutToken(current_user)
+         return
+      elif max_ounces == -1:
+         self.info('flow', 'user approved for unlimited ounces')
+      else:
+         self.info('flow', 'user approved for %.1f ounces' % max_ounces)
 
       current_grant = None
       while 1:
@@ -418,7 +446,7 @@ class KegBot:
       ceiling = self.config.getfloat('timing','ib_missing_ceiling')
 
       # set up the record for logging
-      rec = DrinkRecord(self.drink_store,current_user.id,current_keg)
+      rec = backend.DrinkRecord(self.drink_store,current_user.id,current_keg)
 
       #
       # flow maintenance loop
@@ -486,8 +514,8 @@ class KegBot:
             ounces = round(self.fc.ticksToOunces(flow_ticks),1)
             oz = "%s oz    " % ounces
 
-            user_screen.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0)
-            user_screen.write_dict['ounces'].setData(oz[:6])
+            self.ui.plate_pour.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0)
+            self.ui.plate_pour.write_dict['ounces'].setData(oz[:6])
 
             # record how long we have been idle in idle_time
             if lastticks == nowticks:

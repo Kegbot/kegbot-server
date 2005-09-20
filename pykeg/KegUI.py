@@ -4,6 +4,7 @@ class KegUI(lcdui.lcdui):
    def __init__(self, device, kb):
       self.kb = kb
       lcdui.lcdui.__init__(self, device)
+      self.plate_standby = plate_kegbot_standby(self)
       self.plate_main = plate_kegbot_main(self)
       self.plate_pour = plate_kegbot_pour(self)
 
@@ -24,9 +25,9 @@ class plate_kegbot_main(lcdui.plate_multi):
 
       self.main_menu = lcdui.plate_select_menu(owner,header="kegbot menu")
       self.main_menu.insert(("pour a drink",owner.setCurrentPlate,(self.drinkers,)))
-      self.main_menu.insert(("show history",None,()))
+      self.main_menu.insert(("display standby",owner.setCurrentPlate,(owner.plate_standby,)))
+      self.main_menu.insert(("drink cancel",None,()))
       self.main_menu.insert(("add user",None,()))
-      self.main_menu.insert(("squelch user",None,()))
       self.main_menu.insert(("lock kegbot",None,()))
       #self.main_menu.insert(("exit",owner.setCurrentPlate,(self,)))
 
@@ -148,4 +149,18 @@ class plate_kegbot_drinker_menu(lcdui.plate_select_menu):
          self.menu.append((u.getName(), self.owner.startPour, (u,)))
       self.refreshMenu()
 
+class plate_kegbot_standby(lcdui.plate_std):
+   def __init__(self, owner):
+      lcdui.plate_std.__init__(self, owner)
+      self.cmd_dict['up'] = self.owner.backToLastPlate
+      self.cmd_dict['down'] = self.owner.backToLastPlate
+      self.cmd_dict['left'] = self.owner.backToLastPlate
+      self.cmd_dict['right'] = self.owner.backToLastPlate
+      self.cmd_dict['enter'] = self.owner.backToLastPlate
+      self.cmd_dict['exit'] = self.owner.backToLastPlate
 
+   def onSwitchIn(self):
+      self.owner.lcdobj.DisableBacklight()
+
+   def onSwitchOut(self):
+      self.owner.lcdobj.EnableBacklight()

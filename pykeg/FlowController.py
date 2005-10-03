@@ -63,7 +63,7 @@ class FlowController:
       failing this simple size and boundary check qill be discarded
    
    """
-   def __init__(self,dev,rate=115200,ticks_per_liter=1100,tick_skew=1.0):
+   def __init__(self,dev,rate=115200,ticks_per_liter=1100,tick_skew=1.0,logger=None):
 
       # commands
       self.CMD_STATUS      = '\x81'
@@ -82,6 +82,7 @@ class FlowController:
       self.ticks_per_liter = ticks_per_liter
       self.tick_skew = tick_skew
       self._lock = threading.Lock()
+      self.logger = logger
 
       self.status = {"fridge": 2, "valve": 2, "ticks":0}
 
@@ -90,7 +91,7 @@ class FlowController:
          os.system("stty %s raw < %s" % (self.rate, self.dev))
          pass
       except:
-         print "error setting raw"
+         self.logger.error("error setting raw")
          pass
 
       self._devpipe.flush()
@@ -147,14 +148,14 @@ class FlowController:
       # gobble up ending boundary
       c = os.read(fd,2)
       if c != "M:":
-         print "no message start found, gobbling"
+         self.logger.info("no message start found, gobbling")
          while 1:
             c = os.read(fd,1)
             if c != '\n':
                continue
             else:
                #self._lock.release()
-               print "end of bad packet; returning"
+               self.logger.info("end of bad packet; returning")
                return
 
       # now, c should contain the start of a packet

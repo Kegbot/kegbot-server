@@ -5,6 +5,7 @@ class KegUI(lcdui.lcdui):
       self.kb = kb
       lcdui.lcdui.__init__(self, device)
       self.plate_standby = plate_kegbot_standby(self)
+      self.plate_input = plate_kegbot_input(self)
       self.plate_main = plate_kegbot_main(self)
       self.plate_pour = plate_kegbot_pour(self)
 
@@ -26,6 +27,7 @@ class plate_kegbot_main(lcdui.plate_multi):
       self.main_menu = lcdui.plate_select_menu(owner,header="kegbot menu")
       self.main_menu.insert(("pour a drink",owner.setCurrentPlate,(self.drinkers,)))
       self.main_menu.insert(("display standby",owner.setCurrentPlate,(owner.plate_standby,)))
+      self.main_menu.insert(("input",owner.setCurrentPlate,(owner.plate_input,)))
       self.main_menu.insert(("drink cancel",None,()))
       self.main_menu.insert(("add user",None,()))
       self.main_menu.insert(("lock kegbot",None,()))
@@ -148,6 +150,55 @@ class plate_kegbot_drinker_menu(lcdui.plate_select_menu):
       for u in users:
          self.menu.append((u.getName(), self.owner.startPour, (u,)))
       self.refreshMenu()
+
+class plate_kegbot_input(lcdui.plate_std):
+   def __init__(self, owner):
+      lcdui.plate_std.__init__(self, owner)
+      self.cmd_dict['up'] = self.goUp
+      self.cmd_dict['down'] = self.goDown
+      self.cmd_dict['left'] = self.goLeft
+      self.cmd_dict['right'] = self.goRight
+      self.cmd_dict['exit'] = self.owner.backToLastPlate
+      self.cmd_dict['enter'] = self.submit
+
+      self.chars = ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      self.data = 'blah'
+      self.idx = len(self.data)
+      self.updateInput()
+
+   def updateInput(self):
+      self.input_line = lcdui.widget_line_std(self.data+'_'*(self.owner.cols() - len(self.data)), row=1,col=0,scroll=0,fat=0)
+      self.updateObject('input_line', self.input_line)
+      self.cursor_line = lcdui.widget_line_std(self.idx*' ' + '\x1a', row=2,col=0,scroll=0,fat=0)
+      self.updateObject('cursor_line', self.cursor_line)
+
+   def goUp(self):
+      while self.idx >= len(self.data):
+         self.data += ' '
+      curr_char = self.data[self.idx]
+      new_char = self.chars[(self.chars.index(curr_char)-1) % len(self.chars)]
+      self.data = self.data[:self.idx] + new_char + self.data[self.idx+1:]
+      self.updateInput()
+
+   def goDown(self):
+      while self.idx >= len(self.data):
+         self.data += ' '
+      curr_char = self.data[self.idx]
+      new_char = self.chars[(self.chars.index(curr_char)+1) % len(self.chars)]
+      self.data = self.data[:self.idx] + new_char + self.data[self.idx+1:]
+      self.updateInput()
+
+   def goLeft(self):
+      self.idx = max(self.idx - 1, 0)
+      self.data = self.data[:self.idx]
+      self.updateInput()
+
+   def goRight(self):
+      self.idx = min(self.idx + 1, self.owner.cols()-1)
+      self.updateInput()
+
+   def submit(self):
+      print self.data
 
 class plate_kegbot_standby(lcdui.plate_std):
    def __init__(self, owner):

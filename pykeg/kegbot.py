@@ -22,7 +22,6 @@ import KegRemoteServer
 import KegUI
 import lcdui
 import onewirenet
-import pycfz as lcddriver
 import SoundServer
 import SQLConfigParser
 import SQLHandler
@@ -112,6 +111,7 @@ class KegBot:
          self.ownet = onewirenet.onewirenet(dev)
          self.info('main','new onewire net at device %s' % dev)
       except:
+         self.ownet = None
          self.error('main','not connected to onewirenet')
 
       # start the sound server
@@ -120,14 +120,22 @@ class KegBot:
          self.sounds.start()
 
       # start the remote server
-      self.server = KegRemoteServer.KegRemoteServer(self,'',9966)
-      self.server.start()
+      #self.server = KegRemoteServer.KegRemoteServer(self,'',9966)
+      #self.server.start()
 
       # load the LCD-UI stuff
       if self.config.getboolean('ui','use_lcd'):
+         lcdtype = self.config.get('ui', 'lcd_type')
          dev = self.config.get('devices','lcd')
-         self.info('main','new LCD at device %s' % dev)
-         self.lcd = lcddriver.Display(dev)
+         if lcdtype == 'mtxorb':
+            import mtxorb as lcddriver
+            self.lcd = lcddriver.Display(dev, model=self.config.get('ui', 'lcd_model'))
+         elif lcdtype == 'cfz':
+            import pycfz as lcddriver
+            self.lcd = lcddriver.Display(dev)
+         else:
+            self.error('main', 'unknown lcd_type!')
+         self.info('main','new %s LCD at device %s' % (lcdtype, dev))
          self.ui = KegUI.KegUI(self.lcd, self)
 
          self.keypad_fp = open(self.config.get('ui','keypad_pipe'))
@@ -141,6 +149,7 @@ class KegBot:
       self.info('main','new flow controller at device %s' % dev)
       tickmetric = self.config.getint('flow','tick_metric')
       tick_skew = self.config.getfloat('flow','tick_skew')
+      fclogger = self.makeLogger('flow', logging.INFO)
       self.fc = FlowController.FlowController(dev,ticks_per_liter = tickmetric,tick_skew = tick_skew)
       self.last_fridge_time = 0 # time since fridge event (relay trigger)
 
@@ -150,8 +159,9 @@ class KegBot:
       self.ui.activity()
 
       # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
-      thread.start_new_thread(self.ibRefreshLoop,())
-      time.sleep(1.0) # sleep to wait for ibrefreshloop - XXX
+      if self.ownet is not None:
+         thread.start_new_thread(self.ibRefreshLoop,())
+         time.sleep(1.0) # sleep to wait for ibrefreshloop - XXX
 
       # start the flow controller status monitor
       thread.start_new_thread(self.fcStatusLoop,())
@@ -176,14 +186,14 @@ class KegBot:
       self.info('main','attempting to quit')
 
       # hacks for blocking threads..
-      self.server.stop()
+      #self.server.stop()
       self.fc.getStatus()
       if self.config.getboolean('sounds','use_sounds'):
          self.sounds.quit()
 
       # other quitting
-      self.QUIT.set()
       self.ui.stop()
+      self.QUIT.set()
 
    def makeLogger(self,compname,level=logging.INFO):
       """ set up a logging logger, given the component name """

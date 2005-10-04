@@ -3,11 +3,14 @@
 # keg control system
 # by mike wakerly; mike@wakerly.com
 
+# edit this line to point to your config file; that's all you have to do!
+config = 'keg.cfg'
+
+# standard lib imports
 import ConfigParser
 import logging
 import MySQLdb
 import optparse
-import os
 import select
 import signal
 import sys
@@ -17,10 +20,10 @@ import time
 import traceback
 import Queue
 
+# kegbot lib imports
 import FlowController
 import KegRemoteServer
 import KegUI
-import lcdui
 import onewirenet
 import SoundServer
 import SQLConfigParser
@@ -30,14 +33,11 @@ import TempMonitor
 import usbkeyboard
 import util
 
-# edit this line to point to your config file; that's all you have to do!
-config = 'keg.cfg'
-
 # command line parser are defined here
 parser = optparse.OptionParser()
 parser.add_option('-D','--daemon',dest='daemon',action='store_true',help='run kegbot in daemon mode')
 parser.set_defaults(daemon=False)
-(flags, args) = parser.parse_args()
+flags, args = parser.parse_args()
 
 # ---------------------------------------------------------------------------- #
 # Main classes
@@ -60,10 +60,7 @@ class KegBot:
       self.drinker_queue = Queue.Queue()
 
       # a list of buttons (probably just zero or one) that have been connected
-      # for too long. if in this list, the mainEventLoop will wait for the
-      # button to 'go away' for awhile until it will recognize it again. among
-      # other things, this keeps a normally-closed solenoid valve from burning
-      # out
+      # for too long
       self.timed_out = []
 
       # ready to perform second stage of initialization
@@ -150,7 +147,7 @@ class KegBot:
       tickmetric = self.config.getint('flow','tick_metric')
       tick_skew = self.config.getfloat('flow','tick_skew')
       fclogger = self.makeLogger('flow', logging.INFO)
-      self.fc = FlowController.FlowController(dev,ticks_per_liter = tickmetric,tick_skew = tick_skew)
+      self.fc = FlowController.FlowController(dev,ticks_per_liter = tickmetric,tick_skew = tick_skew,logger = fclogger)
       self.last_fridge_time = 0 # time since fridge event (relay trigger)
 
       # set up the default 'screen'. for now, it is just a boring standard
@@ -358,7 +355,6 @@ class KegBot:
          try:
             self.handleFlow(user)
          except:
-            import traceback
             self.error('flow','*** UNEXPECTED ERROR - please report this bug! ***')
             traceback.print_exc()
 
@@ -412,6 +408,7 @@ class KegBot:
       else:
          self.info('flow', 'user approved for %.1f ounces' % max_ounces)
 
+      # TODO: move grants to a post-processing step
       current_grant = None
       while 1:
          try:

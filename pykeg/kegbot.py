@@ -46,25 +46,17 @@ flags, args = parser.parse_args()
 class KegBot:
    """ the thinking kegerator! """
    def __init__(self):
-
-      # this init function is now split in to two sections, to support online
-      # reloading of compiled component code.
-
-      self.QUIT = threading.Event() # event to set when we want everything to quit
-      self.setsigs() # set up handlers for control-c, kill signals
-
-      self.config = SQLConfigParser.SQLConfigParser()
-      self.ibs = []
-      self._allibs = []
-      self.ibs_seen = {} # store time when IB was last seen
+      self.QUIT          = threading.Event() # event to set when we want everything to quit
+      self.config        = SQLConfigParser.SQLConfigParser()
       self.drinker_queue = Queue.Queue()
-
-      # a list of buttons (probably just zero or one) that have been connected
-      # for too long
-      self.timed_out = []
+      self.ibs           = [] # list of non-hidden ibuttons
+      self._allibs       = [] # like the above, but including hidden ibuttons
+      self.ibs_seen      = {} # store time when IB was last seen
+      self.timed_out     = [] # tokens that are connected but being ignored
 
       # ready to perform second stage of initialization
       self._setup()
+      self._setsigs()
 
       # start everything up
       self.mainEventLoop()
@@ -158,11 +150,9 @@ class KegBot:
       # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
       if self.ownet is not None:
          thread.start_new_thread(self.ibRefreshLoop,())
-         time.sleep(1.0) # sleep to wait for ibrefreshloop - XXX
 
       # start the flow controller status monitor
       thread.start_new_thread(self.fcStatusLoop,())
-      time.sleep(1.0)
 
       # start the temperature monitor
       if self.config.getboolean('thermo','use_thermo'):
@@ -170,7 +160,7 @@ class KegBot:
          self.tempmon = TempMonitor.TempMonitor(self,self.tempsensor,self.QUIT)
          self.tempmon.start()
 
-   def setsigs(self):
+   def _setsigs(self):
       signal.signal(signal.SIGHUP, self.handler)
       signal.signal(signal.SIGINT, self.handler)
       signal.signal(signal.SIGQUIT,self.handler)

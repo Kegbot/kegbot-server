@@ -333,13 +333,12 @@ class KegBot:
 
          # look for a user to handle
          try:
-            username = self.drinker_queue.get_nowait()
+            uid = self.drinker_queue.get_nowait()
          except Queue.Empty:
             continue
 
-         self.info('flow','api call to start user for %s' % username)
-         uid = self.user_store.getUid(username)
          user = self.user_store.getUser(uid)
+         self.info('flow','api call to start user for %s' % user.getName())
 
          # jump into the flow
          try:
@@ -349,7 +348,13 @@ class KegBot:
             traceback.print_exc()
 
    def handleDrinker(self,username):
-      self.drinker_queue.put_nowait(username)
+      try:
+         uid = self.user_store.getUid(username)
+         if uid is None:
+            return 0
+      except:
+         return 0
+      self.drinker_queue.put_nowait(uid)
       return 1
 
    def stopFlow(self):

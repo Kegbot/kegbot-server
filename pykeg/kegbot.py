@@ -330,45 +330,37 @@ class KegBot:
 
    def mainEventLoop(self):
       while not self.QUIT.isSet():
-         time.sleep(0.5)
+         time.sleep(0.1)
 
-         # remove any tokens from the 'idle' list. assume the config value
-         # ib_idle_min_disconnected is set to 5 seconds. require each kicked
-         # button to have been seen 5 or more seconds ago. (eg, not seen in
-         # last 5 seconds).
+         # update the list of idle tokens, removing ones that have left
          cutoff = time.time() - self.config.getint('timing','ib_idle_min_disconnected')
          self.timed_out = [x for x in self.timed_out if self.lastSeen(x) > cutoff]
 
-         # now get down to business.
-         try:
-            username = self.drinker_queue.get_nowait()
-            self.info('flow','api call to start user for %s' % username)
-            uid = self.user_store.getUid(username)
-            user = self.user_store.getUser(uid)
-            try:
-               self.handleFlow(user)
-            except:
-               import traceback
-               traceback.print_exc()
-            continue
-         except Queue.Empty:
-            pass
-         except:
-            continue
+         # check for a new ibutton, add it to the drinker queue if so
          for ib in self.ibs:
             if self.key_store.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
-               time_since_seen = time.time() - self.lastSeen(ib.read_id())
-               ceiling = self.config.getfloat('timing','ib_missing_ceiling')
-               if time_since_seen < ceiling:
-                  self.info('flow','found an authorized ibutton: %s' % ib.read_id())
+               self.info('flow','found an authorized ibutton: %s' % ib.read_id())
+               current_key = self.key_store.getKey(ib.read_id())
+               self.drinker_queue.put_nowait(current_key.ownerid)
+               break
 
-                  # note: break call at the end of this block ensures that,
-                  # after a flow is handled, this mainEventLoop re-starts with
-                  # fresh data (eg self.ibs)
-                  self.fc.getStatus()
-                  time.sleep(0.1)
-                  self.handleFlow(ib)
-                  break
+         # look for a user to handle
+         try:
+            username = self.drinker_queue.get_nowait()
+         except Queue.Empty:
+            continue
+
+         self.info('flow','api call to start user for %s' % username)
+         uid = self.user_store.getUid(username)
+         user = self.user_store.getUser(uid)
+
+         # jump into the flow
+         try:
+            self.handleFlow(user)
+         except:
+            import traceback
+            self.error('flow','*** UNEXPECTED ERROR - please report this bug! ***')
+            traceback.print_exc()
 
    def handleDrinker(self,username):
       self.drinker_queue.put_nowait(username)
@@ -409,7 +401,7 @@ class KegBot:
       ordered = self.grant_store.orderGrants(grants)
 
       # determine how many ounces [zero, inf) the user is allowed to pour
-      # before we cut him off. (TODO: implement.)
+      # before we cut him off
       max_ounces = self.getMaxOunces(ordered)
       if max_ounces == 0:
          self.info('flow', 'user does not have any credit')

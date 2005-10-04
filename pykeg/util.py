@@ -1,3 +1,5 @@
+import os
+
 def daemonize():
    # Fork once
    if os.fork() != 0:

@@ -24,7 +24,6 @@ import Queue
 import FlowController
 import KegRemoteServer
 import KegUI
-import onewirenet
 import SoundServer
 import SQLConfigParser
 import SQLHandler
@@ -97,6 +96,7 @@ class KegBot:
       # set up the import stuff: the ibutton onewire network, and the LCD UI
       dev = self.config.get('devices','onewire')
       try:
+         import onewirenet
          self.ownet = onewirenet.onewirenet(dev)
          self.info('main','new onewire net at device %s' % dev)
       except:

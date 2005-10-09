@@ -136,10 +136,7 @@ class KegBot:
       # init flow meter
       dev = self.config.get('devices','flow')
       self.info('main','new flow controller at device %s' % dev)
-      tickmetric = self.config.getint('flow','tick_metric')
-      tick_skew = self.config.getfloat('flow','tick_skew')
-      fclogger = self.makeLogger('flow', logging.INFO)
-      self.fc = FlowController.FlowController(dev,ticks_per_liter = tickmetric,tick_skew = tick_skew,logger = fclogger)
+      self.fc = FlowController.FlowController(dev, self.makeLogger('flow', logging.INFO))
       self.last_fridge_time = 0 # time since fridge event (relay trigger)
 
       # set up the default 'screen'. for now, it is just a boring standard
@@ -379,8 +376,8 @@ class KegBot:
       self.ui.activity()
       self.STOP_FLOW = 0
 
-      current_keg = self.keg_store.getCurrentKeg()
-      if not current_keg:
+      self.current_keg = self.keg_store.getCurrentKeg()
+      if not self.current_keg:
          self.error('flow','no keg currently active; what are you trying to pour?')
          return
 
@@ -440,7 +437,7 @@ class KegBot:
       ceiling = self.config.getfloat('timing','ib_missing_ceiling')
 
       # set up the record for logging
-      rec = backend.DrinkRecord(self.drink_store,current_user.id,current_keg)
+      rec = backend.DrinkRecord(self.drink_store,current_user.id,self.current_keg)
 
       #
       # flow maintenance loop
@@ -453,7 +450,7 @@ class KegBot:
 
       while 1:
          # if we've expired the grant, log it
-         if current_grant.isExpired(current_keg.getDrinkOunces(grant_ticks)):
+         if current_grant.isExpired(self.current_keg.getDrinkOunces(grant_ticks)):
             rec.addFragment(current_grant,grant_ticks)
             grant_ticks = 0
             try:
@@ -504,10 +501,10 @@ class KegBot:
          nowticks    = self.fc.readTicks()
          flow_ticks  = nowticks - start_ticks_flow
          grant_ticks = nowticks - start_ticks_grant
-         ounces = round(self.fc.ticksToOunces(flow_ticks),1)
+         ounces = round(self.current_keg.getDrinkOunces(flow_ticks),1)
          oz = "%s oz    " % ounces
 
-         self.ui.plate_pour.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0)
+         self.ui.plate_pour.write_dict['progbar'].setProgress(self.current_keg.getDrinkOunces(flow_ticks)/8.0)
          self.ui.plate_pour.write_dict['ounces'].setData(oz[:6])
 
          # record how long we have been idle in idle_time
@@ -541,11 +538,11 @@ class KegBot:
 
       # add the final total to the record
       old_drink = self.drink_store.getLastDrink(current_user.id)
-      bac = util.instantBAC(current_user,current_keg,flow_ticks)
+      bac = util.instantBAC(current_user,self.current_keg,flow_ticks)
       bac += util.decomposeBAC(old_drink[0],time.time()-old_drink[1])
       rec.emit(flow_ticks,current_grant,grant_ticks,bac)
 
-      ounces = round(self.fc.ticksToOunces(flow_ticks),1)
+      ounces = round(self.current_keg.getDrinkOunces(flow_ticks),1)
       self.ui.plate_main.setLastDrink(current_user.getName(),ounces)
       self.info('flow','drink total: %i ticks, %.2f ounces' % (flow_ticks, ounces))
 
@@ -582,7 +579,6 @@ class KegBot:
    def addUser(self,username,name = None, init_ib = None, admin = 0, email = None,aim = None):
       uid = self.user_store.addUser(username,email,aim)
       self.key_store.addKey(uid,str(init_ib))
-
 
 # start a new kegbot instance, if we are called from the command line
 if __name__ == '__main__':

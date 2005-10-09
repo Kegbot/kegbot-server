@@ -63,7 +63,7 @@ class FlowController:
       failing this simple size and boundary check qill be discarded
    
    """
-   def __init__(self,dev,rate=115200,ticks_per_liter=1100,tick_skew=1.0,logger=None):
+   def __init__(self,dev,logger,rate=115200):
 
       # commands
       self.CMD_STATUS      = '\x81'
@@ -79,8 +79,6 @@ class FlowController:
       self.UNKNOWN = True
       self.dev = dev
       self.rate = rate
-      self.ticks_per_liter = ticks_per_liter
-      self.tick_skew = tick_skew
       self._lock = threading.Lock()
       self.logger = logger
 
@@ -100,22 +98,12 @@ class FlowController:
       #self.closeValve()
       #self.clearTicks()
 
-   def ticksToOunces(self,ticks):
-      # one liter is 32 ounces.
-      ticks_per_ounce = float(self.ticks_per_liter)/32.0
-      return ticks/ticks_per_ounce
-
-   def ouncesToTicks(self,oz):
-      # one liter is 32 ounces.
-      ticks_per_ounce = float(self.ticks_per_liter)/32.0
-      return oz*ticks_per_ounce
-
    # helpers for FC1 compatibility
    def fridgeStatus(self):
       return self.status['fridge'] == 1
 
    def readTicks(self):
-      return self.status['ticks']*self.tick_skew
+      return self.status['ticks']
 
    def openValve(self):
       self._lock.acquire()
@@ -168,7 +156,7 @@ class FlowController:
       self.status['valve']  = pkt[2]
       newticks = pkt[3]*256 + pkt[4]
       #newticks *= 4
-      self.status['ticks'] += newticks*self.tick_skew
+      self.status['ticks'] += newticks
       return pkt
 
    def getStatus(self):

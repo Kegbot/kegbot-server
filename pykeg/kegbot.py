@@ -500,26 +500,24 @@ class KegBot:
          if STOP_FLOW:
             break
 
-         if time.time() - last_flow_time > self.config.getfloat("flow","polltime"):
+         # tick-incrementing block
+         nowticks    = self.fc.readTicks()
+         flow_ticks  = nowticks - start_ticks_flow
+         grant_ticks = nowticks - start_ticks_grant
+         ounces = round(self.fc.ticksToOunces(flow_ticks),1)
+         oz = "%s oz    " % ounces
 
-            # tick-incrementing block
-            nowticks    = self.fc.readTicks()
-            flow_ticks  = nowticks - start_ticks_flow
-            grant_ticks = nowticks - start_ticks_grant
-            ounces = round(self.fc.ticksToOunces(flow_ticks),1)
-            oz = "%s oz    " % ounces
+         self.ui.plate_pour.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0)
+         self.ui.plate_pour.write_dict['ounces'].setData(oz[:6])
 
-            self.ui.plate_pour.write_dict['progbar'].setProgress(self.fc.ticksToOunces(flow_ticks)/8.0)
-            self.ui.plate_pour.write_dict['ounces'].setData(oz[:6])
+         # record how long we have been idle in idle_time
+         if lastticks == nowticks:
+            idle_time += time.time() - last_flow_time
+         else:
+            idle_time = 0
 
-            # record how long we have been idle in idle_time
-            if lastticks == nowticks:
-               idle_time += time.time() - last_flow_time
-            else:
-               idle_time = 0
-
-            last_flow_time = time.time()
-            lastticks = nowticks
+         last_flow_time = time.time()
+         lastticks = nowticks
 
       # at this point, the flow maintenance loop has exited. this means
       # we must quickly disable the beer flow and kick the user off the

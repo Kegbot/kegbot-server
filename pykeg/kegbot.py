@@ -309,11 +309,11 @@ class KegBot:
 
       self.info('ibRefreshLoop','quit!')
 
-   def lastSeen(self,ibname):
-      if self.ibs_seen.has_key(ibname):
-         return self.ibs_seen[ibname]
+   def lastSeen(self, token):
+      if self.ibs_seen.has_key(token):
+         return self.ibs_seen[token]
       else:
-         return 0
+         return time.time()
 
    def mainEventLoop(self):
       while not self.QUIT.isSet():
@@ -328,12 +328,12 @@ class KegBot:
             if self.key_store.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
                self.info('flow','found an authorized ibutton: %s' % ib.read_id())
                current_key = self.key_store.getKey(ib.read_id())
-               self.drinker_queue.put_nowait(current_key.ownerid)
+               self.drinker_queue.put_nowait((current_key.ownerid, ib.read_id()))
                break
 
          # look for a user to handle
          try:
-            uid = self.drinker_queue.get_nowait()
+            uid, token = self.drinker_queue.get_nowait()
          except Queue.Empty:
             continue
 
@@ -342,7 +342,7 @@ class KegBot:
 
          # jump into the flow
          try:
-            self.handleFlow(user)
+            self.handleFlow(user, token)
          except:
             self.error('flow','*** UNEXPECTED ERROR - please report this bug! ***')
             traceback.print_exc()
@@ -354,7 +354,7 @@ class KegBot:
             return 0
       except:
          return 0
-      self.drinker_queue.put_nowait(uid)
+      self.drinker_queue.put_nowait((uid, None))
       return 1
 
    def stopFlow(self):
@@ -374,7 +374,7 @@ class KegBot:
             tot += oz
       return tot
 
-   def handleFlow(self,current_user):
+   def handleFlow(self, current_user, current_token):
       self.info('flow','starting flow handling')
       self.ui.activity()
       self.STOP_FLOW = 0
@@ -477,10 +477,10 @@ class KegBot:
             old_grant = current_grant
 
          # if the token has been gone awhile, end
-         time_since_seen = time.time() - self.lastSeen(current_user)
-         #if time_since_seen > ceiling:
-         #   self.info('flow','ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling))
-         #   STOP_FLOW = 0
+         time_since_seen = time.time() - self.lastSeen(current_token)
+         if time_since_seen > ceiling:
+            self.info('flow','ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling))
+            STOP_FLOW = 0
 
          if idle_time >= idle_timeout:
             self.timeoutToken(current_user)
@@ -489,6 +489,7 @@ class KegBot:
          # check other credentials necessary to keep the beer flowing!
          if self.QUIT.isSet():
             STOP_FLOW = 1
+
          if self.STOP_FLOW:
             self.STOP_FLOW = 0
             STOP_FLOW = 1

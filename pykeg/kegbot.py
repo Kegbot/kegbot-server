@@ -480,7 +480,7 @@ class KegBot:
          time_since_seen = time.time() - self.lastSeen(current_token)
          if time_since_seen > ceiling:
             self.info('flow','ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling))
-            STOP_FLOW = 0
+            STOP_FLOW = 1
 
          if idle_time >= idle_timeout:
             self.timeoutToken(current_user)

@@ -1,0 +1,220 @@
+/* css used to be based on freely available templates from bluerobot.com; now
+ * it is just all freaked out! */
+body {
+   /*background-color:#ff6342;*/
+   background-color:#ccc;
+   margin:20px 0px 0px 20px;
+   padding:0px;
+   font:12px Verdana, Helvetica, Arial, sans-serif;
+   color:#000;
+   }
+h1 {
+   margin:0px 0px 0px 0px;
+   padding:10px 0px;
+   font:bold 34px/34px Verdana, Helvetica, Arial, sans-serif;
+   color:#000;
+   }
+h2 {
+   margin:0px 0px 0px 0px;
+   font:bold 24px/24px Verdana, Helvetica, Arial, sans-serif;
+   padding:0px 0px 10px 0px;
+   color:#000;
+   }
+p {
+   font:12px/12px Verdana, Helvetica, Arial, sans-serif;
+   margin:0px 0px 0px 0px;
+   padding:8px 0px;
+   color:#000;
+   }
+.content>p {margin:0px;}
+/* .Content>p+p {text-indent:30px;} */
+div.header {
+    padding:0px 0px 0px 0px;
+    margin: 10px 0px 10px 0px;
+    height:33px; 
+    width:500px;
+    border-style:solid;
+    border-color:#000;
+    border-width:1px 0px;
+    background-color:#aaa;
+    }
+a {
+   color:#09c;
+   font-size:11px;
+   font-family:Verdana, Helvetica, Arial, sans-serif;
+   font-weight:600;
+   text-decoration:none;
+   }
+input { 
+   font : 11px/11px Verdana, Helvetica, Arial, sans-serif;
+   border : 1px solid #999999; 
+   color : black; 
+   background-color : #eeeeee; 
+   margin-top: 2px; 
+   margin-left: 2px;
+   margin-bottom: 2px; 
+} 
+
+input.large { 
+   width: 200px; 
+} 
+
+input:focus { 
+   background-color : #ffffff; 
+} 
+
+input.button { 
+   color : white; 
+   background-color : #000000; 
+} 
+
+select {
+   border: 1px solid #999999; 
+   color: black; 
+   background-color: #eeeeee; 
+   font: 12px/12px Verdana, Helvetica, Arial, sans-serif;
+}
+textarea { 
+   border: 1px solid #999999; 
+   margin-bottom: 10px; 
+   color: black; 
+   background-color: #eeeeee; 
+   font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+} 
+
+textarea:focus { 
+   background-color : #ffffff; 
+} 
+
+a:link {color:#039;}
+a:visited {color:#07a;}
+/*a:hover {background-color:#eee;}*/
+a:hover {color:#fff;}
+
+
+
+div.row {
+  clear: both;
+  padding-top: 0px;
+}
+
+td {
+   font:12px/14px Verdana, Helvetica, Arial, sans-serif;
+   color: white;
+   margin:0px 0px 16px 0px;
+   padding:0px;
+}
+div.float {
+   float: left;
+   width:133px;
+   margin-right: 10px;
+   margin-top: 10px;
+   padding: 5px;
+   background:#9999cc;
+}
+div.gallrow {
+   background-color: #ffe;
+}
+div.spacer{
+   clear: both;
+}
+div.sep {
+   position: relative;
+   margin:0px 0px 0px 170px;
+   border-style:dotted;
+   border-color:#dddddd;
+   border-width:1px 0px 0px 0px;
+   width:490px;
+}
+
+div.row span.label {
+  float: left;
+  font: bold 12px/12px Verdana, Helvetica, Arial, sans-serif;
+  width: 140px;
+  padding-right: 9px;
+  text-align: right;
+}
+
+div.row span.data {
+  float: left;
+  font: 12px/12px Verdana, Helvetica, Arial, sans-serif;
+  width: auto;
+  padding-right: 1px;
+  text-align: left;
+} 
+div.content_head {
+   font: bold 12px/14px Verdana, Helvetica, Arial, sans-serif;
+   color: #000;
+   font-size: 12px;
+   margin: 10px 0px 0px 0px;
+   padding: 0px 0px 0px 10px;
+   text-align: left;
+   width:230px;
+   
+   border: 1px solid #666;
+   border-bottom: none;
+   /*
+   border-radius: 4px;
+   -moz-border-radius: 4px;
+   */
+}
+div.tab {
+   margin: 0px 0px 0px 170px;
+   border: 1px solid black;
+   font: 16px/16px Verdana, Helvetica, Arial, sans-serif;
+   border-radius: 3px; 
+   -moz-border-radius: 3px;
+   background-color: #eeeeee;
+   border-bottom: none; 
+   width: 50%;
+}
+
+/* All the content boxes belong to the content class. */
+.content {
+   position:relative; /* Position is declared "relative" to gain control of stacking order (z-index). */
+   width:500;
+   min-width:120px;
+   /*margin:15px 110px 20px 170px;*/
+   margin:0px 0px;
+   border:1px solid #666;
+   color:#000;
+   background-color: #aaa;
+   padding:10px;
+   z-index:3; /* This allows the content to overlap the right menu in narrow windows in good browsers. */
+   }
+
+#navAlpha {
+   position:absolute;
+   width:150px;
+   min-height:300;
+   height:400;
+   top:35px;
+   left:0px;
+   border-style: solid;
+   border-width: 0px 1px 0px 0px;
+   border-color: #fff;
+   background-color:#00184a;
+   color:#ffffff;
+   padding:10px;
+   z-index:2;
+   voice-family: "\"}\"";
+   voice-family:inherit;
+   width:128px;
+   }
+body>#navAlpha {width:128px;}
+      
+#navBeta {
+   position:absolute;
+   width:190px;
+   top:20px;
+   right:20px;
+   border:1px dashed black;
+   background-color:#eee;
+   padding:10px;
+   z-index:1;
+   voice-family: "\"}\"";
+   voice-family:inherit;
+   width:168px;
+   }
+body>#navBeta {width:168px;}
+

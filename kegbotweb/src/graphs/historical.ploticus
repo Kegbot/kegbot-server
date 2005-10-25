@@ -1,0 +1,84 @@
+#proc page
+backgroundcolor: transparent
+
+#proc getdata
+file: /data/kegbot/htdocs/graphs/historical.dat
+
+#proc processdata
+fieldnames: @fields
+
+#proc areadef
+title: total volume leader movement
+rectangle: 1 1 4.8 3.2
+xautorange: datafield=@1
+yautorange: datafield=mikey
+
+#proc xaxis
+grid: color=black
+label: drink number
+
+#proc yaxis
+grid: color=gray(0.3) style=1
+gridskip: min
+ticincrement: 200
+tics: yes
+stubs: inc 100
+stubcull: 0.1
+label: career ounces
+
+#proc lineplot
+yfield: asynch
+xfield: did
+linedetails: color=yellow width=.5
+legendlabel: asynch
+
+#proc lineplot
+yfield: oakiehead
+xfield: did
+linedetails: color=red width=.5
+//pointsymbol: shape=triangle
+legendlabel: oakiehead
+
+#proc lineplot
+yfield: the_champ
+xfield: did
+linedetails: color=green width=.5
+//pointsymbol: shape=triangle
+legendlabel: the_champ
+
+#proc lineplot
+yfield: mikey
+xfield: did
+linedetails: color=purple width=.5
+legendlabel: mikey
+
+#proc lineplot
+yfield: whitey
+xfield: did
+linedetails: color=white width=.5
+legendlabel: whitey
+
+#proc lineplot
+yfield: eric
+xfield: did
+linedetails: color=redorange width=.5
+legendlabel: eric
+
+#proc lineplot
+yfield: charlotte
+xfield: did
+linedetails: color=magenta width=.5
+legendlabel: charlotte
+
+#proc lineplot
+yfield: adam
+xfield: did
+linedetails: color=tan2 width=.5
+legendlabel: adam
+
+#proc legend
+format: multiline
+location: min+0.35 max-0.01
+sep: 0.12
+seglen: 0.2
+

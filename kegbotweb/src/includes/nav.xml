@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<navplaces>
+<section name="graphs">
+   <subsection name="today">
+      <title>drinks today</title>
+      <addr>#</addr>
+   </subsection>
+   <subsection name="today">
+      <title>drinks your mom</title>
+      <addr>#</addr>
+   </subsection>
+</section>
+
+<section name="stats">
+      <subsection name="biggest">
+         <title>leader board</title>
+         <addr>/leaders.php</addr>
+      </subsection>
+
+      <subsection name="bykeg">
+         <title>keg-by-keg</title>
+         <addr>#</addr>
+      </subsection>
+</section>
+
+<section name="your account">
+   <subsection name="login">
+      <title>login</title>
+      <addr>#</addr>
+   </subsection>
+
+   <subsection name="signup">
+      <title>signup</title>
+      <addr>#</addr>
+   </subsection>
+</section>
+</navplaces>

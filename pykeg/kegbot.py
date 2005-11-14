@@ -9,9 +9,7 @@ config = 'keg.cfg'
 # standard lib imports
 import ConfigParser
 import logging
-import MySQLdb
 import optparse
-import select
 import signal
 import sys
 import thread
@@ -21,22 +19,31 @@ import traceback
 import Queue
 
 # kegbot lib imports
+import Auth
+import Backend
 import FlowController
-import KegRemoteServer
 import KegUI
 import SoundServer
 import SQLConfigParser
 import SQLHandler
-import SQLStores as backend
 import TempMonitor
 import usbkeyboard
 import util
 
+# other (third-party) lib imports
+import MySQLdb
+import sqlobject
+
 # command line parser are defined here
 parser = optparse.OptionParser()
-parser.add_option('-D','--daemon',dest='daemon',action='store_true',help='run kegbot in daemon mode')
+parser.add_option('-D','--daemon',dest='daemon',action='store_true',
+      help='run kegbot in daemon mode')
 parser.set_defaults(daemon=False)
 flags, args = parser.parse_args()
+
+# helper defines
+NULL_DEVICES = ('', '/dev/null')
+MILLILITERS_PER_OUNCE = 29.5735297
 
 # ---------------------------------------------------------------------------- #
 # Main classes
@@ -48,10 +55,7 @@ class KegBot:
       self.QUIT          = threading.Event() # event to set when we want everything to quit
       self.config        = SQLConfigParser.SQLConfigParser()
       self.drinker_queue = Queue.Queue()
-      self.ibs           = [] # list of non-hidden ibuttons
-      self._allibs       = [] # like the above, but including hidden ibuttons
-      self.ibs_seen      = {} # store time when IB was last seen
-      self.timed_out     = [] # tokens that are connected but being ignored
+      self.authed_users  = [] # users currently connected (usually 0 or 1)
 
       # ready to perform second stage of initialization
       self._setup()
@@ -62,57 +66,50 @@ class KegBot:
 
    def _setup(self):
 
-      # read the config
+      # read the database config
       dbcfg = ConfigParser.ConfigParser()
       dbcfg.read(config)
 
       # load the db info, because we will use it often enough
-      self.dbhost     = dbcfg.get('DB','host')
-      self.dbuser     = dbcfg.get('DB','user')
-      self.dbdb       = dbcfg.get('DB','db')
+      self.dbhost = dbcfg.get('DB','host')
+      self.dbuser = dbcfg.get('DB','user')
+      self.dbdb = dbcfg.get('DB','db')
       self.dbpassword = dbcfg.get('DB','password')
 
-      self.config.read(MySQLdb.connect(host=self.dbhost,user=self.dbuser,passwd=self.dbpassword,db=self.dbdb), dbcfg.get('DB','config_table'))
+      # initialize the config, from stored values in MySQL
+      self.config.read(MySQLdb.connect(host=self.dbhost,user=self.dbuser,
+         passwd=self.dbpassword,db=self.dbdb), dbcfg.get('DB','config_table'))
+
+      # connect to db - TODO: remove mysql component and make the URI the sole
+      # config option
+      db_uri = 'mysql://%s:%s@%s/%s' % (self.dbuser, self.dbpassword, self.dbhost, self.dbdb)
+      connection = sqlobject.connectionForURI(db_uri)
+      sqlobject.sqlhub.processConnection = connection
 
       # set up logging, using the python 2.3 logging module
       self.main_logger = self.makeLogger('main',logging.INFO)
 
-      # set up the drink, user, and key stores. these classes provide read,
-      # write, and search access to information that the keg needs to know
-      # about.
-
-      # rather than retyping this stuff on each init line, just add this tuple
-      # and the table name to form the init tuple
-      db_tuple = (self.dbhost,self.dbuser,self.dbpassword,self.dbdb)
-
-      self.drink_store   = backend.DrinkStore(  self, db_tuple, 'drinks' )
-      self.user_store    = backend.UserStore(   self, db_tuple, 'users' )
-      self.key_store     = backend.KeyStore(    self, db_tuple, 'tokens' )
-      self.policy_store  = backend.PolicyStore( self, db_tuple, 'policies' )
-      self.grant_store   = backend.GrantStore(  self, db_tuple, 'grants' , self.policy_store)
-      self.keg_store     = backend.KegStore(    self, db_tuple, 'kegs' )
-      self.thermo_store  = backend.ThermoStore( self, db_tuple, 'thermolog' )
-
-      # set up the import stuff: the ibutton onewire network, and the LCD UI
+      # optional module: serial ibutton auth
       dev = self.config.get('devices','onewire')
-      try:
-         import onewirenet
-         self.ownet = onewirenet.onewirenet(dev)
-         self.info('main','new onewire net at device %s' % dev)
-      except:
-         self.ownet = None
-         self.error('main','not connected to onewirenet')
+      if dev not in NULL_DEVICES:
+         timeout = self.config.getfloat('timing','ib_refresh_timeout')
+         logger = self.makeLogger('serial_ibauth',logging.INFO)
+         serial_ibauth = Auth.SerialIBAuth(self, timeout, self.QUIT, logger)
+         serial_ibauth.start()
 
-      # start the sound server
+      # optional module: usb ibutton auth
+      if self.config.getboolean('auth','usb_ib'):
+         timeout = self.config.getfloat('timing','ib_refresh_timeout')
+         logger = self.makeLogger('usb_ibauth',logging.INFO)
+         usb_ibauth = Auth.USBIBAuth(self, timeout, self.QUIT, logger)
+         usb_ibauth.start()
+
+      # optional module: sound server
       if self.config.getboolean('sounds','use_sounds'):
          self.sounds = SoundServer.SoundServer(self,self.config.get('sounds','sound_dir'))
          self.sounds.start()
 
-      # start the remote server
-      #self.server = KegRemoteServer.KegRemoteServer(self,'',9966)
-      #self.server.start()
-
-      # load the LCD-UI stuff
+      # optional module: LCD UI
       if self.config.getboolean('ui','use_lcd'):
          lcdtype = self.config.get('ui', 'lcd_type')
          dev = self.config.get('devices','lcd')
@@ -127,35 +124,33 @@ class KegBot:
          self.info('main','new %s LCD at device %s' % (lcdtype, dev))
          self.ui = KegUI.KegUI(self.lcd, self)
 
-         self.keypad_fp = open(self.config.get('ui','keypad_pipe'))
-         thread.start_new_thread(self.keypadThread,())
+         keypad_device = self.config.get('ui','keypad_pipe')
+         if keypad_device not in NULL_DEVICES:
+            self.keypad_fp = open(keypad_device)
+            thread.start_new_thread(self.keypadThread,())
       else:
+         # TODO: replace me with a KegUI.NullUI instance
          self.lcd = Display('/dev/null')
          self.ui = KegUI.KegUI(self.lcd, self)
 
-      # init flow meter
-      dev = self.config.get('devices','flow')
-      self.info('main','new flow controller at device %s' % dev)
-      self.fc = FlowController.FlowController(dev, self.makeLogger('flow', logging.INFO))
-      self.last_fridge_time = 0 # time since fridge event (relay trigger)
-
-      # set up the default 'screen'. for now, it is just a boring standard
-      self.ui.setCurrentPlate(self.ui.plate_main)
-      self.ui.start()
-      self.ui.activity()
-
-      # start the refresh loop, which will keep self.ibs populated with the current onewirenetwork.
-      if self.ownet is not None:
-         thread.start_new_thread(self.ibRefreshLoop,())
-
-      # start the flow controller status monitor
-      thread.start_new_thread(self.fcStatusLoop,())
-
-      # start the temperature monitor
+      # optional module: temperature monitor
       if self.config.getboolean('thermo','use_thermo'):
          self.tempsensor = TempMonitor.TempSensor(self.config.get('devices','thermo'))
          self.tempmon = TempMonitor.TempMonitor(self,self.tempsensor,self.QUIT)
          self.tempmon.start()
+
+      # initialize flow meter
+      dev = self.config.get('devices','flow')
+      self.info('main','new flow controller at device %s' % dev)
+      self.fc = FlowController.FlowController(dev, self.makeLogger('flow', logging.INFO))
+
+      # set up the default screen
+      self.ui.setCurrentPlate(self.ui.plate_main)
+      self.ui.start()
+      self.ui.activity()
+
+      # start the flow controller status monitor
+      thread.start_new_thread(self.fc.statusLoop,(self.config.getfloat('timing','fc_status_timeout'),self.QUIT))
 
    def _setsigs(self):
       signal.signal(signal.SIGHUP, self.handler)
@@ -163,14 +158,13 @@ class KegBot:
       signal.signal(signal.SIGQUIT,self.handler)
       signal.signal(signal.SIGTERM, self.handler)
 
-   def handler(self,signum,frame):
+   def handler(self, signum, frame):
       self.quit()
 
    def quit(self):
       self.info('main','attempting to quit')
 
       # hacks for blocking threads..
-      #self.server.stop()
       self.fc.getStatus()
       if self.config.getboolean('sounds','use_sounds'):
          self.sounds.quit()
@@ -215,60 +209,27 @@ class KegBot:
       curr = self.tempmon.sensor.getTemp(1) # XXX - sensor index is hardcoded! add to .config
       max_t = self.config.getfloat('thermo','temp_max_high')
 
-      # refuse to enable the fridge if we just disabled it. (we don't do this
-      # in the disableFreezer routine, because we should always be allowed to
-      # disable it.)
-      min_diff = self.config.getint('timing','freezer_event_min')
-      diff = time.time() - self.last_fridge_time
-
       if self.fc.UNKNOWN or not self.fc.fridgeStatus():
-         if diff < min_diff:
-            self.warning('tempmon','fridge event requested less than %i seconds after last, ignored (%i)' % (min_diff,diff))
-            return
-         self.last_fridge_time = time.time()
          self.fc.UNKNOWN = False
          self.info('tempmon','activated freezer curr=%s max=%s'%(curr[0],max_t))
-         self.ui.plate_main.setFreezer('on ')
+         self.ui.setFreezer('on ')
          self.fc.enableFridge()
 
    def disableFreezer(self):
       curr = self.tempmon.sensor.getTemp(1)
       min_t = self.config.getfloat('thermo','temp_max_low')
 
-      # note: no check here for recent fridge event, because we will always
-      # allow the fridge to be disabled.
-      self.last_fridge_time = time.time()
-
       if self.fc.UNKNOWN or self.fc.fridgeStatus():
          self.fc.UNKNOWN = False
          self.info('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min_t))
-         self.ui.plate_main.setFreezer('off')
+         self.ui.setFreezer('off')
          self.fc.disableFridge()
-
-   def fcStatusLoop(self):
-      self.info('fc','status loop starting')
-      self.last_pkt_time = 0
-      timeout = self.config.getfloat('timing','fc_status_timeout')
-      self.fc.getStatus()
-      while not self.QUIT.isSet():
-         (rr,wr,xr) = select.select([self.fc._devpipe],[],[],0.0)
-         if len(rr):
-            try:
-               p = self.fc.recvPacket()
-               self.info('fc',"read status packet " + str(p))
-            except:
-               self.warning('fc','packet read error')
-         time.sleep(timeout)
-      self.info('fc','status loop exiting')
-
 
    def keypadThread(self):
       """
       read commands from the USB keypad and send them off to our UI
       """
       self.info('keypad','keypad thread starting')
-      #while not self.QUIT.isSet():
-      #   e = self.ui.cmd_queue.get()
 
       while not self.QUIT.isSet():
          time.sleep(0.01)
@@ -282,101 +243,84 @@ class KegBot:
          except:
             pass
 
-   def ibRefreshLoop(self):
-      """
-      Periodically update self.ibs with the current ibutton list.
-
-      Because there are at least two threads (temperature monitor, main event
-      loop) that require fresh status of the onewirenetwork, it is useful to
-      simply refresh them constantly.
-
-      Note that the config file may specify IB IDs to ignore (such as the
-      serial controller ID or other persistent IBs). These IDs will be sored in
-      _allibs but not self.ibs, and that is the only difference.
-      """
-      timeout = self.config.getfloat('timing','ib_refresh_timeout')
-
-      while not self.QUIT.isSet():
-         self._allibs = self.ownet.refresh()
-         self.ibs = [ib for ib in self._allibs] # XXX deal with ibs to ignore
-         now = time.time()
-         for ib in self.ibs:
-            self.ibs_seen[ib.read_id()] = now
-         time.sleep(timeout)
-
-      self.info('ibRefreshLoop','quit!')
-
-   def lastSeen(self, token):
-      if self.ibs_seen.has_key(token):
-         return self.ibs_seen[token]
-      else:
-         return time.time()
-
    def mainEventLoop(self):
       while not self.QUIT.isSet():
          time.sleep(0.1)
 
-         # update the list of idle tokens, removing ones that have left
-         cutoff = time.time() - self.config.getint('timing','ib_idle_min_disconnected')
-         self.timed_out = [x for x in self.timed_out if self.lastSeen(x) > cutoff]
-
-         # check for a new ibutton, add it to the drinker queue if so
-         for ib in self.ibs:
-            if self.key_store.knownKey(ib.read_id()) and ib.read_id() not in self.timed_out:
-               self.info('flow','found an authorized ibutton: %s' % ib.read_id())
-               current_key = self.key_store.getKey(ib.read_id())
-               self.drinker_queue.put_nowait((current_key.ownerid, ib.read_id()))
-               break
-
          # look for a user to handle
          try:
-            uid, token = self.drinker_queue.get_nowait()
-         except Queue.Empty:
+            user = self.authed_users[0]
+         except IndexError:
             continue
 
-         user = self.user_store.getUser(uid)
-         self.info('flow','api call to start user for %s' % user.getName())
-
+         self.info('flow','api call to start user for %s' % user.username)
          # jump into the flow
          try:
-            self.handleFlow(user, token)
+            self.handleFlow(user)
          except:
-            self.error('flow','*** UNEXPECTED ERROR - please report this bug! ***')
+            self.critical('flow','UNEXPECTED ERROR - please report this bug!')
             traceback.print_exc()
+            sys.exit(1)
+
+   def authUser(self, username):
+      matches = Backend.User.selectBy(username=username)
+      if matches.count():
+         u = matches[0]
+         self.authed_users.append(u)
+
+   def deauthUser(self, username):
+      matches = Backend.User.selectBy(username=username)
+      if matches.count():
+         u = matches[0]
+         self.authed_users = [x for x in self.authed_users if x.username != u.username]
+
+   def userIsAuthed(self, user):
+      return user in self.authed_users
 
    def handleDrinker(self,username):
-      try:
-         uid = self.user_store.getUid(username)
-         if uid is None:
-            return 0
-      except:
-         return 0
-      self.drinker_queue.put_nowait((uid, None))
-      return 1
+      self.authUser(username)
 
    def stopFlow(self):
       self.STOP_FLOW = 1
-      self.ui.plate_main.gotoPlate('last')
+      self.ui.flowEnded()
       return 1
 
-   def getMaxOunces(self, grants):
-      tot = 0
-      for g in grants:
-         oz = g.availableOunces()
-         if oz == -1:
-            return -1
-         elif oz == 0:
-            continue
-         else:
-            tot += oz
-      return tot
+   def checkAccess(self, current_user, idle_time, volume, max_volume):
+      if self.QUIT.isSet():
+         self.info('flow', 'boot: quit flag set')
+         return 0
 
-   def handleFlow(self, current_user, current_token):
+      # user is no longer authed
+      if not self.userIsAuthed(current_user):
+         self.info('flow', 'boot: user no longer authorized')
+         return 0
+
+      # user is idle
+      if idle_time >= self.config.getfloat('timing','ib_idle_timeout'):
+         self.info('flow', 'boot: user went idle')
+         self.timeoutUser(current_user)
+         return 0
+
+      # global flow stop is set (XXX: this is a silly hack for xml-rpc)
+      if self.STOP_FLOW:
+         self.info('flow', 'boot: global kill set')
+         self.STOP_FLOW = 0
+         return 0
+
+      # user has poured his maximum
+      if max_volume != -1:
+         if volume >= max_volume:
+            self.info('flow', 'boot: volume limit met/exceeded')
+            return 0
+
+      return 1
+
+   def handleFlow(self, current_user):
       self.info('flow','starting flow handling')
       self.ui.activity()
       self.STOP_FLOW = 0
 
-      self.current_keg = self.keg_store.getCurrentKeg()
+      self.current_keg = Backend.Keg.selectBy(status='online', orderBy='-id')[0]
       if not self.current_keg:
          self.error('flow','no keg currently active; what are you trying to pour?')
          return
@@ -385,179 +329,114 @@ class KegBot:
          self.error('flow','no valid user for this key; how did we get here?')
          return
 
-      grants = self.grant_store.getGrants(current_user)
-      ordered = self.grant_store.orderGrants(grants)
+      grants = list(Backend.Grant.selectBy(foruid=current_user.id))
 
-      # determine how many ounces [zero, inf) the user is allowed to pour
+      # determine how much volume [zero, inf) the user is allowed to pour
       # before we cut him off
-      max_ounces = self.getMaxOunces(ordered)
-      if max_ounces == 0:
+      max_volume = util.getMaxVolume(grants)
+      if max_volume == 0:
          self.info('flow', 'user does not have any credit')
-         self.timeoutToken(current_user)
+         self.timeoutUser(current_user)
          return
-      elif max_ounces == -1:
-         self.info('flow', 'user approved for unlimited ounces')
+      elif max_volume == -1:
+         self.info('flow', 'user approved for unlimited volume')
       else:
-         self.info('flow', 'user approved for %.1f ounces' % max_ounces)
+         self.info('flow', 'user approved for %.1f volunits' % max_volume)
 
-      # TODO: move grants to a post-processing step
-      current_grant = None
-      while 1:
-         try:
-            test = ordered.pop(0)
-            if not test.isExpired(0):
-               current_grant = test
-               break
-         except IndexError:
-            self.info('flow','no valid grants found; not starting flow')
-            self.timeoutToken(current_user)
-            return
-
-      self.info('flow',"current grant: %s" % (current_grant.policy.descr))
-
-      # sequence of steps that should take place:
-
-      # - record flow counter
+      # record flow counter
       start_ticks_flow = self.fc.readTicks()
-      start_ticks_grant = start_ticks_flow
       self.info('flow','current flow ticks: %s' % start_ticks_flow)
 
-      # - turn on UI
-      self.ui.plate_pour.setDrinker(current_user.getName())
+      # turn on UI
+      self.ui.setDrinker(current_user.username)
       self.ui.setCurrentPlate(self.ui.plate_pour,replace=1)
 
-      # - turn on flow
+      # turn on flow
       self.fc.openValve()
-
-      # - wait for ibutton release OR inaction timeout
-      self.info('flow','starting flow for user %s' % current_user.getName())
-      STOP_FLOW = 0
-
-      idle_timeout = self.config.getfloat('timing','ib_idle_timeout')
-      ceiling = self.config.getfloat('timing','ib_missing_ceiling')
-
-      # set up the record for logging
-      rec = backend.DrinkRecord(self.drink_store,current_user.id,self.current_keg)
+      self.info('flow','starting flow for user %s' % current_user.username)
 
       #
       # flow maintenance loop
       #
-      last_flow_time = time.time()
-      flow_ticks,grant_ticks = 0,0
-      lastticks = 0
-      old_grant = None
-      idle_time = 0
+      last_flow_time = time.time()  # time since last change in flow count
+      start_time = time.time()      # timestamp of flow start
+      flow_ticks = 0                # ticks in current flow
+      refresh_time = 0              # time since flow controller last polled
+      lastticks = 0                 # temporary value for storing last flow reading
+      curr_vol = 0.0                # volume of current flow
 
       while 1:
-         # if we've expired the grant, log it
-         if current_grant.isExpired(self.current_keg.getDrinkOunces(grant_ticks)):
-            rec.addFragment(current_grant,grant_ticks)
-            grant_ticks = 0
-            try:
-               current_grant = ordered.pop(0)
-               while current_grant.isExpired():
-                  current_grant = ordered.pop(0)
-               start_ticks_grant = self.fc.readTicks()
-            except:
-               current_grant = None
+         looptime = time.time()
 
-         if time.time() - self.last_pkt_time >= 0.5:
-            self.fc.getStatus()
-            self.last_pkt_time = time.time()
-
-         # if no more grants, no more beer
-         if not current_grant:
-            self.info('flow','no more valid grants; ending flow')
-            self.timeoutToken(current_user)
-            STOP_FLOW = 1
-         else:
-            old_grant = current_grant
-
-         # if the token has been gone awhile, end
-         time_since_seen = time.time() - self.lastSeen(current_token)
-         if time_since_seen > ceiling:
-            self.info('flow','ib went missing, ending flow (%s,%s)'%(time_since_seen,ceiling))
-            STOP_FLOW = 1
-
-         if idle_time >= idle_timeout:
-            self.timeoutToken(current_user)
-            STOP_FLOW = 1
-
-         # check other credentials necessary to keep the beer flowing!
-         if self.QUIT.isSet():
-            STOP_FLOW = 1
-
-         if self.STOP_FLOW:
-            self.STOP_FLOW = 0
-            STOP_FLOW = 1
-
-         elif current_user in self.timed_out:
-            STOP_FLOW = 1
-
-         if STOP_FLOW:
+         # check user access
+         idle_amt = looptime - last_flow_time
+         if not self.checkAccess(current_user, idle_amt, curr_vol, max_volume):
             break
 
-         # tick-incrementing block
-         nowticks    = self.fc.readTicks()
-         flow_ticks  = nowticks - start_ticks_flow
-         grant_ticks = nowticks - start_ticks_grant
-         ounces = round(self.current_keg.getDrinkOunces(flow_ticks),1)
-         oz = "%s oz    " % ounces
+         # poke the controller for status every so often and perform other
+         # tasks that depend on flow
+         if looptime - refresh_time >= 0.25:
+            self.fc.getStatus()
+            refresh_time = looptime
+            curr_vol = self.ticksToVolunits(flow_ticks)
 
-         self.ui.plate_pour.write_dict['progbar'].setProgress(self.current_keg.getDrinkOunces(flow_ticks)/8.0)
-         self.ui.plate_pour.write_dict['ounces'].setData(oz[:6])
+            # update running flow total
+            nowticks = self.fc.readTicks()
+            flow_ticks = nowticks - start_ticks_flow
 
-         # record how long we have been idle in idle_time
-         if lastticks == nowticks:
-            idle_time += time.time() - last_flow_time
-         else:
-            idle_time = 0
+            # touch the last flow time if the user wasn't idle, and update ui
+            # if flow happened
+            if lastticks != nowticks:
+               last_flow_time = looptime
+               self.ui.updatePourAmount(self.volunitsToOunces(curr_vol))
 
-         last_flow_time = time.time()
-         lastticks = nowticks
+            lastticks = nowticks
 
       # at this point, the flow maintenance loop has exited. this means
       # we must quickly disable the beer flow and kick the user off the
       # system
 
-      # - turn off flow
+      # turn off flow
+      looptime = time.time()
       self.info('flow','user is gone; flow ending')
       self.fc.closeValve()
-      self.ui.setCurrentPlate(self.ui.plate_main,replace=1)
+      self.ui.setCurrentPlate(self.ui.plate_main, replace=1)
 
-      # - record flow totals; save to user database
-      # tick-incrementing block
-      nowticks    = self.fc.readTicks()
-      flow_ticks  = nowticks - start_ticks_flow
-      grant_ticks = nowticks - start_ticks_grant
+      # record flow totals; save to user database
+      nowticks = self.fc.readTicks()
+      flow_ticks = nowticks - start_ticks_flow
+      volume = self.ticksToVolunits(flow_ticks)
 
-      if old_grant: # XXX - sometimes, it is None. why?
-         rec.addFragment(old_grant,grant_ticks)
-      else:
-         self.error('flow','BUG: no old_grant, yet we\'re in the flow loop?')
+      # log the drink
+      d = Backend.Drink(ticks=flow_ticks, volume=int(volume), starttime=int(start_time),
+            endtime=int(looptime), user_id=current_user.id,
+            keg_id=self.current_keg.id, status='valid')
+      d.syncUpdate()
 
-      # add the final total to the record
-      old_drink = self.drink_store.getLastDrink(current_user.id)
-      bac = util.instantBAC(current_user,self.current_keg,flow_ticks)
-      bac += util.decomposeBAC(old_drink[0],time.time()-old_drink[1])
-      rec.emit(flow_ticks,current_grant,grant_ticks,bac)
+      #self.brain.Event('drink-postprocessing', drink)
 
-      ounces = round(self.current_keg.getDrinkOunces(flow_ticks),1)
-      self.ui.plate_main.setLastDrink(current_user.getName(),ounces)
-      self.info('flow','drink total: %i ticks, %.2f ounces' % (flow_ticks, ounces))
+      # update the UI
+      ounces = round(self.volunitsToOunces(volume),2)
+      self.ui.setLastDrink(current_user.username,ounces)
+      self.info('flow','drink total: %i ticks, %i volunits, %.2f ounces' % (flow_ticks, volume, ounces))
 
-      # - back to idle UI
+      # de-auth the user. this may need to be configurable down the line..
+      self.deauthUser(current_user.username)
 
-   def timeoutToken(self,id):
-      self.info('timeout','timing out id %s' % id)
-      self.timed_out.append(id)
+   def timeoutUser(self, user):
+      self.deauthUser(user.username)
 
-   def getUser(self,ib):
-      key = self.key_store.getKey(ib.read_id())
-      if key:
-         return self.user_store.getUser(key.getOwner())
-      return None
+   ### volume related helper functions
+   def ticksToVolunits(self, ticks):
+      return self.config.getfloat('flow','ticks_to_volunits_factor')*ticks
 
+   def volunitsToOunces(self, volunits):
+      return volunits/MILLILITERS_PER_OUNCE
+
+   def volunitsToLiters(self, volunits):
+      return volunits/1000.0
+
+   ### logging related helper functions
    def log(self,component,message):
       self.main_logger.info("%s: %s" % (component,message))
 
@@ -573,15 +452,11 @@ class KegBot:
    def critical(self,component,message):
       self.main_logger.critical("%s: %s" % (component,message))
 
-   # DB Helper functions (for use with CMD line)
-   # TODO: eventually we will have a suite of "public" functons that are called
-   # by the external API (ie an XML-RPC delegate)
-   def addUser(self,username,name = None, init_ib = None, admin = 0, email = None,aim = None):
-      uid = self.user_store.addUser(username,email,aim)
-      self.key_store.addKey(uid,str(init_ib))
-
 # start a new kegbot instance, if we are called from the command line
 if __name__ == '__main__':
+   if sys.version_info < (2,3):
+      print 'kegbot requires Python 2.3 or later; aborting'
+      sys.exit(1)
    if flags.daemon:
       util.daemonize()
    else:

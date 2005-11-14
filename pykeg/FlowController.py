@@ -1,4 +1,8 @@
-import os,threading
+import os
+import select
+import threading
+import time
+import traceback
 
 class FlowController:
    """
@@ -81,6 +85,7 @@ class FlowController:
       self.rate = rate
       self._lock = threading.Lock()
       self.logger = logger
+      self.last_fridge_time = 0
 
       self.status = {"fridge": 2, "valve": 2, "ticks":0}
 
@@ -118,6 +123,10 @@ class FlowController:
       self.valve_open = False
 
    def enableFridge(self):
+      if time.time() - self.last_fridge_time < 300:
+         self.logger.warn('fridge ON event requested too soon; ignoring')
+         return
+      self.last_fridge_time = time.time()
       self._lock.acquire()
       self._devpipe.write(self.CMD_FRIDGEON)
       self._lock.release()
@@ -149,18 +158,42 @@ class FlowController:
       # now, c should contain the start of a packet
       pkt = os.read(fd,7)
       #self._lock.release()
-      pkt = map(ord,pkt)
+      pkt = StatusPacket(map(ord,pkt))
 
-      #print "got status packet: %s" % (str(pkt),)
-      self.status['fridge'] = pkt[1]
-      self.status['valve']  = pkt[2]
-      newticks = pkt[3]*256 + pkt[4]
-      #newticks *= 4
-      self.status['ticks'] += newticks
+      self.status['fridge'] = pkt.fridge_on
+      self.status['valve'] = pkt.valve_open
+      self.status['ticks'] += pkt.ticks
       return pkt
 
    def getStatus(self):
       self._lock.acquire()
       self._devpipe.write(self.CMD_STATUS)
       self._lock.release()
+
+   def statusLoop(self, timeout, QUIT):
+      """ asynchrnous fetch loop for the flow controller """
+      try:
+         self.logger.info('status loop starting')
+         self.getStatus()
+         while not QUIT.isSet():
+            (rr,wr,xr) = select.select([self._devpipe],[],[],0.0)
+            if len(rr):
+               try:
+                  p = self.recvPacket()
+                  self.logger.info('read status packet ' + str(p))
+               except:
+                  self.logger.warning('packet read error')
+            time.sleep(timeout)
+         self.logger.info('status loop exiting')
+      except:
+         traceback.print_exc()
+
+class StatusPacket:
+   def __init__(self, pkt):
+      self.ticks = pkt[3]*256 + pkt[4]
+      self.fridge_on = pkt[1] != 0
+      self.valve_open = pkt[2] != 0
+
+   def __str__(self):
+      return '<StatusPacket: ticks=%i fridge_on=%s valve_open=%s>' % (self.ticks, self.fridge_on, self.valve_open)
 

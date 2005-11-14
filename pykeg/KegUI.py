@@ -1,3 +1,6 @@
+import Backend
+import re
+
 import lcdui
 
 class KegUI(lcdui.lcdui):
@@ -10,7 +13,25 @@ class KegUI(lcdui.lcdui):
       self.plate_pour = plate_kegbot_pour(self)
 
    def startPour(self, user):
-      self.kb.handleDrinker(user.getName())
+      self.kb.handleDrinker(user.username)
+
+   def updatePourAmount(self, ounces):
+      oz = '%.1foz' % round(ounces, 1)
+      progress = (ounces % 8.0)/8.0
+      self.plate_pour.write_dict['progline'].setProgress(progress)
+      self.plate_pour.write_dict['ounces'].setData(oz)
+
+   def setFreezer(self, status):
+      self.plate_main.setFreezer(status)
+
+   def setDrinker(self, name):
+      self.plate_pour.setDrinker(name)
+
+   def setLastDrink(self, name, amt):
+      self.plate_main.setLastDrink(name, amt)
+
+   def flowEnded(self):
+      self.plate_main.gotoPlate('last')
 
 class plate_kegbot_main(lcdui.plate_multi):
    def __init__(self, owner):
@@ -121,34 +142,30 @@ class plate_kegbot_pour(lcdui.plate_std):
       self.cmd_dict['enter'] = (self.owner.kb.stopFlow, ())
       self.cmd_dict['exit'] = (self.owner.kb.stopFlow, ())
 
-      line1 = lcdui.widget_line_std("*------------------*", row=0, col=0, scroll=0)
-      self.line2 = lcdui.widget_line_std("", row=1, col=0, scroll=0, prefix='| ', postfix=' |')
-      self.line3 = lcdui.widget_progbar(row = 2, col = 2, prefix ='[', postfix=']', proglen = 9)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
+      line1 = lcdui.widget_line_std("_now pouring________", row=0, col=0, scroll=0)
+      self.userline = lcdui.widget_line_std("", row=1, col=0, scroll=0, prefix='', postfix='')
+      self.progline = lcdui.widget_progbar(row = 2, col = 0, prefix ='|flow: [', postfix=']', proglen = 14)
+      self.costline = lcdui.widget_line_std("",row=3,col=0,prefix='|cost: $0.00',scroll=0)
 
-      pipe1 = lcdui.widget_line_std("|", row=2,col=0,scroll=0,fat=0)
-      pipe2 = lcdui.widget_line_std("|", row=2,col=19,scroll=0,fat=0)
-      ounces = lcdui.widget_line_std("", row=2,col=12,scroll=0,fat=0)
+      ounces = lcdui.widget_line_std("", row=2,col=14,scroll=0,fat=0)
 
       self.updateObject('line1',line1)
-      self.updateObject('line2',self.line2)
-      self.updateObject('progbar',self.line3)
-      self.updateObject('line4',line4)
-      self.updateObject('pipe1',pipe1)
-      self.updateObject('pipe2',pipe2)
+      self.updateObject('userline',self.userline)
+      self.updateObject('progline',self.progline)
+      self.updateObject('costline',self.costline)
       self.updateObject('ounces',ounces)
 
    def setDrinker(self, name):
-      self.line2.setData('hello, ' + name)
+      self.userline.setData('|user: ' + name)
 
 class plate_kegbot_drinker_menu(lcdui.plate_select_menu):
    def onSwitchIn(self):
-      users = self.owner.kb.user_store.getAllUsers()
+      users = Backend.User.select()
       if self.cursor + self.offset >= users:
          self.reset()
       self.menu = []
       for u in users:
-         self.menu.append((u.getName(), self.owner.startPour, (u,)))
+         self.menu.append((u.username, self.owner.startPour, (u,)))
       self.refreshMenu()
 
 class plate_kegbot_input(lcdui.plate_std):
@@ -162,39 +179,40 @@ class plate_kegbot_input(lcdui.plate_std):
       self.cmd_dict['enter'] = self.submit
 
       self.chars = ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-      self.data = 'blah'
-      self.idx = len(self.data)
+      self.data = ' '
       self.updateInput()
 
    def updateInput(self):
-      self.input_line = lcdui.widget_line_std(self.data+'_'*(self.owner.cols() - len(self.data)), row=1,col=0,scroll=0,fat=0)
+      real_data = re.sub('\s+$','',self.data)  # strip only trailing whitespace
+      self.input_line = lcdui.widget_line_std(real_data+'_'*(self.owner.cols() - len(real_data)), row=1,col=0,scroll=0,fat=0)
       self.updateObject('input_line', self.input_line)
-      self.cursor_line = lcdui.widget_line_std(self.idx*' ' + '\x1a', row=2,col=0,scroll=0,fat=0)
+      self.cursor_line = lcdui.widget_line_std( (len(self.data) - 1)*' ' + '\x1a', row=2,col=0,scroll=0,fat=0)
       self.updateObject('cursor_line', self.cursor_line)
 
    def goUp(self):
-      while self.idx >= len(self.data):
-         self.data += ' '
-      curr_char = self.data[self.idx]
+      if len(self.data) == 0:
+         curr_char = ' '
+      else:
+         curr_char = self.data[-1]
       new_char = self.chars[(self.chars.index(curr_char)-1) % len(self.chars)]
-      self.data = self.data[:self.idx] + new_char + self.data[self.idx+1:]
+      self.data = self.data[:-1] + new_char
       self.updateInput()
 
    def goDown(self):
-      while self.idx >= len(self.data):
-         self.data += ' '
-      curr_char = self.data[self.idx]
+      if len(self.data) == 0:
+         curr_char = ' '
+      else:
+         curr_char = self.data[-1]
       new_char = self.chars[(self.chars.index(curr_char)+1) % len(self.chars)]
-      self.data = self.data[:self.idx] + new_char + self.data[self.idx+1:]
+      self.data = self.data[:-1] + new_char
       self.updateInput()
 
    def goLeft(self):
-      self.idx = max(self.idx - 1, 0)
-      self.data = self.data[:self.idx]
+      self.data = self.data[:-1]
       self.updateInput()
 
    def goRight(self):
-      self.idx = min(self.idx + 1, self.owner.cols()-1)
+      self.data += ' '
       self.updateInput()
 
    def submit(self):

@@ -297,10 +297,12 @@ class KegBot:
       self.ui.activity()
       self.STOP_FLOW = 0
 
-      self.current_keg = Backend.Keg.selectBy(status='online', orderBy='-id')[0]
-      if not self.current_keg:
+      online_kegs = list(Backend.Keg.selectBy(status='online', orderBy='-id'))
+      if len(online_kegs) == 0:
          self.error('flow','no keg currently active; what are you trying to pour?')
          return
+      else:
+         current_keg = online_kegs[0]
 
       if not current_user:
          self.error('flow','no valid user for this key; how did we get here?')
@@ -387,7 +389,7 @@ class KegBot:
       # log the drink
       d = Backend.Drink(ticks=flow_ticks, volume=int(volume), starttime=int(start_time),
             endtime=int(looptime), user_id=current_user.id,
-            keg_id=self.current_keg.id, status='valid')
+            keg_id=current_keg.id, status='valid')
       d.syncUpdate()
 
       #self.brain.Event('drink-postprocessing', drink)

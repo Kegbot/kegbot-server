@@ -27,7 +27,6 @@ import SoundServer
 import SQLConfigParser
 import SQLHandler
 import TempMonitor
-import usbkeyboard
 import util
 
 # other (third-party) lib imports
@@ -124,10 +123,6 @@ class KegBot:
          self.info('main','new %s LCD at device %s' % (lcdtype, dev))
          self.ui = KegUI.KegUI(self.lcd, self)
 
-         keypad_device = self.config.get('ui','keypad_pipe')
-         if keypad_device not in NULL_DEVICES:
-            self.keypad_fp = open(keypad_device)
-            thread.start_new_thread(self.keypadThread,())
       else:
          # TODO: replace me with a KegUI.NullUI instance
          self.lcd = Display('/dev/null')
@@ -315,7 +310,7 @@ class KegBot:
 
       # determine how much volume [zero, inf) the user is allowed to pour
       # before we cut him off
-      max_volume = util.GetMaxVolume(grants)
+      max_volume = util.MaxVolume(grants)
       if max_volume == 0:
          self.info('flow', 'user does not have any credit')
          self.timeoutUser(current_user)

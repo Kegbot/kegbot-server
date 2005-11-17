@@ -145,7 +145,7 @@ class KegBot:
       self.fc = FlowController.FlowController(dev, self.makeLogger('flow', logging.INFO))
 
       # set up the default screen
-      self.ui.setCurrentPlate(self.ui.plate_main)
+      self.ui.setMain()
       self.ui.start()
       self.ui.activity()
 
@@ -224,24 +224,6 @@ class KegBot:
          self.info('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min_t))
          self.ui.setFreezer('off')
          self.fc.disableFridge()
-
-   def keypadThread(self):
-      """
-      read commands from the USB keypad and send them off to our UI
-      """
-      self.info('keypad','keypad thread starting')
-
-      while not self.QUIT.isSet():
-         time.sleep(0.01)
-         try:
-            e = usbkeyboard.read_event(self.keypad_fp)
-            #self.info('keypad','got event: %s' % (str(e)))
-            if e[3] == 1:
-               # the lcdui object may transform this key based on any
-               # translation dictionary it has, eg, "KP5 = 'up', KP2 = 'down'"
-               self.ui.cmd_queue.put(('usb',self.ui.translateKey(e[2])))
-         except:
-            pass
 
    def mainEventLoop(self):
       while not self.QUIT.isSet():

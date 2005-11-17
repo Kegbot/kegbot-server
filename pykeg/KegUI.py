@@ -12,6 +12,12 @@ class KegUI(lcdui.lcdui):
       self.plate_main = plate_kegbot_main(self)
       self.plate_pour = plate_kegbot_pour(self)
 
+   def putQueue(self, e):
+      self.cmd_queue.put(e)
+
+   def setMain(self):
+      self.setCurrentPlate(self.plate_main)
+
    def startPour(self, user):
       self.kb.handleDrinker(user.username)
 

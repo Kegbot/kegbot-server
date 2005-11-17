@@ -3,6 +3,7 @@ from sqlobject import *
 class Drink(SQLObject):
    class sqlmeta:
       table = 'drinks'
+      lazyUpdate = True
 
    ticks = IntCol()
    volume = IntCol()
@@ -15,6 +16,7 @@ class Drink(SQLObject):
 class Keg(SQLObject):
    class sqlmeta:
       table = 'kegs'
+      lazyUpdate = True
 
    full_volume = IntCol()
    startdate = DateTimeCol()
@@ -43,18 +45,18 @@ class Grant(SQLObject):
    total_volume = IntCol()
    total_drinks = IntCol()
 
-   def availableVolume(self):
+   def AvailableVolume(self):
       """
       return how much volume is available with this grant, at this instant.
       """
-      if self.isExpired():
+      if self.IsExpired():
          return 0
       if self.expiration == 'volume':
          return max(0, self.exp_volume - self.total_volume)
       else:
          return -1
 
-   def isExpired(self, extravolume = 0):
+   def IsExpired(self, extravolume = 0):
       if self.status != 'active':
          return True
       if self.expiration == "none":
@@ -66,7 +68,7 @@ class Grant(SQLObject):
       else:
          return True
 
-   def expiresBefore(self,other):
+   def ExpiresBefore(self,other):
       """
       determine if this grant will expire sooner than the given one.
 
@@ -116,5 +118,4 @@ class Token(SQLObject):
    ownerid = ForeignKey('User')
    keyinfo = StringCol()
    created = DateTimeCol()
-
 

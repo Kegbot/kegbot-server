@@ -67,11 +67,11 @@ def decomposeBAC(bac,seconds_ago,rate=0.02):
 def toF(t):
    return ((9.0/5.0)*t) + 32
 
-def getMaxVolume(grants):
+def MaxVolume(grants):
    """ return maximum volume pourable, in range [0, inf) """
    tot = 0
    for g in grants:
-      vol = g.availableVolume()
+      vol = g.AvailableVolume()
       if vol == -1:
          return -1
       elif vol == 0:

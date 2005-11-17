@@ -315,7 +315,7 @@ class KegBot:
 
       # determine how much volume [zero, inf) the user is allowed to pour
       # before we cut him off
-      max_volume = util.getMaxVolume(grants)
+      max_volume = util.GetMaxVolume(grants)
       if max_volume == 0:
          self.info('flow', 'user does not have any credit')
          self.timeoutUser(current_user)

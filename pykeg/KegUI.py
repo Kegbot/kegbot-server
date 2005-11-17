@@ -19,7 +19,7 @@ class KegUI(lcdui.lcdui):
       self.setCurrentPlate(self.plate_main)
 
    def startPour(self, user):
-      self.kb.handleDrinker(user.username)
+      self.kb.authUser(user.username)
 
    def updatePourAmount(self, ounces):
       oz = '%.1foz' % round(ounces, 1)

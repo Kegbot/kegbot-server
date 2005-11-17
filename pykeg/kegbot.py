@@ -254,9 +254,6 @@ class KegBot:
    def userIsAuthed(self, user):
       return user in self.authed_users
 
-   def handleDrinker(self,username):
-      self.authUser(username)
-
    def stopFlow(self):
       self.STOP_FLOW = 1
       self.ui.flowEnded()

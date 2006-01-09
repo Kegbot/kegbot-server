@@ -7,14 +7,14 @@
       <tr>
          <td rowspan="8" align="center" valign="top" width=140>
             <div>
-            { include file="mugshot-box.tpl" u=$drinker d=128}
+            { include file="boxes/mugshot-box.tpl" u=$drinker d=128}
             </div>
             <font size=+1>{$rating}</font><br>({$avg_drinks_hour|string_format:"%.1f"} drinks/hour)
          </td>
       </tr>
       <tr>
          <td valign="top">
-            {include file="drinker-quickshot.tpl"}
+            {include file="boxes/drinker-quickshot.tpl"}
          </td>
       </tr>
    </table>
@@ -25,7 +25,7 @@
 </div>
 <div class="content">
    {if $num_sess > 0}
-      {include file="binge-stats.tpl"}
+      {include file="misc/binge-stats.tpl"}
    {else}
    <p>
       this guy hasn't had nearly enough to drink! no statistics are available for babies...
@@ -45,7 +45,7 @@
       <td><b>#</b></td><td align="right"><b>size</b></td><td>&nbsp;</td><td><b>user</b></td><td><b>when</b></td><td><b>bac</b></td>
    </tr>
    { foreach name=drinks item="drink" from=$drinks }
-      { include file="drink-span.tpl" drink=$drink } 
+      { include file="spans/drink.tpl" drink=$drink } 
    { /foreach }
    </table>
    </p>

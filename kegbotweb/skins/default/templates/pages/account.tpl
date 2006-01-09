@@ -101,7 +101,7 @@
       </tr>
       {foreach name=bills item="charge" from=$charges}
          <tr >
-         { include file="charge-span.tpl"}
+         { include file="spans/charge.tpl"}
          </tr>
          <tr>
       {/foreach}
@@ -132,7 +132,7 @@
       </tr>
       {foreach name=grants item="grant" from=$grants}
          <tr>
-         { include file="grant-span.tpl" grant=$grant}
+         { include file="spans/grant.tpl" grant=$grant}
          </tr>
       {/foreach}
       </table>
@@ -169,7 +169,7 @@
       </td>
       <td>
          <b>current:</b><br>
-         { include file="mugshot-box.tpl" u=$drinker d=128}
+         { include file="boxes/mugshot-box.tpl" u=$drinker d=128}
       </td>
    </table>
    </div>

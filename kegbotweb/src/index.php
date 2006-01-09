@@ -1,10 +1,6 @@
 <?
-    //Header('Location: /static/kegbot.org/');
-    //exit;
    include_once('includes/load-config.php');
    include_once('includes/SmartyBeer.class.php');
-   //include_once('includes/session.php');
-   //require_once('includes/loggedin-required.php');
 
    // per-page stuff
    $nav_section = 'main';

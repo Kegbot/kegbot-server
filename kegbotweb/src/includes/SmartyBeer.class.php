@@ -97,13 +97,13 @@
          // constructor
          $this->Smarty();
 
-         $basedir = $cfg['dirs']['skindir'] . "/$skin";
-         file_exists($basedir) || die "Skin dir not found!";
+         $this->basedir = $cfg['dirs']['skindir'] . "/$skin";
+         file_exists($this->basedir) || die "Skin dir not found!";
          $smartydir = $cfg['dirs']['smartydir'] . "/$skin";
          file_exists($smartydir) || die "Smarty dir not found!";
 
-         $this->template_dir = $basedir . '/templates/';
-         $this->config_dir = $basedir . '/configs/';
+         $this->template_dir = $this->basedir . '/templates/';
+         $this->config_dir = $this->basedir . '/configs/';
          $this->compile_dir = $smartydir . '/templates_c/';
          $this->cache_dir = $smartydir . '/cache/' . $cfg['edition'] . '/'; 
 

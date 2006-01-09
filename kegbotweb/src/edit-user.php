@@ -10,8 +10,8 @@
 
    // set up available policies
    $smarty->assign("policies",getAllPolicies());
-   $drinker = loadDrinker($_GET['u']);
-   $smarty->assign("drinker",$drinker);
+   $d = loadDrinker($_GET['u']);
+   $smarty->assign("target",$d);
    $smarty->assign("grants",getUserGrants($drinker->id));
 
    

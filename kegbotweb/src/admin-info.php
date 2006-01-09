@@ -12,6 +12,6 @@
    $smarty->assign("tokens",getAllTokens());
    $smarty->assign("policies",getAllPolicies());
 
-   $smarty->show_page("admin-page.tpl",$cid);
+   $smarty->show_page("admin-info.tpl",$cid);
 
 ?>

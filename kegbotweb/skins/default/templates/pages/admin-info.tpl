@@ -24,11 +24,11 @@
       <tr>
       <td rowspan="2" valign="top"><input type="submit" name="action" value="grant"></td>
       <td valign="top">
-         {include file="policy-select.tpl"}
+         {include file="misc/policy-select.tpl"}
       </td>
       <td valign="top">to user(s)</td>
       <td valign="top">
-         {include file="multi-drinker-select.tpl"}
+         {include file="boxes/multi-drinker-select.tpl"}
       </td>
       </tr>
       <tr>
@@ -60,7 +60,7 @@
          <td><b>created</b></td>
       </tr>
       {foreach from=$tokens item=token}
-         {include file="token-span.tpl" token=$token}
+         {include file="spans/token.tpl" token=$token}
       {/foreach}
       </table>
       </div>
@@ -75,7 +75,7 @@
       all known policies are shown below.
    </p>
    <p>
-      {include file="policy-select.tpl" policies=$policies}
+      {include file="misc/policy-select.tpl" policies=$policies}
       <input type="submit" name="action" value="edit">
       <input type="submit" name="action" value="delete">
       <input type="submit" name="action" value="show grants">

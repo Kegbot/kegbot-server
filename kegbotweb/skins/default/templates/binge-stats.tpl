@@ -59,7 +59,12 @@
                <td><b>#</b></td><td align="right"><b>size</b></td><td>&nbsp;</td><td><b>user</b></td><td><b>bac</b></td>
             </tr>
          {foreach from=$session->drinks item=drink}
-            { include file="drink-span_session.tpl" drink=$drink } 
+            <tr>
+               <td><a href="{$drink->infoURL()}">{$drink->id}</a></td>
+               <td align="right">{$drink->getSize()|string_format:"%.1f"}&nbsp;</td> <td>ounces</td>
+               <td>{$drink->endtime|rel_date|lower}</td>
+               <td>{$drink->bac|string_format:"%.3f"}</td>
+            </tr>
          {/foreach}
          </table>
          </div>

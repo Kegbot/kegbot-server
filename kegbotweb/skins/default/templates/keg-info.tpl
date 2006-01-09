@@ -63,7 +63,7 @@
    full drink history
 </div>
 <div class="content">
-   {if $keg->status == "online" and $edition == 'default'}
+   {if $keg->status == "online"}
    <img src="http://kegbot.org/graphs/gen-graph.php?g=keghist">
    {/if}
    {if $usehistory}

@@ -27,8 +27,7 @@
    // when we call buildGraph
 
    $tpl = '../templates/graph-display.tpl';
-   global $OVERFLOW;
-   if (!$smarty->is_cached($tpl,"$g.$d") and !$OVERFLOW) {
+   if (!$smarty->is_cached($tpl,"$g.$d")) {
       $f = buildGraph($g,$refresh,$last);
    }
 

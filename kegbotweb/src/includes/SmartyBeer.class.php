@@ -3,11 +3,8 @@
    include_once('drinker.class.php');
    include_once('charge.class.php');
    include_once('Smarty.class.php');
-   global $skin, $css, $OVERFLOW;
-   $OVERFLOW = 0;
-   if ($OVERFLOW != 1) {
-     include_once('session.php');
-   }
+   global $skin, $css;
+   include_once('session.php');
    include_once('main-functions.php');
    if ($_SESSION['skin']) {
       $skin = $_SESSION['skin'];
@@ -121,8 +118,6 @@
          $this->assign('edition',$cfg['edition']);
          $this->assign('css',$css);
          $this->assign('skin',$skin);
-         global $OVERFLOW;
-         $this->assign('OVERFLOW',$OVERFLOW);
          $this->assign('g_current_vol', getLeadersByVolume(false,5));
          $this->assign('g_alltime_vol', getLeadersByVolume(true,5));
 

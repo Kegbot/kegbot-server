@@ -5,37 +5,10 @@
 </div>
 <div class="content">
    <p>
-   this is the kegbot kegerator{if $edition != 'default'}, <b>{$edition}</b> edition{/if}! for more information, see the <a
+   this is the kegbot kegerator! for more information, see the <a
    href="http://kegbot.org/project/">project page</a>.
    </p>
-
-   {if $edition == 'default'}
-   <p>
-   <div style="text-align:center;background:#ccc; border:1px solid #ccc;font-size:14px;">
-   <b>=&gt;</b> please see the <a href="http://wiki.kegbot.org/Kegbot_FAQ">FAQ</a> and <a href="http://wiki.kegbot.org">wiki</a> for info. <b>&lt;=</b>
-   </div>
-   </p>
-
-   <p>
-   <b><font color="#dd0000">11/15/05 update</font></b><br>
-
-    it's been while since kegbot.org's last keg was finished, but fear not, a
-    new one is coming soon, and we can finally wipe adam's smirk off the page
-    below! in the meantime we've been busy putting <a
-    href="http://sj.kegbot.org">two</a> <a href="http://md.kegbot.org">new</a>
-    kegbots online -- though their servers go up and down, so be nice.
-
-   </p>
-   {/if}
-
 </div>
-{if $OVERFLOW==1}
-<div class="content" style="background:#ff5555;">
-   <p>
-   overflow mode - some features disabled
-   </p>
-</div>
-{/if}
 <div class="contenthead">
    last five drinks
 </div>
@@ -125,7 +98,6 @@
          <b><a href="/keg/{$curr_keg->id}">{$curr_keg->beername}</a></b>; {$curr_keg->alccontent|string_format:"%.1f"}% abv; <i>{$curr_keg->status}</i>; {$keg_temp_c|string_format:"%.2f"} &deg;C / {$keg_temp_f|string_format:"%.2f"} &deg;F<br>
       </center>
    </p>
-   {if $edition == 'default'}
    <p>
       <div class="box">
       <img src="/graphs/gen-graph.php?g=current-temps&d={$graphdays}"><br>
@@ -142,7 +114,6 @@
       the moving average is computed only for the primary sensor, and is based
       on the last 30 points, or roughly, the last 15 minutes of measurements.
    </p>
-   {/if}
 </div>
 
 <div class="contenthead">

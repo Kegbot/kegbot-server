@@ -80,10 +80,6 @@ class Drink {
    }
    function infoURL() {
       //return "/drink-info.php?drink=" . $this->id;
-      global $OVERFLOW;
-      if ($OVERFLOW) {
-         return "";
-      }
       return "/drink/" . $this->id;
    }
    function getSize() {

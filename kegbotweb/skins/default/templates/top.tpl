@@ -5,14 +5,6 @@
    {/if}
    <title>kegbot kegerator</title>
    <style type="text/css" media="all">@import "{$css}";</style>
-   {if $edition == 'default'}
-   <script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
-   </script>
-   <script type="text/javascript">
-   _uacct = "UA-73794-1";
-   urchinTracker();
-   </script>
-   {/if}
 </head>
 <body>
    {include file="top5.tpl"}

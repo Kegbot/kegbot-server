@@ -39,11 +39,11 @@ class Drinker {
    }
    function getMugshotURL() {
       global $cfg;
-      $uf = $cfg['dirs']['imagedir'] . "/{$cfg['edition']}" . "/{$this->username}.jpg";
+      $uf = $cfg['dirs']['imagedir'] . "/{$this->username}.jpg";
       if (!file_exists($uf)) {
          return "/images/unknown-drinker.jpg";
       }
-      return "/userpics/{$cfg['edition']}/{$this->username}.jpg";
+      return "/userpics/{$this->username}.jpg";
    }
    function getSlots() {
       $slots= Array();

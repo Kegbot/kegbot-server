@@ -70,7 +70,6 @@ current leaders
    </p>
 </div>
 
-{if $edition == 'default'}
 <div class="contenthead">
    leader movement
 </div>
@@ -82,4 +81,3 @@ current leaders
          sections show periods of drinker inactivity.
       </p>
 </div>
-{/if}

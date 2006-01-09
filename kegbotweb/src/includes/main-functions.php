@@ -3,7 +3,7 @@
    require_once("load-config.php");
    require_once("allclasses.php");
    include_once('binge-functions.php');
-   @mysql_connect($cfg['db']['host'], $cfg['db']['user'], $cfg['db']['password']) || die("the kegbot front end can't connect to the backend. uh oh.");
+   @mysql_connect($cfg['db']['host'], $cfg['db']['user'], $cfg['db']['password']) || die("the kegbot front end can't connect to the backend. check db config in cfg.inc.php");
    mysql_select_db($cfg['db']['db']) || die("the kegbot front end can't find this database. uh oh.");
    $r = mysql_query("SELECT UNIX_TIMESTAMP(NOW())");
    $DBTIME = mysql_fetch_array($r);

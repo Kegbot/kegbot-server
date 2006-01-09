@@ -1,7 +1,7 @@
 <?
 $cfg['db']['host'] = 'localhost';
 $cfg['db']['user'] = 'kegbot';
-$cfg['db']['password'] = '';
+$cfg['db']['password'] = 'beer!me';
 $cfg['db']['db'] = 'kegbot';
 
 $cfg['flow']['minticks'] = 2;

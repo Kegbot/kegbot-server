@@ -12,7 +12,7 @@
    }
    else {
       $skin = 'default';
-      $css  = '/css/main.css';
+      $css  = '/css.php?css=main.css';
    }
 
    function netcash_filter($val)

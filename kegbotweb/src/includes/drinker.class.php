@@ -41,7 +41,7 @@ class Drinker {
       global $cfg;
       $uf = $cfg['dirs']['imagedir'] . "/{$this->username}.jpg";
       if (!file_exists($uf)) {
-         return "/images/unknown-drinker.jpg";
+         return "/images/unknown-drinker.png";
       }
       return "/userpics/{$this->username}.jpg";
    }

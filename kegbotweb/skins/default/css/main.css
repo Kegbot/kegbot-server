@@ -83,7 +83,7 @@ div.mainheader {
    padding-top: 8px;
    padding-bottom: 5px;
    border-top:0px;
-   background-image:url('/images/keg-header.jpg');
+   background-image:url('/images/keg-header.png');
    background-position: -40px;
    background-repeat:no-repeat;
 }
@@ -124,7 +124,7 @@ div.leftbox {
    clear: left;
 }
 div.leftnav {
-   background-image:url('/images/keg-header.jpg');
+   background-image:url('/images/keg-header.png');
    background-repeat:no-repeat;
    width: 100px;
    min-height: 200px;

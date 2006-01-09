@@ -17,6 +17,7 @@
       $skin = 'beerskin';
       $css  = '/css/main.css';
    }
+
    function netcash_filter($val)
       {
          if ($val == 0) {
@@ -41,7 +42,7 @@
             return "<font color=\"red\">$val</font>";
          }
       }
- 
+
    function money_fmt($m) {
       if ($m < 1) {
          return "no cost";
@@ -55,6 +56,7 @@
          return '$' . money_format('%i',$m);
       }
    }
+
    function bac_format($bac)
    {
       $bacval = max(0.0,floatval($bac) - 0.005);
@@ -66,6 +68,7 @@
       return "<font color=\"#$color\">$bac</font>";
 
    }
+
    function rel_date($stamp) {
       $diff = $GLOBALS['dbtime'] - $stamp;
       if ($diff < 60) { 
@@ -90,18 +93,22 @@
          return strftime("%B %e, %Y %H:%M", $stamp);
       }
   }
+
   class SmartyBeer extends Smarty {
       function SmartyBeer() {
          global $cfg, $skin, $css;
          // constructor
          $this->Smarty();
 
-         $basedir = $cfg['smarty']['basedir'] . "/$skin";
+         $basedir = $cfg['dirs']['skindir'] . "/$skin";
+         file_exists($basedir) || die "Skin dir not found!";
+         $smartydir = $cfg['dirs']['smartydir'] . "/$skin";
+         file_exists($smartydir) || die "Smarty dir not found!";
 
          $this->template_dir = $basedir . '/templates/';
-         $this->compile_dir = $basedir . '/templates_c/';
          $this->config_dir = $basedir . '/configs/';
-         $this->cache_dir = $basedir . '/cache/' . $cfg['edition'] . '/'; 
+         $this->compile_dir = $smartydir . '/templates_c/';
+         $this->cache_dir = $smartydir . '/cache/' . $cfg['edition'] . '/'; 
 
 
          $this->register_modifier("rel_date","rel_date");

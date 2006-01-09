@@ -6,15 +6,19 @@ $cfg['db']['db'] = 'kegbot';
 
 $cfg['flow']['minticks'] = 2;
 
-$cfg['graph']['imgdir'] = '/data/kegbot/htdocs/graphs/img';
-$cfg['graph']['scriptdir'] = '/data/kegbot/htdocs/graphs';
-$cfg['graph']['datadir'] = '/data/kegbot/htdocs/graphs';
+$cfg['dirs']['webdir'] = "/data/kegbot-beta/htdocs";
+$cfg['dirs']['skindir'] = "/data/kegbot-beta/skins";
+$cfg['dirs']['smartytmp'] = "/data/kegbot-beta/smartytmp";
+
+$cfg['dirs']['imagedir'] = $cfg['dirs']['webdir'] . '/userpics';
+
+$cfg['graph']['imgdir'] = $cfg['dirs']['webdir'] . '/graphs/img';
+$cfg['graph']['scriptdir'] = $cfg['dirs']['webdir'] . '/graphs';
+$cfg['graph']['datadir'] = $cfg['dirs']['webdir'] . '/graphs';
 $cfg['graph']['imgurl'] = '/graphs/img';
 $cfg['graph']['cmd'] = 'ploticus';
 
-$cfg['smarty']['basedir'] = "/data/kegbot/kegbot-smarty";
 $cfg['smarty']['cachetime'] = 600;
-$cfg['dirs']['imagedir'] = "/data/kegbot/htdocs/userpics";
 
 $cfg['edition'] = 'default';
 

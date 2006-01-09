@@ -30,8 +30,5 @@
       unset($_SESSION['oneshot_msg']);
    }
 
-   // display the top
-   $smarty->display("top.tpl");
-   $smarty->display("account-main.tpl");
-   $smarty->display("bottom.tpl");
+   $smarty->show_page("account.tpl");
 ?>

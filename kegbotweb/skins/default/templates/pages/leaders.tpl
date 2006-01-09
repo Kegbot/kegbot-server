@@ -44,17 +44,17 @@ current leaders
    <tr>
       <td align="center" valign="top">
          { foreach name=alltime_vol item="volleader" from=$alltime_vol} 
-             { include file="leader-box.tpl" units=$volleader.units border=1 leadinfo=$volleader place=$smarty.foreach.alltime_vol.iteration }
+             { include file="boxes/leader-box.tpl" units=$volleader.units border=1 leadinfo=$volleader place=$smarty.foreach.alltime_vol.iteration }
          { /foreach }
       </td>
       <td align="center" valign="top">
       { foreach name=current_vol item="kegleader" from=$current_vol} 
-          { include file="leader-box.tpl" border=1 units=$kegleader.units leadinfo=$kegleader place=$smarty.foreach.current_vol.iteration }
+          { include file="boxes/leader-box.tpl" border=1 units=$kegleader.units leadinfo=$kegleader place=$smarty.foreach.current_vol.iteration }
       { /foreach }
       </td>
       <td align="center" valign="top">
       { foreach name=alltime_bac item="BACleader" from=$alltime_bac } 
-         { include file="leader-box.tpl" border=1 units="%" leadinfo=$BACleader place=$smarty.foreach.alltime_bac.iteration }
+         { include file="boxes/leader-box.tpl" border=1 units="%" leadinfo=$BACleader place=$smarty.foreach.alltime_bac.iteration }
       { /foreach }
       </td>
    </tr>

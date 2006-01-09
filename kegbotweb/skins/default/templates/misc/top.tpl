@@ -7,7 +7,7 @@
    <style type="text/css" media="all">@import "{$css}";</style>
 </head>
 <body>
-   {include file="top5.tpl"}
+   {include file="boxes/top5.tpl"}
    <div class="mainheader">
       <p>
          <font size="+2" color="#ffffff"><b>kegbot beer device...</b> beer me!</font>

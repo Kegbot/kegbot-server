@@ -44,8 +44,5 @@
       $smarty->assign('keg_volleaders', $drinkers);
    }
 
-   // display the stuff
-   $smarty->display("top.tpl");
-   $smarty->display("$tplpage",$cid);
-   $smarty->display("bottom.tpl");
+   $smarty->show_page("$tplpage",$cid);
 ?>

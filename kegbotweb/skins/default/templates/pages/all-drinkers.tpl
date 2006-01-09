@@ -10,12 +10,12 @@
    <table width="100%" border="0" cellpadding="3" cellspacing="3">
    <tr>
       <td align="center" valign="top">
-            { include file="mugshot-box.tpl" u=$d d=100}
+            { include file="boxes/mugshot-box.tpl" u=$d d=100}
             <font size="+1">{$d->getNameLinkified()}</font>
       </td>
 
       <td valign="top">
-         {include file="drinker-quickshot.tpl" drinker=$d stats=$d->stats}
+         {include file="boxes/drinker-quickshot.tpl" drinker=$d stats=$d->stats}
       </td>
    </tr>
    </table>
@@ -32,7 +32,7 @@
    { foreach name=all_drinkers item="d" from=$drinkers}
    {if $d->stats.alltime_vol < 64.0}
    <div style="text-align:center; float:left; padding-right: 5px; padding-top:5px;">
-      { include file="mugshot-box.tpl" u=$d d=100}
+      { include file="boxes/mugshot-box.tpl" u=$d d=100}
       {$d->getNameLinkified()}
    </div>
    {/if}

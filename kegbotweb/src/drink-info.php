@@ -51,8 +51,5 @@
       }
    }
    
-   // display the top
-   $smarty->display("top.tpl");
-   $smarty->display("$tplpage");
-   $smarty->display("bottom.tpl");
+   $smarty->show_page("$tplpage");
 ?>

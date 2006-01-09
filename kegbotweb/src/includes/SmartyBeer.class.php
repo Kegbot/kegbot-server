@@ -130,6 +130,12 @@
          $this->compile_check = true;
       }
 
+      function show_page($tpl, $cid="") {
+         $this->display("misc/top.tpl", $cid);
+         $this->display("pages/$tpl", $cid);
+         $this->display("misc/bottom.tpl", $cid);
+      }
+
    }
 
 ?>

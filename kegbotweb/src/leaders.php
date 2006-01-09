@@ -4,7 +4,7 @@
 
    $nav_section = 'stats';
    $nav_page = 'findLeaders';
-   $tplpage = "leaders-new.tpl";
+   $tplpage = "leaders.tpl";
 
    $smarty = new SmartyBeer();
 
@@ -36,8 +36,5 @@
       //$smarty->assign('current_binge', getLeadersByBinge(false,$disp));
    }
 
-   // display the top
-   $smarty->display("top.tpl");
-   $smarty->display($tplpage,$cid);
-   $smarty->display("bottom.tpl");
+   $smarty->show_page($tplpage,$cid);
 ?>

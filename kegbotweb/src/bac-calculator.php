@@ -10,9 +10,5 @@
 
    $smarty = new SmartyBeer();
 
-   // display the top
-   $templates = "/var/www/localhost/smarty/beerskin/templates";
-   $smarty->display("$templates/top.tpl");
-   $smarty->display("$templates/bac-calc.tpl");
-   $smarty->display("$templates/bottom.tpl");
+   $smarty->show_page("bac-calculator.tpl");
 ?>

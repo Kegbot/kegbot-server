@@ -75,7 +75,7 @@
       <td><b>#</b></td><td align="right"><b>size</b></td><td>&nbsp;</td><td><b>user</b></td><td><b>when</b></td>
    </tr>
    { foreach name=drinks item="drink" from=$drinks }
-      { include file="drink-span.tpl" drink=$drink } 
+      { include file="spans/drink.tpl" drink=$drink } 
    { /foreach }
    </table>
    </p>
@@ -100,7 +100,7 @@
 
    <tr>
       <td align="center" valign="top">
-            { include file="mugshot-box.tpl" u=$d d=100}
+            { include file="boxes/mugshot-box.tpl" u=$d d=100}
             <font size="+1">{$d->getNameLinkified()}</font>
       </td>
 
@@ -110,7 +110,7 @@
             <b>hall of shame finalist</b>
          </font>
          {else}
-            {include file="drinker-quickshot.tpl" drinker=$d stats=$d->stats}
+            {include file="boxes/drinker-quickshot.tpl" drinker=$d stats=$d->stats}
          {/if}
       </td>
    </tr>

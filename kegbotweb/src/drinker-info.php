@@ -24,9 +24,7 @@
          $tplpage = $errpage;
          $msg = "Drinker id $history does not exist.";
          $smarty->assign('msg',$msg);
-         $smarty->display("top.tpl");
-         $smarty->display("$tplpage",$cid);
-         $smarty->display("bottom.tpl");
+         $smarty->show_page("$tplpage",$cid);
          exit;
       }
 
@@ -130,7 +128,5 @@
       }
    }
 
-   $smarty->display("top.tpl");
-   $smarty->display("$tplpage",$cid);
-   $smarty->display("bottom.tpl");
+   $smarty->show_page("$tplpage",$cid);
 ?>

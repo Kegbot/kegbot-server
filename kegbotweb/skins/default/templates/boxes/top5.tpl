@@ -4,7 +4,7 @@ current keg
 {foreach name=curr_vol from=$g_current_vol item=resinfo}
    <div class="leftbox" style="font:10px Courier, sans-serif;">
    <center>
-   {include file="mugshot-box.tpl" u=$resinfo.drinker d=100 border=0 href=$resinfo.drinker->getLink()}
+   {include file="boxes/mugshot-box.tpl" u=$resinfo.drinker d=100 border=0 href=$resinfo.drinker->getLink()}
    {$resinfo.amount}{$resinfo.units}
    </center>
    </div>

@@ -1,6 +1,6 @@
 <div style="text-align:center;">
    <center>
-   {include file="mugshot-box.tpl" u=$leadinfo.drinker d="96" href=$leadinfo.drinker->getLink() border=$border}
+   {include file="boxes/mugshot-box.tpl" u=$leadinfo.drinker d="96" href=$leadinfo.drinker->getLink() border=$border}
    <b>{$leadinfo.drinker->username}</b><br>
    {if $place == 1}
    <font color="#ff0000">top dog!</font><br>

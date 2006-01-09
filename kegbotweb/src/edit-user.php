@@ -15,8 +15,6 @@
    $smarty->assign("grants",getUserGrants($drinker->id));
 
    
-   $smarty->display("top.tpl");
-   $smarty->display("edit-user.tpl",$cid);
-   $smarty->display("bottom.tpl");
+   $smarty->show_page("edit-user.tpl",$cid);
 
 ?>

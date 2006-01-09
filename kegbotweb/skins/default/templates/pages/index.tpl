@@ -26,7 +26,7 @@
    { foreach name=drinks item="drink" from=$last_drinks }
       <td>
          <center>
-         {include file="mugshot-box.tpl" u=$drink->drinker_obj d="72" href="/drink/`$drink->id`" border=1}
+         {include file="boxes/mugshot-box.tpl" u=$drink->drinker_obj d="72" href="/drink/`$drink->id`" border=1}
          </center>
       </td>
       <td>&nbsp;</td>
@@ -57,7 +57,7 @@
       <td><b>bac</b></td>
    </tr>
    { foreach name=drinks item="drink" from=$last_drinks }
-      { include file="drink-span.tpl" drink=$drink } 
+      { include file="spans/drink.tpl" drink=$drink } 
    { /foreach }
    </table>
    </div>
@@ -80,7 +80,7 @@
             <td><b>current bac</b></td>
          </tr>
       {foreach name=drunks item="drinker" from=$drunks}
-         {include file="bac-leaders.tpl" drinker=$drinker }
+         {include file="boxes/bac-leaders.tpl" drinker=$drinker }
       {/foreach}
       </table>
    {else}
@@ -123,7 +123,7 @@
    <p>
    {if $s_drinker}
    {foreach from=$tags item="tag"}
-   {include file="tag-line.tpl"}
+   {include file="spans/tag.tpl"}
    {/foreach}
    {else}
    must be logged in to view tags

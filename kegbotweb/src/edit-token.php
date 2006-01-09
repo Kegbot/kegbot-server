@@ -11,8 +11,6 @@
    $smarty->caching = 0;
    $smarty->assign("token",getToken($_GET['id']));
 
-   $smarty->display("top.tpl");
-   $smarty->display("edit-token.tpl",$cid);
-   $smarty->display("bottom.tpl");
+   $smarty->show_page("edit-token.tpl",$cid);
 
 ?>

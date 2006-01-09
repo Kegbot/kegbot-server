@@ -5,7 +5,7 @@
    // per-page stuff
    $nav_section = 'main';
    $nav_page = 'main';
-   $tplpage = "front-page.tpl";
+   $tplpage = "index.tpl";
 
    // generate the template processor
    $smarty = new SmartyBeer();
@@ -37,9 +37,6 @@
       $smarty->assign('keg_time',$curr['time']);
    }
 
-   // display the stuff
-   $smarty->display("top.tpl",$cid);
-   $smarty->display($tplpage,$cid);
-   $smarty->display("bottom.tpl",$cid);
+   $smarty->show_page($tplpage, $cid);
 
 ?>

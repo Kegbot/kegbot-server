@@ -1,0 +1,7 @@
+Options FollowSymLinks
+
+RewriteEngine on
+RewriteRule ^drinker/(.*)/drinks.rss$ drinker.rss.php?drinker=$1 [L]
+RewriteRule ^drinker/(.*)$ drinker-info.php?drinker=$1 [L]
+RewriteRule ^drink/(.*)$ drink-info.php?drink=$1 [L]
+RewriteRule ^keg/(.*)$ keg-info.php?keg=$1 [L]

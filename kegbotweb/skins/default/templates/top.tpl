@@ -1,7 +1,7 @@
 <html>
 <head>
    {if $refresh}
-   <META HTTP-EQUIV=Refresh CONTENT="10; URL=leaders2.php?r=1">
+   <META HTTP-EQUIV=Refresh CONTENT="10; URL=leaders.php?r=1">
    {/if}
    <title>kegbot kegerator</title>
    <style type="text/css" media="all">@import "{$css}";</style>
@@ -24,7 +24,7 @@
          <div style="padding-left:30px;">
          <a href="/">main</a> |
          <a href="/all-drinkers.php">drinkers</a> |
-         <a href="/leaders2.php">leader board</a> |
+         <a href="/leaders.php">leader board</a> |
          <a href="/account.php">account</a>
          { if $s_drinker->admin }
          | <a href="/admin-info.php">kebgot admin</a>

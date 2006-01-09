@@ -11,7 +11,7 @@
       $css  = $_SESSION['css'];
    }
    else {
-      $skin = 'beerskin';
+      $skin = 'default';
       $css  = '/css/main.css';
    }
 
@@ -92,20 +92,22 @@
   }
 
   class SmartyBeer extends Smarty {
+      var $basedir;
+
       function SmartyBeer() {
          global $cfg, $skin, $css;
          // constructor
          $this->Smarty();
 
          $this->basedir = $cfg['dirs']['skindir'] . "/$skin";
-         file_exists($this->basedir) || die "Skin dir not found!";
-         $smartydir = $cfg['dirs']['smartydir'] . "/$skin";
-         file_exists($smartydir) || die "Smarty dir not found!";
+         file_exists($this->basedir) || die("Skin dir {$this->basedir} not found!");
+         $smartydir = $cfg['dirs']['smartytmp'] . "/$skin";
+         file_exists($smartydir) || die("Smarty dir not found!");
 
          $this->template_dir = $this->basedir . '/templates/';
          $this->config_dir = $this->basedir . '/configs/';
          $this->compile_dir = $smartydir . '/templates_c/';
-         $this->cache_dir = $smartydir . '/cache/' . $cfg['edition'] . '/'; 
+         $this->cache_dir = $smartydir . '/cache/';
 
 
          $this->register_modifier("rel_date","rel_date");
@@ -115,7 +117,6 @@
          $this->register_modifier("netcash_filter",Array(&$this,"netcash_filter"));
 
          $this->assign('app_name','Beer Bot');
-         $this->assign('edition',$cfg['edition']);
          $this->assign('css',$css);
          $this->assign('skin',$skin);
          $this->assign('g_current_vol', getLeadersByVolume(false,5));

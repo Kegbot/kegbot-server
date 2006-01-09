@@ -22,6 +22,8 @@ $cfg['smarty']['cachetime'] = 600;
 
 $cfg['edition'] = 'default';
 
+// locale stuff... TODO organize me
 putenv("TZ=US/Pacific");
+setlocale(LC_MONETARY, 'en_US');
 $cfg['timezone'] = 'PDT';
 ?>

@@ -44,13 +44,9 @@
       if ($m < 1) {
          return "no cost";
       }
-      elseif ($m < 100) {
-         return round($m,0) . "&cent;";
-      }
       else {
          $m = round($m/100.0,2);
-         setlocale(LC_MONETARY, 'en_US');
-         return '$' . money_format('%i',$m);
+         return htmlentities(money_format('%.2n',$m),ENT_QUOTES,'ISO-8859-15');
       }
    }
 

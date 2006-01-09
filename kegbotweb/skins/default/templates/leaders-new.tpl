@@ -40,9 +40,6 @@ current leaders
       <td align="center">
          <b>blood alcohol freaks</b>
       </td>
-      <td align="center">
-         <b>largest binge</b>
-      </td>
    </tr>
    <tr>
       <td align="center" valign="top">
@@ -58,11 +55,6 @@ current leaders
       <td align="center" valign="top">
       { foreach name=alltime_bac item="BACleader" from=$alltime_bac } 
          { include file="leader-box.tpl" border=1 units="%" leadinfo=$BACleader place=$smarty.foreach.alltime_bac.iteration }
-      { /foreach }
-      </td>
-      <td align="center" valign="top">
-      { foreach name=alltime_binge item="binger" from=$alltime_binge } 
-         { include file="leader-box.tpl" border=1 units="%" leadinfo=$binger place=$smarty.foreach.alltime_binge.iteration }
       { /foreach }
       </td>
    </tr>

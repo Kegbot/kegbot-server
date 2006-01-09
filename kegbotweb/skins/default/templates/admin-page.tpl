@@ -2,9 +2,6 @@
    edit user
 </div>
 <div class="content">
-   <p>
-      want to fuck a user up? then edit the shit out of him below.
-   </p>
    <form action="edit-user.php">
    <p>
          <select name="u">

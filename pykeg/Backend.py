@@ -1,3 +1,5 @@
+import sys
+
 from sqlobject import *
 
 class Drink(SQLObject):
@@ -9,8 +11,8 @@ class Drink(SQLObject):
    volume = IntCol()
    starttime = IntCol()
    endtime = IntCol()
-   user_id = ForeignKey('User')
-   keg_id = ForeignKey('Keg')
+   user = ForeignKey('User')
+   keg = ForeignKey('Keg')
    status = EnumCol(enumValues = ['valid','invalid'])
 
 class Keg(SQLObject):
@@ -35,10 +37,10 @@ class Grant(SQLObject):
       table = 'grants'
       lazyUpdate = True
 
-   foruid = ForeignKey('User')
+   user = ForeignKey('User')
    expiration = EnumCol(enumValues = ['none', 'time', 'ounces', 'drinks'])
    status = EnumCol(enumValues = ['active', 'expired', 'deleted'])
-   forpolicy_id = ForeignKey('Policy')
+   policy = ForeignKey('Policy')
    exp_volume = IntCol()
    exp_time = IntCol()
    exp_drinks = IntCol()
@@ -54,7 +56,7 @@ class Grant(SQLObject):
       if self.expiration == 'volume':
          return max(0, self.exp_volume - self.total_volume)
       else:
-         return -1
+         return sys.maxint
 
    def IsExpired(self, extravolume = 0):
       if self.status != 'active':
@@ -67,6 +69,13 @@ class Grant(SQLObject):
          return (extravolume + self.total_volume) >= self.exp_volume
       else:
          return True
+
+   def IncVolume(self, volume):
+      self.total_volume += volume
+      if self.expiration == 'volume':
+         if self.total_volume >= self.exp_volume:
+            self.status = 'expired'
+      self.syncUpdate()
 
    def ExpiresBefore(self,other):
       """
@@ -115,7 +124,27 @@ class Token(SQLObject):
       table = 'tokens'
       lazyUpdate = True
 
-   ownerid = ForeignKey('User')
+   user = ForeignKey('User')
    keyinfo = StringCol()
    created = DateTimeCol()
+
+class BAC(SQLObject):
+   class sqlmeta:
+      table = 'bacs'
+      lazyUpdate = True
+
+   user = ForeignKey('User')
+   rectime = IntCol()
+   bac = FloatCol()
+
+class GrantCharge(SQLObject):
+   class sqlmeta:
+      table = 'grantcharges'
+      lazyUpdate = True
+
+   grant = ForeignKey('Grant')
+   drink = ForeignKey('Drink')
+   user = ForeignKey('User')
+   volume = IntCol()
+
 

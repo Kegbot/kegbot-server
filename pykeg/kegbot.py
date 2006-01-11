@@ -282,7 +282,7 @@ class KegBot:
          return 0
 
       # user has poured his maximum
-      if max_volume != -1:
+      if max_volume != sys.maxint:
          if volume >= max_volume:
             self.info('flow', 'boot: volume limit met/exceeded')
             return 0
@@ -305,7 +305,7 @@ class KegBot:
          self.error('flow','no valid user for this key; how did we get here?')
          return
 
-      grants = list(Backend.Grant.selectBy(foruid=current_user.id))
+      grants = list(Backend.Grant.selectBy(user=current_user))
 
       # determine how much volume [zero, inf) the user is allowed to pour
       # before we cut him off
@@ -314,7 +314,7 @@ class KegBot:
          self.info('flow', 'user does not have any credit')
          self.timeoutUser(current_user)
          return
-      elif max_volume == -1:
+      elif max_volume == sys.maxint:
          self.info('flow', 'user approved for unlimited volume')
       else:
          self.info('flow', 'user approved for %.1f volunits' % max_volume)
@@ -385,11 +385,13 @@ class KegBot:
 
       # log the drink
       d = Backend.Drink(ticks=flow_ticks, volume=int(volume), starttime=int(start_time),
-            endtime=int(looptime), user_id=current_user.id,
-            keg_id=current_keg.id, status='valid')
+            endtime=int(looptime), user=current_user,
+            keg=current_keg, status='valid')
       d.syncUpdate()
 
       #self.brain.Event('drink-postprocessing', drink)
+      self.BACCalculate(d)
+      self.GrantCalculate(d)
 
       # update the UI
       ounces = round(self.volunitsToOunces(volume),2)
@@ -398,6 +400,45 @@ class KegBot:
 
       # de-auth the user. this may need to be configurable down the line..
       self.deauthUser(current_user.username)
+
+   def SortByValue(self, grants):
+      """ return a list of grants sorted by least cost to user """
+      def valsort(a, b):
+         # TODO consider value of expirations
+         ret = cmp(a.policy.unitcost, b.policy.unitcost)
+         return ret
+
+      grants.sort(valsort)
+      return grants
+
+   def GrantCalculate(self, d):
+      grants = self.SortByValue(list(Backend.Grant.selectBy(user=d.user)))
+      vol_remain = d.volume
+      while vol_remain > 0:
+         try:
+            g = grants.pop()
+         except IndexError:
+            break
+         vol_curr = min(g.AvailableVolume(), vol_remain)
+         if vol_curr > 0:
+            c = Backend.GrantCharge(grant=g, drink=d, user=d.user, volume=vol_curr)
+            c.syncUpdate()
+            g.IncVolume(vol_curr)
+         vol_remain -= vol_curr
+
+      if vol_remain > 0:
+         print 'ERROR: volume not charged: %i' % vol_remain
+         # XXX TODO charge to default grant
+
+   def BACCalculate(self, d):
+      curr_bac = 0.0
+      matches = Backend.BAC.selectby(user=d.user, orderBy='-rectime')
+      if matches.count():
+         last_bac = matches[0]
+         curr_bac = util.decomposeBAC(last_bac, time.time() - last_bac.rectime)
+      curr_bac += util.instantBAC(d.user, d.keg, self.volunitsToOunces(d.volume))
+      b = Backend.BAC(user=d.user, rectime=time.time(), bac=curr_bac)
+      d.syncUpdate()
 
    def timeoutUser(self, user):
       self.deauthUser(user.username)

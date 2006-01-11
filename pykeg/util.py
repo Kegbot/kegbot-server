@@ -26,13 +26,12 @@ def daemonize():
    os.open('/dev/null', os.O_RDWR)
    os.open('/dev/null', os.O_RDWR)
 
-def instantBAC(user,keg,drink_ticks):
+def instantBAC(user, keg, ounces):
    # calculate weight in metric KGs
    if user.weight <= 0:
       return 0.0
 
    kg_weight = user.weight/2.2046
-   ounces = keg.getDrinkOunces(drink_ticks)
 
    # gender based water-weight
    if user.gender == 'male':

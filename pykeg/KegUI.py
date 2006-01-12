@@ -18,23 +18,34 @@ class KegUI(lcdui.lcdui):
    def setMain(self):
       self.setCurrentPlate(self.plate_main)
 
-   def startPour(self, user):
+   def userPresent(self, user):
+      """ Callback for menu UI (if enabled) to start flow for a user """
       self.kb.authUser(user.username)
 
-   def updatePourAmount(self, ounces):
+   def pourStart(self, username):
+      """ Called by kegbot at start of new flow """
+      self.activity()
+      self.setDrinker(username)
+      self.setCurrentPlate(self.plate_pour, replace=1)
+
+   def pourUpdate(self, ounces):
+      """ Called by kegbot periodically during a flow """
+      self.activity()
       oz = '%.1foz' % round(ounces, 1)
       progress = (ounces % 8.0)/8.0
       self.plate_pour.write_dict['progline'].setProgress(progress)
       self.plate_pour.write_dict['ounces'].setData(oz)
+
+   def pourEnd(self, username, amt):
+      """ Called by kegbot at end of flow """
+      self.plate_main.setLastDrink(username, amt)
+      self.setCurrentPlate(self.plate_main, replace=1)
 
    def setFreezer(self, status):
       self.plate_main.setFreezer(status)
 
    def setDrinker(self, name):
       self.plate_pour.setDrinker(name)
-
-   def setLastDrink(self, name, amt):
-      self.plate_main.setLastDrink(name, amt)
 
    def flowEnded(self):
       self.plate_main.gotoPlate('last')
@@ -49,7 +60,7 @@ class plate_kegbot_main(lcdui.plate_multi):
       self.freezerinfo = lcdui.plate_std(owner)
       self.lastinfo    = lcdui.plate_std(owner)
       self.drinker     = lcdui.plate_std(owner)
-      self.drinkers    = plate_kegbot_drinker_menu(owner, header = "select drinker", default_ptr = self.owner.startPour)
+      self.drinkers    = plate_kegbot_drinker_menu(owner, header = "select drinker", default_ptr = self.owner.userPresent)
 
       self.main_menu = lcdui.plate_select_menu(owner,header="kegbot menu")
       self.main_menu.insert(("pour a drink",owner.setCurrentPlate,(self.drinkers,)))
@@ -62,55 +73,30 @@ class plate_kegbot_main(lcdui.plate_multi):
 
       self.cmd_dict = {'right': (self.owner.setCurrentPlate,(self.main_menu,)) }
 
-      line1 = lcdui.widget_line_std(" ================== ",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("      kegbot!!      ",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("  have good beer!!  ",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std(" ================== ",row=3,col=0,scroll=0)
+      self.maininfo.line1 = lcdui.widget_line_std(" ================== ",row=0,col=0,scroll=0)
+      self.maininfo.line2 = lcdui.widget_line_std("      kegbot!!      ",row=1,col=0,scroll=0)
+      self.maininfo.line3 = lcdui.widget_line_std("  have good beer!!  ",row=2,col=0,scroll=0)
+      self.maininfo.line4 = lcdui.widget_line_std(" ================== ",row=3,col=0,scroll=0)
 
-      self.maininfo.updateObject('line1',line1)
-      self.maininfo.updateObject('line2',line2)
-      self.maininfo.updateObject('line3',line3)
-      self.maininfo.updateObject('line4',line4)
+      self.tempinfo.line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      self.tempinfo.line2 = lcdui.widget_line_std("| current temp:    |",row=1,col=0,scroll=0)
+      self.tempinfo.line3 = lcdui.widget_line_std("| unknown          |",row=2,col=0,scroll=0)
+      self.tempinfo.line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
-      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("| current temp:    |",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("| unknown          |",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
+      self.freezerinfo.line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      self.freezerinfo.line2 = lcdui.widget_line_std("| freezer status:  |",row=1,col=0,scroll=0)
+      self.freezerinfo.line3 = lcdui.widget_line_std("| [off]            |",row=2,col=0,scroll=0)
+      self.freezerinfo.line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
-      self.tempinfo.updateObject('line1',line1)
-      self.tempinfo.updateObject('line2',line2)
-      self.tempinfo.updateObject('line3',line3)
-      self.tempinfo.updateObject('line4',line4)
+      self.lastinfo.line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      self.lastinfo.line2 = lcdui.widget_line_std("| last pour:       |",row=1,col=0,scroll=0)
+      self.lastinfo.line3 = lcdui.widget_line_std("| 0.0 oz           |",row=2,col=0,scroll=0)
+      self.lastinfo.line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
-      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("| freezer status:  |",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("| [off]            |",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
-
-      self.freezerinfo.updateObject('line1',line1)
-      self.freezerinfo.updateObject('line2',line2)
-      self.freezerinfo.updateObject('line3',line3)
-      self.freezerinfo.updateObject('line4',line4)
-
-      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("| last pour:       |",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("| 0.0 oz           |",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
-
-      self.lastinfo.updateObject('line1',line1)
-      self.lastinfo.updateObject('line2',line2)
-      self.lastinfo.updateObject('line3',line3)
-      self.lastinfo.updateObject('line4',line4)
-
-      line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
-      line2 = lcdui.widget_line_std("| last drinker:    |",row=1,col=0,scroll=0)
-      line3 = lcdui.widget_line_std("| unknown          |",row=2,col=0,scroll=0)
-      line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
-
-      self.drinker.updateObject('line1',line1)
-      self.drinker.updateObject('line2',line2)
-      self.drinker.updateObject('line3',line3)
-      self.drinker.updateObject('line4',line4)
+      self.drinker.line1 = lcdui.widget_line_std("*------------------*",row=0,col=0,scroll=0)
+      self.drinker.line2 = lcdui.widget_line_std("| last drinker:    |",row=1,col=0,scroll=0)
+      self.drinker.line3 = lcdui.widget_line_std("| unknown          |",row=2,col=0,scroll=0)
+      self.drinker.line4 = lcdui.widget_line_std("*------------------*",row=3,col=0,scroll=0)
 
       self.addPlate("main",self.maininfo)
       self.addPlate("temp",self.tempinfo)
@@ -123,19 +109,15 @@ class plate_kegbot_main(lcdui.plate_multi):
 
    def setTemperature(self,tempc):
       inside = "%.1fc/%.1ff" % (tempc,toF(tempc))
-      line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
-      self.tempinfo.updateObject('line3',line3)
+      self.tempinfo.line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
 
    def setFreezer(self,status):
       inside = "[%s]" % status
-      line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
-      self.freezerinfo.updateObject('line3',line3)
+      self.freezerinfo.line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
 
-   def setLastDrink(self,user,ounces):
-      line3 = lcdui.widget_line_std("%s oz"%ounces,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
-      self.lastinfo.updateObject('line3',line3)
-      line3 = lcdui.widget_line_std("%s"%user,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
-      self.drinker.updateObject('line3',line3)
+   def setLastDrink(self, user, ounces):
+      self.lastinfo.line3 = lcdui.widget_line_std("%s oz"%ounces,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
+      self.drinker.line3 = lcdui.widget_line_std("%s"%user,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
 
    def gotKey(self,key):
       lcdui.plate_multi.gotKey(self,key)
@@ -148,18 +130,12 @@ class plate_kegbot_pour(lcdui.plate_std):
       self.cmd_dict['enter'] = (self.owner.kb.stopFlow, ())
       self.cmd_dict['exit'] = (self.owner.kb.stopFlow, ())
 
-      line1 = lcdui.widget_line_std("_now pouring________", row=0, col=0, scroll=0)
+      self.line1 = lcdui.widget_line_std("_now pouring________", row=0, col=0, scroll=0)
       self.userline = lcdui.widget_line_std("", row=1, col=0, scroll=0, prefix='', postfix='')
       self.progline = lcdui.widget_progbar(row = 2, col = 0, prefix ='|flow: [', postfix=']', proglen = 14)
       self.costline = lcdui.widget_line_std("",row=3,col=0,prefix='|cost: $0.00',scroll=0)
 
-      ounces = lcdui.widget_line_std("", row=2,col=14,scroll=0,fat=0)
-
-      self.updateObject('line1',line1)
-      self.updateObject('userline',self.userline)
-      self.updateObject('progline',self.progline)
-      self.updateObject('costline',self.costline)
-      self.updateObject('ounces',ounces)
+      self.ounces = lcdui.widget_line_std("", row=2,col=14,scroll=0)
 
    def setDrinker(self, name):
       self.userline.setData('|user: ' + name)
@@ -171,7 +147,7 @@ class plate_kegbot_drinker_menu(lcdui.plate_select_menu):
          self.reset()
       self.menu = []
       for u in users:
-         self.menu.append((u.username, self.owner.startPour, (u,)))
+         self.menu.append((u.username, self.owner.userPresent, (u,)))
       self.refreshMenu()
 
 class plate_kegbot_input(lcdui.plate_std):
@@ -184,16 +160,14 @@ class plate_kegbot_input(lcdui.plate_std):
       self.cmd_dict['exit'] = self.owner.backToLastPlate
       self.cmd_dict['enter'] = self.submit
 
-      self.chars = ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-      self.data = ' '
+      self.__dict__['chars'] = ' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      self.__dict__['data'] = ' '
       self.updateInput()
 
    def updateInput(self):
       real_data = re.sub('\s+$','',self.data)  # strip only trailing whitespace
-      self.input_line = lcdui.widget_line_std(real_data+'_'*(self.owner.cols() - len(real_data)), row=1,col=0,scroll=0,fat=0)
-      self.updateObject('input_line', self.input_line)
-      self.cursor_line = lcdui.widget_line_std( (len(self.data) - 1)*' ' + '\x1a', row=2,col=0,scroll=0,fat=0)
-      self.updateObject('cursor_line', self.cursor_line)
+      self.input_line = lcdui.widget_line_std(real_data+'_'*(self.owner.cols() - len(real_data)), row=1,col=0,scroll=0)
+      self.cursor_line = lcdui.widget_line_std( (len(self.data) - 1)*' ' + '\x1a', row=2,col=0,scroll=0)
 
    def goUp(self):
       if len(self.data) == 0:

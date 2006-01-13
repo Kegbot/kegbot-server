@@ -4,6 +4,7 @@ import threading
 import SimpleXMLRPCServer
 from KegRemoteFunctions import KegRemoteFunctions
 import socket
+import xmlrpclib
 
 class KegRemoteServer(threading.Thread):
    def __init__(self,kegbot,host,port):
@@ -34,6 +35,13 @@ class KegRemoteServer(threading.Thread):
 
    def stop(self):
       self.QUIT.set()
+
+      # hack to unblock the wait
+      x = xmlrpclib.ServerProxy('http://localhost:9966')
+      try:
+         x.quit()
+      except:
+         pass
 
 class ReusableServer(SimpleXMLRPCServer.SimpleXMLRPCServer):
    """ an XMLRPC Server class that recovers nicely when previously terminated. """

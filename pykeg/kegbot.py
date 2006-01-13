@@ -156,6 +156,7 @@ class KegBot:
       self.info('main','attempting to quit')
 
       # other quitting
+      self.server.stop()
       self.fc.stop()
       self.ui.stop()
       self.QUIT.set()

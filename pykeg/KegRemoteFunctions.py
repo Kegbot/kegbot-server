@@ -25,4 +25,4 @@ class KegRemoteFunctions:
       return self.kegbot.stopFlow()
 
    def quit(self):
-      self.kegbot.quit()
+      return True # just gobble an event

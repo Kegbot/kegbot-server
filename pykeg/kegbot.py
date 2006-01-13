@@ -22,6 +22,7 @@ import Queue
 import Auth
 import Backend
 import FlowController
+import KegRemoteServer
 import KegUI
 import SoundServer
 import SQLConfigParser
@@ -87,6 +88,9 @@ class KegBot:
 
       # set up logging, using the python 2.3 logging module
       self.main_logger = self.makeLogger('main',logging.INFO)
+
+      self.server = KegRemoteServer.KegRemoteServer(self, '', 9966)
+      self.server.start()
 
       # optional module: serial ibutton auth
       dev = self.config.get('devices','onewire')
@@ -160,11 +164,11 @@ class KegBot:
       self.info('main','attempting to quit')
 
       # hacks for blocking threads..
-      self.fc.getStatus()
       if self.config.getboolean('sounds','use_sounds'):
          self.sounds.quit()
 
       # other quitting
+      self.fc.stop()
       self.ui.stop()
       self.QUIT.set()
 
@@ -244,12 +248,16 @@ class KegBot:
       if matches.count():
          u = matches[0]
          self.authed_users.append(u)
+         return True
+      return False
 
    def deauthUser(self, username):
       matches = Backend.User.selectBy(username=username)
       if matches.count():
          u = matches[0]
          self.authed_users = [x for x in self.authed_users if x.username != u.username]
+         return True
+      return False
 
    def userIsAuthed(self, user):
       return user in self.authed_users
@@ -297,6 +305,7 @@ class KegBot:
       online_kegs = list(Backend.Keg.selectBy(status='online', orderBy='-id'))
       if len(online_kegs) == 0:
          self.error('flow','no keg currently active; what are you trying to pour?')
+         self.timeoutUser(current_user)
          return
       else:
          current_keg = online_kegs[0]
@@ -328,7 +337,7 @@ class KegBot:
       self.ui.setCurrentPlate(self.ui.plate_pour,replace=1)
 
       # turn on flow
-      self.fc.openValve()
+      #self.fc.openValve()
       self.info('flow','starting flow for user %s' % current_user.username)
 
       #
@@ -337,7 +346,6 @@ class KegBot:
       last_flow_time = time.time()  # time since last change in flow count
       start_time = time.time()      # timestamp of flow start
       flow_ticks = 0                # ticks in current flow
-      refresh_time = 0              # time since flow controller last polled
       lastticks = 0                 # temporary value for storing last flow reading
       curr_vol = 0.0                # volume of current flow
 
@@ -349,33 +357,21 @@ class KegBot:
          if not self.checkAccess(current_user, idle_amt, curr_vol, max_volume):
             break
 
-         # poke the controller for status every so often and perform other
-         # tasks that depend on flow
-         if looptime - refresh_time >= 0.25:
-            self.fc.getStatus()
-            refresh_time = looptime
-            curr_vol = self.ticksToVolunits(flow_ticks)
-
-            # update running flow total
-            nowticks = self.fc.readTicks()
+         # touch the last flow time if the user wasn't idle, and update ui
+         # if flow happened
+         nowticks = self.fc.readTicks()
+         if lastticks != nowticks:
+            last_flow_time = looptime
             flow_ticks = nowticks - start_ticks_flow
+            curr_vol = self.ticksToVolunits(flow_ticks)
+            self.ui.updatePourAmount(self.volunitsToOunces(curr_vol))
 
-            # touch the last flow time if the user wasn't idle, and update ui
-            # if flow happened
-            if lastticks != nowticks:
-               last_flow_time = looptime
-               self.ui.updatePourAmount(self.volunitsToOunces(curr_vol))
-
-            lastticks = nowticks
-
-      # at this point, the flow maintenance loop has exited. this means
-      # we must quickly disable the beer flow and kick the user off the
-      # system
+         lastticks = nowticks
 
       # turn off flow
       looptime = time.time()
       self.info('flow','user is gone; flow ending')
-      self.fc.closeValve()
+      #self.fc.closeValve()
       self.ui.setCurrentPlate(self.ui.plate_main, replace=1)
 
       # record flow totals; save to user database
@@ -389,13 +385,13 @@ class KegBot:
             keg=current_keg, status='valid')
       d.syncUpdate()
 
-      #self.brain.Event('drink-postprocessing', drink)
+      # post-processing steps
       self.BACCalculate(d)
       self.GrantCalculate(d)
 
       # update the UI
       ounces = round(self.volunitsToOunces(volume),2)
-      self.ui.setLastDrink(current_user.username,ounces)
+      #self.ui.setLastDrink(current_user.username,ounces)
       self.info('flow','drink total: %i ticks, %i volunits, %.2f ounces' % (flow_ticks, volume, ounces))
 
       # de-auth the user. this may need to be configurable down the line..
@@ -432,12 +428,12 @@ class KegBot:
 
    def BACCalculate(self, d):
       curr_bac = 0.0
-      matches = Backend.BAC.selectby(user=d.user, orderBy='-rectime')
+      matches = Backend.BAC.selectBy(user=d.user, orderBy='-rectime')
       if matches.count():
          last_bac = matches[0]
-         curr_bac = util.decomposeBAC(last_bac, time.time() - last_bac.rectime)
+         curr_bac = util.decomposeBAC(last_bac.bac, time.time() - last_bac.rectime)
       curr_bac += util.instantBAC(d.user, d.keg, self.volunitsToOunces(d.volume))
-      b = Backend.BAC(user=d.user, rectime=time.time(), bac=curr_bac)
+      b = Backend.BAC(user=d.user, rectime=int(time.time()), bac=curr_bac)
       d.syncUpdate()
 
    def timeoutUser(self, user):

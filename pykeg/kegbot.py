@@ -24,7 +24,6 @@ import Backend
 import FlowController
 import KegRemoteServer
 import KegUI
-import SoundServer
 import SQLConfigParser
 import SQLHandler
 import TempMonitor
@@ -107,11 +106,6 @@ class KegBot:
          usb_ibauth = Auth.USBIBAuth(self, timeout, self.QUIT, logger)
          usb_ibauth.start()
 
-      # optional module: sound server
-      if self.config.getboolean('sounds','use_sounds'):
-         self.sounds = SoundServer.SoundServer(self,self.config.get('sounds','sound_dir'))
-         self.sounds.start()
-
       # optional module: LCD UI
       if self.config.getboolean('ui','use_lcd'):
          lcdtype = self.config.get('ui', 'lcd_type')
@@ -160,10 +154,6 @@ class KegBot:
 
    def quit(self):
       self.info('main','attempting to quit')
-
-      # hacks for blocking threads..
-      if self.config.getboolean('sounds','use_sounds'):
-         self.sounds.quit()
 
       # other quitting
       self.fc.stop()

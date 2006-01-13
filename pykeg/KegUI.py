@@ -33,8 +33,8 @@ class KegUI(lcdui.lcdui):
       self.activity()
       oz = '%.1foz' % round(ounces, 1)
       progress = (ounces % 8.0)/8.0
-      self.plate_pour.write_dict['progline'].setProgress(progress)
-      self.plate_pour.write_dict['ounces'].setData(oz)
+      self.plate_pour.progline.setProgress(progress)
+      self.plate_pour.ounces.setData(oz)
 
    def pourEnd(self, username, amt):
       """ Called by kegbot at end of flow """

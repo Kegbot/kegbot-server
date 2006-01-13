@@ -7,30 +7,31 @@ class Drink(SQLObject):
       table = 'drinks'
       lazyUpdate = True
 
-   ticks = IntCol()
-   volume = IntCol()
+   ticks = IntCol(default=0)
+   volume = IntCol(default=0)
    starttime = IntCol()
    endtime = IntCol()
    user = ForeignKey('User')
    keg = ForeignKey('Keg')
-   status = EnumCol(enumValues = ['valid','invalid'])
+   status = EnumCol(enumValues=['valid','invalid'], default='valid')
 
 class Keg(SQLObject):
    class sqlmeta:
       table = 'kegs'
       lazyUpdate = True
 
-   full_volume = IntCol()
+   # default full_volume = 15.5 gallons in mL
+   full_volume = IntCol(default=58673)
    startdate = DateTimeCol()
    enddate = DateTimeCol()
-   status = EnumCol(enumValues = ['online', 'offline', 'coming soon'])
-   beername = StringCol()
-   alccontent = FloatCol()
-   description = StringCol()
-   origcost = FloatCol()
-   beerpalid = IntCol()
-   ratebeerid = IntCol()
-   calories_oz = FloatCol()
+   status = EnumCol(enumValues=['online', 'offline', 'coming soon'], default='online')
+   beername = StringCol(default='')
+   alccontent = FloatCol(default=4.5)
+   description = StringCol(default='')
+   origcost = FloatCol(default=0)
+   beerpalid = IntCol(default=0)
+   ratebeerid = IntCol(default=0)
+   calories_oz = FloatCol(default=0)
 
 class Grant(SQLObject):
    class sqlmeta:
@@ -38,14 +39,14 @@ class Grant(SQLObject):
       lazyUpdate = True
 
    user = ForeignKey('User')
-   expiration = EnumCol(enumValues = ['none', 'time', 'ounces', 'drinks'])
-   status = EnumCol(enumValues = ['active', 'expired', 'deleted'])
+   expiration = EnumCol(enumValues=['none', 'time', 'volume', 'drinks'], default='volume')
+   status = EnumCol(enumValues=['active', 'expired', 'deleted'], default='active')
    policy = ForeignKey('Policy')
-   exp_volume = IntCol()
-   exp_time = IntCol()
-   exp_drinks = IntCol()
-   total_volume = IntCol()
-   total_drinks = IntCol()
+   exp_volume = IntCol(default=0)
+   exp_time = IntCol(default=0)
+   exp_drinks = IntCol(default=0)
+   total_volume = IntCol(default=0)
+   total_drinks = IntCol(default=0)
 
    def AvailableVolume(self):
       """
@@ -100,32 +101,32 @@ class User(SQLObject):
       table = 'users'
       lazyUpdate = True
 
-   username = StringCol(length=32)
-   email = StringCol()
-   im_aim = StringCol()
+   username = StringCol(length=32, notNone=True)
+   email = StringCol(default='')
+   im_aim = StringCol(default='')
    admin = EnumCol(enumValues = ['yes','no'])
-   password = StringCol()
+   password = StringCol(default='')
    gender = EnumCol(enumValues = ['male','female'])
-   weight = FloatCol()
-   image_url = StringCol()
+   weight = FloatCol(default=180.0)
+   image_url = StringCol(default='')
 
 class Policy(SQLObject):
    class sqlmeta:
       table = 'policies'
       lazyUpdate = True
 
-   type = EnumCol(enumValues = ['fixed-cost','free'])
-   unitcost = FloatCol()
-   unitvolume = IntCol()
-   description = StringCol()
+   type = EnumCol(enumValues = ['fixed-cost','free'], notNone=True)
+   unitcost = FloatCol(default=0.0)
+   unitvolume = IntCol(default=0)
+   description = StringCol(default='')
 
 class Token(SQLObject):
    class sqlmeta:
       table = 'tokens'
       lazyUpdate = True
 
-   user = ForeignKey('User')
-   keyinfo = StringCol()
+   user = ForeignKey('User', notNone=True)
+   keyinfo = StringCol(notNone=True)
    created = DateTimeCol()
 
 class BAC(SQLObject):
@@ -134,8 +135,8 @@ class BAC(SQLObject):
       lazyUpdate = True
 
    user = ForeignKey('User')
-   rectime = IntCol()
-   bac = FloatCol()
+   rectime = IntCol(notNone=True)
+   bac = FloatCol(notNone=True)
 
 class GrantCharge(SQLObject):
    class sqlmeta:
@@ -145,6 +146,6 @@ class GrantCharge(SQLObject):
    grant = ForeignKey('Grant')
    drink = ForeignKey('Drink')
    user = ForeignKey('User')
-   volume = IntCol()
+   volume = IntCol(default=0)
 
 

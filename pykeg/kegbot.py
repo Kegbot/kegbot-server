@@ -142,14 +142,12 @@ class KegBot:
       dev = self.config.get('devices','flow')
       self.info('main','new flow controller at device %s' % dev)
       self.fc = FlowController.FlowController(dev, self.makeLogger('flow', logging.INFO))
+      self.fc.start()
 
       # set up the default screen
       self.ui.setMain()
       self.ui.start()
       self.ui.activity()
-
-      # start the flow controller status monitor
-      thread.start_new_thread(self.fc.statusLoop,(self.config.getfloat('timing','fc_status_timeout'),self.QUIT))
 
    def _setsigs(self):
       signal.signal(signal.SIGHUP, self.handler)
@@ -208,8 +206,7 @@ class KegBot:
       curr = self.tempmon.sensor.getTemp(1) # XXX - sensor index is hardcoded! add to .config
       max_t = self.config.getfloat('thermo','temp_max_high')
 
-      if self.fc.UNKNOWN or not self.fc.fridgeStatus():
-         self.fc.UNKNOWN = False
+      if not self.fc.fridgeStatus():
          self.info('tempmon','activated freezer curr=%s max=%s'%(curr[0],max_t))
          self.ui.setFreezer('on ')
          self.fc.enableFridge()
@@ -218,8 +215,7 @@ class KegBot:
       curr = self.tempmon.sensor.getTemp(1)
       min_t = self.config.getfloat('thermo','temp_max_low')
 
-      if self.fc.UNKNOWN or self.fc.fridgeStatus():
-         self.fc.UNKNOWN = False
+      if self.fc.fridgeStatus():
          self.info('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min_t))
          self.ui.setFreezer('off')
          self.fc.disableFridge()
@@ -337,7 +333,7 @@ class KegBot:
       self.ui.setCurrentPlate(self.ui.plate_pour,replace=1)
 
       # turn on flow
-      #self.fc.openValve()
+      self.fc.openValve()
       self.info('flow','starting flow for user %s' % current_user.username)
 
       #
@@ -364,14 +360,14 @@ class KegBot:
             last_flow_time = looptime
             flow_ticks = nowticks - start_ticks_flow
             curr_vol = self.ticksToVolunits(flow_ticks)
-            self.ui.updatePourAmount(self.volunitsToOunces(curr_vol))
+            self.ui.pourUpdate(self.volunitsToOunces(curr_vol))
 
          lastticks = nowticks
 
       # turn off flow
       looptime = time.time()
       self.info('flow','user is gone; flow ending')
-      #self.fc.closeValve()
+      self.fc.closeValve()
       self.ui.setCurrentPlate(self.ui.plate_main, replace=1)
 
       # record flow totals; save to user database
@@ -401,7 +397,7 @@ class KegBot:
       """ return a list of grants sorted by least cost to user """
       def valsort(a, b):
          # TODO consider value of expirations
-         ret = cmp(a.policy.unitcost, b.policy.unitcost)
+         ret = cmp(b.policy.unitcost, a.policy.unitcost)
          return ret
 
       grants.sort(valsort)

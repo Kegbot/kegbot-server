@@ -1,10 +1,11 @@
 import os
+import random
 import select
 import threading
 import time
 import traceback
 
-class FlowController:
+class FlowController(threading.Thread):
    """
    represents the embedded flowmeter counter microcontroller.
 
@@ -68,6 +69,8 @@ class FlowController:
    
    """
    def __init__(self,dev,logger,rate=115200):
+      threading.Thread.__init__(self)
+      self.QUIT = threading.Event()
 
       # commands
       self.CMD_STATUS      = '\x81'
@@ -80,14 +83,12 @@ class FlowController:
       self.CMD_READTEMP    = '\x93'
 
       # other stuff
-      self.UNKNOWN = True
       self.dev = dev
       self.rate = rate
       self._lock = threading.Lock()
       self.logger = logger
+      self.total_ticks = 0
       self.last_fridge_time = 0
-
-      self.status = {"fridge": 2, "valve": 2, "ticks":0}
 
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
       try:
@@ -103,24 +104,28 @@ class FlowController:
       #self.closeValve()
       #self.clearTicks()
 
-   # helpers for FC1 compatibility
+   def run(self):
+      self.statusLoop()
+
+   def stop(self):
+      self.QUIT.set()
+      self.getStatus() # hack to break the blocking wait
+
    def fridgeStatus(self):
-      return self.status['fridge'] == 1
+      return self.status.fridge
 
    def readTicks(self):
-      return self.status['ticks']
+      return self.total_ticks
 
    def openValve(self):
       self._lock.acquire()
       self._devpipe.write(self.CMD_VALVEON)
       self._lock.release()
-      self.valve_open = True
 
    def closeValve(self):
       self._lock.acquire()
       self._devpipe.write(self.CMD_VALVEOFF)
       self._lock.release()
-      self.valve_open = False
 
    def enableFridge(self):
       if time.time() - self.last_fridge_time < 300:
@@ -130,13 +135,11 @@ class FlowController:
       self._lock.acquire()
       self._devpipe.write(self.CMD_FRIDGEON)
       self._lock.release()
-      self.fridge_status = True
 
    def disableFridge(self):
       self._lock.acquire()
       self._devpipe.write(self.CMD_FRIDGEOFF)
       self._lock.release()
-      self.fridge_status = False
 
    def recvPacket(self):
       #self._lock.acquire()
@@ -158,24 +161,22 @@ class FlowController:
       # now, c should contain the start of a packet
       pkt = os.read(fd,7)
       #self._lock.release()
-      pkt = StatusPacket(map(ord,pkt))
-
-      self.status['fridge'] = pkt.fridge_on
-      self.status['valve'] = pkt.valve_open
-      self.status['ticks'] += pkt.ticks
-      return pkt
+      self.status = StatusPacket(map(ord,pkt))
+      self.total_ticks += self.status.ticks
+      return self.status
 
    def getStatus(self):
       self._lock.acquire()
       self._devpipe.write(self.CMD_STATUS)
       self._lock.release()
 
-   def statusLoop(self, timeout, QUIT):
-      """ asynchrnous fetch loop for the flow controller """
+   def statusLoop(self):
+      """ asynchronous fetch loop for the flow controller """
+      timeout=0.1
       try:
          self.logger.info('status loop starting')
          self.getStatus()
-         while not QUIT.isSet():
+         while not self.QUIT.isSet():
             (rr,wr,xr) = select.select([self._devpipe],[],[],0.0)
             if len(rr):
                try:
@@ -183,17 +184,68 @@ class FlowController:
                   self.logger.info('read status packet ' + str(p))
                except:
                   self.logger.warning('packet read error')
+                  traceback.print_exc()
             time.sleep(timeout)
          self.logger.info('status loop exiting')
       except:
          traceback.print_exc()
 
 class StatusPacket:
+   FRIDGE_OFF = 0
+   FRIDGE_ON = 1
+   FRIDGE_UNKNOWN = 2
+
+   VALVE_CLOSED = 0
+   VALVE_OPEN = 1
+
    def __init__(self, pkt):
       self.ticks = pkt[3]*256 + pkt[4]
-      self.fridge_on = pkt[1] != 0
-      self.valve_open = pkt[2] != 0
+      self.fridge = pkt[1]
+      self.valve = pkt[2]
+
+   def ValveOpen(self):
+      return self.valve == self.VALVE_OPEN
+
+   def ValveClosed(self):
+      return self.valve == self.VALVE_CLOSED
+
+   def FridgeOn(self):
+      return self.fridge == self.FRIDGE_ON
+
+   def FridgeOff(self):
+      return self.fridge == self.FRIDGE_OFF
 
    def __str__(self):
-      return '<StatusPacket: ticks=%i fridge_on=%s valve_open=%s>' % (self.ticks, self.fridge_on, self.valve_open)
+      return '<StatusPacket: ticks=%i fridge=%s valve=%s>' % (self.ticks, self.fridge, self.valve)
 
+class FlowSimulator:
+   """ a fake flowcontroller that pours a slow drink """
+
+   def __init__(self):
+      self.fridge = 0
+      self.valve = 0
+      self.ticks = 0
+      self.open_time = 0
+
+   def start(self): pass
+
+   def stop(self): pass
+
+   def fridgeStatus(self):
+      return self.fridge
+
+   def readTicks(self):
+      return int(50*(time.time() - self.open_time))
+
+   def openValve(self):
+      self.valve = 1
+      self.open_time = time.time()
+
+   def closeValve(self):
+      self.valve = 0
+
+   def enableFridge(self):
+      self.fridge = 1
+
+   def disableFridge(self):
+      self.fridge = 0

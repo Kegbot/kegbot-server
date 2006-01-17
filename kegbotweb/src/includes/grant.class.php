@@ -13,18 +13,22 @@ class Grant {
    var $total_volume;
    var $total_drinks;
 
-   function Grant($a) {
-      $this->id = $a['id'];
-      $this->user_id = $a['user_id'];
-      $this->expiration = $a['expiration'];
-      $this->status = $a['status'];
-      $this->policy = getPolicy($a['policy_id']);
-      $this->exp_volume = $a['exp_volume'];
-      $this->exp_time = $a['exp_time'];
-      $this->exp_drinks = $a['exp_drinks'];
-      $this->total_volume = $a['total_volume'];
-      $this->total_drinks = $a['total_drinks'];
+   var $policy_obj;
+
+   function Grant($id) {
+      $q = SQLQuery( $table = 'grants',
+                     $select = NULL,
+                     $where = array("`id`='$id'"),
+                     $limit = 1 );
+      $res = mysql_query($q);
+      $row = mysql_fetch_assoc($res);
+      foreach ($row as $key => $val) {
+         $this->$key = $val;
+      }
+
+      $this->policy_obj = new Policy($this->policy_id);
    }
+
    function getExpirationStr() {
       if (!strcmp($this->expiration,"time")) {
          $date = strftime("%D",$this->exp_time);

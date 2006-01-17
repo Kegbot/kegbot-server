@@ -6,6 +6,19 @@
    require_once('includes/SmartyBeer.class.php');
    require_once('includes/session.php');
 
+   function validateUser($username,$passwd) {
+      $q = "SELECT `id` FROM `users` WHERE `username`='$username' AND `password` = MD5('$passwd')";
+      $res = mysql_query($q);
+      if (mysql_num_rows($res) == 0) {
+         return False;
+      }
+      else {
+         $row = mysql_fetch_assoc($res);
+         $uid = $row['id'];
+         return loadDrinker($uid);
+      }
+   }
+
    $action = $HTTP_POST_VARS['action'];
    if ($HTTP_GET_VARS['clear']){
       $_SESSION['login_attempts'] = 0;

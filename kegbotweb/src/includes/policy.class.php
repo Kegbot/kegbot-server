@@ -6,13 +6,18 @@ class Policy {
    var $unitticks;
    var $descr;
 
-   function Policy($a) {
-      $this->id = $a['id'];
-      $this->ptype = $a['type'];
-      $this->unitcost = $a['unitcost'];
-      $this->unitounces = $a['unitounces'];
-      $this->descr = $a['description'];
+   function Policy($id) {
+      $q = SQLQuery( $table = 'policies',
+                     $select = NULL,
+                     $where = array("`id`='$id'"),
+                     $limit = 1 );
+      $res = mysql_query($q);
+      $row = mysql_fetch_assoc($res);
+      foreach ($row as $key => $val) {
+         $this->$key = $val;
+      }
    }
+
    function getCost($oz) {
       if ($this->unitcost == 0 or $this->unitounces == 0) {
          return 0.0;

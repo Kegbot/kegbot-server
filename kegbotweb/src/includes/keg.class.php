@@ -1,8 +1,7 @@
 <?
 class Keg {
    var $id;
-   var $tickmetric;
-   var $startounces;
+   var $full_volume;
    var $startdate;
    var $enddate;
    var $status;
@@ -17,34 +16,36 @@ class Keg {
    var $beerpalbase = "http://www.beerpal.com/beerinfo.asp?ID=";
    var $ratebeerbase = "http://ratebeer.com/Ratings/Beer/Beer-Ratings.asp?BeerID=";
 
-   function Keg($assoc) {
-      $this->id = $assoc['id'];
-      $this->tickmetric = $assoc['tickmetric'];
-      $this->startounces = $assoc['startounces'];
-      $this->startdate = $assoc['startdate'];
-      $this->enddate = $assoc['enddate'];
-      $this->status = $assoc['status'];
-      $this->beername = $assoc['beername'];
-      $this->alccontent = $assoc['alccontent'];
-      $this->calories = $assoc['calories_oz'];
-      $this->descr = $assoc['description'];
-      $this->origcost = $assoc['origcost'];
-      $this->beerpalid = $assoc['beerpalid'];
-      $this->ratebeerid = $assoc['ratebeerid'];
-   }
-   function getDescrLinkified() {
-      return "<a href=\"/keg-info.php?keg={$this->id}\">{$this->beername}</a>";
+   function Keg($id) {
+      $q = SQLQuery( $table = 'kegs',
+                     $select = NULL,
+                     $where = array("`id`='$id'"),
+                     $limit = 1 );
+      $res = mysql_query($q);
+      $row = mysql_fetch_assoc($res);
+      foreach ($row as $key => $val) {
+         $this->$key = $val;
+      }
    }
 
-   // return how many ticks makes a full keg; accomodate for whatever units the
-   // capacity is stored in. (currently: ounces)
-   function ticksWhenFull() {
-      return $this->startounces * $this->tickmetric;
+   /**
+   *
+   * Return amount of volume left in keg.
+   *
+   * @return	int	 volunits remaining
+   */
+   function volumeLeft() {
+      $q = "SELECT SUM(volume) as 'tot' FROM `drinks` WHERE `keg_id`='{$this->id}'";
+      $res = mysql_query($q);
+      $row = mysql_fetch_assoc($res);
+      $gone = $row['tot'];
+      return $this->full_volume - $gone;
    }
 
    function toOunces($volunits) {
       return $volunits * 0.0338140226;
    }
+
    function toCalories($volunits) {
       return $this->toOunces($volunits) * $this->calories;
    }

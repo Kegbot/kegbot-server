@@ -12,7 +12,7 @@
          $eoz = 0;
          $etime = strtotime($edate);
       }
-      $q = "INSERT INTO `grants` (`foruid`,`expiration`,`forpolicy`,`exp_ounces`,`exp_time`) VALUES ('$did','$exp','$pid','$eoz','$etime')";
+      $q = "INSERT INTO `grants` (`user_id`,`expiration`,`policy_id`,`exp_volume`,`exp_time`) VALUES ('$did','$exp','$pid','$eoz','$etime')";
       mysql_query($q);
    }
 

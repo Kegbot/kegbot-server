@@ -1,7 +1,7 @@
 <?
 function smarty_modifier_money_fmt($m)
 {
-   if ($m < 1) {
+   if ($m <= 0) {
       return "no cost";
    }
    else {

@@ -4,11 +4,11 @@
    require_once('includes/admin-required.php');
    require_once('includes/main-functions.php');
 
-   function deleteGrant($id) {
-      $q = "UPDATE `grants` SET `status`='deleted' WHERE `id`='$id' LIMIT 1";
+   function updateGrant($id, $status) {
+      $q = "UPDATE `grants` SET `status`='$status' WHERE `id`='$id' LIMIT 1";
       mysql_query($q);
    }
 
-   deleteGrant($_GET['g']);
+   updateGrant($_GET['g'], $_GET['action']);
    Header("Location: edit-user.php?u={$_GET['u']}");
 ?>

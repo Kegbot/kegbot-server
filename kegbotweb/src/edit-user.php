@@ -10,9 +10,9 @@
 
    // set up available policies
    $smarty->assign("policies",getAllPolicies());
-   $d = loadDrinker($_GET['u']);
+   $d = new Drinker($_GET['u']);
    $smarty->assign("target",$d);
-   $smarty->assign("grants",getUserGrants($drinker->id));
+   $smarty->assign("grants",getUserGrants($d->id));
 
    
    $smarty->show_page("edit-user.tpl",$cid);

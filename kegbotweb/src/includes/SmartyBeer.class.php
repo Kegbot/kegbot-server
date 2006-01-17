@@ -41,6 +41,7 @@
          $this->assign('skin',$skin);
          $this->assign('getvars', $_GET);
          ini_set('include_path', ini_get('include_path') . ':/var/www/localhost/htdocs/kegbotweb/src/includes/');
+         $this->assign('s_drinker', $_SESSION['drinker']); // XXX not cached for other users, right?
 
          // caching and related
          $this->caching = 0;

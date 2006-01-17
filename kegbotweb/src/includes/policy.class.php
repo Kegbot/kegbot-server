@@ -3,7 +3,7 @@ class Policy {
    var $id;
    var $gtype;
    var $unitcost;
-   var $unitticks;
+   var $unitvolume;
    var $descr;
 
    function Policy($id) {
@@ -27,16 +27,8 @@ class Policy {
          return $x;
       }
    }
-   function printCost() {
-      if ($this->unitcost == 0 or $this->unitounces == 0)
-         return "--";
-      $cost = $this->getCostPerOunce();
-      return "$cost&cent;/oz";
-   }
    function getCostPerOunce() {
-      if ($this->unitcost == 0 or $this->unitounces == 0)
-         return 0;
-      return 100 * $this->unitcost / $this->unitounces;
+      return ($this->unitcost/$this->unitvolume) * ounces_to_volunits(1) * 100; // in dollars
    }
 }
 ?>

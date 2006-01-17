@@ -157,6 +157,10 @@
       return $amt * 0.0338140226;
    }
 
+   function ounces_to_volunits($amt) {
+      return $amt * 29.5735297;
+   }
+
    function newPolicy($type,$unitcost,$unitounces,$descr) {
       $descr = addslashes($descr);
       $q = "INSERT INTO `policies` (`type`,`unitcost`,`unitounces`,`description`) VALUES ('$type','$unitcost','$unitounces','$descr')";
@@ -165,7 +169,7 @@
 
    function getAllPolicies()
    {
-      $q = "SELECT `id` FROM `policies` ORDER BY `type`,`unitcost`*`unitounces` DESC";
+      $q = "SELECT `id` FROM `policies` ORDER BY `type`,`unitcost` DESC";
       $res = mysql_query($q);
 
       $ps = Array();

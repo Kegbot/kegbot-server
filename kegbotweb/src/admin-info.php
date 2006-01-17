@@ -6,6 +6,7 @@
    require_once('includes/SmartyBeer.class.php');
 
    $smarty = new SmartyBeer();
+   $smarty->caching = 0;
 
    // set up select name of drinkers 
    $smarty->assign("drinkers",getAllDrinkers());

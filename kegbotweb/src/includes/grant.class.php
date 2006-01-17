@@ -41,6 +41,9 @@ class Grant {
       return "never";
    }
    function getToGo() {
+      if (!strcmp($this->status, "expired")) {
+         return "expired!";
+      }
       if (!strcmp($this->expiration,"time")) {
          $dest = $this->exp_time;
          $src  = time();

@@ -14,8 +14,8 @@
       }
       else {
          $row = mysql_fetch_assoc($res);
-         $uid = $row['id'];
-         return loadDrinker($uid);
+         $id = $row['id'];
+         return new Drinker($id);
       }
    }
 
@@ -53,7 +53,7 @@
          Header("Location:$loc");
       }
       else {
-         Header("Location:/account.php");
+         Header("Location:account.php");
       }
       exit;
    }

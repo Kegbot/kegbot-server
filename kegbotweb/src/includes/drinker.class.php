@@ -37,13 +37,13 @@ class Drinker {
    function isAdmin() {
       return $this->admin == True;
    }
-   function getMugshotURL() {
+   function getMugshotFilename() {
       global $cfg;
       $uf = $cfg['dirs']['imagedir'] . "/{$this->username}.jpg";
       if (!file_exists($uf)) {
-         return "/images/unknown-drinker.png";
+         return "unknown-drinker.png";
       }
-      return "/userpics/{$this->username}.jpg";
+      return "userpics/{$this->username}.jpg";
    }
    function getSlots() {
       $slots= Array();

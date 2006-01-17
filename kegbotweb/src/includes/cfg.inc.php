@@ -1,14 +1,15 @@
 <?
+global $cfg;
 $cfg['db']['host'] = 'localhost';
-$cfg['db']['user'] = 'kegbot';
+$cfg['db']['user'] = 'root';
 $cfg['db']['password'] = '';
 $cfg['db']['db'] = 'kegbot';
 
 $cfg['flow']['minticks'] = 2;
 
-$cfg['dirs']['webdir'] = "/data/kegbot-beta/htdocs";
-$cfg['dirs']['skindir'] = "/data/kegbot-beta/skins";
-$cfg['dirs']['smartytmp'] = "/data/kegbot-beta/smartytmp";
+$cfg['dirs']['webdir'] = "/var/www/localhost/htdocs/kegbotweb/src";
+$cfg['dirs']['skindir'] = "/var/www/localhost/htdocs/kegbotweb/skins";
+$cfg['dirs']['smartytmp'] = "/var/www/localhost/htdocs/kegbotweb/smartytmp";
 
 $cfg['dirs']['imagedir'] = $cfg['dirs']['webdir'] . '/userpics';
 

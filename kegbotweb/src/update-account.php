@@ -7,5 +7,5 @@
    }
    $drinker = $_SESSION['drinker'];
    updateUser($drinker->id,$HTTP_POST_VARS);
-   header("Location:/account.php");
+   header("Location:account.php");
 ?>

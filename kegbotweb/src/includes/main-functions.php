@@ -1,10 +1,10 @@
 <?
-#require_once("cfg.inc.php");
    require_once("load-config.php");
    require_once("allclasses.php");
    include_once('binge-functions.php');
+   global $cfg;
    @mysql_connect($cfg['db']['host'], $cfg['db']['user'], $cfg['db']['password']) || die("the kegbot front end can't connect to the backend. check db config in cfg.inc.php");
-   mysql_select_db($cfg['db']['db']) || die("the kegbot front end can't find this database. uh oh.");
+   mysql_select_db($cfg['db']['db']) || die("the kegbot front end can't find this database ({$cfg['db']['db']}). uh oh.");
    $r = mysql_query("SELECT UNIX_TIMESTAMP(NOW())");
    $DBTIME = mysql_fetch_array($r);
    $GLOBALS['dbtime'] = $DBTIME[0];
@@ -45,7 +45,7 @@
       $drinks = getUserDrinks($did);
       $kegs = getAllKegs();
       foreach ($kegs as $keg) {
-         $drinks = getDrinksByQuery("SELECT * FROM `drinks` WHERE `user_id`='$did' AND `frag`='0' and `keg_id`='{$keg->id}'");
+         $drinks = getDrinksByQuery("SELECT * FROM `drinks` WHERE `user_id`='$did' AND `keg_id`='{$keg->id}'");
          $kegcost = 0.0;
          foreach ($drinks as $d) {
             $kegcost += $d->getCost();
@@ -125,11 +125,12 @@
    function getLeadersByBAC($all_kegs = true, $num = 5)
    {
       if ($all_kegs) {
-         $q = "SELECT id,user_id,MAX(bac) as bac FROM drinks WHERE status='valid' GROUP BY user_id ORDER BY bac DESC LIMIT $num";
+         $q = "SELECT id,user_id,MAX(bac) as bac FROM bacs GROUP BY user_id ORDER BY bac DESC LIMIT $num";
       }
       else {
          $keg = loadCurrentKeg();
-         $q = "SELECT id,user_id,MAX(bac) FROM drinks WHERE status='valid' AND keg_id='{$keg->id}' AND id > 80 GROUP BY bac ORDER BY bac DESC LIMIT $num";
+         // XXX FIXME
+         //$q = "SELECT id,user_id,MAX(bac) FROM bacs WHERE keg_id='{$keg->id}' AND id > 80 GROUP BY bac ORDER BY bac DESC LIMIT $num";
       }
       $res = mysql_query($q);
       $ret = Array();
@@ -161,7 +162,7 @@
    function getLeadersByVolume($all_kegs = true, $num = 5, $kegid = NULL)
    {
       if ($all_kegs) {
-         $q = "SELECT user_id,SUM(`ticks`/`tickmetric`) AS `ounces` FROM `drinks`,`kegs` WHERE drinks.keg_id = kegs.id AND drinks.status='valid' GROUP BY `user_id` ORDER BY `ounces` DESC LIMIT $num";
+         $q = "SELECT user_id,SUM(`volume`) AS `total_volume` FROM `drinks`,`kegs` WHERE drinks.keg_id = kegs.id AND drinks.status='valid' GROUP BY `user_id` ORDER BY `total_volume` DESC LIMIT $num";
       }
       else {
          if ($kegid == NULL) {
@@ -170,17 +171,22 @@
          else {
             $keg = loadKeg($kegid);
          }
-         $q = "SELECT user_id,SUM(`ticks`/`tickmetric`) AS `ounces` FROM `drinks`,`kegs` WHERE drinks.keg_id='{$keg->id}' AND drinks.keg_id = kegs.id AND drinks.status='valid' GROUP BY `user_id` ORDER BY `ounces` DESC LIMIT $num";
+         $q = "SELECT user_id,SUM(`volume`) AS `total_volume` FROM `drinks`,`kegs` WHERE drinks.keg_id='{$keg->id}' AND drinks.keg_id = kegs.id AND drinks.status='valid' GROUP BY `user_id` ORDER BY `total_volume` DESC LIMIT $num";
       }
       $res = mysql_query($q);
       $ret = Array();
       while (($row = mysql_fetch_assoc($res)))  {
+         //print_r($row);
          $row['drinker'] = loadDrinker($row['user_id']);
-         $row['amount'] = round($row['ounces'],2);
+         $row['amount'] = round(volunits_to_ounces($row['total_volume']) ,2); // FIXME CONSTANT
          $row['units'] = " ounces";
          $ret[$row['user_id']] = $row;
       }
       return $ret;
+   }
+
+   function volunits_to_ounces($amt) {
+      return $amt * 0.0338140226;
    }
 
    function newPolicy($type,$unitcost,$unitounces,$descr) {
@@ -188,10 +194,12 @@
       $q = "INSERT INTO `policies` (`type`,`unitcost`,`unitounces`,`description`) VALUES ('$type','$unitcost','$unitounces','$descr')";
       mysql_query($q);
    }
+
    function deleteGrant($id) {
       $q = "UPDATE `grants` SET `status`='deleted' WHERE `id`='$id' LIMIT 1";
       mysql_query($q);
    }
+
    function grantPolicy($pid,$did,$exp,$eoz,$edate) {
       if ($exp == 'ounces') {
          $etime= 0;
@@ -204,6 +212,7 @@
       mysql_query($q);
 
    }
+
    function updateUser($uid,$vars) {
       $fields = Array('username','weight','gender');
 
@@ -246,7 +255,7 @@
    function getDrink($id)
    {
       global $cfg; 
-      $q = "SELECT * FROM `drinks` WHERE `id` = '$id' AND `frag` = '0'";
+      $q = "SELECT * FROM `drinks` WHERE `id` = '$id'";
       $res = mysql_query($q);
       $row = mysql_fetch_assoc($res);
       $newdrink = fillDrink($row);
@@ -273,13 +282,14 @@
    function loadGrant($gid)
    {
       $q = "SELECT * FROM `grants` WHERE `id` = $gid LIMIT 1";
+      echo $q;
       $res = mysql_query($q);
       $grants = Array();
       return new Grant(mysql_fetch_assoc($res));
    }
    function getUserGrants($userid)
    {
-      $q = "SELECT * FROM `grants` WHERE `foruid` = $userid AND `status`!='deleted'";
+      $q = "SELECT * FROM `grants` WHERE `user_id` = $userid AND `status`!='deleted'";
       $res = mysql_query($q);
       $grants = Array();
       while ($row = mysql_fetch_assoc($res)) {
@@ -292,10 +302,10 @@
    {
       global $cfg; 
       if (!$show_invalid) {
-         $q = "SELECT * FROM `drinks` WHERE `status`='valid' AND `totalticks` > " . $cfg['flow']['minticks'] . " AND `user_id` = '$userid' AND `frag` = '0' ORDER BY `id` $order";
+         $q = "SELECT * FROM `drinks` WHERE `status`='valid' AND `ticks` > " . $cfg['flow']['minticks'] . " AND `user_id` = '$userid' ORDER BY `id` $order";
       }
       else {
-         $q = "SELECT * FROM `drinks` WHERE `totalticks` > " . $cfg['flow']['minticks'] . " AND `user_id` = '$userid' AND `frag` = '0' ORDER BY `id` $order";
+         $q = "SELECT * FROM `drinks` WHERE `ticks` > " . $cfg['flow']['minticks'] . " AND `user_id` = '$userid' ORDER BY `id` $order";
       }
       $res = mysql_query($q);
       $drinks = Array();
@@ -578,27 +588,26 @@
          return NULL;
       }
    }
+
    function getCurrentBAC($user_id) {
-      $q = "SELECT `bac`,`endtime`,UNIX_TIMESTAMP(NOW()) as `CURRTIME` FROM `drinks` WHERE `user_id`='$user_id' AND `frag` = '0' ORDER BY `endtime` DESC LIMIT 1";
+      $q = "SELECT `bac`,`rectime`,UNIX_TIMESTAMP(NOW()) as `CURRTIME` FROM `bacs` WHERE `user_id`='$user_id' ORDER BY `rectime` DESC LIMIT 1";
       $res = mysql_query($q);
       $row = mysql_fetch_assoc($res);
       if (empty($row)) {
          return 0.0;
       }
       else {
-         return decomposeBAC($row['bac'],$row['CURRTIME'] - $row['endtime']);
+         return decomposeBAC($row['bac'],$row['CURRTIME'] - $row['rectime']);
       }
    }
+
    function decomposeBAC($bac,$time_diff) {
       $rate = 0.016;
       return max(0.0, $bac - ($rate * ($time_diff/3600.0)));
    }
+
    function getDrinkSize($orgticks, $kegid) {
-      $q = "SELECT `tickmetric` FROM `kegs` WHERE id='$kegid' LIMIT 1";
-      $row = mysql_fetch_assoc(mysql_query($q));
-      if(empty($row))
-         return NULL;
-      return $orgticks/$row['tickmetric'];
+      return $orgticks; // XXX TODO
    }
   function fillDrink($row){
       if($row == NULL)
@@ -608,7 +617,6 @@
       $drink->setDrinkSize(getDrinkSize($row['totalticks'],$row['keg_id']));
       $drink->setKeg(loadKeg($row['keg_id']));
       $drink->setDrinker(loadDrinker($row['user_id']));
-      $drink->setGrant(loadGrant($row['grant_id']));
       $DRINKS[$row['id']] = $drink;
       return $drink;
    }

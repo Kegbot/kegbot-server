@@ -3,26 +3,26 @@
 include_once("main-functions.php");
 class Grant {
    var $id;
-   var $foruid;
+   var $user_id;
    var $expiration;
    var $status;
-   var $policy;
-   var $exp_ounces;
+   var $policy_id;
+   var $exp_volume;
    var $exp_time;
    var $exp_drinks;
-   var $total_ounces;
+   var $total_volume;
    var $total_drinks;
 
    function Grant($a) {
       $this->id = $a['id'];
-      $this->foruid = $a['foruid'];
+      $this->user_id = $a['user_id'];
       $this->expiration = $a['expiration'];
       $this->status = $a['status'];
-      $this->policy = getPolicy($a['forpolicy']);
-      $this->exp_ounces = $a['exp_ounces'];
+      $this->policy = getPolicy($a['policy_id']);
+      $this->exp_volume = $a['exp_volume'];
       $this->exp_time = $a['exp_time'];
       $this->exp_drinks = $a['exp_drinks'];
-      $this->total_ounces = $a['total_ounces'];
+      $this->total_volume = $a['total_volume'];
       $this->total_drinks = $a['total_drinks'];
    }
    function getExpirationStr() {
@@ -30,8 +30,9 @@ class Grant {
          $date = strftime("%D",$this->exp_time);
          return "on $date";
       }
-      elseif (!strcmp($this->expiration,"ounces")) {
-         return "after {$this->exp_ounces} ounces";
+      elseif (!strcmp($this->expiration,"volume")) {
+         $oz = round(volunits_to_ounces($this->exp_volume), 2);
+         return "after $oz ounces";
       }
       return "never";
    }
@@ -60,8 +61,9 @@ class Grant {
 
          return $ret;
       }
-      elseif (!strcmp($this->expiration,"ounces")) {
-         $diff = $this->exp_ounces - $this->total_ounces;
+      elseif (!strcmp($this->expiration,"volume")) {
+         $diff = $this->exp_volume - $this->total_volume;
+         $diff = volunits_to_ounces($diff);
          $diff = round($diff,2);
          if ($diff <= 0) 
             return "expired!";

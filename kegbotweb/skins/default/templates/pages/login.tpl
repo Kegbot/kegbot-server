@@ -14,7 +14,7 @@
    {/if}
    <p>
       <table>
-         <form method="post" action="/login.php">
+         <form method="post" action="{module_url module="login"}">
          <input type="hidden" name="action" value="login">
          <tr>
             <td><b>drinker name:</b></td>

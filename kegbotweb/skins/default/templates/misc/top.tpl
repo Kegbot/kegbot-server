@@ -14,10 +14,10 @@
       </p>
       <div class="linkbar">
          <div style="padding-left:30px;">
-         <a href="/">main</a> |
-         <a href="/all-drinkers.php">drinkers</a> |
-         <a href="/leaders.php">leader board</a> |
-         <a href="/account.php">account</a>
+         <a href="{module_url module="main"}">main</a> |
+         <a href="{module_url module="all-drinkers"}">drinkers</a> |
+         <a href="{module_url module="leaders"}">leader board</a> |
+         <a href="{module_url module="account"}">account</a>
          { if $s_drinker->admin }
          | <a href="/admin-info.php">kebgot admin</a>
          { /if}

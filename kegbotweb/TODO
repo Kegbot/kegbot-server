@@ -1,17 +1,26 @@
 * clean up template and code mixture
    - it is really messy right now
-   - smarty "componentized templates" are a better solution for a lot of the
-     code/html embedded in the current set of tpls
+   - [in progress] smarty "componentized templates" are a better solution for a
+     lot of the code/html embedded in the current set of tpls
+
+* fix graphing
+
 * cache data (tie in with frontend)
    - drinker totals should be recomputed each drink, _not_ by the frontend!
    - customization in the frontend should still be possible, but common
      calculations (especially periodic ones) should have a real owner
+
 * multi-keg sane
+
+* selectable units display, not just ounces (javascript magic?)
+
 * go over everything with a style brush
    - my php 'style' sucks
+
 * remove or fix support for multiple backends served by same frontend
    - it is quite hacky right now, and some things are broken: ie user mugshot
      syncing, etc..
+
 * lots of other stuff i'll remember once i start trying to make this work again
   :)
 

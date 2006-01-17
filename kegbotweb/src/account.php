@@ -9,10 +9,10 @@
    require_once('includes/loggedin-required.php');
 
    $smarty = new SmartyBeer();
-   $cid = $_SESSION['drinker']->id;
+   $drinker = $_SESSION['drinker'];
+   $cid = $drinker->id;
    $smarty->caching = 0;
 
-   $drinker = $_SESSION['drinker'];
    $smarty->assign('drinker',$drinker);
    $smarty->assign('genders',Array('male','female'));
    $smarty->assign('grants',getUserGrants($drinker->id));

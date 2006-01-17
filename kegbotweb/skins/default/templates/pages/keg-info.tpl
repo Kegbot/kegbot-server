@@ -1,3 +1,4 @@
+{load_keg assign="keg" id=$id}
 <div class="contenthead">
    info for keg #{$keg->id}
 </div>
@@ -10,7 +11,7 @@
             {$keg->beername} ({$keg->alccontent|string_format:"%.2f"}% alcohol)
             </td>
          <td rowspan="6" align="right">
-            <img src="/images/keg.png" width="77" height="100">
+            <img src="{module_url module="images" image="keg.png"}" width="77" height="100">
          </td>
       </tr>
       {if $keg->ratebeerid or $keg->beerpalid}
@@ -64,26 +65,21 @@
 </div>
 <div class="content">
    {if $keg->status == "online"}
-   <img src="http://kegbot.org/graphs/gen-graph.php?g=keghist">
+   <img src="graphs/gen-graph.php?g=keghist">
    {/if}
-   {if $usehistory}
    <p>
-      full drink history for keg shown below. <a href="/keg/{$keg->id}">hide history</a>.
+      full drink history for keg shown below.
    <p>
    <table cellspacing=0 border=0 width="430">
    <tr>
       <td><b>#</b></td><td align="right"><b>size</b></td><td>&nbsp;</td><td><b>user</b></td><td><b>when</b></td>
    </tr>
+   {load_drinks assign="drinks" keg=$keg->id}
    { foreach name=drinks item="drink" from=$drinks }
       { include file="spans/drink.tpl" drink=$drink } 
    { /foreach }
    </table>
    </p>
-   {else}
-   <p>
-      to show full drink history for this keg, <a href="/keg-info.php?keg={ $keg->id }&history=1">click here</a>
-   </p>
-   {/if}
 
 </div>
 

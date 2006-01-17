@@ -14,5 +14,5 @@
       $_SESSION['oneshot_msg'] = "password changed succesfully";
    }
 
-   header("Location:/account.php");
+   header("Location:account.php");
 ?>

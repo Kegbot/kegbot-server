@@ -42,11 +42,11 @@ class Keg {
       return $this->startounces * $this->tickmetric;
    }
 
-   function toOunces($ticks) {
-      return $ticks/$this->tickmetric;
+   function toOunces($volunits) {
+      return $volunits * 0.0338140226;
    }
-   function toCalories($ticks) {
-      return $this->toOunces($ticks) * $this->calories;
+   function toCalories($volunits) {
+      return $this->toOunces($volunits) * $this->calories;
    }
 }
 ?>

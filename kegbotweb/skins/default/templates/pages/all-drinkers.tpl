@@ -1,21 +1,24 @@
 <div class="contenthead">
    all known drinkers
 </div>
+{load_drinkers assign="drinkers"}
+{load_drinker_stats assign="stats"}
 <div class="content">
    <p>
    <br>
    { foreach name=all_drinkers item="d" from=$drinkers}
-   {if $d->stats.alltime_vol >= 64.0}
+   {assign var="drinkerid" value=$d->id}
+   {if $stats.$drinkerid.alltime_vol >= 64.0}
    <div class="box">
    <table width="100%" border="0" cellpadding="3" cellspacing="3">
    <tr>
       <td align="center" valign="top">
             { include file="boxes/mugshot-box.tpl" u=$d d=100}
-            <font size="+1">{$d->getNameLinkified()}</font>
+            <font size="+1">{include file="misc/drinker-link.tpl drinker=$d}</font>
       </td>
 
       <td valign="top">
-         {include file="boxes/drinker-quickshot.tpl" drinker=$d stats=$d->stats}
+         {include file="boxes/drinker-quickshot.tpl" drinker=$d stats=$stats.$drinkerid}
       </td>
    </tr>
    </table>
@@ -30,10 +33,12 @@
    <div class="box">
    <center>find us in the street and ridicule us!<br></center>
    { foreach name=all_drinkers item="d" from=$drinkers}
-   {if $d->stats.alltime_vol < 64.0}
+   {assign var="drinkerid" value=$d->id}
+   {if $stats.$drinkerid.alltime_vol < 64.0}
    <div style="text-align:center; float:left; padding-right: 5px; padding-top:5px;">
       { include file="boxes/mugshot-box.tpl" u=$d d=100}
-      {$d->getNameLinkified()}
+      {include file="misc/drinker-link.tpl drinker=$d}
+      {$stats[$d.id]}
    </div>
    {/if}
    { /foreach }

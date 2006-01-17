@@ -2,34 +2,34 @@
 class Drink {
    var $id;
    var $ticks;
+   var $volume;
    var $starttime;
    var $endtime;
    var $user_id;
    var $keg_id;
-   var $totalticks;
-   var $bac;
+   var $status;
 
    function Drink($assoc) {
       $this->id = $assoc['id'];
       $this->ticks = $assoc['ticks'];
+      $this->volume = $assoc['volume'];
       $this->starttime = $assoc['starttime'];
       $this->endtime = $assoc['endtime'];
       $this->user_id = $assoc['user_id'];
       $this->keg_id = $assoc['keg_id'];
-      $this->bac = $assoc['bac'];
+      $this->status = $assoc['status'];
       $this->keg_obj = false;
       $this->drinker_obj = false;
       $this->grant_obj = false;
-      $this->totalticks = $assoc['totalticks'];
       $this->drink_size = 0;
       $this->username = "";
    }
 
    function inOunces() {
-      return $this->keg_obj->toOunces($this->totalticks);
+      return $this->keg_obj->toOunces($this->volume);
    }
    function getCalories() {
-      return $this->keg_obj->toCalories($this->totalticks);
+      return $this->keg_obj->toCalories($this->volume);
    }
    function convert_timestamp($timestamp, $adjust="") {
       $timestring = substr($timestamp,0,8)." ".
@@ -73,7 +73,7 @@ class Drink {
    }
 
    function getCost() {
-      return $this->grant_obj->policy->getCost($this->inOunces());
+      return 0; // TODO FIXME
    }
    function setDrinkSize($size) {
       $this->drink_size = $size;
@@ -83,7 +83,8 @@ class Drink {
       return "/drink/" . $this->id;
    }
    function getSize() {
-      return $this->drink_size;
+      //return $this->drink_size;
+      return $this->keg_obj->toOunces($this->volume);
    }
 }
 

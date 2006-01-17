@@ -18,7 +18,7 @@
 <div class="content">
    <p>
       <table>
-         <form method="post" action="change-password.php">
+         <form method="post" action="{module_url module="change-password"}">
          <input type="hidden" name="action" value="login">
          <tr>
             <td><b>new password:</b></td>
@@ -41,7 +41,7 @@
    drinker bio
 </div>
 <div class="content">
-   <form method="post" action="/update-account.php">
+   <form method="post" action="{module_url module="update-account"}">
    <p>
       please be sure that your gender and weight are generally accurate. both
       are used solely for calculating your BAC, so the more accurate you are,

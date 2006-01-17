@@ -1,4 +1,5 @@
 <LINK REL="alternate" TITLE="{$drinker->username} RSS Drink History" HREF="http://www.kegbot.org/drinker/{$drinker->username}/drinks.rss" TYPE="application/rss+xml">
+{load_drinker assign="drinker" id=$id}
 <div class="contenthead">
    drinker info: {$drinker->username}
 </div>
@@ -21,22 +22,9 @@
 </div>
 
 <div class="contenthead">
-   binge statistics
-</div>
-<div class="content">
-   {if $num_sess > 0}
-      {include file="misc/binge-stats.tpl"}
-   {else}
-   <p>
-      this guy hasn't had nearly enough to drink! no statistics are available for babies...
-   </p>
-   {/if}
-</div>   
-<div class="contenthead">
    full drink history
 </div>
 <div class="content">
-   {if $usehistory}
    <p>
       full drink history for { $drinker->username } is shown below. <a href="/drinker-info.php?drinker={$drinker->id}">hide history</a>.
    <p>
@@ -49,10 +37,5 @@
    { /foreach }
    </table>
    </p>
-   {else}
-   <p>
-      to show full drink history for this drinker, <a href="/drinker-info.php?drinker={ $drinker->id }&history=1">click here</a>
-   </p>
-   {/if}
 </div>
 

@@ -1,6 +1,5 @@
 <LINK REL="alternate" TITLE="Kegbot RSS" HREF="http://www.kegbot.org/main.rss" TYPE="application/rss+xml">
 <div class="contenthead">
-
    welcome{if $s_drinker->username}, {$s_drinker->username}{/if}
 </div>
 <div class="content">
@@ -12,6 +11,9 @@
 <div class="contenthead">
    last five drinks
 </div>
+
+{load_drinks assign="last_drinks" limit="5"}
+
 <div class="content">
    {if !$last_drinks}
    <p>
@@ -26,7 +28,9 @@
    { foreach name=drinks item="drink" from=$last_drinks }
       <td>
          <center>
-         {include file="boxes/mugshot-box.tpl" u=$drink->drinker_obj d="72" href="/drink/`$drink->id`" border=1}
+         <a href="{module_url module="drink-info" drink=$drink->id}">
+         {include file="boxes/mugshot-box.tpl" u=$drink->drinker_obj d="72" border=1}
+         </a>
          </center>
       </td>
       <td>&nbsp;</td>
@@ -71,6 +75,9 @@
 <div class="contenthead">
    current drunks!
 </div>
+
+{load_current_drunks assign="drunks"}
+
 <div class="content">
    <p>
    {if $drunks}
@@ -89,6 +96,7 @@
    </p>
 </div>
 
+<!--
 <div class="contenthead">
    current keg status
 </div>
@@ -101,7 +109,6 @@
    <p>
       <div class="box">
       <img src="/graphs/gen-graph.php?g=current-temps&d={$graphdays}"><br>
-      <!-- <center>[<a href="?d=1">1day</a>] [<a href="?d=3">3day</a>] [<a href="?d=7">7day</a>]</center> -->
       <img src="/graphs/gen-graph.php?g=current-fridge&d={$graphdays}"><br>
       </div>
    </p>
@@ -115,6 +122,7 @@
       on the last 30 points, or roughly, the last 15 minutes of measurements.
    </p>
 </div>
+-->
 
 <div class="contenthead">
    tags

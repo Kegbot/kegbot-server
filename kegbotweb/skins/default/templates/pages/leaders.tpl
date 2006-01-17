@@ -11,19 +11,9 @@ current leaders
    {/if}
    </p>
    <p>
-      <form action="leaders2.php" method="get">
+      <form action="{module_url module="leaders"}" method="get">
          <input type="submit" name="show" value="show">
-         <select name="num">
-         <option>5
-         <option>6
-         <option>7
-         <option>8
-         <option>9
-         <option>10
-         <option>15
-         <option>25
-         <option value="500">all
-         </select>
+         {html_options name="num" options=$select_range selected=$max_leaders}
          drinkers per award
       </form>
    </center>
@@ -41,17 +31,20 @@ current leaders
          <b>blood alcohol freaks</b>
       </td>
    </tr>
+{load_leaders_by_volume assign="alltime_vol" limit=$max_leaders}
    <tr>
       <td align="center" valign="top">
          { foreach name=alltime_vol item="volleader" from=$alltime_vol} 
              { include file="boxes/leader-box.tpl" units=$volleader.units border=1 leadinfo=$volleader place=$smarty.foreach.alltime_vol.iteration }
          { /foreach }
       </td>
+{load_leaders_by_volume assign="current_vol" limit=$max_leaders keg="current"}
       <td align="center" valign="top">
       { foreach name=current_vol item="kegleader" from=$current_vol} 
           { include file="boxes/leader-box.tpl" border=1 units=$kegleader.units leadinfo=$kegleader place=$smarty.foreach.current_vol.iteration }
       { /foreach }
       </td>
+{load_leaders_by_bac assign="alltime_bac" limit=$max_leaders keg="current"}
       <td align="center" valign="top">
       { foreach name=alltime_bac item="BACleader" from=$alltime_bac } 
          { include file="boxes/leader-box.tpl" border=1 units="%" leadinfo=$BACleader place=$smarty.foreach.alltime_bac.iteration }
@@ -66,7 +59,7 @@ current leaders
    leader movement
 </div>
 <div class="content">
-      <img src="http://kegbot.org/graphs/gen-graph.php?g=historical">
+      <img src=graphs/gen-graph.php?g=historical">
       <p>
          this graph plots all-time total ounces versus actual drinks. each time
          someone takes a drink, the plots step one place to the right. flat

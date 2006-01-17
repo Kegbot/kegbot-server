@@ -3,7 +3,6 @@
 include_once("drink.class.php");
 include_once("keg.class.php");
 include_once("drinker.class.php");
-include_once("drinker_cache.class.php");
 include_once("grant.class.php");
 include_once("policy.class.php");
 include_once("tag.class.php");

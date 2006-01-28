@@ -133,13 +133,12 @@
       return $ret;
    }
 
-   function getLeadersByVolume($all_kegs = true, $num = 5, $kegid = NULL)
+   function getLeadersByVolume($num, $keg)
    {
-      if ($all_kegs) {
+      if (!$keg) {
          $q = "SELECT user_id,SUM(`volume`) AS `total_volume` FROM `drinks`,`kegs` WHERE drinks.keg_id = kegs.id AND drinks.status='valid' GROUP BY `user_id` ORDER BY `total_volume` DESC LIMIT $num";
       }
       else {
-         $keg = new Keg($kegid);
          $q = "SELECT user_id,SUM(`volume`) AS `total_volume` FROM `drinks`,`kegs` WHERE drinks.keg_id='{$keg->id}' AND drinks.keg_id = kegs.id AND drinks.status='valid' GROUP BY `user_id` ORDER BY `total_volume` DESC LIMIT $num";
       }
       $res = mysql_query($q);
@@ -276,6 +275,13 @@
          $row = mysql_fetch_assoc($res); // TODO CHECK INPUT
          return new Drinker($row['id']);
       }
+   }
+
+   function getCurrentKeg() {
+      $q = "SELECT `id` FROM `kegs` ORDER BY `id` DESC LIMIT 1";
+      $res = mysql_query($q);
+      $row = mysql_fetch_assoc($res);
+      return new Keg($row['id']);
    }
 
    function getCurrentKegTemp() {

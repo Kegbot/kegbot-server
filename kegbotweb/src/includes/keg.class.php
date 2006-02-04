@@ -7,7 +7,7 @@ class Keg {
    var $status;
    var $beername;
    var $alccontent;
-   var $calories;
+   var $calories_oz;
    var $descr;
    var $origcost;
    var $beerpalid;
@@ -47,7 +47,7 @@ class Keg {
    }
 
    function toCalories($volunits) {
-      return $this->toOunces($volunits) * $this->calories;
+      return $this->toOunces($volunits) * $this->calories_oz;
    }
 }
 ?>

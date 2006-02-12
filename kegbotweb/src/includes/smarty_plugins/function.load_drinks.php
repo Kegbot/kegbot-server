@@ -2,9 +2,13 @@
 include_once('main-functions.php');
 function smarty_function_load_drinks($params, &$smarty)
 {
+   $params['where'] = array();
    // TODO: better way to support this?
    if (!empty($params['user_id'])) {
-      $params['where'] = array("`user_id`='{$params['user_id']}'");
+      $params['where'][] = "`user_id`='{$params['user_id']}'";
+   }
+   if (!empty($params['keg_id'])) {
+      $params['where'][] = "`keg_id`='{$params['keg_id']}'";
    }
 
    $q = SQLQuery( $table='drinks',

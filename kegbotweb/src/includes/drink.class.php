@@ -1,4 +1,5 @@
 <?
+include_once('units.php');
 class Drink {
    var $id;
    var $ticks;
@@ -24,7 +25,7 @@ class Drink {
    }
 
    function inOunces() {
-      return $this->keg_obj->toOunces($this->volume);
+      return volunits_to_ounces($this->volume);
    }
 
    function getCalories() {

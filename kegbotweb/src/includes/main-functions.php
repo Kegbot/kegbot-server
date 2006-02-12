@@ -2,6 +2,7 @@
    require_once("load-config.php");
    require_once("allclasses.php");
    include_once('binge-functions.php');
+   include_once('units.php');
    global $cfg;
 
    @mysql_connect($cfg['db']['host'], $cfg['db']['user'], $cfg['db']['password']) || die("the kegbot front end can't connect to the backend. check db config in cfg.inc.php");
@@ -150,14 +151,6 @@
          $ret[$row['user_id']] = $row;
       }
       return $ret;
-   }
-
-   function volunits_to_ounces($amt) {
-      return $amt * 0.0338140226;
-   }
-
-   function ounces_to_volunits($amt) {
-      return $amt * 29.5735297;
    }
 
    function newPolicy($type,$unitcost,$unitounces,$descr) {

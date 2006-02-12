@@ -42,12 +42,8 @@ class Keg {
       return $this->full_volume - $gone;
    }
 
-   function toOunces($volunits) {
-      return $volunits * 0.0338140226;
-   }
-
    function toCalories($volunits) {
-      return $this->toOunces($volunits) * $this->calories_oz;
+      return volunits_to_ounces($volunits) * $this->calories_oz;
    }
 }
 ?>

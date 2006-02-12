@@ -8,4 +8,5 @@ include_once("policy.class.php");
 include_once("tag.class.php");
 include_once("token.class.php");
 include_once("charge.class.php");
+include_once("binge.class.php");
 ?>

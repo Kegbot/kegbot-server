@@ -15,10 +15,45 @@
       </tr>
       <tr>
          <td valign="top">
-            {include file="boxes/drinker-quickshot.tpl"}
+            {load_drinker_stats assign="stats" id=$drinker->id}
+            {include file="boxes/drinker-quickshot.tpl" drinker=$drinker stats=$stats}
          </td>
       </tr>
    </table>
+</div>
+
+{load_binges assign="binges" user_id=$drinker->id}
+<div class="contenthead">
+   binges
+</div>
+<div class="content">
+   <p>
+      a binge constitutes 3 or more drinks, separated by no more than 90
+      minutes each, and totalling at least 4 pints
+   </p>
+
+   {if !$binges}
+   <p>
+      <b>none recorded yet.</b> {$drinker->username} is clearly a very balanced
+      drinker.
+   </p>
+   {else}
+   <p>
+   <div class="box">
+   <table class="sortable" id="binges" cellspacing=0 border=0 width="430">
+      <tr>
+      <td><b>#</b></td>
+      <td><b>size</b></td>
+      <td><b>start</b></td>
+      <td><b>end</b></td>
+   </tr>
+   {foreach from=$binges item="binge"}
+      { include file="spans/binge.tpl" binge=$binge}
+   {/foreach}
+   </table>
+   </div>
+   </p>
+   {/if}
 </div>
 
 {load_drinks assign="drinks" user_id=$drinker->id order_by="id" order_dir="DESC"}
@@ -30,12 +65,13 @@
       full drink history for { $drinker->username } is shown below.
    </p>
    <p>
-      <table cellspacing=0 border=0 width="430">
+   <div class="box">
+   <table class="sortable" id="all_drinks" cellspacing=0 border=0 width="430">
       <tr>
-         <td><b>#</b></td>
-         <td align="right"><b>size</b></td>
          <td>&nbsp;</td>
-         <td><b>user</b></td>
+         <td align="right"><b>size</b></td>
+         <td align="right"><b>calories</b></td>
+         <td>user</td>
          <td><b>when</b></td>
          <td><b>bac</b></td>
       </tr>
@@ -43,6 +79,7 @@
          { include file="spans/drink.tpl" drink=$drink } 
       { /foreach }
       </table>
+   </div>
    </p>
 </div>
 

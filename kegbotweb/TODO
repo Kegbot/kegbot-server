@@ -24,3 +24,9 @@
 * lots of other stuff i'll remember once i start trying to make this work again
   :)
 
+* binge info on drink page: show drink centered around binge that it fell in
+
+* nearby drinkers -- try to group drinks with other drinkers
+
+* "drinking with <drinker>" - get current binge, find binges that fall within
+  it, show icons of the owning drinker

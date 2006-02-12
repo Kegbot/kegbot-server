@@ -35,7 +35,28 @@
          <td align="right"><b>keg:</b></td>
          <td>{include file="misc/keg-link.tpl" keg=$drink->keg_obj}</td>
       </tr>
+      <tr>
+         {assign var="binge" value=$drink->getBinge()}
+         <td align="right"><b>binge:</b></td>
+         <td>{$binge->id}</td>
+      </tr>
    </table>
    </p>
 </div>
 
+{load_nearby_drinkers assign="friends" drink=$drink}
+<div class="contenthead">
+   drinking with {$drink->drinker_obj->username}
+</div>
+<div class="content">
+   <p>
+   {if !$friends}
+   <b>{$drink->drinker_obj->username}</b> appeared to be drinking alone.
+   {else}
+   {foreach from=$friends item=friend}
+      {*include file="boxes/mugshot-box.tpl" u=$friend d=50*}
+      {include file="misc/drinker-link.tpl drinker=$friend}<br>
+   {/foreach}
+   {/if}
+   </p>
+</div>

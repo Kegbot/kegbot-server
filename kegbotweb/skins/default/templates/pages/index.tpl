@@ -50,13 +50,12 @@
    </p>
    <p>
    <div class="box">
-   <table cellspacing=0 border=0 width="430">
+   <table class="sortable" id="recent_drinks" cellspacing=0 border=0 width="430">
    <tr>
       <td>&nbsp;</td>
-      <td align="right"><b>size</b></td>
-      <td>&nbsp;</td>
-      <td align="right" colspan="2"><b>calories</b>&nbsp;&nbsp;</td>
-      <td><b>user</b></td>
+      <td align="left"><b>size</b></td>
+      <td align="right"><b>calories</b></td>
+      <td>user</td>
       <td><b>when</b></td>
       <td><b>bac</b></td>
    </tr>

@@ -32,12 +32,22 @@ class Drink {
       return $this->keg_obj->toCalories($this->volume);
    }
 
+   function BAC() {
+      return getBAC($this->user_id, $this->id);
+   }
+
    function getCost() {
       return 0; // TODO FIXME
    }
 
    function getSize() { // XXX needed
       return $this->inOunces();
+   }
+
+   function getBinge() {
+      $q = "SELECT * FROM binges WHERE `user_id`='{$this->user_id}' AND `startdrink_id` <= '{$this->id}' AND `enddrink_id` >= '{$this->id}' LIMIT 1";
+      $binges = getBingesByQuery($q);
+      return $binges[0];
    }
 
 }

@@ -246,6 +246,31 @@
       return ($va > $vb) ? -1 : 1;
    }
 
+   function getBingesByQuery($q)
+   {
+      $res = mysql_query($q);
+      $binges = Array();
+      while ($row = mysql_fetch_assoc($res)) {
+         if(empty($row))
+            return NULL;
+         $binges[] = new Binge($row['id']);
+      }
+      return $binges;
+   }
+
+   function getDrinkersByQuery($q)
+   {
+      $res = mysql_query($q);
+      $drinkers = Array();
+      while ($row = mysql_fetch_assoc($res)) {
+         if(empty($row))
+            return NULL;
+         $drinkers[] = new Drinker($row['id']);
+      }
+      return $drinkers;
+   }
+
+
    function getDrinksByQuery($q)
    {
       $res = mysql_query($q);
@@ -297,6 +322,18 @@
          }
       }
       return $drunks;
+   }
+
+   function getBAC($user_id, $drink_id) {
+      $q = "SELECT `bac` FROM `bacs` WHERE `user_id`='$user_id' AND `drink_id`='$drink_id' LIMIT 1";
+      $res = mysql_query($q);
+      $row = mysql_fetch_assoc($res);
+      if (empty($row)) {
+         return 0.0;
+      }
+      else {
+         return $row['bac'];
+      }
    }
 
    function getCurrentBAC($user_id) {

@@ -5,6 +5,7 @@
    {/if}
    <title>kegbot kegerator</title>
    <style type="text/css" media="all">@import "{$css}";</style>
+   <script src="sorttable.js"></script>
 </head>
 <body>
    {include file="boxes/top5.tpl"}

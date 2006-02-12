@@ -19,10 +19,10 @@
          <a href="{module_url module="leaders"}">leader board</a> |
          <a href="{module_url module="account"}">account</a>
          { if $s_drinker->admin }
-         | <a href="/admin-info.php">kebgot admin</a>
+         | <a href="{module_url module="admin-info"}">kebgot admin</a>
          { /if}
          { if $s_drinker }
-         | <a href="/login.php?action=logout">logout</a>
+         | <a href="{module_url module="login" action="logout"}">logout</a>
          {/if}
       </div>
       </div>

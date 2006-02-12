@@ -12,7 +12,7 @@
    last five drinks
 </div>
 
-{load_drinks assign="last_drinks" limit="5"}
+{load_drinks assign="last_drinks" limit="5" order_by="id" order_dir="desc"}
 
 <div class="content">
    {if !$last_drinks}

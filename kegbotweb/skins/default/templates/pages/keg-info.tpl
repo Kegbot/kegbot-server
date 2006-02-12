@@ -47,7 +47,7 @@
       </tr>
       <tr>
          <td align="right"><b>drinks served:</b></td>
-         <td>{$drinks_served} ({$full_pct|string_format:"%.1f"}% full)</td>
+         <td>{$keg->volumeLeft()|volunits_to_ounces|string_format:"%.1f"} oz ({$keg->volumeLeft()/$keg->full_volume*100|string_format:"%.1f"}% full)</td>
       </tr>
       {if $keg->descr}
       <tr>
@@ -74,7 +74,7 @@
    <tr>
       <td><b>#</b></td><td align="right"><b>size</b></td><td>&nbsp;</td><td><b>user</b></td><td><b>when</b></td>
    </tr>
-   {load_drinks assign="drinks" keg=$keg->id}
+   {load_drinks assign="drinks" keg_id=$keg->id}
    { foreach name=drinks item="drink" from=$drinks }
       { include file="spans/drink.tpl" drink=$drink } 
    { /foreach }

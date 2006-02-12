@@ -37,14 +37,17 @@
       <table cellspacing=0 border=0 width="440">
       <tr>
          <td><b>action</b></td>
-         <td><b>description</b></td>
+         <td><b>descr</b></td>
          <td><b>cost/oz</b></td>
          <td><b>expires</b></td>
          <td><b>to go</b></td>
       </tr>
       {foreach name=grants item="grant" from=$grants}
          <tr>
-         <td><a href="edit-grant.php?targetgrant={$grant->id}&action=edit">edit</a>/<a href="delete-grant.php?g={$grant->id}&u={$target->id}">kill</a>&nbsp;</td>
+         <td>
+            <a href="edit-grant.php?targetgrant={$grant->id}&action=edit">edit</a>/<a href="delete-grant.php?g={$grant->id}&u={$target->id}&action=expired">expire</a>/<a href="delete-grant.php?g={$grant->id}&u={$target->id}&action=deleted">kill</a>
+            &nbsp;
+         </td>
          { include file="spans/grant.tpl" grant=$grant}
          </tr>
       {/foreach}

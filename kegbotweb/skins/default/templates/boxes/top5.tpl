@@ -1,7 +1,7 @@
 <div class="leftbox" style="background:#003; font:12px Courier, sans-serif; text-align: center;color: #fff; border:1px solid #fff; border-top:0px;">
 current keg
 </div>
-{load_leaders_by_volume assign="leaders" limit="5"}
+{load_leaders_by_volume assign="leaders" limit="5" keg="current"}
 {foreach name=curr_vol from=$leaders item=resinfo}
    <div class="leftbox" style="font:10px Courier, sans-serif;">
    <center>

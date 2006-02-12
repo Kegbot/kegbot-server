@@ -3,7 +3,7 @@
 </div>
 <div class="content">
    <p>
-      hello, {$drinker->username}! welcome to the liquor cabinet. (<a href="/login.php?action=logout">logout</a>)
+      hello, {$drinker->username}! welcome to the liquor cabinet. (<a href="{module_url module="login" action="logout"}">logout</a>)
    </p>
    {if $oneshot_msg}
    <p>

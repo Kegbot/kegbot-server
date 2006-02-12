@@ -21,21 +21,28 @@
    </table>
 </div>
 
+{load_drinks assign="drinks" user_id=$drinker->id order_by="id" order_dir="DESC"}
 <div class="contenthead">
    full drink history
 </div>
 <div class="content">
    <p>
-      full drink history for { $drinker->username } is shown below. <a href="/drinker-info.php?drinker={$drinker->id}">hide history</a>.
+      full drink history for { $drinker->username } is shown below.
+   </p>
    <p>
-   <table cellspacing=0 border=0 width="430">
-   <tr>
-      <td><b>#</b></td><td align="right"><b>size</b></td><td>&nbsp;</td><td><b>user</b></td><td><b>when</b></td><td><b>bac</b></td>
-   </tr>
-   { foreach name=drinks item="drink" from=$drinks }
-      { include file="spans/drink.tpl" drink=$drink } 
-   { /foreach }
-   </table>
+      <table cellspacing=0 border=0 width="430">
+      <tr>
+         <td><b>#</b></td>
+         <td align="right"><b>size</b></td>
+         <td>&nbsp;</td>
+         <td><b>user</b></td>
+         <td><b>when</b></td>
+         <td><b>bac</b></td>
+      </tr>
+      { foreach name=drinks item="drink" from=$drinks }
+         { include file="spans/drink.tpl" drink=$drink } 
+      { /foreach }
+      </table>
    </p>
 </div>
 

@@ -3,20 +3,13 @@ current leaders
 </div>
 <div class="content">
    <p>
-   <center>
-   {if $refresh}
-      autorefresh enabled [<a href="/leaders2.php">disable</a>]
-   {else}
-      autorefresh disabled [<a href="/leaders2.php?r=1">enable</a>]
-   {/if}
-   </p>
-   <p>
+      <center>
       <form action="{module_url module="leaders"}" method="get">
          <input type="submit" name="show" value="show">
          {html_options name="num" options=$select_range selected=$max_leaders}
          drinkers per award
       </form>
-   </center>
+      </center>
    </p>
    <p>
    <table border="0">

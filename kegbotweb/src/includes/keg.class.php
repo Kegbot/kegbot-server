@@ -28,18 +28,14 @@ class Keg {
       }
    }
 
-   /**
-   *
-   * Return amount of volume left in keg.
-   *
-   * @return	int	 volunits remaining
-   */
-   function volumeLeft() {
+   function volumeServed() {
       $q = "SELECT SUM(volume) as 'tot' FROM `drinks` WHERE `keg_id`='{$this->id}'";
       $res = mysql_query($q);
       $row = mysql_fetch_assoc($res);
-      $gone = $row['tot'];
-      return $this->full_volume - $gone;
+      return $row['tot'];
+   }
+   function volumeLeft() {
+      return $this->full_volume - $this->volumeServed();
    }
 
    function toCalories($volunits) {

@@ -1,7 +1,10 @@
 <?
+require_once("load-config.php");
 function smarty_function_module_url($params, &$smarty)
 {
-   // XX TODO check input
+   global $cfg;
+
+   // build an argument stream from smarty params
    $args = array();
    foreach ($params as $key => $val) {
       if (strcmp($key, "module")) {

@@ -246,9 +246,34 @@
       return ($va > $vb) ? -1 : 1;
    }
 
+   function getBingeGroups($keg)
+   {
+      $start = "UNIX_TIMESTAMP('{$keg->startdate}')";
+      $end = $keg->enddate;
+      if (empty($end)) {
+         $end = "NOW()";
+      } else {
+         $end = "UNIX_TIMESTAMP('$end')";
+      }
+      $q = "SELECT * FROM `binges` WHERE `starttime`>=$start AND `endtime`<=$end ORDER BY `starttime` ASC";
+      $binges = getBingesByQuery($q);
+      $groups = array();
+      $last = NULL;
+      foreach ($binges as $binge) {
+         if ($last == NULL or $last->endtime < $binge->starttime) {
+            $groups[] = array();
+         }
+         $groups[sizeof($groups)-1][] = $binge;
+         $last = $binge;
+      }
+      return $groups;
+   }
    function getBingesByQuery($q)
    {
       $res = mysql_query($q);
+      if (empty($res)) {
+         return array();
+      }
       $binges = Array();
       while ($row = mysql_fetch_assoc($res)) {
          if(empty($row))

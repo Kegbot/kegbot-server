@@ -53,10 +53,16 @@
    {if !$friends}
    <b>{$drink->drinker_obj->username}</b> appeared to be drinking alone.
    {else}
-   {foreach from=$friends item=friend}
-      {*include file="boxes/mugshot-box.tpl" u=$friend d=50*}
-      {include file="misc/drinker-link.tpl drinker=$friend}<br>
-   {/foreach}
-   {/if}
+   <div class="box">
+      {foreach from=$friends item=friend}
+         <div style="text-align:center; float:left; padding:5px;">
+         {include file="boxes/mugshot-box.tpl" u=$friend d=50}
+         {include file="misc/drinker-link.tpl drinker=$friend}<br>
+         </div>
+      {/foreach}
+      <br clear="all">
+   </div>
+   <div class="spacer">&nbsp;</div>
    </p>
+   {/if}
 </div>

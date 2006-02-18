@@ -30,10 +30,10 @@ class Drinker {
    function getMugshotFilename() {
       global $cfg;
       $uf = $cfg['dirs']['imagedir'] . "/{$this->username}.jpg";
-      if (!file_exists($uf)) {
+      /*if (!file_exists($uf)) {
          return "unknown-drinker.png";
-      }
-      return "userpics/{$this->username}.jpg";
+      }*/
+      return "{$this->username}.jpg";
    }
 
 }

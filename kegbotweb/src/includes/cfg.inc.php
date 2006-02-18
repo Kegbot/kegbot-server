@@ -3,10 +3,11 @@ global $cfg;
 $cfg['db']['host'] = 'localhost';
 $cfg['db']['user'] = 'root';
 $cfg['db']['password'] = '';
-$cfg['db']['db'] = 'kegbot';
+$cfg['db']['db'] = 'kegbot2';
 
 $cfg['flow']['minticks'] = 2;
 
+$cfg['urls']['baseurl'] = "/kegbotweb/src";
 $cfg['dirs']['webdir'] = "/var/www/localhost/htdocs/kegbotweb/src";
 $cfg['dirs']['skindir'] = "/var/www/localhost/htdocs/kegbotweb/skins";
 $cfg['dirs']['smartytmp'] = "/var/www/localhost/htdocs/kegbotweb/smartytmp";

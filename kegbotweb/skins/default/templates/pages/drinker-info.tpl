@@ -48,7 +48,9 @@
       <td><b>end</b></td>
    </tr>
    {foreach from=$binges item="binge"}
+      {if $binge->enddrink_id > $binge->startdrink_id and $binge->volume > 400}
       { include file="spans/binge.tpl" binge=$binge}
+      {/if}
    {/foreach}
    </table>
    </div>

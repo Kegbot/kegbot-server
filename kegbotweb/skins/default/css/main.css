@@ -115,13 +115,10 @@ div.rightbox {
    margin-left: 650px;
    background-color: #aaa;
 }
-div.leftbox {
-   float: left;
+div.leadercol {
+   position: absolute;
    width: 100px;
-   margin-bottom: 10px;
-   margin-left: 10px;
    background-color: #aaa;
-   clear: left;
 }
 div.leftnav {
    background-image:url('images/keg-header.png'); 

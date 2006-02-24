@@ -235,7 +235,7 @@ class FlowSimulator:
       return self.fridge
 
    def readTicks(self):
-      return int(50*(time.time() - self.open_time))
+      return max(0, int(50*(time.time() - self.open_time)))
 
    def openValve(self):
       self.valve = 1

@@ -1,3 +1,5 @@
+from datetime import datetime
+import time
 import sys
 
 from sqlobject import *
@@ -7,13 +9,13 @@ class Drink(SQLObject):
       table = 'drinks'
       lazyUpdate = True
 
-   ticks = IntCol(default=0)
-   volume = IntCol(default=0)
-   starttime = IntCol()
-   endtime = IntCol()
-   user = ForeignKey('User')
-   keg = ForeignKey('Keg')
-   status = EnumCol(enumValues=['valid','invalid'], default='valid')
+   ticks = IntCol(default=0, notNone=True)
+   volume = IntCol(default=0, notNone=True)
+   starttime = IntCol(notNone=True)
+   endtime = IntCol(notNone=True)
+   user = ForeignKey('User', notNone=True)
+   keg = ForeignKey('Keg', notNone=True)
+   status = EnumCol(enumValues=['valid','invalid'], default='valid', notNone=True)
 
 class Keg(SQLObject):
    class sqlmeta:
@@ -21,7 +23,7 @@ class Keg(SQLObject):
       lazyUpdate = True
 
    # default full_volume = 15.5 gallons in mL
-   full_volume = IntCol(default=58673)
+   full_volume = IntCol(default=58673, notNone=True)
    startdate = DateTimeCol()
    enddate = DateTimeCol()
    status = EnumCol(enumValues=['online', 'offline', 'coming soon'], default='online')
@@ -135,6 +137,7 @@ class BAC(SQLObject):
       lazyUpdate = True
 
    user = ForeignKey('User')
+   drink = ForeignKey('Drink')
    rectime = IntCol(notNone=True)
    bac = FloatCol(notNone=True)
 
@@ -148,4 +151,27 @@ class GrantCharge(SQLObject):
    user = ForeignKey('User')
    volume = IntCol(default=0)
 
+
+class Binge(SQLObject):
+   class sqlmeta:
+      table = 'binges'
+      lazyUpdate = True
+
+   user = ForeignKey('User', notNone=True)
+   startdrink = ForeignKey('Drink')
+   enddrink = ForeignKey('Drink')
+   volume = IntCol(default=0, notNone=True)
+   starttime = IntCol(notNone=True)
+   endtime = IntCol(notNone=True)
+
+
+class Userpic(SQLObject):
+   class sqlmeta:
+      table = 'userpics'
+      lazyUpdate = True
+
+   user = ForeignKey('User', notNone=True)
+   filetype = EnumCol(enumValues=['png','jpeg'], default='png', notNone=True)
+   modified = DateTimeCol(default=datetime.now)
+   data = BLOBCol(length=2**24)
 

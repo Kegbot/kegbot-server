@@ -18,6 +18,10 @@ import time
 import traceback
 import Queue
 
+# path hooks for local modules
+sys.path.append('../pymtxorb')
+sys.path.append('../pylcdui')
+
 # kegbot lib imports
 import Auth
 import Backend
@@ -27,6 +31,7 @@ import KegUI
 import SQLConfigParser
 import SQLHandler
 import TempMonitor
+import units
 import util
 
 # other (third-party) lib imports
@@ -135,13 +140,16 @@ class KegBot:
       # initialize flow meter
       dev = self.config.get('devices','flow')
       self.info('main','new flow controller at device %s' % dev)
-      self.fc = FlowController.FlowController(dev, self.makeLogger('flow', logging.INFO))
-      self.fc.start()
+      if dev in NULL_DEVICES:
+         self.fc = FlowController.FlowSimulator()
+      else:
+         self.fc = FlowController.FlowController(dev, self.makeLogger('flow', logging.INFO))
+         self.fc.start()
 
       # set up the default screen
       self.ui.setMain()
-      self.ui.start()
       self.ui.activity()
+      self.ui.start()
 
    def _setsigs(self):
       signal.signal(signal.SIGHUP, self.handler)
@@ -315,16 +323,14 @@ class KegBot:
       else:
          self.info('flow', 'user approved for %.1f volunits' % max_volume)
 
-      # record flow counter
-      start_ticks_flow = self.fc.readTicks()
-      self.info('flow','current flow ticks: %s' % start_ticks_flow)
-
       # turn on UI
       self.ui.setDrinker(current_user.username)
       self.ui.setCurrentPlate(self.ui.plate_pour,replace=1)
 
       # turn on flow
       self.fc.openValve()
+      start_ticks_flow = self.fc.readTicks()
+      self.info('flow','current flow ticks: %s' % start_ticks_flow)
       self.info('flow','starting flow for user %s' % current_user.username)
 
       #
@@ -373,8 +379,9 @@ class KegBot:
       d.syncUpdate()
 
       # post-processing steps
-      self.BACCalculate(d)
       self.GrantCalculate(d)
+      self.BACCalculate(d)
+      self.BingeUpdate(d)
 
       # update the UI
       ounces = round(self.volunitsToOunces(volume),2)
@@ -413,6 +420,28 @@ class KegBot:
          print 'ERROR: volume not charged: %i' % vol_remain
          # XXX TODO charge to default grant
 
+   def BingeUpdate(self, d):
+      binges = list(Backend.Binge.select("user_id=%i"%d.user.id,
+         orderBy="-id", limit=1))
+
+      # flush binge fetched if it is too old
+      if len(binges) != 0:
+         if binges[0].endtime < (d.endtime - (60*90)): # XXX fix constant
+            binges = []
+
+      # now find or create the current binge, and update it
+      if len(binges) == 0:
+         last_binge = Backend.Binge(user=d.user, startdrink=d,
+               enddrink=d, volume=d.volume, starttime=d.endtime,
+               endtime=d.endtime)
+         last_binge.syncUpdate()
+      else:
+         last_binge = binges[0]
+         last_binge.volume += d.volume
+         last_binge.enddrink = d
+         last_binge.endtime = d.endtime
+         last_binge.syncUpdate()
+
    def BACCalculate(self, d):
       curr_bac = 0.0
       matches = Backend.BAC.selectBy(user=d.user, orderBy='-rectime')
@@ -420,7 +449,7 @@ class KegBot:
          last_bac = matches[0]
          curr_bac = util.decomposeBAC(last_bac.bac, time.time() - last_bac.rectime)
       curr_bac += util.instantBAC(d.user, d.keg, self.volunitsToOunces(d.volume))
-      b = Backend.BAC(user=d.user, rectime=int(time.time()), bac=curr_bac)
+      b = Backend.BAC(user=d.user, drink=d.id, rectime=int(time.time()), bac=curr_bac)
       d.syncUpdate()
 
    def timeoutUser(self, user):
@@ -428,13 +457,13 @@ class KegBot:
 
    ### volume related helper functions
    def ticksToVolunits(self, ticks):
-      return self.config.getfloat('flow','ticks_to_volunits_factor')*ticks
+      return ticks
 
    def volunitsToOunces(self, volunits):
-      return volunits/MILLILITERS_PER_OUNCE
+      return float(volunits)/units.US_OUNCE
 
    def volunitsToLiters(self, volunits):
-      return volunits/1000.0
+      return float(volunits)/units.LITER
 
    ### logging related helper functions
    def log(self,component,message):

@@ -3,8 +3,9 @@ oldest items first
 
 HIGH PRIORITY
 
-- get rid of drink fragments and change the flow loop so that the maximum
-  amount pourable is calculated a priori; calculate the cost later or offline
+- [DONE!] get rid of drink fragments and change the flow loop so that the
+  maximum amount pourable is calculated a priori; calculate the cost later or
+  offline
 - [DONE!] unify keg.tick_metric and config.tick_metric so that only one is used
 - add hooks to the main flow sequence so it is easier to hook in other
   authentication modules or steps

@@ -33,18 +33,18 @@
          $this->config_dir = $this->basedir . '/configs/';
          $this->compile_dir = $smartydir . '/templates_c/';
          $this->cache_dir = $smartydir . '/cache/';
-         $this->plugins_dir[] = '/var/www/localhost/htdocs/kegbotweb/src/includes/smarty_plugins';
+         $this->plugins_dir[] = $cfg['dirs']['webdir'] . '/includes/smarty_plugins';
 
          // default assignments
          $this->assign('app_name','kegbotweb');
          $this->assign('css',$css);
          $this->assign('skin',$skin);
          $this->assign('getvars', $_GET);
-         ini_set('include_path', ini_get('include_path') . ':/var/www/localhost/htdocs/kegbotweb/src/includes/');
+         ini_set('include_path', ini_get('include_path') . ':' . $cfg['dirs']['webdir'] . '/includes/');
          $this->assign('s_drinker', $_SESSION['drinker']); // XXX not cached for other users, right?
 
          // caching and related
-         $this->caching = 0;
+         $this->caching = 1;
          $this->cache_lifetime = $cfg['smarty']['cachetime'];
          $this->compile_check = true;
       }

@@ -35,7 +35,6 @@ import units
 import util
 
 # other (third-party) lib imports
-import MySQLdb
 import sqlobject
 
 # command line parser are defined here
@@ -57,7 +56,7 @@ class KegBot:
    """ the thinking kegerator! """
    def __init__(self):
       self.QUIT          = threading.Event() # event to set when we want everything to quit
-      self.config        = SQLConfigParser.SQLConfigParser()
+      self.config        = SQLConfigParser.SQLObjectConfigParser()
       self.drinker_queue = Queue.Queue()
       self.authed_users  = [] # users currently connected (usually 0 or 1)
 
@@ -80,15 +79,14 @@ class KegBot:
       self.dbdb = dbcfg.get('DB','db')
       self.dbpassword = dbcfg.get('DB','password')
 
-      # initialize the config, from stored values in MySQL
-      self.config.read(MySQLdb.connect(host=self.dbhost,user=self.dbuser,
-         passwd=self.dbpassword,db=self.dbdb), dbcfg.get('DB','config_table'))
-
       # connect to db - TODO: remove mysql component and make the URI the sole
       # config option
       db_uri = 'mysql://%s:%s@%s/%s' % (self.dbuser, self.dbpassword, self.dbhost, self.dbdb)
       connection = sqlobject.connectionForURI(db_uri)
       sqlobject.sqlhub.processConnection = connection
+
+      # initialize the config, from stored values in MySQL
+      self.config.read(Backend.Config)
 
       # set up logging, using the python 2.3 logging module
       self.main_logger = self.makeLogger('main',logging.INFO)

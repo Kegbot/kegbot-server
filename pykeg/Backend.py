@@ -4,6 +4,34 @@ import sys
 
 from sqlobject import *
 
+class Config(SQLObject):
+   class sqlmeta:
+      table = 'config'
+      idType = str
+
+   value = StringCol(notNone=True)
+
+   def createTable(cls, ifNotExists=False, createJoinTables=True,
+                   createIndexes=True,
+                   connection=None):
+      conn = connection or cls._connection
+      if ifNotExists and conn.tableExists(cls.sqlmeta.table):
+         return
+      conn.query(cls.createTableSQL())
+   createTable = classmethod(createTable)
+
+   def createTableSQL(cls, createJoinTables=True, connection=None,
+                      createIndexes=True):
+      conn = connection or cls._connection
+      q = """ CREATE TABLE `%s` (
+              `%s` varchar(64) NOT NULL default '',
+              `value` mediumtext NOT NULL,
+              PRIMARY KEY  (`%s`)
+      ) """ % (cls.sqlmeta.table, cls.sqlmeta.idName, cls.sqlmeta.idName)
+      return q
+   createTableSQL = classmethod(createTableSQL)
+
+
 class Drink(SQLObject):
    class sqlmeta:
       table = 'drinks'

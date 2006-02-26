@@ -29,7 +29,6 @@ import FlowController
 import KegRemoteServer
 import KegUI
 import SQLConfigParser
-import SQLHandler
 import TempMonitor
 import units
 import util
@@ -172,7 +171,7 @@ class KegBot:
       ret = logging.getLogger(compname)
       ret.setLevel(level)
 
-      # add sql handler
+      # add sql handler -- XXX TODO: deprecated, move to sqlobjet
       if self.config.getboolean('logging','use_sql'):
          try:
             hdlr = SQLHandler.SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.config.get('logging','logtable'),self.dbpassword)

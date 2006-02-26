@@ -111,27 +111,11 @@
    full drink history
 </div>
 <div class="content">
-   {if $keg->status == "online"}
-   <img src="graphs/gen-graph.php?g=keghist">
-   {/if}
    <p>
       full drink history for keg shown below.
-   <p>
-   <table cellspacing=0 border=0 width="430">
-   <tr>
-      <td><b>#</b></td><td align="right"><b>size</b></td><td>&nbsp;</td><td><b>user</b></td><td><b>when</b></td>
-   </tr>
-   {load_drinks assign="drinks" keg_id=$keg->id order_by="id" order_dir="desc"}
-   {assign var="last_date" value=0}
-   { foreach name=drinks item="drink" from=$drinks }
-      {if $last_date != 0 && $last_date > ($drink->endtime + 60*60*3)}
-      <tr><td colspan=4>&nbsp;</td></tr>
-      {/if}
-      {include file="spans/drink.tpl" drink=$drink}
-      {assign var="last_date" value=$drink->endtime}
-   { /foreach }
-   </table>
    </p>
+   {load_drinks assign="drinks" keg_id=$keg->id order_by="id" order_dir="desc"}
+   {include file="boxes/drinks.tpl" drinks=$drinks}
 
 </div>
 

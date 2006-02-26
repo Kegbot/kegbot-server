@@ -173,18 +173,22 @@ class FlowController(threading.Thread):
    def statusLoop(self):
       """ asynchronous fetch loop for the flow controller """
       timeout=0.1
+      last_time = 0
       try:
          self.logger.info('status loop starting')
          self.getStatus()
          while not self.QUIT.isSet():
             (rr,wr,xr) = select.select([self._devpipe],[],[],0.0)
             if len(rr):
+               last_time = time.time()
                try:
                   p = self.recvPacket()
                   self.logger.info('read status packet ' + str(p))
                except:
                   self.logger.warning('packet read error')
                   traceback.print_exc()
+            if self.status.ValveOpen() and time.time()-last_time >= 0.3:
+               self.getStatus()
             time.sleep(timeout)
          self.logger.info('status loop exiting')
       except:

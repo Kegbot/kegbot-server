@@ -1,5 +1,12 @@
 import os
 
+class NoOpObject:
+   def NoOp(self, *args, **kwargs):
+      pass
+
+   def __getattr__(self, name):
+      return self.NoOp
+
 def daemonize():
    # Fork once
    if os.fork() != 0:

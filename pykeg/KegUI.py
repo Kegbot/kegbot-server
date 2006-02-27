@@ -2,6 +2,8 @@ import Backend
 import re
 
 import lcdui
+import units
+import util
 
 class KegUI(lcdui.lcdui):
    def __init__(self, device, kb):
@@ -11,9 +13,18 @@ class KegUI(lcdui.lcdui):
       self.plate_input = plate_kegbot_input(self)
       self.plate_main = plate_kegbot_main(self)
       self.plate_pour = plate_kegbot_pour(self)
+      self.plate_alert = AlertPlate(self)
+      self.plate_alert.line1 = lcdui.widget_line_std('*'*20, row = 0, col = 0, scroll = 0)
+      self.plate_alert.line2 = lcdui.widget_line_std('ERROR'.center(18), row=1, col=0,
+            scroll=0, prefix='*', postfix='*')
+      self.plate_alert.line4 = lcdui.widget_line_std('*'*20, row = 3, col = 0, scroll = 0)
 
-   def putQueue(self, e):
-      self.cmd_queue.put(e)
+   def Alert(self, notice):
+      self.plate_alert.line3 = lcdui.widget_line_std(notice.center(18), row=2, col=0, scroll=0,
+            prefix='*', postfix='*')
+
+      self.plate_alert.SetTimeout(2)
+      self.setCurrentPlate(self.plate_alert)
 
    def setMain(self):
       self.setCurrentPlate(self.plate_main)
@@ -22,19 +33,23 @@ class KegUI(lcdui.lcdui):
       """ Callback for menu UI (if enabled) to start flow for a user """
       self.kb.authUser(user.username)
 
+   def setLastDrink(self, d):
+      self.plate_main.setLastDrink(d)
+
    def pourStart(self, username):
       """ Called by kegbot at start of new flow """
       self.activity()
       self.setDrinker(username)
       self.setCurrentPlate(self.plate_pour, replace=1)
 
-   def pourUpdate(self, ounces):
+   def pourUpdate(self, ounces, cost):
       """ Called by kegbot periodically during a flow """
       self.activity()
       oz = '%.1foz' % round(ounces, 1)
       progress = (ounces % 8.0)/8.0
       self.plate_pour.progline.setProgress(progress)
-      self.plate_pour.ounces.setData(oz)
+      self.plate_pour.ounces.setData(oz.rjust(6))
+      self.plate_pour.costline.setData('$%.2f' % cost)
 
    def pourEnd(self, username, amt):
       """ Called by kegbot at end of flow """
@@ -50,6 +65,11 @@ class KegUI(lcdui.lcdui):
    def flowEnded(self):
       self.plate_main.gotoPlate('last')
 
+
+class AlertPlate(lcdui.TimeoutMixin, lcdui.plate_std):
+   pass
+
+
 class plate_kegbot_main(lcdui.plate_multi):
    def __init__(self, owner):
       lcdui.plate_multi.__init__(self,owner)
@@ -60,7 +80,8 @@ class plate_kegbot_main(lcdui.plate_multi):
       self.freezerinfo = lcdui.plate_std(owner)
       self.lastinfo    = lcdui.plate_std(owner)
       self.drinker     = lcdui.plate_std(owner)
-      self.drinkers    = plate_kegbot_drinker_menu(owner, header = "select drinker", default_ptr = self.owner.userPresent)
+      self.drinkers    = plate_kegbot_drinker_menu(owner, header = "select drinker",
+            default_ptr = self.owner.userPresent)
 
       self.main_menu = lcdui.plate_select_menu(owner,header="kegbot menu")
       self.main_menu.insert(("pour a drink",owner.setCurrentPlate,(self.drinkers,)))
@@ -107,20 +128,23 @@ class plate_kegbot_main(lcdui.plate_multi):
       # starts the rotation
       self.rotate_time = 5.0
 
-   def setTemperature(self,tempc):
-      inside = "%.1fc/%.1ff" % (tempc,toF(tempc))
-      self.tempinfo.line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
+   def setTemperature(self, tempc):
+      inside = '%.1fc/%.1ff' % (tempc, util.toF(tempc))
+      self.tempinfo.line3 = lcdui.widget_line_std(inside, row = 2, col = 0,
+            prefix = '| ', postfix= ' |', scroll=0)
 
-   def setFreezer(self,status):
-      inside = "[%s]" % status
-      self.freezerinfo.line3 = lcdui.widget_line_std("%s"%inside,row=2,col=0,prefix="| ", postfix= " |", scroll=0)
+   def setFreezer(self, status):
+      inside = '[%s]' % status
+      self.freezerinfo.line3 = lcdui.widget_line_std(inside, row = 2, col = 0,
+            prefix = '| ', postfix = ' |', scroll = 0)
 
-   def setLastDrink(self, user, ounces):
-      self.lastinfo.line3 = lcdui.widget_line_std("%s oz"%ounces,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
-      self.drinker.line3 = lcdui.widget_line_std("%s"%user,row=2,col=0,prefix ="| ",postfix=" |",scroll=0)
+   def setLastDrink(self, d):
+      ounces = units.to_ounces(d.volume)
+      self.lastinfo.line3 = lcdui.widget_line_std('%.1f oz' % ounces,
+            row = 2, col = 0, prefix = '| ', postfix = ' |', scroll = 0)
+      self.drinker.line3 = lcdui.widget_line_std(d.user.username,
+            row = 2, col = 0, prefix = '| ', postfix = ' |', scroll = 0)
 
-   def gotKey(self,key):
-      lcdui.plate_multi.gotKey(self,key)
 
 class plate_kegbot_pour(lcdui.plate_std):
    def __init__(self, owner):
@@ -130,15 +154,19 @@ class plate_kegbot_pour(lcdui.plate_std):
       self.cmd_dict['enter'] = (self.owner.kb.stopFlow, ())
       self.cmd_dict['exit'] = (self.owner.kb.stopFlow, ())
 
-      self.line1 = lcdui.widget_line_std("_now pouring________", row=0, col=0, scroll=0)
-      self.userline = lcdui.widget_line_std("", row=1, col=0, scroll=0, prefix='', postfix='')
-      self.progline = lcdui.widget_progbar(row = 2, col = 0, prefix ='|flow: [', postfix=']', proglen = 14)
-      self.costline = lcdui.widget_line_std("",row=3,col=0,prefix='|cost: $0.00',scroll=0)
+      self.line1 = lcdui.widget_line_std("_now pouring________", row = 0, col = 0, scroll = 0)
+      self.userline = lcdui.widget_line_std("", row = 1, col = 0, scroll = 0,
+            prefix = '', postfix = '')
+      self.progline = lcdui.widget_progbar("", row = 2, col = 0,
+            prefix = '|flow: [', postfix =']', proglen = 14)
+      self.ounces = lcdui.widget_line_std("", row = 2,col = 14,scroll = 0, pad = False)
+      self.costline = lcdui.widget_line_std("$0.00", row = 3, col = 0,
+            prefix = '|cost: ', scroll = 0)
 
-      self.ounces = lcdui.widget_line_std("", row=2,col=14,scroll=0)
 
    def setDrinker(self, name):
       self.userline.setData('|user: ' + name)
+
 
 class plate_kegbot_drinker_menu(lcdui.plate_select_menu):
    def onSwitchIn(self):
@@ -149,6 +177,7 @@ class plate_kegbot_drinker_menu(lcdui.plate_select_menu):
       for u in users:
          self.menu.append((u.username, self.owner.userPresent, (u,)))
       self.refreshMenu()
+
 
 class plate_kegbot_input(lcdui.plate_std):
    def __init__(self, owner):
@@ -166,8 +195,10 @@ class plate_kegbot_input(lcdui.plate_std):
 
    def updateInput(self):
       real_data = re.sub('\s+$','',self.data)  # strip only trailing whitespace
-      self.input_line = lcdui.widget_line_std(real_data+'_'*(self.owner.cols() - len(real_data)), row=1,col=0,scroll=0)
-      self.cursor_line = lcdui.widget_line_std( (len(self.data) - 1)*' ' + '\x1a', row=2,col=0,scroll=0)
+      self.input_line = lcdui.widget_line_std(real_data+'_'*(self.owner.cols() - len(real_data)),
+            row = 1, col = 0, scroll = 0)
+      self.cursor_line = lcdui.widget_line_std( (len(self.data) - 1)*' ' + '\x1a',
+            row = 2, col = 0, scroll = 0)
 
    def goUp(self):
       if len(self.data) == 0:
@@ -198,6 +229,7 @@ class plate_kegbot_input(lcdui.plate_std):
    def submit(self):
       print self.data
 
+
 class plate_kegbot_standby(lcdui.plate_std):
    def __init__(self, owner):
       lcdui.plate_std.__init__(self, owner)
@@ -213,3 +245,4 @@ class plate_kegbot_standby(lcdui.plate_std):
 
    def onSwitchOut(self):
       self.owner.lcdobj.EnableBacklight()
+

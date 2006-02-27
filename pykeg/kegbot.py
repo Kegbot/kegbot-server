@@ -121,6 +121,9 @@ class KegBot:
             self.error('main', 'unknown lcd_type!')
          self.info('main','new %s LCD at device %s' % (lcdtype, dev))
          self.ui = KegUI.KegUI(self.lcd, self)
+         drinks = list(Backend.Drink.select(orderBy="-id", limit=1))
+         if len(drinks):
+            self.ui.setLastDrink(drinks[0])
       else:
          # This works fine, as long as we're cool with shared memory access to
          # the ui (and we are cool with it, for now :)
@@ -311,6 +314,7 @@ class KegBot:
       max_volume = util.MaxVolume(grants)
       if max_volume == 0:
          self.info('flow', 'user does not have any credit')
+         self.ui.Alert('no credit!')
          self.timeoutUser(current_user)
          return
       elif max_volume == sys.maxint:
@@ -352,7 +356,8 @@ class KegBot:
             last_flow_time = looptime
             flow_ticks = nowticks - start_ticks_flow
             curr_vol = self.ticksToVolunits(flow_ticks)
-            self.ui.pourUpdate(self.volunitsToOunces(curr_vol))
+            curr_cost = self.EstimateCost(current_user, curr_vol)
+            self.ui.pourUpdate(units.to_ounces(curr_vol), curr_cost)
 
          lastticks = nowticks
 
@@ -374,13 +379,13 @@ class KegBot:
       d.syncUpdate()
 
       # post-processing steps
-      self.GrantCalculate(d)
+      self.GenGrantCharges(d)
       self.BACCalculate(d)
       self.BingeUpdate(d)
 
       # update the UI
-      ounces = round(self.volunitsToOunces(volume),2)
-      #self.ui.setLastDrink(current_user.username,ounces)
+      ounces = round(units.to_ounces(volume),2)
+      self.ui.setLastDrink(d)
       self.info('flow','drink total: %i ticks, %i volunits, %.2f ounces' % (flow_ticks, volume, ounces))
 
       # de-auth the user. this may need to be configurable down the line..
@@ -396,7 +401,22 @@ class KegBot:
       grants.sort(valsort)
       return grants
 
-   def GrantCalculate(self, d):
+   def EstimateCost(self, user, volume):
+      grants = self.SortByValue(list(Backend.Grant.selectBy(user=user)))
+      vol_remain = volume
+      cost = 0.0
+      while vol_remain > 0:
+         try:
+            g = grants.pop()
+         except IndexError:
+            break
+         vol_curr = min(g.AvailableVolume(), vol_remain)
+         if vol_curr > 0:
+            cost += g.policy.Cost(vol_remain)
+            vol_remain -= vol_curr
+      return cost
+
+   def GenGrantCharges(self, d):
       grants = self.SortByValue(list(Backend.Grant.selectBy(user=d.user)))
       vol_remain = d.volume
       while vol_remain > 0:
@@ -443,7 +463,7 @@ class KegBot:
       if matches.count():
          last_bac = matches[0]
          curr_bac = util.decomposeBAC(last_bac.bac, time.time() - last_bac.rectime)
-      curr_bac += util.instantBAC(d.user, d.keg, self.volunitsToOunces(d.volume))
+      curr_bac += util.instantBAC(d.user, d.keg, units.to_ounces(d.volume))
       b = Backend.BAC(user=d.user, drink=d.id, rectime=int(time.time()), bac=curr_bac)
       d.syncUpdate()
 
@@ -453,12 +473,6 @@ class KegBot:
    ### volume related helper functions
    def ticksToVolunits(self, ticks):
       return ticks
-
-   def volunitsToOunces(self, volunits):
-      return float(volunits)/units.US_OUNCE
-
-   def volunitsToLiters(self, volunits):
-      return float(volunits)/units.LITER
 
    ### logging related helper functions
    def log(self,component,message):

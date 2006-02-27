@@ -150,6 +150,12 @@ class Policy(SQLObject):
    unitvolume = IntCol(default=0)
    description = StringCol(default='')
 
+   def Cost(self, volume):
+      if self.type == 'free':
+         return 0.0
+      elif self.type == 'fixed-cost':
+         return self.unitcost / self.unitvolume * volume
+
 class Token(SQLObject):
    class sqlmeta:
       table = 'tokens'

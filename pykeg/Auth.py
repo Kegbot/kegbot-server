@@ -4,38 +4,41 @@ import traceback
 
 import Backend
 
-class SerialIBAuth:
-   def __init__(self, owner, refresh_timeout, quit_event, logger):
-      pass
+class AbstractMethodError(Exception):
+   pass
 
-   def start(self):
-      pass
 
-class USBIBAuth:
-   def __init__(self, owner, refresh_timeout, quit_event, logger):
+class GenericIBAuth:
+   def __init__(self, device, owner, refresh_timeout, quit_event, logger):
+      self.device = device
       self.owner = owner
       self.refresh_timeout = refresh_timeout
       self.QUIT = quit_event
-      self.ibs = []
-      self._allibs = {}
       self.logger = logger
 
-   def start(self):
-      try:
-         import usb
-         usb.UpdateLists()
-         import ds2490
-         try:
-            self.dev = ds2490.DS2490()
-         except ValueError:
-            self.logger.error('ds2490 not connected; disabled')
-            return
-         thread.start_new_thread(self.RefreshLoop, ())
-      except:
-         self.logger.error('Error connecting to onewirenet')
-         traceback.print_exc()
+      self.ibs = []
+      self._allibs = {}
 
-   def AbsenceEvent(self, ibid):
+   def _UpdateState(self, ibs):
+      """ Record IB event histories """
+      # mark presence bit for new ibs
+      for ibid in ibs:
+         if not self._allibs.has_key(ibid):
+            self._allibs[ibid] = [0] * 6
+         self._allibs[ibid] = [1] + self._allibs[ibid][:5]
+
+      # mark absence bit for recent ibs
+      for ibid in [x for x in self._allibs.keys() if x not in ibs]:
+         self._allibs[ibid] = [0] + self._allibs[ibid][:5]
+
+      # detect ib events
+      for ibid, history in self._allibs.iteritems():
+         if history == [0,0,0,1,1,1]:
+            self._AbsenceEvent(ibid)
+         elif history == [1,1,1,0,0,0]:
+            self._PresenceEvent(ibid)
+
+   def _AbsenceEvent(self, ibid):
       matches = Backend.Token.selectBy(keyinfo=ibid)
       if not matches.count():
          return
@@ -45,7 +48,7 @@ class USBIBAuth:
       self.logger.info('key %s user %s is gone' % (ibid, user.username))
       self.owner.deauthUser(user.username)
 
-   def PresenceEvent(self, ibid):
+   def _PresenceEvent(self, ibid):
       matches = Backend.Token.selectBy(keyinfo=ibid)
       if not matches.count():
          return
@@ -53,40 +56,54 @@ class USBIBAuth:
       self.logger.info('key %s belongs to user %s' % (ibid, user.username))
       self.owner.authUser(user.username)
 
-   def RefreshLoop(self):
-      """
-      Periodically update self.ibs with the current ibutton list.
-
-      Because there are at least two threads (temperature monitor, main event
-      loop) that require fresh status of the onewirenetwork, it is useful to
-      simply refresh them constantly.
-
-      Note that the config file may specify IB IDs to ignore (such as the
-      serial controller ID or other persistent IBs). These IDs will be sored in
-      _allibs but not self.ibs, and that is the only difference.
-      """
+   def _RefreshLoop(self):
+      """ Periodically update self.ibs with the current ibutton list. """
       while not self.QUIT.isSet():
-         curribs = map(str, self.dev.GetIDs())
-
-         # mark presence bit for new ibs
-         for ibid in curribs:
-            if not self._allibs.has_key(ibid):
-               self._allibs[ibid] = [0] * 6
-            self._allibs[ibid] = [1] + self._allibs[ibid][:5]
-
-         # mark absence bit for recent ibs
-         for ibid in [x for x in self._allibs.keys() if x not in curribs]:
-            self._allibs[ibid] = [0] + self._allibs[ibid][:5]
-
-         # detect ib events
-         for ibid, history in self._allibs.iteritems():
-            if history == [0,0,0,1,1,1]:
-               self.AbsenceEvent(ibid)
-            elif history == [1,1,1,0,0,0]:
-               self.PresenceEvent(ibid)
-
-         time.sleep(0.1)
-
+         self._UpdateState(self._GetPresentIDs())
+         time.sleep(self.refresh_timeout)
       self.logger.info('quit')
+
+   def start(self):
+      try:
+         self._Bootstrap()
+         thread.start_new_thread(self._RefreshLoop, ())
+      except:
+         self.logger.error('error connecting to onewirenet')
+         traceback.print_exc()
+
+   def _GetPresentIDs(self):
+      raise AbstractMethodError
+
+   def _Bootstrap(self):
+      raise AbstractMethodError
+
+
+class SerialIBAuth(GenericIBAuth):
+   """ iButton auth class for a serial DSXXXX reader """
+   def _Bootstrap(self):
+      import onewirenet
+      self.ownet = onewirenet.onewirenet(self.device)
+      self.logger.info('new onewire net at device %s' % self.device)
+      return True
+
+   def _GetPresentIDs(self):
+      return [ib.read_id() for ib in self.ownet.refresh()]
+
+
+class USBIBAuth(GenericIBAuth):
+   """ iButton auth class for a USB DS2490 reader """
+   def _Bootstrap(self):
+      import usb
+      usb.UpdateLists()
+      import ds2490
+      try:
+         self.ownet = ds2490.DS2490()
+      except ValueError:
+         self.logger.error('ds2490 not connected; disabled')
+         return False
+      return True
+
+   def _GetPresentIDs(self):
+      return map(str, self.ownet.GetIDs())
 
 

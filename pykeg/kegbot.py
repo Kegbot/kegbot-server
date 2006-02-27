@@ -12,7 +12,6 @@ import logging
 import optparse
 import signal
 import sys
-import thread
 import threading
 import time
 import traceback
@@ -93,20 +92,20 @@ class KegBot:
       self.server = KegRemoteServer.KegRemoteServer(self, '', 9966)
       self.server.start()
 
-      # optional module: serial ibutton auth
-      dev = self.config.get('devices','onewire')
-      if dev not in NULL_DEVICES:
-         timeout = self.config.getfloat('timing','ib_refresh_timeout')
-         logger = self.makeLogger('serial_ibauth',logging.INFO)
-         serial_ibauth = Auth.SerialIBAuth(self, timeout, self.QUIT, logger)
-         serial_ibauth.start()
-
       # optional module: usb ibutton auth
       if self.config.getboolean('auth','usb_ib'):
          timeout = self.config.getfloat('timing','ib_refresh_timeout')
          logger = self.makeLogger('usb_ibauth',logging.INFO)
-         usb_ibauth = Auth.USBIBAuth(self, timeout, self.QUIT, logger)
+         usb_ibauth = Auth.USBIBAuth(self, 'usb', timeout, self.QUIT, logger)
          usb_ibauth.start()
+
+      # optional module: serial ibutton auth
+      if self.config.getboolean('auth','serial_ib'):
+         dev = self.config.get('devices','onewire')
+         timeout = self.config.getfloat('timing','ib_refresh_timeout')
+         logger = self.makeLogger('serial_ibauth',logging.INFO)
+         serial_ibauth = Auth.SerialIBAuth(self, dev, timeout, self.QUIT, logger)
+         serial_ibauth.start()
 
       # optional module: LCD UI
       if self.config.getboolean('ui','use_lcd'):
@@ -122,11 +121,10 @@ class KegBot:
             self.error('main', 'unknown lcd_type!')
          self.info('main','new %s LCD at device %s' % (lcdtype, dev))
          self.ui = KegUI.KegUI(self.lcd, self)
-
       else:
-         # TODO: replace me with a KegUI.NullUI instance
-         self.lcd = Display('/dev/null')
-         self.ui = KegUI.KegUI(self.lcd, self)
+         # This works fine, as long as we're cool with shared memory access to
+         # the ui (and we are cool with it, for now :)
+         self.ui = util.NoOpObject()
 
       # optional module: temperature monitor
       if self.config.getboolean('thermo','use_thermo'):

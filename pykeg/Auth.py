@@ -9,9 +9,9 @@ class AbstractMethodError(Exception):
 
 
 class GenericIBAuth:
-   def __init__(self, device, owner, refresh_timeout, quit_event, logger):
-      self.device = device
+   def __init__(self, owner, device, refresh_timeout, quit_event, logger):
       self.owner = owner
+      self.device = device
       self.refresh_timeout = refresh_timeout
       self.QUIT = quit_event
       self.logger = logger

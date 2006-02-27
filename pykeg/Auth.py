@@ -42,7 +42,7 @@ class GenericIBAuth:
       matches = Backend.Token.selectBy(keyinfo=ibid)
       if not matches.count():
          return
-      user = Backend.User.get(matches[0].userid)
+      user = matches[0].user
       if not user:
          return
       self.logger.info('key %s user %s is gone' % (ibid, user.username))
@@ -52,7 +52,7 @@ class GenericIBAuth:
       matches = Backend.Token.selectBy(keyinfo=ibid)
       if not matches.count():
          return
-      user = Backend.User.get(matches[0].userid)
+      user = matches[0].user
       self.logger.info('key %s belongs to user %s' % (ibid, user.username))
       self.owner.authUser(user.username)
 

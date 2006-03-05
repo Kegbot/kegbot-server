@@ -150,15 +150,17 @@ class KegBot:
       self.ui.start()
 
    def _setsigs(self):
-      signal.signal(signal.SIGHUP, self.handler)
-      signal.signal(signal.SIGINT, self.handler)
-      signal.signal(signal.SIGQUIT,self.handler)
-      signal.signal(signal.SIGTERM, self.handler)
+      """ Sets HUP, INT, QUIT, TERM to go to cause a quit """
+      signal.signal(signal.SIGHUP, self._SignalHander)
+      signal.signal(signal.SIGINT, self._SignalHander)
+      signal.signal(signal.SIGQUIT,self._SignalHander)
+      signal.signal(signal.SIGTERM, self._SignalHander)
 
-   def handler(self, signum, frame):
-      self.quit()
+   def _SignalHandler(self, signum, frame):
+      """ All handled signals cause a quit """
+      self.Quit()
 
-   def quit(self):
+   def Quit(self):
       self.info('main','attempting to quit')
 
       # other quitting
@@ -199,24 +201,6 @@ class KegBot:
 
       return ret
 
-   def enableFreezer(self):
-      curr = self.tempmon.sensor.getTemp(1) # XXX - sensor index is hardcoded! add to .config
-      max_t = self.config.getfloat('thermo','temp_max_high')
-
-      if not self.fc.fridgeStatus():
-         self.info('tempmon','activated freezer curr=%s max=%s'%(curr[0],max_t))
-         self.ui.setFreezer('on ')
-         self.fc.enableFridge()
-
-   def disableFreezer(self):
-      curr = self.tempmon.sensor.getTemp(1)
-      min_t = self.config.getfloat('thermo','temp_max_low')
-
-      if self.fc.fridgeStatus():
-         self.info('tempmon','disabled freezer curr=%s min=%s'%(curr[0],min_t))
-         self.ui.setFreezer('off')
-         self.fc.disableFridge()
-
    def mainEventLoop(self):
       while not self.QUIT.isSet():
          time.sleep(0.1)
@@ -237,6 +221,13 @@ class KegBot:
             sys.exit(1)
 
    def authUser(self, username):
+      """
+      Add user matching username to the list of authorized users.
+
+      Returns:
+         True - user added to authed_users
+         False - no match for username
+      """
       matches = Backend.User.selectBy(username=username)
       if matches.count():
          u = matches[0]
@@ -245,6 +236,13 @@ class KegBot:
       return False
 
    def deauthUser(self, username):
+      """
+      Remove user matching username from the list of authorized users.
+
+      Returns:
+         True - user removed from authed_users
+         False - no match for username in authed_users
+      """
       matches = Backend.User.selectBy(username=username)
       if matches.count():
          u = matches[0]
@@ -253,42 +251,45 @@ class KegBot:
       return False
 
    def userIsAuthed(self, user):
+      """ Return True if user is presently in the authed_users list """
       return user in self.authed_users
 
    def stopFlow(self):
+      """ Cause any running flow to terminate """
       self.STOP_FLOW = 1
       self.ui.flowEnded()
       return 1
 
    def checkAccess(self, current_user, idle_time, volume, max_volume):
+      """ Given a flow, return True if it should continue """
       if self.QUIT.isSet():
          self.info('flow', 'boot: quit flag set')
-         return 0
+          return False
 
       # user is no longer authed
       if not self.userIsAuthed(current_user):
          self.info('flow', 'boot: user no longer authorized')
-         return 0
+          return False
 
       # user is idle
       if idle_time >= self.config.getfloat('timing','ib_idle_timeout'):
          self.info('flow', 'boot: user went idle')
          self.timeoutUser(current_user)
-         return 0
+          return False
 
       # global flow stop is set (XXX: this is a silly hack for xml-rpc)
       if self.STOP_FLOW:
          self.info('flow', 'boot: global kill set')
          self.STOP_FLOW = 0
-         return 0
+          return False
 
       # user has poured his maximum
       if max_volume != sys.maxint:
          if volume >= max_volume:
             self.info('flow', 'boot: volume limit met/exceeded')
-            return 0
+             return False
 
-      return 1
+      return True
 
    def handleFlow(self, current_user):
       self.info('flow','starting flow handling')
@@ -402,6 +403,9 @@ class KegBot:
       return grants
 
    def EstimateCost(self, user, volume):
+      """ Given a user and a volume, estimate the cost of that volume. """
+      # this function is somewhat wasteful; thankfully sqlobject is caching the
+      # results from the select, else we'd be doing way too many
       grants = self.SortByValue(list(Backend.Grant.selectBy(user=user)))
       vol_remain = volume
       cost = 0.0
@@ -417,6 +421,7 @@ class KegBot:
       return cost
 
    def GenGrantCharges(self, d):
+      """ Create and store one or more grant charges given a recent drink """
       grants = self.SortByValue(list(Backend.Grant.selectBy(user=d.user)))
       vol_remain = d.volume
       while vol_remain > 0:
@@ -436,6 +441,7 @@ class KegBot:
          # XXX TODO charge to default grant
 
    def BingeUpdate(self, d):
+      """ Create or update a binge given a recent drink """
       binges = list(Backend.Binge.select("user_id=%i"%d.user.id,
          orderBy="-id", limit=1))
 
@@ -458,6 +464,7 @@ class KegBot:
          last_binge.syncUpdate()
 
    def BACCalculate(self, d):
+      """ Store a BAC value given a recent drink """
       curr_bac = 0.0
       matches = Backend.BAC.select('user_id=%i' % d.user.id, orderBy='-rectime')
       if matches.count():
@@ -468,6 +475,7 @@ class KegBot:
       d.syncUpdate()
 
    def timeoutUser(self, user):
+      """ Callback executed when a user goes idle """
       self.deauthUser(user.username)
 
    ### volume related helper functions

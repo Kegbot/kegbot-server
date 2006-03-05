@@ -459,7 +459,7 @@ class KegBot:
 
    def BACCalculate(self, d):
       curr_bac = 0.0
-      matches = Backend.BAC.selectBy(user=d.user, orderBy='-rectime')
+      matches = Backend.BAC.select('user_id=%i' % d.user.id, orderBy='-rectime')
       if matches.count():
          last_bac = matches[0]
          curr_bac = util.decomposeBAC(last_bac.bac, time.time() - last_bac.rectime)

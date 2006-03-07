@@ -99,8 +99,8 @@ class FlowController(threading.Thread):
          pass
 
       self._devpipe.flush()
-      self.valve_open = None
       self.disableFridge()
+      self.status = None
       #self.closeValve()
       #self.clearTicks()
 
@@ -187,7 +187,7 @@ class FlowController(threading.Thread):
                except:
                   self.logger.warning('packet read error')
                   traceback.print_exc()
-            if self.status.ValveOpen() and time.time()-last_time >= 0.3:
+            if self.status and self.status.ValveOpen() and time.time()-last_time >= 0.3:
                self.getStatus()
             time.sleep(timeout)
          self.logger.info('status loop exiting')

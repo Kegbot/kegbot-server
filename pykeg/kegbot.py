@@ -151,10 +151,10 @@ class KegBot:
 
    def _setsigs(self):
       """ Sets HUP, INT, QUIT, TERM to go to cause a quit """
-      signal.signal(signal.SIGHUP, self._SignalHander)
-      signal.signal(signal.SIGINT, self._SignalHander)
-      signal.signal(signal.SIGQUIT,self._SignalHander)
-      signal.signal(signal.SIGTERM, self._SignalHander)
+      signal.signal(signal.SIGHUP, self._SignalHandler)
+      signal.signal(signal.SIGINT, self._SignalHandler)
+      signal.signal(signal.SIGQUIT,self._SignalHandler)
+      signal.signal(signal.SIGTERM, self._SignalHandler)
 
    def _SignalHandler(self, signum, frame):
       """ All handled signals cause a quit """
@@ -264,30 +264,30 @@ class KegBot:
       """ Given a flow, return True if it should continue """
       if self.QUIT.isSet():
          self.info('flow', 'boot: quit flag set')
-          return False
+         return False
 
       # user is no longer authed
       if not self.userIsAuthed(current_user):
          self.info('flow', 'boot: user no longer authorized')
-          return False
+         return False
 
       # user is idle
       if idle_time >= self.config.getfloat('timing','ib_idle_timeout'):
          self.info('flow', 'boot: user went idle')
          self.timeoutUser(current_user)
-          return False
+         return False
 
       # global flow stop is set (XXX: this is a silly hack for xml-rpc)
       if self.STOP_FLOW:
          self.info('flow', 'boot: global kill set')
          self.STOP_FLOW = 0
-          return False
+         return False
 
       # user has poured his maximum
       if max_volume != sys.maxint:
          if volume >= max_volume:
             self.info('flow', 'boot: volume limit met/exceeded')
-             return False
+            return False
 
       return True
 
@@ -497,6 +497,17 @@ class KegBot:
 
    def critical(self,component,message):
       self.main_logger.critical("%s: %s" % (component,message))
+
+
+class Flow:
+   def __init__(self, start = None, user = None, volume = 0,
+         max_volume = 0):
+      self.start = start or time.time()
+      self.user = user
+      self.volume = volume
+
+      self._last_activity = time.time()
+
 
 # start a new kegbot instance, if we are called from the command line
 if __name__ == '__main__':

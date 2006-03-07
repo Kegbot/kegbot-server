@@ -6,12 +6,12 @@
    $q =  "SELECT `filetype`,`data` FROM `userpics` WHERE `user_id`='{$drinker->id}'";
    $res = mysql_query($q);
    if ($res == NULL) {
-      Header("Location: images/unknown-drinker.png");
+      Header("Location: images.php?image=unknown-drinker.png");
       return;
    }
    $row = mysql_fetch_assoc($res);
    if (empty($row)) {
-      Header("Location: images/unknown-drinker.png");
+      Header("Location: images.php?image=unknown-drinker.png");
       return;
    }
    /* TODO: use a mtime stored in the DB */

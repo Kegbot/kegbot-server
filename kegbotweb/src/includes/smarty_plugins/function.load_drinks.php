@@ -3,6 +3,8 @@ include_once('main-functions.php');
 function smarty_function_load_drinks($params, &$smarty)
 {
    $params['where'] = array();
+   $params['where'][] = "`status`='valid'";
+
    // TODO: better way to support this?
    if (!empty($params['user_id'])) {
       $params['where'][] = "`user_id`='{$params['user_id']}'";

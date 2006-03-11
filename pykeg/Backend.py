@@ -4,6 +4,22 @@ import sys
 
 from sqlobject import *
 
+import units
+import util
+
+def setup(db_uri):
+   """ Set default connection """
+   connection = connectionForURI(db_uri)
+   sqlhub.processConnection = connection
+
+def drop_and_create(tbl):
+   try:
+      tbl.dropTable()
+   except:
+      pass
+   tbl.createTable()
+
+
 class Config(SQLObject):
    class sqlmeta:
       table = 'config'
@@ -45,6 +61,7 @@ class Drink(SQLObject):
    keg = ForeignKey('Keg', notNone=True)
    status = EnumCol(enumValues=['valid','invalid'], default='valid', notNone=True)
 
+
 class Keg(SQLObject):
    class sqlmeta:
       table = 'kegs'
@@ -62,6 +79,7 @@ class Keg(SQLObject):
    beerpalid = IntCol(default=0)
    ratebeerid = IntCol(default=0)
    calories_oz = FloatCol(default=0)
+
 
 class Grant(SQLObject):
    class sqlmeta:
@@ -126,6 +144,7 @@ class Grant(SQLObject):
       # fall-thru, XXX
       return False
 
+
 class User(SQLObject):
    class sqlmeta:
       table = 'users'
@@ -139,6 +158,7 @@ class User(SQLObject):
    gender = EnumCol(enumValues = ['male','female'])
    weight = FloatCol(default=180.0)
    image_url = StringCol(default='')
+
 
 class Policy(SQLObject):
    class sqlmeta:
@@ -156,6 +176,7 @@ class Policy(SQLObject):
       elif self.type == 'fixed-cost':
          return self.unitcost / self.unitvolume * volume
 
+
 class Token(SQLObject):
    class sqlmeta:
       table = 'tokens'
@@ -164,6 +185,7 @@ class Token(SQLObject):
    user = ForeignKey('User', notNone=True)
    keyinfo = StringCol(notNone=True)
    created = DateTimeCol()
+
 
 class BAC(SQLObject):
    class sqlmeta:
@@ -174,6 +196,24 @@ class BAC(SQLObject):
    drink = ForeignKey('Drink')
    rectime = IntCol(notNone=True)
    bac = FloatCol(notNone=True)
+
+   def ProcessDrink(cls, d):
+      """ Store a BAC value given a recent drink """
+      prev_bac = 0.0
+
+      matches = BAC.select('user_id=%i' % d.user.id, orderBy='-rectime')
+      if matches.count():
+         last_bac = matches[0]
+         prev_bac = util.decomposeBAC(last_bac.bac, d.endtime - last_bac.rectime)
+
+      now = util.instantBAC(d.user.gender, d.user.weight, d.keg.alccontent,
+            units.to_ounces(d.volume))
+      now = util.decomposeBAC(now, units.to_ounces(d.volume)/12.0*(30*60))
+
+      b = BAC(user=d.user, drink=d.id, rectime=d.endtime, bac=now+prev_bac)
+      d.syncUpdate()
+   ProcessDrink = classmethod(ProcessDrink)
+
 
 class GrantCharge(SQLObject):
    class sqlmeta:
@@ -197,6 +237,31 @@ class Binge(SQLObject):
    volume = IntCol(default=0, notNone=True)
    starttime = IntCol(notNone=True)
    endtime = IntCol(notNone=True)
+
+   def Assign(cls, d):
+      """ Create or update a binge given a recent drink """
+      binges = list(Binge.select("user_id=%i"%d.user.id,
+         orderBy="-id", limit=1))
+
+      # flush binge fetched if it is too old
+      if len(binges) != 0:
+         if binges[0].endtime < (d.endtime - (60*90)): # XXX fix constant
+            binges = []
+
+      # now find or create the current binge, and update it
+      if len(binges) == 0:
+         last_binge = Binge(user=d.user, startdrink=d,
+               enddrink=d, volume=d.volume, starttime=d.endtime,
+               endtime=d.endtime)
+         last_binge.syncUpdate()
+      else:
+         last_binge = binges[0]
+         last_binge.volume += d.volume
+         last_binge.enddrink = d
+         last_binge.endtime = d.endtime
+         last_binge.syncUpdate()
+      return last_binge.id
+   Assign = classmethod(Assign)
 
 
 class Userpic(SQLObject):

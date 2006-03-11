@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.4
 
 # keg control system
 # by mike wakerly; mike@wakerly.com
@@ -80,8 +80,7 @@ class KegBot:
       # connect to db - TODO: remove mysql component and make the URI the sole
       # config option
       db_uri = 'mysql://%s:%s@%s/%s' % (self.dbuser, self.dbpassword, self.dbhost, self.dbdb)
-      connection = sqlobject.connectionForURI(db_uri)
-      sqlobject.sqlhub.processConnection = connection
+      Backend.setup(db_uri)
 
       # initialize the config, from stored values in MySQL
       self.config.read(Backend.Config)
@@ -442,37 +441,11 @@ class KegBot:
 
    def BingeUpdate(self, d):
       """ Create or update a binge given a recent drink """
-      binges = list(Backend.Binge.select("user_id=%i"%d.user.id,
-         orderBy="-id", limit=1))
-
-      # flush binge fetched if it is too old
-      if len(binges) != 0:
-         if binges[0].endtime < (d.endtime - (60*90)): # XXX fix constant
-            binges = []
-
-      # now find or create the current binge, and update it
-      if len(binges) == 0:
-         last_binge = Backend.Binge(user=d.user, startdrink=d,
-               enddrink=d, volume=d.volume, starttime=d.endtime,
-               endtime=d.endtime)
-         last_binge.syncUpdate()
-      else:
-         last_binge = binges[0]
-         last_binge.volume += d.volume
-         last_binge.enddrink = d
-         last_binge.endtime = d.endtime
-         last_binge.syncUpdate()
+      Backend.Binge.Assign(d)
 
    def BACCalculate(self, d):
       """ Store a BAC value given a recent drink """
-      curr_bac = 0.0
-      matches = Backend.BAC.select('user_id=%i' % d.user.id, orderBy='-rectime')
-      if matches.count():
-         last_bac = matches[0]
-         curr_bac = util.decomposeBAC(last_bac.bac, time.time() - last_bac.rectime)
-      curr_bac += util.instantBAC(d.user, d.keg, units.to_ounces(d.volume))
-      b = Backend.BAC(user=d.user, drink=d.id, rectime=int(time.time()), bac=curr_bac)
-      d.syncUpdate()
+      Backend.BAC.ProcessDrink(d)
 
    def timeoutUser(self, user):
       """ Callback executed when a user goes idle """

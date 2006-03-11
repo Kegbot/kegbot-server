@@ -33,15 +33,15 @@ def daemonize():
    os.open('/dev/null', os.O_RDWR)
    os.open('/dev/null', os.O_RDWR)
 
-def instantBAC(user, keg, ounces):
+def instantBAC(gender, weight, alcpct, ounces):
    # calculate weight in metric KGs
-   if user.weight <= 0:
+   if weight <= 0:
       return 0.0
 
-   kg_weight = user.weight/2.2046
+   kg_weight = weight/2.2046
 
    # gender based water-weight
-   if user.gender == 'male':
+   if gender == 'male':
          waterp = 0.58
    else:
       waterp = 0.49
@@ -62,7 +62,7 @@ def instantBAC(user, keg, ounces):
    grams_pct = alc_per_blood_ml * 100.0
 
    # determine how much we've really consumed
-   alc_consumed = ounces * (keg.alccontent/100.0)
+   alc_consumed = ounces * (alcpct/100.0)
    instant_bac = alc_consumed * grams_pct
 
    return instant_bac

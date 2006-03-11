@@ -12,7 +12,7 @@
    }
    else {
       $skin = 'default';
-      $css  = 'css.php?css=main.css';
+      $css  = '/css.php?css=main.css';
    }
 
    class SmartyBeer extends Smarty {
@@ -34,6 +34,7 @@
          $this->compile_dir = $smartydir . '/templates_c/';
          $this->cache_dir = $smartydir . '/cache/';
          $this->plugins_dir[] = $cfg['dirs']['webdir'] . '/includes/smarty_plugins';
+         $this->debugging_ctrl = 'URL';
 
          // default assignments
          $this->assign('app_name','kegbotweb');

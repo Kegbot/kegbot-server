@@ -7,7 +7,7 @@
    {foreach name=curr_vol from=$leaders item=resinfo}
       <div style="font:10px Courier, sans-serif;">
       <center>
-      <a href="{drinker_url name=$resinfo.drinker->username}">
+      <a href="{module_url module="drinker-info" drinker=$resinfo.drinker->username}">
       {include file="boxes/mugshot-box.tpl" u=$resinfo.drinker d=100 border=0}
       </a>
       {$resinfo.amount}{$resinfo.units}

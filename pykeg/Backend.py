@@ -208,7 +208,8 @@ class BAC(SQLObject):
 
       now = util.instantBAC(d.user.gender, d.user.weight, d.keg.alccontent,
             units.to_ounces(d.volume))
-      now = util.decomposeBAC(now, units.to_ounces(d.volume)/12.0*(30*60))
+      # TODO(mikey): fix this factor
+      #now = util.decomposeBAC(now, units.to_ounces(d.volume)/12.0*(30*60))
 
       b = BAC(user=d.user, drink=d.id, rectime=d.endtime, bac=now+prev_bac)
       d.syncUpdate()

@@ -6,11 +6,13 @@
    </tr>
    {assign var="last_date" value=0}
    { foreach name=drinks item="drink" from=$drinks }
-      {if $last_date != 0 && $last_date > ($drink->endtime + 60*60*3)}
-      <tr><td colspan=4>&nbsp;</td></tr>
+      {if $drink->inOunces() > 1.5}
+         {if $last_date != 0 && $last_date > ($drink->endtime + 60*60*3)}
+         <tr><td colspan=4>&nbsp;</td></tr>
+         {/if}
+         {include file="spans/drink.tpl" drink=$drink}
+         {assign var="last_date" value=$drink->endtime}
       {/if}
-      {include file="spans/drink.tpl" drink=$drink}
-      {assign var="last_date" value=$drink->endtime}
    { /foreach }
    </table>
    </div>

@@ -24,6 +24,7 @@ sys.path.append('../pylcdui')
 # kegbot lib imports
 import Auth
 import Backend
+import Flow
 import FlowController
 import KegRemoteServer
 import KegUI
@@ -44,7 +45,6 @@ flags, args = parser.parse_args()
 
 # helper defines
 NULL_DEVICES = ('', '/dev/null')
-MILLILITERS_PER_OUNCE = 29.5735297
 
 # ---------------------------------------------------------------------------- #
 # Main classes
@@ -213,7 +213,8 @@ class KegBot:
          self.info('flow','api call to start user for %s' % user.username)
          # jump into the flow
          try:
-            self.handleFlow(user)
+            flow = self.CreateFlow(user)
+            self.handleFlow(flow)
          except:
             self.critical('flow','UNEXPECTED ERROR - please report this bug!')
             traceback.print_exc()
@@ -259,21 +260,21 @@ class KegBot:
       self.ui.flowEnded()
       return 1
 
-   def checkAccess(self, current_user, idle_time, volume, max_volume):
+   def checkAccess(self, flow):
       """ Given a flow, return True if it should continue """
       if self.QUIT.isSet():
          self.info('flow', 'boot: quit flag set')
          return False
 
       # user is no longer authed
-      if not self.userIsAuthed(current_user):
+      if not self.userIsAuthed(flow.user):
          self.info('flow', 'boot: user no longer authorized')
          return False
 
       # user is idle
-      if idle_time >= self.config.getfloat('timing','ib_idle_timeout'):
+      if flow.IdleSeconds() >= self.config.getfloat('timing','ib_idle_timeout'):
          self.info('flow', 'boot: user went idle')
-         self.timeoutUser(current_user)
+         self.timeoutUser(flow.user)
          return False
 
       # global flow stop is set (XXX: this is a silly hack for xml-rpc)
@@ -283,98 +284,89 @@ class KegBot:
          return False
 
       # user has poured his maximum
-      if max_volume != sys.maxint:
-         if volume >= max_volume:
+      if flow.max_volume != sys.maxint:
+         volume = self.ticksToVolunits(flow.Ticks())
+         if volume >= flow.max_volume:
             self.info('flow', 'boot: volume limit met/exceeded')
             return False
 
       return True
 
-   def handleFlow(self, current_user):
-      self.info('flow','starting flow handling')
-      self.ui.activity()
-      self.STOP_FLOW = 0
-
+   def CurrentKeg(self):
       online_kegs = list(Backend.Keg.selectBy(status='online', orderBy='-id'))
       if len(online_kegs) == 0:
-         self.error('flow','no keg currently active; what are you trying to pour?')
-         self.timeoutUser(current_user)
-         return
+         return None
       else:
-         current_keg = online_kegs[0]
+         return online_kegs[0]
 
-      if not current_user:
-         self.error('flow','no valid user for this key; how did we get here?')
-         return
-
-      grants = list(Backend.Grant.selectBy(user=current_user))
+   def CreateFlow(self, user):
+      grants = list(Backend.Grant.selectBy(user=user))
 
       # determine how much volume [zero, inf) the user is allowed to pour
       # before we cut him off
       max_volume = util.MaxVolume(grants)
       if max_volume == 0:
          self.info('flow', 'user does not have any credit')
-         self.ui.Alert('no credit!')
-         self.timeoutUser(current_user)
-         return
       elif max_volume == sys.maxint:
          self.info('flow', 'user approved for unlimited volume')
       else:
          self.info('flow', 'user approved for %.1f volunits' % max_volume)
 
+      return Flow.Flow(0, user = user, max_volume = max_volume)
+
+   def handleFlow(self, flow):
+      self.info('flow','starting flow handling')
+      self.ui.activity()
+      self.STOP_FLOW = 0
+
+      current_keg = self.CurrentKeg()
+      if not current_keg:
+         self.error('flow','no keg currently active; what are you trying to pour?')
+         self.timeoutUser(flow.user)
+         return
+
+      if flow.max_volume <= 0:
+         self.ui.Alert('no credit!')
+         self.timeoutUser(flow.user)
+         return
+
       # turn on UI
-      self.ui.setDrinker(current_user.username)
-      self.ui.setCurrentPlate(self.ui.plate_pour,replace=1)
+      self.ui.setDrinker(flow.user.username)
+      self.ui.setCurrentPlate(self.ui.plate_pour, replace=1)
 
       # turn on flow
       self.fc.openValve()
-      start_ticks_flow = self.fc.readTicks()
-      self.info('flow','current flow ticks: %s' % start_ticks_flow)
-      self.info('flow','starting flow for user %s' % current_user.username)
 
-      #
+      # zero the flow on current tick reading
+      flow.SetTicks(self.fc.readTicks())
+      self.info('flow','starting flow for user %s' % flow.user.username)
+
       # flow maintenance loop
-      #
-      last_flow_time = time.time()  # time since last change in flow count
-      start_time = time.time()      # timestamp of flow start
-      flow_ticks = 0                # ticks in current flow
-      lastticks = 0                 # temporary value for storing last flow reading
-      curr_vol = 0.0                # volume of current flow
-
       while 1:
-         looptime = time.time()
-
          # check user access
-         idle_amt = looptime - last_flow_time
-         if not self.checkAccess(current_user, idle_amt, curr_vol, max_volume):
+         if not self.checkAccess(flow):
             break
 
          # touch the last flow time if the user wasn't idle, and update ui
          # if flow happened
-         nowticks = self.fc.readTicks()
-         if lastticks != nowticks:
-            last_flow_time = looptime
-            flow_ticks = nowticks - start_ticks_flow
-            curr_vol = self.ticksToVolunits(flow_ticks)
-            curr_cost = self.EstimateCost(current_user, curr_vol)
+         if flow.SetTicks(self.fc.readTicks()):
+            curr_vol = self.ticksToVolunits(flow.Ticks())
+            curr_cost = self.EstimateCost(flow.user, curr_vol)
             self.ui.pourUpdate(units.to_ounces(curr_vol), curr_cost)
 
-         lastticks = nowticks
-
       # turn off flow
-      looptime = time.time()
       self.info('flow','user is gone; flow ending')
       self.fc.closeValve()
       self.ui.setCurrentPlate(self.ui.plate_main, replace=1)
 
       # record flow totals; save to user database
-      nowticks = self.fc.readTicks()
-      flow_ticks = nowticks - start_ticks_flow
-      volume = self.ticksToVolunits(flow_ticks)
+      flow.SetTicks(self.fc.readTicks())
+      flow.end = time.time()
+      volume = self.ticksToVolunits(flow.Ticks())
 
       # log the drink
-      d = Backend.Drink(ticks=flow_ticks, volume=int(volume), starttime=int(start_time),
-            endtime=int(looptime), user=current_user,
+      d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=int(flow.start),
+            endtime=int(flow.end), user=flow.user,
             keg=current_keg, status='valid')
       d.syncUpdate()
 
@@ -386,10 +378,10 @@ class KegBot:
       # update the UI
       ounces = round(units.to_ounces(volume),2)
       self.ui.setLastDrink(d)
-      self.info('flow','drink total: %i ticks, %i volunits, %.2f ounces' % (flow_ticks, volume, ounces))
+      self.info('flow','drink total: %i ticks, %i volunits, %.2f ounces' % (flow.Ticks(), volume, ounces))
 
       # de-auth the user. this may need to be configurable down the line..
-      self.deauthUser(current_user.username)
+      self.deauthUser(flow.user.username)
 
    def SortByValue(self, grants):
       """ return a list of grants sorted by least cost to user """
@@ -470,16 +462,6 @@ class KegBot:
 
    def critical(self,component,message):
       self.main_logger.critical("%s: %s" % (component,message))
-
-
-class Flow:
-   def __init__(self, start = None, user = None, volume = 0,
-         max_volume = 0):
-      self.start = start or time.time()
-      self.user = user
-      self.volume = volume
-
-      self._last_activity = time.time()
 
 
 # start a new kegbot instance, if we are called from the command line

@@ -57,6 +57,7 @@ class KegBot:
       self.config        = SQLConfigParser.SQLObjectConfigParser()
       self.drinker_queue = Queue.Queue()
       self.authed_users  = [] # users currently connected (usually 0 or 1)
+      self.flow_queue    = []
 
       # ready to perform second stage of initialization
       self._setup()
@@ -143,6 +144,9 @@ class KegBot:
          self.fc = FlowController.FlowController(dev, self.makeLogger('flow', logging.INFO))
          self.fc.start()
 
+      # set up channels. TODO: assuming one keg (single channel) at the moment
+      self.channels = [Flow.Channel(self.fc)]
+
       # set up the default screen
       self.ui.setMain()
       self.ui.activity()
@@ -176,7 +180,9 @@ class KegBot:
       # add sql handler -- XXX TODO: deprecated, move to sqlobjet
       if self.config.getboolean('logging','use_sql'):
          try:
-            hdlr = SQLHandler.SQLHandler(self.dbhost,self.dbuser,self.dbdb,self.config.get('logging','logtable'),self.dbpassword)
+            hdlr = SQLHandler.SQLHandler(self.dbhost, self.dbuser,
+                  self.dbdb, self.config.get('logging','logtable'),
+                  self.dbpassword)
             hdlr.setLevel(logging.WARNING)
             formatter = SQLHandler.SQLVerboseFormatter()
             hdlr.setFormatter(formatter)
@@ -201,24 +207,28 @@ class KegBot:
       return ret
 
    def mainEventLoop(self):
+      active_flows = []
       while not self.QUIT.isSet():
-         time.sleep(0.1)
-
-         # look for a user to handle
          try:
-            user = self.authed_users[0]
+            new_flow = self.flow_queue.pop()
+            self.info('flow','new flow started for user %s' % new_flow.user.username)
+            success = self.StartFlow(new_flow)
+            if success:
+               active_flows.append(new_flow)
          except IndexError:
-            continue
+            pass
 
-         self.info('flow','api call to start user for %s' % user.username)
-         # jump into the flow
-         try:
-            flow = self.CreateFlow(user)
-            self.handleFlow(flow)
-         except:
-            self.critical('flow','UNEXPECTED ERROR - please report this bug!')
-            traceback.print_exc()
-            sys.exit(1)
+         for flow in active_flows:
+            flow_active = self.StepFlow(flow)
+            if not flow_active:
+               self.FinishFlow(flow)
+               active_flows.remove(flow)
+
+         # sleep a bit longer if there is no guarantee of work to do next cycle
+         if len(active_flows):
+            time.sleep(0.01)
+         else:
+            time.sleep(0.1)
 
    def authUser(self, username):
       """
@@ -232,6 +242,7 @@ class KegBot:
       if matches.count():
          u = matches[0]
          self.authed_users.append(u)
+         self.flow_queue.append(self.CreateFlow(u))
          return True
       return False
 
@@ -300,6 +311,7 @@ class KegBot:
          return online_kegs[0]
 
    def CreateFlow(self, user):
+      """ Create a generic Flow.Flow object for given user """
       grants = list(Backend.Grant.selectBy(user=user))
 
       # determine how much volume [zero, inf) the user is allowed to pour
@@ -312,9 +324,10 @@ class KegBot:
       else:
          self.info('flow', 'user approved for %.1f volunits' % max_volume)
 
-      return Flow.Flow(0, user = user, max_volume = max_volume)
+      return Flow.Flow(self.channels[0], user = user, max_volume = max_volume)
 
-   def handleFlow(self, flow):
+   def StartFlow(self, flow):
+      """ Begin a flow, based on flow passed in """
       self.info('flow','starting flow handling')
       self.ui.activity()
       self.STOP_FLOW = 0
@@ -323,51 +336,55 @@ class KegBot:
       if not current_keg:
          self.error('flow','no keg currently active; what are you trying to pour?')
          self.timeoutUser(flow.user)
-         return
+         return False
+      flow.keg = current_keg
 
       if flow.max_volume <= 0:
          self.ui.Alert('no credit!')
          self.timeoutUser(flow.user)
-         return
+         return False
 
       # turn on UI
       self.ui.setDrinker(flow.user.username)
       self.ui.setCurrentPlate(self.ui.plate_pour, replace=1)
 
       # turn on flow
-      self.fc.openValve()
+      flow.channel.fc.openValve()
 
       # zero the flow on current tick reading
-      flow.SetTicks(self.fc.readTicks())
+      flow.SetTicks(flow.channel.fc.readTicks())
       self.info('flow','starting flow for user %s' % flow.user.username)
 
-      # flow maintenance loop
-      while 1:
-         # check user access
-         if not self.checkAccess(flow):
-            break
+      return True
 
-         # touch the last flow time if the user wasn't idle, and update ui
-         # if flow happened
-         if flow.SetTicks(self.fc.readTicks()):
-            curr_vol = self.ticksToVolunits(flow.Ticks())
-            curr_cost = self.EstimateCost(flow.user, curr_vol)
-            self.ui.pourUpdate(units.to_ounces(curr_vol), curr_cost)
+   def StepFlow(self, flow):
+      """ Do periodic work on a Flow (update ui, collect volume, etc """
+      if not self.checkAccess(flow):
+         print 'Flow ending'
+         return False
 
-      # turn off flow
+      # update things if anything changed
+      if flow.SetTicks(flow.channel.fc.readTicks()):
+         curr_vol = self.ticksToVolunits(flow.Ticks())
+         curr_cost = self.EstimateCost(flow.user, curr_vol)
+         self.ui.pourUpdate(units.to_ounces(curr_vol), curr_cost)
+
+      return True
+
+   def FinishFlow(self, flow):
+      """ End a Flow and record a drink """
       self.info('flow','user is gone; flow ending')
-      self.fc.closeValve()
+      flow.channel.fc.closeValve()
       self.ui.setCurrentPlate(self.ui.plate_main, replace=1)
 
       # record flow totals; save to user database
-      flow.SetTicks(self.fc.readTicks())
+      flow.SetTicks(flow.channel.fc.readTicks())
       flow.end = time.time()
       volume = self.ticksToVolunits(flow.Ticks())
 
       # log the drink
       d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=int(flow.start),
-            endtime=int(flow.end), user=flow.user,
-            keg=current_keg, status='valid')
+            endtime=int(flow.end), user=flow.user, keg=flow.keg, status='valid')
       d.syncUpdate()
 
       # post-processing steps
@@ -378,7 +395,8 @@ class KegBot:
       # update the UI
       ounces = round(units.to_ounces(volume),2)
       self.ui.setLastDrink(d)
-      self.info('flow','drink total: %i ticks, %i volunits, %.2f ounces' % (flow.Ticks(), volume, ounces))
+      self.info('flow','drink total: %i ticks, %i volunits, %.2f ounces' %
+            (flow.Ticks(), volume, ounces))
 
       # de-auth the user. this may need to be configurable down the line..
       self.deauthUser(flow.user.username)

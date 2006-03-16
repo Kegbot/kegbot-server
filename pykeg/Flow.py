@@ -35,6 +35,13 @@ class Flow:
       return self._ticks
 
 class Channel:
+   """
+   A Channel is a path of beer contianing a flow controller and drinker queue.
+
+   For example, the typical kegerator has only one keg and thus one channel. A
+   4-headed kegerator would likely have 4 kegbot channels, each channel having
+   its own flow controller instance and drinker "flow" queue.
+   """
    def __init__(self, fc, logger):
       self.fc = fc
       self.flow_queue = []
@@ -42,9 +49,11 @@ class Channel:
       self.logger = logger
 
    def EnqueueFlow(self, flow):
+      """ Add a flow to the waiting queue of flows """
       self.flow_queue.append(flow)
 
    def MaybeActivateNextFlow(self):
+      """ If there isn't an active flow, pop one from flow_queue and activate """
       if self.active_flow is None:
          try:
             flow = self.flow_queue.pop()
@@ -56,6 +65,7 @@ class Channel:
       return None
 
    def DeactivateFlow(self):
+      """ Reset active_flow state variable to None """
       self.active_flow = None
 
 

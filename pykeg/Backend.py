@@ -2,7 +2,12 @@ from datetime import datetime
 import time
 import sys
 
-from sqlobject import *
+try:
+   from sqlobject import *
+except ImportError:
+   print>>sys.stderr, 'Could not import sqlobject - do you have it installed?'
+   print>>sys.stderr, 'Kegbot requires sqlobject version 0.8 or later. Exiting.'
+   sys.exit(1)
 
 import units
 import util

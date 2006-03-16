@@ -14,7 +14,6 @@ import signal
 import sys
 import threading
 import time
-import traceback
 import Queue
 
 # path hooks for local modules
@@ -32,9 +31,6 @@ import SQLConfigParser
 import TempMonitor
 import units
 import util
-
-# other (third-party) lib imports
-import sqlobject
 
 # command line parser are defined here
 parser = optparse.OptionParser()
@@ -57,7 +53,6 @@ class KegBot:
       self.config        = SQLConfigParser.SQLObjectConfigParser()
       self.drinker_queue = Queue.Queue()
       self.authed_users  = [] # users currently connected (usually 0 or 1)
-      self.flow_queue    = []
 
       # ready to perform second stage of initialization
       self._setup()
@@ -145,7 +140,7 @@ class KegBot:
          self.fc.start()
 
       # set up channels. TODO: assuming one keg (single channel) at the moment
-      self.channels = [Flow.Channel(self.fc)]
+      self.channels = [Flow.Channel(self.fc, self.makeLogger('channel0'))]
 
       # set up the default screen
       self.ui.setMain()
@@ -209,20 +204,23 @@ class KegBot:
    def mainEventLoop(self):
       active_flows = []
       while not self.QUIT.isSet():
-         try:
-            new_flow = self.flow_queue.pop()
-            self.info('flow','new flow started for user %s' % new_flow.user.username)
-            success = self.StartFlow(new_flow)
-            if success:
-               active_flows.append(new_flow)
-         except IndexError:
-            pass
+         for channel in self.channels:
+            new_flow = channel.MaybeActivateNextFlow()
+            if new_flow is not None:
+               success = self.StartFlow(new_flow)
+               if success:
+                  self.info('flow','new flow started for user %s on channel %s' % (new_flow.user.username, channel))
+                  active_flows.append(new_flow)
+               else:
+                  self.info('flow', 'flow not started')
 
+         # step each flow and check if it is complete
          for flow in active_flows:
             flow_active = self.StepFlow(flow)
             if not flow_active:
                self.FinishFlow(flow)
                active_flows.remove(flow)
+               channel.DeactivateFlow()
 
          # sleep a bit longer if there is no guarantee of work to do next cycle
          if len(active_flows):
@@ -230,7 +228,7 @@ class KegBot:
          else:
             time.sleep(0.1)
 
-   def authUser(self, username):
+   def AuthUser(self, username):
       """
       Add user matching username to the list of authorized users.
 
@@ -242,11 +240,12 @@ class KegBot:
       if matches.count():
          u = matches[0]
          self.authed_users.append(u)
-         self.flow_queue.append(self.CreateFlow(u))
+         # TODO: explicit support for channels
+         self.channels[0].EnqueueFlow(self.CreateFlow(u))
          return True
       return False
 
-   def deauthUser(self, username):
+   def DeauthUser(self, username):
       """
       Remove user matching username from the list of authorized users.
 
@@ -261,24 +260,24 @@ class KegBot:
          return True
       return False
 
-   def userIsAuthed(self, user):
+   def UserIsAuthed(self, user):
       """ Return True if user is presently in the authed_users list """
       return user in self.authed_users
 
-   def stopFlow(self):
+   def StopFlow(self):
       """ Cause any running flow to terminate """
       self.STOP_FLOW = 1
       self.ui.flowEnded()
-      return 1
+      return True
 
-   def checkAccess(self, flow):
+   def CheckAccess(self, flow):
       """ Given a flow, return True if it should continue """
       if self.QUIT.isSet():
          self.info('flow', 'boot: quit flag set')
          return False
 
       # user is no longer authed
-      if not self.userIsAuthed(flow.user):
+      if not self.UserIsAuthed(flow.user):
          self.info('flow', 'boot: user no longer authorized')
          return False
 
@@ -359,7 +358,7 @@ class KegBot:
 
    def StepFlow(self, flow):
       """ Do periodic work on a Flow (update ui, collect volume, etc """
-      if not self.checkAccess(flow):
+      if not self.CheckAccess(flow):
          print 'Flow ending'
          return False
 
@@ -399,7 +398,7 @@ class KegBot:
             (flow.Ticks(), volume, ounces))
 
       # de-auth the user. this may need to be configurable down the line..
-      self.deauthUser(flow.user.username)
+      self.DeauthUser(flow.user.username)
 
    def SortByValue(self, grants):
       """ return a list of grants sorted by least cost to user """
@@ -446,8 +445,8 @@ class KegBot:
          vol_remain -= vol_curr
 
       if vol_remain > 0:
+         # TODO: charge to default grant
          print 'ERROR: volume not charged: %i' % vol_remain
-         # XXX TODO charge to default grant
 
    def BingeUpdate(self, d):
       """ Create or update a binge given a recent drink """
@@ -459,7 +458,7 @@ class KegBot:
 
    def timeoutUser(self, user):
       """ Callback executed when a user goes idle """
-      self.deauthUser(user.username)
+      self.DeauthUser(user.username)
 
    ### volume related helper functions
    def ticksToVolunits(self, ticks):

@@ -35,5 +35,28 @@ class Flow:
       return self._ticks
 
 class Channel:
-   def __init__(self, fc):
+   def __init__(self, fc, logger):
       self.fc = fc
+      self.flow_queue = []
+      self.active_flow = None
+      self.logger = logger
+
+   def EnqueueFlow(self, flow):
+      self.flow_queue.append(flow)
+
+   def MaybeActivateNextFlow(self):
+      if self.active_flow is None:
+         try:
+            flow = self.flow_queue.pop()
+         except:
+            return None
+         self.logger.info('new active flow: %s' % flow)
+         self.active_flow = flow
+         return flow
+      return None
+
+   def DeactivateFlow(self):
+      self.active_flow = None
+
+
+

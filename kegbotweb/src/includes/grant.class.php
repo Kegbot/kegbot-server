@@ -35,11 +35,12 @@ class Grant {
          return "on $date";
       }
       elseif (!strcmp($this->expiration,"volume")) {
-         $oz = round(volunits_to_ounces($this->exp_volume), 2);
+         $oz = round(volunits_to_ounces($this->exp_volume), 0);
          return "after $oz ounces";
       }
       return "never";
    }
+
    function getToGo() {
       if (!strcmp($this->status, "expired")) {
          return "expired!";
@@ -47,32 +48,17 @@ class Grant {
       if (!strcmp($this->expiration,"time")) {
          $dest = $this->exp_time;
          $src  = time();
-         $info = mkDays($dest-$src);
-         $ret = "";
-         if ($info['years'] != 0)
-            $ret .= $info['years'] . ' years ';
-         if ($info['days'] != 0) {
-            $ret .= $info['days'] . ' days ';
-            if ($info['days'] > 1) {
-               return $ret . "+";
-            }
+         if ($dest <= $src) {
+            return "expired!";
+         } else {
+            return relative_date($dest);
          }
-         if ($info['hours'] != 0)
-            $ret .= $info['hours'] . ' hours ';
-         if ($info['minutes'] != 0)
-            $ret .= $info['minutes'] . ' minutes ';
-         if ($info['seconds'] != 0)
-            $ret .= $info['seconds'] . ' seconds ';
-         if (!strcmp($ret,""))
-            $ret = "expired!";
-
-         return $ret;
       }
       elseif (!strcmp($this->expiration,"volume")) {
          $diff = $this->exp_volume - $this->total_volume;
          $diff = volunits_to_ounces($diff);
-         $diff = round($diff,2);
-         if ($diff <= 0) 
+         $diff = round($diff,1);
+         if ($diff <= 0)
             return "expired!";
          return "$diff ounces";
       }

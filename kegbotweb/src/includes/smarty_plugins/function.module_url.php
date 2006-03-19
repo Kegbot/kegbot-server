@@ -11,30 +11,31 @@ function smarty_function_module_url($params, &$smarty)
    // build an argument stream from smarty params
    $args = array();
    $path = '';
+   $tail = '';
    foreach ($params as $key => $val) {
       if (strcmp($key, "module")) {
          $args[] = "$key=$val";
          $path .= "/$val";
       }
    }
+   if (sizeof($args) > 0) {
+      $tail = "?" . implode("&", $args);
+   }
 
    // special cases
    if (!strcmp($params['module'],"main")) {
-      return "/index.php";
-   } else {
-      $out = '/' . $params['module'] . ".php";
+      return $cfg['urls']['baseurl'] . "/";
    }
 
+   // build the url
    if ($cfg['misc']['fancy_urls'] and $TR[$params['module']]) {
-      $out = '/' . $TR[$params['module']] . $path;
-      return $out;
+      $out = $TR[$params['module']];
+      $out .= $path;
    }
    else {
-      // append arguments
-      if (sizeof($args) > 0) {
-         $out .= "?" . implode("&", $args);
-      }
+      $out = $params['module'] . ".php";
+      $out .= $tail;
    }
-   return $out;
+   return $cfg['urls']['baseurl'] . '/' . $out;
 }
 ?>

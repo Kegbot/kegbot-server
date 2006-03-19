@@ -3,7 +3,7 @@
    include_once('drinker.class.php');
    include_once('charge.class.php');
    include_once('Smarty.class.php');
-   global $skin, $css;
+   global $skin, $css, $cfg;
    include_once('session.php');
 
    if ($_SESSION['skin']) {
@@ -12,7 +12,7 @@
    }
    else {
       $skin = 'default';
-      $css  = '/css.php?css=main.css';
+      $css  = $cfg['urls']['baseurl'] . '/css.php?css=main.css';
    }
 
    class SmartyBeer extends Smarty {

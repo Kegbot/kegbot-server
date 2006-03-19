@@ -342,7 +342,7 @@
          $bac = getCurrentBAC($row['id']);
          if ($bac > 0.0) {
             $drinker = loadDrinker($row['id']);
-            $drinker->bac = $bac; // XXX FIXME
+            $drinker->current_bac = $bac; // XXX FIXME
             $drunks[] = $drinker;
          }
       }

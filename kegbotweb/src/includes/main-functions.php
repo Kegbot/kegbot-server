@@ -159,6 +159,37 @@
       mysql_query($q);
    }
 
+   function grantPolicy($pid, $did, $exp, $eoz, $edate) {
+      $etime = 0;
+      $evol = 0;
+      if (!strcmp($exp, "volume")) {
+         $evol = ounces_to_volunits($eoz);
+      }
+      if (!strcmp($exp, "time")) {
+         $etime = strtotime($edate);
+      }
+      $q = "INSERT INTO `grants` (`status`,`user_id`,`expiration`,`policy_id`,`exp_volume`,`exp_time`,`exp_drinks`,`total_volume`,`total_drinks`) VALUES ('active','$did','$exp','$pid','$evol','$etime',0,0,0)";
+      mysql_query($q);
+   }
+
+   function createToken($did, $keyinfo) {
+      $q = "INSERT INTO `tokens` (`user_id`,`keyinfo`,`created`) VALUES ('$did', '$keyinfo', NOW())";
+      $res = mysql_query($q);
+      if ($res) {
+         return mysql_insert_id();
+      }
+      return NULL;
+   }
+
+   function createUser($username, $pass, $gender, $weight, $email) {
+      $q = "INSERT INTO `users` (`username`,`email`,`gender`,`password`,`weight`) VALUES ('$username', '$email', '$gender', MD5('$pass'), '$weight')";
+      $res = mysql_query($q);
+      if ($res) {
+         return mysql_insert_id();
+      }
+      return NULL;
+   }
+
    function getAllPolicies()
    {
       $q = "SELECT `id` FROM `policies` ORDER BY `type`,`unitcost` DESC";

@@ -130,6 +130,10 @@
          <td><input type="text" name="username" size="35"></td>
       </tr>
       <tr>
+         <td align="right" valign="top"><b>e-mail:</b></td>
+         <td><input type="text" name="email" size="35"></td>
+      </tr>
+      <tr>
          <td align="right" valign="top"><b>password:</b></td>
          <td><input type="password" name="password" size="35"></td>
       </tr>
@@ -144,6 +148,24 @@
       <tr>
          <td align="right" valign="top"><b>weight:</b></td>
          <td><input type="text" name="weight" size="35" value="175"></td>
+      </tr>
+      <tr>
+         <td align="right" valign="top"><b>initial grant:</b></td>
+         <td>
+            <select name="policy">
+            <option value="-1">No grant
+            {foreach from=$policies item=i}
+               <option value="{$i->id}">{$i->description} ({$i->getCostPerOunce()|money_fmt}/oz)
+            {/foreach}
+            </select><br><font size="-1">(no expiration)</font>
+         </td>
+      </tr>
+      <tr>
+         <td align="right" valign="top"><b>initial token:</b></td>
+         <td><input type="text" name="token" size="35"></td>
+      </tr>
+      <tr>
+         <td colspan="2"><input type="submit"></td>
       </tr>
    </table>
    </form>

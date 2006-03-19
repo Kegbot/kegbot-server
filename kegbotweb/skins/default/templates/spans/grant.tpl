@@ -1,4 +1,4 @@
-   <td>{$grant->policy_obj->descr}</td>
+   <td>{$grant->policy_obj->description}</td>
    {if $grant->policy_obj->getCostPerOunce() == 0}
       <td>--</td>
    {else}

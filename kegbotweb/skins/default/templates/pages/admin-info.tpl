@@ -34,7 +34,7 @@
       <tr>
       <td valign="top" colspan="3">
          <input type="radio" name="exptype" value="none" checked> expires never<br>
-         <input type="radio" name="exptype" value="ounces" > expires after <input type="text" name="expounces" size="3" value="64"> ounces<br>
+         <input type="radio" name="exptype" value="volume" > expires after <input type="text" name="expounces" size="3" value="64"> ounces<br>
          <input type="radio" name="exptype" value="time" > expires on date <input type="text" name="expdate" size="16">
       </td>
       </tr>

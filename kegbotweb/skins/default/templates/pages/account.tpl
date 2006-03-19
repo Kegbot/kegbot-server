@@ -88,7 +88,7 @@
    <p>
       your account balance is shown below. this is a listing of all charges you
       have made on this account, along with any credits (cash paid, and so on).
-      depending on the mood of the kegbot, a larger outstanding blaance here
+      depending on the mood of the kegbot, a larger outstanding balance here
       may negatively affect your ability to get beer -- best to keep the kegbot
       happy!
    </p>

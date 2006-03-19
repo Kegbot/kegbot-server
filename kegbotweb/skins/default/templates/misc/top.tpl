@@ -20,7 +20,7 @@
          <a href="{module_url module="leaders"}">leader board</a> |
          <a href="{module_url module="account"}">account</a>
          { if $s_drinker->admin }
-         | <a href="{module_url module="admin-info"}">kebgot admin</a>
+         | <a href="{module_url module="admin-info"}">kegbot admin</a>
          { /if}
          { if $s_drinker }
          | <a href="{module_url module="login" action="logout"}">logout</a>

@@ -59,7 +59,7 @@ class KegBot:
       self._setsigs()
 
       # start everything up
-      self.mainEventLoop()
+      self.MainEventLoop()
 
    def _setup(self):
 
@@ -82,7 +82,7 @@ class KegBot:
       self.config.read(Backend.Config)
 
       # set up logging, using the python 2.3 logging module
-      self.main_logger = self.makeLogger('main',logging.INFO)
+      self.main_logger = self.MakeLogger('main',logging.INFO)
 
       self.server = KegRemoteServer.KegRemoteServer(self, '', 9966)
       self.server.start()
@@ -90,7 +90,7 @@ class KegBot:
       # optional module: usb ibutton auth
       if self.config.getboolean('auth','usb_ib'):
          timeout = self.config.getfloat('timing','ib_refresh_timeout')
-         logger = self.makeLogger('usb_ibauth',logging.INFO)
+         logger = self.MakeLogger('usb_ibauth',logging.INFO)
          usb_ibauth = Auth.USBIBAuth(self, 'usb', timeout, self.QUIT, logger)
          usb_ibauth.start()
 
@@ -98,7 +98,7 @@ class KegBot:
       if self.config.getboolean('auth','serial_ib'):
          dev = self.config.get('devices','onewire')
          timeout = self.config.getfloat('timing','ib_refresh_timeout')
-         logger = self.makeLogger('serial_ibauth',logging.INFO)
+         logger = self.MakeLogger('serial_ibauth',logging.INFO)
          serial_ibauth = Auth.SerialIBAuth(self, dev, timeout, self.QUIT, logger)
          serial_ibauth.start()
 
@@ -136,11 +136,11 @@ class KegBot:
       if dev in NULL_DEVICES:
          self.fc = FlowController.FlowSimulator()
       else:
-         self.fc = FlowController.FlowController(dev, self.makeLogger('flow', logging.INFO))
+         self.fc = FlowController.FlowController(dev, self.MakeLogger('flow', logging.INFO))
          self.fc.start()
 
       # set up channels. TODO: assuming one keg (single channel) at the moment
-      self.channels = [Flow.Channel(self.fc, self.makeLogger('channel0'))]
+      self.channels = [Flow.Channel(self.fc, self.MakeLogger('channel0'))]
 
       # set up the default screen
       self.ui.setMain()
@@ -167,7 +167,7 @@ class KegBot:
       self.ui.stop()
       self.QUIT.set()
 
-   def makeLogger(self,compname,level=logging.INFO):
+   def MakeLogger(self, compname, level=logging.INFO):
       """ set up a logging logger, given the component name """
       ret = logging.getLogger(compname)
       ret.setLevel(level)
@@ -201,7 +201,7 @@ class KegBot:
 
       return ret
 
-   def mainEventLoop(self):
+   def MainEventLoop(self):
       active_flows = []
       while not self.QUIT.isSet():
          for channel in self.channels:
@@ -212,6 +212,7 @@ class KegBot:
                   self.info('flow','new flow started for user %s on channel %s' % (new_flow.user.username, channel))
                   active_flows.append(new_flow)
                else:
+                  channel.DeactivateFlow()
                   self.info('flow', 'flow not started')
 
          # step each flow and check if it is complete
@@ -357,7 +358,7 @@ class KegBot:
       return True
 
    def StepFlow(self, flow):
-      """ Do periodic work on a Flow (update ui, collect volume, etc """
+      """ Do periodic work on a Flow (update ui, collect volume, etc) """
       if not self.CheckAccess(flow):
          print 'Flow ending'
          return False

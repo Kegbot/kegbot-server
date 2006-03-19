@@ -19,7 +19,7 @@
 
    // create the first policy
    if (intval($_POST['policy']) != -1) {
-      grantPolicy(intval($_POST['policy']), $did, 'never', 0, 0);
+      grantPolicy(intval($_POST['policy']), $did, 'none', 0, 0);
    }
 
    // create initial token

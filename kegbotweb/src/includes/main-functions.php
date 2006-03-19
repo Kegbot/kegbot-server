@@ -182,7 +182,7 @@
    }
 
    function createUser($username, $pass, $gender, $weight, $email) {
-      $q = "INSERT INTO `users` (`username`,`email`,`gender`,`password`,`weight`) VALUES ('$username', '$email', '$gender', MD5('$pass'), '$weight')";
+      $q = "INSERT INTO `users` (`username`,`email`,`gender`,`password`,`weight`,`im_aim`,`admin`,`image_url`) VALUES ('$username', '$email', '$gender', MD5('$pass'), '$weight','','no','')";
       $res = mysql_query($q);
       if ($res) {
          return mysql_insert_id();

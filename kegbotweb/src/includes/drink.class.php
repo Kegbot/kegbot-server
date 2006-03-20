@@ -20,8 +20,8 @@ class Drink {
       foreach ($row as $key => $val) {
          $this->$key = $val;
       }
-      $this->keg_obj = new Keg($this->keg_id);
-      $this->drinker_obj = new Drinker($this->user_id);
+      $this->keg_obj = GetKeg($this->keg_id);
+      $this->drinker_obj = GetDrinker($this->user_id);
    }
 
    function inOunces() {

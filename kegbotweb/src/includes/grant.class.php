@@ -26,7 +26,7 @@ class Grant {
          $this->$key = $val;
       }
 
-      $this->policy_obj = new Policy($this->policy_id);
+      $this->policy_obj = GetPolicy($this->policy_id);
    }
 
    function getExpirationStr() {

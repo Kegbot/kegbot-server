@@ -18,7 +18,7 @@ class GrantCharge {
       foreach ($row as $key => $val) {
          $this->$key = $val;
       }
-      $this->grant_obj = new Grant($this->grant_id);
+      $this->grant_obj = GetGrant($this->grant_id);
    }
 }
 ?>

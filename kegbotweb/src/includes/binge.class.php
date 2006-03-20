@@ -18,7 +18,7 @@ class Binge {
       foreach ($row as $key => $val) {
          $this->$key = $val;
       }
-      $this->drinker_obj = new Drinker($this->user_id);
+      $this->drinker_obj = GetDrinker($this->user_id);
    }
    function getSize() {
       return volunits_to_ounces($this->volume);

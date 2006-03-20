@@ -15,7 +15,7 @@ class Token {
       foreach ($row as $key => $val) {
          $this->$key = $val;
       }
-      $this->owner_obj = new Drinker($this->user_id);
+      $this->owner_obj = GetDrinker($this->user_id);
    }
 
    function getOwnerName() {

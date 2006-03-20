@@ -13,6 +13,12 @@
 
    $TOKENS = Array();
 
+   $GLOBALS['drinkers'] = Array();
+   $GLOBALS['drinks'] = Array();
+   $GLOBALS['kegs'] = Array();
+   $GLOBALS['grants'] = Array();
+   $GLOBALS['policies'] = Array();
+
    /**
    *
    * A simple, SELECT-only MySQL query generator.
@@ -120,7 +126,7 @@
          $q = "SELECT id,user_id,MAX(bac) as bac FROM bacs GROUP BY user_id ORDER BY bac DESC LIMIT $num";
       }
       else {
-         $keg = new Keg($kegid);
+         $keg = GetKeg($kegid);
          // XXX FIXME
          //$q = "SELECT id,user_id,MAX(bac) FROM bacs WHERE keg_id='{$keg->id}' AND id > 80 GROUP BY bac ORDER BY bac DESC LIMIT $num";
       }
@@ -197,19 +203,19 @@
 
       $ps = Array();
       while ($row = mysql_fetch_assoc($res)) {
-         $p = new Policy($row['id']);
+         $p = GetPolicy($row['id']);
          $ps[] = $p;
       }
       return $ps;
    }
 
    function getPolicy($id) {
-      return new Policy($id);
+      return GetPolicy($id);
    }
 
    function loadGrant($id)
    {
-      return new Grant($id);
+      return GetGrant($id);
    }
 
    function getUserGrants($userid)
@@ -218,7 +224,7 @@
       $res = mysql_query($q);
       $grants = Array();
       while ($row = mysql_fetch_assoc($res)) {
-         $newgrant = new Grant($row['id']);
+         $newgrant = GetGrant($row['id']);
          $grants[] = $newgrant;
       }
       return $grants;
@@ -231,7 +237,7 @@
       $res = mysql_query($q);
       $drinks = Array();
       while ($row = mysql_fetch_assoc($res)) {
-         $newdrink = new Drink($row['id']);
+         $newdrink = GetDrink($row['id']);
          $drinks[] = $newdrink;
       }
       return $drinks;
@@ -261,7 +267,7 @@
       $res = mysql_query($q);
       $drinkers = Array();
       while ($row = mysql_fetch_assoc($res)) {
-         $newdrinker = new Drinker($row['id']);
+         $newdrinker = GetDrinker($row['id']);
          $drinkers[] = $newdrinker;
       }
       return $drinkers;
@@ -321,7 +327,7 @@
       while ($row = mysql_fetch_assoc($res)) {
          if(empty($row))
             return NULL;
-         $drinkers[] = new Drinker($row['id']);
+         $drinkers[] = GetDrinker($row['id']);
       }
       return $drinkers;
    }
@@ -334,7 +340,7 @@
       while ($row = mysql_fetch_assoc($res)) {
          if(empty($row))
             return NULL;
-         $newdrink = new Drink($row['id']);
+         $newdrink = GetDrink($row['id']);
          $drinks[] = $newdrink;
       }
       return $drinks;
@@ -342,20 +348,55 @@
 
    function loadDrinker($id) {
       if (is_numeric($id)) {
-         return new Drinker($id);
+         return GetDrinker($id);
       } else {
          $q = "SELECT `id` FROM `users` WHERE username='$id' LIMIT 1";
          $res = mysql_query($q);
          $row = mysql_fetch_assoc($res); // TODO CHECK INPUT
-         return new Drinker($row['id']);
+         return GetDrinker($row['id']);
       }
+   }
+
+   function GetDrink($id) {
+      if (!$GLOBALS['drinks'][$id]) {
+         $GLOBALS['drinks'][$id] = new Drink($id);
+      }
+      return $GLOBALS['drinks'][$id];
+   }
+
+   function GetDrinker($id) {
+      if (!$GLOBALS['drinkers'][$id]) {
+         $GLOBALS['drinkers'][$id] = new Drinker($id);
+      }
+      return $GLOBALS['drinkers'][$id];
+   }
+
+   function GetKeg($id) {
+      if (!$GLOBALS['kegs'][$id]) {
+         $GLOBALS['kegs'][$id] = new Keg($id);
+      }
+      return $GLOBALS['kegs'][$id];
+   }
+
+   function GetGrant($id) {
+      if (!$GLOBALS['grants'][$id]) {
+         $GLOBALS['grants'][$id] = new Grant($id);
+      }
+      return $GLOBALS['grants'][$id];
+   }
+
+   function GetPolicy($id) {
+      if (!$GLOBALS['policies'][$id]) {
+         $GLOBALS['policies'][$id] = new Policy($id);
+      }
+      return $GLOBALS['policies'][$id];
    }
 
    function getCurrentKeg() {
       $q = "SELECT `id` FROM `kegs` ORDER BY `id` DESC LIMIT 1";
       $res = mysql_query($q);
       $row = mysql_fetch_assoc($res);
-      return new Keg($row['id']);
+      return GetKeg($row['id']);
    }
 
    function getCurrentKegTemp() {
@@ -414,7 +455,7 @@
       $res = mysql_query($q);
       $ret = array();
       while (($row = mysql_fetch_assoc($res)) != NULL) {
-         $ret[] = new Keg($row['id']);
+         $ret[] = GetKeg($row['id']);
       }
       return $ret;
    }

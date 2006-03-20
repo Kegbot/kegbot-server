@@ -209,10 +209,6 @@
       return $ps;
    }
 
-   function getPolicy($id) {
-      return GetPolicy($id);
-   }
-
    function loadGrant($id)
    {
       return GetGrant($id);

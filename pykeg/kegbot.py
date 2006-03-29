@@ -49,9 +49,8 @@ NULL_DEVICES = ('', '/dev/null')
 class KegBot:
    """ the thinking kegerator! """
    def __init__(self):
-      self.QUIT          = threading.Event() # event to set when we want everything to quit
+      self.QUIT          = threading.Event()
       self.config        = SQLConfigParser.SQLObjectConfigParser()
-      self.drinker_queue = Queue.Queue()
       self.authed_users  = [] # users currently connected (usually 0 or 1)
 
       # ready to perform second stage of initialization
@@ -75,14 +74,15 @@ class KegBot:
 
       # connect to db - TODO: remove mysql component and make the URI the sole
       # config option
-      db_uri = 'mysql://%s:%s@%s/%s' % (self.dbuser, self.dbpassword, self.dbhost, self.dbdb)
+      db_uri = 'mysql://%s:%s@%s/%s' % (self.dbuser, self.dbpassword,
+            self.dbhost, self.dbdb)
       Backend.setup(db_uri)
 
       # initialize the config, from stored values in MySQL
       self.config.read(Backend.Config)
 
       # set up logging, using the python 2.3 logging module
-      self.main_logger = self.MakeLogger('main',logging.INFO)
+      self.logger = self.MakeLogger('main',logging.INFO)
 
       self.server = KegRemoteServer.KegRemoteServer(self, '', 9966)
       self.server.start()
@@ -113,8 +113,8 @@ class KegBot:
             import pycfz as lcddriver
             self.lcd = lcddriver.Display(dev)
          else:
-            self.error('main', 'unknown lcd_type!')
-         self.info('main','new %s LCD at device %s' % (lcdtype, dev))
+            self.logger.error('main: unknown lcd_type!')
+         self.logger.info('main: new %s LCD at device %s' % (lcdtype, dev))
          self.ui = KegUI.KegUI(self.lcd, self)
          drinks = list(Backend.Drink.select(orderBy="-id", limit=1))
          if len(drinks):
@@ -132,7 +132,7 @@ class KegBot:
 
       # initialize flow meter
       dev = self.config.get('devices','flow')
-      self.info('main','new flow controller at device %s' % dev)
+      self.logger.info('main: new flow controller at device %s' % dev)
       if dev in NULL_DEVICES:
          self.fc = FlowController.FlowSimulator()
       else:
@@ -159,7 +159,7 @@ class KegBot:
       self.Quit()
 
    def Quit(self):
-      self.info('main','attempting to quit')
+      self.logger.info('main: attempting to quit')
 
       # other quitting
       self.server.stop()
@@ -209,11 +209,12 @@ class KegBot:
             if new_flow is not None:
                success = self.StartFlow(new_flow)
                if success:
-                  self.info('flow','new flow started for user %s on channel %s' % (new_flow.user.username, channel))
+                  self.logger.info('flow: new flow started for user %s on channel %s' %
+                        (new_flow.user.username, channel))
                   active_flows.append(new_flow)
                else:
                   channel.DeactivateFlow()
-                  self.info('flow', 'flow not started')
+                  self.logger.info('flow: flow not started')
 
          # step each flow and check if it is complete
          for flow in active_flows:
@@ -274,31 +275,31 @@ class KegBot:
    def CheckAccess(self, flow):
       """ Given a flow, return True if it should continue """
       if self.QUIT.isSet():
-         self.info('flow', 'boot: quit flag set')
+         self.logger.info('flow: boot: quit flag set')
          return False
 
       # user is no longer authed
       if not self.UserIsAuthed(flow.user):
-         self.info('flow', 'boot: user no longer authorized')
+         self.logger.info('flow: boot: user no longer authorized')
          return False
 
       # user is idle
       if flow.IdleSeconds() >= self.config.getfloat('timing','ib_idle_timeout'):
-         self.info('flow', 'boot: user went idle')
+         self.logger.info('flow: boot: user went idle')
          self.timeoutUser(flow.user)
          return False
 
       # global flow stop is set (XXX: this is a silly hack for xml-rpc)
       if self.STOP_FLOW:
-         self.info('flow', 'boot: global kill set')
+         self.logger.info('flow: boot: global kill set')
          self.STOP_FLOW = 0
          return False
 
       # user has poured his maximum
       if flow.max_volume != sys.maxint:
-         volume = self.ticksToVolunits(flow.Ticks())
+         volume = units.ticks_to_volunits(flow.Ticks())
          if volume >= flow.max_volume:
-            self.info('flow', 'boot: volume limit met/exceeded')
+            self.logger.info('flow: boot: volume limit met/exceeded')
             return False
 
       return True
@@ -318,23 +319,23 @@ class KegBot:
       # before we cut him off
       max_volume = util.MaxVolume(grants)
       if max_volume == 0:
-         self.info('flow', 'user does not have any credit')
+         self.logger.info('flow: user does not have any credit')
       elif max_volume == sys.maxint:
-         self.info('flow', 'user approved for unlimited volume')
+         self.logger.info('flow: user approved for unlimited volume')
       else:
-         self.info('flow', 'user approved for %.1f volunits' % max_volume)
+         self.logger.info('flow: user approved for %.1f volunits' % max_volume)
 
       return Flow.Flow(self.channels[0], user = user, max_volume = max_volume)
 
    def StartFlow(self, flow):
       """ Begin a flow, based on flow passed in """
-      self.info('flow','starting flow handling')
+      self.logger.info('flow: starting flow handling')
       self.ui.activity()
       self.STOP_FLOW = 0
 
       current_keg = self.CurrentKeg()
       if not current_keg:
-         self.error('flow','no keg currently active; what are you trying to pour?')
+         self.logger.error('flow: no keg currently active; what are you trying to pour?')
          self.timeoutUser(flow.user)
          return False
       flow.keg = current_keg
@@ -353,19 +354,19 @@ class KegBot:
 
       # zero the flow on current tick reading
       flow.SetTicks(flow.channel.fc.readTicks())
-      self.info('flow','starting flow for user %s' % flow.user.username)
+      self.logger.info('flow: starting flow for user %s' % flow.user.username)
 
       return True
 
    def StepFlow(self, flow):
       """ Do periodic work on a Flow (update ui, collect volume, etc) """
       if not self.CheckAccess(flow):
-         print 'Flow ending'
+         self.logger.info('flow: Flow ending')
          return False
 
       # update things if anything changed
       if flow.SetTicks(flow.channel.fc.readTicks()):
-         curr_vol = self.ticksToVolunits(flow.Ticks())
+         curr_vol = units.ticks_to_volunits(flow.Ticks())
          curr_cost = self.EstimateCost(flow.user, curr_vol)
          self.ui.pourUpdate(units.to_ounces(curr_vol), curr_cost)
 
@@ -373,14 +374,14 @@ class KegBot:
 
    def FinishFlow(self, flow):
       """ End a Flow and record a drink """
-      self.info('flow','user is gone; flow ending')
+      self.logger.info('flow: user is gone; flow ending')
       flow.channel.fc.closeValve()
       self.ui.setCurrentPlate(self.ui.plate_main, replace=1)
 
       # record flow totals; save to user database
       flow.SetTicks(flow.channel.fc.readTicks())
       flow.end = time.time()
-      volume = self.ticksToVolunits(flow.Ticks())
+      volume = units.ticks_to_volunits(flow.Ticks())
 
       # log the drink
       d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=int(flow.start),
@@ -389,13 +390,13 @@ class KegBot:
 
       # post-processing steps
       self.GenGrantCharges(d)
-      self.BACCalculate(d)
-      self.BingeUpdate(d)
+      Backend.BAC.ProcessDrink(d)
+      Backend.Binge.Assign(d)
 
       # update the UI
       ounces = round(units.to_ounces(volume),2)
       self.ui.setLastDrink(d)
-      self.info('flow','drink total: %i ticks, %i volunits, %.2f ounces' %
+      self.logger.info('flow: drink total: %i ticks, %i volunits, %.2f ounces' %
             (flow.Ticks(), volume, ounces))
 
       # de-auth the user. this may need to be configurable down the line..
@@ -447,49 +448,22 @@ class KegBot:
 
       if vol_remain > 0:
          # TODO: charge to default grant
-         print 'ERROR: volume not charged: %i' % vol_remain
-
-   def BingeUpdate(self, d):
-      """ Create or update a binge given a recent drink """
-      Backend.Binge.Assign(d)
-
-   def BACCalculate(self, d):
-      """ Store a BAC value given a recent drink """
-      Backend.BAC.ProcessDrink(d)
+         self.logger.warning('flow: volume not charged: %i' % vol_remain)
 
    def timeoutUser(self, user):
       """ Callback executed when a user goes idle """
       self.DeauthUser(user.username)
 
-   ### volume related helper functions
-   def ticksToVolunits(self, ticks):
-      return ticks
-
-   ### logging related helper functions
-   def log(self,component,message):
-      self.main_logger.info("%s: %s" % (component,message))
-
-   def info(self,component,message):
-      self.main_logger.info("%s: %s" % (component,message))
-
-   def warning(self,component,message):
-      self.main_logger.warning("%s: %s" % (component,message))
-
-   def error(self,component,message):
-      self.main_logger.error("%s: %s" % (component,message))
-
-   def critical(self,component,message):
-      self.main_logger.critical("%s: %s" % (component,message))
-
 
 # start a new kegbot instance, if we are called from the command line
 if __name__ == '__main__':
    if sys.version_info < (2,3):
-      print 'kegbot requires Python 2.3 or later; aborting'
+      print>>sys.stderr, 'kegbot requires Python 2.3 or later; aborting'
       sys.exit(1)
    if flags.daemon:
+      print 'Running in background'
       util.daemonize()
    else:
-      print "Running in foreground"
+      print 'Running in foreground'
    KegBot()
 

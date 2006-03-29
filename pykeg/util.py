@@ -1,4 +1,5 @@
 import os
+import sys
 
 class NoOpObject:
    def NoOp(self, *args, **kwargs):
@@ -15,19 +16,12 @@ def daemonize():
    # Fork twice
    if os.fork() != 0:
       os._exit(0)
-   os.chdir("/")
+   #os.chdir("/")
    os.umask(0)
 
-   try:
-      maxfd = os.sysconf("SC_OPEN_MAX")
-   except (AttributeError, ValueError):
-      maxfd = 256
-
-   for fd in range(0, maxfd):
-      try:
-         os.close(fd)
-      except OSError:
-         pass
+   os.close(sys.__stdin__.fileno())
+   os.close(sys.__stdout__.fileno())
+   os.close(sys.__stderr__.fileno())
 
    os.open('/dev/null', os.O_RDONLY)
    os.open('/dev/null', os.O_RDWR)

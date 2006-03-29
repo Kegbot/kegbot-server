@@ -8,14 +8,6 @@ WHAT IS HERE?
    python stuff that forms the glue between the Kegboard controller board and
    the back end (presently a MySQL database.)
 
-HACKING KEGBOT
-
-   Some of this code could be improved. Parts are painfully old, lack any design
-   or coherence, etc. It is probably true that some stuff has crept in to the
-   code while, ah, 'debugging' the kegerator. I do have some plans to move
-   things to a modular and event-driven runtime, more suitable for add-ons and
-   such, but I haven't had much time to see this to fruition.
-
 HOW TO SETUP KEGBOT
 
    Kegbot isn't quite there yet with a nice general-purpose installer, but try

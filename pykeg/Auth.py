@@ -16,6 +16,8 @@ class GenericIBAuth:
       self.QUIT = quit_event
       self.logger = logger
 
+      self.ownet = None
+
       self.ibs = []
       self._allibs = {}
 
@@ -46,7 +48,7 @@ class GenericIBAuth:
       if not user:
          return
       self.logger.info('key %s user %s is gone' % (ibid, user.username))
-      self.owner.deauthUser(user.username)
+      self.owner.DeauthUser(user.username)
 
    def _PresenceEvent(self, ibid):
       matches = Backend.Token.selectBy(keyinfo=ibid)
@@ -54,13 +56,16 @@ class GenericIBAuth:
          return
       user = matches[0].user
       self.logger.info('key %s belongs to user %s' % (ibid, user.username))
-      self.owner.authUser(user.username)
+      self.owner.AuthUser(user.username)
 
    def _RefreshLoop(self):
       """ Periodically update self.ibs with the current ibutton list. """
       while not self.QUIT.isSet():
-         self._UpdateState(self._GetPresentIDs())
-         time.sleep(self.refresh_timeout)
+         try:
+            self._UpdateState(self._GetPresentIDs())
+            time.sleep(self.refresh_timeout)
+         except:
+            traceback.print_exc()
       self.logger.info('quit')
 
    def start(self):
@@ -87,7 +92,10 @@ class SerialIBAuth(GenericIBAuth):
       return True
 
    def _GetPresentIDs(self):
-      return [ib.read_id() for ib in self.ownet.refresh()]
+      if self.ownet is not None:
+         return [ib.read_id() for ib in self.ownet.refresh()]
+      else:
+         return []
 
 
 class USBIBAuth(GenericIBAuth):
@@ -104,6 +112,9 @@ class USBIBAuth(GenericIBAuth):
       return True
 
    def _GetPresentIDs(self):
-      return map(str, self.ownet.GetIDs())
+      if self.ownet is not None:
+         return map(str, self.ownet.GetIDs())
+      else:
+         return []
 
 

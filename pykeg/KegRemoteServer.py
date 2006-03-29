@@ -14,7 +14,7 @@ class KegRemoteServer(threading.Thread):
       self.QUIT = threading.Event()
       threading.Thread.__init__(self)
 
-      self.kegbot.log('rserver',"remote server started on http://%s:%s" % (host,port))
+      #self.kegbot.log('rserver',"remote server started on http://%s:%s" % (host,port))
 
       # set up xml-rpc server
       self.functions = KegRemoteFunctions(kegbot,self)

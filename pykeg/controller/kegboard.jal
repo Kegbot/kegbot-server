@@ -172,6 +172,69 @@ procedure read_temp(byte out ls, byte out ms) is begin
   ow_reset
 end procedure
 
+procedure asynch_send_bit(bit in b) is begin
+  -- convert a bit to a byte
+  if b then
+     asynch_send_hw( 1 )
+  else
+     asynch_send_hw( 0 )
+  end if
+end procedure
+
+function byte_div_10(byte in b) return byte is begin
+   var byte ret = 0
+   var byte tmp = b
+   tmp = tmp - 10
+   while tmp <= b loop
+      ret = ret + 1
+      tmp = tmp - 10
+   end loop
+   return ret
+end function
+
+function byte_div_100(byte in b) return byte is begin
+   if b >= 200 then
+      return 2
+   elsif b >= 100 then
+      return 1
+   else
+      return 0
+   end if
+end function
+
+procedure byte_to_dec(byte in b, byte out x, byte out y, byte out z) is begin
+   var byte tmp = b
+
+   x = byte_div_100(b)
+
+   for x loop
+      tmp = tmp - 100
+   end loop
+   y = byte_div_10(tmp)
+
+   for y loop
+      tmp = tmp - 10
+   end loop
+   z = tmp
+end procedure
+
+procedure int_to_ascii(byte in out b) is begin
+   b = b + 0x48
+end procedure
+
+procedure asynch_send_ascii(byte in b) is begin
+   var byte x
+   var byte y
+   var byte z
+   byte_to_dec(b,x,y,z)
+   int_to_ascii(x)
+   int_to_ascii(y)
+   int_to_ascii(z)
+   asynch_send_hw(x)
+   asynch_send_hw(y)
+   asynch_send_hw(z)
+end procedure
+
 -- -----------------------------------------------------------------------------
 -- STARTUP/SELF-TEST
 -- -----------------------------------------------------------------------------
@@ -189,37 +252,31 @@ end procedure
 -- MAIN LOOP
 -- -----------------------------------------------------------------------------
 
-var byte x
-var byte lstemp = 0xff
-var byte mstemp = 0xff
-var byte loop_count = 0
-var byte fridgestatus = 2
-var byte valvestatus = 0
-var byte tmp_low = 0
-var byte tmp_high = 0
+var byte chr
+var byte lstemp       = 0xff
+var byte mstemp       = 0xff
+var byte loop_count   = 0
+var byte status_count = 0
+var byte tmp_low      = 0
+var byte tmp_high     = 0
+
 var bit sendstatus = high
 
 forever loop
   -- handle serial events
-  if asynch_read_hw(x) & high then
-    -- assume we have a known command, so send the status afterward (clear
-    -- in catch-all else block at bottom)
+  if asynch_read_hw(chr) & high then
     sendstatus = high
-    if x == CMD_STATUS then
+    if chr == CMD_STATUS then
       sendstatus = high -- redundant
-    elsif x == CMD_VALVEON then
-      valvestatus = 1
+    elsif chr == CMD_VALVEON then
       rly0_pin = high
-    elsif x == CMD_VALVEOFF then
-      valvestatus = 0
+    elsif chr == CMD_VALVEOFF then
       rly0_pin = low
-    elsif x == CMD_FRIDGEON then
+    elsif chr == CMD_FRIDGEON then
       rly1_pin = high
-      fridgestatus = 1
-    elsif x == CMD_FRIDGEOFF then
+    elsif chr == CMD_FRIDGEOFF then
       rly1_pin = low
-      fridgestatus = 0
-    elsif x == CMD_READTEMP then
+    elsif chr == CMD_READTEMP then
       read_temp(lstemp, mstemp)
     else
       sendstatus = low
@@ -228,9 +285,27 @@ forever loop
 
   -- read temperature approx once every 5s
   if loop_count == 0 then
-      read_temp(lstemp, mstemp)
+     -- but only if valve is not enabled (too intrusive)
+      if rly0_pin == low then
+         read_temp(lstemp, mstemp)
+      end if
   end if
   loop_count = loop_count + 1
+
+  -- send status ~1x/second in idle mode
+  if status_count == 50 then
+     sendstatus = high
+     status_count = 0
+  end if
+
+  -- send status ~5x/second if valve pouring
+  if rly0_pin == high then
+     if status_count == 10 then
+        sendstatus = high
+        status_count = 0
+     end if
+  end if
+  status_count = status_count + 1
 
   if sendstatus == high then
     sendstatus = low
@@ -246,8 +321,8 @@ forever loop
     asynch_send_hw( CMD_START_1 )
 
     asynch_send_hw( PKT_TYPE_STATUS )
-    asynch_send_hw( fridgestatus )
-    asynch_send_hw( valvestatus )
+    asynch_send_bit( rly1_pin )
+    asynch_send_bit( rly0_pin )
     asynch_send_hw( tmp_high )
     asynch_send_hw( tmp_low )
     asynch_send_hw( mstemp )
@@ -257,9 +332,8 @@ forever loop
     asynch_send_hw( CMD_END_1 )
     flow_low = 0
     flow_high = 0
-  else
-     delay_10ms(2)
   end if
+  delay_10ms(2)
 
 end loop
 

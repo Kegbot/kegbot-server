@@ -1,3 +1,5 @@
+-- original source: http://groups.yahoo.com/group/jallist/files/
+
 -- DalSemi 1-Wire library for JAL
 -- P. Pemberton. Licensed under the LGPL.
 -- Uses a single I/O pin and a 4k7 pullup to communicate over the 1-Wire bus.
@@ -6,20 +8,12 @@
 -- 2x DS1990A-F5 "Serial Number iButton"
 -- 2x DS1973-F3 "EEPROM iButton"
 
-          include   1wirep
+-- Following bits should be defined in your program:
+--
+-- var volatile bit _1w_dq is pin_a2
+-- var volatile bit _1w_dq_dir is pin_a2_direction
 
-procedure _1w_delay(byte in dlp) is
-var byte Delay
-  assembler
-    local DelayLoop
-      movf dlp, w
-      movwf Delay
-    DelayLoop:
-      nop
-      decfsz Delay, f
-      goto DelayLoop
-  end assembler
-end procedure
+include jdelay
 
 -- Generates a reset pulse on the 1-Wire bus
 -- Return values:
@@ -33,7 +27,7 @@ function _1w_reset return byte is
     return 2                            -- Yes. Exit with errorcode 2
   end if
   _1w_dq_dir = output                   -- Reset pulse
-  _1w_delay(192)                        -- Short delay
+  delay_500us()
   _1w_dq_dir = input                    -- Allow bus to float high
   assembler                             -- Allow for rise time
    nop
@@ -66,11 +60,11 @@ procedure _1w_writebyte(byte in ib) is
       -- Output a "1"
       _1w_dq_dir = output               -- Momentary low
       _1w_dq_dir = input
-      _1w_delay(20)                     -- 60uS delay
+      delay_20uS(3)                     -- 60uS delay
     else
       -- Output a "0"
       _1w_dq_dir = output               -- 60uS low
-      _1w_delay(20)
+      delay_20uS(3)
       _1w_dq_dir = input
     end if
   end loop
@@ -90,7 +84,7 @@ function _1w_readbyte return byte is
       status_c = high                   -- it's high.
       asm rrf temp, f
     end if
-    _1w_delay(20)                       -- timeslot delay
+    delay_20uS(3)                       -- timeslot delay
   end loop
   return temp
 end function

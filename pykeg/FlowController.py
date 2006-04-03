@@ -155,8 +155,14 @@ class FlowController(threading.Thread):
 
    def recvPacket(self):
       line = self._devpipe.readline()
+      if line == '':
+         self.logger.error('ERROR: Flow device went away; exiting!')
+         sys.exit(1)
       if not line.startswith('M:'):
-         self.logger.info('no start of packet; ignoring!')
+         if line.startswith('K'):
+            self.logger.info('Found board: %s' % line[:-2])
+         else:
+            self.logger.info('no start of packet; ignoring!')
          return None
       if not line.endswith('\r\n'):
          self.logger.info('bad trailer; ignoring!')

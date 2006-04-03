@@ -24,13 +24,25 @@ const baudrate     = 115_200
 include rs232_hw
 
 -- -----------------------------------------------------------------------------
+-- 1wire setup and include
+-- -----------------------------------------------------------------------------
+-- a0 = real pin, a3= debug pin
+var volatile bit _1w_dq is pin_a2
+var volatile bit _1w_dq_dir is pin_a2_direction
+include 1wire
+
+
+-- -----------------------------------------------------------------------------
 -- hardware configuration
 -- -----------------------------------------------------------------------------
 var volatile bit rly0_pin is pin_b4
 var volatile bit rly0_pin_direction is pin_b4_direction
+
 var volatile bit rly1_pin is pin_b5
 var volatile bit rly1_pin_direction is pin_b5_direction
 
+var volatile bit led0_pin is pin_a4
+var volatile bit led0_pin_direction is pin_a4_direction
 
 -- -----------------------------------------------------------------------------
 -- aliases for pic registers
@@ -69,7 +81,7 @@ const byte PKT_TYPE_STATUS = 0x01 -- a status packet
 -- -----------------------------------------------------------------------------
 -- INITIAL PIN STATE
 -- -----------------------------------------------------------------------------
-port_a_direction = all_output
+; port_a_direction = all_output
 
 -- valve output pins
 rly0_pin_direction = output
@@ -133,25 +145,60 @@ _CCP1IE      = high         -- enable ccp interrupt
 ;intcon_eeie = high         -- RISING EDGE triggered
 bank_0
 
--- serial input
-var byte x
-var byte temp
-var bit pushticks = low
-var byte fridgestatus = 2
-var byte valvestatus = 0
-var bit sendstatus = high
-
--- temporary tick bytes
-var byte tmp_low = 0
-var byte tmp_high = 0
-
 -- disable the solenoid
 rly0_pin = off
 rly1_pin = off
 
 -- -----------------------------------------------------------------------------
+-- procedures
+-- -----------------------------------------------------------------------------
+function ow_reset return byte is
+  var byte temp = 1
+  while (temp != 0) loop
+    temp = _1w_reset
+  end loop
+end function
+
+
+procedure read_temp(byte out ls, byte out ms) is begin
+  _1w_writebyte(0xCC)         -- Skip ROM
+  _1w_writebyte(0x44)         -- Convert T
+  _1w_waitconv                -- Conversion delay
+  _1w_reset                   -- Reset
+  _1w_writebyte(0xCC)         -- Skip ROM
+  _1w_writebyte(0xBE)         -- Read ScratchPad
+  ls = _1w_readbyte
+  ms = _1w_readbyte
+  ow_reset
+end procedure
+
+-- -----------------------------------------------------------------------------
+-- STARTUP/SELF-TEST
+-- -----------------------------------------------------------------------------
+
+-- led0_pin = on
+-- delay_1s()
+-- led0_pin = off
+-- delay_1s()
+-- led0_pin = on
+-- delay_1s()
+-- led0_pin = off
+-- delay_1s()
+
+-- -----------------------------------------------------------------------------
 -- MAIN LOOP
 -- -----------------------------------------------------------------------------
+
+var byte x
+var byte lstemp = 0xff
+var byte mstemp = 0xff
+var byte loop_count = 0
+var byte fridgestatus = 2
+var byte valvestatus = 0
+var byte tmp_low = 0
+var byte tmp_high = 0
+var bit sendstatus = high
+
 forever loop
   -- handle serial events
   if asynch_read_hw(x) & high then
@@ -172,19 +219,18 @@ forever loop
     elsif x == CMD_FRIDGEOFF then
       rly1_pin = low
       fridgestatus = 0
+    elsif x == CMD_READTEMP then
+      read_temp(lstemp, mstemp)
     else
       sendstatus = low
     end if
   end if
 
-  -- send a status packet.
-
-  -- the format is (one byte per []):
-  -- ["M"][":"]
-  -- [PKT_TYPE=status]
-  -- [relay status bitmask]
-  -- [newticks_high][newticks_low]
-  -- ["\r"]["\n"]
+  -- read temperature approx once every 5s
+  if loop_count == 0 then
+      read_temp(lstemp, mstemp)
+  end if
+  loop_count = loop_count + 1
 
   if sendstatus == high then
     sendstatus = low
@@ -204,11 +250,15 @@ forever loop
     asynch_send_hw( valvestatus )
     asynch_send_hw( tmp_high )
     asynch_send_hw( tmp_low )
+    asynch_send_hw( mstemp )
+    asynch_send_hw( lstemp )
 
     asynch_send_hw( CMD_END_0 )
     asynch_send_hw( CMD_END_1 )
     flow_low = 0
     flow_high = 0
+  else
+     delay_10ms(2)
   end if
 
 end loop

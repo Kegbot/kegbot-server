@@ -16,6 +16,10 @@ pragma target fuses       0x3F22
 -- 3F62  off off on    mclr off  off hs          default
 -- -----------------------------------------------------------
 
+const byte KB_FW_MAJOR = "1"
+const byte KB_FW_MINOR = "1"
+const byte KB_FW_MACRO = "0"
+
 -- -----------------------------------------------------------------------------
 -- rs232 hardware setup and include
 -- -----------------------------------------------------------------------------
@@ -235,9 +239,34 @@ procedure asynch_send_ascii(byte in b) is begin
    asynch_send_hw(z)
 end procedure
 
+procedure init_message is begin
+   asynch_send_hw("K")
+   asynch_send_hw("e")
+   asynch_send_hw("g")
+   asynch_send_hw("b")
+   asynch_send_hw("o")
+   asynch_send_hw("a")
+   asynch_send_hw("r")
+   asynch_send_hw("d")
+   asynch_send_hw(" ")
+   asynch_send_hw("F")
+   asynch_send_hw("W")
+   asynch_send_hw(" ")
+   asynch_send_hw(KB_FW_MAJOR)
+   asynch_send_hw(".")
+   asynch_send_hw(KB_FW_MINOR)
+   asynch_send_hw(".")
+   asynch_send_hw(KB_FW_MACRO)
+   asynch_send_hw(" ")
+   asynch_send_hw(ASCII_CR)
+   asynch_send_hw(ASCII_LF)
+end procedure
+
 -- -----------------------------------------------------------------------------
 -- STARTUP/SELF-TEST
 -- -----------------------------------------------------------------------------
+
+init_message()
 
 -- led0_pin = on
 -- delay_1s()

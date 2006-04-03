@@ -1,6 +1,8 @@
+import logging
 import os
 import random
 import select
+import sys
 import threading
 import time
 import traceback
@@ -68,7 +70,7 @@ class FlowController(threading.Thread):
       failing this simple size and boundary check qill be discarded
    
    """
-   def __init__(self,dev,logger,rate=115200):
+   def __init__(self, dev, logger=None, rate=115200):
       threading.Thread.__init__(self)
       self.QUIT = threading.Event()
 
@@ -86,6 +88,11 @@ class FlowController(threading.Thread):
       self.dev = dev
       self.rate = rate
       self._lock = threading.Lock()
+      if not logger:
+         logger = logging.getLogger('FlowController')
+         hdlr = logging.StreamHandler(sys.stdout)
+         logger.addHandler(hdlr)
+         logger.setLevel(logging.DEBUG)
       self.logger = logger
       self.total_ticks = 0
       self.last_fridge_time = 0
@@ -128,12 +135,17 @@ class FlowController(threading.Thread):
       self._lock.release()
 
    def enableFridge(self):
-      if time.time() - self.last_fridge_time < 300:
-         self.logger.warn('fridge ON event requested too soon; ignoring')
-         return
+      #if time.time() - self.last_fridge_time < 300:
+      #   self.logger.warn('fridge ON event requested too soon; ignoring')
+      #   return
       self.last_fridge_time = time.time()
       self._lock.acquire()
       self._devpipe.write(self.CMD_FRIDGEON)
+      self._lock.release()
+
+   def updateTemp(self):
+      self._lock.acquire()
+      self._devpipe.write(self.CMD_READTEMP)
       self._lock.release()
 
    def disableFridge(self):
@@ -142,26 +154,14 @@ class FlowController(threading.Thread):
       self._lock.release()
 
    def recvPacket(self):
-      #self._lock.acquire()
-      fd = self._devpipe.fileno()
-
-      # gobble up ending boundary
-      c = os.read(fd,2)
-      if c != "M:":
-         self.logger.info("no message start found, gobbling")
-         while 1:
-            c = os.read(fd,1)
-            if c != '\n':
-               continue
-            else:
-               #self._lock.release()
-               self.logger.info("end of bad packet; returning")
-               return
-
-      # now, c should contain the start of a packet
-      pkt = os.read(fd,7)
-      #self._lock.release()
-      self.status = StatusPacket(map(ord,pkt))
+      line = self._devpipe.readline()
+      if not line.startswith('M:'):
+         self.logger.info('no start of packet; ignoring!')
+         return None
+      if not line.endswith('\r\n'):
+         self.logger.info('bad trailer; ignoring!')
+         return None
+      self.status = StatusPacket(map(ord, line[2:-2]))
       self.total_ticks += self.status.ticks
       return self.status
 
@@ -172,27 +172,17 @@ class FlowController(threading.Thread):
 
    def statusLoop(self):
       """ asynchronous fetch loop for the flow controller """
-      timeout=0.1
-      last_time = 0
       try:
          self.logger.info('status loop starting')
-         self.getStatus()
          while not self.QUIT.isSet():
-            (rr,wr,xr) = select.select([self._devpipe],[],[],0.0)
+            rr, wr, xr = select.select([self._devpipe],[],[],1.0)
             if len(rr):
-               last_time = time.time()
-               try:
-                  p = self.recvPacket()
-                  self.logger.info('read status packet ' + str(p))
-               except:
-                  self.logger.warning('packet read error')
-                  traceback.print_exc()
-            if self.status and self.status.ValveOpen() and time.time()-last_time >= 0.3:
-               self.getStatus()
-            time.sleep(timeout)
+               p = self.recvPacket()
          self.logger.info('status loop exiting')
       except:
+         self.logger.error('packet read error')
          traceback.print_exc()
+
 
 class StatusPacket:
    FRIDGE_OFF = 0
@@ -203,9 +193,18 @@ class StatusPacket:
    VALVE_OPEN = 1
 
    def __init__(self, pkt):
+      self.temp = self._ConvertTemp(pkt[5], pkt[6])
       self.ticks = pkt[3]*256 + pkt[4]
       self.fridge = pkt[1]
       self.valve = pkt[2]
+
+   def _ConvertTemp(self, msbyte, lsbyte):
+      # XXX: assuming 12 bit mode
+      val = (msbyte & 0x7)*256 + lsbyte
+      val = val * 0.0625
+      if msbyte >> 3 != 0:
+         val = -1 * val
+      return val
 
    def ValveOpen(self):
       return self.valve == self.VALVE_OPEN
@@ -220,7 +219,7 @@ class StatusPacket:
       return self.fridge == self.FRIDGE_OFF
 
    def __str__(self):
-      return '<StatusPacket: ticks=%i fridge=%s valve=%s>' % (self.ticks, self.fridge, self.valve)
+      return '<StatusPacket: ticks=%i fridge=%s valve=%s temp=%.03f>' % (self.ticks, self.fridge, self.valve, self.temp)
 
 class FlowSimulator:
    """ a fake flowcontroller that pours a slow drink """

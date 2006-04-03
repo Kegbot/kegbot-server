@@ -38,7 +38,6 @@
 --   - original release
 -- --------------------------------------------------------------------
 
-
 -- -----------------------------------------------------------------------------
 -- <Example RS232
 ; -- define settings
@@ -54,6 +53,18 @@
 ;   ... do other things here
 ; end loop
 -- -----------------------------------------------------------------------------
+
+include jpic
+var volatile byte SPBRG is f877_spbrg
+var volatile byte TXSTA is f877_txsta
+var volatile byte RCSTA is f877_rcsta
+var volatile byte TXREG is f877_txreg
+var volatile byte RCREG is f877_rcreg
+var volatile bit _b_BRGH is brgh
+
+var volatile byte _PIE1 is f877_pie1
+var volatile bit _b_RCIE at f877_pie1 : 5
+var volatile bit _b_TXIE at f877_pie1 : 4
 
 
 -- <code
@@ -135,9 +146,11 @@ procedure _calculate_and_set_Baudrate is
 
     -- now set baudrate high-low bit in TXSTA
     if baudrate_high then
-      TXSTA = TXSTA | _b_BRGH         -- set baudrate-high flag
+      _b_BRGH = high
+      -- TXSTA = TXSTA | _b_BRGH         -- set baudrate-high flag
     else
-      TXSTA = TXSTA & ! ( _b_BRGH )   -- clear baudarte-high flag
+      _b_BRGH = low
+      -- TXSTA = TXSTA & ! ( _b_BRGH )   -- clear baudarte-high flag
     end if
 
 
@@ -196,8 +209,10 @@ end procedure
 -- --------------------------------------------------------------------
 procedure SPI_init is
   -- disable all USART interrupts
-  _PIE1 = _PIE1 & (! _b_RCIE)
-  _PIE1 = _PIE1 & (! _b_TXIE)
+  _b_RCIE = low
+  _b_TXIE = low
+  -- _PIE1 = _PIE1 & (! _b_RCIE)
+  -- _PIE1 = _PIE1 & (! _b_TXIE)
 ;intcon = 0
 
   -- Load baudrate generator
@@ -242,8 +257,10 @@ end procedure
 -- --------------------------------------------------------------------
 procedure asynch_init_hw is
   -- disable all USART interrupts
-  _PIE1 = _PIE1 & (! _b_RCIE)
-  _PIE1 = _PIE1 & (! _b_TXIE)
+  _b_RCIE = low
+  _b_TXIE = low
+  -- _PIE1 = _PIE1 & (! _b_RCIE)
+  -- _PIE1 = _PIE1 & (! _b_TXIE)
 ;intcon = 0
 
   -- Enable transmitter : TXEN=1

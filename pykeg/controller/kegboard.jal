@@ -219,7 +219,7 @@ procedure byte_to_dec(byte in b, byte out x, byte out y, byte out z) is begin
 end procedure
 
 procedure int_to_ascii(byte in out b) is begin
-   b = b + 0x48
+   b = b + 0x30
 end procedure
 
 procedure asynch_send_ascii(byte in b) is begin

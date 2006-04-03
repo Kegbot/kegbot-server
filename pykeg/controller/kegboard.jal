@@ -2,34 +2,56 @@
 -- (c) mike wakerly 2003-2006
 -- http://hoho.com/mike/kegbot
 
-include 16f628_defs
-include delay_20mc
+include 16f628_20
+include jdelay
 include jascii
 
+pragma target fuses       0x3F22
+-- --------------------------------------------------------------------
+-- word  cpd lvp boden mclr pwrt wdt osc         observation
+-- 3FC1  off on  on    io   off  off xt
+-- 3FD0  off on  on    io   off  off intrc+io
+-- 3FF0  off on  on    mclr off  off intrc+io
+-- 3F22  off off off   mclr off  off hs
+-- 3F62  off off on    mclr off  off hs          default
+-- -----------------------------------------------------------
+
 -- -----------------------------------------------------------------------------
--- copy of rs232_hw_ins
+-- rs232 hardware setup and include
 -- -----------------------------------------------------------------------------
-    const usart_asynch = true      ;true = RS232, false = SPI
-    const baudrate     = 115_200   ;Baudrate
-    -- Here all the routines are made available
-    -- and the initialization is called based upon the above parameters
-    -- Because the hardware USART is used no pin declarations are needed
-    include rs232_hw
+const usart_asynch = true      -- true = RS232, false = SPI
+const baudrate     = 115_200
+include rs232_hw
+
 -- -----------------------------------------------------------------------------
--- END of copy of rs232_hw_ins
+-- hardware configuration
 -- -----------------------------------------------------------------------------
+var volatile bit rly0_pin is pin_b4
+var volatile bit rly0_pin_direction is pin_b4_direction
+var volatile bit rly1_pin is pin_b5
+var volatile bit rly1_pin_direction is pin_b5_direction
+
+
+-- -----------------------------------------------------------------------------
+-- aliases for pic registers
+-- -----------------------------------------------------------------------------
+var volatile byte CMCON is f877_adcon0
+var volatile byte CCP1CON is f877_ccp1con
+
+var volatile bit  CCP1IF  at f877_pir1 : 2
+var volatile bit  _CCP1IE at f877_pie1 : 2
 
 -- -----------------------------------------------------------------------------
 -- CONTROL COMMANDS
 -- -----------------------------------------------------------------------------
-const byte CMD_STATUS = 0x81 -- just send the current status
-const byte CMD_VALVEON = 0x83 -- enable solenoid valve
-const byte CMD_VALVEOFF = 0x84 -- disable solenoid valve
-const byte CMD_PUSHTICKS = 0x87 -- enable pushing of ticks
+const byte CMD_STATUS      = 0x81 -- just send the current status
+const byte CMD_VALVEON     = 0x83 -- enable solenoid valve
+const byte CMD_VALVEOFF    = 0x84 -- disable solenoid valve
+const byte CMD_PUSHTICKS   = 0x87 -- enable pushing of ticks
 const byte CMD_NOPUSHTICKS = 0x88 -- disable pushing of ticks
-const byte CMD_FRIDGEON = 0x90 -- enable the freezer relay
-const byte CMD_FRIDGEOFF = 0x91 -- disable the freezer relay
-const byte CMD_READTEMP = 0x93 -- unused, yet
+const byte CMD_FRIDGEON    = 0x90 -- enable the freezer relay
+const byte CMD_FRIDGEOFF   = 0x91 -- disable the freezer relay
+const byte CMD_READTEMP    = 0x93 -- unused, yet
 
 -- -----------------------------------------------------------------------------
 -- FRAMING CONSTANTS
@@ -50,9 +72,8 @@ const byte PKT_TYPE_STATUS = 0x01 -- a status packet
 port_a_direction = all_output
 
 -- valve output pins
-pin_b4_direction = output
-pin_b5_direction = output
-pin_b6_direction = output
+rly0_pin_direction = output
+rly1_pin_direction = output
 
 -- configure ccp input
 pin_b3_direction = input
@@ -102,14 +123,14 @@ end procedure
 -- INTERRUPT CONFIG
 -- -----------------------------------------------------------------------------
 bank_1
-GIE  = high         -- enable global interrupts
-RBIE = low          -- DISABLE interrupts on change
-T0IE = low          -- DISABLE tmr0 interrupts
-INTE = low          -- disable external interrupt (on rb0)
-INTF = low          -- clear INT flag
-;intcon_eeie = high -- RISING EDGE triggered
-_CCP1IE = high      -- enable ccp interrupt
-PEIE = high         -- enable perhipheral interrupt (ccp)
+intcon_gie   = high         -- enable global interrupts
+intcon_rbie  = low          -- DISABLE interrupts on change
+intcon_t0ie  = low          -- DISABLE tmr0 interrupts
+intcon_inte  = low          -- disable external interrupt (on rb0)
+intcon_intf  = low          -- clear INT flag
+intcon_peie  = high         -- enable perhipheral interrupt (ccp)
+_CCP1IE      = high         -- enable ccp interrupt
+;intcon_eeie = high         -- RISING EDGE triggered
 bank_0
 
 -- serial input
@@ -125,9 +146,8 @@ var byte tmp_low = 0
 var byte tmp_high = 0
 
 -- disable the solenoid
-pin_b4 = off
-
--- don't change the fridge
+rly0_pin = off
+rly1_pin = off
 
 -- -----------------------------------------------------------------------------
 -- MAIN LOOP
@@ -142,21 +162,15 @@ forever loop
       sendstatus = high -- redundant
     elsif x == CMD_VALVEON then
       valvestatus = 1
-      pin_b4 = high
+      rly0_pin = high
     elsif x == CMD_VALVEOFF then
       valvestatus = 0
-      pin_b4 = low
+      rly0_pin = low
     elsif x == CMD_FRIDGEON then
-      pin_b5 = off
-      pin_b6 = on
-      delay_100ms( 1 )
-      pin_b6 = off
+      rly1_pin = high
       fridgestatus = 1
     elsif x == CMD_FRIDGEOFF then
-      pin_b6 = off
-      pin_b5 = on
-      delay_100ms( 1 )
-      pin_b5 = off
+      rly1_pin = low
       fridgestatus = 0
     else
       sendstatus = low
@@ -193,8 +207,8 @@ forever loop
 
     asynch_send_hw( CMD_END_0 )
     asynch_send_hw( CMD_END_1 )
-    count_low = 0
-    count_high = 0
+    flow_low = 0
+    flow_high = 0
   end if
 
 end loop

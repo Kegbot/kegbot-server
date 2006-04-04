@@ -35,7 +35,6 @@ var volatile bit _1w_dq is pin_a2
 var volatile bit _1w_dq_dir is pin_a2_direction
 include 1wire
 
-
 -- -----------------------------------------------------------------------------
 -- hardware configuration
 -- -----------------------------------------------------------------------------
@@ -60,14 +59,12 @@ var volatile bit  _CCP1IE at f877_pie1 : 2
 -- -----------------------------------------------------------------------------
 -- CONTROL COMMANDS
 -- -----------------------------------------------------------------------------
-const byte CMD_STATUS      = 0x81 -- just send the current status
-const byte CMD_VALVEON     = 0x83 -- enable solenoid valve
-const byte CMD_VALVEOFF    = 0x84 -- disable solenoid valve
-const byte CMD_PUSHTICKS   = 0x87 -- enable pushing of ticks
-const byte CMD_NOPUSHTICKS = 0x88 -- disable pushing of ticks
-const byte CMD_FRIDGEON    = 0x90 -- enable the freezer relay
-const byte CMD_FRIDGEOFF   = 0x91 -- disable the freezer relay
-const byte CMD_READTEMP    = 0x93 -- unused, yet
+const byte CMD_STATUS      = 0x53 -- (S) just send the current status
+const byte CMD_VALVEON     = 0x56 -- (V) enable solenoid valve
+const byte CMD_VALVEOFF    = 0x76 -- (v) disable solenoid valve
+const byte CMD_FRIDGEON    = 0x46 -- (F) enable the freezer relay
+const byte CMD_FRIDGEOFF   = 0x66 -- (f) disable the freezer relay
+const byte CMD_READTEMP    = 0x54 -- (T) initiate a temperature read immediately
 
 -- -----------------------------------------------------------------------------
 -- FRAMING CONSTANTS
@@ -80,7 +77,7 @@ const byte CMD_END_1 = ASCII_LF   -- "\n"
 -- -----------------------------------------------------------------------------
 -- PACKET TYPES
 -- -----------------------------------------------------------------------------
-const byte PKT_TYPE_STATUS = 0x01 -- a status packet
+const byte PKT_TYPE_STATUS = "S" -- a status packet
 
 -- -----------------------------------------------------------------------------
 -- INITIAL PIN STATE
@@ -116,10 +113,8 @@ CCP1CON = 0b_0000_0101
 -- VARIABLES
 -- -----------------------------------------------------------------------------
 var byte flow_low = 0
+var byte flow_mid = 0
 var byte flow_high = 0
-var volatile byte counter_low = 0
-var volatile byte counter_mid = 0
-var volatile byte counter_high = 0
 
 -- -----------------------------------------------------------------------------
 -- PULSE COUNTER ISR
@@ -127,10 +122,16 @@ var volatile byte counter_high = 0
 procedure ISR is
   pragma interrupt
   ;bank_0
-  if CCP1IF == high then CCP1IF = low
+  if CCP1IF == high then
+    CCP1IF = low
     flow_low = flow_low + 1
-    if flow_low == 0 then
-      flow_high = flow_high + 1
+    if flow_low == 100 then
+       flow_low = 0
+       flow_mid = flow_mid + 1
+       if flow_mid == 100 then
+          flow_mid = 0
+          flow_high = flow_high + 1
+       end if
     end if
   end if
 end procedure
@@ -164,6 +165,7 @@ function ow_reset return byte is
 end function
 
 
+-- from phil p's 1wire.jal examples
 procedure read_temp(byte out ls, byte out ms) is begin
   _1w_writebyte(0xCC)         -- Skip ROM
   _1w_writebyte(0x44)         -- Convert T
@@ -176,97 +178,154 @@ procedure read_temp(byte out ls, byte out ms) is begin
   ow_reset
 end procedure
 
-procedure asynch_send_bit(bit in b) is begin
-  -- convert a bit to a byte
-  if b then
-     asynch_send_hw( 1 )
-  else
-     asynch_send_hw( 0 )
-  end if
-end procedure
-
-function byte_div_10(byte in b) return byte is begin
-   var byte ret = 0
-   var byte tmp = b
-   tmp = tmp - 10
-   while tmp <= b loop
-      ret = ret + 1
-      tmp = tmp - 10
-   end loop
-   return ret
-end function
-
-function byte_div_100(byte in b) return byte is begin
-   if b >= 200 then
-      return 2
-   elsif b >= 100 then
-      return 1
-   else
-      return 0
-   end if
-end function
-
+-- convert a byte to three bytes (each in range 0-9), representing base-10
+-- value of byte
 procedure byte_to_dec(byte in b, byte out x, byte out y, byte out z) is begin
    var byte tmp = b
 
-   x = byte_div_100(b)
-
-   for x loop
+   -- hundreds place
+   x = 0
+   while tmp >= 100 loop
+      x = x + 1
       tmp = tmp - 100
    end loop
-   y = byte_div_10(tmp)
 
-   for y loop
+   -- tens place
+   y = 0
+   while tmp >= 10 loop
+      y = y + 1
       tmp = tmp - 10
    end loop
+
+   -- ones place
    z = tmp
+
 end procedure
 
+-- convert a byte (on range 0-9) to ascii
 procedure int_to_ascii(byte in out b) is begin
    b = b + 0x30
 end procedure
 
-procedure asynch_send_ascii(byte in b) is begin
+-- send the string "on" or "off" depending on value of bit
+procedure asynch_send_on_off(bit in b) is begin
+   if b then
+      asynch_send_hw("o")
+      asynch_send_hw("n")
+   else
+      asynch_send_hw("o")
+      asynch_send_hw("f")
+      asynch_send_hw("f")
+   end if
+end procedure
+
+-- send a byte as a base-10 ascii sequence of up to 3 chars
+procedure asynch_send_ascii(byte in b, bit in pad_10 = low, bit in pad_100 = low) is begin
    var byte x
    var byte y
    var byte z
    byte_to_dec(b,x,y,z)
-   int_to_ascii(x)
-   int_to_ascii(y)
+
+   if x != 0 then
+      int_to_ascii(x)
+      asynch_send_hw(x)
+   elsif pad_100 then
+      int_to_ascii(x)
+      asynch_send_hw(x)
+   end if
+
+   if y != 0 then
+      int_to_ascii(y)
+      asynch_send_hw(y)
+   elsif pad_10 then
+      int_to_ascii(y)
+      asynch_send_hw(y)
+   end if
+
    int_to_ascii(z)
-   asynch_send_hw(x)
-   asynch_send_hw(y)
    asynch_send_hw(z)
 end procedure
 
-procedure init_message is begin
-   asynch_send_hw("K")
-   asynch_send_hw("e")
-   asynch_send_hw("g")
-   asynch_send_hw("b")
-   asynch_send_hw("o")
-   asynch_send_hw("a")
-   asynch_send_hw("r")
-   asynch_send_hw("d")
-   asynch_send_hw(" ")
-   asynch_send_hw("F")
-   asynch_send_hw("W")
-   asynch_send_hw(" ")
-   asynch_send_hw(KB_FW_MAJOR)
+procedure ds1820_12b_conv(byte in ms, byte in ls) is begin
+   -- there's got to be a better implementation than this.. wasteful
+   if (ms >> 4) != 0 then
+      asynch_send_hw("-")
+   end if
+   asynch_send_ascii( (ls >> 4) | ((ms << 4) & 0xf0) )
    asynch_send_hw(".")
-   asynch_send_hw(KB_FW_MINOR)
-   asynch_send_hw(".")
-   asynch_send_hw(KB_FW_MACRO)
-   asynch_send_hw(" ")
-   asynch_send_hw(ASCII_CR)
-   asynch_send_hw(ASCII_LF)
+   ls = ls & 0x0f
+   if ls == 0 then
+      asynch_send_hw("0")
+   elsif ls == 1 then
+      asynch_send_hw("0")
+      asynch_send_hw("6")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 2 then
+      asynch_send_hw("1")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 3 then
+      asynch_send_hw("1")
+      asynch_send_hw("8")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 4 then
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 5 then
+      asynch_send_hw("3")
+      asynch_send_hw("1")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 6 then
+      asynch_send_hw("3")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 7 then
+      asynch_send_hw("4")
+      asynch_send_hw("3")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 8 then
+      asynch_send_hw("5")
+   elsif ls == 9 then
+      asynch_send_hw("5")
+      asynch_send_hw("6")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 10 then
+      asynch_send_hw("6")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 11 then
+      asynch_send_hw("6")
+      asynch_send_hw("8")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 12 then
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 13 then
+      asynch_send_hw("8")
+      asynch_send_hw("1")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 14 then
+      asynch_send_hw("8")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 15 then
+      asynch_send_hw("9")
+      asynch_send_hw("3")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   end if
 end procedure
 
 -- -----------------------------------------------------------------------------
 -- STARTUP/SELF-TEST
 -- -----------------------------------------------------------------------------
-
-init_message()
 
 -- led0_pin = on
 -- delay_1s()
@@ -281,13 +340,14 @@ init_message()
 -- MAIN LOOP
 -- -----------------------------------------------------------------------------
 
-var byte chr
-var byte lstemp       = 0xff
-var byte mstemp       = 0xff
-var byte loop_count   = 0
-var byte status_count = 0
-var byte tmp_low      = 0
-var byte tmp_high     = 0
+var byte chr           = 0
+var byte lstemp        = 0xfe
+var byte mstemp        = 0xfe
+var byte loop_count    = 0
+var byte status_count  = 0
+var byte flow_low_tmp  = 0
+var byte flow_mid_tmp  = 0
+var byte flow_high_tmp = 0
 
 var bit sendstatus = high
 
@@ -336,31 +396,55 @@ forever loop
   end if
   status_count = status_count + 1
 
+  -- generate and send status packet
   if sendstatus == high then
     sendstatus = low
-    -- disable interrupts
-    -- GIE = low
-    tmp_low = flow_low
-    flow_low = 0
-    tmp_high = flow_high
-    flow_high = 0
-    -- GIE = high
 
+    -- save a copy of current ticks
+    intcon_gie = low
+    flow_low_tmp  = flow_low
+    flow_mid_tmp  = flow_mid
+    flow_high_tmp = flow_high
+    intcon_gie = high
+
+    -- preamble
     asynch_send_hw( CMD_START_0 )
     asynch_send_hw( CMD_START_1 )
+    asynch_send_hw( " " )
 
+    -- packet type
     asynch_send_hw( PKT_TYPE_STATUS )
-    asynch_send_bit( rly1_pin )
-    asynch_send_bit( rly0_pin )
-    asynch_send_hw( tmp_high )
-    asynch_send_hw( tmp_low )
-    asynch_send_hw( mstemp )
-    asynch_send_hw( lstemp )
+    asynch_send_hw( " " )
 
+    -- relay 0 status
+    asynch_send_on_off( rly0_pin )
+    asynch_send_hw( " " )
+
+    -- relay 1 status
+    asynch_send_on_off( rly1_pin )
+    asynch_send_hw( " " )
+
+    -- flow ticks
+    if flow_high_tmp != 0 then
+       asynch_send_ascii( flow_high_tmp, low)
+       asynch_send_ascii( flow_mid_tmp, high)
+       asynch_send_ascii( flow_low_tmp, high)
+    elsif flow_mid_tmp != 0 then
+       asynch_send_ascii( flow_mid_tmp, low)
+       asynch_send_ascii( flow_low_tmp, high)
+    else
+       asynch_send_ascii( flow_low_tmp, low)
+    end if
+    asynch_send_hw( " " )
+
+    -- temperature fields
+    ds1820_12b_conv(mstemp, lstemp)
+    asynch_send_hw( " " )
+
+    -- trailer
     asynch_send_hw( CMD_END_0 )
     asynch_send_hw( CMD_END_1 )
-    flow_low = 0
-    flow_high = 0
+
   end if
   delay_10ms(2)
 

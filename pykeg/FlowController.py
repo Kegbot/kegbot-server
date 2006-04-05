@@ -17,8 +17,7 @@ class FlowController(threading.Thread):
 
       STATUS (0x81)
          cause the FC to send a status packet back to us the next chance it
-         gets. note that a status packet is automatically sent after every
-         other command.
+         gets. note that a status packet is automatically sent periodically
 
       VALVEON (0x83)
          turn the solenoid valve on. caution: the watchdog timer for the valve
@@ -28,14 +27,6 @@ class FlowController(threading.Thread):
       VALVEOFF (0x84)
          disable (close) the solenoid valve.
 
-      PUSHTICKS (0x87)
-         enable pushing of flow ticks. in the future, this will cause the FC to
-         give priority to the pulse counting ISR, and disable things that might
-         interfere with it (ie, temperature reading.) currently does nothing.
-
-      NOPUSHTICKS (0x88)
-         return the FC to normal state; the inverse of PUSHTICKS
-
       FRIDGEON (0x90)
          activate the freezer relay, powering on the freezer
 
@@ -43,46 +34,41 @@ class FlowController(threading.Thread):
          disable the freezer by pulsing the relay off
 
       READTEMP (0x93)
-         read the current temperature of the connected sensor. currently does
-         nothing, and will probably be removed (as the status packet should
-         show this info).
+         request the controller to refresh temperature data. note a refresh is
+         automatically triggered and reported periodically
 
    STATUS PACKET
-
       the FC will periodically send a status packet to the host via rs232.
       because there is no easy way to timestamp these on the FC side, it is
       important that the serial queue be kept flushed and current.
 
-      the status packet has the following format:
+      fields are divided by a single space character, and the packet ends with
+      the "\r\n" sequence (invidible below)
 
-      BYTE  VALUE    Description
-      0     "M"      First of the two-bye start sequence
-      1     ":"      Second char of the two-byte start sequence
-      2     0-255    Packet type. Currently only defined packet is status (0x1)
-      3     0-2      Fridge status (0=off, 1=on, 2=unknown)
-      4     0-1      Solenoid status (0=off, 1=on)
-      5     0-255    High flow ticks (1/4 actual)
-      6     0-255    Low flow ticks (1/4 actual)
-      7     "\r"     First of two-byte end sequence
-      8     "\n"     Second of two-byte end sequence
+      here is a sample packet:
+         M: S off on 893 26.5
 
-      the status packet is 9 bytes long, bounded by "M:...\r\n". packets
-      failing this simple size and boundary check qill be discarded
-   
+      descriptions of fields:
+         "M:"  -  start of message from controller; never changes
+         "S"   -  type of controller message; currently only "S" (status) is
+                  defined
+         "off" -  relay 0 status
+         "on"  -  relay 1 status
+         893   -  monotonically increasing tick counter; rolls over every
+                  2560000 ticks
+         26.5  -  temperature in degrees C
    """
+   # command         hex        char
+   CMD_STATUS      = '\x53'   # 'S'
+   CMD_VALVEON     = '\x56'   # 'V'
+   CMD_VALVEOFF    = '\x76'   # 'v'
+   CMD_FRIDGEON    = '\x46'   # 'F'
+   CMD_FRIDGEOFF   = '\x66'   # 'f'
+   CMD_READTEMP    = '\x54'   # 'T'
+
    def __init__(self, dev, logger=None, rate=115200):
       threading.Thread.__init__(self)
       self.QUIT = threading.Event()
-
-      # commands
-      self.CMD_STATUS      = '\x81'
-      self.CMD_VALVEON     = '\x83'
-      self.CMD_VALVEOFF    = '\x84'
-      self.CMD_PUSHTICKS   = '\x87'
-      self.CMD_NOPUSHTICKS = '\x88'
-      self.CMD_FRIDGEON    = '\x90'
-      self.CMD_FRIDGEOFF   = '\x91'
-      self.CMD_READTEMP    = '\x93'
 
       # other stuff
       self.dev = dev
@@ -94,21 +80,21 @@ class FlowController(threading.Thread):
          logger.addHandler(hdlr)
          logger.setLevel(logging.DEBUG)
       self.logger = logger
+
+      self.status = None
       self.total_ticks = 0
       self.last_fridge_time = 0
+      self._last_ticks = 0
 
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
       try:
          os.system("stty %s raw < %s" % (self.rate, self.dev))
-         pass
       except:
          self.logger.error("error setting raw")
-         pass
 
       self._devpipe.flush()
       self.disableFridge()
-      self.status = None
-      #self.closeValve()
+      self.closeValve()
       #self.clearTicks()
 
    def run(self):
@@ -158,7 +144,7 @@ class FlowController(threading.Thread):
       if line == '':
          self.logger.error('ERROR: Flow device went away; exiting!')
          sys.exit(1)
-      if not line.startswith('M:'):
+      if not line.startswith('M: '):
          if line.startswith('K'):
             self.logger.info('Found board: %s' % line[:-2])
          else:
@@ -167,8 +153,15 @@ class FlowController(threading.Thread):
       if not line.endswith('\r\n'):
          self.logger.info('bad trailer; ignoring!')
          return None
-      self.status = StatusPacket(map(ord, line[2:-2]))
-      self.total_ticks += self.status.ticks
+      fields = line[3:-2].split()
+      if len(fields) < StatusPacket.NUM_FIELDS:
+         self.logger.info('not enough fields; ignoring!')
+      self.status = StatusPacket(fields)
+      diff = self.status.ticks - self._last_ticks
+      if diff < 0:
+         self.logger.warn('tick delta from last packet is negative')
+      else:
+         self.total_ticks += diff
       return self.status
 
    def getStatus(self):
@@ -191,16 +184,16 @@ class FlowController(threading.Thread):
 
 
 class StatusPacket:
-   FRIDGE_OFF = 0
-   FRIDGE_ON = 1
-   FRIDGE_UNKNOWN = 2
+   NUM_FIELDS = 5
+   FRIDGE_OFF = 'off'
+   FRIDGE_ON = 'on'
 
-   VALVE_CLOSED = 0
-   VALVE_OPEN = 1
+   VALVE_CLOSED = 'off'
+   VALVE_OPEN = 'on'
 
    def __init__(self, pkt):
-      self.temp = self._ConvertTemp(pkt[5], pkt[6])
-      self.ticks = pkt[3]*256 + pkt[4]
+      self.temp = float(pkt[4])
+      self.ticks = int(pkt[3])
       self.fridge = pkt[1]
       self.valve = pkt[2]
 
@@ -225,7 +218,8 @@ class StatusPacket:
       return self.fridge == self.FRIDGE_OFF
 
    def __str__(self):
-      return '<StatusPacket: ticks=%i fridge=%s valve=%s temp=%.03f>' % (self.ticks, self.fridge, self.valve, self.temp)
+      return '<StatusPacket: ticks=%i fridge=%s valve=%s temp=%.04f>' % (self.ticks, self.fridge, self.valve, self.temp)
+
 
 class FlowSimulator:
    """ a fake flowcontroller that pours a slow drink """

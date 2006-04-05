@@ -341,8 +341,8 @@ end procedure
 -- -----------------------------------------------------------------------------
 
 var byte chr           = 0
-var byte lstemp        = 0xfe
-var byte mstemp        = 0xfe
+var byte lstemp        = 0
+var byte mstemp        = 0
 var byte loop_count    = 0
 var byte status_count  = 0
 var byte flow_low_tmp  = 0

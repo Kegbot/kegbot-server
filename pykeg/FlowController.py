@@ -162,6 +162,7 @@ class FlowController(threading.Thread):
          self.logger.warn('tick delta from last packet is negative')
       else:
          self.total_ticks += diff
+      self._last_ticks = self.status.ticks
       return self.status
 
    def getStatus(self):

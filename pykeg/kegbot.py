@@ -14,7 +14,6 @@ import signal
 import sys
 import threading
 import time
-import Queue
 
 # path hooks for local modules
 sys.path.append('../pymtxorb')
@@ -24,13 +23,13 @@ sys.path.append('../pylcdui')
 import Auth
 import Backend
 import Flow
-import FlowController
 import KegRemoteServer
 import KegUI
 import SQLConfigParser
-import TempMonitor
 import units
 import util
+
+import localconfig
 
 # command line parser are defined here
 parser = optparse.OptionParser()
@@ -87,6 +86,11 @@ class KegBot:
       self.server = KegRemoteServer.KegRemoteServer(self, '', 9966)
       self.server.start()
 
+      # do local hardware config
+      self.channels = []
+      self.devices = []
+      localconfig.configure(self, self.config)
+
       # optional module: usb ibutton auth
       if self.config.getboolean('auth','usb_ib'):
          timeout = self.config.getfloat('timing','ib_refresh_timeout')
@@ -124,24 +128,6 @@ class KegBot:
          # the ui (and we are cool with it, for now :)
          self.ui = util.NoOpObject()
 
-      # optional module: temperature monitor
-      if self.config.getboolean('thermo','use_thermo'):
-         self.tempsensor = TempMonitor.TempSensor(self.config.get('devices','thermo'))
-         self.tempmon = TempMonitor.TempMonitor(self,self.tempsensor,self.QUIT)
-         self.tempmon.start()
-
-      # initialize flow meter
-      dev = self.config.get('devices','flow')
-      self.logger.info('main: new flow controller at device %s' % dev)
-      if dev in NULL_DEVICES:
-         self.fc = FlowController.FlowSimulator()
-      else:
-         self.fc = FlowController.FlowController(dev, self.MakeLogger('flow', logging.INFO))
-         self.fc.start()
-
-      # set up channels. TODO: assuming one keg (single channel) at the moment
-      self.channels = [Flow.Channel(self.fc, self.MakeLogger('channel0'))]
-
       # set up the default screen
       self.ui.setMain()
       self.ui.activity()
@@ -163,27 +149,19 @@ class KegBot:
 
       # other quitting
       self.server.stop()
-      self.fc.stop()
       self.ui.stop()
       self.QUIT.set()
+
+   def AddChannel(self, chan):
+      self.channels.append(chan)
+
+   def AddDevice(self, dev):
+      self.devices.append(dev)
 
    def MakeLogger(self, compname, level=logging.INFO):
       """ set up a logging logger, given the component name """
       ret = logging.getLogger(compname)
       ret.setLevel(level)
-
-      # add sql handler -- XXX TODO: deprecated, move to sqlobjet
-      if self.config.getboolean('logging','use_sql'):
-         try:
-            hdlr = SQLHandler.SQLHandler(self.dbhost, self.dbuser,
-                  self.dbdb, self.config.get('logging','logtable'),
-                  self.dbpassword)
-            hdlr.setLevel(logging.WARNING)
-            formatter = SQLHandler.SQLVerboseFormatter()
-            hdlr.setFormatter(formatter)
-            ret.addHandler(hdlr)
-         except:
-            ret.warning("Could not start SQL Handler")
 
       # add a file-output handler
       if self.config.getboolean('logging','use_logfile'):
@@ -210,7 +188,7 @@ class KegBot:
                success = self.StartFlow(new_flow)
                if success:
                   self.logger.info('flow: new flow started for user %s on channel %s' %
-                        (new_flow.user.username, channel))
+                        (new_flow.user.username, channel.chanid))
                   active_flows.append(new_flow)
                else:
                   channel.DeactivateFlow()
@@ -223,6 +201,10 @@ class KegBot:
                self.FinishFlow(flow)
                active_flows.remove(flow)
                channel.DeactivateFlow()
+
+         # other misc stuff
+         for dev in self.devices:
+            dev.Step()
 
          # sleep a bit longer if there is no guarantee of work to do next cycle
          if len(active_flows):
@@ -350,10 +332,10 @@ class KegBot:
       self.ui.setCurrentPlate(self.ui.plate_pour, replace=1)
 
       # turn on flow
-      flow.channel.fc.openValve()
+      flow.channel.EnableValve()
 
       # zero the flow on current tick reading
-      flow.SetTicks(flow.channel.fc.readTicks())
+      flow.SetTicks(flow.channel.GetTicks())
       self.logger.info('flow: starting flow for user %s' % flow.user.username)
 
       return True
@@ -365,7 +347,7 @@ class KegBot:
          return False
 
       # update things if anything changed
-      if flow.SetTicks(flow.channel.fc.readTicks()):
+      if flow.SetTicks(flow.channel.GetTicks()):
          curr_vol = units.ticks_to_volunits(flow.Ticks())
          curr_cost = self.EstimateCost(flow.user, curr_vol)
          self.ui.pourUpdate(units.to_ounces(curr_vol), curr_cost)
@@ -375,11 +357,11 @@ class KegBot:
    def FinishFlow(self, flow):
       """ End a Flow and record a drink """
       self.logger.info('flow: user is gone; flow ending')
-      flow.channel.fc.closeValve()
+      flow.channel.DisableValve()
       self.ui.setCurrentPlate(self.ui.plate_main, replace=1)
 
       # record flow totals; save to user database
-      flow.SetTicks(flow.channel.fc.readTicks())
+      flow.SetTicks(flow.channel.GetTicks())
       flow.end = time.time()
       volume = units.ticks_to_volunits(flow.Ticks())
 

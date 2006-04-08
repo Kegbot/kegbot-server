@@ -42,11 +42,14 @@ class Channel:
    4-headed kegerator would likely have 4 kegbot channels, each channel having
    its own flow controller instance and drinker "flow" queue.
    """
-   def __init__(self, fc, logger):
-      self.fc = fc
+   def __init__(self, chanid, valve_relay, flow_meter, logger):
+      self.chanid = id
+      self.valve_relay = valve_relay
+      self.flow_meter = flow_meter
+      self.logger = logger
+
       self.flow_queue = []
       self.active_flow = None
-      self.logger = logger
 
    def EnqueueFlow(self, flow):
       """ Add a flow to the waiting queue of flows """
@@ -64,9 +67,16 @@ class Channel:
          return flow
       return None
 
+   def EnableValve(self):
+      return self.valve_relay.Enable()
+
+   def DisableValve(self):
+      return self.valve_relay.Disable()
+
+   def GetTicks(self):
+      return self.flow_meter.GetTicks()
+
    def DeactivateFlow(self):
       """ Reset active_flow state variable to None """
       self.active_flow = None
-
-
 

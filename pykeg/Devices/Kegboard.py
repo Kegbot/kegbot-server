@@ -7,7 +7,9 @@ import threading
 import time
 import traceback
 
-class FlowController(threading.Thread):
+import Interfaces
+
+class Kegboard(threading.Thread):
    """
    represents the embedded flowmeter counter microcontroller.
 
@@ -66,9 +68,29 @@ class FlowController(threading.Thread):
    CMD_FRIDGEOFF   = '\x66'   # 'f'
    CMD_READTEMP    = '\x54'   # 'T'
 
+   class KBRelay(Interfaces.IRelay):
+      def __init__(self, kboard, relay_num):
+         self.kboard = kboard
+         self.relay_num = relay_num
+
+      def Enable(self):
+         return self.kboard.EnableRelay(self.relay_num)
+
+      def Disable(self):
+         return self.kboard.DisableRelay(self.relay_num)
+
+      def Status(self):
+         return self.kboard.RelayStatus(self.relay_num)
+
    def __init__(self, dev, logger=None, rate=115200):
       threading.Thread.__init__(self)
       self.QUIT = threading.Event()
+
+      # provide interfaces for other components
+      self.i_relay_0 = Kegboard.KBRelay(self, 0)
+      self.i_relay_1 = Kegboard.KBRelay(self, 1)
+      self.i_thermo = self
+      self.i_flowmeter = self
 
       # other stuff
       self.dev = dev
@@ -83,7 +105,6 @@ class FlowController(threading.Thread):
 
       self.status = None
       self.total_ticks = 0
-      self.last_fridge_time = 0
       self._last_ticks = 0
 
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
@@ -93,51 +114,42 @@ class FlowController(threading.Thread):
          self.logger.error("error setting raw")
 
       self._devpipe.flush()
-      self.disableFridge()
-      self.closeValve()
-      #self.clearTicks()
+      self.i_relay_0.Disable()
+      self.i_relay_1.Disable()
 
    def run(self):
       self.statusLoop()
 
    def stop(self):
       self.QUIT.set()
-      self.getStatus() # hack to break the blocking wait
 
-   def fridgeStatus(self):
-      return self.status.fridge
+   def _DoCmd(self, cmd):
+      self._lock.acquire()
+      self._devpipe.write(cmd)
+      self._lock.release()
 
-   def readTicks(self):
+   def EnableRelay(self, num):
+      cmd = {0: self.CMD_VALVEON, 1: self.CMD_FRIDGEON}[num]
+      self._DoCmd(cmd)
+      self.logger.info('relay %i enabled' % num)
+
+   def DisableRelay(self, num):
+      cmd = {0: self.CMD_VALVEOFF, 1: self.CMD_FRIDGEOFF}[num]
+      self._DoCmd(cmd)
+      self.logger.info('relay %i disabled' % num)
+
+   def RelayStatus(self, num):
+      status = {0: self.status.valve, 1: self.status.fridge}[num]
+      return status
+
+   def GetTemperature(self):
+      if self.status:
+         return self.status.temp
+      else:
+         return None
+
+   def GetTicks(self):
       return self.total_ticks
-
-   def openValve(self):
-      self._lock.acquire()
-      self._devpipe.write(self.CMD_VALVEON)
-      self._lock.release()
-
-   def closeValve(self):
-      self._lock.acquire()
-      self._devpipe.write(self.CMD_VALVEOFF)
-      self._lock.release()
-
-   def enableFridge(self):
-      #if time.time() - self.last_fridge_time < 300:
-      #   self.logger.warn('fridge ON event requested too soon; ignoring')
-      #   return
-      self.last_fridge_time = time.time()
-      self._lock.acquire()
-      self._devpipe.write(self.CMD_FRIDGEON)
-      self._lock.release()
-
-   def updateTemp(self):
-      self._lock.acquire()
-      self._devpipe.write(self.CMD_READTEMP)
-      self._lock.release()
-
-   def disableFridge(self):
-      self._lock.acquire()
-      self._devpipe.write(self.CMD_FRIDGEOFF)
-      self._lock.release()
 
    def recvPacket(self):
       line = self._devpipe.readline()
@@ -163,12 +175,14 @@ class FlowController(threading.Thread):
       else:
          self.total_ticks += diff
       self._last_ticks = self.status.ticks
+      self.logger.info('got status: %s' % str(self.status))
       return self.status
 
-   def getStatus(self):
-      self._lock.acquire()
-      self._devpipe.write(self.CMD_STATUS)
-      self._lock.release()
+   def GetStatus(self):
+      self._DoCmd(self.CMD_STATUS)
+
+   def UpdateTemp(self):
+      self._DoCmd(self.CMD_READTEMP)
 
    def statusLoop(self):
       """ asynchronous fetch loop for the flow controller """
@@ -195,8 +209,8 @@ class StatusPacket:
    def __init__(self, pkt):
       self.temp = float(pkt[4])
       self.ticks = int(pkt[3])
-      self.fridge = pkt[1]
-      self.valve = pkt[2]
+      self.valve = pkt[1]
+      self.fridge = pkt[2]
 
    def _ConvertTemp(self, msbyte, lsbyte):
       # XXX: assuming 12 bit mode
@@ -219,37 +233,6 @@ class StatusPacket:
       return self.fridge == self.FRIDGE_OFF
 
    def __str__(self):
-      return '<StatusPacket: ticks=%i fridge=%s valve=%s temp=%.04f>' % (self.ticks, self.fridge, self.valve, self.temp)
+      return '<StatusPacket: ticks=%i fridge=%s valve=%s temp=%.04f>' % (self.ticks,
+            self.fridge, self.valve, self.temp)
 
-
-class FlowSimulator:
-   """ a fake flowcontroller that pours a slow drink """
-
-   def __init__(self):
-      self.fridge = 0
-      self.valve = 0
-      self.ticks = 0
-      self.open_time = 0
-
-   def start(self): pass
-
-   def stop(self): pass
-
-   def fridgeStatus(self):
-      return self.fridge
-
-   def readTicks(self):
-      return max(0, int(50*(time.time() - self.open_time)))
-
-   def openValve(self):
-      self.valve = 1
-      self.open_time = time.time()
-
-   def closeValve(self):
-      self.valve = 0
-
-   def enableFridge(self):
-      self.fridge = 1
-
-   def disableFridge(self):
-      self.fridge = 0

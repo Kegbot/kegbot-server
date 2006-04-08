@@ -1,15 +1,16 @@
+import copy
 import logging
 import os
-import random
 import select
 import sys
 import threading
-import time
 import traceback
 
 import Interfaces
 
-class Kegboard(threading.Thread):
+class Kegboard(threading.Thread,
+      Interfaces.ITemperatureSensor,
+      Interfaces.IFlowmeter):
    """
    represents the embedded flowmeter counter microcontroller.
 
@@ -17,25 +18,25 @@ class Kegboard(threading.Thread):
    consists of single-byte command packets. currently the following commands
    are defined:
 
-      STATUS (0x81)
+      STATUS (0x53)
          cause the FC to send a status packet back to us the next chance it
          gets. note that a status packet is automatically sent periodically
 
-      VALVEON (0x83)
+      VALVEON (0x56)
          turn the solenoid valve on. caution: the watchdog timer for the valve
          is not present in the current FC revision, so care must be taken to
          disable the valve when finished.
 
-      VALVEOFF (0x84)
+      VALVEOFF (0x76)
          disable (close) the solenoid valve.
 
-      FRIDGEON (0x90)
+      FRIDGEON (0x46)
          activate the freezer relay, powering on the freezer
 
-      FRIDGEOFF (0x91)
+      FRIDGEOFF (0x66)
          disable the freezer by pulsing the relay off
 
-      READTEMP (0x93)
+      READTEMP (0x54)
          request the controller to refresh temperature data. note a refresh is
          automatically triggered and reported periodically
 
@@ -60,7 +61,7 @@ class Kegboard(threading.Thread):
                   2560000 ticks
          26.5  -  temperature in degrees C
    """
-   # command         hex        char
+
    CMD_STATUS      = '\x53'   # 'S'
    CMD_VALVEON     = '\x56'   # 'V'
    CMD_VALVEOFF    = '\x76'   # 'v'
@@ -84,7 +85,15 @@ class Kegboard(threading.Thread):
 
    def __init__(self, dev, logger=None, rate=115200):
       threading.Thread.__init__(self)
+
       self.QUIT = threading.Event()
+      self._lock = threading.Lock()
+      if not logger:
+         logger = logging.getLogger('kegboard')
+         hdlr = logging.StreamHandler(sys.stdout)
+         logger.addHandler(hdlr)
+         logger.setLevel(logging.DEBUG)
+      self.logger = logger
 
       # provide interfaces for other components
       self.i_relay_0 = Kegboard.KBRelay(self, 0)
@@ -92,33 +101,24 @@ class Kegboard(threading.Thread):
       self.i_thermo = self
       self.i_flowmeter = self
 
-      # other stuff
-      self.dev = dev
-      self.rate = rate
-      self._lock = threading.Lock()
-      if not logger:
-         logger = logging.getLogger('FlowController')
-         hdlr = logging.StreamHandler(sys.stdout)
-         logger.addHandler(hdlr)
-         logger.setLevel(logging.DEBUG)
-      self.logger = logger
-
-      self.status = None
-      self.total_ticks = 0
+      self._status = None
+      self._total_ticks = 0
       self._last_ticks = 0
+      self._last_status = None
 
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
       try:
-         os.system("stty %s raw < %s" % (self.rate, self.dev))
+         os.system("stty %s raw < %s" % (rate, dev))
       except:
          self.logger.error("error setting raw")
 
+      # flush the pipe and reset all relays
       self._devpipe.flush()
       self.i_relay_0.Disable()
       self.i_relay_1.Disable()
 
    def run(self):
-      self.statusLoop()
+      self._StatusLoop()
 
    def stop(self):
       self.QUIT.set()
@@ -127,6 +127,66 @@ class Kegboard(threading.Thread):
       self._lock.acquire()
       self._devpipe.write(cmd)
       self._lock.release()
+
+   def _ReadPacket(self):
+      """ read from the device and parse a packet, if available """
+      line = self._devpipe.readline()
+
+      # check for error; no data = dead fd
+      if line == '':
+         self.logger.error('ERROR: Flow device went away; exiting!')
+         sys.exit(1)
+
+      # handle the init packet and ignore any other malformatted lines
+      if not line.startswith('M: '):
+         if line.startswith('K'):
+            self.logger.info('Found board: %s' % line[:-2])
+         else:
+            self.logger.info('no start of packet; ignoring!')
+         return None
+
+      # check for trailer and abort if not present
+      if not line.endswith('\r\n'):
+         self.logger.info('bad trailer; ignoring!')
+         return None
+
+      # strip off preamble and trailer
+      fields = line[3:-2].split()
+
+      # parse packet
+      if len(fields) < StatusPacket.NUM_FIELDS:
+         self.logger.info('not enough fields; ignoring!')
+      self._status = StatusPacket(fields)
+
+      # try to catch tick wraparound (and ignore it for now)
+      diff = self._status.ticks - self._last_ticks
+      if diff < 0:
+         self.logger.warn('tick delta from last packet is negative, ignoring')
+      else:
+         self._total_ticks += diff
+      self._last_ticks = self._status.ticks
+
+      # print status update
+      if self._status != self._last_status:
+         self.logger.info('status change: %s' % str(self._status))
+         self._last_status = copy.copy(self._status)
+
+      return self._status
+
+   def _StatusLoop(self):
+      """ Device service loop """
+      try:
+         self.logger.info('status loop starting')
+         while not self.QUIT.isSet():
+            rr, wr, xr = select.select([self._devpipe],[],[],1.0)
+            if len(rr):
+               self._ReadPacket()
+         self.logger.info('status loop exiting')
+      except:
+         self.logger.critical('packet read error')
+         traceback.print_exc()
+
+   ### public functions
 
    def EnableRelay(self, num):
       cmd = {0: self.CMD_VALVEON, 1: self.CMD_FRIDGEON}[num]
@@ -139,63 +199,17 @@ class Kegboard(threading.Thread):
       self.logger.info('relay %i disabled' % num)
 
    def RelayStatus(self, num):
-      status = {0: self.status.valve, 1: self.status.fridge}[num]
+      status = {0: self._status.valve, 1: self._status.fridge}[num]
       return status
 
    def GetTemperature(self):
-      if self.status:
-         return self.status.temp
+      if self._status:
+         return self._status.temp
       else:
          return None
 
    def GetTicks(self):
-      return self.total_ticks
-
-   def recvPacket(self):
-      line = self._devpipe.readline()
-      if line == '':
-         self.logger.error('ERROR: Flow device went away; exiting!')
-         sys.exit(1)
-      if not line.startswith('M: '):
-         if line.startswith('K'):
-            self.logger.info('Found board: %s' % line[:-2])
-         else:
-            self.logger.info('no start of packet; ignoring!')
-         return None
-      if not line.endswith('\r\n'):
-         self.logger.info('bad trailer; ignoring!')
-         return None
-      fields = line[3:-2].split()
-      if len(fields) < StatusPacket.NUM_FIELDS:
-         self.logger.info('not enough fields; ignoring!')
-      self.status = StatusPacket(fields)
-      diff = self.status.ticks - self._last_ticks
-      if diff < 0:
-         self.logger.warn('tick delta from last packet is negative')
-      else:
-         self.total_ticks += diff
-      self._last_ticks = self.status.ticks
-      self.logger.info('got status: %s' % str(self.status))
-      return self.status
-
-   def GetStatus(self):
-      self._DoCmd(self.CMD_STATUS)
-
-   def UpdateTemp(self):
-      self._DoCmd(self.CMD_READTEMP)
-
-   def statusLoop(self):
-      """ asynchronous fetch loop for the flow controller """
-      try:
-         self.logger.info('status loop starting')
-         while not self.QUIT.isSet():
-            rr, wr, xr = select.select([self._devpipe],[],[],1.0)
-            if len(rr):
-               p = self.recvPacket()
-         self.logger.info('status loop exiting')
-      except:
-         self.logger.error('packet read error')
-         traceback.print_exc()
+      return self._total_ticks
 
 
 class StatusPacket:
@@ -212,13 +226,11 @@ class StatusPacket:
       self.valve = pkt[1]
       self.fridge = pkt[2]
 
-   def _ConvertTemp(self, msbyte, lsbyte):
-      # XXX: assuming 12 bit mode
-      val = (msbyte & 0x7)*256 + lsbyte
-      val = val * 0.0625
-      if msbyte >> 3 != 0:
-         val = -1 * val
-      return val
+   def __cmp__(self, other):
+      if not isinstance(other, StatusPacket):
+         return 1
+      return cmp((self.temp, self.ticks, self.valve, self.fridge),
+            (other.temp, other.ticks, other.valve, other.fridge))
 
    def ValveOpen(self):
       return self.valve == self.VALVE_OPEN

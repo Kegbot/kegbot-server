@@ -1,12 +1,13 @@
 class FreezerConversion:
-   def __init__(self, freezer_id, control_relay, temp_sensor, logger):
+   def __init__(self, freezer_id, control_relay, temp_sensor, logger,
+         low_t, high_t):
       self.id = freezer_id
       self.relay = control_relay
       self.sensor = temp_sensor
       self.logger = logger
 
-      self._low_t = 27.0
-      self._high_t = 29.0
+      self._low_t = low_t
+      self._high_t = high_t
 
    def Step(self):
       temp = self.sensor.GetTemperature()

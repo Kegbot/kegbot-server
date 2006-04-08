@@ -3,66 +3,17 @@ oldest items first
 
 HIGH PRIORITY
 
-- [DONE!] get rid of drink fragments and change the flow loop so that the
-  maximum amount pourable is calculated a priori; calculate the cost later or
-  offline
-- [DONE!] unify keg.tick_metric and config.tick_metric so that only one is used
-- add hooks to the main flow sequence so it is easier to hook in other
-  authentication modules or steps
-
 AVERAGE PRIORITY
 
 - rework calibration script and make it easier to apply to current keg/pours
 - add 'invalidate last pour' menu to LCD ui
-- fix BAC values so they can be recalculated if configuration changes
-- (ongoing) clean up and document stuff
-- make authentication modular
-   * whether ibutton-based, pin or password based, whatever; the KegBot class
-     does not need to know. it just needs to accept credentials (uid
-     arrive/depart events from trusted source)
-   * make credentials time out rather than the token data
-- move flow control into a separate module
-   * support multiple kegs with single module for [kegbot,backend,auth,...]
-   * simple API so other controllers can join the party
-   * anticipate kegboards that support multiple meters
-- move freezer control into a separate process
-   * should be really easy, this is the most static part of the system and
-     needs high reliability anyway.
 - fix up RPC hooks
   * goes along with general modularization tack..
-- move SQLStores object classes (User,Drink,...) to another lib, and make it
-  possible to use another backend (eg SQLite or some other DB API)
 - improve the setup script
   * try to anticipate all possible problems
   * automate the routine, boring stuff
 - improve the DB schema update script
   * perhaps a good place to use TDD
-- ticks vs liters vs ounces: be consistent!
-  * converting to ounces for recording is lossy; native meter unit is
-    Liters/2200 
-  * but, insulate controller code from flowmeter- or config-specific properties
-- (backend) make some things more relational
-  * drinks table should just be raw drink info; extrapolate/log costs elsewhere
-  * drinks and users should have properties that don't necessarily justify
-    being columns, eg "hide this drink" or "this is a guest user"
-- finance system improvements
-  * currently, costs are stored in the DB and computed on demand, eg, when the
-    frontend shows the drink
-  * doesn't necessarily need to be a persistant/stateful entity, just something
-    that recomputes tabs after pour
-- fix binge/drinker stats: have the backend provide common datapoints
-  * currently computed on demand: wasteful, and data doesn't change after a
-    pour (except BAC, which decays predictably)
-  * OK to do some computation on the frontend, but the backend should store a
-    per-pour-computed table of volume totals, etc.
-- fix icky "self.lcd = Display('/dev/null')" when LCD support not enabled
-- (kegboard) rewrite controller firmware (16x or 18x) so that status is
-  constantly pushed -- easier to debug, simplifies fcRefreshLoop
-- clean up flow loop; move all STOP_FLOW checks into a CheckAccess (or
-  somesuch) routine
-- fix up the flow emulator so we can get a real testing setup
 
 LOW PRIORITY
-
-- (frontend) move functionality to smarty registered functions
 

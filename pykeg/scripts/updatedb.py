@@ -70,8 +70,9 @@ def doUpgrade(current, latest):
       ret = 0
       cls = 'SchemaUpdate__%i' % new_schema
       if not globals().has_key(cls):
-         print '!!! No upgrade found, assuming OK'
-         return
+         print '<<< No upgrade found, assuming OK'
+         print ''
+         continue
 
       updater = globals()[cls]()
       ret = updater.Upgrade()

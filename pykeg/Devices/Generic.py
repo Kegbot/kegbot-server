@@ -1,3 +1,7 @@
+import time
+
+import Backend
+
 class FreezerConversion:
    def __init__(self, freezer_id, control_relay, temp_sensor, logger,
          low_t, high_t):
@@ -29,4 +33,20 @@ class FreezerConversion:
       return self._high_t
 
 
+class ThermoLogger:
+   LOG_INTERVAL = 30
+   def __init__(self, name, sensor):
+      self.name = name
+      self.sensor = sensor
+      self._last_time = 0.0
+
+   def Step(self):
+      now = time.time()
+      if now - self.LOG_INTERVAL < self._last_time:
+         return
+
+      self._last_time = now
+      curr_temp = self.sensor.GetTemperature()
+      rec = Backend.ThermoLog(name = self.name, temp = curr_temp)
+      rec.syncUpdate()
 

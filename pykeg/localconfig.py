@@ -29,3 +29,9 @@ def configure(kegbot, config):
    )
    kegbot.AddDevice(freezer)
 
+   # enable temperature logging
+   thermologger = Generic.ThermoLogger('main',
+         controller.i_thermo,
+   )
+   kegbot.AddDevice(thermologger)
+

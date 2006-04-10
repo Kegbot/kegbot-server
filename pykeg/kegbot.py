@@ -87,8 +87,9 @@ class KegBot:
       self.server.start()
 
       # do local hardware config
-      self.channels = []
-      self.devices = []
+      self._channels = []
+      self._auth_devices = []
+      self._devices = []
       localconfig.configure(self, self.config)
 
       # optional module: usb ibutton auth
@@ -153,10 +154,10 @@ class KegBot:
       self.QUIT.set()
 
    def AddChannel(self, chan):
-      self.channels.append(chan)
+      self._channels.append(chan)
 
    def AddDevice(self, dev):
-      self.devices.append(dev)
+      self._devices.append(dev)
 
    def MakeLogger(self, compname, level=logging.INFO):
       """ set up a logging logger, given the component name """
@@ -179,10 +180,14 @@ class KegBot:
 
       return ret
 
+   def _ProcessDevices(self):
+      for dev in self._devices:
+         dev.Step()
+
    def MainEventLoop(self):
       active_flows = []
       while not self.QUIT.isSet():
-         for channel in self.channels:
+         for channel in self._channels:
             new_flow = channel.MaybeActivateNextFlow()
             if new_flow is not None:
                success = self.StartFlow(new_flow)
@@ -202,9 +207,8 @@ class KegBot:
                active_flows.remove(flow)
                channel.DeactivateFlow()
 
-         # other misc stuff
-         for dev in self.devices:
-            dev.Step()
+         # process other thigns needing attention
+         self._ProcessDevices()
 
          # sleep a bit longer if there is no guarantee of work to do next cycle
          if len(active_flows):
@@ -225,7 +229,7 @@ class KegBot:
          u = matches[0]
          self.authed_users.append(u)
          # TODO: explicit support for channels
-         self.channels[0].EnqueueFlow(self.CreateFlow(u))
+         self._channels[0].EnqueueFlow(self.CreateFlow(u))
          return True
       return False
 
@@ -307,7 +311,7 @@ class KegBot:
       else:
          self.logger.info('flow: user approved for %.1f volunits' % max_volume)
 
-      return Flow.Flow(self.channels[0], user = user, max_volume = max_volume)
+      return Flow.Flow(self._channels[0], user = user, max_volume = max_volume)
 
    def StartFlow(self, flow):
       """ Begin a flow, based on flow passed in """

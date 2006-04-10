@@ -77,13 +77,13 @@ class Keg(SQLObject):
    startdate = DateTimeCol()
    enddate = DateTimeCol()
    status = EnumCol(enumValues=['online', 'offline', 'coming soon'], default='online')
-   beername = StringCol(default='')
-   alccontent = FloatCol(default=4.5)
-   description = StringCol(default='')
-   origcost = FloatCol(default=0)
-   beerpalid = IntCol(default=0)
-   ratebeerid = IntCol(default=0)
-   calories_oz = FloatCol(default=0)
+   beername = StringCol(default='', notNone=True)
+   alccontent = FloatCol(default=4.5, notNone=True)
+   description = StringCol(default='', notNone=True)
+   origcost = FloatCol(default=0, notNone=True)
+   beerpalid = IntCol(default=0, notNone=True)
+   ratebeerid = IntCol(default=0, notNone=True)
+   calories_oz = FloatCol(default=0, notNone=True)
 
 
 class Grant(SQLObject):
@@ -91,15 +91,17 @@ class Grant(SQLObject):
       table = 'grants'
       lazyUpdate = True
 
-   user = ForeignKey('User')
-   expiration = EnumCol(enumValues=['none', 'time', 'volume', 'drinks'], default='volume')
-   status = EnumCol(enumValues=['active', 'expired', 'deleted'], default='active')
-   policy = ForeignKey('Policy')
-   exp_volume = IntCol(default=0)
-   exp_time = IntCol(default=0)
-   exp_drinks = IntCol(default=0)
-   total_volume = IntCol(default=0)
-   total_drinks = IntCol(default=0)
+   user = ForeignKey('User', notNone=True)
+   expiration = EnumCol(enumValues=['none', 'time', 'volume', 'drinks'],
+         default='volume', notNone=True)
+   status = EnumCol(enumValues=['active', 'expired', 'deleted'],
+         default='active', notNone=True)
+   policy = ForeignKey('Policy', notNone=True)
+   exp_volume = IntCol(default=0, notNone=True)
+   exp_time = IntCol(default=0, notNone=True)
+   exp_drinks = IntCol(default=0, notNone=True)
+   total_volume = IntCol(default=0, notNone=True)
+   total_drinks = IntCol(default=0, notNone=True)
 
    def AvailableVolume(self):
       """
@@ -171,9 +173,9 @@ class Policy(SQLObject):
       lazyUpdate = True
 
    type = EnumCol(enumValues = ['fixed-cost','free'], notNone=True)
-   unitcost = FloatCol(default=0.0)
-   unitvolume = IntCol(default=0)
-   description = StringCol(default='')
+   unitcost = FloatCol(default=0.0, notNone=True)
+   unitvolume = IntCol(default=0, notNone=True)
+   description = StringCol(default='', notNone=True)
 
    def Cost(self, volume):
       if self.type == 'free':
@@ -279,4 +281,24 @@ class Userpic(SQLObject):
    filetype = EnumCol(enumValues=['png','jpeg'], default='png', notNone=True)
    modified = DateTimeCol(default=datetime.now)
    data = BLOBCol(length=2**24)
+
+
+class ThermoLog(SQLObject):
+   class sqlmeta:
+      table = 'thermolog'
+      lazyUpdate = True
+
+   name = StringCol(notNone=True, default='')
+   temp = FloatCol(notNone=True, default=0.0)
+   time = DateTimeCol(notNone=True, default=datetime.now)
+
+
+class RelayLog(SQLObject):
+   class sqlmeta:
+      table = 'relaylog'
+      lazyUpdate = True
+
+   name = StringCol(notNone=True, default='')
+   status = EnumCol(enumValues=['unknown','on','off'], default='unknown', notNone=True)
+   time = DateTimeCol(notNone=True, default=datetime.now)
 

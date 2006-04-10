@@ -2,6 +2,8 @@
 updatedb.py - tool for updating kegbot database
 """
 
+import sys
+
 import MySQLdb
 import ConfigParser
 
@@ -13,8 +15,13 @@ dbdb   = config.get('DB','db')
 dbpass = config.get('DB','password')
 dbconn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpass, db=dbdb)
 
+sys.path.append('.')
+import Backend
 
-### UPDATES TABLE
+db_uri = 'mysql://%s:%s@%s/%s' % (dbuser, dbpass, dbhost, dbdb)
+Backend.setup(db_uri)
+
+LATEST_SCHEMA = 6
 
 def GetInstalledSchema():
    """ determine current schema version. quite stupid for now """
@@ -29,15 +36,32 @@ def GetInstalledSchema():
 UPGRADE_PASS = 0
 UPGRADE_FAIL = 1
 
-class SchemaUpdate__2:
-   """ upgrade to schema 2 """
+def SetCurrentSchema(num):
+   c = dbconn.cursor()
+   q = """ UPDATE `config` SET `value`='%i' WHERE `id`='db.schema_version' LIMIT 1 """ % num
+   c.execute(q)
+
+class Update:
+   def log(self, msg):
+      print '--- %s' % msg
+
+### BEGIN SCHEMA UPDATES
+
+class SchemaUpdate__5(Update):
    def Upgrade(self):
+      self.log('creating thermolog table')
+      Backend.ThermoLog.createTable()
+      SetCurrentSchema(5)
       return UPGRADE_PASS
 
-class SchemaUpdate__3:
-   """ upgrade to schema 3 """
+class SchemaUpdate__6(Update):
    def Upgrade(self):
+      self.log('creating relaylog table')
+      Backend.RelayLog.createTable()
+      SetCurrentSchema(6)
       return UPGRADE_PASS
+
+### END SCHEMA UPDATES
 
 def doUpgrade(current, latest):
    for new_schema in range(current+1, latest+1):
@@ -65,16 +89,16 @@ def Main():
    except:
       print '!!! ERROR: could not get currently installed schema'
       raise
-   print 'Currently installed schema: %i' % current
 
+   print 'Currently installed schema: %i' % current
+   print 'Latest available schemta: %i' % LATEST_SCHEMA
    print ''
 
-   latest = 4
-   if current == latest:
+   if current == LATEST_SCHEMA:
       print 'Nothing to do, great!'
       sys.exit(0)
    else:
-      doUpgrade(current, latest)
+      doUpgrade(current, LATEST_SCHEMA)
       print 'Upgrade complete'
 
 

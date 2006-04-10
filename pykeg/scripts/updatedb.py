@@ -21,7 +21,7 @@ import Backend
 db_uri = 'mysql://%s:%s@%s/%s' % (dbuser, dbpass, dbhost, dbdb)
 Backend.setup(db_uri)
 
-LATEST_SCHEMA = 6
+LATEST_SCHEMA = 7
 
 def GetInstalledSchema():
    """ determine current schema version. quite stupid for now """
@@ -37,9 +37,9 @@ UPGRADE_PASS = 0
 UPGRADE_FAIL = 1
 
 def SetCurrentSchema(num):
-   c = dbconn.cursor()
-   q = """ UPDATE `config` SET `value`='%i' WHERE `id`='db.schema_version' LIMIT 1 """ % num
-   c.execute(q)
+   v = Backend.Config.get('db.schema_version')
+   v.value = num
+   v.syncUpdate()
 
 class Update:
    def log(self, msg):
@@ -59,6 +59,18 @@ class SchemaUpdate__6(Update):
       self.log('creating relaylog table')
       Backend.RelayLog.createTable()
       SetCurrentSchema(6)
+      return UPGRADE_PASS
+
+class SchemaUpdate__7(Update):
+   def Upgrade(self):
+      self.log('updating log format')
+      v = Backend.Config.get('logging.logformat')
+      oldfmt = '%(asctime)s %(levelname)s %(message)s'
+      newfmt = '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'
+      if v.value == oldfmt:
+         v.value = newfmt
+         v.syncUpdate()
+      SetCurrentSchema(7)
       return UPGRADE_PASS
 
 ### END SCHEMA UPDATES

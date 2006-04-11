@@ -139,7 +139,7 @@ def Main():
 
    c = dbconn.cursor()
    for (option, title, default, descr) in sqls:
-      q = """ UPDATE `config` SET `value`='%s' WHERE `key`='%s' """ % (MySQLdb.escape_string(sqlvals[option]), MySQLdb.escape_string(option))
+      q = """ UPDATE `config` SET `value`='%s' WHERE `id`='%s' """ % (MySQLdb.escape_string(sqlvals[option]), MySQLdb.escape_string(option))
       print 'Saving %s...' % (option,),
       c.execute(q)
       print 'done!'
@@ -197,7 +197,7 @@ def Main():
    c.execute(q)
    print 'done!'
 
-   q = """ INSERT INTO `tokens` (`ownerid`,`keyinfo`) VALUES ('1','%s') """ % (MySQLdb.escape_string(ibid),)
+   q = """ INSERT INTO `tokens` (`user_id`,`keyinfo`) VALUES ('1','%s') """ % (MySQLdb.escape_string(ibid),)
    print 'Adding admin token...',
    c.execute(q)
    print 'done!'

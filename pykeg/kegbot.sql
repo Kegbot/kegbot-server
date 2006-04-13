@@ -1,3 +1,7 @@
+-- NOTICE: THIS FILE IS DEPRECATED!
+-- use the tool in scripts/genschema.py to generate an up-to-date schema!
+--
+
 -- KEGBOT_SCHEMA_VERSION=1
 -- NOTE: do not modify the above line
 

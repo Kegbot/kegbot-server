@@ -21,7 +21,7 @@ import Backend
 db_uri = 'mysql://%s:%s@%s/%s' % (dbuser, dbpass, dbhost, dbdb)
 Backend.setup(db_uri)
 
-LATEST_SCHEMA = 7
+LATEST_SCHEMA = Backend.SCHEMA_VERSION
 
 def GetInstalledSchema():
    """ determine current schema version. quite stupid for now """

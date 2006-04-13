@@ -6,11 +6,15 @@ try:
    from sqlobject import *
 except ImportError:
    print>>sys.stderr, 'Could not import sqlobject - do you have it installed?'
-   print>>sys.stderr, 'Kegbot requires sqlobject version 0.8 or later. Exiting.'
+   print>>sys.stderr, 'Kegbot requires sqlobject version 0.7 or later. Exiting.'
    sys.exit(1)
 
 import units
 import util
+
+SCHEMA_VERSION = 7
+
+### utility functions
 
 def setup(db_uri):
    """ Set default connection """
@@ -24,6 +28,8 @@ def drop_and_create(tbl):
       pass
    tbl.createTable()
 
+
+### table definitions
 
 class Config(SQLObject):
    class sqlmeta:
@@ -301,4 +307,38 @@ class RelayLog(SQLObject):
    name = StringCol(notNone=True, default='')
    status = EnumCol(enumValues=['unknown','on','off'], default='unknown', notNone=True)
    time = DateTimeCol(notNone=True, default=datetime.now)
+
+
+### defaults for this schema version
+def set_defaults():
+   # config table defaults
+   cfgs = (('logging.logfile', 'keg.log'),
+      ('logging.logformat', '%(asctime)s %(levelname)s %(message)s'),
+      ('logging.use_sql', 'false'),
+      ('logging.logtable', 'logging'),
+      ('logging.use_logfile', 'true'),
+      ('logging.use_stream', 'true'),
+      ('devices.lcd', '/dev/lcd'),
+      ('devices.onewire', '/dev/onewire'),
+      ('devices.thermo', '/dev/thermo'),
+      ('devices.flow', '/dev/flow'),
+      ('ui.keypad_pipe', '/dev/input/event0'),
+      ('ui.use_lcd', 'true'),
+      ('ui.translation_file', 'keymap.cfg'),
+      ('ui.lcd_model', 'lk204-25'),
+      ('timing.ib_refresh_timeout', '0.75'),
+      ('timing.ib_idle_timeout', '60'),
+      ('thermo.temp_max_low', '2.0'),
+      ('thermo.temp_max_high', '4.5'),
+      ('db.schema_version', str(SCHEMA_VERSION)),
+   )
+   for key, val in cfgs:
+      obj = Config(key=key, value=val)
+      obj.syncUpdate()   # inserts in sqlobject 0.7 are never lazy, tho
+
+   # policy table defaults
+   p = Policy(type='free', description='free')
+   p.syncUpdate()
+
+
 

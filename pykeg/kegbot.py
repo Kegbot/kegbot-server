@@ -20,9 +20,9 @@ sys.path.append('../pymtxorb')
 sys.path.append('../pylcdui')
 
 # kegbot lib imports
-import Auth
 import Backend
 import Flow
+import Interfaces
 import KegRemoteServer
 import KegUI
 import SQLConfigParser
@@ -151,14 +151,14 @@ class KegBot:
          hdlr = logging.FileHandler(self.config.get('logging','logfile'))
          formatter = logging.Formatter(self.config.get('logging','logformat'))
          hdlr.setFormatter(formatter)
-         root.addHandler(hdlr)
+         logging.root.addHandler(hdlr)
 
       # add tty handler
       if not flags.daemon:
          hdlr = logging.StreamHandler(sys.stdout)
          formatter = logging.Formatter(self.config.get('logging','logformat'))
          hdlr.setFormatter(formatter)
-         root.addHandler(hdlr)
+         logging.root.addHandler(hdlr)
 
    def _ProcessDevices(self):
       for dev in self._devices:

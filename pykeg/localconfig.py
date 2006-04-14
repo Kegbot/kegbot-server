@@ -22,6 +22,7 @@ Within configure, the following calls may be used:
 """
 import logging
 
+import Auth
 import Flow
 import Interfaces
 from Devices import Kegboard, Generic
@@ -65,7 +66,7 @@ def configure(kegbot, config):
    kegbot.AddDevice(freezer)
 
    # enable temperature logging
-   if config.getboolean('thermo', 'use_termo'):
+   if config.getboolean('thermo', 'use_thermo'):
       thermologger = Generic.ThermoLogger('main', controller.i_thermo)
       kegbot.AddDevice(thermologger)
 

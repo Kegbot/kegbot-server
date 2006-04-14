@@ -12,7 +12,7 @@ class AbstractMethodError(Exception):
    pass
 
 
-class GenericIBAuth(Interfaces.IPresenceAuth):
+class GenericIBAuth(Interfaces.IAuthPresence):
    def __init__(self, device, refresh_timeout, quit_event):
       self.device = device
       self.refresh_timeout = refresh_timeout

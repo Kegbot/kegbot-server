@@ -73,6 +73,11 @@ class SchemaUpdate__7(Update):
       SetCurrentSchema(7)
       return UPGRADE_PASS
 
+class SchemaUpdate__8(Update):
+   def Upgrade(self):
+      self.log('adding channel column to kegs table')
+      return UPGRADE_FAIL
+
 ### END SCHEMA UPDATES
 
 def doUpgrade(current, latest):

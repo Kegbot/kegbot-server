@@ -148,7 +148,7 @@ class plate_kegbot_main(lcdui.plate_multi):
 
 class plate_kegbot_pour(lcdui.plate_std):
    def __init__(self, owner):
-      lcdui.plate_std.__init__(self,owner)
+      lcdui.plate_std.__init__(self, owner)
       self.owner = owner
 
       self.cmd_dict['enter'] = (self.owner.kb.StopFlow, ())

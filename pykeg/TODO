@@ -14,6 +14,9 @@ AVERAGE PRIORITY
   * automate the routine, boring stuff
 - improve the DB schema update script
   * perhaps a good place to use TDD
+- per-keg grants
+- clean up UI; KegUI is a mess (and pymtxorb/pylcdui too); better support other
+  displays
 
 LOW PRIORITY
 

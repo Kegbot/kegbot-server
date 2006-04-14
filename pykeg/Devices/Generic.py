@@ -1,20 +1,24 @@
+import logging
 import time
 
 import Backend
 
 class FreezerConversion:
-   def __init__(self, freezer_id, control_relay, temp_sensor, logger,
-         low_t, high_t):
+   def __init__(self, freezer_id, control_relay, temp_sensor, low_t, high_t):
+      assert isinstance(Interfaces.IRelay, control_relay), \
+            "control_relay must implemented IRelay interface"
+      assert isinstance(Interfaces.ITemperatureSensor, temp_sensor), \
+            "temp_sensor must implemented ITemperatureSensor interface"
       self.id = freezer_id
       self.relay = control_relay
       self.sensor = temp_sensor
-      self.logger = logger
-
       self._low_t = low_t
       self._high_t = high_t
 
+      self.logger = logging.getLogger('freezer%s' % str(freezer_id))
+
    def Step(self):
-      temp = self.sensor.GetTemperature()
+      temp, temp_time = self.sensor.GetTemperature()
       if temp is None:
          return
       if temp > self.HighT():
@@ -35,9 +39,11 @@ class FreezerConversion:
 
 class ThermoLogger:
    LOG_INTERVAL = 30
-   def __init__(self, name, sensor):
+   def __init__(self, name, temp_sensor):
+      assert isinstance(Interfaces.ITemperatureSensor, temp_sensor), \
+            "temp_sensor must implemented ITemperatureSensor interface"
       self.name = name
-      self.sensor = sensor
+      self.sensor = temp_sensor
       self._last_time = 0.0
 
    def Step(self):

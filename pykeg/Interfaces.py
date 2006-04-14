@@ -3,6 +3,7 @@ class AbstractInterfaceError(Exception):
 
 
 class IRelay:
+   """ Relay interface """
    STATUS_ENABLED = 1
    STATUS_DISABLED = 0
    STATUS_UNKNOWN = -1
@@ -33,5 +34,16 @@ class IFlowmeter:
       """
       Get monotonically increasing tick value. Returns integer.
       """
+      raise AbstractInterfaceError
+
+
+class IAuthPresence:
+   """ Interface for a presence-based (stateful) access control device """
+   def PresenceCheck(self):
+      """ Return a username if newly present, otherwise None """
+      raise AbstractInterfaceError
+
+   def AbsenceCheck(self):
+      """ Return a username if newly absent, otherwise None """
       raise AbstractInterfaceError
 

@@ -12,7 +12,7 @@ except ImportError:
 import units
 import util
 
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 ### utility functions
 
@@ -82,6 +82,7 @@ class Keg(SQLObject):
    full_volume = IntCol(default=58673, notNone=True)
    startdate = DateTimeCol()
    enddate = DateTimeCol()
+   channel = IntCol(default=0, notNone=True)
    status = EnumCol(enumValues=['online', 'offline', 'coming soon'], default='online')
    beername = StringCol(default='', notNone=True)
    alccontent = FloatCol(default=4.5, notNone=True)

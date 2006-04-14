@@ -83,17 +83,12 @@ class Kegboard(threading.Thread,
       def Status(self):
          return self.kboard.RelayStatus(self.relay_num)
 
-   def __init__(self, dev, logger=None, rate=115200):
+   def __init__(self, dev, rate=115200):
       threading.Thread.__init__(self)
 
       self.QUIT = threading.Event()
       self._lock = threading.Lock()
-      if not logger:
-         logger = logging.getLogger('kegboard')
-         hdlr = logging.StreamHandler(sys.stdout)
-         logger.addHandler(hdlr)
-         logger.setLevel(logging.DEBUG)
-      self.logger = logger
+      self.logger = logging.getLogger('kegboard') # TODO: change name for multiple instances?
 
       # provide interfaces for other components
       self.i_relay_0 = Kegboard.KBRelay(self, 0)
@@ -204,9 +199,8 @@ class Kegboard(threading.Thread,
 
    def GetTemperature(self):
       if self._status:
-         return self._status.temp
-      else:
-         return None
+         return (self._status.temp, self._last_status.rectime)
+      return (None, None)
 
    def GetTicks(self):
       return self._total_ticks
@@ -225,6 +219,7 @@ class StatusPacket:
       self.ticks = int(pkt[3])
       self.valve = pkt[1]
       self.fridge = pkt[2]
+      self.rectime = time.time()
 
    def __cmp__(self, other):
       if not isinstance(other, StatusPacket):

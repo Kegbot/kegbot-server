@@ -1,25 +1,42 @@
+import logging
+import Queue
 import thread
 import time
 import traceback
 
 import Backend
+import Interfaces
+
 
 class AbstractMethodError(Exception):
    pass
 
 
-class GenericIBAuth:
-   def __init__(self, owner, device, refresh_timeout, quit_event, logger):
-      self.owner = owner
+class GenericIBAuth(Interfaces.IPresenceAuth):
+   def __init__(self, device, refresh_timeout, quit_event):
       self.device = device
       self.refresh_timeout = refresh_timeout
       self.QUIT = quit_event
-      self.logger = logger
+      self.logger = logging.getLogger('ibauth')
 
-      self.ownet = None
-
-      self.ibs = []
+      self._ownet = None
       self._allibs = {}
+      self._auth_queue = Queue.Queue()
+      self._deauth_queue = Queue.Queue()
+
+   ### public interfaces (IAuthPresence)
+
+   def PresenceCheck(self):
+      try:
+         return self._auth_queue.get_nowait()
+      except Queue.Empty:
+         return None
+
+   def AbsenceCheck(self):
+      try:
+         return self._deauth_queue.get_nowait()
+      except Queue.Empty:
+         return None
 
    def _UpdateState(self, ibs):
       """ Record IB event histories """
@@ -48,7 +65,7 @@ class GenericIBAuth:
       if not user:
          return
       self.logger.info('key %s user %s is gone' % (ibid, user.username))
-      self.owner.DeauthUser(user.username)
+      self._deauth_queue.put(user.username)
 
    def _PresenceEvent(self, ibid):
       matches = Backend.Token.selectBy(keyinfo=ibid)
@@ -56,7 +73,7 @@ class GenericIBAuth:
          return
       user = matches[0].user
       self.logger.info('key %s belongs to user %s' % (ibid, user.username))
-      self.owner.AuthUser(user.username)
+      self._auth_queue.put(user.username)
 
    def _RefreshLoop(self):
       """ Periodically update self.ibs with the current ibutton list. """
@@ -87,13 +104,13 @@ class SerialIBAuth(GenericIBAuth):
    """ iButton auth class for a serial DSXXXX reader """
    def _Bootstrap(self):
       import onewirenet
-      self.ownet = onewirenet.onewirenet(self.device)
+      self._ownet = onewirenet.onewirenet(self.device)
       self.logger.info('new onewire net at device %s' % self.device)
       return True
 
    def _GetPresentIDs(self):
-      if self.ownet is not None:
-         return [ib.read_id() for ib in self.ownet.refresh()]
+      if self._ownet is not None:
+         return [ib.read_id() for ib in self._ownet.refresh()]
       else:
          return []
 
@@ -105,15 +122,15 @@ class USBIBAuth(GenericIBAuth):
       usb.UpdateLists()
       import ds2490
       try:
-         self.ownet = ds2490.DS2490()
+         self._ownet = ds2490.DS2490()
       except ValueError:
          self.logger.error('ds2490 not connected; disabled')
          return False
       return True
 
    def _GetPresentIDs(self):
-      if self.ownet is not None:
-         return map(str, self.ownet.GetIDs())
+      if self._ownet is not None:
+         return map(str, self._ownet.GetIDs())
       else:
          return []
 

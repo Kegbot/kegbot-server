@@ -76,7 +76,10 @@ class SchemaUpdate__7(Update):
 class SchemaUpdate__8(Update):
    def Upgrade(self):
       self.log('adding channel column to kegs table')
-      return UPGRADE_FAIL
+      c = dbconn.cursor()
+      c.execute("ALTER TABLE `kegs` ADD `channel` INT( 11 ) DEFAULT '0' NOT NULL AFTER `enddate`")
+      SetCurrentSchema(8)
+      return UPGRADE_PASS
 
 ### END SCHEMA UPDATES
 

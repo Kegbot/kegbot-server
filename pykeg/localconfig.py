@@ -50,14 +50,14 @@ def configure(kegbot, config):
    controller.start()
 
    # config & install first beer channel
-   channel_1 = Flow.Channel(1,
+   channel_1 = Flow.Channel(0,
          controller.i_relay_0,
          controller.i_flowmeter,
    )
    kegbot.AddChannel(channel_1)
 
    # config & install fridge control
-   freezer = Generic.FreezerConversion(1,
+   freezer = Generic.FreezerConversion(0,
          controller.i_relay_1,
          controller.i_thermo,
          config.getfloat('thermo', 'temp_max_low'),

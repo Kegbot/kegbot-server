@@ -146,6 +146,8 @@ class KegBot:
       self._devices.append(dev)
 
    def _SetupLogging(self, level=logging.INFO):
+      logging.root.setLevel(level)
+
       # add a file-output handler
       if self.config.getboolean('logging','use_logfile'):
          hdlr = logging.FileHandler(self.config.get('logging','logfile'))
@@ -168,7 +170,7 @@ class KegBot:
                self.AuthUser(new_user)
             old_user = dev.AbsenceCheck()
             if old_user:
-               self.DeuthUser(old_user)
+               self.DeauthUser(old_user)
          else:
             dev.Step()
 
@@ -277,7 +279,7 @@ class KegBot:
       # TODO: fix me with a new config value (ib_idle_timeout doesn't look right)
       if flow.IdleSeconds() >= self.config.getfloat('timing','ib_idle_timeout'):
          self.logger.info('flow: boot: user went idle')
-         self.DeauthUser(flow.user)
+         self.DeauthUser(flow.user.username)
          return False
 
       # global flow stop is set (XXX: this is a silly hack for xml-rpc)
@@ -322,12 +324,12 @@ class KegBot:
       if flow.Keg() is None:
          self.logger.error('flow: no keg currently active; what are you trying to pour?')
          self.ui.Alert('no active keg')
-         self.DeauthUser(flow.user)
+         self.DeauthUser(flow.user.username)
          return False
 
       if flow.max_volume <= 0:
          self.ui.Alert('no credit')
-         self.DeauthUser(flow.user)
+         self.DeauthUser(flow.user.username)
          return False
 
       # turn on UI
@@ -380,7 +382,7 @@ class KegBot:
 
       # update the UI
       ounces = round(units.to_ounces(volume), 2)
-      self.ui.pourEnd(flow.user.username, ounces)
+      self.ui.pourEnd(d)
       self.logger.info('flow: drink total: %i ticks, %i volunits, %.2f ounces' %
             (flow.Ticks(), volume, ounces))
 

@@ -3,6 +3,7 @@ import sys
 import time
 import Queue
 
+import Backend
 import Devices
 import Interfaces
 
@@ -49,7 +50,7 @@ class Channel:
    controller instance and drinker "flow" queue.
    """
    def __init__(self, chanid, valve_relay = None, flow_meter = None):
-      self.chanid = id
+      self.chanid = chanid
       self.logger = logging.getLogger('channel%s' % str(chanid))
 
       if valve_relay is None:

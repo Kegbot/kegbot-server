@@ -51,9 +51,9 @@ class KegUI(lcdui.lcdui):
       self.plate_pour.ounces.setData(oz.rjust(6))
       self.plate_pour.costline.setData('$%.2f' % cost)
 
-   def pourEnd(self, username, amt):
+   def pourEnd(self, drink):
       """ Called by kegbot at end of flow """
-      self.plate_main.setLastDrink(username, amt)
+      self.plate_main.setLastDrink(drink)
       self.setCurrentPlate(self.plate_main, replace=1)
 
    def setFreezer(self, status):

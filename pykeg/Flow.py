@@ -1,6 +1,8 @@
 import sys
 import time
 
+from Devices import NoOp
+
 class Flow:
    """ Holds all the state of a flow/pour """
    def __init__(self, channel, start = None, user = None,
@@ -42,11 +44,17 @@ class Channel:
    4-headed kegerator would likely have 4 kegbot channels, each channel having
    its own flow controller instance and drinker "flow" queue.
    """
-   def __init__(self, chanid, valve_relay, flow_meter, logger):
+   def __init__(self, chanid, logger, valve_relay = None, flow_meter = None):
       self.chanid = id
-      self.valve_relay = valve_relay
-      self.flow_meter = flow_meter
       self.logger = logger
+
+      if valve_relay is None:
+         valve_relay = NoOp.Relay()
+      self.valve_relay = valve_relay
+
+      if flow_meter is None:
+         flow_meter = NoOp.Flowmeter()
+      self.flow_meter = flow_meter
 
       self.flow_queue = []
       self.active_flow = None

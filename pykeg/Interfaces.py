@@ -3,6 +3,9 @@ class AbstractInterfaceError(Exception):
 
 
 class IRelay:
+   STATUS_ENABLED = 1
+   STATUS_DISABLED = 0
+   STATUS_UNKNOWN = -1
    def Enable(self):
       raise AbstractInterfaceError
 

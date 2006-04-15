@@ -11,7 +11,7 @@ all event types are supported yet.
 class PykegClient:
    CLIENT_PASS = 0
    CLIENT_FAIL = 1
-   CLIENT_HANGP = 2
+   CLIENT_HANGUP = 2
    def KegbotEvent_Drink(self, id, kegid, userid, username, kegname,
          volume, endtime):
       print 'Got drink event: %(username)s had %(volume)i mL' % vars()

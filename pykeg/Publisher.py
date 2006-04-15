@@ -6,7 +6,7 @@ is a publish-only interface; subscription to event streams must be done out of
 band (ie, in the global config).
 
 Remote clients of this data should immediately return after an event is
-published. Any returned data will be discardeded (TODO: return HANGUP?)
+published. Any returned data will be discarded (TODO: return HANGUP?)
 
 Several types of events are currently supported:
 

@@ -11,6 +11,7 @@ import ConfigParser
 import logging
 import optparse
 import signal
+import socket
 import sys
 import threading
 import time
@@ -25,6 +26,7 @@ import Flow
 import Interfaces
 import KegRemoteServer
 import KegUI
+import Publisher
 import SQLConfigParser
 import units
 import util
@@ -96,6 +98,9 @@ class KegBot:
       # remote server
       self.server = KegRemoteServer.KegRemoteServer(self, '', 9966)
       self.server.start()
+
+      # remote event publisher
+      self.publisher = Publisher.Publisher()
 
       # do local hardware config
       self._channels = []
@@ -194,6 +199,7 @@ class KegBot:
                   self.logger.info('flow: new flow started for user %s on channel %s' %
                         (new_flow.user.username, channel.chanid))
                   active_flows.append(new_flow)
+                  self.publisher.PublishFlowStart(new_flow)
                else:
                   channel.DeactivateFlow()
                   self.logger.info('flow: flow not started')
@@ -388,6 +394,7 @@ class KegBot:
       self.GenGrantCharges(d)
       Backend.BAC.ProcessDrink(d)
       Backend.Binge.Assign(d)
+      self.publisher.PublishDrinkEvent(d)
 
       # update the UI
       ounces = round(units.to_ounces(volume), 2)

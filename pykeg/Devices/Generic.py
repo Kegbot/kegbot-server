@@ -2,12 +2,13 @@ import logging
 import time
 
 import Backend
+import Interfaces
 
 class FreezerConversion:
    def __init__(self, freezer_id, control_relay, temp_sensor, low_t, high_t):
-      assert isinstance(Interfaces.IRelay, control_relay), \
+      assert isinstance(control_relay, Interfaces.IRelay), \
             "control_relay must implemented IRelay interface"
-      assert isinstance(Interfaces.ITemperatureSensor, temp_sensor), \
+      assert isinstance(temp_sensor, Interfaces.ITemperatureSensor), \
             "temp_sensor must implemented ITemperatureSensor interface"
       self.id = freezer_id
       self.relay = control_relay

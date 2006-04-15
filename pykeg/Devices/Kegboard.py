@@ -198,10 +198,17 @@ class Kegboard(threading.Thread,
       status = {0: self._status.valve, 1: self._status.fridge}[num]
       return status
 
+   ### ITemperatureSensor interface
+
+   def SensorName(self):
+      return 'kegboard'
+
    def GetTemperature(self):
       if self._status:
          return (self._status.temp, self._last_status.rectime)
       return (None, None)
+
+   ### IFlowmeter interfaces
 
    def GetTicks(self):
       return self._total_ticks

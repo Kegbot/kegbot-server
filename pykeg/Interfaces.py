@@ -18,6 +18,10 @@ class IRelay:
 
 
 class ITemperatureSensor:
+   def SensorName(self):
+      """ Return a descriptive string name """
+      raise AbstractInterfaceError
+
    def GetTemperature(self):
       """
       Get the last recorded temperature.

@@ -64,6 +64,7 @@ def configure(kegbot, config):
          config.getfloat('thermo', 'temp_max_high'),
    )
    kegbot.AddDevice(freezer)
+   kegbot.AddDevice(controller.i_thermo)
 
    # enable temperature logging
    if config.getboolean('thermo', 'use_thermo'):

@@ -26,19 +26,19 @@ class PykegClient:
       print 'Flow update: %(username)s %(volume)s mL' % vars()
       return self.CLIENT_PASS
 
-   def KegbotEvent_PeriodicTemperature(self, temp):
-      print 'Periodic temperature: %.2f' % temp
+   def KegbotEvent_PeriodicTemperature(self, name, temp):
+      print 'Periodic temperature: sensor %s: %.2f' % (name, temp)
       return self.CLIENT_PASS
 
-   def KegbotEvent_AlarmTemperature(self, temp):
-      print 'Alarm Temperature: %.2f' % temp
+   def KegbotEvent_AlarmTemperature(self, name, temp):
+      print 'Alarm Temperature: sensor %s: %.2f' % (name, temp)
       print 'You should probably do something about this!'
       return self.CLIENT_PASS
 
 
 if __name__ == '__main__':
    client_obj = PykegClient()
-   server = SimpleXMLRPCServer.SimpleXMLRPCServer(('', 9091))
+   server = SimpleXMLRPCServer.SimpleXMLRPCServer(('', 9091), logRequests=False)
    server.register_instance(client_obj)
    server.register_introspection_functions()
 

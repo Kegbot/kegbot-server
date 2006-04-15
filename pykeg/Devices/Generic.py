@@ -41,7 +41,7 @@ class FreezerConversion:
 class ThermoLogger:
    LOG_INTERVAL = 30
    def __init__(self, name, temp_sensor):
-      assert isinstance(Interfaces.ITemperatureSensor, temp_sensor), \
+      assert isinstance(temp_sensor, Interfaces.ITemperatureSensor), \
             "temp_sensor must implemented ITemperatureSensor interface"
       self.name = name
       self.sensor = temp_sensor
@@ -53,7 +53,8 @@ class ThermoLogger:
          return
 
       self._last_time = now
-      curr_temp = self.sensor.GetTemperature()
-      rec = Backend.ThermoLog(name = self.name, temp = curr_temp)
-      rec.syncUpdate()
+      curr_temp, rec_time = self.sensor.GetTemperature()
+      if curr_temp is not None:
+         rec = Backend.ThermoLog(name = self.name, temp = curr_temp)
+         rec.syncUpdate()
 

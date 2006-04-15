@@ -50,6 +50,7 @@ Several types of events are currently supported:
       Periodic reporting of the current temperature, if such data is available.
 
       Fields:
+         string   name        // sensor name
          float    temp        // in C
 
    KegbotEvent_AlarmTemperature
@@ -57,11 +58,13 @@ Several types of events are currently supported:
       is available.
 
       Fields:
+         string   name        // sensor name
          float    temp        // in C
 """
 
 import logging
 import socket
+import time
 import units
 import xmlrpclib
 
@@ -71,6 +74,8 @@ class Publisher:
       self._subscribers = {}
       self.logger = logging.getLogger('publisher')
       self.logger.info('Event publisher started')
+
+      self._last_publish = {}
 
       # for now, add localhost to all events. eventually this should be
       # in the global config
@@ -91,6 +96,7 @@ class Publisher:
 
    # TODO: make me publish events to a worker thread (so callee won't block)
    def _DoPublish(self, event, args):
+      self._last_publish[event] = time.time()
       func_name = 'KegbotEvent_' + event
       for addr, server in self.GetSubscribers(event):
          self.logger.info('Publishing %s to %s' % (event, addr))
@@ -120,8 +126,10 @@ class Publisher:
             units.ticks_to_volunits(flow.Ticks()))
       self._DoPublish('FlowUpdate', args)
 
-   def PublishTemperature(self, temp):
-      args = (temp,)
+   def PublishTemperature(self, name, temp):
+      if time.time() - self._last_publish.get('PeriodicTemperature', 0) < 30:
+         return
+      args = (name, temp)
       self._DoPublish('PeriodicTemperature', args)
 
       # TODO: publish alarm temperature here if necessary

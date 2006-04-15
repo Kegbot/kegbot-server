@@ -185,6 +185,8 @@ class KegBot:
             old_user = dev.AbsenceCheck()
             if old_user:
                self.DeauthUser(old_user)
+         elif isinstance(dev, Interfaces.ITemperatureSensor):
+            self.publisher.PublishTemperature(dev.SensorName(), dev.GetTemperature()[0])
          else:
             dev.Step()
 

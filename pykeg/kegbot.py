@@ -84,6 +84,15 @@ class KegBot:
       self._SetupLogging()
       self.logger = logging.getLogger('pykeg')
 
+      # check schema freshness
+      installed_schema = self.config.getint('db', 'schema_version')
+      if installed_schema < Backend.SCHEMA_VERSION:
+         self.logger.fatal('Error: outdated schema detected! (latest = %i, installed = %i)' %
+               (installed_schema, Backend.SCHEMA_VERSION))
+         self.logger.fatal('Please run scripts/updatedb.py to correct this.')
+         self.logger.fatal('Aborting.')
+         sys.exit(1)
+
       # remote server
       self.server = KegRemoteServer.KegRemoteServer(self, '', 9966)
       self.server.start()

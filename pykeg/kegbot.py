@@ -138,7 +138,7 @@ class KegBot:
       """ Sets HUP, INT, QUIT, TERM to go to cause a quit """
       signal.signal(signal.SIGHUP, self._SignalHandler)
       signal.signal(signal.SIGINT, self._SignalHandler)
-      signal.signal(signal.SIGQUIT,self._SignalHandler)
+      signal.signal(signal.SIGQUIT, self._SignalHandler)
       signal.signal(signal.SIGTERM, self._SignalHandler)
 
    def _SignalHandler(self, signum, frame):

@@ -81,6 +81,13 @@ class SchemaUpdate__8(Update):
       SetCurrentSchema(8)
       return UPGRADE_PASS
 
+class SchemaUpdate__9(Update):
+   def Upgrade(self):
+      self.log('adding relaylog table')
+      Backend.RelayLog.createTable()
+      SetCurrentSchema(9)
+      return UPGRADE_PASS
+
 ### END SCHEMA UPDATES
 
 def doUpgrade(current, latest):

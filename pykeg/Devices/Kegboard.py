@@ -7,6 +7,7 @@ import threading
 import time
 import traceback
 
+import Backend
 import Interfaces
 
 class Kegboard(threading.Thread,
@@ -187,11 +188,13 @@ class Kegboard(threading.Thread,
    def EnableRelay(self, num):
       cmd = {0: self.CMD_VALVEON, 1: self.CMD_FRIDGEON}[num]
       self._DoCmd(cmd)
+      Backend.RelayLog(name=str(num), status='on')
       self.logger.info('relay %i enabled' % num)
 
    def DisableRelay(self, num):
       cmd = {0: self.CMD_VALVEOFF, 1: self.CMD_FRIDGEOFF}[num]
       self._DoCmd(cmd)
+      Backend.RelayLog(name=str(num), status='off')
       self.logger.info('relay %i disabled' % num)
 
    def RelayStatus(self, num):

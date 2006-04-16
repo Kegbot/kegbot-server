@@ -12,7 +12,7 @@ except ImportError:
 import units
 import util
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 ### utility functions
 

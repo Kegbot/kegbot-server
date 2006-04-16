@@ -13,6 +13,7 @@ classes = inspect.getmembers(Backend, inspect.isclass)
 
 print '-- kegbot sql schema'
 print '-- schema version: %i' % Backend.SCHEMA_VERSION
+print ''
 
 for clsname, cls in classes:
    if not issubclass(cls, sqlobject.SQLObject):

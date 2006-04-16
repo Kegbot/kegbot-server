@@ -101,10 +101,9 @@ class Channel:
       self.active_flow = None
 
    def GetKeg(self):
-      online_kegs = list(Backend.Keg.selectBy(status='online',
+      channel_kegs = list(Backend.Keg.selectBy(status='online',
          channel=self.chanid, orderBy='-id'))
-      if len(online_kegs) == 0:
+      if len(channel_kegs) != 1:
          return None
-      else:
-         return online_kegs[0]
+      return channel_kegs[0]
 

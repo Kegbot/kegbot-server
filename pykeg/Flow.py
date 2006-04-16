@@ -28,8 +28,9 @@ class Flow:
 
       diff = ticks - self._last_ticks
       self._ticks += diff
-      self._last_activity = time.time()
       self._last_ticks = ticks
+      if diff != 0:
+         self._last_activity = time.time()
       return diff
 
    def IdleSeconds(self):

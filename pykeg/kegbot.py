@@ -191,34 +191,29 @@ class KegBot:
             dev.Step()
 
    def MainEventLoop(self):
-      active_flows = []
+      """ Main asynchronous service loop of the kegbot. """
+
+      self.active_flows = []
       while not self.QUIT.isSet():
-         for channel in self._channels:
+         # start any newly-created flows
+         for channel in [chan for chan in self._channels if chan.IsIdle()]:
             new_flow = channel.MaybeActivateNextFlow()
             if new_flow is not None:
-               success = self.StartFlow(new_flow)
-               if success:
-                  self.logger.info('flow: new flow started for user %s on channel %s' %
-                        (new_flow.user.username, channel.chanid))
-                  active_flows.append(new_flow)
-                  self.publisher.PublishFlowStart(new_flow)
-               else:
-                  channel.DeactivateFlow()
-                  self.logger.info('flow: flow not started')
+               self.StartFlow(new_flow)
 
          # step each flow and check if it is complete
-         for flow in active_flows:
+         for flow in self.active_flows:
             flow_active = self.StepFlow(flow)
             if not flow_active:
                self.FinishFlow(flow)
-               active_flows.remove(flow)
-               channel.DeactivateFlow()
+               self.active_flows.remove(flow)
+               flow.channel.DeactivateFlow()
 
          # process other things needing attention
          self._ProcessDevices()
 
          # sleep a bit longer if there is no guarantee of work to do next cycle
-         if len(active_flows):
+         if len(self.active_flows):
             time.sleep(0.01)
          else:
             time.sleep(0.1)
@@ -342,11 +337,13 @@ class KegBot:
          self.logger.error('flow: no keg currently active; what are you trying to pour?')
          self.ui.Alert('no active keg')
          self.DeauthUser(flow.user.username)
+         flow.channel.DeactivateFlow()
          return False
 
       if flow.max_volume <= 0:
          self.ui.Alert('no credit')
          self.DeauthUser(flow.user.username)
+         flow.channel.DeactivateFlow()
          return False
 
       # turn on UI
@@ -358,6 +355,12 @@ class KegBot:
       # zero the flow on current tick reading
       flow.SetTicks(flow.channel.GetTicks())
       self.logger.info('flow: starting flow for user %s' % flow.user.username)
+
+      # mark the flow as active
+      self.active_flows.append(flow)
+      self.logger.info('flow: new flow started for user %s on channel %s' %
+            (flow.user.username, flow.channel.chanid))
+      self.publisher.PublishFlowStart(flow)
 
       return True
 

@@ -68,6 +68,9 @@ class Channel:
       self.flow_queue = Queue.Queue()
       self.active_flow = None
 
+   def IsIdle(self):
+      return self.active_flow is None
+
    def EnqueueFlow(self, flow):
       """ Add a flow to the waiting queue of flows """
       self.flow_queue.put(flow)
@@ -80,7 +83,6 @@ class Channel:
          flow = self.flow_queue.get_nowait()
       except Queue.Empty:
          return None
-      self.logger.info('new active flow: %s' % flow)
       self.active_flow = flow
       return flow
 

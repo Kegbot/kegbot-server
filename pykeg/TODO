@@ -17,6 +17,9 @@ AVERAGE PRIORITY
 - per-keg grants
 - clean up UI; KegUI is a mess (and pymtxorb/pylcdui too); better support other
   displays
+- anonymous flows: support for channels to initiate flows without an
+  authentication module to support it; this would be useful for valveless
+  setups, where we have to notice the flowmeter 'just starts' ticking
 
 LOW PRIORITY
 

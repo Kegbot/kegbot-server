@@ -88,6 +88,15 @@ class SchemaUpdate__9(Update):
       SetCurrentSchema(9)
       return UPGRADE_PASS
 
+class SchemaUpdate__10(Update):
+   def Upgrade(self):
+      self.log('changing config value col to TEXT type')
+      c = dbconn.cursor()
+      c.execute("ALTER TABLE `config` CHANGE `value` `value` TEXT NOT NULL");
+      SetCurrentSchema(10)
+      return UPGRADE_PASS
+
+
 ### END SCHEMA UPDATES
 
 def doUpgrade(current, latest):

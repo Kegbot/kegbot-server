@@ -12,7 +12,7 @@ except ImportError:
 import units
 import util
 
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 
 ### utility functions
 
@@ -50,11 +50,11 @@ class Config(SQLObject):
    def createTableSQL(cls, createJoinTables=True, connection=None,
                       createIndexes=True):
       conn = connection or cls._connection
-      q = """ CREATE TABLE `%s` (
-              `%s` varchar(64) NOT NULL default '',
-              `value` mediumtext NOT NULL,
-              PRIMARY KEY  (`%s`)
-      ) """ % (cls.sqlmeta.table, cls.sqlmeta.idName, cls.sqlmeta.idName)
+      q = """
+CREATE TABLE %s (
+    %s VARCHAR(64) PRIMARY KEY NOT NULL,
+    value TEXT NOT NULL
+) """ % (cls.sqlmeta.table, cls.sqlmeta.idName)
       return q
    createTableSQL = classmethod(createTableSQL)
 

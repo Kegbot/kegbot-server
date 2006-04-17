@@ -433,9 +433,8 @@ class KegBot:
          except IndexError:
             break
          vol_curr = min(g.AvailableVolume(), vol_remain)
-         if vol_curr > 0:
-            cost += g.policy.Cost(vol_remain)
-            vol_remain -= vol_curr
+         cost += g.policy.Cost(vol_curr)
+         vol_remain -= vol_curr
       return cost
 
    def GenGrantCharges(self, d):

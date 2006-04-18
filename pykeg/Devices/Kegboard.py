@@ -183,6 +183,9 @@ class Kegboard(threading.Thread,
          self.logger.critical('packet read error')
          traceback.print_exc()
 
+      self.DisableRelay(0)
+      self.DisableRelay(1)
+
    ### public functions
 
    def EnableRelay(self, num):

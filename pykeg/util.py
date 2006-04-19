@@ -80,3 +80,22 @@ def MaxVolume(grants):
          tot += vol
    return tot
 
+def boolstr(s):
+   if s.lower()[0] == 'y':
+      return 1
+   elif s.lower()[0] == 'n':
+      return 0
+   else:
+      return None
+
+def prompt(msg, default='', cast=str):
+   ret = None
+   while ret is None:
+      ret = raw_input('%s [%s]: ' % (msg, default)).strip()
+      if ret == '':
+         ret = default
+      try:
+         ret = cast(ret)
+      except:
+         ret = None
+   return ret

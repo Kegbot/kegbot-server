@@ -12,7 +12,7 @@ except ImportError:
 import units
 import util
 
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 11
 
 ### utility functions
 
@@ -32,6 +32,7 @@ def drop_and_create(tbl):
 ### table definitions
 
 class Config(SQLObject):
+   """ stores string key -> string value config data for python """
    class sqlmeta:
       table = 'config'
       idType = str
@@ -60,9 +61,9 @@ CREATE TABLE %s (
 
 
 class Drink(SQLObject):
+   """ Raw drink data: how much, when, pointers to user and keg """
    class sqlmeta:
       table = 'drinks'
-      lazyUpdate = True
 
    ticks = IntCol(default=0, notNone=True)
    volume = IntCol(default=0, notNone=True)
@@ -74,29 +75,25 @@ class Drink(SQLObject):
 
 
 class Keg(SQLObject):
+   """ One row for each keg used """
    class sqlmeta:
       table = 'kegs'
-      lazyUpdate = True
 
    # default full_volume = 15.5 gallons in mL
+   type = ForeignKey('BeerType', notNone=True)
    full_volume = IntCol(default=58673, notNone=True)
-   startdate = DateTimeCol()
-   enddate = DateTimeCol()
+   startdate = DateTimeCol(notNone=True)
+   enddate = DateTimeCol(notNone=True)
    channel = IntCol(default=0, notNone=True)
    status = EnumCol(enumValues=['online', 'offline', 'coming soon'], default='online')
-   beername = StringCol(default='', notNone=True)
-   alccontent = FloatCol(default=4.5, notNone=True)
    description = StringCol(default='', notNone=True)
    origcost = FloatCol(default=0, notNone=True)
-   beerpalid = IntCol(default=0, notNone=True)
-   ratebeerid = IntCol(default=0, notNone=True)
-   calories_oz = FloatCol(default=0, notNone=True)
 
 
 class Grant(SQLObject):
+   """ Maps a policy (cost of pouring beer) to a user, with restrictions """
    class sqlmeta:
       table = 'grants'
-      lazyUpdate = True
 
    user = ForeignKey('User', notNone=True)
    expiration = EnumCol(enumValues=['none', 'time', 'volume', 'drinks'],
@@ -160,9 +157,9 @@ class Grant(SQLObject):
 
 
 class User(SQLObject):
+   """ Drinker information """
    class sqlmeta:
       table = 'users'
-      lazyUpdate = True
 
    username = StringCol(length=32, notNone=True)
    email = StringCol(default='')
@@ -171,13 +168,12 @@ class User(SQLObject):
    password = StringCol(default='')
    gender = EnumCol(enumValues = ['male','female'])
    weight = FloatCol(default=180.0)
-   image_url = StringCol(default='')
 
 
 class Policy(SQLObject):
+   """ Specify cost function(s) for arbitrary volumes of beer """
    class sqlmeta:
       table = 'policies'
-      lazyUpdate = True
 
    type = EnumCol(enumValues = ['fixed-cost','free'], notNone=True)
    unitcost = FloatCol(default=0.0, notNone=True)
@@ -192,9 +188,9 @@ class Policy(SQLObject):
 
 
 class Token(SQLObject):
+   """ Maps an arbitrary ID (such as an 1-wire address) to a user, for auth """
    class sqlmeta:
       table = 'tokens'
-      lazyUpdate = True
 
    user = ForeignKey('User', notNone=True)
    keyinfo = StringCol(notNone=True)
@@ -202,9 +198,9 @@ class Token(SQLObject):
 
 
 class BAC(SQLObject):
+   """ Generated table of historic blood-alcohol level estimates """
    class sqlmeta:
       table = 'bacs'
-      lazyUpdate = True
 
    user = ForeignKey('User')
    drink = ForeignKey('Drink')
@@ -220,7 +216,7 @@ class BAC(SQLObject):
          last_bac = matches[0]
          prev_bac = util.decomposeBAC(last_bac.bac, d.endtime - last_bac.rectime)
 
-      now = util.instantBAC(d.user.gender, d.user.weight, d.keg.alccontent,
+      now = util.instantBAC(d.user.gender, d.user.weight, d.keg.type.abv,
             units.to_ounces(d.volume))
       # TODO(mikey): fix this factor
       #now = util.decomposeBAC(now, units.to_ounces(d.volume)/12.0*(30*60))
@@ -231,9 +227,9 @@ class BAC(SQLObject):
 
 
 class GrantCharge(SQLObject):
+   """ Records that a portion of a specific Grant was applied to a specific Drink """
    class sqlmeta:
       table = 'grantcharges'
-      lazyUpdate = True
 
    grant = ForeignKey('Grant')
    drink = ForeignKey('Drink')
@@ -242,9 +238,9 @@ class GrantCharge(SQLObject):
 
 
 class Binge(SQLObject):
+   """ Generated table caching uninterrupted groups of pours, plus total volume """
    class sqlmeta:
       table = 'binges'
-      lazyUpdate = True
 
    user = ForeignKey('User', notNone=True)
    startdrink = ForeignKey('Drink')
@@ -280,9 +276,9 @@ class Binge(SQLObject):
 
 
 class Userpic(SQLObject):
+   """ User can store his image in SQL (mostly for frontend use) """
    class sqlmeta:
       table = 'userpics'
-      lazyUpdate = True
 
    user = ForeignKey('User', notNone=True)
    filetype = EnumCol(enumValues=['png','jpeg'], default='png', notNone=True)
@@ -291,9 +287,9 @@ class Userpic(SQLObject):
 
 
 class ThermoLog(SQLObject):
+   """ Log of temperatures, indexed by arbitrary sensor name """
    class sqlmeta:
       table = 'thermolog'
-      lazyUpdate = True
 
    name = StringCol(notNone=True, default='')
    temp = FloatCol(notNone=True, default=0.0)
@@ -301,14 +297,48 @@ class ThermoLog(SQLObject):
 
 
 class RelayLog(SQLObject):
+   """ Log of relay events, indicated by arbitrary relay name """
    class sqlmeta:
       table = 'relaylog'
-      lazyUpdate = True
 
    name = StringCol(notNone=True, default='')
    status = EnumCol(enumValues=['unknown','on','off'], default='unknown', notNone=True)
    time = DateTimeCol(notNone=True, default=datetime.now)
 
+
+class BeerType(SQLObject):
+   """ Describes a specific beer by name, brewer, style, and content """
+   class sqlmeta:
+      table = 'beertypes'
+
+   name = StringCol(notNone=True, default='')
+   brewer = ForeignKey('Brewer', notNone=True)
+   style = ForeignKey('BeerStyle', notNone=True, default=1)
+   calories_oz = FloatCol()   # None is OK here, to indicate no data
+   carbs_oz = FloatCol()      # None is OK here, to indicate no data
+   abv = FloatCol(notNone=True, default=4.5)
+
+
+class Brewer(SQLObject):
+   """ Dynamic table of beer brewer information """
+   class sqlmeta:
+      table = 'brewers'
+
+   name = StringCol(notNone=True, default='')
+   origin_country = StringCol(notNone=True, default='')
+   origin_state = StringCol(notNone=True, default='')
+   origin_city = StringCol(notNone=True, default='')
+   distribution = EnumCol(notNone=True, enumValues=['retail', 'homebrew', 'unknown'], default='unknown')
+   url = StringCol(notNone=True, default='')
+   comment = StringCol(notNone=True, default='')
+
+
+class BeerStyle(SQLObject):
+   """ Dynamic table of beer style information """
+   class sqlmeta:
+      table = 'beerstyles'
+
+   name = StringCol(notNone=True)
 
 ### defaults for this schema version
 def set_defaults():

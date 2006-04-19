@@ -17,6 +17,8 @@ dbconn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpass, db=dbdb)
 
 sys.path.append('.')
 import Backend
+import util
+import sqlobject
 
 db_uri = 'mysql://%s:%s@%s/%s' % (dbuser, dbpass, dbhost, dbdb)
 Backend.setup(db_uri)
@@ -96,8 +98,97 @@ class SchemaUpdate__10(Update):
       SetCurrentSchema(10)
       return UPGRADE_PASS
 
+class SchemaUpdate__11(Update):
+   def Upgrade(self):
+
+      self.log('creating beertypes table')
+      Backend.BeerType.createTable()
+      self.log('creating brewers table')
+      Backend.Brewer.createTable()
+      Backend.Brewer(name='Unknown', comment='No brewer information')
+      self.log('creating beerstyle table')
+      Backend.BeerStyle.createTable()
+      Backend.BeerStyle(name='Unknown')
+
+      # migrate old rows
+      self.log('starting keg migration')
+      c = dbconn.cursor()
+      q = 'select * from kegs order by id asc'
+      res = c.execute(q)
+      keg_type_map = {}
+      for row in c:
+         (id, fullvol, start, end, chan, status, beername, abv, descr, cost, beerpal, ratebeer, calories) = row
+         print '-'*72
+         print 'Migrating keg %i: %s, %.1f%% ABV, %i calories/oz' % (id, beername, abv, calories)
+         print ''
+         types = list(Backend.BeerType.select())
+         print 'Existing beer types:'
+         print '\n'.join(['  [%i] %s (%s)' % (type.id, type.name, type.brewer.name) for type in types])
+         print ''
+         print 'Enter an id from above (if any), or "n" to create new'
+         action = None
+         while action not in ['n'] + [str(type.id) for type in types]:
+            action = raw_input('beer type? ').strip()
+         print ''
+         if action == 'n':
+            print 'OK, creating new beer type...'
+            beername = util.prompt('beername', beername)
+            calories_oz = util.prompt('calories/oz', '%.1f'%calories, float)
+            carbs_oz = util.prompt('carbs/os', '0.0', float)
+            abv = util.prompt('percent alcohol by volume', '%.1f'%abv, float)
+
+            brewers = list(Backend.Brewer.select())
+            print 'Existing brewers:'
+            print '\n'.join(['  [%i] %s' % (brewer.id, brewer.name) for brewer in brewers])
+            print ''
+            print 'Enter an id from above (if any), or "n" to create new'
+            brewer_id = None
+            while brewer_id not in ['n'] + [str(b.id) for b in brewers]:
+               brewer_id = raw_input('brewer? ').strip()
+            print ''
+            if brewer_id == 'n':
+               brewname = util.prompt('brewer name','Generic Brewer')
+               country = util.prompt('country', 'USA')
+               state = util.prompt('state/province', 'California')
+               city = util.prompt('city/other', 'Anytown')
+               url = util.prompt('url','')
+               dist = util.prompt('distribution (retail/homebrew)', 'retail')
+               comment = util.prompt('comment','')
+
+               brewer = Backend.Brewer(name=brewname, origin_country=country, origin_state=state, origin_city=city,
+                     distribution=dist, url=url, comment=comment)
+            else:
+               brewer = Backend.Brewer.get(int(brewer_id))
+
+            beer_type = Backend.BeerType(name=beername, brewer=brewer, calories_oz = float(calories_oz),
+                  carbs_oz = float(carbs_oz), abv = float(abv))
+         else:
+            beer_type = Backend.BeerType.get(int(action))
+         keg_type_map[id] = beer_type.id
+
+      self.log('inserting type foreign key col')
+      c.execute("ALTER TABLE  `kegs` ADD  `type_id` INT NOT NULL AFTER  `id`")
+
+      self.log('dropping cols from old kegs table')
+      c.execute("""ALTER TABLE `kegs`
+                 DROP `beername`,
+                 DROP `alccontent`,
+                 DROP `beerpalid`,
+                 DROP `ratebeerid`,
+                 DROP `calories_oz`""");
+
+      # update kegs table with user input
+      self.log('updating old kegs with new type pointers')
+      for k, v in keg_type_map.iteritems():
+         k = Backend.Keg.get(k)
+         k.type_id = v
+         k.syncUpdate()
+
+      SetCurrentSchema(11)
+      return UPGRADE_PASS
 
 ### END SCHEMA UPDATES
+
 
 def doUpgrade(current, latest):
    for new_schema in range(current+1, latest+1):
@@ -128,7 +219,7 @@ def Main():
       raise
 
    print 'Currently installed schema: %i' % current
-   print 'Latest available schemta: %i' % LATEST_SCHEMA
+   print 'Latest available schema: %i' % LATEST_SCHEMA
    print ''
 
    if current == LATEST_SCHEMA:

@@ -344,7 +344,7 @@ class BeerStyle(SQLObject):
 def set_defaults():
    # config table defaults
    cfgs = (('logging.logfile', 'keg.log'),
-      ('logging.logformat', '%(asctime)s %(levelname)s %(message)s'),
+      ('logging.logformat', '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'),
       ('logging.use_sql', 'false'),
       ('logging.logtable', 'logging'),
       ('logging.use_logfile', 'true'),

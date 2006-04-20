@@ -364,7 +364,7 @@ def set_defaults():
       ('db.schema_version', str(SCHEMA_VERSION)),
    )
    for key, val in cfgs:
-      obj = Config(key=key, value=val)
+      obj = Config(id=key, value=val)
       obj.syncUpdate()   # inserts in sqlobject 0.7 are never lazy, tho
 
    # policy table defaults

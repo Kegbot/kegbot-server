@@ -388,7 +388,7 @@ class KegBot:
       channel.StopFlow()
 
       # log the drink
-      volume = units.ticks_to_volunets(flow.Ticks())
+      volume = units.ticks_to_volunits(flow.Ticks())
       d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=int(flow.start),
             endtime=int(flow.end), user=flow.user, keg=flow.channel.Keg(), status='valid')
       d.syncUpdate()

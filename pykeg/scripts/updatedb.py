@@ -163,7 +163,7 @@ class SchemaUpdate__11(Update):
                   carbs_oz = float(carbs_oz), abv = float(abv))
          else:
             beer_type = Backend.BeerType.get(int(action))
-         keg_type_map[id] = beer_type.id
+         keg_type_map[id] = beer_type
 
       self.log('inserting type foreign key col')
       c.execute("ALTER TABLE  `kegs` ADD  `type_id` INT NOT NULL AFTER  `id`")
@@ -180,7 +180,7 @@ class SchemaUpdate__11(Update):
       self.log('updating old kegs with new type pointers')
       for k, v in keg_type_map.iteritems():
          k = Backend.Keg.get(k)
-         k.type_id = v
+         k.type = v
          k.syncUpdate()
 
       self.log('adding thermo pref')

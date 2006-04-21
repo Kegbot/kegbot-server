@@ -123,20 +123,14 @@ class Channel:
    def StartFlow(self):
       self.logger.info('starting new flow for user %s' % self.active_flow.user.username)
       self.active_flow.SetTicks(self.GetTicks())
-      return self._EnableValve()
+      return self.valve_relay.Enable()
 
    def ServiceFlow(self):
       return self.active_flow.SetTicks(self.GetTicks())
 
    def StopFlow(self):
-      self.valve_relay._DisableValve()
+      self.valve_relay.Disable()
       self.active_flow.SetTicks(self.GetTicks()) # final tick reading
-
-   def _EnableValve(self):
-      return self.valve_relay.Enable()
-
-   def _DisableValve(self):
-      return self.valve_relay.Disable()
 
    def GetTicks(self):
       return self.flow_meter.GetTicks()

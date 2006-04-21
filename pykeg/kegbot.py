@@ -332,34 +332,32 @@ class KegBot:
       self.logger.info('flow: starting flow handling')
       self.ui.activity()
       self.STOP_FLOW = 0 # TODO: move to flow
+      channel = flow.channel
 
-      if flow.Keg() is None:
+      if flow.channel.Keg() is None:
          self.logger.error('flow: no keg currently active; what are you trying to pour?')
          self.ui.Alert('no active keg')
          self.DeauthUser(flow.user.username)
-         flow.channel.DeactivateFlow()
+         channel.DeactivateFlow()
          return False
 
       if flow.max_volume <= 0:
          self.ui.Alert('no credit')
          self.DeauthUser(flow.user.username)
-         flow.channel.DeactivateFlow()
+         channel.DeactivateFlow()
          return False
 
       # turn on UI
       self.ui.pourStart(flow.user.username)
 
       # turn on flow
-      flow.channel.EnableValve()
-
-      # zero the flow on current tick reading
-      flow.SetTicks(flow.channel.GetTicks())
+      channel.StartFlow()
       self.logger.info('flow: starting flow for user %s' % flow.user.username)
 
       # mark the flow as active
       self.active_flows.append(flow)
       self.logger.info('flow: new flow started for user %s on channel %s' %
-            (flow.user.username, flow.channel.chanid))
+            (flow.user.username, channel.chanid))
       self.publisher.PublishFlowStart(flow)
 
       return True
@@ -371,7 +369,8 @@ class KegBot:
          return False
 
       # update things if anything changed
-      if flow.SetTicks(flow.channel.GetTicks()):
+      channel = flow.channel
+      if channel.ServiceFlow():
          curr_vol = units.ticks_to_volunits(flow.Ticks())
          curr_cost = self.EstimateCost(flow.user, curr_vol)
          self.ui.pourUpdate(units.to_ounces(curr_vol), curr_cost)
@@ -381,18 +380,15 @@ class KegBot:
    def FinishFlow(self, flow):
       """ End a Flow and record a drink """
       self.logger.info('flow: user is gone; flow ending')
+      channel = flow.channel
 
-      # disable the valve; if there isn't a valve, this will be a no-op
-      flow.channel.DisableValve()
-
-      # update flow object with final state
-      flow.SetTicks(flow.channel.GetTicks())
-      flow.end = time.time()
+      # tell the channel to clean things up
+      channel.StopFlow()
 
       # log the drink
       volume = units.ticks_to_volunits(flow.Ticks())
       d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=int(flow.start),
-            endtime=int(flow.end), user=flow.user, keg=flow.Keg(), status='valid')
+            endtime=int(flow.end), user=flow.user, keg=flow.channel.Keg(), status='valid')
       d.syncUpdate()
 
       # post-processing steps

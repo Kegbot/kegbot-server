@@ -8,7 +8,13 @@ import Devices
 import Interfaces
 
 class Flow:
-   """ Holds all the state of a flow/pour """
+   """
+   Holds all the state of a flow/pour.
+
+   The main Kegbot class is responsible for associating a Flow object with a
+   particular channel, and updating the data in this object by servicing the
+   Flow periodically.
+   """
    def __init__(self, channel, start = None, user = None,
          ticks = 0, max_volume = sys.maxint, end = None):
       self.channel = channel
@@ -22,11 +28,29 @@ class Flow:
       self._last_ticks = None
 
    def SetTicks(self, ticks):
-      """ ticks should be a monotonically increasing count """
+      """
+      Set or increment the tick count (warning: not idempotent, see note!)
+
+      For this flow, if this is the first time SetTicks is called, then the
+      Flow is 'zeroed' around this value.
+
+      Subsequent calls to SetTicks will cause the current flow's tick countere
+      to be incremented by difference between the current value of `ticks`, and
+      the value at the last function call.
+      """
       if self._last_ticks is None:
          self._last_ticks = ticks
 
+      # compute difference with respect to last call, and log a warning if so.
+      # IFlowmeter devices should be insulating us from this situation, so this
+      # is an unusal error. (handling of wraparound cases may be possible, but
+      # should still be the responsiblity of an IFlowmeter implementation)
       diff = ticks - self._last_ticks
+      if diff < 0:
+         self.logger.warning('Tick value to GetTicks (%s) less than last call (%s); ignoring)' *
+               ticks, self._last_ticks)
+         diff = 0
+
       self._ticks += diff
       self._last_ticks = ticks
       if diff != 0:
@@ -39,16 +63,25 @@ class Flow:
    def Ticks(self):
       return self._ticks
 
-   def Keg(self):
-      return self.channel.GetKeg()
 
 class Channel:
    """
-   A Channel is a path of beer contianing a flow controller and drinker queue.
+   A Channel is a path of beer containing flow control and a drinker queue.
 
    For example, the typical kegerator has only one keg and thus one channel. A
    4-tap kegbot would have 4 channels, each channel having its own flow
    controller instance and drinker "flow" queue.
+
+   Every controlled beer line is associated with exactly one channel. While a
+   flow is in progress, there is exactly one Flow object associated with that
+   channel, dynamically created to store data about the current pour. Each
+   channel keeps a Queue of waiting Flow objects. The Kegbot instance will
+   create Flow objects and push them on to this Queue as drinkers present
+   themselves; seperately, the kegbot class will pop Flow objects off the Queue
+   and service them.
+
+   For convenience, the channel class contains a reference (whose value may
+   possibly be None) to the current active Flow, if any.
    """
    def __init__(self, chanid, valve_relay = None, flow_meter = None):
       self.chanid = chanid
@@ -87,10 +120,22 @@ class Channel:
       self.active_flow = flow
       return flow
 
-   def EnableValve(self):
+   def StartFlow(self):
+      self.logger.info('starting new flow for user' % self.active_flow.user.username)
+      self.active_flow.SetTicks(self.GetTicks())
+      return self._EnableValve()
+
+   def ServiceFlow(self):
+      return self.active_flow.SetTicks(self.GetTicks())
+
+   def StopFlow(self):
+      self.valve_relay._DisableValve()
+      self.active_flow.SetTicks(self.GetTicks()) # final tick reading
+
+   def _EnableValve(self):
       return self.valve_relay.Enable()
 
-   def DisableValve(self):
+   def _DisableValve(self):
       return self.valve_relay.Disable()
 
    def GetTicks(self):

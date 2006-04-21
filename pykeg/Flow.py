@@ -6,6 +6,7 @@ import Queue
 import Backend
 import Devices
 import Interfaces
+import util
 
 class Flow:
    """
@@ -99,14 +100,31 @@ class Channel:
             "flow_meter must implement IFlowmeter interface"
       self.flow_meter = flow_meter
 
+      # cache locally what user to use for anonymous flows, if any (if no user
+      # has the label 'guest', anonymous flows will be disabled)
+      self.anon_user = None
+      for user in Backend.User.select():
+         if user.HasLabel('guest'):
+            self.anon_user = user
+
       self._waiting = Queue.Queue()
       self.active_flow = None
+      self._last_ticks = self.GetTicks()
+      self._idle_stats = util.TimeStats(10)
 
    def IsIdle(self):
       return self.active_flow is None
 
    def EnqueueUser(self, user):
       """ Add a flow to the waiting queue of flows """
+      # piviot the active flow to this user if it is anonymous
+      if not self.IsIdle() and self.active_flow.user == self.anon_user:
+         self.logger.info('user %s replacing anonymous flow' % user.username)
+         self.active_flow.user = user
+         self.active_flow.max_volume = user.MaxVolume()
+         return
+
+      # otherwise, enqueue
       flow = self._CreateFlow(user)
       if flow.max_volume != 0:
          self._waiting.put(flow)
@@ -117,19 +135,35 @@ class Channel:
       return Flow(self, user=user, max_volume=user.MaxVolume())
 
    def _CreateAnonymousFlow(self):
-      unk_user = Backed.User.selectBy(name='unknown')[0] # XXX FIXME
-      return _CreateFlow(unk_user)
+      return self._CreateFlow(self.anon_user)
 
    def CheckForNewFlows(self):
       """ If there isn't an active flow, pop one from waiting and activate """
+      now_ticks = self.GetTicks()
+      self._idle_stats.Inc(now_ticks - self._last_ticks)
+      self._last_ticks = now_ticks
+
       if self.active_flow is not None:
-         return None
+         return False
+
+      # return the head of the queue if it is there
       try:
          flow = self._waiting.get_nowait()
+         self.active_flow = flow
+         return flow
       except Queue.Empty:
-         return None
-      self.active_flow = flow
-      return flow
+         pass
+
+      # there is no active flow and no one is authenticated; check if an
+      # anonymous flow has started
+      # TODO: hardcoded thresshold
+      if self.anon_user is not None and self._idle_stats.Count() >= 10:
+         flow = self._CreateAnonymousFlow()
+         flow.SetTicks(now_ticks - self._idle_stats.Count())
+         self.active_flow = flow
+         return flow
+
+      return None
 
    def StartFlow(self):
       self.logger.info('starting new flow for user %s' % self.active_flow.user.username)
@@ -143,6 +177,7 @@ class Channel:
       self.valve_relay.Disable()
       self.active_flow.SetTicks(self.GetTicks()) # final tick reading
       self.end = time.time()
+      self._last_ticks = self.GetTicks()
 
    def GetTicks(self):
       return self.flow_meter.GetTicks()

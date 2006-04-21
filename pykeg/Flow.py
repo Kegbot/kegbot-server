@@ -19,7 +19,7 @@ class Flow:
          ticks = 0, max_volume = sys.maxint, end = None):
       self.channel = channel
       self.start = start or time.time()
-      self.end = end or start
+      self.end = end or self.start
       self.user = user
       self._ticks = ticks
       self.max_volume = max_volume
@@ -131,6 +131,7 @@ class Channel:
    def StopFlow(self):
       self.valve_relay.Disable()
       self.active_flow.SetTicks(self.GetTicks()) # final tick reading
+      self.end = time.time()
 
    def GetTicks(self):
       return self.flow_meter.GetTicks()

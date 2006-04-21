@@ -145,7 +145,7 @@ class Channel:
       """ Reset active_flow state variable to None """
       self.active_flow = None
 
-   def GetKeg(self):
+   def Keg(self):
       channel_kegs = list(Backend.Keg.selectBy(status='online',
          channel=self.chanid, orderBy='-id'))
       if len(channel_kegs) != 1:

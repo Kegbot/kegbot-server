@@ -211,7 +211,7 @@ class Kegboard(threading.Thread,
 
    def GetTemperature(self):
       if self._status:
-         return (self._status.temp, self._last_status.rectime)
+         return (self._status.temp, self._status.rectime)
       return (None, None)
 
    ### IFlowmeter interfaces

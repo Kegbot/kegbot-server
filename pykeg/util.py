@@ -1,3 +1,4 @@
+import time
 import os
 import sys
 
@@ -7,6 +8,49 @@ class NoOpObject:
 
    def __getattr__(self, name):
       return self.NoOp
+
+class TimeStats:
+   """
+   Provide a time-bucketed counter.
+
+   Count() will return the number of events within this counter's window,
+   defined as interval*numslots. For example, if the sum of calls to Inc() was
+   15 in the last 10 seconds, then Count() will return 15.
+
+   This works but algo needs some tuning (TODO).
+   """
+   def __init__(self, numslots, interval=10):
+      self.interval = interval
+      self.numslots = numslots
+      self.slots = []
+      for i in range(self.numslots):
+         self.slots.append([0,0])
+      self._last_time = 0
+
+   def _Prune(self):
+      for i in range(len(self.slots)):
+         (amt, when) = self.slots[i]
+         if when <= (int(time.time()) - (self.interval * self.numslots)):
+            self.slots[i][0] = 0
+
+   def Inc(self, amt):
+      self._Prune()
+      now = int(time.time())
+      slot = self.slots[self._CurrSlot(now)]
+      slot[0] += amt
+      slot[1] = now
+
+   def Count(self):
+      self._Prune()
+      x = 0
+      for amt, when in self.slots:
+         x += amt
+      return x
+
+   def _CurrSlot(self, when):
+      slot = when % (self.interval * self.numslots)
+      slot = slot / self.interval
+      return slot
 
 def daemonize():
    # Fork once

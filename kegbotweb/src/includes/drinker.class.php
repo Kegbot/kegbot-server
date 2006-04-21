@@ -5,7 +5,6 @@ class Drinker {
    var $username;
    var $email;
    var $im_aim;
-   var $admin;
    var $weight;
    var $gender;
    var $current_bac = 0.0;
@@ -24,7 +23,7 @@ class Drinker {
    }
 
    function isAdmin() {
-      return $this->admin == True;
+      return False;
    }
 
    function getMugshotFilename() {

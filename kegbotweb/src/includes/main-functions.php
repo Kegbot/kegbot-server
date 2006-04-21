@@ -374,6 +374,14 @@
       return $GLOBALS['kegs'][$id];
    }
 
+
+   function GetBeerType($id) {
+      if (!$GLOBALS['beertypes'][$id]) {
+         $GLOBALS['beertypes'][$id] = new BeerType($id);
+      }
+      return $GLOBALS['beertypes'][$id];
+   }
+
    function GetGrant($id) {
       if (!$GLOBALS['grants'][$id]) {
          $GLOBALS['grants'][$id] = new Grant($id);

@@ -200,7 +200,7 @@ class KegBot:
          # start any newly-created flows
          for channel in [chan for chan in self._channels if chan.IsIdle()]:
             new_flow = channel.CheckForNewFlows()
-            if new_flow is not None:
+            if new_flow:
                self.StartFlow(new_flow)
 
          # step each flow and check if it is complete
@@ -260,6 +260,9 @@ class KegBot:
 
    def UserIsAuthed(self, user):
       """ Return True if user is presently in the authed_users list """
+      # guests are always authorized
+      if user.HasLabel('guest'):
+         return True
       return user in self.authed_users
 
    def StopFlow(self):

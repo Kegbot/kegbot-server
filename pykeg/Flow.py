@@ -121,7 +121,7 @@ class Channel:
       return flow
 
    def StartFlow(self):
-      self.logger.info('starting new flow for user' % self.active_flow.user.username)
+      self.logger.info('starting new flow for user %s' % self.active_flow.user.username)
       self.active_flow.SetTicks(self.GetTicks())
       return self._EnableValve()
 

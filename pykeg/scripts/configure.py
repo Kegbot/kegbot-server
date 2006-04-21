@@ -1,12 +1,11 @@
+from ConfigParser import ConfigParser
+import md5
 import sys
 
-try:
-   import MySQLdb
-except:
-   print 'Eek! You do not seem to have MySQLdb, aka mysql-python, installed.'
-   print 'Please install this and try again.'
+sys.path.append('.')
+sys.path.append('..')
+import Backend
 
-from ConfigParser import ConfigParser
 
 sqls = [ (  'devices.lcd', 
             'LCD display device',
@@ -97,13 +96,28 @@ def Main():
       dbuser = config.get('DB','user')
       dbdb   = config.get('DB','db')
       dbpass = config.get('DB','password')
-      dbconn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpass, db=dbdb)
+      #dbconn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpass, db=dbdb)
+      if dbpass != '':
+         dbpass = ':'+dbpass
+      uri = 'mysql://%s%s@%s/%s' % (dbuser, dbpass, dbhost, dbdb)
+      print uri
+      Backend.setup(uri)
       print 'Great! You weren\'t lying; I managed to connect to the DB. Onward we go!'
    except:
       print 'Ooops! I tried connecting with that config and it did not work.'
+      print 'If you havent yet created the %s table, you might try doing so:' % dbdb
+      print '  mysqladmin -u root create %s' % dbdb
       print 'I\'m going to quit, but maybe the following error will help you out.'
       print ''
       raise
+
+   print "I'm now going to create the tables in the database."
+   print ""
+   prompt_if_ok("Ok to add tables to %s database?" % dbdb)
+   Backend.create_tables()
+   print "Tables created; setting defaults"
+   print ""
+   Backend.set_defaults()
 
    print "Now, let's start by configuring some default devices. I'm going to need"
    print "to know where the various devices you may have attached live."
@@ -128,7 +142,7 @@ def Main():
    print 'Great! We\'re almost ready to save your new config. Before we do, please'
    print 'take a look at the values below and ensure they are what you want.'
    print
-   
+
    maxlen = max([len(x[0]) for x in sqls])
    for (option, title, default, descr) in sqls:
       print '%s : %s' % (option.rjust(maxlen), sqlvals[option])
@@ -137,11 +151,9 @@ def Main():
    prompt_if_ok('OK with above?')
    print ''
 
-   c = dbconn.cursor()
    for (option, title, default, descr) in sqls:
-      q = """ UPDATE `config` SET `value`='%s' WHERE `id`='%s' """ % (MySQLdb.escape_string(sqlvals[option]), MySQLdb.escape_string(option))
       print 'Saving %s...' % (option,),
-      c.execute(q)
+      Backend.Config.get(option).value = sqlvals[option]
       print 'done!'
 
    print ''
@@ -166,7 +178,7 @@ def Main():
    print 'Hi there, %s!' % (drinker_name,)
    print 'Now, lets select a password for you. The default password is'
    print '"kegbotadmin", but you should probably change that.'
-   
+
    print ''
    password = prompt('New admin password? [kegbotadmin]: ') or 'kegbotadmin'
    print ''
@@ -190,16 +202,14 @@ def Main():
    prompt_if_ok('OK to update the admin user?')
    print ''
 
-   c = dbconn.cursor()
-   q = """ UPDATE `users` SET `username`='%s', password=MD5('%s') WHERE `id`='1' LIMIT 1 """ % (MySQLdb.escape_string(drinker_name), MySQLdb.escape_string(password) )
-
    print 'Updating admin user...',
-   c.execute(q)
+   admin = Backend.User.get(1)
+   admin.username = drinker_name
+   admin.password = md5.md5(password).hexdigest()
    print 'done!'
 
-   q = """ INSERT INTO `tokens` (`user_id`,`keyinfo`) VALUES ('1','%s') """ % (MySQLdb.escape_string(ibid),)
    print 'Adding admin token...',
-   c.execute(q)
+   Backend.Token(user=admin, keyinfo=ibid)
    print 'done!'
 
    print ''

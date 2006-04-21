@@ -18,7 +18,6 @@ dbconn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpass, db=dbdb)
 sys.path.append('.')
 import Backend
 import util
-import sqlobject
 
 db_uri = 'mysql://%s:%s@%s/%s' % (dbuser, dbpass, dbhost, dbdb)
 Backend.setup(db_uri)
@@ -85,8 +84,6 @@ class SchemaUpdate__8(Update):
 
 class SchemaUpdate__9(Update):
    def Upgrade(self):
-      self.log('adding relaylog table')
-      Backend.RelayLog.createTable()
       SetCurrentSchema(9)
       return UPGRADE_PASS
 
@@ -118,8 +115,10 @@ class SchemaUpdate__11(Update):
       keg_type_map = {}
       for row in c:
          (id, fullvol, start, end, chan, status, beername, abv, descr, cost, beerpal, ratebeer, calories) = row
+         calories = calories or 0.0
+         abv = abv or 0.0
          print '-'*72
-         print 'Migrating keg %i: %s, %.1f%% ABV, %i calories/oz' % (id, beername, abv, calories)
+         print 'Migrating keg %s %s, %.1f%% ABV, %s calories/oz' % (id, beername, abv, calories)
          print ''
          types = list(Backend.BeerType.select())
          print 'Existing beer types:'
@@ -184,11 +183,46 @@ class SchemaUpdate__11(Update):
          k.type_id = v
          k.syncUpdate()
 
+      self.log('adding thermo pref')
+      try:
+         Backend.Config(id='thermo.use_thermo', value='true')
+      except:
+         pass
+
       SetCurrentSchema(11)
       return UPGRADE_PASS
 
-### END SCHEMA UPDATES
 
+class SchemaUpdate__12(Update):
+   def Upgrade(self):
+      c = dbconn.cursor()
+      self.log('scanning for previous admins')
+      c.execute("select * from users")
+      orig_admin_ids = []
+      for row in c:
+         if row[3] == 'yes':
+            orig_admin_ids.append(row[0])
+      self.log('dropping admin col from users db')
+      c.execute('ALTER TABLE `users` DROP `admin`')
+      self.log('adding UserLabel table')
+      Backend.UserLabel.createTable()
+      self.log('setting admin labels')
+      for admin_id in orig_admin_ids:
+         Backend.UserLabel(userID=admin_id, labelname='admin')
+
+      self.log('creating guest user')
+      guest_user = Backend.User(username='unknown')
+      self.log('setting guest label')
+      Backend.UserLabel(user=guest_user, labelname='guest')
+      self.log('creating guest policy')
+      guest_policy = Backend.Policy(type='free', description='__guest__')
+      self.log('granting new policy to new guest user')
+      Backend.Grant(user=guest_user, expiration='none', status='active', policy=guest_policy)
+      SetCurrentSchema(12)
+      return UPGRADE_PASS
+
+
+### END SCHEMA UPDATES
 
 def doUpgrade(current, latest):
    for new_schema in range(current+1, latest+1):

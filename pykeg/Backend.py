@@ -5,14 +5,18 @@ import sys
 try:
    from sqlobject import *
 except ImportError:
-   print>>sys.stderr, 'Could not import sqlobject - do you have it installed?'
-   print>>sys.stderr, 'Kegbot requires sqlobject version 0.7 or later. Exiting.'
-   sys.exit(1)
+   print>>sys.stderr, '!!! Could not import sqlobject - do you have it installed?'
+   print>>sys.stderr, '!!! Kegbot requires sqlobject version 0.7 or later. Exiting.'
+try:
+   import MySQLdb
+except ImportError:
+   print>>sys.stderr, '!!! Could not import MySQLdb - do you have it installed?'
+   print>>sys.stderr, '!!! MySQLdb is required to use sqlobject with kegbot. Exiting.'
 
 import units
 import util
 
-SCHEMA_VERSION = 11
+SCHEMA_VERSION = 12
 
 ### utility functions
 
@@ -164,10 +168,12 @@ class User(SQLObject):
    username = StringCol(length=32, notNone=True)
    email = StringCol(default='')
    im_aim = StringCol(default='')
-   admin = EnumCol(enumValues = ['yes','no'])
    password = StringCol(default='')
-   gender = EnumCol(enumValues = ['male','female'])
+   gender = EnumCol(enumValues = ['male','female'], default='male')
    weight = FloatCol(default=180.0)
+
+   def HasLabel(self, lbl):
+      return len(list(UserLabel.selectBy(user=self, labelname=lbl))) > 0
 
 
 class Policy(SQLObject):
@@ -194,7 +200,7 @@ class Token(SQLObject):
 
    user = ForeignKey('User', notNone=True)
    keyinfo = StringCol(notNone=True)
-   created = DateTimeCol()
+   created = DateTimeCol(default=datetime.now)
 
 
 class BAC(SQLObject):
@@ -314,8 +320,8 @@ class BeerType(SQLObject):
    name = StringCol(notNone=True, default='')
    brewer = ForeignKey('Brewer', notNone=True)
    style = ForeignKey('BeerStyle', notNone=True, default=1)
-   calories_oz = FloatCol()   # None is OK here, to indicate no data
-   carbs_oz = FloatCol()      # None is OK here, to indicate no data
+   calories_oz = FloatCol(default=None)   # None is OK here, to indicate no data
+   carbs_oz = FloatCol(default=None)      # None is OK here, to indicate no data
    abv = FloatCol(notNone=True, default=4.5)
 
 
@@ -340,36 +346,77 @@ class BeerStyle(SQLObject):
 
    name = StringCol(notNone=True)
 
-### defaults for this schema version
+
+class UserLabel(SQLObject):
+   """ A dynamic enumerations column for the users table """
+   class sqlmeta:
+      table = 'userlabels'
+
+   # XXX TODO: should have primary key(user, labelname)
+   user = ForeignKey('User', notNone=True)
+   labelname = StringCol(notNone=True)
+
+
+### maintenance-related functions
+
+def all_tables():
+   """ return all tables (ie all classes derived from SQLObject) """
+   import inspect
+   classes = [x for x in globals().values() if inspect.isclass(x) and issubclass(x, SQLObject) and x is not SQLObject]
+   return classes
+
+def create_tables():
+   """ attempt to create all tables """
+   for c in all_tables():
+      c.createTable()
+
 def set_defaults():
+   """ default values (contents may change with schema) """
    # config table defaults
-   cfgs = (('logging.logfile', 'keg.log'),
-      ('logging.logformat', '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'),
-      ('logging.use_sql', 'false'),
-      ('logging.logtable', 'logging'),
-      ('logging.use_logfile', 'true'),
-      ('logging.use_stream', 'true'),
-      ('devices.lcd', '/dev/lcd'),
-      ('devices.onewire', '/dev/onewire'),
-      ('devices.thermo', '/dev/thermo'),
-      ('devices.flow', '/dev/flow'),
-      ('ui.keypad_pipe', '/dev/input/event0'),
-      ('ui.use_lcd', 'true'),
-      ('ui.translation_file', 'keymap.cfg'),
-      ('ui.lcd_model', 'lk204-25'),
-      ('timing.ib_refresh_timeout', '0.75'),
-      ('timing.ib_idle_timeout', '60'),
-      ('thermo.temp_max_low', '2.0'),
-      ('thermo.temp_max_high', '4.5'),
-      ('db.schema_version', str(SCHEMA_VERSION)),
-   )
-   for key, val in cfgs:
-      obj = Config(id=key, value=val)
-      obj.syncUpdate()   # inserts in sqlobject 0.7 are never lazy, tho
+   Config(id='logging.logfile', value='keg.log'),
+   Config(id='logging.logformat', value='%(asctime)s %(levelname)-8s (%(name)s) %(message)s'),
+   Config(id='logging.use_sql', value='false'),
+   Config(id='logging.logtable', value='logging'),
+   Config(id='logging.use_logfile', value='true'),
+   Config(id='logging.use_stream', value='true'),
+   Config(id='devices.lcd', value='/dev/lcd'),
+   Config(id='devices.onewire', value='/dev/onewire'),
+   Config(id='devices.thermo', value='/dev/thermo'),
+   Config(id='devices.flow', value='/dev/flow'),
+   Config(id='ui.keypad_pipe', value='/dev/input/event0'),
+   Config(id='ui.use_lcd', value='true'),
+   Config(id='ui.translation_file', value='keymap.cfg'),
+   Config(id='ui.lcd_model', value='lk204-25'),
+   Config(id='timing.ib_refresh_timeout', value='0.75'),
+   Config(id='timing.ib_idle_timeout', value='60'),
+   Config(id='thermo.use_thermo', value='true'),
+   Config(id='thermo.temp_max_low', value='2.0'),
+   Config(id='thermo.temp_max_high', value='4.5'),
+   Config(id='db.schema_version', value=str(SCHEMA_VERSION)),
+
+   # user defaults
+   import md5
+   admin_user = User(username='admin', password=md5.md5('admin').hexdigest())
+   guest_user = User(username='unknown')
 
    # policy table defaults
-   p = Policy(type='free', description='free')
-   p.syncUpdate()
+   free_policy = Policy(type='free', description='free')
+   guest_policy = Policy(type='free', description='__guest__')
 
+   # grant defaults
+   Grant(user=admin_user, expiration='none', status='active', policy=free_policy)
+   Grant(user=guest_user, expiration='none', status='active', policy=free_policy)
 
+   # brewer defaults
+   unk_brewer = Brewer(name='Unknown')
+
+   # beerstyle defaults
+   unk_style = BeerStyle(name='Unknown')
+
+   # beertype defaults
+   BeerType(name="unknown", brewer=unk_brewer, style=unk_style)
+
+   # userlabel defaults
+   UserLabel(user=admin_user, labelname='admin')
+   UserLabel(user=guest_user, labelname='guest')
 

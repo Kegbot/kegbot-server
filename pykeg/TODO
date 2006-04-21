@@ -20,6 +20,8 @@ AVERAGE PRIORITY
 - anonymous flows: support for channels to initiate flows without an
   authentication module to support it; this would be useful for valveless
   setups, where we have to notice the flowmeter 'just starts' ticking
+- update configure script to use Backend for most operations; create tables and
+  set defaults in script.
 
 LOW PRIORITY
 

@@ -199,7 +199,7 @@ class KegBot:
       while not self.QUIT.isSet():
          # start any newly-created flows
          for channel in [chan for chan in self._channels if chan.IsIdle()]:
-            new_flow = channel.MaybeActivateNextFlow()
+            new_flow = channel.CheckForNewFlows()
             if new_flow is not None:
                self.StartFlow(new_flow)
 
@@ -240,7 +240,7 @@ class KegBot:
       # valves), (b) user preference, (c) auth/key type (different behavior
       # for admin?)
       for channel in self._channels:
-         channel.EnqueueFlow(self.CreateFlow(u))
+         channel.EnqueueUser(u)
       return True
 
    def DeauthUser(self, username):
@@ -312,22 +312,6 @@ class KegBot:
             return False
 
       return True
-
-   def CreateFlow(self, user):
-      """ Create a generic Flow.Flow object for given user """
-      grants = list(Backend.Grant.selectBy(user=user))
-
-      # determine how much volume [zero, inf) the user is allowed to pour
-      # before we cut him off
-      max_volume = util.MaxVolume(grants)
-      if max_volume == 0:
-         self.logger.info('flow: user does not have any credit')
-      elif max_volume == sys.maxint:
-         self.logger.info('flow: user approved for unlimited volume')
-      else:
-         self.logger.info('flow: user approved for %.1f volunits' % max_volume)
-
-      return Flow.Flow(self._channels[0], user = user, max_volume = max_volume)
 
    def StartFlow(self, flow):
       """ Begin a flow, based on flow passed in """

@@ -175,6 +175,10 @@ class User(SQLObject):
    def HasLabel(self, lbl):
       return len(list(UserLabel.selectBy(user=self, labelname=lbl))) > 0
 
+   def MaxVolume(self):
+      grants = list(Grant.selectBy(user=self))
+      return util.MaxVolume(grants)
+
 
 class Policy(SQLObject):
    """ Specify cost function(s) for arbitrary volumes of beer """

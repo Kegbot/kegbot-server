@@ -99,22 +99,33 @@ class Channel:
             "flow_meter must implement IFlowmeter interface"
       self.flow_meter = flow_meter
 
-      self.flow_queue = Queue.Queue()
+      self._waiting = Queue.Queue()
       self.active_flow = None
 
    def IsIdle(self):
       return self.active_flow is None
 
-   def EnqueueFlow(self, flow):
+   def EnqueueUser(self, user):
       """ Add a flow to the waiting queue of flows """
-      self.flow_queue.put(flow)
+      flow = self._CreateFlow(user)
+      if flow.max_volume != 0:
+         self._waiting.put(flow)
+      else:
+         self.logger.info('no volume for user, not starting')
 
-   def MaybeActivateNextFlow(self):
-      """ If there isn't an active flow, pop one from flow_queue and activate """
+   def _CreateFlow(self, user):
+      return Flow(self, user=user, max_volume=user.MaxVolume())
+
+   def _CreateAnonymousFlow(self):
+      unk_user = Backed.User.selectBy(name='unknown')[0] # XXX FIXME
+      return _CreateFlow(unk_user)
+
+   def CheckForNewFlows(self):
+      """ If there isn't an active flow, pop one from waiting and activate """
       if self.active_flow is not None:
          return None
       try:
-         flow = self.flow_queue.get_nowait()
+         flow = self._waiting.get_nowait()
       except Queue.Empty:
          return None
       self.active_flow = flow

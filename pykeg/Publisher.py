@@ -116,13 +116,13 @@ class Publisher:
       self._DoPublish('Drink', args)
 
    def PublishFlowStart(self, flow):
-      args = (flow.channel.chanid, flow.user.id, flow.Keg().id,
-            flow.user.username, flow.Keg().description)
+      args = (flow.channel.chanid, flow.user.id, flow.channel.Keg().id,
+            flow.user.username, flow.channel.Keg().description)
       self._DoPublish('FlowStart', args)
 
    def PublishFlowUpdate(self, flow):
-      args = (flow.channel.chanid, flow.user.id, flow.Keg().id,
-            flow.user.username, flow.Keg().description,
+      args = (flow.channel.chanid, flow.user.id, flow.channel.Keg().id,
+            flow.user.username, flow.channel.Keg().description,
             units.ticks_to_volunits(flow.Ticks()))
       self._DoPublish('FlowUpdate', args)
 

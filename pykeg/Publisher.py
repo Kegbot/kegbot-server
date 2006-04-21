@@ -88,7 +88,7 @@ class Publisher:
    def AddSubscriber(self, event, addr):
       if not self._subscribers.has_key(event):
          self._subscribers[event] = list()
-      subscriber = (addr, xmlrpclib.ServerProxy(addr))
+      subscriber = (addr, xmlrpclib.ServerProxy(addr, allow_none=True))
       self._subscribers[event].append(subscriber)
 
    def GetSubscribers(self, event):

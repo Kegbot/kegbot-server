@@ -9,19 +9,9 @@ AVERAGE PRIORITY
 - add 'invalidate last pour' menu to LCD ui
 - fix up RPC hooks
   * goes along with general modularization tack..
-- improve the setup script
-  * try to anticipate all possible problems
-  * automate the routine, boring stuff
-- improve the DB schema update script
-  * perhaps a good place to use TDD
 - per-keg grants
 - clean up UI; KegUI is a mess (and pymtxorb/pylcdui too); better support other
   displays
-- anonymous flows: support for channels to initiate flows without an
-  authentication module to support it; this would be useful for valveless
-  setups, where we have to notice the flowmeter 'just starts' ticking
-- update configure script to use Backend for most operations; create tables and
-  set defaults in script.
 
 LOW PRIORITY
 

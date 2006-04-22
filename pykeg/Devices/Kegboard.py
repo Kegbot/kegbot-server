@@ -100,7 +100,6 @@ class Kegboard(threading.Thread,
 
       self._status = None
       self._total_ticks = 0
-      self._last_ticks = 0
       self._last_status = None
 
       self._devpipe = open(dev,'w+',0) # unbuffered is zero
@@ -155,13 +154,15 @@ class Kegboard(threading.Thread,
          self.logger.info('not enough fields; ignoring!')
       self._status = StatusPacket(fields)
 
-      # try to catch tick wraparound (and ignore it for now)
-      diff = self._status.ticks - self._last_ticks
-      if diff < 0:
-         self.logger.warn('tick delta from last packet is negative, ignoring')
-      else:
-         self._total_ticks += diff
-      self._last_ticks = self._status.ticks
+      # if this is the first packet, we don't update total_ticks and instead
+      # record this packet as the reference.
+      if self._last_status is not None:
+         # try to catch tick wraparound (and ignore it for now)
+         diff = self._status.ticks - self._last_status.ticks
+         if diff < 0:
+            self.logger.warn('tick delta from last packet is negative, ignoring')
+         else:
+            self._total_ticks += diff
 
       # print status update
       if self._status != self._last_status:

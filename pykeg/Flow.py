@@ -84,7 +84,8 @@ class Channel:
    For convenience, the channel class contains a reference (whose value may
    possibly be None) to the current active Flow, if any.
    """
-   def __init__(self, chanid, valve_relay = None, flow_meter = None):
+   def __init__(self, chanid, valve_relay = None, flow_meter = None,
+         allow_anon = True):
       self.chanid = chanid
       self.logger = logging.getLogger('channel%s' % str(chanid))
 
@@ -103,9 +104,10 @@ class Channel:
       # cache locally what user to use for anonymous flows, if any (if no user
       # has the label 'guest', anonymous flows will be disabled)
       self.anon_user = None
-      for user in Backend.User.select():
-         if user.HasLabel('guest'):
-            self.anon_user = user
+      if allow_anon:
+         for user in Backend.User.select():
+            if user.HasLabel('guest'):
+               self.anon_user = user
 
       self._waiting = Queue.Queue()
       self.active_flow = None
@@ -139,12 +141,12 @@ class Channel:
 
    def CheckForNewFlows(self):
       """ If there isn't an active flow, pop one from waiting and activate """
+      if self.active_flow is not None:
+         return False
+
       now_ticks = self.GetTicks()
       self._idle_stats.Inc(now_ticks - self._last_ticks)
       self._last_ticks = now_ticks
-
-      if self.active_flow is not None:
-         return False
 
       # return the head of the queue if it is there
       try:
@@ -178,6 +180,7 @@ class Channel:
       self.active_flow.SetTicks(self.GetTicks()) # final tick reading
       self.end = time.time()
       self._last_ticks = self.GetTicks()
+      self._idle_stats.Clear()
 
    def GetTicks(self):
       return self.flow_meter.GetTicks()

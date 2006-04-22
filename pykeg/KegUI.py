@@ -42,11 +42,14 @@ class KegUI(lcdui.lcdui):
       self.setDrinker(username)
       self.setCurrentPlate(self.plate_pour, replace=1)
 
-   def pourUpdate(self, ounces, cost):
+   def pourUpdate(self, flow, cost):
       """ Called by kegbot periodically during a flow """
       self.activity()
+      ounces = units.ticks_to_volunits(flow.Ticks())
+      ounces /= units.US_OUNCE
       oz = '%.1foz' % round(ounces, 1)
       progress = (ounces % 8.0)/8.0
+      self.setDrinker(flow.user.username)
       self.plate_pour.progline.setProgress(progress)
       self.plate_pour.ounces.setData(oz.rjust(6))
       self.plate_pour.costline.setData('$%.2f' % cost)

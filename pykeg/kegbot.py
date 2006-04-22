@@ -361,8 +361,8 @@ class KegBot:
       channel = flow.channel
       if channel.ServiceFlow():
          curr_vol = units.ticks_to_volunits(flow.Ticks())
-         curr_cost = self.EstimateCost(flow.user, curr_vol)
-         self.ui.pourUpdate(units.to_ounces(curr_vol), curr_cost)
+         cost = self.EstimateCost(flow.user, curr_vol)
+         self.ui.pourUpdate(flow, cost)
 
       return True
 

@@ -22,6 +22,9 @@ class TimeStats:
    def __init__(self, numslots, interval=10):
       self.interval = interval
       self.numslots = numslots
+      self.Clear()
+
+   def Clear(self):
       self.slots = []
       for i in range(self.numslots):
          self.slots.append([0,0])

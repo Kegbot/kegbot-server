@@ -53,6 +53,8 @@ class KegBot:
       self.QUIT          = threading.Event()
       self.config        = SQLConfigParser.SQLObjectConfigParser()
       self.authed_users  = [] # users currently connected (usually 0 or 1)
+      self._channels = []
+      self._devices = []
 
       # ready to perform second stage of initialization
       self._setup()
@@ -103,8 +105,6 @@ class KegBot:
       self.publisher = Publisher.Publisher()
 
       # do local hardware config
-      self._channels = []
-      self._devices = []
       localconfig.configure(self, self.config)
 
       # optional module: LCD UI
@@ -121,8 +121,8 @@ class KegBot:
             self.logger.error('main: unknown lcd_type!')
          self.logger.info('main: new %s LCD at device %s' % (lcdtype, dev))
          self.ui = KegUI.KegUI(self.lcd, self)
-         drinks = list(Backend.Drink.select(orderBy="-id", limit=1))
-         if len(drinks):
+         drinks = Backend.Drink.select(orderBy="-id", limit=1)
+         if drinks.count() > 0:
             self.ui.setLastDrink(drinks[0])
       else:
          # This works fine, as long as we're cool with shared memory access to

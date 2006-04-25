@@ -159,6 +159,19 @@ class Grant(SQLObject):
       # fall-thru, XXX
       return False
 
+   def MaxVolume(cls, user):
+      """ return maximum volume pourable, in range [0, sys.maxint = infty) """
+      grants = cls.selectBy(user=user)
+      tot = 0
+      for g in grants:
+         vol = g.AvailableVolume()
+         if vol == sys.maxint:   # unlimited
+            return vol
+         else:
+            tot += vol
+      return tot
+   MaxVolume = classmethod(MaxVolume)
+
 
 class User(SQLObject):
    """ Drinker information """
@@ -173,11 +186,10 @@ class User(SQLObject):
    weight = FloatCol(default=180.0)
 
    def HasLabel(self, lbl):
-      return len(list(UserLabel.selectBy(user=self, labelname=lbl))) > 0
+      return UserLabel.selectBy(user=self, labelname=lbl).count() > 0
 
    def MaxVolume(self):
-      grants = list(Grant.selectBy(user=self))
-      return util.MaxVolume(grants)
+      return Grant.MaxVolume(self)
 
 
 class Policy(SQLObject):
@@ -261,16 +273,11 @@ class Binge(SQLObject):
 
    def Assign(cls, d):
       """ Create or update a binge given a recent drink """
-      binges = list(Binge.select("user_id=%i"%d.user.id,
-         orderBy="-id", limit=1))
-
-      # flush binge fetched if it is too old
-      if len(binges) != 0:
-         if binges[0].endtime < (d.endtime - (60*90)): # XXX fix constant
-            binges = []
+      min_end = d.endtime - 60*90
+      binges = Binge.select("user_id=%i AND endtime >= %i"% (d.user.id, min_end), orderBy="-id", limit=1)
 
       # now find or create the current binge, and update it
-      if len(binges) == 0:
+      if binges.count() == 0:
          last_binge = Binge(user=d.user, startdrink=d,
                enddrink=d, volume=d.volume, starttime=d.endtime,
                endtime=d.endtime)

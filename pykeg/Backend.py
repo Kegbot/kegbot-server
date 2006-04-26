@@ -161,7 +161,7 @@ class Grant(SQLObject):
 
    def MaxVolume(cls, user):
       """ return maximum volume pourable, in range [0, sys.maxint = infty) """
-      grants = cls.selectBy(user=user)
+      grants = user.grants
       tot = 0
       for g in grants:
          vol = g.AvailableVolume()
@@ -185,8 +185,12 @@ class User(SQLObject):
    gender = EnumCol(enumValues = ['male','female'], default='male')
    weight = FloatCol(default=180.0)
 
-   def HasLabel(self, lbl):
-      return UserLabel.selectBy(user=self, labelname=lbl).count() > 0
+   grants = MultipleJoin('Grant', joinColumn='user_id')
+   tokens = MultipleJoin('Token', joinColumn='user_id')
+   labels = MultipleJoin('UserLabel', joinColumn='user_id')
+
+   def HasLabel(self, lblname):
+      return lblname in [lbl.labelname for lbl in self.labels]
 
    def MaxVolume(self):
       return Grant.MaxVolume(self)

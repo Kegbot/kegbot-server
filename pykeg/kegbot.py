@@ -409,7 +409,7 @@ class KegBot:
       """ Given a user and a volume, estimate the cost of that volume. """
       # this function is somewhat wasteful; thankfully sqlobject is caching the
       # results from the select, else we'd be doing way too many
-      grants = self.SortByValue(list(Backend.Grant.selectBy(user=user)))
+      grants = self.SortByValue(user.grants)
       vol_remain = volume
       cost = 0.0
       while vol_remain > 0:
@@ -424,7 +424,7 @@ class KegBot:
 
    def GenGrantCharges(self, d):
       """ Create and store one or more grant charges given a recent drink """
-      grants = self.SortByValue(list(Backend.Grant.selectBy(user=d.user)))
+      grants = self.SortByValue(d.user.grants)
       vol_remain = d.volume
       while vol_remain > 0:
          try:

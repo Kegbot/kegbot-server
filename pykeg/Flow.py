@@ -4,7 +4,7 @@ import time
 import Queue
 
 import Backend
-import Devices
+from Devices import NoOp
 import Interfaces
 import util
 
@@ -90,13 +90,13 @@ class Channel:
       self.logger = logging.getLogger('channel%s' % str(chanid))
 
       if valve_relay is None:
-         valve_relay = Devices.NoOp.Relay()
+         valve_relay = NoOp.Relay()
       assert isinstance(valve_relay,Interfaces.IRelay), \
             "valve_relay must implement IRelay interface"
       self.valve_relay = valve_relay
 
       if flow_meter is None:
-         flow_meter = Devices.NoOp.Flowmeter()
+         flow_meter = NoOp.Flowmeter()
       assert isinstance(flow_meter, Interfaces.IFlowmeter),\
             "flow_meter must implement IFlowmeter interface"
       self.flow_meter = flow_meter

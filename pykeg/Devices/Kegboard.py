@@ -152,6 +152,7 @@ class Kegboard(threading.Thread,
       # parse packet
       if len(fields) < StatusPacket.NUM_FIELDS:
          self.logger.info('not enough fields; ignoring!')
+         return None
       self._status = StatusPacket(fields)
 
       # if this is the first packet, we don't update total_ticks and instead

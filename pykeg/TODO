@@ -12,6 +12,10 @@ AVERAGE PRIORITY
 - per-keg grants
 - clean up UI; KegUI is a mess (and pymtxorb/pylcdui too); better support other
   displays
+- sqlobject MultipleJoins -- use for grants; RelatedJoins -- use for lables
+- use sqlobject alternateID where appropriate
+- make auth devices take a list of channels, so that their eventsmay be
+  associated only with a particular channel
 
 LOW PRIORITY
 

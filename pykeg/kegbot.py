@@ -228,7 +228,7 @@ class KegBot:
       if user.HasLabel('guest'):
          return True
       for dev in self.IterDevicesImplementing(Interfaces.IAuthDevice):
-         if dev.UserIsAuthed(user.username):
+         if user.username in dev.AuthorizedUsers():
             return True
       return False
 

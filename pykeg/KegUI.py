@@ -67,7 +67,7 @@ class KegUI(lcdui.lcdui,
 
    def AuthUser(self, user):
       """ Callback for menu UI (if enabled) to start flow for a user """
-      self._authed = [user]
+      self._authed = [user.username]
 
    def DeauthUser(self):
       self._authed = []

@@ -1,5 +1,4 @@
 import logging
-import Queue
 import thread
 import time
 import traceback
@@ -12,7 +11,7 @@ class AbstractMethodError(Exception):
    pass
 
 
-class GenericIBAuth(Interfaces.IAuthPresence):
+class GenericIBAuth(Interfaces.IAuthDevice):
    def __init__(self, device, refresh_timeout, quit_event):
       self.device = device
       self.refresh_timeout = refresh_timeout
@@ -21,22 +20,12 @@ class GenericIBAuth(Interfaces.IAuthPresence):
 
       self._ownet = None
       self._allibs = {}
-      self._auth_queue = Queue.Queue()
-      self._deauth_queue = Queue.Queue()
+      self._authed = []
 
-   ### public interfaces (IAuthPresence)
+   ### IAuthDevice interface
 
-   def PresenceCheck(self):
-      try:
-         return self._auth_queue.get_nowait()
-      except Queue.Empty:
-         return None
-
-   def AbsenceCheck(self):
-      try:
-         return self._deauth_queue.get_nowait()
-      except Queue.Empty:
-         return None
+   def AuthorizedUsers(self):
+      return self._authed
 
    def _UpdateState(self, ibs):
       """ Record IB event histories """
@@ -65,15 +54,19 @@ class GenericIBAuth(Interfaces.IAuthPresence):
       if not user:
          return
       self.logger.info('key %s user %s is gone' % (ibid, user.username))
-      self._deauth_queue.put(user.username)
+      assert user.username in self._authed, 'absence event for missing user'
+      self._authed.remove(user.username)
 
    def _PresenceEvent(self, ibid):
       matches = Backend.Token.selectBy(keyinfo=ibid)
       if not matches.count():
          return
       user = matches[0].user
+      if not user:
+         return
       self.logger.info('key %s belongs to user %s' % (ibid, user.username))
-      self._auth_queue.put(user.username)
+      assert user.username not in self._authed, 'presence event for already-present user'
+      self._authed.append(user.username)
 
    def _RefreshLoop(self):
       """ Periodically update self.ibs with the current ibutton list. """

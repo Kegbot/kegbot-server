@@ -26,6 +26,11 @@ import Auth
 import Flow
 import Interfaces
 from Devices import Kegboard, Generic
+import Publisher
+
+import KegUI
+import lcdui
+import pycfz
 
 def configure(kegbot, config):
    """
@@ -50,28 +55,37 @@ def configure(kegbot, config):
    controller.start()
 
    # config & install first beer channel
-   channel_1 = Flow.Channel(0,
-         controller.i_relay_0,
-         controller.i_flowmeter,
+   channel_0 = Flow.Channel(chanid = 0,
+         valve_relay = controller.i_relay_0,
+         flow_meter = controller.i_flowmeter,
    )
-   kegbot.AddChannel(channel_1)
+   kegbot.AddChannel(channel_0)
 
    # config & install fridge control
-   freezer = Generic.FreezerConversion(0,
-         controller.i_relay_1,
-         controller.i_thermo,
-         config.getfloat('thermo', 'temp_max_low'),
-         config.getfloat('thermo', 'temp_max_high'),
+   freezer = Generic.FreezerConversion(freezer_id = 0,
+         control_relay = controller.i_relay_1,
+         temp_sensor = controller.i_thermo,
+         low_t = config.getfloat('thermo', 'temp_max_low'),
+         high_t = config.getfloat('thermo', 'temp_max_high'),
    )
    kegbot.AddDevice(freezer)
    kegbot.AddDevice(controller.i_thermo)
 
    # enable temperature logging
    if config.getboolean('thermo', 'use_thermo'):
-      thermologger = Generic.ThermoLogger('main', controller.i_thermo)
+      thermologger = Generic.ThermoLogger(name='main',
+            temp_sensor = controller.i_thermo
+      )
       kegbot.AddDevice(thermologger)
 
    ### standard config stuff below (TODO: move me)
+
+   # publisher
+   kegbot.AddDevice(Publisher.Publisher())
+
+   ui = KegUI.KegUI(pycfz.Display('/dev/tts/USB1'))
+   kegbot.AddDevice(ui)
+   ui.start()
 
    # optional module: usb ibutton auth
    if config.getboolean('auth','usb_ib'):

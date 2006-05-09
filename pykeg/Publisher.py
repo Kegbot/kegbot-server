@@ -68,8 +68,9 @@ import time
 import units
 import xmlrpclib
 
+import Interfaces
 
-class Publisher:
+class Publisher(Interfaces.IFlowListener, Interfaces.IThermoListener):
    def __init__(self):
       self._subscribers = {}
       self.logger = logging.getLogger('publisher')
@@ -107,29 +108,31 @@ class Publisher:
          except xmlrpclib.Fault, e:
             self.logger.error('Fault encountered in XML-RPC with %s: %s' % (addr, e))
 
-   ### pykeg publishing calls
+   ### IFlowListener interface
 
-   def PublishDrinkEvent(self, drink):
-      args = (drink.id, drink.keg.id, drink.user.id, drink.user.username,
-            drink.keg.description, drink.volume/units.MILLILITER,
-            drink.endtime)
-      self._DoPublish('Drink', args)
-
-   def PublishFlowStart(self, flow):
+   def FlowStart(self, flow):
       args = (flow.channel.chanid, flow.user.id, flow.channel.Keg().id,
             flow.user.username, flow.channel.Keg().description)
       self._DoPublish('FlowStart', args)
 
-   def PublishFlowUpdate(self, flow):
+   def FlowUpdate(self, flow):
+      if time.time() - self._last_publish.get('FlowUpdate', 0) < 5:
+         return
       args = (flow.channel.chanid, flow.user.id, flow.channel.Keg().id,
             flow.user.username, flow.channel.Keg().description,
             units.ticks_to_volunits(flow.Ticks()))
       self._DoPublish('FlowUpdate', args)
 
-   def PublishTemperature(self, name, temp):
+   def FlowEnd(self, flow, drink):
+      args = (drink.id, drink.keg.id, drink.user.id, drink.user.username,
+            drink.keg.description, drink.volume/units.MILLILITER,
+            drink.endtime)
+      self._DoPublish('Drink', args)
+
+   def ThermoUpdate(self, sensor, temperature):
       if time.time() - self._last_publish.get('PeriodicTemperature', 0) < 30:
          return
-      args = (name, temp)
+      args = (sensor, temperature)
       self._DoPublish('PeriodicTemperature', args)
 
       # TODO: publish alarm temperature here if necessary

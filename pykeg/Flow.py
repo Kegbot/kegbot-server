@@ -24,6 +24,7 @@ class Flow:
       self.user = user
       self._ticks = ticks
       self.max_volume = max_volume
+      self.est_cost = 0.0
 
       self._last_activity = time.time()
       self._last_ticks = None
@@ -48,7 +49,7 @@ class Flow:
       # should still be the responsiblity of an IFlowmeter implementation)
       diff = ticks - self._last_ticks
       if diff < 0:
-         self.logger.warning('Tick value to GetTicks (%s) less than last call (%s); ignoring)' *
+         self.channel.logger.warning('Tick value to GetTicks (%s) less than last call (%s); ignoring)' *
                ticks, self._last_ticks)
          diff = 0
 
@@ -151,6 +152,7 @@ class Channel:
       # return the head of the queue if it is there
       try:
          flow = self._waiting.get_nowait()
+         self.logger.info('new flow found on channel %s' % self.chanid)
          self.active_flow = flow
          return flow
       except Queue.Empty:

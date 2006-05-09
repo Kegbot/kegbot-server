@@ -1,13 +1,17 @@
 import Backend
+import Interfaces
+
 import re
 
 import lcdui
 import units
 import util
 
-class KegUI(lcdui.lcdui):
-   def __init__(self, device, kb):
-      self.kb = kb
+class KegUI(lcdui.lcdui,
+      Interfaces.IFlowListener,
+      Interfaces.IDisplayDevice,
+      Interfaces.IAuthDevice):
+   def __init__(self, device):
       lcdui.lcdui.__init__(self, device)
       self.plate_standby = plate_kegbot_standby(self)
       self.plate_input = plate_kegbot_input(self)
@@ -18,6 +22,11 @@ class KegUI(lcdui.lcdui):
       self.plate_alert.line2 = lcdui.widget_line_std('ERROR'.center(18), row=1, col=0,
             scroll=0, prefix='*', postfix='*')
       self.plate_alert.line4 = lcdui.widget_line_std('*'*20, row = 3, col = 0, scroll = 0)
+      self.setCurrentPlate(self.plate_main)
+
+      self._authed = []
+
+   ### IDisplayDevice interface
 
    def Alert(self, notice):
       self.plate_alert.line3 = lcdui.widget_line_std(notice.center(18), row=2, col=0, scroll=0,
@@ -26,25 +35,18 @@ class KegUI(lcdui.lcdui):
       self.plate_alert.SetTimeout(2)
       self.setCurrentPlate(self.plate_alert)
 
-   def setMain(self):
-      self.setCurrentPlate(self.plate_main)
+   def Activity(self):
+      return self.activity()
 
-   def userPresent(self, user):
-      """ Callback for menu UI (if enabled) to start flow for a user """
-      self.kb.AuthUser(user.username)
+   ### IFlowListener interface
 
-   def setLastDrink(self, d):
-      self.plate_main.setLastDrink(d)
-
-   def pourStart(self, username):
-      """ Called by kegbot at start of new flow """
-      self.activity()
-      self.setDrinker(username)
+   def FlowStart(self, flow):
+      self.Activity()
+      self.setDrinker(flow.user.username)
       self.setCurrentPlate(self.plate_pour, replace=1)
 
-   def pourUpdate(self, flow, cost):
-      """ Called by kegbot periodically during a flow """
-      self.activity()
+   def FlowUpdate(self, flow):
+      self.Activity()
       ounces = units.ticks_to_volunits(flow.Ticks())
       ounces /= units.US_OUNCE
       oz = '%.1foz' % round(ounces, 1)
@@ -52,21 +54,32 @@ class KegUI(lcdui.lcdui):
       self.setDrinker(flow.user.username)
       self.plate_pour.progline.setProgress(progress)
       self.plate_pour.ounces.setData(oz.rjust(6))
-      self.plate_pour.costline.setData('$%.2f' % cost)
+      self.plate_pour.costline.setData('$%.2f' % flow.est_cost)
 
-   def pourEnd(self, drink):
-      """ Called by kegbot at end of flow """
+   def FlowEnd(self, flow, drink):
       self.plate_main.setLastDrink(drink)
       self.setCurrentPlate(self.plate_main, replace=1)
+
+   ### IAuthDevice
+
+   def AuthorizedUsers(self):
+      return self._authed
+
+   def AuthUser(self, user):
+      """ Callback for menu UI (if enabled) to start flow for a user """
+      self._authed = [user]
+
+   def DeauthUser(self):
+      self._authed = []
+
+   def setLastDrink(self, d):
+      self.plate_main.setLastDrink(d)
 
    def setFreezer(self, status):
       self.plate_main.setFreezer(status)
 
    def setDrinker(self, name):
       self.plate_pour.setDrinker(name)
-
-   def flowEnded(self):
-      self.plate_main.gotoPlate('last')
 
 
 class AlertPlate(lcdui.TimeoutMixin, lcdui.plate_std):
@@ -84,7 +97,7 @@ class plate_kegbot_main(lcdui.plate_multi):
       self.lastinfo    = lcdui.plate_std(owner)
       self.drinker     = lcdui.plate_std(owner)
       self.drinkers    = plate_kegbot_drinker_menu(owner, header = "select drinker",
-            default_ptr = self.owner.userPresent)
+            default_ptr = self.owner.AuthUser)
 
       self.main_menu = lcdui.plate_select_menu(owner,header="kegbot menu")
       self.main_menu.insert(("pour a drink",owner.setCurrentPlate,(self.drinkers,)))
@@ -154,8 +167,8 @@ class plate_kegbot_pour(lcdui.plate_std):
       lcdui.plate_std.__init__(self, owner)
       self.owner = owner
 
-      self.cmd_dict['enter'] = (self.owner.kb.StopFlow, ())
-      self.cmd_dict['exit'] = (self.owner.kb.StopFlow, ())
+      self.cmd_dict['enter'] = (self.owner.DeauthUser, ())
+      self.cmd_dict['exit'] = (self.owner.DeauthUser, ())
 
       self.line1 = lcdui.widget_line_std("_now pouring________", row = 0, col = 0, scroll = 0)
       self.userline = lcdui.widget_line_std("", row = 1, col = 0, scroll = 0,
@@ -178,7 +191,7 @@ class plate_kegbot_drinker_menu(lcdui.plate_select_menu):
          self.reset()
       self.menu = []
       for u in users:
-         self.menu.append((u.username, self.owner.userPresent, (u,)))
+         self.menu.append((u.username, self.owner.AuthUser, (u,)))
       self.refreshMenu()
 
 

@@ -8,25 +8,18 @@ config = 'keg.cfg'
 
 # standard lib imports
 import ConfigParser
+import itertools
 import logging
 import optparse
 import signal
-import socket
 import sys
 import threading
 import time
 
-# path hooks for local modules
-sys.path.append('../pymtxorb')
-sys.path.append('../pylcdui')
-
 # kegbot lib imports
 import Backend
-import Flow
 import Interfaces
 import KegRemoteServer
-import KegUI
-import Publisher
 import SQLConfigParser
 import units
 import util
@@ -52,9 +45,9 @@ class KegBot:
    def __init__(self):
       self.QUIT          = threading.Event()
       self.config        = SQLConfigParser.SQLObjectConfigParser()
-      self.authed_users  = [] # users currently connected (usually 0 or 1)
       self._channels = []
       self._devices = []
+      self._authed_users = {}
 
       # ready to perform second stage of initialization
       self._setup()
@@ -101,38 +94,8 @@ class KegBot:
       self.server = KegRemoteServer.KegRemoteServer(self, '', 9966)
       self.server.start()
 
-      # remote event publisher
-      self.publisher = Publisher.Publisher()
-
       # do local hardware config
       localconfig.configure(self, self.config)
-
-      # optional module: LCD UI
-      if self.config.getboolean('ui','use_lcd'):
-         lcdtype = self.config.get('ui', 'lcd_type')
-         dev = self.config.get('devices','lcd')
-         if lcdtype == 'mtxorb':
-            import mtxorb as lcddriver
-            self.lcd = lcddriver.Display(dev, model=self.config.get('ui', 'lcd_model'))
-         elif lcdtype == 'cfz':
-            import pycfz as lcddriver
-            self.lcd = lcddriver.Display(dev)
-         else:
-            self.logger.error('main: unknown lcd_type!')
-         self.logger.info('main: new %s LCD at device %s' % (lcdtype, dev))
-         self.ui = KegUI.KegUI(self.lcd, self)
-         drinks = Backend.Drink.select(orderBy="-id", limit=1)
-         if drinks.count() > 0:
-            self.ui.setLastDrink(drinks[0])
-      else:
-         # This works fine, as long as we're cool with shared memory access to
-         # the ui (and we are cool with it, for now :)
-         self.ui = util.NoOpObject()
-
-      # set up the default screen
-      self.ui.setMain()
-      self.ui.activity()
-      self.ui.start()
 
    def _setsigs(self):
       """ Sets HUP, INT, QUIT, TERM to go to cause a quit """
@@ -150,8 +113,9 @@ class KegBot:
 
       # other quitting
       self.server.stop()
-      self.ui.stop()
       self.QUIT.set()
+
+      # XXX TODO: stop all devices that have a stop method
 
    def AddChannel(self, chan):
       self._channels.append(chan)
@@ -178,19 +142,35 @@ class KegBot:
 
    def _ProcessDevices(self):
       for dev in self._devices:
-         if isinstance(dev, Interfaces.IAuthPresence):
-            new_user = dev.PresenceCheck()
-            if new_user:
-               self.AuthUser(new_user)
-            old_user = dev.AbsenceCheck()
-            if old_user:
-               self.DeauthUser(old_user)
+         if isinstance(dev, Interfaces.IAuthDevice):
+            for username in self._NewUsersFromAuthDevice(dev):
+               self.AuthUser(username)
          elif isinstance(dev, Interfaces.ITemperatureSensor):
             temp, temp_time = dev.GetTemperature()
             if temp is not None:
-               self.publisher.PublishTemperature(dev.SensorName(), temp)
-         else:
+               for listener in self.IterDevicesImplementing(Interfaces.IThermoListener):
+                  listener.ThermoUpdate(dev.SensorName(), temp)
+         elif hasattr(dev, 'Step'):
             dev.Step()
+
+   def _NewUsersFromAuthDevice(self, dev):
+      """
+      Returns a list of any new users authorized on dev since last check.
+
+      A cache of the last call to dev.AuthorizedUsers() is maintained in
+      Kegbot._authed_users
+      """
+      if not self._authed_users.has_key(dev):
+         self._authed_users[dev] = []
+      old = self._authed_users[dev]
+      new = dev.AuthorizedUsers()
+      ret = [x for x in new if x not in old]
+      self._authed_users[dev] = new
+      return ret
+
+   def IterDevicesImplementing(self, interface):
+      """ Return all registered devices that implement `interface` """
+      return itertools.ifilter(lambda o: isinstance(o, interface), self._devices)
 
    def MainEventLoop(self):
       """ Main asynchronous service loop of the kegbot. """
@@ -233,7 +213,6 @@ class KegBot:
          return False
 
       u = matches[0]
-      self.authed_users.append(u)
 
       # TODO: for now, authorization means start a flow on all channels. we
       # may need to change this depending on (a) hardware (ie valves or no
@@ -243,33 +222,15 @@ class KegBot:
          channel.EnqueueUser(u)
       return True
 
-   def DeauthUser(self, username):
-      """
-      Remove user matching username from the list of authorized users.
-
-      Returns:
-         True - user removed from authed_users
-         False - no match for username in authed_users
-      """
-      matches = Backend.User.selectBy(username=username)
-      if not matches.count():
-         return False
-      u = matches[0]
-      self.authed_users = [x for x in self.authed_users if x.username != u.username]
-      return True
-
    def UserIsAuthed(self, user):
       """ Return True if user is presently in the authed_users list """
       # guests are always authorized
       if user.HasLabel('guest'):
          return True
-      return user in self.authed_users
-
-   def StopFlow(self):
-      """ Cause any running flow to terminate """
-      self.STOP_FLOW = 1
-      self.ui.flowEnded()
-      return True
+      for dev in self.IterDevicesImplementing(Interfaces.IAuthDevice):
+         if dev.UserIsAuthed(user.username):
+            return True
+      return False
 
    def _TotalPendingVolume(self, user):
       """
@@ -296,13 +257,6 @@ class KegBot:
       # TODO: fix me with a new config value (ib_idle_timeout doesn't look right)
       if flow.IdleSeconds() >= self.config.getfloat('timing','ib_idle_timeout'):
          self.logger.info('flow: boot: user went idle')
-         self.DeauthUser(flow.user.username)
-         return False
-
-      # global flow stop is set (XXX: this is a silly hack for xml-rpc)
-      if self.STOP_FLOW:
-         self.logger.info('flow: boot: global kill set')
-         self.STOP_FLOW = 0
          return False
 
       # user has poured his maximum
@@ -319,25 +273,26 @@ class KegBot:
    def StartFlow(self, flow):
       """ Begin a flow, based on flow passed in """
       self.logger.info('flow: starting flow handling')
-      self.ui.activity()
-      self.STOP_FLOW = 0 # TODO: move to flow
+      for ui in self.IterDevicesImplementing(Interfaces.IDisplayDevice):
+         ui.Activity()
       channel = flow.channel
 
       if flow.channel.Keg() is None:
          self.logger.error('flow: no keg currently active; what are you trying to pour?')
-         self.ui.Alert('no active keg')
-         self.DeauthUser(flow.user.username)
+         for ui in self.IterDevicesImplementing(Interfaces.IDisplayDevice):
+            ui.Alert('no active keg')
          channel.DeactivateFlow()
          return False
 
       if flow.max_volume <= 0:
-         self.ui.Alert('no credit')
-         self.DeauthUser(flow.user.username)
+         for ui in self.IterDevicesImplementing(Interfaces.IDisplayDevice):
+            ui.Alert('no credit')
          channel.DeactivateFlow()
          return False
 
-      # turn on UI
-      self.ui.pourStart(flow.user.username)
+      # turn on dev
+      for dev in self.IterDevicesImplementing(Interfaces.IFlowListener):
+         dev.FlowStart(flow)
 
       # turn on flow
       channel.StartFlow()
@@ -347,7 +302,6 @@ class KegBot:
       self.active_flows.append(flow)
       self.logger.info('flow: new flow started for user %s on channel %s' %
             (flow.user.username, channel.chanid))
-      self.publisher.PublishFlowStart(flow)
 
       return True
 
@@ -361,8 +315,9 @@ class KegBot:
       channel = flow.channel
       if channel.ServiceFlow():
          curr_vol = units.ticks_to_volunits(flow.Ticks())
-         cost = self.EstimateCost(flow.user, curr_vol)
-         self.ui.pourUpdate(flow, cost)
+         flow.est_cost = self.EstimateCost(flow.user, curr_vol)
+         for dev in self.IterDevicesImplementing(Interfaces.IFlowListener):
+            dev.FlowUpdate(flow)
 
       return True
 
@@ -384,16 +339,13 @@ class KegBot:
       self.GenGrantCharges(d)
       Backend.BAC.ProcessDrink(d)
       Backend.Binge.Assign(d)
-      self.publisher.PublishDrinkEvent(d)
 
       # update the UI
       ounces = round(units.to_ounces(volume), 2)
-      self.ui.pourEnd(d)
+      for dev in self.IterDevicesImplementing(Interfaces.IFlowListener):
+         dev.FlowEnd(flow, d)
       self.logger.info('flow: drink total: %i ticks, %i volunits, %.2f ounces' %
             (flow.Ticks(), volume, ounces))
-
-      # de-auth the user. this may need to be configurable down the line..
-      self.DeauthUser(flow.user.username)
 
    def SortByValue(self, grants):
       """ return a list of grants sorted by least cost to user """

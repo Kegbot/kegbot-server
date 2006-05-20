@@ -73,6 +73,6 @@ class RelayLogger:
          return
       self._last_status = current_status
       status = {0: 'off', 1: 'on'}.get(current_status, 'unknown')
-      rec = Backend.RelayLog(name = self.name, status = status])
+      rec = Backend.RelayLog(name = self.name, status = status)
       rec.syncUpdate()
 

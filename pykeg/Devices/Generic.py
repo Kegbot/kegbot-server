@@ -7,9 +7,9 @@ import Interfaces
 class FreezerConversion:
    def __init__(self, freezer_id, control_relay, temp_sensor, low_t, high_t):
       assert isinstance(control_relay, Interfaces.IRelay), \
-            "control_relay must implemented IRelay interface"
+            "control_relay must implement IRelay interface"
       assert isinstance(temp_sensor, Interfaces.ITemperatureSensor), \
-            "temp_sensor must implemented ITemperatureSensor interface"
+            "temp_sensor must implement ITemperatureSensor interface"
       self.id = freezer_id
       self.relay = control_relay
       self.sensor = temp_sensor
@@ -42,7 +42,7 @@ class ThermoLogger:
    LOG_INTERVAL = 30
    def __init__(self, name, temp_sensor):
       assert isinstance(temp_sensor, Interfaces.ITemperatureSensor), \
-            "temp_sensor must implemented ITemperatureSensor interface"
+            "temp_sensor must implement ITemperatureSensor interface"
       self.name = name
       self.sensor = temp_sensor
       self._last_time = 0.0
@@ -57,4 +57,22 @@ class ThermoLogger:
       if curr_temp is not None:
          rec = Backend.ThermoLog(name = self.name, temp = curr_temp)
          rec.syncUpdate()
+
+
+class RelayLogger:
+   def __init__(self, name, relay):
+      assert isinstance(relay, Interfaces.IRelay), \
+            "relay must implement IRelay interface"
+      self.name = name
+      self.relay = relay
+      self._last_status = 0
+
+   def Step(self):
+      current_status = self.relay.RelayStatus()
+      if self._last_status == current_status:
+         return
+      self._last_status = current_status
+      status = {0: 'off', 1: 'on'}.get(current_status, 'unknown')
+      rec = Backend.RelayLog(name = self.name, status = status])
+      rec.syncUpdate()
 

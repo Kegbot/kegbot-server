@@ -236,11 +236,12 @@ class BAC(SQLObject):
    def ProcessDrink(cls, d):
       """ Store a BAC value given a recent drink """
       prev_bac = 0.0
-
-      matches = BAC.select('user_id=%i' % d.user.id, orderBy='-rectime')
-      if matches.count():
-         last_bac = matches[0]
-         prev_bac = util.decomposeBAC(last_bac.bac, d.endtime - last_bac.rectime)
+      if not d.user.HasLabel('guest'):
+         # consider previously recorded bac for non-guest users
+         matches = BAC.select('user_id=%i' % d.user.id, orderBy='-rectime')
+         if matches.count():
+            last_bac = matches[0]
+            prev_bac = util.decomposeBAC(last_bac.bac, d.endtime - last_bac.rectime)
 
       now = util.instantBAC(d.user.gender, d.user.weight, d.keg.type.abv,
             units.to_ounces(d.volume))
@@ -248,7 +249,6 @@ class BAC(SQLObject):
       #now = util.decomposeBAC(now, units.to_ounces(d.volume)/12.0*(30*60))
 
       b = BAC(user=d.user, drink=d.id, rectime=d.endtime, bac=now+prev_bac)
-      d.syncUpdate()
    ProcessDrink = classmethod(ProcessDrink)
 
 
@@ -277,8 +277,13 @@ class Binge(SQLObject):
 
    def Assign(cls, d):
       """ Create or update a binge given a recent drink """
+      if d.user.HasLabel('guest'):
+         # no binge calculation for guest users
+         return -1
+
       min_end = d.endtime - 60*90
-      binges = Binge.select("user_id=%i AND endtime >= %i"% (d.user.id, min_end), orderBy="-id", limit=1)
+      binges = Binge.select("user_id=%i AND endtime >= %i" %
+            (d.user.id, min_end), orderBy="-id", limit=1)
 
       # now find or create the current binge, and update it
       if binges.count() == 0:

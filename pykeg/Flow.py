@@ -49,8 +49,7 @@ class Flow:
       # should still be the responsiblity of an IFlowmeter implementation)
       diff = ticks - self._last_ticks
       if diff < 0:
-         self.channel.logger.warning('Tick value to GetTicks (%s) less than last call (%s); ignoring)' *
-               ticks, self._last_ticks)
+         self.channel.logger.warning('Tick value to GetTicks (%s) less than last call (%s); ignoring)' % (ticks, self._last_ticks))
          diff = 0
 
       self._ticks += diff

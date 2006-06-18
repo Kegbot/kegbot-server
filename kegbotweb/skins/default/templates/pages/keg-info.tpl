@@ -8,7 +8,7 @@
       <tr>
          <td align="right" valign="top"><b>name:</b></td>
          <td>
-            {$keg->beername} ({$keg->abv()|string_format:"%.2f"}% alcohol)
+            {$keg->description()} ({$keg->abv()|string_format:"%.2f"}% alcohol)
             </td>
          <td rowspan="6" align="right">
             <img src="{module_url module="images" image="keg.png"}" width="77" height="100">

@@ -1,5 +1,6 @@
 import logging
 import sys
+import datetime
 import time
 import Queue
 
@@ -19,7 +20,7 @@ class Flow:
    def __init__(self, channel, start = None, user = None,
          ticks = 0, max_volume = sys.maxint, end = None):
       self.channel = channel
-      self.start = start or time.time()
+      self.start = start or datetime.datetime.now()
       self.end = end or self.start
       self.user = user
       self._ticks = ticks
@@ -179,7 +180,7 @@ class Channel:
    def StopFlow(self):
       self.valve_relay.Disable()
       self.active_flow.SetTicks(self.GetTicks()) # final tick reading
-      self.end = time.time()
+      self.end = datetime.datetime.now()
       self._last_ticks = self.GetTicks()
       self._idle_stats.Clear()
 

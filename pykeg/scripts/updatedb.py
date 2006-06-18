@@ -18,6 +18,7 @@ dbconn = MySQLdb.connect(host=dbhost, user=dbuser, passwd=dbpass, db=dbdb)
 sys.path.append('.')
 import Backend
 import util
+import datetime
 
 db_uri = 'mysql://%s:%s@%s/%s' % (dbuser, dbpass, dbhost, dbdb)
 Backend.setup(db_uri)
@@ -221,6 +222,35 @@ class SchemaUpdate__12(Update):
       SetCurrentSchema(12)
       return UPGRADE_PASS
 
+class SchemaUpdate__13(Update):
+   def _ChangeIntToDateTime(self, table, colname):
+      tablename = table._table
+      backup = {}
+      c = dbconn.cursor()
+      self.log('backing up timevals in %s.%s' % (tablename, colname))
+      q = "SELECT `id`,`%s` FROM `%s`" % (colname, tablename)
+      c.execute(q)
+      for idx, val in c:
+         backup[idx] = val
+
+      self.log('altering column from int to datetime')
+      q = "ALTER TABLE `%s` CHANGE `%s` `%s` DATETIME NOT NULL" % (tablename, colname, colname)
+      ret = c.execute(q)
+
+      self.log('restoring old values')
+      for idx, val in backup.iteritems():
+         q = "UPDATE `%s` SET `%s`='%s' WHERE `id`='%s'" % (tablename,colname,datetime.datetime.fromtimestamp(val),idx)
+         c.execute(q)
+
+   def Upgrade(self):
+      self._ChangeIntToDateTime(Backend.Drink, 'starttime')
+      self._ChangeIntToDateTime(Backend.Drink, 'endtime')
+      self._ChangeIntToDateTime(Backend.Grant, 'exp_time')
+      self._ChangeIntToDateTime(Backend.BAC, 'rectime')
+      self._ChangeIntToDateTime(Backend.Binge, 'starttime')
+      self._ChangeIntToDateTime(Backend.Binge, 'endtime')
+      SetCurrentSchema(13)
+      return UPGRADE_PASS
 
 ### END SCHEMA UPDATES
 

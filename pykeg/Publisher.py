@@ -104,7 +104,7 @@ class Publisher(Interfaces.IFlowListener, Interfaces.IThermoListener):
          try:
             apply(getattr(server, func_name), args)
          except socket.error, e:
-            self.logger.error('Error contacting %s: %s' % (addr, e))
+            self.logger.debug('Error contacting %s: %s' % (addr, e))
          except xmlrpclib.Fault, e:
             self.logger.error('Fault encountered in XML-RPC with %s: %s' % (addr, e))
 
@@ -128,6 +128,8 @@ class Publisher(Interfaces.IFlowListener, Interfaces.IThermoListener):
             drink.keg.description, drink.volume/units.MILLILITER,
             drink.endtime)
       self._DoPublish('Drink', args)
+
+   ### IThermoListener interface
 
    def ThermoUpdate(self, sensor, temperature):
       if time.time() - self._last_publish.get('PeriodicTemperature', 0) < 30:

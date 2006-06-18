@@ -238,8 +238,8 @@ class KegBot:
       """
       vol = 0
       for channel in self._channels:
-         if channel.flow is not None and channel.flow.user == user:
-            vol += units.ticks_to_volunits(channel.flow.Ticks())
+         if channel.active_flow is not None and channel.active_flow.user == user:
+            vol += units.ticks_to_volunits(channel.active_flow.Ticks())
       return vol
 
    def CheckAccess(self, flow):
@@ -331,8 +331,8 @@ class KegBot:
 
       # log the drink
       volume = units.ticks_to_volunits(flow.Ticks())
-      d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=int(flow.start),
-            endtime=int(flow.end), user=flow.user, keg=flow.channel.Keg(), status='valid')
+      d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=flow.start,
+            endtime=flow.end, user=flow.user, keg=flow.channel.Keg(), status='valid')
       d.syncUpdate()
 
       # post-processing steps

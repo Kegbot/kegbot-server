@@ -56,14 +56,14 @@ def configure(kegbot, config):
 
    # config & install first beer channel
    channel_0 = Flow.Channel(chanid = 0,
-         valve_relay = controller.i_relay_0,
+         valve_relay = controller.i_relay_1,
          flow_meter = controller.i_flowmeter,
    )
    kegbot.AddChannel(channel_0)
 
    # config & install fridge control
    freezer = Generic.FreezerConversion(freezer_id = 0,
-         control_relay = controller.i_relay_1,
+         control_relay = controller.i_relay_0,
          temp_sensor = controller.i_thermo,
          low_t = config.getfloat('thermo', 'temp_max_low'),
          high_t = config.getfloat('thermo', 'temp_max_high'),
@@ -81,7 +81,8 @@ def configure(kegbot, config):
    ### standard config stuff below (TODO: move me)
 
    # publisher
-   kegbot.AddDevice(Publisher.Publisher())
+   # TODO: fixme, datetime cols break me
+   #kegbot.AddDevice(Publisher.Publisher())
 
    ui = KegUI.KegUI(pycfz.Display('/dev/tts/USB1'))
    kegbot.AddDevice(ui)

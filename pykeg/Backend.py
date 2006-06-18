@@ -1,6 +1,9 @@
-from datetime import datetime
+import datetime
 import time
 import sys
+
+# TODO for Django compatibility:
+# - convert INT date/time cols to real DateTime cols
 
 try:
    from sqlobject import *
@@ -16,7 +19,7 @@ except ImportError:
 import units
 import util
 
-SCHEMA_VERSION = 12
+SCHEMA_VERSION = 13
 
 ### utility functions
 
@@ -71,8 +74,8 @@ class Drink(SQLObject):
 
    ticks = IntCol(default=0, notNone=True)
    volume = IntCol(default=0, notNone=True)
-   starttime = IntCol(notNone=True)
-   endtime = IntCol(notNone=True)
+   starttime = DateTimeCol(notNone=True)
+   endtime = DateTimeCol(notNone=True)
    user = ForeignKey('User', notNone=True)
    keg = ForeignKey('Keg', notNone=True)
    status = EnumCol(enumValues=['valid','invalid'], default='valid', notNone=True)
@@ -106,7 +109,7 @@ class Grant(SQLObject):
          default='active', notNone=True)
    policy = ForeignKey('Policy', notNone=True)
    exp_volume = IntCol(default=0, notNone=True)
-   exp_time = IntCol(default=0, notNone=True)
+   exp_time = DateTimeCol(default=0, notNone=True)
    exp_drinks = IntCol(default=0, notNone=True)
    total_volume = IntCol(default=0, notNone=True)
    total_drinks = IntCol(default=0, notNone=True)
@@ -128,7 +131,7 @@ class Grant(SQLObject):
       if self.expiration == "none":
          return False
       elif self.expiration == "time":
-         return self.exp_time < time.time()
+         return self.exp_time < datetime.datetime.now()
       elif self.expiration == "volume":
          return (extravolume + self.total_volume) >= self.exp_volume
       else:
@@ -220,7 +223,7 @@ class Token(SQLObject):
 
    user = ForeignKey('User', notNone=True)
    keyinfo = StringCol(notNone=True)
-   created = DateTimeCol(default=datetime.now)
+   created = DateTimeCol(default=datetime.datetime.now)
 
 
 class BAC(SQLObject):
@@ -230,7 +233,7 @@ class BAC(SQLObject):
 
    user = ForeignKey('User')
    drink = ForeignKey('Drink')
-   rectime = IntCol(notNone=True)
+   rectime = DateTimeCol(notNone=True)
    bac = FloatCol(notNone=True)
 
    def ProcessDrink(cls, d):
@@ -241,7 +244,7 @@ class BAC(SQLObject):
          matches = BAC.select('user_id=%i' % d.user.id, orderBy='-rectime')
          if matches.count():
             last_bac = matches[0]
-            prev_bac = util.decomposeBAC(last_bac.bac, d.endtime - last_bac.rectime)
+            prev_bac = util.decomposeBAC(last_bac.bac, (d.endtime - last_bac.rectime).seconds)
 
       now = util.instantBAC(d.user.gender, d.user.weight, d.keg.type.abv,
             units.to_ounces(d.volume))
@@ -272,8 +275,8 @@ class Binge(SQLObject):
    startdrink = ForeignKey('Drink')
    enddrink = ForeignKey('Drink')
    volume = IntCol(default=0, notNone=True)
-   starttime = IntCol(notNone=True)
-   endtime = IntCol(notNone=True)
+   starttime = DateTimeCol(notNone=True)
+   endtime = DateTimeCol(notNone=True)
 
    def Assign(cls, d):
       """ Create or update a binge given a recent drink """
@@ -281,8 +284,8 @@ class Binge(SQLObject):
          # no binge calculation for guest users
          return -1
 
-      min_end = d.endtime - 60*90
-      binges = Binge.select("user_id=%i AND endtime >= %i" %
+      min_end = d.endtime - datetime.timedelta(minutes=90)
+      binges = Binge.select("user_id=%i AND endtime >= '%s'" %
             (d.user.id, min_end), orderBy="-id", limit=1)
 
       # now find or create the current binge, and update it
@@ -308,7 +311,7 @@ class Userpic(SQLObject):
 
    user = ForeignKey('User', notNone=True)
    filetype = EnumCol(enumValues=['png','jpeg'], default='png', notNone=True)
-   modified = DateTimeCol(default=datetime.now)
+   modified = DateTimeCol(default=datetime.datetime.now)
    data = BLOBCol(length=2**24)
 
 
@@ -319,7 +322,7 @@ class ThermoLog(SQLObject):
 
    name = StringCol(notNone=True, default='')
    temp = FloatCol(notNone=True, default=0.0)
-   time = DateTimeCol(notNone=True, default=datetime.now)
+   time = DateTimeCol(notNone=True, default=datetime.datetime.now)
 
 
 class RelayLog(SQLObject):
@@ -329,7 +332,7 @@ class RelayLog(SQLObject):
 
    name = StringCol(notNone=True, default='')
    status = EnumCol(enumValues=['unknown','on','off'], default='unknown', notNone=True)
-   time = DateTimeCol(notNone=True, default=datetime.now)
+   time = DateTimeCol(notNone=True, default=datetime.datetime.now)
 
 
 class BeerType(SQLObject):

@@ -1,0 +1,35 @@
+{% load kegweblib %}
+{% extends "base.html" %}
+
+{% block title %}kegbot main page{% endblock %}
+
+{% block content %}
+<div class="contenthead">
+   last five drinks
+</div>
+<div class="content">
+{% if last_drinks %}
+   <p>
+   <div align="center">
+   <table border="0" cellspacing="1" cellpadding="1">
+   <tr>
+   <td>&nbsp;</td>
+   {% for drink in last_drinks %}
+      <td>
+         <center>
+         {% mugshot_box drink.user 64 %}
+         </center>
+      </td>
+   {% endfor %}
+   </tr>
+   </table>
+   </div>
+   </p>
+{% else %}
+   <p>
+   virgin kegbot; no drinks yet recorded! this is indeed a very special time...
+   </p>
+{% endif %}
+</div>
+{% endblock %}
+

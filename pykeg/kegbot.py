@@ -339,20 +339,18 @@ class KegBot:
       # tell the channel to clean things up
       channel.StopFlow()
 
-      # nothing to do if null pour
-      if flow.Ticks() <= 0:
-         return
-
-      # log the drink
+      d = None
       volume = units.ticks_to_volunits(flow.Ticks())
-      d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=flow.start,
-            endtime=flow.end, user=flow.user, keg=flow.channel.Keg(), status='valid')
-      d.syncUpdate()
+      if flow.Ticks() > 0:
+         # log the drink
+         d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=flow.start,
+               endtime=flow.end, user=flow.user, keg=flow.channel.Keg(), status='valid')
+         d.syncUpdate()
 
-      # post-processing steps
-      self.GenGrantCharges(d)
-      Backend.BAC.ProcessDrink(d)
-      Backend.Binge.Assign(d)
+         # post-processing steps
+         self.GenGrantCharges(d)
+         Backend.BAC.ProcessDrink(d)
+         Backend.Binge.Assign(d)
 
       # update the UI
       ounces = round(units.to_ounces(volume), 2)

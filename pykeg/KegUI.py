@@ -56,8 +56,9 @@ class KegUI(lcdui.lcdui,
       self.plate_pour.ounces.setData(oz.rjust(6))
       self.plate_pour.costline.setData('$%.2f' % flow.est_cost)
 
-   def FlowEnd(self, flow, drink):
-      self.plate_main.setLastDrink(drink)
+   def FlowEnd(self, flow, drink=None):
+      if drink:
+         self.plate_main.setLastDrink(drink)
       self.setCurrentPlate(self.plate_main, replace=1)
 
    ### IAuthDevice

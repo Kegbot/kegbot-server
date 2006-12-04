@@ -2,6 +2,8 @@ kegbot TODO
 oldest items first
 
 HIGH PRIORITY
+- document & fix the flow state machine
+- per keg grants (has this feature really been missing for this long?)
 
 AVERAGE PRIORITY
 

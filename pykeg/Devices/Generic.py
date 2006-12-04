@@ -28,7 +28,7 @@ class FreezerConversion:
             self.relay.Enable()
       elif temp < self.LowT():
          if self.relay.Status() == 'on':
-            self.logger.info('temperature low (%.2f); disbling relay' % temp)
+            self.logger.info('temperature low (%.2f); disabling relay' % temp)
             self.relay.Disable()
 
    def LowT(self):

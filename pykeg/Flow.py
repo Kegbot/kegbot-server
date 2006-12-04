@@ -50,7 +50,7 @@ class Flow:
       # should still be the responsiblity of an IFlowmeter implementation)
       diff = ticks - self._last_ticks
       if diff < 0:
-         self.channel.logger.warning('Tick value to GetTicks (%s) less than last call (%s); ignoring)' % (ticks, self._last_ticks))
+         self.channel.logger.warning('Tick value to SetTicks (%s) less than last call (%s); ignoring)' % (ticks, self._last_ticks))
          diff = 0
 
       self._ticks += diff
@@ -120,66 +120,60 @@ class Channel:
 
    def EnqueueUser(self, user):
       """ Add a flow to the waiting queue of flows """
-      # piviot the active flow to this user if it is anonymous
-      if not self.IsIdle() and self.active_flow.user == self.anon_user:
-         self.logger.info('user %s replacing anonymous flow' % user.username)
-         self.active_flow.user = user
-         self.active_flow.max_volume = user.MaxVolume()
-         return
-
-      # otherwise, enqueue
-      flow = self._CreateFlow(user)
-      if flow.max_volume != 0:
-         self._waiting.put(flow)
-      else:
-         self.logger.info('no volume for user, not starting')
+      # start a new flow right away if we aren't already servicing one
+      self._waiting.put(user)
+      if self.IsIdle():
+         self._GetAndIncrementFlow(self.GetTicks())
 
    def _CreateFlow(self, user):
       return Flow(self, user=user, max_volume=user.MaxVolume())
 
-   def _CreateAnonymousFlow(self):
-      return self._CreateFlow(self.anon_user)
+   def _GetUserForNewFlow(self):
+      """ Called when a flow starts and returns who to blame """
+      if not self._waiting.empty():
+         return self._waiting.get_nowait()
+      else:
+         return self.anon_user
 
-   def CheckForNewFlows(self):
-      """ If there isn't an active flow, pop one from waiting and activate """
-      if self.active_flow is not None:
+   def _GetAndIncrementFlow(self, ticks):
+      """ Fetch the current flow (possibly creating it) and increment it """
+      if not self.active_flow:
+         # case 2: create and increment a new flow
+         self.active_flow = self._CreateFlow(self._GetUserForNewFlow())
+         self.logger.info('created new flow for user %s' %
+               self.active_flow.user.username)
+      return self.active_flow.SetTicks(ticks)
+
+   def Service(self):
+      now_ticks = self.GetTicks()
+      delta_ticks = now_ticks - self._last_ticks
+
+      # return if nothing to service (no change in fluid)
+      if delta_ticks <= 0 or not self.active_flow and delta_ticks <= 2:
+         self._last_ticks = now_ticks
          return False
 
-      now_ticks = self.GetTicks()
-      self._idle_stats.Inc(now_ticks - self._last_ticks)
+      # increment the flow
+      diff = self._GetAndIncrementFlow(now_ticks)
+      flow = self.active_flow
+
+      # if anonymous flow, attempt to assign blame
+      if flow.user == self.anon_user:
+         if not self._waiting.empty():
+            new_user = self._GetUserForNewFlow()
+            self.logger.info('user %s replacing anonymous' % new_user.username)
+            self.active_flow.user = new_user
+            self.active_flow.max_volume = new_user.MaxVolume()
+
       self._last_ticks = now_ticks
-
-      # return the head of the queue if it is there
-      try:
-         flow = self._waiting.get_nowait()
-         self.logger.info('new flow found on channel %s' % self.chanid)
-         self.active_flow = flow
-         return flow
-      except Queue.Empty:
-         pass
-
-      # there is no active flow and no one is authenticated; check if an
-      # anonymous flow has started
-      # TODO: hardcoded thresshold
-      if self.anon_user is not None and self._idle_stats.Count() >= 10:
-         flow = self._CreateAnonymousFlow()
-         flow.SetTicks(now_ticks - self._idle_stats.Count())
-         self.active_flow = flow
-         return flow
-
-      return None
 
    def StartFlow(self):
       self.logger.info('starting new flow for user %s' % self.active_flow.user.username)
       self.active_flow.SetTicks(self.GetTicks())
       return self.valve_relay.Enable()
 
-   def ServiceFlow(self):
-      return self.active_flow.SetTicks(self.GetTicks())
-
    def StopFlow(self):
       self.valve_relay.Disable()
-      self.active_flow.SetTicks(self.GetTicks()) # final tick reading
       self.end = datetime.datetime.now()
       self._last_ticks = self.GetTicks()
       self._idle_stats.Clear()
@@ -193,7 +187,7 @@ class Channel:
 
    def Keg(self):
       channel_kegs = list(Backend.Keg.selectBy(status='online',
-         channel=self.chanid, orderBy='-id'))
+         channel=self.chanid))
       if len(channel_kegs) != 1:
          return None
       return channel_kegs[0]

@@ -109,7 +109,7 @@ class Grant(SQLObject):
          default='active', notNone=True)
    policy = ForeignKey('Policy', notNone=True)
    exp_volume = IntCol(default=0, notNone=True)
-   exp_time = DateTimeCol(default=0, notNone=True)
+   exp_time = DateTimeCol(default=datetime.datetime.now, notNone=True)
    exp_drinks = IntCol(default=0, notNone=True)
    total_volume = IntCol(default=0, notNone=True)
    total_drinks = IntCol(default=0, notNone=True)

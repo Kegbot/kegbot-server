@@ -173,23 +173,32 @@ class KegBot:
       return itertools.ifilter(lambda o: isinstance(o, interface), self._devices)
 
    def MainEventLoop(self):
-      """ Main asynchronous service loop of the kegbot. """
+      """ Main asynchronous service loop of the kegbot """
 
       self.active_flows = []
       while not self.QUIT.isSet():
-         # start any newly-created flows
-         for channel in [chan for chan in self._channels if chan.IsIdle()]:
-            new_flow = channel.CheckForNewFlows()
-            if new_flow:
-               self.StartFlow(new_flow)
+         # service all channels
+         for c in self._channels:
+            c.Service()
 
-         # step each flow and check if it is complete
-         for flow in self.active_flows:
-            flow_active = self.StepFlow(flow)
-            if not flow_active:
-               self.FinishFlow(flow)
-               self.active_flows.remove(flow)
-               flow.channel.DeactivateFlow()
+         all_flows = [c.active_flow for c in self._channels if not c.IsIdle()]
+
+         new_flows = [f for f in all_flows if f not in self.active_flows]
+         old_flows = [f for f in self.active_flows if f not in all_flows]
+
+         # do existing-flow-specific work -- possibly ending flows
+         self.active_flows = all_flows
+         for flow in all_flows:
+            self.StepFlow(flow)
+
+         # do new-flow-specific work
+         for flow in new_flows:
+            self.StartFlow(flow)
+
+         # do dead-flow-specific work
+         for flow in old_flows:
+            self.FinishFlow(flow)
+            #self.active_flows.remove(flow)
 
          # process other things needing attention
          self._ProcessDevices()
@@ -255,7 +264,7 @@ class KegBot:
 
       # user is idle
       # TODO: fix me with a new config value (ib_idle_timeout doesn't look right)
-      if flow.IdleSeconds() >= self.config.getfloat('timing','ib_idle_timeout'):
+      if flow.IdleSeconds() >= 10:
          self.logger.info('flow: boot: user went idle')
          return False
 
@@ -277,14 +286,15 @@ class KegBot:
          ui.Activity()
       channel = flow.channel
 
-      if flow.channel.Keg() is None:
+      # XXX FIXME
+      if 0 and flow.channel.Keg() is None:
          self.logger.error('flow: no keg currently active; what are you trying to pour?')
          for ui in self.IterDevicesImplementing(Interfaces.IDisplayDevice):
             ui.Alert('no active keg')
          channel.DeactivateFlow()
          return False
 
-      if flow.max_volume <= 0:
+      if 0 and flow.max_volume <= 0:
          for ui in self.IterDevicesImplementing(Interfaces.IDisplayDevice):
             ui.Alert('no credit')
          channel.DeactivateFlow()
@@ -292,6 +302,7 @@ class KegBot:
 
       # turn on dev
       for dev in self.IterDevicesImplementing(Interfaces.IFlowListener):
+         print 'flow start: %s' % dev
          dev.FlowStart(flow)
 
       # turn on flow
@@ -308,16 +319,15 @@ class KegBot:
    def StepFlow(self, flow):
       """ Do periodic work on a Flow (update ui, collect volume, etc) """
       if not self.CheckAccess(flow):
-         self.logger.info('flow: Flow ending')
+         self.logger.info('flow: Flow ending in StepFlow due to CheckAccess')
+         flow.channel.DeactivateFlow()
          return False
 
       # update things if anything changed
-      channel = flow.channel
-      if channel.ServiceFlow():
-         curr_vol = units.ticks_to_volunits(flow.Ticks())
-         flow.est_cost = self.EstimateCost(flow.user, curr_vol)
-         for dev in self.IterDevicesImplementing(Interfaces.IFlowListener):
-            dev.FlowUpdate(flow)
+      curr_vol = units.ticks_to_volunits(flow.Ticks())
+      flow.est_cost = self.EstimateCost(flow.user, curr_vol)
+      for dev in self.IterDevicesImplementing(Interfaces.IFlowListener):
+         dev.FlowUpdate(flow)
 
       return True
 
@@ -328,6 +338,10 @@ class KegBot:
 
       # tell the channel to clean things up
       channel.StopFlow()
+
+      # nothing to do if null pour
+      if flow.Ticks() <= 0:
+         return
 
       # log the drink
       volume = units.ticks_to_volunits(flow.Ticks())

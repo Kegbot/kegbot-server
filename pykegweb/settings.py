@@ -62,7 +62,7 @@ ROOT_URLCONF = 'pykegweb.urls'
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates".
     # Always use forward slashes, even on Windows.
-    "/Users/mikey/svnbox/kegbot/pykegweb/templates",
+    "templates",
 )
 
 INSTALLED_APPS = (

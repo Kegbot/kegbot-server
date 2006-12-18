@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}drinker details for {{ drinker.username }}{% endblock %}
+
+{% block content %}
+
+<div class="contenthead">
+   drinker info: {{ drinker.username }}
+</div>
+<div class="content">
+   <table width="100%" cellspacing=3 cellpadding=1 border=0>
+      <tr>
+         <td rowspan="8" align="center" valign="top" width=140>
+            <div>
+            TODO mugshot
+            </div>
+            <font size=+1>{{ rating }}</font><br>({{ avg_drinks_hour }} drinks/hour)
+         </td>
+      </tr>
+      <tr>
+         <td valign="top">
+            TODO quickshot
+         </td>
+      </tr>
+   </table>
+</div>
+
+<div class="contenthead">
+   binges
+</div>
+<div class="content">
+   <p>
+      a binge constitutes 3 or more drinks, separated by no more than 90
+      minutes each, and totalling at least 4 pints
+   </p>
+
+   {% if not binges %}
+   <p>
+      <b>none recorded yet.</b> {{ drinker.username }} is clearly a very balanced
+      drinker.
+   </p>
+   {% else %}
+   TODO
+   <ul>
+      {% for binge in binges %}
+      <li>{{ binge}}
+      {% endfor %}
+   </ul>
+   {% endif %}
+</div>
+
+<div class="contenthead">
+   full drink history
+</div>
+<div class="content">
+   <p>
+      full drink history for {{ drinker.username }} is shown below.
+   </p>
+   TODO
+   <ul>
+      {% for drink in drinks %}
+      <li>{{ drink }}
+      {% endfor %}
+   </ul>
+</div>
+
+{% endblock %}

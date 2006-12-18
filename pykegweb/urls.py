@@ -1,10 +1,18 @@
+import os.path
+
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('',
-    # Example:
-    # (r'^pykegweb/', include('pykegweb.apps.foo.urls.foo')),
+def basedir():
+   """ Get the pwd of this module, eg for use setting absolute paths """
+   return os.path.abspath(os.path.dirname(__file__))
 
-    # Uncomment this for admin:
+urlpatterns = patterns('',
     (r'^admin/', include('django.contrib.admin.urls')),
     (r'', include('pykegweb.kegweb.urls')),
+)
+
+urlpatterns += patterns('',
+      (r'^site_media/(.*)$',
+         'django.views.static.serve',
+         {'document_root': os.path.join(basedir(), 'media')}),
 )

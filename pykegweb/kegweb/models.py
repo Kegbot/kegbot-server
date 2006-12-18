@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class User(models.Model):
+class KegbotUser(models.Model):
    class Meta:
       db_table = "users"
 
@@ -46,7 +46,7 @@ class Brewer(models.Model):
                      ('unknown', 'unknown'),
          ),
    )
-   url = models.URLField()
+   url = models.URLField(verify_exists=False)
    comment = models.TextField()
 
    def __str__(self):
@@ -119,7 +119,7 @@ class Drink(models.Model):
    volume = models.PositiveIntegerField()
    starttime = models.DateTimeField('drink start')
    endtime = models.DateTimeField('drink end')
-   user = models.ForeignKey(User)
+   user = models.ForeignKey(KegbotUser)
    keg = models.ForeignKey(Keg)
    status = models.CharField(maxlength=128, choices = (
       ('valid', 'valid'),
@@ -156,7 +156,7 @@ class Grant(models.Model):
    class Admin:
       pass
 
-   user = models.ForeignKey(User)
+   user = models.ForeignKey(KegbotUser)
    expiration = models.CharField(maxlength=128, choices = (
       ('none', 'none'),
       ('time', 'time'),
@@ -186,7 +186,7 @@ class Token(models.Model):
    class Admin:
       pass
 
-   user = models.ForeignKey(User)
+   user = models.ForeignKey(KegbotUser)
    keyinfo = models.TextField()
    created = models.DateTimeField()
 
@@ -201,7 +201,7 @@ class BAC(models.Model):
    class Admin:
       pass
 
-   user = models.ForeignKey(User)
+   user = models.ForeignKey(KegbotUser)
    drink = models.ForeignKey(Drink)
    rectime = models.DateTimeField()
    bac = models.FloatField(max_digits=6, decimal_places=4)
@@ -219,7 +219,7 @@ class GrantCharge(models.Model):
 
    grant = models.ForeignKey(Grant)
    drink = models.ForeignKey(Drink)
-   user = models.ForeignKey(User)
+   user = models.ForeignKey(KegbotUser)
    volume = models.PositiveIntegerField()
 
 
@@ -230,7 +230,10 @@ class Binge(models.Model):
    class Admin:
       pass
 
-   user = models.ForeignKey(User)
+   def __str__(self):
+      return "binge %s by %s (%s to %s)" % (self.id, self.user, self.starttime, self.endtime)
+
+   user = models.ForeignKey(KegbotUser)
    startdrink = models.ForeignKey(Drink, related_name='start')
    enddrink = models.ForeignKey(Drink, related_name='end')
    volume = models.PositiveIntegerField()
@@ -245,10 +248,11 @@ class UserPic(models.Model):
    class Admin:
       pass
 
-   user = models.ForeignKey(User)
+   user = models.ForeignKey(KegbotUser)
    filetype = models.CharField(maxlength=12)
    modified = models.DateTimeField()
-   data = models.ImageField(upload_to='/tmp') # XXX
+   #data = models.ImageField(upload_to='/tmp') # XXX
+   data = models.TextField()
 
 
 class Thermolog(models.Model):
@@ -281,6 +285,6 @@ class UserLabel(models.Model):
    class Admin:
       pass
 
-   user = models.ForeignKey(User)
+   user = models.ForeignKey(KegbotUser)
    labelname = models.CharField(maxlength=128)
 

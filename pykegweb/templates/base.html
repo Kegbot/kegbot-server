@@ -1,10 +1,11 @@
 {% load kegweblib %}
+{% load humanize %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
    <link rel="stylesheet" href="/site_media/style.css" />
-   <title>{% block title %}Default Page{% endblock %}</title>
+   <title>kegbot :: {% block title %}Default Page{% endblock %}</title>
 </head>
 
 <body>
@@ -37,7 +38,7 @@
          <div style="padding-left:30px;">
             <a href="/">main</a> |
             <a href="/drinkers">drinkers</a> |
-            <a href="/keg">kegs</a> |
+            <a href="/kegs">kegs</a> |
             <a href="/leaders">leader board</a> |
             <a href="/account">account</a>
          </div>

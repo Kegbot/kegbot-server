@@ -27,7 +27,9 @@ class KegbotUser(models.Model):
       return self.get_list()
 
    def VolumeByKeg(self):
-      return 123
+      # TODO FIXME figure out how to do aggregate columns with django
+      return 0
+
 
 class Brewer(models.Model):
    class Meta:
@@ -92,6 +94,17 @@ class Keg(models.Model):
    class Admin:
       list_display = ('id', 'type')
 
+   def volserved(self):
+      drinks = Drink.objects.filter(keg__exact=self,
+            status__exact='valid')
+      tot = 0.0
+      for d in drinks:
+         tot += d.volume
+      return tot
+
+   def pctremain(self):
+      return (self.full_volume - self.volserved())/self.full_volume * 100.0
+
    type = models.ForeignKey(BeerType)
    full_volume = models.IntegerField()
    startdate = models.DateTimeField('start date')
@@ -109,11 +122,30 @@ class Keg(models.Model):
 
 
 class Drink(models.Model):
+   # TODO: unify these constants with pykeg somewhere
+   MILLILITER      = 2.2
+   LITER           = MILLILITER * 1000
+   US_OUNCE        = 29.5735297 * MILLILITER
+
    class Meta:
       db_table = "drinks"
+      get_latest_by = "starttime"
 
    class Admin:
       pass
+
+   def ounces(self):
+      return self.volume/self.US_OUNCE
+
+   def calories(self):
+      cal = self.keg.type.calories_oz*self.ounces()
+      return cal
+
+   def bac(self):
+      bacs = BAC.objects.filter(drink__exact=self)
+      if bacs.count() == 1:
+         return bacs[0].bac
+      return 0
 
    ticks = models.PositiveIntegerField()
    volume = models.PositiveIntegerField()

@@ -25,6 +25,25 @@
    </table>
    </div>
    </p>
+
+   <p>
+   <div class="box">
+   <table class="sortable" id="recent_drinks" cellspacing=0 border=0 width="430">
+   <tr>
+      <td>&nbsp;</td>
+      <td align="left"><b>size</b></td>
+      <td align="right"><b>calories</b></td>
+      <td><b>user</b></td>
+      <td><b>when</b></td>
+      <td><b>bac</b></td>
+   </tr>
+   {% for drink in last_drinks %}
+      {% drink_span drink %}
+   {% endfor %}
+   </table>
+   </div>
+   </p>
+
 {% else %}
    <p>
    virgin kegbot; no drinks yet recorded! this is indeed a very special time...

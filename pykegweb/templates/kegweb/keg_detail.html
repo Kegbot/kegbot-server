@@ -4,8 +4,8 @@
 {% block title %}keg {{ keg.id }}{% endblock %}
 
 {% block content %}
-<div class="content">
-   this is keg {{keg.id}}: {{keg.type}}
+<div class="contenthead">
+   keg {{keg.id}} details
 </div>
 
 <div class="content">
@@ -33,7 +33,7 @@
       </tr>
       <tr>
          <td align="right"><b>keg size:</b></td>
-         <td>{{ keg.full_volume }} TODO oz</td>
+         <td>{{ keg.full_volume|vol_to_ounces|floatformat}} oz</td>
       </tr>
       <tr>
          <td align="right"><b>activated:</b></td>
@@ -47,7 +47,10 @@
       {% endif %}
       <tr>
          <td align="right"><b>served:</b></td>
-         <td>TODO</td>
+         <td>
+            {{ keg.volserved|vol_to_ounces|floatformat }}
+            ({{ keg.pctremain|floatformat}}% remain)
+         </td>
       </tr>
       {% if keg.descr %}
       <tr>
@@ -85,7 +88,8 @@
       {{ group.start }}
       {% for drinker in group.drinkers %}
       <div style="text-align:center; float:left; padding:5px;">
-         {{ drinker }}
+         {% mugshot_box drinker 48 %}<br>
+         {{ drinker.username }}
       </div>
       {% endfor %}
       <div style="text-align:center; vertical-align:middle; float:right;">
@@ -106,10 +110,23 @@
    <p>
       full drink history for keg shown below.
    </p>
-   TODO
+   <p>
+   <div class="box">
+   <table class="sortable" id="all_drinks" cellspacing=0 border=0 width="430">
+   <tr>
+      <td>&nbsp;</td>
+      <td align="left"><b>size</b></td>
+      <td align="right"><b>calories</b></td>
+      <td><b>user</b></td>
+      <td><b>when</b></td>
+      <td><b>bac</b></td>
+   </tr>
    {% for drink in drinks %}
-   {{ drink }}
+      {% drink_span drink %}
    {% endfor %}
+   </table>
+   </div>
+   </p>
 </div>
 
 <div class="contenthead">

@@ -1,5 +1,6 @@
 from django.views.generic.list_detail import object_detail, object_list
 from django.views.generic.simple import direct_to_template, redirect_to
+from django.shortcuts import render_to_response
 from django.http import Http404
 
 from pykegweb.kegweb.models import *
@@ -9,10 +10,8 @@ from pykegweb.kegweb.models import *
 
 def default_context():
    c = {}
-   c['kegs'] = Keg.objects.all()[:5]
    c['top_5'] = KegbotUser.objects.all()[:5]
    c['boxsize'] = 100
-   c['kegweb'] = None
    return c
 
 ### main page
@@ -21,7 +20,8 @@ def index(request):
    context = default_context()
    context['last_drinks'] = Drink.objects.filter(status='valid').order_by('-endtime')[:5]
    context['template'] = 'index.html'
-   return direct_to_template(request, 'index.html', extra_context=context)
+   return render_to_response('index.html', context)
+   #return direct_to_template(request, 'index.html', extra_context=context)
 
 ### object lists and detail (generic views)
 
@@ -50,8 +50,20 @@ def user_detail(request, username=None, user_id=None):
    else:
       raise Http404
 
+   drinks = Drink.objects.filter(user__exact=user_list[0]).order_by('-starttime')
    extra['binges'] = Binge.objects.filter(user__exact=user_list[0])
-   extra['drinks'] = Drink.objects.filter(user__exact=user_list[0])
+   extra['drinks'] = drinks
+
+   # TODO: fix or remove; broken in kegbotweb
+   extra['rating'] = 'standard'
+   extra['avg_drinks_hour'] = 0.0
+
+   # TODO: this feels very wrong...
+   extra['first_drink'] = drinks[0]
+   extra['last_drink'] = drinks[drinks.count()-1]
+
+   extra['total_volume'] = 0.0
+
    params['queryset'] = user_list
    params['extra_context'] = extra
    return object_detail(request, **params)
@@ -100,12 +112,12 @@ def keg_detail(request, keg_id):
       if len(group) < 2:
          continue
       for binge in group:
-         users[binge.user.username] = True
+         users[binge.user.username] = binge.user
          totalvol += binge.volume
       reduced_groups.append({
             'start':    group[0].starttime,
             'end':      group[-1].endtime,
-            'drinkers': users.keys(),
+            'drinkers': users.values(),
             'totalvol': totalvol,
       })
 
@@ -139,7 +151,7 @@ def drink_detail(request, drink_id):
          endtime__gte=drink_list[0].starttime,
          user__exact=drink_list[0].user)
    if binges:
-      extra['binge'] = binge[0]
+      extra['binge'] = binges[0]
 
    return object_detail(request, queryset=drink_list, object_id=drink_id,
          template_object_name='drink', extra_context=extra)

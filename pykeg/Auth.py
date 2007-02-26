@@ -3,7 +3,7 @@ import thread
 import time
 import traceback
 
-import Backend
+from pykeg.core import models
 import Interfaces
 
 
@@ -47,7 +47,7 @@ class GenericIBAuth(Interfaces.IAuthDevice):
             self._PresenceEvent(ibid)
 
    def _AbsenceEvent(self, ibid):
-      matches = Backend.Token.selectBy(keyinfo=ibid)
+      matches = models.Token.objects.filter(keyinfo=ibid)
       if not matches.count():
          return
       user = matches[0].user
@@ -58,7 +58,7 @@ class GenericIBAuth(Interfaces.IAuthDevice):
       self._authed.remove(user.username)
 
    def _PresenceEvent(self, ibid):
-      matches = Backend.Token.selectBy(keyinfo=ibid)
+      matches = models.Token.objects.filter(keyinfo=ibid)
       if not matches.count():
          return
       user = matches[0].user

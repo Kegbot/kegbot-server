@@ -17,12 +17,12 @@ import threading
 import time
 
 # kegbot lib imports
-import Backend
 import Interfaces
 import KegRemoteServer
 import SQLConfigParser
 import units
 import util
+from pykeg.core import models
 
 import localconfig
 
@@ -43,8 +43,8 @@ NULL_DEVICES = ('', '/dev/null')
 class KegBot:
    """ the thinking kegerator! """
    def __init__(self):
-      self.QUIT          = threading.Event()
-      self.config        = SQLConfigParser.SQLObjectConfigParser()
+      self.QUIT = threading.Event()
+      self.config = SQLConfigParser.DjangoConfigParser()
       self._channels = []
       self._devices = []
       self._authed_users = {}
@@ -58,24 +58,8 @@ class KegBot:
 
    def _setup(self):
 
-      # read the database config
-      dbcfg = ConfigParser.ConfigParser()
-      dbcfg.read(config)
-
-      # load the db info, because we will use it often enough
-      self.dbhost = dbcfg.get('DB','host')
-      self.dbuser = dbcfg.get('DB','user')
-      self.dbdb = dbcfg.get('DB','db')
-      self.dbpassword = dbcfg.get('DB','password')
-
-      # connect to db - TODO: remove mysql component and make the URI the sole
-      # config option
-      db_uri = 'mysql://%s:%s@%s/%s' % (self.dbuser, self.dbpassword,
-            self.dbhost, self.dbdb)
-      Backend.setup(db_uri)
-
       # initialize the config, from stored values in MySQL
-      self.config.read(Backend.Config)
+      self.config.read(models.Config)
 
       # set up logging, using the python 2.3 logging module
       self._SetupLogging()
@@ -83,9 +67,9 @@ class KegBot:
 
       # check schema freshness
       installed_schema = self.config.getint('db', 'schema_version')
-      if installed_schema < Backend.SCHEMA_VERSION:
+      if installed_schema < models.SCHEMA_VERSION:
          self.logger.fatal('Error: outdated schema detected! (latest = %i, installed = %i)' %
-               (installed_schema, Backend.SCHEMA_VERSION))
+               (installed_schema, models.SCHEMA_VERSION))
          self.logger.fatal('Please run scripts/updatedb.py to correct this.')
          self.logger.fatal('Aborting.')
          sys.exit(1)
@@ -177,23 +161,24 @@ class KegBot:
 
       self.active_flows = []
       while not self.QUIT.isSet():
-         # service all channels
+         # first, give all channels a timeslice. in this timeslice, the channel
+         # could notice a new flow, or service an existing flow.
          for c in self._channels:
             c.Service()
 
-         all_flows = [c.active_flow for c in self._channels if not c.IsIdle()]
-
+         # collect the lists of flows that require attention this time around
+         all_flows = [c.active_flow for c in self._channels if c.IsActive()]
          new_flows = [f for f in all_flows if f not in self.active_flows]
          old_flows = [f for f in self.active_flows if f not in all_flows]
-
-         # do existing-flow-specific work -- possibly ending flows
          self.active_flows = all_flows
-         for flow in all_flows:
-            self.StepFlow(flow)
 
          # do new-flow-specific work
          for flow in new_flows:
             self.StartFlow(flow)
+
+         # do existing-flow-specific work -- possibly ending flows
+         for flow in all_flows:
+            self.StepFlow(flow)
 
          # do dead-flow-specific work
          for flow in old_flows:
@@ -217,7 +202,7 @@ class KegBot:
          True - user added to authed_users
          False - no match for username
       """
-      matches = Backend.User.selectBy(username=username)
+      matches = models.User.objects.filter(username=username)
       if not matches.count():
          return False
 
@@ -234,7 +219,7 @@ class KegBot:
    def UserIsAuthed(self, user):
       """ Return True if user is presently in the authed_users list """
       # guests are always authorized
-      if user.HasLabel('guest'):
+      if user.get_profile.HasLabel('guest'):
          return True
       for dev in self.IterDevicesImplementing(Interfaces.IAuthDevice):
          if user.username in dev.AuthorizedUsers():
@@ -255,6 +240,21 @@ class KegBot:
       """ Given a flow, return True if it should continue """
       if self.QUIT.isSet():
          self.logger.info('flow: boot: quit flag set')
+         return False
+
+      # this shouldn't happen
+      if flow.channel.Keg() is None:
+         self.logger.error('flow: no keg currently active; what are you trying to pour?')
+         for ui in self.IterDevicesImplementing(Interfaces.IDisplayDevice):
+            ui.Alert('no active keg')
+         channel.DeactivateFlow()
+         return False
+
+      # the user has no credit
+      if flow.max_volume <= 0:
+         for ui in self.IterDevicesImplementing(Interfaces.IDisplayDevice):
+            ui.Alert('no credit')
+         channel.DeactivateFlow()
          return False
 
       # user is no longer authed
@@ -286,18 +286,8 @@ class KegBot:
          ui.Activity()
       channel = flow.channel
 
-      # XXX FIXME
-      if 0 and flow.channel.Keg() is None:
-         self.logger.error('flow: no keg currently active; what are you trying to pour?')
-         for ui in self.IterDevicesImplementing(Interfaces.IDisplayDevice):
-            ui.Alert('no active keg')
-         channel.DeactivateFlow()
-         return False
-
-      if 0 and flow.max_volume <= 0:
-         for ui in self.IterDevicesImplementing(Interfaces.IDisplayDevice):
-            ui.Alert('no credit')
-         channel.DeactivateFlow()
+      # check if flow is permitted
+      if not self.CheckAccess(flow):
          return False
 
       # turn on dev
@@ -343,14 +333,14 @@ class KegBot:
       volume = units.ticks_to_volunits(flow.Ticks())
       if flow.Ticks() > 0:
          # log the drink
-         d = Backend.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=flow.start,
+         d = models.Drink(ticks=flow.Ticks(), volume=int(volume), starttime=flow.start,
                endtime=flow.end, user=flow.user, keg=flow.channel.Keg(), status='valid')
-         d.syncUpdate()
+         d.save()
 
          # post-processing steps
          self.GenGrantCharges(d)
-         Backend.BAC.ProcessDrink(d)
-         Backend.Binge.Assign(d)
+         models.BAC.ProcessDrink(d)
+         models.Binge.Assign(d)
 
       # update the UI
       ounces = round(units.to_ounces(volume), 2)
@@ -397,8 +387,7 @@ class KegBot:
             break
          vol_curr = min(g.AvailableVolume(), vol_remain)
          if vol_curr > 0:
-            c = Backend.GrantCharge(grant=g, drink=d, user=d.user, volume=vol_curr)
-            c.syncUpdate()
+            c = models.GrantCharge(grant=g, drink=d, user=d.user, volume=vol_curr)
             g.IncVolume(vol_curr)
          vol_remain -= vol_curr
 

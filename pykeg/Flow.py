@@ -4,7 +4,7 @@ import datetime
 import time
 import Queue
 
-import Backend
+from pykeg.core import models
 from Devices import NoOp
 import Interfaces
 import util
@@ -77,10 +77,15 @@ class Channel:
    Every controlled beer line is associated with exactly one channel. While a
    flow is in progress, there is exactly one Flow object associated with that
    channel, dynamically created to store data about the current pour. Each
-   channel keeps a Queue of waiting Flow objects. The Kegbot instance will
-   create Flow objects and push them on to this Queue as drinkers present
-   themselves; seperately, the kegbot class will pop Flow objects off the Queue
-   and service them.
+
+   A flow is created in one of two ways. First, each channel maintains a queue
+   of waiting users. When a user arrives on the channel, if the channel is
+   idle, a new flow is created for that user and started. If the channel is
+   busy, the user waits in a queue until the channel is free or the user goes
+   away.
+
+   If the channel detects a flow has started without a user arriving, it starts
+   a new flow with an anonymous user.
 
    For convenience, the channel class contains a reference (whose value may
    possibly be None) to the current active Flow, if any.
@@ -89,6 +94,13 @@ class Channel:
          allow_anon = True):
       self.chanid = chanid
       self.logger = logging.getLogger('channel%s' % str(chanid))
+
+
+      # possible channel states:
+      #  idle    - ready for a flow
+      #  pouring - actively being serviced by pykeg
+      #  failed  - the channel is unserviceable
+      self.state = "idle"
 
       if valve_relay is None:
          valve_relay = NoOp.Relay()
@@ -106,9 +118,20 @@ class Channel:
       # has the label 'guest', anonymous flows will be disabled)
       self.anon_user = None
       if allow_anon:
-         for user in Backend.User.select():
-            if user.HasLabel('guest'):
+         for user in models.User.objects.all():
+            try:
+               p = user.get_profile()
+            except AttributeError:
+               p = None # XXX django thorws an expection if profile does not exist
+            print p
+            if p and p.HasLabel('guest'):
                self.anon_user = user
+         if self.anon_user is not None:
+            self.logging.info('Anonymous user: %s' % self.anon_user)
+         else:
+            self.logger.warning('Anonymous user not found!')
+      else:
+         self.logger.info('Anonymous users are not permitted')
 
       self._waiting = Queue.Queue()
       self.active_flow = None
@@ -116,14 +139,29 @@ class Channel:
       self._idle_stats = util.TimeStats(10)
 
    def IsIdle(self):
-      return self.active_flow is None
+      return self.state == "idle"
+
+   def SetState(self, state):
+      self.logger.info('state change [%s] -> [%s]' % (self.state, state))
+      self.state = state
+
+   def IsFailed(self):
+      return self.state == "failed"
+
+   def IsActive(self):
+      return self.state == "pouring"
+
+   def _StartFlow(self, f):
+      assert self.IsIdle(), "Trying to start flow when not idle"
+      self.active_flow = f
+      self.state = "pouring"
+
+   def _EndFlow(self):
+      assert self.IsActive(), "Trying to end flow when not active"
 
    def EnqueueUser(self, user):
-      """ Add a flow to the waiting queue of flows """
-      # start a new flow right away if we aren't already servicing one
+      """ Add a user to the queue of waiting users """
       self._waiting.put(user)
-      if self.IsIdle():
-         self._GetAndIncrementFlow(self.GetTicks())
 
    def _CreateFlow(self, user):
       return Flow(self, user=user, max_volume=user.MaxVolume())
@@ -137,25 +175,40 @@ class Channel:
 
    def _GetAndIncrementFlow(self, ticks):
       """ Fetch the current flow (possibly creating it) and increment it """
-      if not self.active_flow:
-         # case 2: create and increment a new flow
-         self.active_flow = self._CreateFlow(self._GetUserForNewFlow())
-         self.logger.info('created new flow for user %s' %
-               self.active_flow.user.username)
-      return self.active_flow.SetTicks(ticks)
+      if self.IsIdle():
+         flow_user = self._GetUserForNewFlow()
+         if not flow_user:
+            # TODO: should we allow this?
+            return False
+         self.logger.info('creating new flow for user %s' % flow_user)
+         self._StartFlow(self._CreateFlow(flow_user))
+      if self.IsActive():
+         return self.active_flow.SetTicks(ticks)
+      else:
+         return False
 
    def Service(self):
       now_ticks = self.GetTicks()
       delta_ticks = now_ticks - self._last_ticks
 
-      # return if nothing to service (no change in fluid)
-      if delta_ticks <= 0 or not self.active_flow and delta_ticks <= 2:
+      # do nothing if the delta was zero and there are no users waiting. bail
+      # out if we're in failed state, too.
+      if delta_ticks <= 0 and self._waiting.empty():
          self._last_ticks = now_ticks
          return False
+      elif self.IsFailed():
+         return False
 
-      # increment the flow
+      # increment the flow. this may create the flow if there is new activity,
+      # or if there is a new waiting user (we create a flow whether or not
+      # there is activity)
       diff = self._GetAndIncrementFlow(now_ticks)
       flow = self.active_flow
+
+      if not flow:
+         self.logger.warning('no flow after tick increment, BUG')
+         self.SetState('failed')
+         return False
 
       # if anonymous flow, attempt to assign blame
       if flow.user == self.anon_user:
@@ -186,9 +239,9 @@ class Channel:
       self.active_flow = None
 
    def Keg(self):
-      channel_kegs = list(Backend.Keg.selectBy(status='online',
-         channel=self.chanid))
-      if len(channel_kegs) != 1:
+      channel_kegs = models.Keg.objects.filter(status='online',
+            channel=self.chanid)
+      if channel_kegs.count() != 1:
          return None
       return channel_kegs[0]
 

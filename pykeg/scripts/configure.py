@@ -1,7 +1,10 @@
+from ConfigParser import ConfigParser
 import md5
 import sys
 
-from pykeg.core import models
+sys.path.append('.')
+sys.path.append('..')
+import Backend
 
 
 sqls = [ (  'devices.lcd', 
@@ -98,7 +101,7 @@ def Main():
          dbpass = ':'+dbpass
       uri = 'mysql://%s%s@%s/%s' % (dbuser, dbpass, dbhost, dbdb)
       print uri
-      #Backend.setup(uri)
+      Backend.setup(uri)
       print 'Great! You weren\'t lying; I managed to connect to the DB. Onward we go!'
    except:
       print 'Ooops! I tried connecting with that config and it did not work.'

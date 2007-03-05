@@ -1,4 +1,4 @@
-from pykeg.core import models
+import Backend
 import Interfaces
 
 import re
@@ -187,7 +187,7 @@ class plate_kegbot_pour(lcdui.plate_std):
 
 class plate_kegbot_drinker_menu(lcdui.plate_select_menu):
    def onSwitchIn(self):
-      users = models.User.objects.all().order_by('username')
+      users = Backend.User.select()
       if self.cursor + self.offset >= users:
          self.reset()
       self.menu = []

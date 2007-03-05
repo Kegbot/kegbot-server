@@ -27,15 +27,3 @@ class SQLObjectConfigParser(RawConfigParser):
             self._sections[section] = {'__name__': section}
          self._sections[section][optname] = v
 
-class DjangoConfigParser(RawConfigParser):
-   """ A RawConfigParser that reads from SQL using a django model """
-
-   def read(self, cls):
-      for row in cls.objects.all():
-         k, v = row.key, row.value
-         section, optname = k.split('.')
-         optname = self.optionxform(optname)
-         if not self._sections.has_key(section):
-            self._sections[section] = {'__name__': section}
-         self._sections[section][optname] = v
-

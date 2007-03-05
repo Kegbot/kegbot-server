@@ -1,7 +1,7 @@
 import logging
 import time
 
-from pykeg.core import models
+import Backend
 import Interfaces
 
 class FreezerConversion:
@@ -55,8 +55,8 @@ class ThermoLogger:
       self._last_time = now
       curr_temp, rec_time = self.sensor.GetTemperature()
       if curr_temp is not None:
-         rec = models.ThermoLog(name=self.name, temp=curr_temp)
-         rec.save()
+         rec = Backend.ThermoLog(name = self.name, temp = curr_temp)
+         rec.syncUpdate()
 
 
 class RelayLogger:
@@ -73,6 +73,6 @@ class RelayLogger:
          return
       self._last_status = current_status
       status = {0: 'off', 1: 'on'}.get(current_status, 'unknown')
-      rec = models.RelayLog(name=self.name, status=status)
-      rec.save()
+      rec = Backend.RelayLog(name = self.name, status = status)
+      rec.syncUpdate()
 

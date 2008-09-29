@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}drink index{% endblock %}
+
+{% block content %}
+<div class="content">
+   <ul>
+      {% for drink in drink_list %}
+      <li> {{ drink }}
+      {% endfor %}
+   </ul>
+</div>
+{% endblock %}

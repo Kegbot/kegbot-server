@@ -1,0 +1,452 @@
+-- kegboard jal source v10
+-- (c) mike wakerly 2003-2006
+-- http://hoho.com/mike/kegbot
+
+include 16f628_20
+include jdelay
+include jascii
+
+pragma target fuses       0x3F22
+-- --------------------------------------------------------------------
+-- word  cpd lvp boden mclr pwrt wdt osc         observation
+-- 3FC1  off on  on    io   off  off xt
+-- 3FD0  off on  on    io   off  off intrc+io
+-- 3FF0  off on  on    mclr off  off intrc+io
+-- 3F22  off off off   mclr off  off hs
+-- 3F62  off off on    mclr off  off hs          default
+-- -----------------------------------------------------------
+
+const byte KB_FW_MAJOR = "1"
+const byte KB_FW_MINOR = "1"
+const byte KB_FW_MACRO = "0"
+
+-- -----------------------------------------------------------------------------
+-- rs232 hardware setup and include
+-- -----------------------------------------------------------------------------
+const usart_asynch = true      -- true = RS232, false = SPI
+const baudrate     = 115_200
+include rs232_hw
+
+-- -----------------------------------------------------------------------------
+-- 1wire setup and include
+-- -----------------------------------------------------------------------------
+-- a0 = real pin, a3= debug pin
+var volatile bit _1w_dq is pin_a2
+var volatile bit _1w_dq_dir is pin_a2_direction
+include 1wire
+
+-- -----------------------------------------------------------------------------
+-- hardware configuration
+-- -----------------------------------------------------------------------------
+var volatile bit rly0_pin is pin_b4
+var volatile bit rly0_pin_direction is pin_b4_direction
+
+var volatile bit rly1_pin is pin_b5
+var volatile bit rly1_pin_direction is pin_b5_direction
+
+var volatile bit led0_pin is pin_a4
+var volatile bit led0_pin_direction is pin_a4_direction
+
+-- -----------------------------------------------------------------------------
+-- aliases for pic registers
+-- -----------------------------------------------------------------------------
+var volatile byte CMCON is f877_adcon0
+var volatile byte CCP1CON is f877_ccp1con
+
+var volatile bit  CCP1IF  at f877_pir1 : 2
+var volatile bit  _CCP1IE at f877_pie1 : 2
+
+-- -----------------------------------------------------------------------------
+-- CONTROL COMMANDS
+-- -----------------------------------------------------------------------------
+const byte CMD_STATUS      = 0x53 -- (S) just send the current status
+const byte CMD_VALVEON     = 0x56 -- (V) enable solenoid valve
+const byte CMD_VALVEOFF    = 0x76 -- (v) disable solenoid valve
+const byte CMD_FRIDGEON    = 0x46 -- (F) enable the freezer relay
+const byte CMD_FRIDGEOFF   = 0x66 -- (f) disable the freezer relay
+const byte CMD_READTEMP    = 0x54 -- (T) initiate a temperature read immediately
+
+-- -----------------------------------------------------------------------------
+-- FRAMING CONSTANTS
+-- -----------------------------------------------------------------------------
+const byte CMD_START_0 = "M"
+const byte CMD_START_1 = ":"
+const byte CMD_END_0 = ASCII_CR   -- "\r"
+const byte CMD_END_1 = ASCII_LF   -- "\n"
+
+-- -----------------------------------------------------------------------------
+-- PACKET TYPES
+-- -----------------------------------------------------------------------------
+const byte PKT_TYPE_STATUS = "S" -- a status packet
+
+-- -----------------------------------------------------------------------------
+-- INITIAL PIN STATE
+-- -----------------------------------------------------------------------------
+; port_a_direction = all_output
+
+-- valve output pins
+rly0_pin_direction = output
+rly1_pin_direction = output
+
+-- configure ccp input
+pin_b3_direction = input
+
+-- -----------------------------------------------------------------------------
+-- INTERRUPT & IO CONFIG
+-- -----------------------------------------------------------------------------
+-- set port a to normal digital i/o
+CMCON = 0x07
+
+-- first 4:  dont care
+-- second 4: capture mode:
+-- 0100: every falling edge
+-- 0101: every rising edge
+-- 0110: every 4th rising edge
+-- 0111: every 16th rising edge
+CCP1CON = 0b_0000_0101
+
+-- given 2200 pulses/liter,
+-- on 0110, every bit == 1/550th Liter;
+-- every flow_high bit == 256/550 Liter
+
+-- -----------------------------------------------------------------------------
+-- VARIABLES
+-- -----------------------------------------------------------------------------
+var byte flow_low = 0
+var byte flow_mid = 0
+var byte flow_high = 0
+
+-- -----------------------------------------------------------------------------
+-- PULSE COUNTER ISR
+-- -----------------------------------------------------------------------------
+procedure ISR is
+  pragma interrupt
+  ;bank_0
+  if CCP1IF == high then
+    CCP1IF = low
+    flow_low = flow_low + 1
+    if flow_low == 100 then
+       flow_low = 0
+       flow_mid = flow_mid + 1
+       if flow_mid == 100 then
+          flow_mid = 0
+          flow_high = flow_high + 1
+       end if
+    end if
+  end if
+end procedure
+
+-- -----------------------------------------------------------------------------
+-- INTERRUPT CONFIG
+-- -----------------------------------------------------------------------------
+bank_1
+intcon_gie   = high         -- enable global interrupts
+intcon_rbie  = low          -- DISABLE interrupts on change
+intcon_t0ie  = low          -- DISABLE tmr0 interrupts
+intcon_inte  = low          -- disable external interrupt (on rb0)
+intcon_intf  = low          -- clear INT flag
+intcon_peie  = high         -- enable perhipheral interrupt (ccp)
+_CCP1IE      = high         -- enable ccp interrupt
+;intcon_eeie = high         -- RISING EDGE triggered
+bank_0
+
+-- disable the solenoid
+rly0_pin = off
+rly1_pin = off
+
+-- -----------------------------------------------------------------------------
+-- procedures
+-- -----------------------------------------------------------------------------
+function ow_reset return byte is
+  var byte temp = 1
+  while (temp != 0) loop
+    temp = _1w_reset
+  end loop
+end function
+
+
+-- from phil p's 1wire.jal examples
+procedure read_temp(byte out ls, byte out ms) is begin
+  _1w_writebyte(0xCC)         -- Skip ROM
+  _1w_writebyte(0x44)         -- Convert T
+  _1w_waitconv                -- Conversion delay
+  _1w_reset                   -- Reset
+  _1w_writebyte(0xCC)         -- Skip ROM
+  _1w_writebyte(0xBE)         -- Read ScratchPad
+  ls = _1w_readbyte
+  ms = _1w_readbyte
+  ow_reset
+end procedure
+
+-- convert a byte to three bytes (each in range 0-9), representing base-10
+-- value of byte
+procedure byte_to_dec(byte in b, byte out x, byte out y, byte out z) is begin
+   var byte tmp = b
+
+   -- hundreds place
+   x = 0
+   while tmp >= 100 loop
+      x = x + 1
+      tmp = tmp - 100
+   end loop
+
+   -- tens place
+   y = 0
+   while tmp >= 10 loop
+      y = y + 1
+      tmp = tmp - 10
+   end loop
+
+   -- ones place
+   z = tmp
+
+end procedure
+
+-- convert a byte (on range 0-9) to ascii
+procedure int_to_ascii(byte in out b) is begin
+   b = b + 0x30
+end procedure
+
+-- send the string "on" or "off" depending on value of bit
+procedure asynch_send_on_off(bit in b) is begin
+   if b then
+      asynch_send_hw("o")
+      asynch_send_hw("n")
+   else
+      asynch_send_hw("o")
+      asynch_send_hw("f")
+      asynch_send_hw("f")
+   end if
+end procedure
+
+-- send a byte as a base-10 ascii sequence of up to 3 chars
+procedure asynch_send_ascii(byte in b, bit in pad_10 = low, bit in pad_100 = low) is begin
+   var byte x
+   var byte y
+   var byte z
+   byte_to_dec(b,x,y,z)
+
+   if x != 0 then
+      int_to_ascii(x)
+      asynch_send_hw(x)
+   elsif pad_100 then
+      int_to_ascii(x)
+      asynch_send_hw(x)
+   end if
+
+   if y != 0 then
+      int_to_ascii(y)
+      asynch_send_hw(y)
+   elsif pad_10 then
+      int_to_ascii(y)
+      asynch_send_hw(y)
+   end if
+
+   int_to_ascii(z)
+   asynch_send_hw(z)
+end procedure
+
+procedure ds1820_12b_conv(byte in ms, byte in ls) is begin
+   -- there's got to be a better implementation than this.. wasteful
+   if (ms >> 4) != 0 then
+      asynch_send_hw("-")
+   end if
+   asynch_send_ascii( (ls >> 4) | ((ms << 4) & 0xf0) )
+   asynch_send_hw(".")
+   ls = ls & 0x0f
+   if ls == 0 then
+      asynch_send_hw("0")
+   elsif ls == 1 then
+      asynch_send_hw("0")
+      asynch_send_hw("6")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 2 then
+      asynch_send_hw("1")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 3 then
+      asynch_send_hw("1")
+      asynch_send_hw("8")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 4 then
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 5 then
+      asynch_send_hw("3")
+      asynch_send_hw("1")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 6 then
+      asynch_send_hw("3")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 7 then
+      asynch_send_hw("4")
+      asynch_send_hw("3")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 8 then
+      asynch_send_hw("5")
+   elsif ls == 9 then
+      asynch_send_hw("5")
+      asynch_send_hw("6")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 10 then
+      asynch_send_hw("6")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 11 then
+      asynch_send_hw("6")
+      asynch_send_hw("8")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 12 then
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 13 then
+      asynch_send_hw("8")
+      asynch_send_hw("1")
+      asynch_send_hw("2")
+      asynch_send_hw("5")
+   elsif ls == 14 then
+      asynch_send_hw("8")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   elsif ls == 15 then
+      asynch_send_hw("9")
+      asynch_send_hw("3")
+      asynch_send_hw("7")
+      asynch_send_hw("5")
+   end if
+end procedure
+
+-- -----------------------------------------------------------------------------
+-- STARTUP/SELF-TEST
+-- -----------------------------------------------------------------------------
+
+-- led0_pin = on
+-- delay_1s()
+-- led0_pin = off
+-- delay_1s()
+-- led0_pin = on
+-- delay_1s()
+-- led0_pin = off
+-- delay_1s()
+
+-- -----------------------------------------------------------------------------
+-- MAIN LOOP
+-- -----------------------------------------------------------------------------
+
+var byte chr           = 0
+var byte lstemp        = 0
+var byte mstemp        = 0
+var byte loop_count    = 0
+var byte status_count  = 0
+var byte flow_low_tmp  = 0
+var byte flow_mid_tmp  = 0
+var byte flow_high_tmp = 0
+
+var bit sendstatus = high
+
+forever loop
+  -- handle serial events
+  if asynch_read_hw(chr) & high then
+    sendstatus = high
+    if chr == CMD_STATUS then
+      sendstatus = high -- redundant
+    elsif chr == CMD_VALVEON then
+      rly0_pin = high
+    elsif chr == CMD_VALVEOFF then
+      rly0_pin = low
+    elsif chr == CMD_FRIDGEON then
+      rly1_pin = high
+    elsif chr == CMD_FRIDGEOFF then
+      rly1_pin = low
+    elsif chr == CMD_READTEMP then
+      read_temp(lstemp, mstemp)
+    else
+      sendstatus = low
+    end if
+  end if
+
+  -- read temperature approx once every 5s
+  if loop_count == 0 then
+     -- but only if valve is not enabled (too intrusive)
+      if rly0_pin == low then
+         read_temp(lstemp, mstemp)
+      end if
+  end if
+  loop_count = loop_count + 1
+
+  -- send status ~1x/second in idle mode
+  if status_count == 50 then
+     sendstatus = high
+     status_count = 0
+  end if
+
+  -- send status ~5x/second if valve pouring
+  if rly0_pin == high then
+     if status_count == 10 then
+        sendstatus = high
+        status_count = 0
+     end if
+  end if
+  status_count = status_count + 1
+
+  -- generate and send status packet
+  if sendstatus == high then
+    sendstatus = low
+
+    -- save a copy of current ticks
+    intcon_gie = low
+    flow_low_tmp  = flow_low
+    flow_mid_tmp  = flow_mid
+    flow_high_tmp = flow_high
+    intcon_gie = high
+
+    -- preamble
+    asynch_send_hw( CMD_START_0 )
+    asynch_send_hw( CMD_START_1 )
+    asynch_send_hw( " " )
+
+    -- packet type
+    asynch_send_hw( PKT_TYPE_STATUS )
+    asynch_send_hw( " " )
+
+    -- relay 0 status
+    asynch_send_on_off( rly0_pin )
+    asynch_send_hw( " " )
+
+    -- relay 1 status
+    asynch_send_on_off( rly1_pin )
+    asynch_send_hw( " " )
+
+    -- flow ticks
+    if flow_high_tmp != 0 then
+       asynch_send_ascii( flow_high_tmp, low)
+       asynch_send_ascii( flow_mid_tmp, high)
+       asynch_send_ascii( flow_low_tmp, high)
+    elsif flow_mid_tmp != 0 then
+       asynch_send_ascii( flow_mid_tmp, low)
+       asynch_send_ascii( flow_low_tmp, high)
+    else
+       asynch_send_ascii( flow_low_tmp, low)
+    end if
+    asynch_send_hw( " " )
+
+    -- temperature fields
+    ds1820_12b_conv(mstemp, lstemp)
+    asynch_send_hw( " " )
+
+    -- trailer
+    asynch_send_hw( CMD_END_0 )
+    asynch_send_hw( CMD_END_1 )
+
+  end if
+  delay_10ms(2)
+
+end loop
+

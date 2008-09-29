@@ -1,0 +1,24 @@
+<div>
+  <div class="boxhead">
+    <b>{{statement.short_desc}}</b>
+  </div>
+  <div class="box">
+<pre>
+  Total unique pours: {{statement.drink_charges.count}}
+ Total ounces poured: {{statement.TotalOunces|floatformat:2}}
+    Total 12oz pours: {{statement.Total12OuncePours|floatformat:2}}
+       Avg cost/12oz: ${{statement.AverageCostPerBeer|floatformat:2}}
+------------------------------------------------------{% for dc in statement.drink_charges.all %}{% if dc.TotalFunds %}
+{{dc.drink.starttime}} |  {{dc.drink.id|stringformat:"4i"}}  {{dc.drink.ounces|stringformat:"3i"}} oz  {{dc.TotalFundsStr}}{% endif %}{% endfor %}
+</pre>
+    {% if statement.IsCredit %}
+    <div class="statementtotal_positive">
+    {% else %}
+    <div class="statementtotal_negative">
+    {% endif %}
+      TOTAL: ${{statement.TotalFundsFloat|floatformat:2}}
+    </div>
+  </div>
+  <div class="spacer">&nbsp;</div>
+
+</div>

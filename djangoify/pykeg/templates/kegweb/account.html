@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load kegweblib %}
+
+{% block title %}your account: {{user.username}}{% endblock %}
+
+{% block content %}
+<div class="contenthead">
+  hello, {{user.username}}
+</div>
+<div class="content">
+  <p>
+    you are logged in.
+  </p>
+</div>
+
+<div class="contenthead">
+   statements
+</div>
+<div class="content">
+{% for statement in statements %}
+<div>
+{% include "kegweb/statement/statement.html" %}
+</div>
+{% endfor %}
+</div>
+
+
+{% endblock %}

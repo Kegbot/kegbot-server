@@ -1,9 +1,0 @@
-{% load kegweblib %}
-<tr>
-   <td><a href="/drinks/{{drink.id}}/"><img border="0" src="/site_media/images/info.png"></a></td>
-   <td nowrap align="right">{{drink.volume|vol_to_ounces|floatformat}}</td> 
-   <td nowrap align="right">{{drink.calories|floatformat}} cal&nbsp;</td> 
-   <td><a href="/drinkers/{{drink.user.username}}/">{{drink.user.username}}</a>&nbsp;</td>
-   <td>{{drink.endtime}}</td>
-   <td>{{drink.bac|bac_format}}</td>
-</tr>

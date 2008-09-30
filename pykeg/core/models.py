@@ -23,6 +23,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib import admin
 
+from pykeg.core import kb_common
 from pykeg.core import units
 from pykeg.core import util
 
@@ -307,22 +308,22 @@ class Binge(models.Model):
     if profile.HasLabel('__no_binge__'):
       return
 
-    min_end = d.endtime - datetime.timedelta(minutes=90) # FIXME constant
+    min_end = d.endtime - datetime.timedelta(minutes=kb_common.BINGE_TIME_MINUTES)
     binges = Binge.objects.filter(user=d.user, endtime__gte=min_end).order_by("-id")[:1]
 
-   # now find or create the current binge, and update it
+    # now find or create the current binge, and update it
     if not len(binges):
       new_binge = Binge(user=d.user, startdrink=d,
                         enddrink=d, volume=d.Volume().Amount(units.RECORD_UNIT),
                         starttime=d.endtime,
-                        endtime=d.endtime)
+                        endtime=d.endtime + kb_common.BINGE_TIME_MINUTES)
       new_binge.save()
       return
     else:
       last_binge = binges[0]
       last_binge.volume += d.volume
       last_binge.enddrink = d
-      last_binge.endtime = d.endtime
+      last_binge.endtime = d.endtime + kb_common.BINGE_TIME_MINUTES
       last_binge.save()
 
 admin.site.register(Binge)

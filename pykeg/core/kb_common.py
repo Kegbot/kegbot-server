@@ -11,6 +11,8 @@ MIN_VOLUME_TO_DISPLAY = 1
 # Idle seconds allowed before a user gets booted for inactivity
 FLOW_IDLE_TIMEOUT = 30
 
+BINGE_TIME_MINUTES = 90
+
 ### Addresses and ports
 
 # Default port for JSON server

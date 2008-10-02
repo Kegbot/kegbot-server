@@ -8,6 +8,7 @@ import time
 
 from pykeg.core import Interfaces
 from pykeg.core import kb_threads
+from pykeg.core import models
 
 KB2_FLOW_1_RE = re.compile('.* flow:1:(?P<meterval>\d+).*')
 
@@ -119,17 +120,41 @@ class NetAuth(kb_threads.KegbotThread,
     self._authed_users = []
     self._user_cache = {}
 
+  def _HandlePacket(self, bytes):
+    users = set()
+    ids = bytes.split()
+    for tok in ids:
+      tokstr = tok.replace('0x', '')
+      q = models.Token.objects.filter(keyinfo__exact=tokstr)
+      if len(q):
+        users.add(q[0].user.username)
+    self._authed_users = users
+
   def AuthorizedUsers(self):
     return self._authed_users
 
-  def run(self):
+  @classmethod
+  def MakeServerSocket(cls):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(('', self.MCAST_PORT))
-    mreq = struct.pack("4sl", socket.inet_aton(self.MCAST_ADDR), socket.INADDR_ANY)
+    sock.bind(('', cls.MCAST_PORT))
+    mreq = struct.pack("4sl", socket.inet_aton(cls.MCAST_ADDR), socket.INADDR_ANY)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+    return sock
+
+  @classmethod
+  def MakeClientSocket(cls):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.connect((cls.MCAST_ADDR, cls.MCAST_PORT))
+    return sock
+
+  def run(self):
+    sock = NetAuth.MakeServerSocket()
     self._logger.info('listening on %s:%s' % (self.MCAST_ADDR, self.MCAST_PORT))
 
-    while True:
+    while not self._quit:
+      rr, wr, er = select.select([sock], [], [], 0.5)
+      if not rr:
+        continue
       bytes = sock.recv(2048)
-      self._authed_users = bytes.split()
+      self._HandlePacket(bytes)

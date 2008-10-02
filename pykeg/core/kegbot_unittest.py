@@ -45,23 +45,23 @@ class KegbotTestCase(TestCase):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', 0))
 
-    for x in xrange(10):
+    for x in xrange(100):
       self.kegbot._StepEventLoop()
 
     # Send two packets to the network flow client
     msg1 = 'netboard - flow:1:0\n'
-    sock.sendto(msg1, ('localhost', 9012))
+    sock.sendto(msg1, ('224.107.101.103', 9012))
     msg2 = 'netboard - flow:1:2200\n'
-    sock.sendto(msg2, ('localhost', 9012))
+    sock.sendto(msg2, ('224.107.101.103', 9012))
 
-    for x in xrange(10):
+    for x in xrange(100):
       self.kegbot._StepEventLoop()
 
     # Idle out the flow. This is a hack.
     f = self.kegbot._flows['0']
     f._last_activity = time.time() - 60
 
-    for x in xrange(10):
+    for x in xrange(100):
       self.kegbot._StepEventLoop()
 
     drinks = models.Drink.objects.all().order_by('-id')

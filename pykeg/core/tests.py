@@ -11,10 +11,13 @@ import models_unittest
 import units_unittest
 import util_unittest
 
+from pykeg.core.Devices import Net_unittest
+
 ALL_TEST_MODULES = (
     models_unittest,
     units_unittest,
     util_unittest,
+    Net_unittest,
     KegbotJsonServer_unittest,
     kegbot_unittest,
 )

@@ -109,6 +109,9 @@ class KegBot:
     net_kegboard = Net.KegBoard()
     self.AddThread(net_kegboard)
 
+    self._auth_thread = Net.NetAuth()
+    self.AddThread(self._auth_thread)
+
     self._channel_0 = Flow.Channel(channel_id="0",
                                    event_queue=self._kb_event_queue,
                                    valve_relay=NoOp.Relay(),

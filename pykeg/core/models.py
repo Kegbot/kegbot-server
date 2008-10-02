@@ -233,7 +233,7 @@ class Token(models.Model):
 
   user = models.ForeignKey(User)
   keyinfo = models.TextField()
-  created = models.DateTimeField()
+  created = models.DateTimeField(default=datetime.datetime.now)
 
 admin.site.register(Token)
 

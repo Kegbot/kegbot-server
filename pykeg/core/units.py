@@ -151,6 +151,9 @@ class Quantity:
       val += self.Amount()
     return Quantity(val, self.NATIVE_UNITS)
 
+  def __sub__(self, other):
+    return self.__add__(other, subtract=True)
+
   def __cmp__(self, other):
     if isinstance(other, (types.IntType, types.LongType, types.FloatType)):
       return cmp(self.Amount(), other)

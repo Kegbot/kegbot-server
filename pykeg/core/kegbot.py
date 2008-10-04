@@ -198,8 +198,9 @@ class KegBot:
   def _ProcessDevices(self):
     for dev in self._devices:
       if isinstance(dev, Interfaces.IAuthDevice):
-        for username in self._NewUsersFromAuthDevice(dev):
-          self.AuthUser(username)
+        old_users, new_users = self._ProcessAuthDevice(dev)
+        for user in old_users:
+          self.AuthUser(user)
       elif isinstance(dev, Interfaces.ITemperatureSensor):
         temp, temp_time = dev.GetTemperature()
         if temp is not None:
@@ -208,15 +209,35 @@ class KegBot:
       elif hasattr(dev, 'Step'):
         dev.Step()
 
-  def _NewUsersFromAuthDevice(self, dev):
-    """Return a set of new users on |dev| since last check.
+  def _UserFromUsername(self, username):
+    matches = models.User.objects.filter(username=username)
+    if not matches.count() == 1:
+      return None
+    return matches[0]
 
-    A cache of the last call to dev.AuthorizedUsers() is maintained in
-    Kegbot._authed_users
-    """
-    old = self._authed_users.get(dev, set())
-    self._authed_users[dev] = set(dev.AuthorizedUsers())
-    return (self._authed_users[dev] - old)
+  def _ProcessAuthDevice(self, dev):
+    user_map = self._authed_users.get(dev, dict())
+
+    old_usernames = set(user_map.keys())
+    current_usernames = set(dev.AuthorizedUsers())
+    gone_usernames = current_usernames.difference(old_usernames)
+    new_usernames = old_usernames.difference(current_usernames)
+
+    gone_ret = []
+    new_ret = []
+    for name in gone_usernames:
+      gone_ret.append(user_map.get(name))
+      del user_map[name]
+
+    for name in new_usernames:
+      u = self._UserFromUsername(name)
+      if u is None:
+        continue
+      user_map[name] = u
+      new_ret.append(u)
+
+    self._authed_users[dev] = user_map
+    return gone_ret, new_ret
 
   def IterDevicesImplementing(self, interface):
     """Return all registered devices that implement |interface|"""
@@ -277,27 +298,19 @@ class KegBot:
     # process other things needing attention
     self._ProcessDevices()
 
-  def AuthUser(self, username):
-    """
-    Add user matching username to the list of authorized users.
+  def AuthUser(self, user):
+    """Add |user| to the list of authorized users."""
+    self._logger.info('authorizing %s' % user.username)
 
-    Returns:
-       True - user added to authed_users
-       False - no match for username
-    """
-    self._logger.info('authorizing %s' % username)
-    matches = models.User.objects.filter(username=username)
-    if not matches.count():
-      return False
+    for channel in self._channels:
+      flow = self._GetFlowForChannel(channel)
+      if flow is None:
+        flow = self._StartFlow(channel, user=user)
 
-    u = matches[0]
+      if flow.user == self._default_user:
+        self._logger.info('replacing default user on flow %s' % flow)
+        flow.user = user
 
-    # TODO: for now, authorization means start a flow on all channels. we
-    # may need to change this depending on (a) hardware (ie valves or no
-    # valves), (b) user preference, (c) auth/key type (different behavior
-    # for admin?)
-    for channel in self._channels.values():
-      channel.EnqueueUser(u)
     return True
 
   def UserIsAuthed(self, user):
@@ -362,6 +375,8 @@ class KegBot:
 
     self._logger.info('New flow started for user %s on channel %s' %
           (user, channel))
+
+    return flow
 
   def _GetFlowForChannel(self, channel):
     return self._flows.get(channel.channel_id())

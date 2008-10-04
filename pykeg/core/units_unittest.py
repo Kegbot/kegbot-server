@@ -98,6 +98,10 @@ class QuantityTestCase(unittest.TestCase):
     res = v1 + 100
     self.assertEqual(res, units.Quantity(0.430, UNITS.Liter))
 
+    # test subtraction
+    v3 = v2 - v1
+    self.assertEqual(v3, units.Quantity(1170, UNITS.Milliliter))
+
 
 if __name__ == '__main__':
   unittest.main()

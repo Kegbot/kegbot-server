@@ -31,22 +31,6 @@ register.inclusion_tag('kegweb/drink_span.html')(drink_span)
 ### filters
 
 @register.filter
-def vol_to_ounces(text):
-   try:
-      f = float(text)
-   except ValueError:
-      return ''
-   return units.to_ounces(f)
-
-@register.filter
-def ounces_to_bottles(text):
-   try:
-      f = float(text)
-   except ValueError:
-      return ''
-   return f/12.0
-
-@register.filter
 def bac_format(text):
    try:
       f = float(text)
@@ -108,4 +92,3 @@ def humanizeTimeDiff(timestamp = None):
         return str
     else:
         return None
-

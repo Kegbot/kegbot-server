@@ -141,12 +141,9 @@ def keg_detail(request, keg_id):
   extra['drinks'] = kegdrinks
   extra['ounces_by_user'] = vol_by_user
   extra['cost_by_user'] = cost_by_user
-  ounces_poured = sum([x[0] for x in extra['ounces_by_user']])
-  extra['total_poured'] = ounces_poured
-  extra['full_volume'] = keg.size.volume
-  extra['full_oz'] = keg.size.Volume().ConvertTo.Ounce
-  extra['pct_full'] = 100.0 - (float(ounces_poured) /
-                               float(keg.size.Volume().ConvertTo.Ounce) * 100)
+  extra['total_poured'] = keg.served_volume()
+  extra['full_volume'] = keg.full_volume()
+  extra['pct_full'] = 100.0 * (float(keg.remaining_volume()) / float(keg.full_volume()))
 
   vol_chart = charts.volume_chart(vol_by_user)
   if vol_chart is not None:

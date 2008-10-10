@@ -141,17 +141,24 @@ admin.site.register(KegSize)
 class Keg(models.Model):
   """ Record for each installed Keg. """
   def full_volume(self):
-    return self.size.volume
+    return self.size.Volume()
 
   def served_volume(self):
     drinks = Drink.objects.filter(keg__exact=self, status__exact='valid')
-    tot = 0.0
+    tot = units.Quantity(0, units.RECORD_UNIT)
     for d in drinks:
-      tot += d.volume
+      tot += d.Volume()
     return tot
 
   def remaining_volume(self):
     return self.full_volume() - self.served_volume()
+
+  def keg_age(self):
+    if self.status == 'online':
+      end = datetime.datetime.now()
+    else:
+      end = self.enddate
+    return end - self.startdate
 
   def __str__(self):
     return "Keg #%s - %s" % (self.id, self.type)

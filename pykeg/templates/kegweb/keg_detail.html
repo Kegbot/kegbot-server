@@ -27,8 +27,22 @@
   {{ keg.type }}
   </p>
   <p>
-  total poured: <b> {{ total_poured|floatformat:2 }} ounces</b>
-  ({{pct_full|floatformat:1}}% full)
+  total poured: <b> {{ total_poured.ConvertTo.USGallon|floatformat:2 }} gallons</b>
+  ({{pct_full|floatformat:2}}% full)
+  </p>
+  {% ifequal keg.status "online" %}
+  <p>
+  remaining: <b> {{ keg.remaining_volume.ConvertTo.USGallon|floatformat:2 }} gallons</b>
+  </p>
+  {% endifequal %}
+  <p>
+  {% ifequal keg.status "online" %}
+  this keg is <b>online</b>, and is {{ keg.keg_age.days }}
+  day{{keg.keg_age.days|pluralize}} old.
+  {% else %}
+  this keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
+  day{{keg.keg_age.days|pluralize}}.
+  {% endifequal %}
   </p>
   {% if chart_pie %}
   <img src="{{chart_pie}}&chf=bg,s,6699cc">

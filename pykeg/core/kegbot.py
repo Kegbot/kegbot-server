@@ -199,7 +199,11 @@ class KegBot:
     for dev in self._devices:
       if isinstance(dev, Interfaces.IAuthDevice):
         old_users, new_users = self._ProcessAuthDevice(dev)
-        for user in old_users:
+        if old_users:
+          self._logger.info("user(s) went away: %s" % str(old_users))
+        if new_users:
+          self._logger.info("user(s) came back: %s" % str(new_users))
+        for user in new_users:
           self.AuthUser(user)
       elif isinstance(dev, Interfaces.ITemperatureSensor):
         temp, temp_time = dev.GetTemperature()
@@ -220,14 +224,15 @@ class KegBot:
 
     old_usernames = set(user_map.keys())
     current_usernames = set(dev.AuthorizedUsers())
-    gone_usernames = current_usernames.difference(old_usernames)
-    new_usernames = old_usernames.difference(current_usernames)
+    gone_usernames = old_usernames.difference(current_usernames)
+    new_usernames = current_usernames.difference(old_usernames)
 
     gone_ret = []
     new_ret = []
     for name in gone_usernames:
-      gone_ret.append(user_map.get(name))
-      del user_map[name]
+      if name in user_map:
+        gone_ret.append(user_map.get(name))
+        del user_map[name]
 
     for name in new_usernames:
       u = self._UserFromUsername(name)
@@ -302,7 +307,7 @@ class KegBot:
     """Add |user| to the list of authorized users."""
     self._logger.info('authorizing %s' % user.username)
 
-    for channel in self._channels:
+    for channel in self._channels.values():
       flow = self._GetFlowForChannel(channel)
       if flow is None:
         flow = self._StartFlow(channel, user=user)

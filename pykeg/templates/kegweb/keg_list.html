@@ -9,9 +9,18 @@
    all kegs
 </div>
 <div class="content">
+  <div class="box">
+  <table class="sortable" cellspacing=0 border=0 width="430">
   {% for keg in kegs %}
-  <li>Keg {{ keg.id }} - {{ keg.type }}
+  <tr>
+    <td><a href="/keg/{{keg.id}}">keg {{keg.id}}&nbsp;</a></td>
+    <td>{{keg.type.name|lower}}&nbsp;</td>
+    <td>{{keg.full_volume.ConvertTo.USGallon|floatformat:1}} gal&nbsp;</td>
+    <td>{{keg.startdate|humanizeTimeDiff|lower}}</td>
+  </tr>
   {% endfor %}
+  </table>
+  </div>
 </div>
 
 {% endblock %}

@@ -113,10 +113,9 @@ def user_detail(request, username=None, user_id=None):
   return object_detail(request, **params)
 
 def keg_list(request):
-  keg_list = models.Keg.objects.all()
-  return object_list(request, queryset=keg_list, template_object_name='keg',
-        template_name='kegweb/keg_list.html',
-        extra_context=default_context(request))
+  context = default_context(request)
+  context['kegs'] = models.Keg.objects.all().order_by('-id')
+  return render_to_response('kegweb/keg_list.html', context)
 
 def keg_detail(request, keg_id):
   q = models.Keg.objects.filter(id__exact=keg_id)

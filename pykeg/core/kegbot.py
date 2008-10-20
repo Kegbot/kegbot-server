@@ -94,7 +94,7 @@ class KegBot:
             (installed_schema, models.SCHEMA_VERSION))
       self._logger.fatal('Please run scripts/updatedb.py to correct this.')
       self._logger.fatal('Aborting.')
-      raise ConfigurationError, "Oudated schema"
+      raise ConfigurationError, "Outdated schema"
 
     # json server
     json_server = KegbotJsonServer.KegbotJsonServer(
@@ -209,7 +209,7 @@ class KegBot:
         temp, temp_time = dev.GetTemperature()
         if temp is not None:
           for listener in self.IterDevicesImplementing(Interfaces.IThermoListener):
-             listener.ThermoUpdate(dev.SensorName(), temp)
+            listener.ThermoUpdate(dev.SensorName(), temp)
       elif hasattr(dev, 'Step'):
         dev.Step()
 
@@ -235,11 +235,11 @@ class KegBot:
         del user_map[name]
 
     for name in new_usernames:
-      u = self._UserFromUsername(name)
-      if u is None:
+      user = self._UserFromUsername(name)
+      if user is None:
         continue
-      user_map[name] = u
-      new_ret.append(u)
+      user_map[name] = user
+      new_ret.append(user)
 
     self._authed_users[dev] = user_map
     return gone_ret, new_ret
@@ -282,7 +282,7 @@ class KegBot:
     # first, give all channels a timeslice. in this timeslice, the channel
     # could notice a new flow, or service an existing flow.
     for c in self._channels.values():
-       c.Service()
+      c.Service()
 
     event_num = event_data = None
     try:

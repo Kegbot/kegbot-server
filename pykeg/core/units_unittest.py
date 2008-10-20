@@ -86,6 +86,10 @@ class QuantityTestCase(unittest.TestCase):
     v.IncAmount(-0.5, UNITS.USGallon)
     self.assertEqual(1.5, v.ConvertTo.USGallon)
 
+    v1 = units.Quantity(123.0)
+    v2 = units.Quantity(123, from_units=units.Quantity.DEFAULT_UNITS)
+    self.assertEqual(v1, v2)
+
   def testOpers(self):
     v1 = units.Quantity(330, UNITS.Milliliter)
     v2 = units.Quantity(1.5, UNITS.Liter)

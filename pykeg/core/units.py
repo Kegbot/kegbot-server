@@ -120,7 +120,7 @@ UnitConverter = _UnitConverter(CONVERSIONS)
 
 
 class Quantity:
-  NATIVE_UNITS = UNITS.Milliliter
+  DEFAULT_UNITS = UNITS.Milliliter
 
   class _AttributeConverter:
     def __init__(self, qty=0):
@@ -129,12 +129,18 @@ class Quantity:
     def __getattr__(self, name):
       qty_obj = self.__dict__['_qty']
       return UnitConverter.Convert(qty_obj.Amount(),
-                                   qty_obj.NATIVE_UNITS,
+                                   qty_obj.units(),
                                    getattr(UNITS, name))
 
-  def __init__(self, amount, origunits=UNITS.Milliliter):
-    self._amount = UnitConverter.Convert(amount, origunits,
-                                         self.NATIVE_UNITS)
+  def __init__(self, amount, units=None, from_units=None):
+    if units is None:
+      units = self.DEFAULT_UNITS
+    self._units = units
+
+    if from_units is None:
+      from_units = self._units
+
+    self._amount = UnitConverter.Convert(amount, from_units, self.units())
     self.ConvertTo = Quantity._AttributeConverter(self)
 
   def __add__(self, other, subtract=False):
@@ -142,14 +148,14 @@ class Quantity:
     if isinstance(other, (types.IntType, types.LongType, types.FloatType)):
       val += other
     elif isinstance(other, Quantity):
-      val += other.Amount(self.NATIVE_UNITS)
+      val += other.Amount(self.units())
     else:
       raise TypeError
     if subtract:
       val = self.Amount() - val
     else:
       val += self.Amount()
-    return Quantity(val, self.NATIVE_UNITS)
+    return Quantity(val, self.units())
 
   def __sub__(self, other):
     return self.__add__(other, subtract=True)
@@ -158,7 +164,7 @@ class Quantity:
     if isinstance(other, (types.IntType, types.LongType, types.FloatType)):
       return cmp(self.Amount(), other)
     elif isinstance(other, Quantity):
-      return cmp(self.Amount(), other.Amount(in_units=self.NATIVE_UNITS))
+      return cmp(self.Amount(), other.Amount(in_units=self.units()))
     else:
       raise TypeError
 
@@ -172,27 +178,24 @@ class Quantity:
   def __float__(self):
     return float(self.Amount())
 
-  @classmethod
-  def FromUnits(cls, other_unit_type, value):
-    return cls(UnitConverter.Convert(value, other_unit_type,
-                                     cls.NATIVE_UNITS))
+  def units(self):
+    return self._units
 
-  def IncAmount(self, amt, units=NATIVE_UNITS):
-    if units == self.NATIVE_UNITS:
+  def IncAmount(self, amt, units=None):
+    if units is None:
       self._amount += amt
     else:
-      self._amount += UnitConverter.Convert(amt, units, self.NATIVE_UNITS)
+      self._amount += UnitConverter.Convert(amt, units, self.units())
 
-  def SetAmount(self, amt, units=NATIVE_UNITS):
+  def SetAmount(self, amt, units=None):
     self._amount= 0
     self.IncAmount(amt, units)
 
   def Clear(self):
     self.SetAmount(0)
 
-  def Amount(self, in_units=NATIVE_UNITS):
-    if in_units == self.NATIVE_UNITS:
-      return self._amount
-    else:
-      # Same as self.ConvertTo.<in_units>
-      return UnitConverter.Convert(self._amount, self.NATIVE_UNITS, in_units)
+  def Amount(self, in_units=None):
+    # Same as self.ConvertTo.<in_units>
+    if in_units is None:
+      in_units = self.units()
+    return UnitConverter.Convert(self._amount, self.units(), in_units)

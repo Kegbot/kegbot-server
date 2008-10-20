@@ -72,7 +72,7 @@ def set_data():
    drink_num = 0
    drink_vols = []
    for size in (11.5, 12.5, 16, 11, 12, 22):
-     drink_vols.append(units.Quantity.FromUnits(units.UNITS.Ounce, size))
+     drink_vols.append(units.Quantity(size, from_units=units.UNITS.Ounce))
 
    # generate some drinks
    for rounds in range(3):

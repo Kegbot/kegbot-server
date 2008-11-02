@@ -20,11 +20,24 @@
 
 import os
 import sys
+import types
 
 ### Misc classes
-def Enum(*names):
+def Enum(*defs):
   """http://code.activestate.com/recipes/413486/"""
-  assert names, "Empty enums are not supported"
+  assert defs, "Empty enums are not supported"
+
+  names = []
+  namedict = {}
+  idx = 0
+  for item in defs:
+    if type(item) == types.TupleType:
+      name, idx = item
+    else:
+      name = item
+    namedict[idx] = name
+    names.append(name)
+    idx += 1
 
   class EnumClass(object):
     __slots__ = names
@@ -47,15 +60,21 @@ def Enum(*names):
       return cmp(self.__value, other.__value)
     def __invert__(self):      return constants[maximum - self.__value]
     def __nonzero__(self):     return bool(self.__value)
-    def __repr__(self):        return str(names[self.__value])
+    def __repr__(self):        return str(namedict[self.__value])
 
   maximum = len(names) - 1
-  constants = [None] * len(names)
-  for i, each in enumerate(names):
-    val = EnumValue(i)
-    setattr(EnumClass, each, val)
-    constants[i] = val
-  constants = tuple(constants)
+  constants = {}
+  i = 0
+  for item in defs:
+    if type(item) == types.TupleType:
+      name, idx = item
+    else:
+      name, idx = item, i
+    assert idx not in constants
+    i = idx + 1
+    val = EnumValue(idx)
+    setattr(EnumClass, name, val)
+    constants[idx] = val
   EnumType = EnumClass()
   return EnumType
 

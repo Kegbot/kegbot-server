@@ -8,6 +8,7 @@ import unittest
 import KegbotJsonServer_unittest
 import kegbot_unittest
 import models_unittest
+import StateMachine_unittest
 import units_unittest
 import util_unittest
 
@@ -15,6 +16,7 @@ from pykeg.core.Devices import Net_unittest
 
 ALL_TEST_MODULES = (
     models_unittest,
+    StateMachine_unittest,
     units_unittest,
     util_unittest,
     Net_unittest,

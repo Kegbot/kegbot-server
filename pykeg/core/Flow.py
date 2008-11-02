@@ -4,10 +4,7 @@ import datetime
 import time
 import Queue
 
-from django.db.models import base
-
 from pykeg.core import kb_common
-from pykeg.core import models
 from pykeg.core import Interfaces
 from pykeg.core import units
 from pykeg.core import util

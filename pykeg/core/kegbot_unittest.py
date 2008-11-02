@@ -58,7 +58,7 @@ class KegbotTestCase(TestCase):
       self.kegbot._StepEventLoop()
 
     # Idle out the flow. This is a hack.
-    f = self.kegbot._flows['0']
+    f = self.kegbot._GetFlowForChannel(self.kegbot._channel_0)
     f._last_activity = time.time() - 60
 
     for x in xrange(100):

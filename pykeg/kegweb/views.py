@@ -23,6 +23,8 @@
 import datetime
 
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
+
 from django.http import Http404
 from django.shortcuts import render_to_response
 from django.views.generic.list_detail import object_detail
@@ -33,6 +35,7 @@ from django.views.generic.simple import redirect_to
 from pykeg.core import models
 from pykeg.core import units
 from pykeg.kegweb import view_util
+from pykeg.kegweb import forms
 from pykeg.kegweb import charts
 
 # TODO: figure out how to get the appname (places that reference 'kegweb') and
@@ -42,7 +45,7 @@ from pykeg.kegweb import charts
 
 def default_context(request):
   c = {}
-  c['top_5'] = view_util.keg_drinkers_by_volume(view_util.current_keg())
+  c['top_5'] = view_util.keg_drinkers_by_volume(view_util.current_keg())[:5]
   c['boxsize'] = 100
   if request.user.is_authenticated():
     c['logged_in_user'] = request.user
@@ -52,14 +55,20 @@ def default_context(request):
 
 ### views
 
+@cache_page(30)
 def index(request):
   context = default_context(request)
   context['last_drinks'] = models.Drink.objects.filter(status='valid').order_by('-id')[:5]
   context['template'] = 'index.html'
   return render_to_response('index.html', context)
 
+@cache_page(30)
 def leaders(request):
   context = default_context(request)
+  all_drinks = models.Drink.objects.filter(status='valid')
+  context['top_vol_alltime'] = view_util.drinkers_by_volume(all_drinks)
+  context['top_vol_current_keg'] = view_util.keg_drinkers_by_volume(view_util.current_keg())
+  context['top_bac_alltime'] = []
   return render_to_response('kegweb/leaders.html', context)
 
 ### object lists and detail (generic views)
@@ -183,7 +192,18 @@ def account_view(request):
   context['statements'] = user.billstatement_set.all().order_by('-statement_date')
   context['payments'] = user.payment_set.all().order_by('-payment_date')
   context['user'] = user
+  context['profile_form'] = forms.UserProfileForm(instance=user.get_profile())
 
   # TODO unbilled activity
 
   return render_to_response('kegweb/account.html', context)
+
+@login_required
+def update_profile(request):
+  if request.method != 'POST':
+    raise Http404
+  orig_profile = request.user.get_profile()
+  form = forms.UserProfileForm(request.POST, instance=orig_profile)
+  if form.is_valid():
+    new_profile = form.save()
+  return redirect_to(request, url='/account/')

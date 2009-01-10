@@ -53,6 +53,10 @@ admin.site.register(UserLabel)
 
 class UserProfile(models.Model):
   """Extra per-User information."""
+  GENDER_CHOICES = (
+    ('male', 'male'),
+    ('female', 'female'),
+  )
   def __str__(self):
     return "profile for %s" % (self.user,)
 
@@ -63,9 +67,10 @@ class UserProfile(models.Model):
     return False
 
   user = models.OneToOneField(User)
-  gender = models.CharField(max_length=8)
+  gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
   labels = models.ManyToManyField(UserLabel)
+  #mugshot = models.ForeignKey(UserPicture, blank=True, null=True)
 
 admin.site.register(UserProfile)
 
@@ -189,12 +194,24 @@ class Drink(models.Model):
   def Volume(self):
     return units.Quantity(self.volume, units.RECORD_UNIT)
 
+  def GetSession(self):
+    q = self.userdrinkingsessionassignment_set.all()
+    if q.count() == 1:
+      return q[0].session
+    return None
+
+  def GetGroup(self):
+    sess = self.GetSession()
+    if sess:
+      return sess.group
+    return None
+
   def calories(self):
     cal = self.keg.type.calories_oz * self.Volume().ConvertTo.Ounce
     return cal
 
   def bac(self):
-    bacs = BAC.objects.filter(drink__exact=self)
+    bacs = self.bac_set.all()
     if bacs.count() == 1:
       return bacs[0].bac
     return 0

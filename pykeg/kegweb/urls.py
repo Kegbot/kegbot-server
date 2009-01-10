@@ -13,6 +13,7 @@ urlpatterns = patterns('pykeg.kegweb.views',
 
       ### accountpage
       (r'^account/$', 'account_view'),
+      (r'^account/update_profile/$', 'update_profile'),
 
       ### leader board
       (r'^leaders/$', 'leaders'),

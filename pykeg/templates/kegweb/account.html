@@ -14,6 +14,18 @@
 </div>
 
 <div class="contenthead">
+   profile
+</div>
+<div class="content">
+  <p>
+  <form action="/account/update_profile/" method="POST">
+  {{profile_form.as_p}}
+  <input type="submit" name="submit" value="submit">
+  </form>
+  </p>
+</div>
+
+<div class="contenthead">
    statements
 </div>
 <div class="content">

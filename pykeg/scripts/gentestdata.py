@@ -75,19 +75,22 @@ def set_data():
      drink_vols.append(units.Quantity(size, from_units=units.UNITS.Ounce))
 
    # generate some drinks
-   for rounds in range(3):
-      for u in users:
-         start = drink_base + drink_num*drink_interval
-         end = start + datetime.timedelta(seconds=10)
-         vol = drink_vols[drink_num%len(drink_vols)]
-         drink = models.Drink(ticks=vol.ConvertTo.KbMeterTick,
-                              volume=vol.Amount(units.RECORD_UNIT),
-                              starttime=start, endtime=end, user=u, keg=k,
-                              status='valid')
-         drink.save()
-         models.BAC.ProcessDrink(drink)
-         models.Binge.Assign(drink)
-         drink_num += 1
+   times = (drink_base, drink_base + datetime.timedelta(days=1))
+
+   for drink_time in times:
+     for rounds in range(3):
+        for u in users:
+           start = drink_time + drink_num*drink_interval
+           end = start + datetime.timedelta(seconds=10)
+           vol = drink_vols[drink_num%len(drink_vols)]
+           drink = models.Drink(ticks=vol.ConvertTo.KbMeterTick,
+                                volume=vol.Amount(units.RECORD_UNIT),
+                                starttime=start, endtime=end, user=u, keg=k,
+                                status='valid')
+           drink.save()
+           models.BAC.ProcessDrink(drink)
+           models.UserDrinkingSessionAssignment.RecordDrink(drink)
+           drink_num += 1
 
 if __name__ == '__main__':
    set_data()

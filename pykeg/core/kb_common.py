@@ -11,7 +11,13 @@ MIN_VOLUME_TO_DISPLAY = 10
 # Idle seconds allowed before a user gets booted for inactivity
 FLOW_IDLE_TIMEOUT = 30
 
-BINGE_TIME_MINUTES = 90
+# Maximum time between consecutive drinks to be considered in the same 'session'
+# (see UserDrinkingSession table)
+DRINK_SESSION_TIME_MINUTES = 90
+
+# Maximum time between different UserDrinkingSession records to be considered
+# 'concurrent' (see DrinkingSessionGroup table)
+GROUP_SESSION_TIME_MINUTES = 90
 
 ### Addresses and ports
 

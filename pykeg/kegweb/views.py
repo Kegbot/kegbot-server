@@ -90,8 +90,9 @@ def user_detail(request, username=None, user_id=None):
   else:
     raise Http404
 
-  drinks = models.Drink.objects.filter(user__exact=user_list[0], volume__gt=0).order_by('-starttime')
-  extra['binges'] = models.Binge.objects.filter(user__exact=user_list[0])
+  user = user_list[0]
+  drinks = user.drink_set.filter(volume__gt=0).order_by('-starttime')
+  extra['drinking_sessions'] = user.userdrinkingsession_set.all().order_by('-starttime')
   extra['drinks'] = drinks
 
   # TODO: fix or remove; broken in kegbotweb
@@ -164,21 +165,12 @@ def drink_detail(request, drink_id):
   drink = q[0]
   extra = default_context(request)
 
-  # fetch any binges happening at the same time ("drinking with" feature)
-  # TODO: coalesce multiple binges/user
-  look_behind = drink.starttime - datetime.timedelta(seconds=60*30)
-  look_ahead = drink.starttime + datetime.timedelta(seconds=60*30)
-  concurrent_binges = models.Binge.objects.filter(starttime__lte=drink.starttime,
-        endtime__gte=drink.starttime)
-  concurrent_binges = concurrent_binges.exclude(
-        user__exact=drink.user)
-  extra['concurrent_binges'] = concurrent_binges
+  drink_session = drink.userdrinkingsessionassignment_set.all()[0].session
+  drink_group = drink_session.group
 
-  # fetch the current binge, if it exists
-  binges = models.Binge.objects.filter(starttime__lte=drink.endtime,
-        endtime__gte=drink.starttime, user__exact=drink.user)
-  if binges:
-    extra['binge'] = binges[0]
+  extra['drink_session'] = drink_session
+  extra['drink_group'] = drink_group
+  extra['drinking_alone'] = drink_group.GetSessions().count() == 1
 
   return object_detail(request, queryset=q, object_id=drink_id,
         template_name='kegweb/drink_detail.html', template_object_name='drink',

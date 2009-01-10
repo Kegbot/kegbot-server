@@ -291,50 +291,124 @@ class BAC(models.Model):
 
 admin.site.register(BAC)
 
+def find_object_in_window(qset, start, end, window):
+  # Match objects containing the start-end range
+  matching = qset.filter(
+      starttime__lte=start + window,
+      endtime__gte=end - window
+  )
 
-class Binge(models.Model):
-  """ A calculated grouping of drinks occuring within a time window """
-  def __str__(self):
-    return "binge %s by %s (%s to %s)" % (self.id, self.user, self.starttime, self.endtime)
+  if len(matching):
+    return matching[0]
 
+  # Match objects ending just before the start
+  earlier = qset.filter(
+      endtime__gte=(start - window),
+      starttime__lt=start,
+  )
+
+  if len(earlier):
+    return earlier[0]
+
+  # Match objects occuring just after the end
+  newer = qset.filter(
+      starttime__lte=(end - window),
+      endtime__gt=end,
+  )
+
+  if len(newer):
+    return newer[0]
+
+  return None
+
+class UserDrinkingSession(models.Model):
+  """ A derived table grouping a sequence of drinks by a user.
+
+  A single row of this table exists for one or more UserDrinkingSessionAssignment
+  rows to point at.
+  """
   user = models.ForeignKey(User)
-  startdrink = models.ForeignKey(Drink, related_name='start')
-  enddrink = models.ForeignKey(Drink, related_name='end')
-  volume = models.PositiveIntegerField()
+  starttime = models.DateTimeField()
+  endtime = models.DateTimeField()
+  group = models.ForeignKey('DrinkingSessionGroup')
+
+  def UpdateTimes(self, drink):
+    if self.starttime > drink.starttime:
+      self.starttime = drink.starttime
+    if self.endtime < drink.endtime:
+      self.endtime = drink.endtime
+
+  def GetDrinks(self):
+    return (a.drink for a in self.userdrinkingsessionassignment_set.all())
+
+  @classmethod
+  def CreateOrUpdateSessionForDrink(cls, d):
+    """ Create or update a UserDrinkingSession given a drink """
+    window = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
+
+    qset = d.user.userdrinkingsession_set
+    session = find_object_in_window(qset, d.starttime, d.endtime, window)
+    if not session:
+      session = UserDrinkingSession(user=d.user, starttime=d.starttime,
+                                    endtime=d.endtime)
+
+    session.UpdateTimes(d)
+    session.group = DrinkingSessionGroup.Assign(session)
+    session.save()
+
+    return session
+
+admin.site.register(UserDrinkingSession)
+
+
+class UserDrinkingSessionAssignment(models.Model):
+  drink = models.ForeignKey(Drink)
+  session = models.ForeignKey(UserDrinkingSession)
+
+  @classmethod
+  def RecordDrink(cls, d):
+    """ Create a new record for the drink |d|.
+
+    This method calles UserDrinkingSession.CreateOrUpdateSessionForDrink to find or
+    create a UserDrinkingSession matching this drink.
+    """
+    session = UserDrinkingSession.CreateOrUpdateSessionForDrink(d)
+    UserDrinkingSessionAssignment.objects.filter(drink=d).delete()
+    dg = UserDrinkingSessionAssignment(
+        drink=d,
+        session=session)
+    dg.save()
+    return dg
+
+admin.site.register(UserDrinkingSessionAssignment)
+
+
+class DrinkingSessionGroup(models.Model):
   starttime = models.DateTimeField()
   endtime = models.DateTimeField()
 
+  def UpdateTimes(self, session):
+    if self.starttime > session.starttime:
+      self.starttime = session.starttime
+    if self.endtime < session.endtime:
+      self.endtime = session.endtime
+
+  def GetSessions(self):
+    return self.userdrinkingsession_set.all()
+
   @classmethod
-  def Assign(cls, d):
-    """ Create or update a binge given a recent drink """
-    try:
-      profile = d.user.get_profile()
-      if profile.HasLabel('__no_binge__'):
-        return
-    except UserProfile.DoesNotExist:
-      pass
+  def Assign(self, session):
+    window = datetime.timedelta(minutes=kb_common.GROUP_SESSION_TIME_MINUTES)
+    group = find_object_in_window(DrinkingSessionGroup.objects.all(),
+                                  session.starttime, session.endtime, window)
+    if not group:
+      group = DrinkingSessionGroup(starttime=session.starttime,
+                                   endtime=session.endtime)
 
-    binge_window = datetime.timedelta(minutes=kb_common.BINGE_TIME_MINUTES)
-    min_end = d.endtime - binge_window
-    binges = Binge.objects.filter(user=d.user, starttime__lte=d.starttime,
-                                  endtime__gte=min_end).order_by("-id")[:1]
+    group.UpdateTimes(session)
+    group.save()
 
-    # now find or create the current binge, and update it
-    if not len(binges):
-      new_binge = Binge(user=d.user, startdrink=d,
-                        enddrink=d, volume=d.Volume().Amount(units.RECORD_UNIT),
-                        starttime=d.endtime,
-                        endtime=d.endtime + binge_window)
-      new_binge.save()
-      return
-    else:
-      last_binge = binges[0]
-      last_binge.volume += d.volume
-      last_binge.enddrink = d
-      last_binge.endtime = d.endtime + binge_window
-      last_binge.save()
-
-admin.site.register(Binge)
+    return group
 
 
 class Thermolog(models.Model):
@@ -347,7 +421,7 @@ admin.site.register(Thermolog)
 
 
 class RelayLog(models.Model):
-  """ A log from an IRelay device of relat events/ """
+  """ A log from an IRelay device of relay events/ """
   name = models.CharField(max_length=128)
   status = models.CharField(max_length=32)
   time = models.DateTimeField()

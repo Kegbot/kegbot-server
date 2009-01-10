@@ -75,8 +75,8 @@ class FlowProcessingThread(KegbotThread):
     models.BAC.ProcessDrink(d)
     self._logger.info('Processed BAC for drink %i' % (d.id,))
 
-    models.Binge.Assign(d)
-    self._logger.info('Processed Binge for drink %i' % (d.id,))
+    models.UserDrinkingSessionAssignment.RecordDrink(d)
+    self._logger.info('Processed UserDrinkGroupAssignment for drink %i' % (d.id,))
 
     # notify listeners
     for dev in self._kegbot.IterDevicesImplementing(Interfaces.IFlowListener):

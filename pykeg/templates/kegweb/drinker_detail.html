@@ -87,23 +87,18 @@
 </div>
 
 <div class="contenthead">
-   binges
+   drinking sessions
 </div>
 <div class="content">
-   <p>
-      a binge constitutes 3 or more drinks, separated by no more than 90
-      minutes each, and totalling at least 4 pints
-   </p>
-
-   {% if not binges %}
+   {% if not drinking_sessions %}
    <p>
       <b>none recorded yet.</b> {{ drinker.username }} is clearly a very balanced
       drinker.
    </p>
    {% else %}
    <ul>
-      {% for binge in binges %}
-      <li>{{ binge}}
+      {% for session in drinking_sessions %}
+      <li>{{ session.starttime }}
       {% endfor %}
    </ul>
    {% endif %}

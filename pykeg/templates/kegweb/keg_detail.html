@@ -78,6 +78,7 @@
       <td><b>bac</b></td>
    </tr>
    {% for drink in drinks %}
+      {% ifchanged drink.GetGroup %} <tr><td colspan=6>&nbsp;</td></tr> {% endifchanged %}
       {% drink_span drink %}
    {% endfor %}
    </table>

@@ -79,31 +79,12 @@
       <td><b>bac</b></td>
    </tr>
    {% for drink in drinks %}
+      {% ifchanged drink.GetGroup %} <tr><td colspan=6>&nbsp;</td></tr> {% endifchanged %}
       {% drink_span drink %}
    {% endfor %}
    </table>
    </div>
    </p>
 </div>
-
-<div class="contenthead">
-   drinking sessions
-</div>
-<div class="content">
-   {% if not drinking_sessions %}
-   <p>
-      <b>none recorded yet.</b> {{ drinker.username }} is clearly a very balanced
-      drinker.
-   </p>
-   {% else %}
-   <ul>
-      {% for session in drinking_sessions %}
-      <li>{{ session.starttime }}
-      {% endfor %}
-   </ul>
-   {% endif %}
-</div>
-
-
 
 {% endblock %}

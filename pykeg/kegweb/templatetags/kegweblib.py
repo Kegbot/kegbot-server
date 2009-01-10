@@ -65,11 +65,11 @@ def humanizeTimeDiff(timestamp = None):
     hours = timeDiff.seconds/3600
     minutes = timeDiff.seconds%3600/60
     seconds = timeDiff.seconds%3600%60
-    
+
     str = ""
     tStr = ""
     if days > 7:
-       return timestamp.strftime("%a %b %d %y")
+        return timestamp.strftime("%a %b %d %y %H:%M")
     if days > 0:
         if days == 1:   tStr = "day"
         else:           tStr = "days"

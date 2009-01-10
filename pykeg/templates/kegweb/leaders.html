@@ -7,5 +7,22 @@
 <div class="contenthead">
    leader board
 </div>
+<div class="content">
+<table>
+<tr>
+
+<td valign="top">
+{% for pair in top_vol_alltime %}
+      <div style="text-align:center;">
+         {% mugshot_box pair.1 %}
+         {{pair.1.username}}<br>
+         {{pair.0|floatformat:2 }}
+      </div>
+{% endfor %}
+</td>
+
+</tr>
+</table>
+</div>
 
 {% endblock %}

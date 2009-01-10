@@ -27,6 +27,14 @@ def current_keg():
   if len(q):
     return q[0]
 
+def user_is_hidden(user):
+  try:
+    profile = user.get_profile()
+  except models.UserProfile.DoesNotExist:
+    return False
+
+  return profile.HasLabel('__hidden__')
+
 def keg_drinks(keg):
   if not keg:
     return []
@@ -40,8 +48,10 @@ def drinkers_by_volume(drinks):
   for d in drinks:
     ret[d.user] = ret.get(d.user, 0) + d.Volume().ConvertTo.Ounce
   outlist = []
-  for k, v in ret.iteritems():
-    outlist.append((v, k))
+  for user, totalvol in ret.iteritems():
+    if user_is_hidden(user):
+      continue
+    outlist.append((totalvol, user))
   outlist.sort(reverse=True)
   return outlist
 

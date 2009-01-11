@@ -51,15 +51,14 @@
 </div>
 <div class="content">
    <p>
+
    {% if drinking_alone %}
-   <b>{{ drink.user.username }}</b> appeared to be drinking alone.
+     <b>{{ drink.user.username }}</b> appeared to be drinking alone.
    {% else %}
-   <div class="box">
-    {{ drink_group }}
-   </div>
-   <div class="spacer">&nbsp;</div>
-   </p>
+     {% show_drink_group drink_group %}
    {% endif %}
+
+   </p>
 </div>
 
 {% endblock %}

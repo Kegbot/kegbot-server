@@ -27,6 +27,9 @@ def drink_span(drink):
    return {'drink' : drink}
 register.inclusion_tag('kegweb/drink_span.html')(drink_span)
 
+def show_drink_group(group):
+   return {'group' : group}
+register.inclusion_tag('kegweb/drink_group.html')(show_drink_group)
 
 ### filters
 

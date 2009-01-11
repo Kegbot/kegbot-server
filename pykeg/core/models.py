@@ -358,6 +358,12 @@ class UserDrinkingSession(models.Model):
   def GetDrinks(self):
     return (a.drink for a in self.userdrinkingsessionassignment_set.all())
 
+  def Volume(self):
+    tot = units.Quantity(0, units.RECORD_UNIT)
+    for d in self.GetDrinks():
+      tot += d.Volume()
+    return tot
+
   @classmethod
   def CreateOrUpdateSessionForDrink(cls, d):
     """ Create or update a UserDrinkingSession given a drink """
@@ -410,8 +416,17 @@ class DrinkingSessionGroup(models.Model):
     if self.endtime < session.endtime:
       self.endtime = session.endtime
 
+  def TotalVolume(self):
+    tot = units.Quantity(0, units.RECORD_UNIT)
+    for sess in self.GetSessions():
+      tot += sess.Volume()
+    return tot
+
   def GetSessions(self):
     return self.userdrinkingsession_set.all()
+
+  def GetUsers(self):
+    return set(sess.user for sess in self.GetSessions())
 
   @classmethod
   def Assign(self, session):

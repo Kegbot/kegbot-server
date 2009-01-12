@@ -6,10 +6,10 @@
   {% load markup %}
   {{ page.content|markdown }}
 {% else %}
-  {% ifequal page.markup "plaintext" %}
-    {{ page.content|linebreaks|urlize }}
+  {% ifequal page.markup "html" %}
+    {{ page.content|safe }}
   {% else %}
-    {{ page.content }}
+    {{ page.content|linebreaks|urlize }}
   {% endifequal %}
 {% endifequal %}
 </div>

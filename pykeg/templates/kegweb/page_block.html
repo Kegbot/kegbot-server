@@ -1,0 +1,17 @@
+<div class="contenthead">
+  {{ page.title }}
+</div>
+<div class="content">
+{% ifequal page.markup "markdown" %}
+  {% load markup %}
+  {{ page.content|markdown }}
+{% else %}
+  {% ifequal page.markup "plaintext" %}
+    {{ page.content|linebreaks|urlize }}
+  {% else %}
+    {{ page.content }}
+  {% endifequal %}
+{% endifequal %}
+</div>
+
+

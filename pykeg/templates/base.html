@@ -51,6 +51,11 @@
    </div>
 
    <div id="content">
+
+{% if page_node %}
+{% render_page page_node %}
+{% endif %}
+
       {% block content %}{% endblock %}
    </div>
 

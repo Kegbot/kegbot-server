@@ -37,6 +37,7 @@ from pykeg.core import units
 from pykeg.kegweb import view_util
 from pykeg.kegweb import forms
 from pykeg.kegweb import charts
+from pykeg.kegweb import models as kegweb_models
 
 # TODO: figure out how to get the appname (places that reference 'kegweb') and
 # use that instead
@@ -58,6 +59,12 @@ def default_context(request):
 @cache_page(30)
 def index(request):
   context = default_context(request)
+  try:
+    page = kegweb_models.Page.objects.get(name__exact='MainPage',
+                                          status__exact='published')
+  except kegweb_models.Page.DoesNotExist:
+    page = None
+  context['page_node'] = page
   context['last_drinks'] = models.Drink.objects.filter(status='valid').order_by('-id')[:5]
   context['template'] = 'index.html'
   return render_to_response('index.html', context)

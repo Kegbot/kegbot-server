@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib import admin
@@ -45,3 +43,4 @@ class Page(models.Model):
   created_on = models.DateTimeField(editable=False, auto_now_add=True)
   last_modified = models.DateTimeField(auto_now=True)
 
+admin.site.register(Page)

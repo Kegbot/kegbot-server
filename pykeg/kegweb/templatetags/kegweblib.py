@@ -31,6 +31,10 @@ def show_drink_group(group):
    return {'group' : group}
 register.inclusion_tag('kegweb/drink_group.html')(show_drink_group)
 
+def render_page(page):
+   return {'page' : page}
+register.inclusion_tag('kegweb/page_block.html')(render_page)
+
 ### filters
 
 @register.filter

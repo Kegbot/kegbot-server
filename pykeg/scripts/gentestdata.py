@@ -3,6 +3,7 @@
 import datetime
 
 from pykeg.core import models, units
+from pykeg.kegweb import models as kegweb_models
 from django.contrib.auth.models import User
 
 from pykeg.core.Devices import Kegboard
@@ -91,6 +92,14 @@ def set_data():
            models.BAC.ProcessDrink(drink)
            models.UserDrinkingSessionAssignment.RecordDrink(drink)
            drink_num += 1
+
+   page = kegweb_models.Page(
+       name="MainPage",
+       title="Welcome",
+       author=users[0],
+       content="# hello!\n\nThis is the *Main Page* of your new kegbot!\n")
+   page.save()
+
 
 if __name__ == '__main__':
    set_data()

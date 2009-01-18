@@ -258,6 +258,13 @@ void setup()
 {
   pinMode(KB_PIN_METER_A, INPUT);
   pinMode(KB_PIN_METER_B, INPUT);
+  
+  // enable internal pullup to prevent disconnected line from ticking away
+  digitalWrite(KB_PIN_METER_A, HIGH);
+  digitalWrite(KB_PIN_METER_B, HIGH);
+  
+  pinMode(KB_PIN_SELFTEST, INPUT);
+  digitalWrite(KB_PIN_SELFTEST, HIGH);
 
   attachInterrupt(0, meterInterruptA, RISING);
   attachInterrupt(1, meterInterruptB, RISING);

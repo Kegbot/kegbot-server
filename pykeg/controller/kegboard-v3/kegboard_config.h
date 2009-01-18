@@ -20,6 +20,7 @@
 #define KB_PIN_RELAY_B      5
 #define KB_PIN_THERMO_A     7
 #define KB_PIN_THERMO_B     8
+#define KB_PIN_SELFTEST     12
 
 // Default values
 

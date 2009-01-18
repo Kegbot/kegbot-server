@@ -107,7 +107,7 @@ def user_detail(request, username=None, user_id=None):
     raise Http404
 
   user = user_list[0]
-  drinks = user.drink_set.filter(volume__gt=0).order_by('-starttime')
+  drinks = user.drink_set.filter(volume__gt=0, status__exact='valid').order_by('-starttime')
   extra['drinking_sessions'] = user.userdrinkingsession_set.all().order_by('-starttime')
   extra['drinks'] = drinks
 

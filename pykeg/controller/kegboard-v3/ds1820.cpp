@@ -53,7 +53,6 @@ bool DS1820Sensor::Update(unsigned long clock)
 bool DS1820Sensor::ResetAndSkip()
 {
   if (!m_bus->reset()) {
-    LOG("No devices on bus.\n");
     return false;
   }
   m_bus->write(0xcc, 1);

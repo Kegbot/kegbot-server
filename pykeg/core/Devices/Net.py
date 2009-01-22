@@ -10,7 +10,7 @@ from pykeg.core import Interfaces
 from pykeg.core import kb_threads
 from pykeg.core import models
 
-KB2_FLOW_1_RE = re.compile('.* flow:1:(?P<meterval>\d+).*')
+KB2_FLOW_1_RE = re.compile('.*flow_0=(?P<meterval>\d+).*')
 
 class KegBoard(kb_threads.KegbotThread,
       Interfaces.IFlowmeter):

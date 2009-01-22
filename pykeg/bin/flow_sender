@@ -19,10 +19,8 @@ MCAST_PORT = 9012
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
 
-def publish(val):
-  print val
-  m = struct.pack('!I', val)
-  sock.sendto(m, (MCAST_ADDR, MCAST_PORT))
+def publish(buf):
+  sock.sendto(buf, (MCAST_ADDR, MCAST_PORT))
 
 def main(name):
   fd = open('/dev/ttyUSB0', 'rb')
@@ -30,11 +28,7 @@ def main(name):
     rr, _, _ = select.select([fd], [], [])
     buf = fd.readline().strip()
     if buf:
-      try:
-        v = int(buf)
-        publish(v)
-      except ValueError:
-        pass
+      publish(buf)
 
 
 if __name__ == '__main__':

@@ -48,6 +48,7 @@ def default_context(request):
   c = {}
   c['top_5'] = view_util.keg_drinkers_by_volume(view_util.current_keg())[:5]
   c['boxsize'] = 100
+  print "---", request.path
   if request.user.is_authenticated():
     c['logged_in_user'] = request.user
   else:
@@ -72,10 +73,22 @@ def index(request):
 @cache_page(30)
 def leaders(request):
   context = default_context(request)
+
   all_drinks = models.Drink.objects.filter(status='valid')
-  context['top_vol_alltime'] = view_util.drinkers_by_volume(all_drinks)
-  context['top_vol_current_keg'] = view_util.keg_drinkers_by_volume(view_util.current_keg())
-  context['top_bac_alltime'] = []
+  context['top_volume_drinkers_alltime'] = view_util.drinkers_by_volume(all_drinks)
+
+  online_kegs = models.Keg.objects.filter(status='online').order_by('startdate')
+
+  online_keg_leaders = []
+  for keg in online_kegs:
+    drinkers = view_util.keg_drinkers_by_volume(keg)
+    online_keg_leaders.append( (keg, drinkers) )
+
+  context['top_volume_drinkers_by_keg'] = online_keg_leaders
+
+  context['top_bac_alltime'] = (bac.user for bac in
+                                models.BAC.objects.all().order_by('-bac') )
+
   return render_to_response('kegweb/leaders.html', context)
 
 ### object lists and detail (generic views)

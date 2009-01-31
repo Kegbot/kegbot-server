@@ -1,0 +1,13 @@
+{% load kegweblib %}
+<div style="text-align:center;">
+
+  <div class="plainboxhead" style="width:280px;">
+    <b>{{drinker.username}}</b>
+  </div>
+  <div class="plainbox" style="width:280px;">
+    {% mugshot_box drinker %}
+    {{volume|floatformat:2 }} ounces
+  </div>
+
+</div>
+

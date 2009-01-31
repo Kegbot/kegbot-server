@@ -76,6 +76,8 @@ INSTALLED_APPS = (
     'pykeg.accounting',
     'pykeg.core',
     'pykeg.kegweb',
+    'registration',
 )
 
 AUTH_PROFILE_MODULE = "core.UserProfile"
+LOGIN_REDIRECT_URL = "/account/"

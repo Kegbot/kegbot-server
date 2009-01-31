@@ -35,6 +35,7 @@
 //  - Thermo:
 //    * check CRC
 //    * clean up code
+//  - leak detect circuit/alarm support
 
 #include "kegboard.h"
 #include "kegboard_config.h"

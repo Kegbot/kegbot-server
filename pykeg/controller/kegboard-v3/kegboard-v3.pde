@@ -273,7 +273,7 @@ void setup()
   pinMode(KB_PIN_RELAY_A, OUTPUT);
   pinMode(KB_PIN_RELAY_B, OUTPUT);
 
-  Serial.begin(57600);
+  Serial.begin(gBaudRate);
 
 #ifdef KB_ENABLE_EEPROM
   readEeprom();

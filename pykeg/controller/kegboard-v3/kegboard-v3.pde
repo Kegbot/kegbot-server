@@ -193,11 +193,11 @@ int eepWriteUpdateInterval(byte off)
 int readEeprom()
 {
   byte tmp1, tmp2;
-  int off;
+  int off=0;
 
   // Does this look like my EEPROM? First two bytes must match the magic values.
-  tmp1 = EEPROM.read(0);
-  tmp2 = EEPROM.read(1);
+  tmp1 = EEPROM.read(off++);
+  tmp2 = EEPROM.read(off++);
   if (tmp1 != KB_EEP_MAGIC_0 || tmp2 != KB_EEP_MAGIC_1)
     return -1;
 
@@ -259,11 +259,11 @@ void setup()
 {
   pinMode(KB_PIN_METER_A, INPUT);
   pinMode(KB_PIN_METER_B, INPUT);
-  
+
   // enable internal pullup to prevent disconnected line from ticking away
   digitalWrite(KB_PIN_METER_A, HIGH);
   digitalWrite(KB_PIN_METER_B, HIGH);
-  
+
   pinMode(KB_PIN_SELFTEST, INPUT);
   digitalWrite(KB_PIN_SELFTEST, HIGH);
 
@@ -274,7 +274,7 @@ void setup()
   pinMode(KB_PIN_RELAY_B, OUTPUT);
 
   Serial.begin(57600);
-  
+
 #ifdef KB_ENABLE_EEPROM
   readEeprom();
 #endif

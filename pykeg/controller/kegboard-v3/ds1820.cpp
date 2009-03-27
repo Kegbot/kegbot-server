@@ -5,10 +5,11 @@
 #include "ds1820.h"
 #include "OneWire.h"
 
+#define REFRESH_MS    5000
+
 DS1820Sensor::DS1820Sensor(OneWire* bus)
 {
   m_bus = bus;
-  m_refresh_ms = 5000;
 
   m_converting = false;
   m_next_conversion_clock = 0;
@@ -35,8 +36,8 @@ bool DS1820Sensor::Update(unsigned long clock)
   // if we're converting, and it is time to fetch, do so.
   if (m_converting && clock >= (m_conversion_start_clock + 1000)) {
     m_converting = false;
-    
-    m_next_conversion_clock = clock + m_refresh_ms;
+
+    m_next_conversion_clock = clock + REFRESH_MS;
     if (FetchConversion()) {
       m_temp_is_valid = true;
     } else {
@@ -74,7 +75,7 @@ bool DS1820Sensor::FetchConversion()
 
   int data[12];
   int i;
-  
+
   m_bus->write(0xBE); // read scratchpad
   for (i = 0; i < 9; i++) {
     data[i] = m_bus->read();
@@ -84,32 +85,32 @@ bool DS1820Sensor::FetchConversion()
   //Serial.print(" CRC=");
   //Serial.print( OneWire::crc8( data, 8), HEX);
   //Serial.println();
-  
+
   m_temp = ((data[1] << 8) | data[0] );
   return true;
 }
 
-void DS1820Sensor::PrintTemp(void)
+long DS1820Sensor::GetTemp(void)
 {
-  if (!m_temp_is_valid) {
-    Serial.print("-99.0");
-    return;
-  }
-  long utemp = m_temp & 0x07ff;
+  long scaled_temp = -999000;
+  if (!m_temp_is_valid)
+    return scaled_temp;
+
+  // DS18B20 reports temp in units of .125 degrees C.
+  // Start by calculating the absolute value in degreesC/1000.
+  // First 9 bits are temperature, rest is sign extended.
+  scaled_temp = 125 * (m_temp & 0x07ff);
+
   bool negative = (m_temp & 0xf800) ? true : false;
-  
-  long temp_100  = (6 * utemp) + utemp / 4;    // multiply by (100 * 0.0625) or 6.25
-  long whole  = temp_100 / 100;  // separate off the whole and fractional portions
-  long fract = temp_100 % 100;
 
   if (negative)
-     Serial.print("-");
+    scaled_temp = -1 * scaled_temp;
 
-  Serial.print(whole);
-  Serial.print(".");
-  if (fract < 10)
-  {
-     Serial.print("0");
-  }
-  Serial.print(fract);
+  return scaled_temp;
+}
+
+void DS1820Sensor::PrintTemp(void)
+{
+  long temp = GetTemp() / 1000;
+  Serial.print(temp);
 }

@@ -5,6 +5,7 @@ class DS1820Sensor {
    DS1820Sensor(OneWire* bus);
    bool Update(unsigned long clock);
    void PrintTemp(void);
+   long GetTemp();
 
   private:
    bool ResetAndSkip();

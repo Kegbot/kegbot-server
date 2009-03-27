@@ -13,6 +13,20 @@
 //
 // You may change values in this section if you know what you are doing --
 // though you ordinarily shouldn't need to change these.
+//
+// The expected digital pin usage is:
+//   2 - flowmeter 0 pulse (input)
+//   3 - flowmeter 1 pulse (input)
+//   4 - relay 0 control (output)
+//   5 - relay 1 control (output)
+//   6
+//   7 - thermo 0 (1-wire, input/output)
+//   8 - thermo 1 (1-wire, input/output)
+//   9
+//   10
+//   11 - test pulse train (output)
+//   12 -
+//   13
 
 #define KB_PIN_METER_A      2
 #define KB_PIN_METER_B      3
@@ -20,7 +34,7 @@
 #define KB_PIN_RELAY_B      5
 #define KB_PIN_THERMO_A     7
 #define KB_PIN_THERMO_B     8
-#define KB_PIN_SELFTEST     12
+#define KB_PIN_TEST_PULSE   11
 
 // Default values
 

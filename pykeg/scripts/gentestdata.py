@@ -6,8 +6,6 @@ from pykeg.core import models, units
 from pykeg.kegweb import models as kegweb_models
 from django.contrib.auth.models import User
 
-from pykeg.core.Devices import Kegboard
-
 def new_user(username, gender="male", weight=180):
    u = User(username=username)
    u.save()

@@ -86,7 +86,7 @@ class StateMachineDriver:
     self.PushEvent(StateMachine.EVENT.Unconditional)
 
   def _DoNoTransition(self, event, state):
-    pass
+    self.CurrentState().NoTransition(event)
 
 
 class State:
@@ -106,6 +106,10 @@ class State:
 
   def TransitionOut(self, event):
     self._exit_count += 1
+
+  def NoTransition(self, event):
+    """ Called when an event does not result in a transition """
+    pass
 
 
 class StateMachine:

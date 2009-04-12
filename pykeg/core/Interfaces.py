@@ -90,3 +90,6 @@ class IThermoListener:
    def ThermoUpdate(self, sensor, temperature):
       raise AbstractInterfaceError
 
+class IEventListener:
+  def PostEvent(self, ev):
+    raise AbstractInterfaceError

@@ -1,0 +1,88 @@
+// kegnet.proto - protocol buffer description for kegnet
+// protocol buffers are described here:
+//   http://code.google.com/p/protobuf/
+//
+// NOTE: This file must be kept in sync with kegnet.py.
+// To add a new message, you must:
+//   - define the message (this file)
+//   - allocate a new message id in Message.MessageId (this file)
+//   - add to the id-to-message map (kegnet.py)
+
+//
+// Protocol messages
+//
+
+// WireMessage wraps a kegbot message, suitable for network transmission.
+message WireMessage {
+  enum MessageId {
+    RESERVED = 0;
+
+    // Core message ids
+    CLIENT_CONNECT = 1000;
+    CLIENT_DISCONNECT = 1001;
+    STATUS_REPLY = 1002;
+    PING_REQUEST = 1003;
+    PING_REPLY = 1004;
+
+    // Flow message ids
+    REGISTER_FLOW_DEV = 2001;
+    UNREGISTER_FLOW_DEV = 2002;
+    FLOW_UPDATE = 2003;
+    FLOW_END = 2004;
+  }
+  required fixed32 message_length = 1;
+  required MessageId message_type = 2;
+  required bytes data = 3;
+}
+
+//
+// Core messages
+//
+
+message ClientConnect {
+  required string client_name = 1;
+}
+
+message ClientDisconnect {
+  required string client_name = 1;
+}
+
+message StatusReply {
+  enum StatusCode {
+    OK = 200;
+    ERROR = 400;
+  }
+  required StatusCode code = 1;
+  optional string description = 2;
+}
+
+message PingRequest {
+  optional fixed32 seqn = 1;
+}
+
+message PingReply {
+  optional fixed32 seqn = 1;
+}
+
+
+//
+// Flow messages
+//
+
+message RegisterFlowDev {
+  required string name = 1;
+  // TODO(mikey): add precision/meter type information?
+}
+
+message UnregisterFlowDev {
+  required string name = 1;
+}
+
+message FlowUpdate {
+  required string name = 1;
+  required uint32 count = 2;
+}
+
+message FlowEnd {
+  required string name = 1;
+}

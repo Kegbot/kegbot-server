@@ -21,6 +21,8 @@
 import os
 import sys
 import types
+import threading
+import logging
 
 ### Misc classes
 def Enum(*defs):
@@ -77,6 +79,27 @@ def Enum(*defs):
     constants[idx] = val
   EnumType = EnumClass()
   return EnumType
+
+
+class KegbotThread(threading.Thread):
+  """ Convenience wrapper around a threading.Thread """
+  def __init__(self, name):
+    threading.Thread.__init__(self)
+    self.setName(name)
+    self.setDaemon(True)
+    self._quit = False
+    self._logger = logging.getLogger(self.getName())
+    self._started = False
+
+  def hasStarted(self):
+    return self._started
+
+  def Quit(self):
+    self._quit = True
+
+  def start(self):
+    self._started = True
+    threading.Thread.start(self)
 
 
 class SimpleGraph:

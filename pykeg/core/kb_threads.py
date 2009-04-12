@@ -8,6 +8,7 @@ from pykeg.core import alarm
 from pykeg.core import event
 from pykeg.core import Interfaces
 from pykeg.core import kb_common
+from pykeg.core import util
 from pykeg.core.net import net
 from pykeg.external.gflags import gflags
 
@@ -26,26 +27,11 @@ gflags.DEFINE_integer('kegnet_server_bind_port',
 
 ### Base kegbot thread class
 
-class KegbotThread(threading.Thread, Interfaces.IEventListener):
+class CoreThread(util.KegbotThread, Interfaces.IEventListener):
   """ Convenience wrapper around a threading.Thread """
   def __init__(self, kb_env, name):
-    threading.Thread.__init__(self)
+    util.KegbotThread.__init__(self, name)
     self._kb_env = kb_env
-    self.setName(name)
-    self.setDaemon(True)
-    self._quit = False
-    self._logger = logging.getLogger(self.getName())
-    self._started = False
-
-  def hasStarted(self):
-    return self._started
-
-  def Quit(self):
-    self._quit = True
-
-  def start(self):
-    self._started = True
-    threading.Thread.start(self)
 
   ### Interfaces.IEventListener methods
   def PostEvent(self, ev):
@@ -54,7 +40,7 @@ class KegbotThread(threading.Thread, Interfaces.IEventListener):
       self.Quit()
 
 
-class WatchdogThread(KegbotThread):
+class WatchdogThread(CoreThread):
   """Monitors all threads in _kb_env for crashes."""
 
   def run(self):
@@ -72,7 +58,7 @@ class WatchdogThread(KegbotThread):
       time.sleep(1.0)
 
 
-class EventHubServiceThread(KegbotThread):
+class EventHubServiceThread(CoreThread):
   """Handles all event dispatches for the event hub."""
 
   def run(self):
@@ -81,7 +67,7 @@ class EventHubServiceThread(KegbotThread):
       hub.DispatchNextEvent(timeout=0.5)
 
 
-class AlarmManagerThread(KegbotThread):
+class AlarmManagerThread(CoreThread):
 
   def run(self):
     am = self._kb_env.GetAlarmManager()
@@ -92,10 +78,10 @@ class AlarmManagerThread(KegbotThread):
         alarm.Fire()
 
 
-class EventHandlerThread(KegbotThread, Interfaces.IEventListener):
+class EventHandlerThread(CoreThread, Interfaces.IEventListener):
   """ Basic event handling thread. """
   def __init__(self, kb_env, name):
-    KegbotThread.__init__(self, kb_env, name)
+    CoreThread.__init__(self, kb_env, name)
     self._event_queue = Queue.Queue()
     self._services = set()
     self._all_event_map = {}
@@ -156,9 +142,9 @@ class EventHandlerThread(KegbotThread, Interfaces.IEventListener):
 
 ### Service threads
 
-class NetProtocolThread(KegbotThread):
+class NetProtocolThread(CoreThread):
   def __init__(self, kb_env, name):
-    KegbotThread.__init__(self, kb_env, name)
+    CoreThread.__init__(self, kb_env, name)
     self._server = net.KegnetServer(name='kegnet',
                                     kb_env=self._kb_env,
                                     addr=FLAGS.kegnet_server_bind_addr,

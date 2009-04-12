@@ -4,10 +4,10 @@ import Queue
 import threading
 import time
 
+from pykeg.core import alarm
 from pykeg.core import event
 from pykeg.core import Interfaces
 from pykeg.core import kb_common
-from pykeg.core import timer
 from pykeg.core.net import net
 from pykeg.external.gflags import gflags
 

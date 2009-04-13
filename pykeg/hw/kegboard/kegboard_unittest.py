@@ -24,8 +24,6 @@ class MessageTestCase(unittest.TestCase):
     fd = open(CAP_FILE, 'rb')
     messages = []
     for frame in fd.readlines():
-      print kegboard.str_to_bytes(frame)
-      print kegboard.str_to_printable(frame)
       msg = kegboard.GetMessageForBytes(frame[:-2])
       print msg
       messages.append(msg)

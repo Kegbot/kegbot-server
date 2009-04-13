@@ -18,6 +18,7 @@
 
 """Python interfaces to a Kegboard device."""
 
+import logging
 import struct
 import string
 
@@ -251,22 +252,26 @@ def GetMessageForBytes(bytes):
 
 
 class KegboardReader(object):
-  def __init__(self, fd):
+  def __init__(self, fd, name):
+    self._name = name
+    self._logger = logging.getLogger('reader-%s' % self._name)
     self._fd = fd
     self._framing_lost_count = 0
 
   def FixFraming(self):
     """Read the stream until a packet prefix is discovered."""
-    print "fixing framing"
+    self._logger.info('Framing broken, fixing')
     bytes_read = 0
     found_prefix = ""
-    while found_prefix != KBSP_PREFIX:
+    while True:
       b = self._fd.read(1)
       bytes_read += 1
       found_prefix += b
-      if not KBSP_PREFIX.startswith(found_prefix):
-        found_prefix = ""
+      if found_prefix.endswith(KBSP_PREFIX):
+        self._logger.info('Found start of frame, framing fixed.')
+        break
       if bytes_read > 256:
+        self._logger.error('Could not fix framing.')
         raise FramingError, "Could not fix framing after 256 bytes"
     self._framing_lost_count += 1
 
@@ -279,3 +284,4 @@ class KegboardReader(object):
     payload = self._fd.read(message_len)
     trailer = self._fd.read(4)
     return GetMessageForBytes(header + payload + trailer)
+

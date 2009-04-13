@@ -1,4 +1,0 @@
-#!/bin/sh
-
-export DJANGO_SETTINGS_MODULE=pykeg.settings
-django-admin.py runserver

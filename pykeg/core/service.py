@@ -128,14 +128,21 @@ class FlowManagerService(KegbotService):
     return ret
 
   def _HandleFlowDevActivityEvent(self, ev):
-    self._logger.info('Handing activity event')
+    self._logger.debug('Handling activity event')
     try:
       flow, is_new = self._flow_manager.UpdateDeviceReading(name=ev.device_name,
           value=ev.meter_reading)
-      self._logger.info('Got flow %s %s' % (is_new, flow))
+      self._logger.debug('Got flow %s %s' % (is_new, flow))
     except (manager.FlowManagerError, e):
       self._logger.error('Activity error: %s' % e)
       return
+
+    if is_new:
+      self._kb_env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.FLOW_START,
+          flow=flow)
+    self._kb_env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.FLOW_UPDATE,
+        flow=flow)
+
 
   def _HandleFlowDevIdleEvent(self, ev):
     pass

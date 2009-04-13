@@ -32,7 +32,7 @@ class MessageTestCase(unittest.TestCase):
 class KegboardReaderTestCase(unittest.TestCase):
   def testBasicUse(self):
     fd = open(CAP_FILE, 'rb')
-    kbr = kegboard.KegboardReader(fd)
+    kbr = kegboard.KegboardReader(fd, 'unittest')
 
     m = kbr.GetNextMessage()
     self.assert_(isinstance(m, kegboard.HelloMessage))

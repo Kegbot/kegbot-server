@@ -26,6 +26,8 @@ Module for common logic for a command line or daemon application.
 import logging
 import signal
 import sys
+import threading
+import time
 
 from pykeg.core import util
 from pykeg.external.gflags import gflags
@@ -49,6 +51,9 @@ gflags.DEFINE_boolean('log_to_file', True,
 gflags.DEFINE_boolean('log_to_stdout', True,
     'Send log messages to the console')
 
+gflags.DEFINE_boolean('verbose', False,
+    'Generate extra logging information.')
+
 
 class App(object):
   """Application instance container.
@@ -61,6 +66,7 @@ class App(object):
     self._name = name
     self._is_daemon = daemon
     self._do_quit = False
+    self._quit_event = threading.Event()
     self._threads = set()
 
     try:
@@ -126,8 +132,9 @@ class App(object):
   def _MainLoop(self):
     """Run the (possibly app-specific) main loop."""
     self._logger.info('Running generic main loop (going to sleep).')
-    while True:
-      time.sleep(1000)
+    while not self._do_quit:
+      self._quit_event.wait(timeout=1.0)
+    self._logger.info('Exiting main loop')
 
   def _DumpStatus(self):
     self._logger.info('-------- Begin Status Dump --------')
@@ -151,11 +158,17 @@ class App(object):
 
   def Quit(self):
     """Run the (possibly app-specific) Quit routines."""
-    self._do_quit = True
     self._StopThreads()
     self._TeardownLogging()
+    self._do_quit = True
+    self._quit_event.set()
 
-  def _SetupLogging(self, level=logging.INFO):
+  def _SetupLogging(self, level=None):
+    if level is None:
+      if FLAGS.verbose:
+        level = logging.DEBUG
+      else:
+        level = logging.INFO
     logging.root.setLevel(level)
 
     # add a file-output handler

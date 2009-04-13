@@ -31,6 +31,7 @@ from pykeg.core import StateMachine_unittest
 from pykeg.core import units_unittest
 from pykeg.core import util_unittest
 from pykeg.core.net import kegnet_unittest
+from pykeg.hw.kegboard import kegboard_unittest
 
 ALL_TEST_MODULES = (
     alarm_unittest,
@@ -40,6 +41,7 @@ ALL_TEST_MODULES = (
     util_unittest,
     kegnet_unittest,
     kegbot_unittest,
+    kegboard_unittest,
 )
 
 def suite():

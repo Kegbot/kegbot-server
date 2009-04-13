@@ -6,7 +6,6 @@ import time
 
 from pykeg.core import alarm
 from pykeg.core import event
-from pykeg.core import Interfaces
 from pykeg.core import kb_common
 from pykeg.core import util
 from pykeg.core.net import net

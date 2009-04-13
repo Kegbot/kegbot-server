@@ -27,13 +27,13 @@ gflags.DEFINE_integer('kegnet_server_bind_port',
 
 ### Base kegbot thread class
 
-class CoreThread(util.KegbotThread, Interfaces.IEventListener):
+class CoreThread(util.KegbotThread):
   """ Convenience wrapper around a threading.Thread """
   def __init__(self, kb_env, name):
     util.KegbotThread.__init__(self, name)
     self._kb_env = kb_env
 
-  ### Interfaces.IEventListener methods
+  ### Event listener methods
   def PostEvent(self, ev):
     if ev.name() == kb_common.KB_EVENT.QUIT:
       self._logger.info('got quit event, quitting')
@@ -78,7 +78,7 @@ class AlarmManagerThread(CoreThread):
         alarm.Fire()
 
 
-class EventHandlerThread(CoreThread, Interfaces.IEventListener):
+class EventHandlerThread(CoreThread):
   """ Basic event handling thread. """
   def __init__(self, kb_env, name):
     CoreThread.__init__(self, kb_env, name)

@@ -76,7 +76,7 @@ class KegbotEnv(object):
 
   def AddThread(self, thr):
     self._threads.add(thr)
-    if isinstance(thr, Interfaces.IEventListener):
+    if isinstance(thr, kb_threads.CoreThread):
       self.GetEventHub().AddListener(thr)
 
   def GetAlarmManager(self):

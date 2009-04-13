@@ -2,12 +2,12 @@ from django.conf.urls.defaults import *
 
 try:
   from registration.views import register
-  from pykeg.kegweb.forms import KegbotRegistrationForm
+  from kegweb.kegweb.forms import KegbotRegistrationForm
   USE_DJANGO_REGISTRATION = True
 except ImportError:
   USE_DJANGO_REGISTRATION = False
 
-urlpatterns = patterns('pykeg.kegweb.views',
+urlpatterns = patterns('kegweb.kegweb.views',
       ### main page
       (r'^$', 'index'),
 

@@ -1,26 +1,59 @@
-kegbot TODO
-oldest items first
+== recently done ==
+- unittest now logs a drink!
+- kegboard_daemon asyncore reader added
+- kb_app; kegbot.py and kegboard_daemon moved to it
+- get kegboard_daemon logging in and registering the right components
+- kegnet is now protobuf based
+- get kegboard_daemon registering flow updates
 
-HIGH PRIORITY
-- document & fix the flow state machine
-- per keg grants (has this feature really been missing for this long?)
-- clean up drink post-processing -- right now functions are a mix of
-  drink.DoSomething() and SomeModel.DoSomething(drink)
-- better checking for UserProfile existence
 
-AVERAGE PRIORITY
+== todo soon ==
+- figure out who owns flows:
+  * how to start w/ no activity?
+  * how to idle out out?
 
-- rework calibration script and make it easier to apply to current keg/pours
-- add 'invalidate last pour' menu to LCD ui
-- fix up RPC hooks
-  * goes along with general modularization tack..
-- per-keg grants
-- clean up UI; KegUI is a mess (and pymtxorb/pylcdui too); better support other
-  displays
-- sqlobject MultipleJoins -- use for grants; RelatedJoins -- use for lables
-- use sqlobject alternateID where appropriate
-- make auth devices take a list of channels, so that their eventsmay be
-  associated only with a particular channel
+- build the auth manager
 
-LOW PRIORITY
+- build a simple auth device
 
+- get kegnet proto build part of main makefile
+
+
+
+
+== for v2.0 release ==
+
+architecture / main components:
+- FlowManager implemented
+- AccessManager implemented
+- kegbot line protocol documented and implemented
+  - kegboard_sender implemented as first client: registers two flow devs, two
+    relays, two thermo devs
+- read-only LCD ui
+- channel lock/unlock commands being sent (debug with LED)
+- cleanup json server - integrate with frontend?
+
+backend:
+- time series for temperature data
+- mugshot images
+
+documentation:
+- complete user guide. must have install instructions, software overview, basic
+  troubleshooting section
+
+packaging/release:
+- python packages -- `easy_install pykeg` should install all dependencies & a
+  recent release (svn?). 
+- `make release` to tag svn, generate documentation, build tarballs/etc
+- clean up scripts/ and install as maintenance tools
+- some sort of selftest tool -- check for correct installation, dependencies,
+  etc
+
+
+== for v2.1 release ==
+
+architecture / main components:
+- read/write lcd ui
+
+
+== for future release ==

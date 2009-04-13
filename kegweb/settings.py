@@ -57,7 +57,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.doc.XViewMiddleware',
 )
 
-ROOT_URLCONF = 'pykeg.urls'
+ROOT_URLCONF = 'kegweb.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates".
@@ -74,6 +74,9 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.markup',
     'pykeg.core',
+    'kegweb.accounting',
+    'kegweb.kegweb',
+    'registration',
 )
 
 AUTH_PROFILE_MODULE = "core.UserProfile"

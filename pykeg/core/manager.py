@@ -127,9 +127,10 @@ class FlowManager(object):
     self._flow_lock.acquire() # TODO: make me a decorator
 
     last_reading = self._last_reading_map[name]
+    self._last_reading_map[name] = value
+
     if last_reading is None:
       last_reading = value
-    self._last_reading_map[name] = value
 
     is_new_flow = False
     flow_obj = self._flow_map.get(name)

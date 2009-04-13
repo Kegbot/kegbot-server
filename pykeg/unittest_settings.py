@@ -45,9 +45,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.humanize',
-    'pykeg.accounting',
     'pykeg.core',
-    'pykeg.kegweb',
 )
 
 AUTH_PROFILE_MODULE = "core.UserProfile"

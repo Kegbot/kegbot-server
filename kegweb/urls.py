@@ -11,7 +11,7 @@ def basedir():
 
 urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
-    (r'', include('pykeg.kegweb.urls')),
+    (r'', include('kegweb.kegweb.urls')),
 )
 
 urlpatterns += patterns('',

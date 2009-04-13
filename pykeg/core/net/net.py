@@ -77,10 +77,6 @@ class KegnetProtocolHandler(asynchat.async_chat):
       self._HandleBadMessage(strbuf, exception)
       return
 
-  def handle_close(self):
-    asynchat.async_chat.handle_close(self)
-    self._server.ChannelClosed(self)
-
   ### KegnetProtocolHandler methods
   def _HandleBadMessage(self, strdata, exception):
     pass
@@ -121,6 +117,10 @@ class KegnetServerHandler(KegnetProtocolHandler):
     res = self._server.HandleMessage(message, self)
     if res:
       self._PushMessage(res)
+
+  def handle_close(self):
+    KegnetProtocolHandler.handle_close(self)
+    self._server.ChannelClosed(self)
 
 
 class KegnetProtocolClient(KegnetProtocolHandler):
@@ -165,6 +165,16 @@ class KegnetProtocolClient(KegnetProtocolHandler):
 
   def SendFlowUpdate(self, name, amt):
     msg = kegnet.Message.FlowUpdate(name=name, count=amt)
+    self.SendAsync(msg)
+
+  def SendThermoStatus(self, name, reading):
+    msg = kegnet.Message.ThermoStatus(name=name,
+        reading=reading)
+    self.SendAsync(msg)
+
+  def SendOutputStatus(self, name, is_on):
+    msg = kegnet.Message.OutputStatus(name=name,
+        status=is_on)
     self.SendAsync(msg)
 
 
@@ -245,12 +255,13 @@ class KegnetClientState(object):
 
   def FlowUpdate(self, name, meter_reading):
     flow_manager = self._kb_env.GetFlowManager()
+    self._logger.debug('Flow update: %s %s' % (name, meter_reading))
     device = self._GetFlowDevice(name)
 
     ev = event.Event(kb_common.KB_EVENT.FLOW_DEV_ACTIVITY)
     ev.device_name = device.GetGlobalName()
     ev.meter_reading = meter_reading
-    self._logger.info('Publishing event: %s' % ev)
+    self._logger.debug('Publishing event: %s' % ev)
     self._kb_env.GetEventHub().PublishEvent(ev)
 
   def FlowEnd(self, name):

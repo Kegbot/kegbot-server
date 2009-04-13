@@ -29,6 +29,13 @@ message WireMessage {
     UNREGISTER_FLOW_DEV = 2002;
     FLOW_UPDATE = 2003;
     FLOW_END = 2004;
+
+    // Thermo message ids
+    THERMO_STATUS = 3001;
+
+    // Output message ids
+    OUTPUT_STATUS = 4001;
+
   }
   required fixed32 message_length = 1;
   required MessageId message_type = 2;
@@ -86,3 +93,26 @@ message FlowUpdate {
 message FlowEnd {
   required string name = 1;
 }
+
+//
+// Thermo messages
+//
+
+message ThermoStatus {
+  required string name = 1;
+  required uint32 reading = 2;
+}
+
+//
+// Output messages
+//
+
+message OutputStatus {
+  enum Status {
+    DISABLED = 0;
+    ENABLED = 1;
+  }
+  required string name = 1;
+  required Status status = 2;
+}
+

@@ -41,6 +41,12 @@ ID_TO_MESSAGE = {
   __ids.UNREGISTER_FLOW_DEV : kegnet_pb2.UnregisterFlowDev,
   __ids.FLOW_UPDATE : kegnet_pb2.FlowUpdate,
   __ids.FLOW_END : kegnet_pb2.FlowEnd,
+
+  ### Thermo messages
+  __ids.THERMO_STATUS : kegnet_pb2.ThermoStatus,
+
+  ### Output messages
+  __ids.OUTPUT_STATUS : kegnet_pb2.OutputStatus,
 }
 
 MESSAGE_TO_ID = dict((v, k) for (k, v) in ID_TO_MESSAGE.iteritems())
@@ -87,6 +93,23 @@ class Message:
   def FlowEnd(cls, name):
     msg = kegnet_pb2.FlowEnd()
     msg.name = name
+    return msg
+
+  @classmethod
+  def ThermoStatus(cls, name, reading):
+    msg = kegnet_pb2.ThermoStatus()
+    msg.name = name
+    msg.reading = reading
+    return msg
+
+  @classmethod
+  def OutputStatus(cls, name, on):
+    msg = kegnet_pb2.OutputStatus()
+    msg.name = name
+    if on:
+      msg.status = msg.ENABLED
+    else:
+      msg.status = msg.DISABLED
     return msg
 
   @classmethod

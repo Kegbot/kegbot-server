@@ -7,11 +7,6 @@
 #define KB_EEP_MAGIC_0        0xba
 #define KB_EEP_MAGIC_1        0xbe
 
-#define KB_EEP_TAG_BOARDNAME       0x01
-#define KB_EEP_TAG_BAUDRATE        0x02
-#define KB_EEP_TAG_UPDATE_INTERVAL 0x03
-#define KB_EEP_TAG_END             0xff
-
 #define KB_MESSAGE_TYPE_HELLO_ID      0x01
 #define KB_MESSAGE_TYPE_HELLO_TAG_PROTOCOL_VERSION  0x01
 

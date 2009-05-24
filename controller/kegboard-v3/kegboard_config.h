@@ -8,6 +8,9 @@
 // Check for & report 1-wire temperature sensors?
 #define KB_ENABLE_ONEWIRE   1
 
+// Enable a selftest pulse?
+#define KB_ENABLE_SELFTEST  1
+
 //
 // Pin configuration
 //

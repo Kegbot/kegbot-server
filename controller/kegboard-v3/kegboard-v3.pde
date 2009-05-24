@@ -1,5 +1,23 @@
-// kegboard3 - v3.0.0
-// Arduino implementation of Kegboard firmware.
+// Copyright 2003-2009 Mike Wakerly <opensource@hoho.com>
+//
+// This file is part of the Kegbot package of the Kegbot project.
+// For more information on Kegbot, see http://kegbot.org/
+//
+// Kegbot is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+//
+// Kegbot is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Kegbot.  If not, see <http://www.gnu.org/licenses/>.
+///////////////////////////////////////////////////////////////////////
+
+// kegboard-v3 Arduino project
 //
 // This firmware is intended for an Arduino Diecimila board (or similar)
 // http://www.arduino.cc/en/Main/ArduinoBoardDiecimila
@@ -14,7 +32,6 @@
 // TODO:
 //  - implement serial reading (relay on/off) commands
 //  - get/set boardname with eeprom
-//  - implement selftest mode
 //  - Thermo:
 //    * check CRC
 //    * clean up code
@@ -53,7 +70,10 @@ static KegboardPacket gOutputPacket;
 #if KB_ENABLE_ONEWIRE
 static OneWire gThermoBusA(KB_PIN_THERMO_A);
 static OneWire gThermoBusB(KB_PIN_THERMO_B);
-static DS1820Sensor gThermoSensors[] = { DS1820Sensor(&gThermoBusA), DS1820Sensor(&gThermoBusA) };
+static DS1820Sensor gThermoSensors[] = {
+  DS1820Sensor(&gThermoBusA),
+  DS1820Sensor(&gThermoBusB),
+};
 #endif
 
 //
@@ -71,28 +91,8 @@ void meterInterruptB()
 }
 
 //
-// Main
+// Serial I/O
 //
-
-void setup()
-{
-  pinMode(KB_PIN_METER_A, INPUT);
-  pinMode(KB_PIN_METER_B, INPUT);
-
-  // enable internal pullup to prevent disconnected line from ticking away
-  digitalWrite(KB_PIN_METER_A, HIGH);
-  digitalWrite(KB_PIN_METER_B, HIGH);
-
-  attachInterrupt(0, meterInterruptA, RISING);
-  attachInterrupt(1, meterInterruptB, RISING);
-
-  pinMode(KB_PIN_RELAY_A, OUTPUT);
-  pinMode(KB_PIN_RELAY_B, OUTPUT);
-  pinMode(KB_PIN_ALARM, OUTPUT);
-  pinMode(KB_PIN_TEST_PULSE, OUTPUT);
-
-  Serial.begin(115200);
-}
 
 uint16_t genCrc(unsigned long val)
 {
@@ -157,6 +157,7 @@ void writeMeterPacket(int channel)
   writeOutputPacket();
 }
 
+#if KB_ENABLE_SELFTEST
 void doTestPulse()
 {
   // Strobes the test pin 4 times.
@@ -166,7 +167,31 @@ void doTestPulse()
     digitalWrite(KB_PIN_TEST_PULSE, 0);
   }
 }
+#endif
 
+//
+// Main
+//
+
+void setup()
+{
+  pinMode(KB_PIN_METER_A, INPUT);
+  pinMode(KB_PIN_METER_B, INPUT);
+
+  // enable internal pullup to prevent disconnected line from ticking away
+  digitalWrite(KB_PIN_METER_A, HIGH);
+  digitalWrite(KB_PIN_METER_B, HIGH);
+
+  attachInterrupt(0, meterInterruptA, RISING);
+  attachInterrupt(1, meterInterruptB, RISING);
+
+  pinMode(KB_PIN_RELAY_A, OUTPUT);
+  pinMode(KB_PIN_RELAY_B, OUTPUT);
+  pinMode(KB_PIN_ALARM, OUTPUT);
+  pinMode(KB_PIN_TEST_PULSE, OUTPUT);
+
+  Serial.begin(115200);
+}
 
 void loop()
 {
@@ -188,7 +213,9 @@ void loop()
   writeThermoPacket(1);
 #endif
 
+#if KB_ENABLE_SELFTEST
   doTestPulse();
+#endif
 
   delay(gUpdateInterval);
 }

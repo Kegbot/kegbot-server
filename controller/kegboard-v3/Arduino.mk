@@ -155,6 +155,14 @@ endif
 OBJS            = $(LOCAL_OBJS) $(CORE_OBJS)
 
 ########################################################################
+# Options
+#
+
+# Try to reset the arduino using stty before upload?
+DO_STTY_RESET = 1
+
+
+########################################################################
 # Rules for making stuff
 #
 
@@ -329,6 +337,9 @@ $(DEP_FILE):	$(OBJDIR) $(DEPS)
 		cat $(DEPS) > $(DEP_FILE)
 
 upload:		$(TARGET_HEX)
+ifeq ($(DO_STTY_RESET),1)
+		stty -F $(ARDUINO_PORT) hupcl
+endif
 		$(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ARD_OPTS) \
 			-U flash:w:$(TARGET_HEX):i
 

@@ -338,7 +338,8 @@ $(DEP_FILE):	$(OBJDIR) $(DEPS)
 
 upload:		$(TARGET_HEX)
 ifeq ($(DO_STTY_RESET),1)
-		stty -F $(ARDUINO_PORT) hupcl
+		# Set rate to 0; this should strobe DTR in Linux.
+		stty -F $(ARDUINO_PORT) 0 > /dev/null 2>&1 || true
 endif
 		$(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ARD_OPTS) \
 			-U flash:w:$(TARGET_HEX):i

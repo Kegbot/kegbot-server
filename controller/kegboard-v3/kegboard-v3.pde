@@ -1,41 +1,43 @@
-// Copyright 2003-2009 Mike Wakerly <opensource@hoho.com>
-//
-// This file is part of the Kegbot package of the Kegbot project.
-// For more information on Kegbot, see http://kegbot.org/
-//
-// Kegbot is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 2 of the License, or
-// (at your option) any later version.
-//
-// Kegbot is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Kegbot.  If not, see <http://www.gnu.org/licenses/>.
-///////////////////////////////////////////////////////////////////////
+/**
+ * kegboard-v3.pde - Kegboard v3 Arduino project
+ * Copyright 2003-2009 Mike Wakerly <opensource@hoho.com>
+ *
+ * This file is part of the Kegbot package of the Kegbot project.
+ * For more information on Kegbot, see http://kegbot.org/
+ *
+ * Kegbot is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Kegbot is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Kegbot.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-// kegboard-v3 Arduino project
-//
-// This firmware is intended for an Arduino Diecimila board (or similar)
-// http://www.arduino.cc/en/Main/ArduinoBoardDiecimila
-//
-// This firmware implements the Kegboard Serial Protocol, version 1
-// (KBSP v1). For more information on what that means, see the kegbot
-// docs: http://kegbot.org/docs/
-//
-// You may change the pin configuration by editing kegboard_config.h; you should
-// not need to change anything in this file.
-//
-// TODO:
-//  - implement serial reading (relay on/off) commands
-//  - get/set boardname with eeprom
-//  - Thermo:
-//    * check CRC
-//    * clean up code
-//  - leak detect circuit/alarm support
+/**
+ * This firmware is intended for an Arduino Diecimila board (or similar)
+ * http://www.arduino.cc/en/Main/ArduinoBoardDiecimila
+ *
+ * This firmware implements the Kegboard Serial Protocol, version 1 (KBSP v1).
+ * For more information on what that means, see the kegbot docs:
+ * http://kegbot.org/docs/
+ *
+ * You may change the pin configuration by editing kegboard_config.h; you should
+ * not need to change anything in this file.
+ *
+ * TODO:
+ *  - implement serial reading (relay on/off) commands
+ *  - get/set boardname with eeprom
+ *  - Thermo:
+ *    * check CRC
+ *    * clean up code
+ *  - leak detect circuit/alarm support
+ */
 
 #include "kegboard.h"
 #include "kegboard_config.h"
@@ -47,6 +49,10 @@
 
 #if KB_ENABLE_ONEWIRE
 #include "OneWire.h"
+#endif
+
+#if KB_ENABLE_BUZZER
+#include "buzzer.h"
 #endif
 
 
@@ -66,6 +72,23 @@ static int gUpdateInterval = KB_DEFAULT_UPDATE_INTERVAL;
 
 static unsigned long volatile gMeters[] = {0, 0};
 static KegboardPacket gOutputPacket;
+
+struct MelodyNote BOOT_MELODY[] = {
+  {5, 3, 100}, {0, -1, 100},
+  {5, 3, 70}, {0, -1, 25},
+  {5, 3, 100}, {0, -1, 25},
+
+  {5, 0, 100}, {0, -1, 25},
+  {5, 0, 100}, {0, -1, 25},
+  {5, 0, 100}, {0, -1, 25},
+
+  {5, 3, 100}, {0, -1, 25},
+  {5, 3, 100}, {0, -1, 25},
+  {5, 3, 100}, {0, -1, 25},
+  {5, 3, 200},
+
+  {-1, -1, -1},
+};
 
 #if KB_ENABLE_ONEWIRE
 static OneWire gThermoBusA(KB_PIN_THERMO_A);
@@ -189,6 +212,11 @@ void setup()
   pinMode(KB_PIN_RELAY_B, OUTPUT);
   pinMode(KB_PIN_ALARM, OUTPUT);
   pinMode(KB_PIN_TEST_PULSE, OUTPUT);
+
+#if KB_ENABLE_BUZZER
+  setupBuzzer();
+  playMelody(BOOT_MELODY);
+#endif
 
   Serial.begin(115200);
 }

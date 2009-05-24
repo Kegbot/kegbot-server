@@ -11,6 +11,9 @@
 // Enable a selftest pulse?
 #define KB_ENABLE_SELFTEST  1
 
+// Enable buzzer?
+#define KB_ENABLE_BUZZER    1
+
 //
 // Pin configuration
 //

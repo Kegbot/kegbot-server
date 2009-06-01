@@ -73,22 +73,29 @@ static int gUpdateInterval = KB_DEFAULT_UPDATE_INTERVAL;
 static unsigned long volatile gMeters[] = {0, 0};
 static KegboardPacket gOutputPacket;
 
+#if KB_ENABLE_BUZZER
 struct MelodyNote BOOT_MELODY[] = {
-  {5, 3, 100}, {0, -1, 100},
-  {5, 3, 70}, {0, -1, 25},
-  {5, 3, 100}, {0, -1, 25},
+  {4, 3, 100}, {0, -1, 100},
+  {4, 3, 70}, {0, -1, 25},
+  {4, 3, 100}, {0, -1, 25},
 
-  {5, 0, 100}, {0, -1, 25},
-  {5, 0, 100}, {0, -1, 25},
-  {5, 0, 100}, {0, -1, 25},
+  {4, 0, 100}, {0, -1, 25},
+  {4, 0, 100}, {0, -1, 25},
+  {4, 0, 100}, {0, -1, 25},
 
-  {5, 3, 100}, {0, -1, 25},
-  {5, 3, 100}, {0, -1, 25},
-  {5, 3, 100}, {0, -1, 25},
-  {5, 3, 200},
+  {4, 3, 100}, {0, -1, 25},
+  {4, 3, 100}, {0, -1, 25},
+  {4, 3, 100}, {0, -1, 25},
+  {4, 3, 200},
 
   {-1, -1, -1},
 };
+
+struct MelodyNote ALARM_MELODY[] = {
+  {3, 1, 500}, {5, 1, 500},
+  {-1, -1, -1},
+};
+#endif
 
 #if KB_ENABLE_ONEWIRE
 static OneWire gThermoBusA(KB_PIN_THERMO_A);
@@ -213,12 +220,13 @@ void setup()
   pinMode(KB_PIN_ALARM, OUTPUT);
   pinMode(KB_PIN_TEST_PULSE, OUTPUT);
 
+  Serial.begin(115200);
+
 #if KB_ENABLE_BUZZER
+  pinMode(KB_PIN_BUZZER, OUTPUT);
   setupBuzzer();
   playMelody(BOOT_MELODY);
 #endif
-
-  Serial.begin(115200);
 }
 
 void loop()

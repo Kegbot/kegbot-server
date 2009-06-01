@@ -29,6 +29,8 @@
 
 #include "buzzer.h"
 
+#define PRESCALER_MASK  0x07
+
 static int oc[] = {
   239, 225, 213, 201, 190, 179, 169, 159, 150, 142, 134, 127,
   119, 113, 106, 100, 95, 89, 84, 80, 75, 71, 67, 63};
@@ -38,26 +40,21 @@ static int pre[] = {5, 5, 4, 4, 3, 3};
 
 void setupBuzzer()
 {
-  // Toggle OC0A on compare match
-  // Mode 2 - CTC mode
-  TCCR0A = (0<<COM0A1) | (1<<COM0A0) | (0<<WGM02) |  (1<<WGM01) | (0<<WGM00);
-
-  // OC0A port is D6 on atmega328 - set to output
-  DDRD |= (1<<6);
-
-  // prescale (0=Off,1=clk,2=8,3=64,4=256,5=1024) 
-  TCCR0B = (1<<CS02) | (0<<CS01) | (0<<CS00);
+  // Note: Buzzer uses the atmega timer2, which is responsible for arduino PWM
+  // pins 3 and 11.  Arduino PWM routines (eg analogWrite) cannot be used on
+  // these pins when the buzzer is enabled.
+  TCCR2A = (0<<COM0A1) | (1<<COM0A0) | (0<<WGM02) | (1<<WGM01) | (0<<WGM00);
 }
 
 // play the note (note=-1 turns off)
 void playMidiNote(int octave, int note)
 {
+  TCCR2B &= ~PRESCALER_MASK;
   if (note == -1) {
-    TCCR0B = 0;
-  } else {
-    TCCR0B = pre[octave];
-    OCR0A = oc[(octave%2)*12 + note];
+    return;
   }
+  TCCR2B |= (pre[octave] & PRESCALER_MASK);
+  OCR2A = oc[(octave%2)*12 + note];
 }
 
 // Play a sequence of MelodyNotes

@@ -46,8 +46,13 @@ void KegboardPacket::Print()
 {
   int i;
   // header
+  // header: prefix
+  Serial.print("KBSP v1:");
+
+  // header: message_id
   Serial.print(m_type & 0xff, BYTE);
   Serial.print((m_type >> 8) & 0xff, BYTE);
+  // header: payload_len
   Serial.print(m_len & 0xff, BYTE);
   Serial.print((m_len >> 8) & 0xff, BYTE);
 

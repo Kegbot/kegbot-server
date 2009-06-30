@@ -4,22 +4,20 @@
 
 import unittest
 from pykeg.core.net import kegnet
+from pykeg.core.net import net
 from pykeg.core.net.proto import kegnet_pb2
 
-class ProtobufTestCase(unittest.TestCase):
-  def testSerialization(self):
-    msg = kegnet_pb2.FlowUpdate()
-    msg.name = "mymeter"
-    msg.count = 12345
-    bytes = msg.SerializeToString()
+class ClientServerTestCase(unittest.TestCase):
+  def setUp(self):
+    self._thr = net.PumpThread('pump')
+    self._thr.start()
 
-    wire_msg = kegnet.msg_to_wire_msg(msg)
-    wire_bytes = wire_msg.SerializeToString()
+  def tearDown(self):
+    self._thr.Quit()
 
-    unpacked_msg = kegnet.msg_from_wire_bytes(wire_bytes)
-
-    print unpacked_msg
-    self.assertEqual(msg, unpacked_msg)
+  def testBasicUse(self):
+    # TODO(mikey): mock kb_env
+    pass
 
 
 if __name__ == '__main__':

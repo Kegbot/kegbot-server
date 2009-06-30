@@ -22,34 +22,12 @@ The module wraps the protocol-buffer implementation of the kegnet communication
 protocol.
 """
 
-from google.protobuf.message import Message as protobuf_Message
+import logging
+from protobufrpc.synchronous import Proxy
+from protobufrpc.synchronous import TcpChannel
+from pykeg.core.net import net
+from pykeg.core.net import service
 from pykeg.core.net.proto import kegnet_pb2
-
-
-# This map must be kept in sync with the constants defined in kegnet.proto
-__ids = kegnet_pb2.WireMessage
-ID_TO_MESSAGE = {
-  ### Core messages
-  __ids.CLIENT_CONNECT : kegnet_pb2.ClientConnect,
-  __ids.CLIENT_DISCONNECT: kegnet_pb2.ClientDisconnect,
-  __ids.STATUS_REPLY : kegnet_pb2.StatusReply,
-  __ids.PING_REQUEST : kegnet_pb2.PingRequest,
-  __ids.PING_REPLY : kegnet_pb2.PingReply,
-
-  ### Flow messages
-  __ids.REGISTER_FLOW_DEV : kegnet_pb2.RegisterFlowDev,
-  __ids.UNREGISTER_FLOW_DEV : kegnet_pb2.UnregisterFlowDev,
-  __ids.FLOW_UPDATE : kegnet_pb2.FlowUpdate,
-  __ids.FLOW_END : kegnet_pb2.FlowEnd,
-
-  ### Thermo messages
-  __ids.THERMO_STATUS : kegnet_pb2.ThermoStatus,
-
-  ### Output messages
-  __ids.OUTPUT_STATUS : kegnet_pb2.OutputStatus,
-}
-
-MESSAGE_TO_ID = dict((v, k) for (k, v) in ID_TO_MESSAGE.iteritems())
 
 class KegnetError(Exception):
   """Generic error for kegnet module."""
@@ -59,112 +37,46 @@ class UnknownMessageError(Exception):
   """Message type or ID is not known."""
 
 
-# TODO(mikey): This class only exists to provide kwargs-based instatiation of
-# protobuf message objects. There must be a better way.
+class KegnetClient:
+  def __init__(self, addr, name):
+    self._addr = addr
+    self._name = name
+    self._channel = TcpChannel(self._addr)
+    self._proxy = Proxy(kegnet_pb2.Core_Stub(self._channel))
+    self._handle = kegnet_pb2.ClientHandle()
 
-class Message:
+  def Login(self):
+    request = self._handle
+    request.client_name = self._name
+    res = self._proxy.Core.Login(request)
+    self._handle = res[0]
 
-  @classmethod
-  def ClientConnect(cls, client_name):
-    msg = kegnet_pb2.ClientConnect()
-    msg.client_name = client_name
-    return msg
+  def FlowUpdate(self, name, amt):
+    request = kegnet_pb2.MeterReading()
+    request.handle.MergeFrom(self._handle)
+    request.name = name
+    request.value = amt
+    self._proxy.Core.PostMeterReading(request)
 
-  @classmethod
-  def ClientDisconnect(cls, client_name):
-    msg = kegnet_pb2.ClientDisonnect()
-    msg.client_name = client_name
-    return msg
+  def StartFlow(self, channel_name):
+    request = kegnet_pb2.FlowChannelRequest()
+    request.handle.MergeFrom(self._handle)
+    request.channel_info.name = channel_name
+    self._proxy.Core.StartFlow(request)
 
-  @classmethod
-  def RegisterFlowDev(cls, name):
-    msg = kegnet_pb2.RegisterFlowDev()
-    msg.name = name
-    return msg
-
-  @classmethod
-  def FlowUpdate(cls, name, count):
-    msg = kegnet_pb2.FlowUpdate()
-    msg.name = name
-    msg.count = count
-    return msg
-
-  @classmethod
-  def FlowEnd(cls, name):
-    msg = kegnet_pb2.FlowEnd()
-    msg.name = name
-    return msg
-
-  @classmethod
-  def ThermoStatus(cls, name, reading):
-    msg = kegnet_pb2.ThermoStatus()
-    msg.name = name
-    msg.reading = reading
-    return msg
-
-  @classmethod
-  def OutputStatus(cls, name, on):
-    msg = kegnet_pb2.OutputStatus()
-    msg.name = name
-    if on:
-      msg.status = msg.ENABLED
-    else:
-      msg.status = msg.DISABLED
-    return msg
-
-  @classmethod
-  def StatusReply(cls, code, description=''):
-    msg = kegnet_pb2.StatusReply()
-    msg.code = code
-    if description:
-      msg.description = description
-    return msg
+  def StopFlow(self, channel_name):
+    request = kegnet_pb2.FlowChannelRequest()
+    request.handle.MergeFrom(self._handle)
+    request.channel_info.name = channel_name
+    self._proxy.Core.StopFlow(request)
 
 
-class GenericResponse:
-  """Static canned reply messages."""
-
-  OK = Message.StatusReply(code=kegnet_pb2.StatusReply.OK)
-  ALREADY_EXISTS = Message.StatusReply(code=kegnet_pb2.StatusReply.ERROR)
-  UNKNOWN_FAILURE = Message.StatusReply(code=kegnet_pb2.StatusReply.ERROR)
-
-
-def msg_to_wire_msg(msg):
-  """Convert a message to wire format, and return wire message."""
-  assert isinstance(msg, protobuf_Message)
-  msg_id = MESSAGE_TO_ID.get(msg.__class__)
-  if msg_id is None:
-    raise UnknownMessageError, "ID for message class not found"
-  msg_bytes = msg.SerializeToString()
-
-  wire_msg = kegnet_pb2.WireMessage()
-  wire_msg.message_type = msg_id
-  wire_msg.data = msg_bytes
-  wire_msg.message_length = wire_msg.ByteSize()
-  return wire_msg
-
-def msg_to_wire_bytes(msg):
-  """Convert a message to wire format, and return raw bytes."""
-  return msg_to_wire_msg(msg).SerializeToString()
-
-def msg_from_wire_msg(wire_msg):
-  """Get the inner message from a wire message."""
-  assert isinstance(wire_msg, kegnet_pb2.WireMessage)
-  msg_cls = ID_TO_MESSAGE.get(wire_msg.message_type)
-  if msg_cls is None:
-    raise UnknownMessageError, "Class for message ID not found"
-
-  msg = msg_cls()
-  msg.ParseFromString(wire_msg.data)
-  return msg
-
-def wire_msg_from_bytes(bytes):
-  """Get a wire message from a wire message bytestream."""
-  wire_msg = kegnet_pb2.WireMessage()
-  wire_msg.ParseFromString(bytes)
-  return wire_msg
-
-def msg_from_wire_bytes(bytes):
-  """Get the inner message from a wire message bytestream."""
-  return msg_from_wire_msg(wire_msg_from_bytes(bytes))
-
+class KegnetServer(net.ProtobufRpcServer):
+  def __init__(self, name, kb_env, addr):
+    self._logger = logging.getLogger(name)
+    self._kb_env = kb_env
+    self._logger.info('Starting up.')
+    services = (
+        service.CoreService('CoreService', kb_env),
+    )
+    net.ProtobufRpcServer.__init__(self, addr, *services)

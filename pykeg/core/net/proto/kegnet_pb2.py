@@ -8,63 +8,6 @@ from google.protobuf import service_reflection
 from google.protobuf import descriptor_pb2
 
 
-_WIREMESSAGE_MESSAGEID = descriptor.EnumDescriptor(
-  name='MessageId',
-  full_name='WireMessage.MessageId',
-  filename='MessageId',
-  values=[
-    descriptor.EnumValueDescriptor(
-      name='RESERVED', index=0, number=0,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='CLIENT_CONNECT', index=1, number=1000,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='CLIENT_DISCONNECT', index=2, number=1001,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='STATUS_REPLY', index=3, number=1002,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='PING_REQUEST', index=4, number=1003,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='PING_REPLY', index=5, number=1004,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='REGISTER_FLOW_DEV', index=6, number=2001,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='UNREGISTER_FLOW_DEV', index=7, number=2002,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='FLOW_UPDATE', index=8, number=2003,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='FLOW_END', index=9, number=2004,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='THERMO_STATUS', index=10, number=3001,
-      options=None,
-      type=None),
-    descriptor.EnumValueDescriptor(
-      name='OUTPUT_STATUS', index=11, number=4001,
-      options=None,
-      type=None),
-  ],
-  options=None,
-)
-
 _STATUSREPLY_STATUSCODE = descriptor.EnumDescriptor(
   name='StatusCode',
   full_name='StatusReply.StatusCode',
@@ -100,87 +43,6 @@ _OUTPUTSTATUS_STATUS = descriptor.EnumDescriptor(
 )
 
 
-_WIREMESSAGE = descriptor.Descriptor(
-  name='WireMessage',
-  full_name='WireMessage',
-  filename='kegnet.proto',
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='message_length', full_name='WireMessage.message_length', index=0,
-      number=1, type=7, cpp_type=3, label=2,
-      default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='message_type', full_name='WireMessage.message_type', index=1,
-      number=2, type=14, cpp_type=8, label=2,
-      default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='data', full_name='WireMessage.data', index=2,
-      number=3, type=12, cpp_type=9, label=2,
-      default_value="",
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],  # TODO(robinson): Implement.
-  enum_types=[
-    _WIREMESSAGE_MESSAGEID,
-  ],
-  options=None)
-
-
-_CLIENTCONNECT = descriptor.Descriptor(
-  name='ClientConnect',
-  full_name='ClientConnect',
-  filename='kegnet.proto',
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='client_name', full_name='ClientConnect.client_name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],  # TODO(robinson): Implement.
-  enum_types=[
-  ],
-  options=None)
-
-
-_CLIENTDISCONNECT = descriptor.Descriptor(
-  name='ClientDisconnect',
-  full_name='ClientDisconnect',
-  filename='kegnet.proto',
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='client_name', full_name='ClientDisconnect.client_name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],  # TODO(robinson): Implement.
-  enum_types=[
-  ],
-  options=None)
-
-
 _STATUSREPLY = descriptor.Descriptor(
   name='StatusReply',
   full_name='StatusReply',
@@ -211,15 +73,15 @@ _STATUSREPLY = descriptor.Descriptor(
   options=None)
 
 
-_PINGREQUEST = descriptor.Descriptor(
-  name='PingRequest',
-  full_name='PingRequest',
+_PINGMESSAGE = descriptor.Descriptor(
+  name='PingMessage',
+  full_name='PingMessage',
   filename='kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='seqn', full_name='PingRequest.seqn', index=0,
-      number=1, type=7, cpp_type=3, label=1,
+      name='seqn', full_name='PingMessage.seqn', index=0,
+      number=1, type=7, cpp_type=3, label=2,
       default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -233,15 +95,80 @@ _PINGREQUEST = descriptor.Descriptor(
   options=None)
 
 
-_PINGREPLY = descriptor.Descriptor(
-  name='PingReply',
-  full_name='PingReply',
+_CHANNELINFO = descriptor.Descriptor(
+  name='ChannelInfo',
+  full_name='ChannelInfo',
   filename='kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='seqn', full_name='PingReply.seqn', index=0,
-      number=1, type=7, cpp_type=3, label=1,
+      name='name', full_name='ChannelInfo.name', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_FLOWCHANNELREQUEST = descriptor.Descriptor(
+  name='FlowChannelRequest',
+  full_name='FlowChannelRequest',
+  filename='kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='handle', full_name='FlowChannelRequest.handle', index=0,
+      number=1, type=11, cpp_type=10, label=2,
+      default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='channel_info', full_name='FlowChannelRequest.channel_info', index=1,
+      number=2, type=11, cpp_type=10, label=2,
+      default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_METERREADING = descriptor.Descriptor(
+  name='MeterReading',
+  full_name='MeterReading',
+  filename='kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='handle', full_name='MeterReading.handle', index=0,
+      number=1, type=11, cpp_type=10, label=2,
+      default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='name', full_name='MeterReading.name', index=1,
+      number=2, type=9, cpp_type=9, label=2,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='value', full_name='MeterReading.value', index=2,
+      number=3, type=13, cpp_type=3, label=2,
       default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -255,117 +182,29 @@ _PINGREPLY = descriptor.Descriptor(
   options=None)
 
 
-_REGISTERFLOWDEV = descriptor.Descriptor(
-  name='RegisterFlowDev',
-  full_name='RegisterFlowDev',
+_THERMOREADING = descriptor.Descriptor(
+  name='ThermoReading',
+  full_name='ThermoReading',
   filename='kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='name', full_name='RegisterFlowDev.name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      default_value=unicode("", "utf-8"),
+      name='handle', full_name='ThermoReading.handle', index=0,
+      number=1, type=11, cpp_type=10, label=2,
+      default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],  # TODO(robinson): Implement.
-  enum_types=[
-  ],
-  options=None)
-
-
-_UNREGISTERFLOWDEV = descriptor.Descriptor(
-  name='UnregisterFlowDev',
-  full_name='UnregisterFlowDev',
-  filename='kegnet.proto',
-  containing_type=None,
-  fields=[
     descriptor.FieldDescriptor(
-      name='name', full_name='UnregisterFlowDev.name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],  # TODO(robinson): Implement.
-  enum_types=[
-  ],
-  options=None)
-
-
-_FLOWUPDATE = descriptor.Descriptor(
-  name='FlowUpdate',
-  full_name='FlowUpdate',
-  filename='kegnet.proto',
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='name', full_name='FlowUpdate.name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
+      name='name', full_name='ThermoReading.name', index=1,
+      number=2, type=9, cpp_type=9, label=2,
       default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='count', full_name='FlowUpdate.count', index=1,
-      number=2, type=13, cpp_type=3, label=2,
-      default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],  # TODO(robinson): Implement.
-  enum_types=[
-  ],
-  options=None)
-
-
-_FLOWEND = descriptor.Descriptor(
-  name='FlowEnd',
-  full_name='FlowEnd',
-  filename='kegnet.proto',
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='name', full_name='FlowEnd.name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],  # TODO(robinson): Implement.
-  enum_types=[
-  ],
-  options=None)
-
-
-_THERMOSTATUS = descriptor.Descriptor(
-  name='ThermoStatus',
-  full_name='ThermoStatus',
-  filename='kegnet.proto',
-  containing_type=None,
-  fields=[
-    descriptor.FieldDescriptor(
-      name='name', full_name='ThermoStatus.name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='reading', full_name='ThermoStatus.reading', index=1,
-      number=2, type=13, cpp_type=3, label=2,
+      name='value', full_name='ThermoReading.value', index=2,
+      number=3, type=13, cpp_type=3, label=2,
       default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -386,15 +225,22 @@ _OUTPUTSTATUS = descriptor.Descriptor(
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='name', full_name='OutputStatus.name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
+      name='handle', full_name='OutputStatus.handle', index=0,
+      number=1, type=11, cpp_type=10, label=2,
+      default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='name', full_name='OutputStatus.name', index=1,
+      number=2, type=9, cpp_type=9, label=2,
       default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='status', full_name='OutputStatus.status', index=1,
-      number=2, type=14, cpp_type=8, label=2,
+      name='status', full_name='OutputStatus.status', index=2,
+      number=3, type=14, cpp_type=8, label=2,
       default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -409,55 +255,360 @@ _OUTPUTSTATUS = descriptor.Descriptor(
   options=None)
 
 
-_WIREMESSAGE.fields_by_name['message_type'].enum_type = _WIREMESSAGE_MESSAGEID
+_CLIENTHANDLE = descriptor.Descriptor(
+  name='ClientHandle',
+  full_name='ClientHandle',
+  filename='kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='client_name', full_name='ClientHandle.client_name', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_FLOWCREDENTIALS = descriptor.Descriptor(
+  name='FlowCredentials',
+  full_name='FlowCredentials',
+  filename='kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='username', full_name='FlowCredentials.username', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='channel_name', full_name='FlowCredentials.channel_name', index=1,
+      number=2, type=9, cpp_type=9, label=2,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='valid_seconds', full_name='FlowCredentials.valid_seconds', index=2,
+      number=3, type=13, cpp_type=3, label=2,
+      default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_FLOWDEVICE = descriptor.Descriptor(
+  name='FlowDevice',
+  full_name='FlowDevice',
+  filename='kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='device_name', full_name='FlowDevice.device_name', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='ticks_per_liter', full_name='FlowDevice.ticks_per_liter', index=1,
+      number=2, type=13, cpp_type=3, label=2,
+      default_value=2200,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_THERMODEVICE = descriptor.Descriptor(
+  name='ThermoDevice',
+  full_name='ThermoDevice',
+  filename='kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='device_name', full_name='ThermoDevice.device_name', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='lower_bound_mdegc', full_name='ThermoDevice.lower_bound_mdegc', index=1,
+      number=2, type=5, cpp_type=1, label=2,
+      default_value=-55000,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='upper_bound_mdegc', full_name='ThermoDevice.upper_bound_mdegc', index=2,
+      number=3, type=5, cpp_type=1, label=2,
+      default_value=125000,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_OUTPUTDEVICE = descriptor.Descriptor(
+  name='OutputDevice',
+  full_name='OutputDevice',
+  filename='kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='device_name', full_name='OutputDevice.device_name', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_CLIENTCONFIG = descriptor.Descriptor(
+  name='ClientConfig',
+  full_name='ClientConfig',
+  filename='kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='client_name', full_name='ClientConfig.client_name', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='flow_device_list', full_name='ClientConfig.flow_device_list', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='thermo_device_list', full_name='ClientConfig.thermo_device_list', index=2,
+      number=3, type=11, cpp_type=10, label=3,
+      default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='output_device_list', full_name='ClientConfig.output_device_list', index=3,
+      number=4, type=11, cpp_type=10, label=3,
+      default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_CORESTATE = descriptor.Descriptor(
+  name='CoreState',
+  full_name='CoreState',
+  filename='kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='client_list', full_name='CoreState.client_list', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
 _STATUSREPLY.fields_by_name['code'].enum_type = _STATUSREPLY_STATUSCODE
+_FLOWCHANNELREQUEST.fields_by_name['handle'].message_type = _CLIENTHANDLE
+_FLOWCHANNELREQUEST.fields_by_name['channel_info'].message_type = _CHANNELINFO
+_METERREADING.fields_by_name['handle'].message_type = _CLIENTHANDLE
+_THERMOREADING.fields_by_name['handle'].message_type = _CLIENTHANDLE
+_OUTPUTSTATUS.fields_by_name['handle'].message_type = _CLIENTHANDLE
 _OUTPUTSTATUS.fields_by_name['status'].enum_type = _OUTPUTSTATUS_STATUS
-
-class WireMessage(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _WIREMESSAGE
-
-class ClientConnect(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _CLIENTCONNECT
-
-class ClientDisconnect(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _CLIENTDISCONNECT
+_CLIENTCONFIG.fields_by_name['flow_device_list'].message_type = _FLOWDEVICE
+_CLIENTCONFIG.fields_by_name['thermo_device_list'].message_type = _THERMODEVICE
+_CLIENTCONFIG.fields_by_name['output_device_list'].message_type = _OUTPUTDEVICE
+_CORESTATE.fields_by_name['client_list'].message_type = _CLIENTCONFIG
 
 class StatusReply(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _STATUSREPLY
 
-class PingRequest(message.Message):
+class PingMessage(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _PINGREQUEST
+  DESCRIPTOR = _PINGMESSAGE
 
-class PingReply(message.Message):
+class ChannelInfo(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _PINGREPLY
+  DESCRIPTOR = _CHANNELINFO
 
-class RegisterFlowDev(message.Message):
+class FlowChannelRequest(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _REGISTERFLOWDEV
+  DESCRIPTOR = _FLOWCHANNELREQUEST
 
-class UnregisterFlowDev(message.Message):
+class MeterReading(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _UNREGISTERFLOWDEV
+  DESCRIPTOR = _METERREADING
 
-class FlowUpdate(message.Message):
+class ThermoReading(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _FLOWUPDATE
-
-class FlowEnd(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _FLOWEND
-
-class ThermoStatus(message.Message):
-  __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _THERMOSTATUS
+  DESCRIPTOR = _THERMOREADING
 
 class OutputStatus(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _OUTPUTSTATUS
+
+class ClientHandle(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _CLIENTHANDLE
+
+class FlowCredentials(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _FLOWCREDENTIALS
+
+class FlowDevice(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _FLOWDEVICE
+
+class ThermoDevice(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _THERMODEVICE
+
+class OutputDevice(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _OUTPUTDEVICE
+
+class ClientConfig(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _CLIENTCONFIG
+
+class CoreState(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _CORESTATE
+
+
+_CORE = descriptor.ServiceDescriptor(
+  name='Core',
+  full_name='Core',
+  index=0,
+  options=None,
+  methods=[
+  descriptor.MethodDescriptor(
+    name='Login',
+    full_name='Core.Login',
+    index=0,
+    containing_service=None,
+    input_type=_CLIENTCONFIG,
+    output_type=_CLIENTHANDLE,
+    options=None,
+  ),
+  descriptor.MethodDescriptor(
+    name='Logout',
+    full_name='Core.Logout',
+    index=1,
+    containing_service=None,
+    input_type=_CLIENTHANDLE,
+    output_type=_STATUSREPLY,
+    options=None,
+  ),
+  descriptor.MethodDescriptor(
+    name='PostMeterReading',
+    full_name='Core.PostMeterReading',
+    index=2,
+    containing_service=None,
+    input_type=_METERREADING,
+    output_type=_STATUSREPLY,
+    options=None,
+  ),
+  descriptor.MethodDescriptor(
+    name='PostOutputStatus',
+    full_name='Core.PostOutputStatus',
+    index=3,
+    containing_service=None,
+    input_type=_OUTPUTSTATUS,
+    output_type=_STATUSREPLY,
+    options=None,
+  ),
+  descriptor.MethodDescriptor(
+    name='PostThermalReading',
+    full_name='Core.PostThermalReading',
+    index=4,
+    containing_service=None,
+    input_type=_THERMOREADING,
+    output_type=_STATUSREPLY,
+    options=None,
+  ),
+  descriptor.MethodDescriptor(
+    name='StartFlow',
+    full_name='Core.StartFlow',
+    index=5,
+    containing_service=None,
+    input_type=_FLOWCHANNELREQUEST,
+    output_type=_STATUSREPLY,
+    options=None,
+  ),
+  descriptor.MethodDescriptor(
+    name='StopFlow',
+    full_name='Core.StopFlow',
+    index=6,
+    containing_service=None,
+    input_type=_FLOWCHANNELREQUEST,
+    output_type=_STATUSREPLY,
+    options=None,
+  ),
+])
+
+class Core(service.Service):
+  __metaclass__ = service_reflection.GeneratedServiceType
+  DESCRIPTOR = _CORE
+class Core_Stub(Core):
+  __metaclass__ = service_reflection.GeneratedServiceStubType
+  DESCRIPTOR = _CORE
 

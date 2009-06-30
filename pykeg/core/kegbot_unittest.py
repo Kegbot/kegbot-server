@@ -46,27 +46,22 @@ class KegbotTestCase(TestCase):
     del self.env
 
   def testSimpleFlow(self):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-    sock.connect((kb_common.KEGNET_SERVER_BIND_ADDR,
-                  kb_common.KEGNET_SERVER_BIND_PORT))
+    addr = (kb_common.KEGNET_SERVER_BIND_ADDR,
+            kb_common.KEGNET_SERVER_BIND_PORT)
+    client = kegnet.KegnetClient(addr, 'testclient')
+    client.Login()
 
-    msg_sequence = (
-        kegnet.Message.ClientConnect(client_name='unittest'),
-        kegnet.Message.ClientConnect(client_name='unittest3'),
-        kegnet.Message.RegisterFlowDev(name='flow0'),
-        kegnet.Message.FlowUpdate(name='flow0', count=123),
-        kegnet.Message.FlowUpdate(name='flow0', count=1123),
-        kegnet.Message.FlowUpdate(name='flow0', count=2123),
-        kegnet.Message.FlowUpdate(name='flow0', count=2223),
-        kegnet.Message.FlowEnd(name='flow0'),
-    )
+    # Synthesize a 2100-tick flow. The FlowManager should zero on the initial
+    # reading of 1000.
+    client.StartFlow('meter0')
+    client.FlowUpdate('meter0', 1000)
+    client.FlowUpdate('meter0', 1100)
+    client.FlowUpdate('meter0', 2100)
+    client.FlowUpdate('meter0', 3100)
+    client.FlowUpdate('meter0', 3200)
+    client.StopFlow('meter0')
 
-    for msg in msg_sequence:
-      bytes = kegnet.msg_to_wire_bytes(msg)
-      sock.send(bytes)
     self.service_thread._FlushEvents()
-    sock.close()
 
     # Services the flow thread (flush all events)
 
@@ -74,10 +69,7 @@ class KegbotTestCase(TestCase):
     last_drink = drinks[0]
 
     LOGGER.info('last drink: %s' % (last_drink,))
-    self.assertEquals(last_drink.ticks, 2100)
-
-  def testOther(self):
-    return True
+    self.assertEquals(last_drink.ticks, 2200)
 
 if __name__ == '__main__':
   unittest.main()

@@ -1,0 +1,8 @@
+message TestMessage {
+  required string data = 1;
+}
+
+service TestService {
+  rpc ToLower (TestMessage) returns (TestMessage);
+  rpc ToUpper (TestMessage) returns (TestMessage);
+}

@@ -25,20 +25,24 @@ routine to return a unittest.TestSuite.
 import unittest
 
 from pykeg.core import alarm_unittest
+from pykeg.core import flow_meter_unittest
 from pykeg.core import kegbot_unittest
 from pykeg.core import models_unittest
 from pykeg.core import StateMachine_unittest
 from pykeg.core import units_unittest
 from pykeg.core import util_unittest
+from pykeg.core.net import net_unittest
 from pykeg.core.net import kegnet_unittest
 from pykeg.hw.kegboard import kegboard_unittest
 
 ALL_TEST_MODULES = (
     alarm_unittest,
+    flow_meter_unittest,
     models_unittest,
     StateMachine_unittest,
     units_unittest,
     util_unittest,
+    net_unittest,
     kegnet_unittest,
     kegbot_unittest,
     kegboard_unittest,

@@ -2,57 +2,10 @@
 // protocol buffers are described here:
 //   http://code.google.com/p/protobuf/
 //
-// NOTE: This file must be kept in sync with kegnet.py.
-// To add a new message, you must:
-//   - define the message (this file)
-//   - allocate a new message id in Message.MessageId (this file)
-//   - add to the id-to-message map (kegnet.py)
 
 //
-// Protocol messages
+// Common messages
 //
-
-// WireMessage wraps a kegbot message, suitable for network transmission.
-message WireMessage {
-  enum MessageId {
-    RESERVED = 0;
-
-    // Core message ids
-    CLIENT_CONNECT = 1000;
-    CLIENT_DISCONNECT = 1001;
-    STATUS_REPLY = 1002;
-    PING_REQUEST = 1003;
-    PING_REPLY = 1004;
-
-    // Flow message ids
-    REGISTER_FLOW_DEV = 2001;
-    UNREGISTER_FLOW_DEV = 2002;
-    FLOW_UPDATE = 2003;
-    FLOW_END = 2004;
-
-    // Thermo message ids
-    THERMO_STATUS = 3001;
-
-    // Output message ids
-    OUTPUT_STATUS = 4001;
-
-  }
-  required fixed32 message_length = 1;
-  required MessageId message_type = 2;
-  required bytes data = 3;
-}
-
-//
-// Core messages
-//
-
-message ClientConnect {
-  required string client_name = 1;
-}
-
-message ClientDisconnect {
-  required string client_name = 1;
-}
 
 message StatusReply {
   enum StatusCode {
@@ -63,56 +16,140 @@ message StatusReply {
   optional string description = 2;
 }
 
-message PingRequest {
-  optional fixed32 seqn = 1;
+message PingMessage {
+  required fixed32 seqn = 1;
 }
-
-message PingReply {
-  optional fixed32 seqn = 1;
-}
-
 
 //
-// Flow messages
+// Device messages
 //
 
-message RegisterFlowDev {
-  required string name = 1;
-  // TODO(mikey): add precision/meter type information?
-}
-
-message UnregisterFlowDev {
+message ChannelInfo {
   required string name = 1;
 }
 
-message FlowUpdate {
-  required string name = 1;
-  required uint32 count = 2;
+message FlowChannelRequest {
+  required ClientHandle handle = 1;
+  required ChannelInfo channel_info = 2;
 }
 
-message FlowEnd {
-  required string name = 1;
+message MeterReading {
+  required ClientHandle handle = 1;
+
+  // Name of the flow device
+  required string name = 2;
+
+  // Current volume, in ticks
+  required uint32 value = 3;
 }
 
-//
-// Thermo messages
-//
+message ThermoReading {
+  required ClientHandle handle = 1;
 
-message ThermoStatus {
-  required string name = 1;
-  required uint32 reading = 2;
+  // Name of the thermo device.
+  required string name = 2;
+
+  // Current temperature, in degC/1000.
+  required uint32 value = 3;
 }
-
-//
-// Output messages
-//
 
 message OutputStatus {
   enum Status {
     DISABLED = 0;
     ENABLED = 1;
   }
-  required string name = 1;
-  required Status status = 2;
+
+  required ClientHandle handle = 1;
+
+  // Name of the output device.
+  required string name = 2;
+
+  // Current status of the output.
+  required Status status = 3;
+}
+
+message ClientHandle {
+  required string client_name = 1;
+}
+
+//
+// Access control
+//
+
+message FlowCredentials {
+  // The username that the credentials apply to
+  required string username = 1;
+
+  // The channel name the credentials apply to. This is specified by the
+  // AuthDevice.  The special name "__all__" authorizes the user on all
+  // available channels.
+  required string channel_name = 2;
+
+  // Duration, in seconds, that the credentials are valid.
+  required uint32 valid_seconds = 3;
+
+}
+
+//
+// Core-internal state
+//
+
+message FlowDevice {
+  // The name of the device, eg "flow0"
+  required string device_name = 1;
+
+  // Number of ticks per liter of fluid.
+  required uint32 ticks_per_liter = 2 [default = 2200];
+}
+
+message ThermoDevice {
+  // The name of the device, eg "temp0"
+  required string device_name = 1;
+
+  // The smallest valid temperature, in DegC/1000 (inclusive).  For example, the
+  // value "-50000" means temperatures less than -50 degrees C are treated as
+  // invalid on this sensor.
+  required int32 lower_bound_mdegc = 2 [default = -55000]; // -55.0 C
+
+  // The greatest valid temperature; same as previous.
+  required int32 upper_bound_mdegc = 3 [default = 125000]; // +125.0 C
+}
+
+message OutputDevice {
+  // The name of the device, eg "relay0"
+  required string device_name = 1;
+}
+
+message ClientConfig {
+  // The name of the client, eg "gameroom"
+  required string client_name = 1;
+
+  // Configuration of devices associated with this client.
+  repeated FlowDevice flow_device_list = 2;
+  repeated ThermoDevice thermo_device_list = 3;
+  repeated OutputDevice output_device_list = 4;
+}
+
+message CoreState {
+  repeated ClientConfig client_list = 1;
+}
+
+// Core Service
+// This is the primary service used by kegnet clients attaching to the Core. It
+// provides all methods related to sensor/device/flow updates.
+service Core {
+  // Connect to the Kegnet service. Prerequisite for all other requests.
+  rpc Login (ClientConfig) returns (ClientHandle);
+  rpc Logout (ClientHandle) returns (StatusReply);
+
+  // Device and sensor-related RPCs.
+  rpc PostMeterReading (MeterReading) returns (StatusReply);
+  rpc PostOutputStatus (OutputStatus) returns (StatusReply);
+  rpc PostThermalReading (ThermoReading) returns (StatusReply);
+
+  // Force-start a flow.
+  rpc StartFlow (FlowChannelRequest) returns (StatusReply);
+  // Force-end a flow.
+  rpc StopFlow (FlowChannelRequest) returns (StatusReply);
 }
 

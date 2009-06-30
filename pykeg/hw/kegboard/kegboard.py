@@ -76,29 +76,32 @@ class Field(object):
     return self._value
 
 
-class Uint16Field(Field):
+class StructField(Field):
+  _STRUCT_FORMAT = '<'
+  def __init__(self, bytes=None, value=None):
+    Field.__init__(self, bytes, value)
+    self._packed_size = struct.calcsize(self._STRUCT_FORMAT)
+
   def SetBytes(self, bytes):
-    if len(bytes) != 2:
-      raise ValueError, "Bad length, must be exactly 2 bytes"
-    self._value = struct.unpack('<H', bytes)[0]
+    if len(bytes) != self._packed_size:
+      raise ValueError, "Bad length, must be exactly %i bytes" % (self._packed_size,)
+    self.SetValue(struct.unpack(self._STRUCT_FORMAT, bytes)[0])
 
   def GetBytes(self):
-    return struct.pack('<H', self._value)
+    return struct.pack(self._STRUCT_FORMAT, self._value)
 
 
-class Uint32Field(Field):
-  def SetBytes(self, bytes):
-    if len(bytes) != 4:
-      raise ValueError, "Bad length, must be exactly 4 bytes"
-    self._value = struct.unpack('<I', bytes)[0]
+class Uint16Field(StructField):
+  _STRUCT_FORMAT = '<H'
 
-  def GetBytes(self):
-    return struct.pack('<I', self._value)
+
+class Uint32Field(StructField):
+  _STRUCT_FORMAT = '<I'
 
 
 class StringField(Field):
   def SetBytes(self, bytes):
-    self._value = bytes.strip('\x00')
+    self.SetValue(bytes.strip('\x00'))
 
   def GetBytes(self):
     return self._value + '\x00'
@@ -270,9 +273,9 @@ class KegboardReader(object):
       if found_prefix.endswith(KBSP_PREFIX):
         self._logger.info('Found start of frame, framing fixed.')
         break
-      if bytes_read > 256:
+      if bytes_read > 2048:
         self._logger.error('Could not fix framing.')
-        raise FramingError, "Could not fix framing after 256 bytes"
+        raise FramingError, "Could not fix framing after 2048 bytes"
     self._framing_lost_count += 1
 
   def GetNextMessage(self):

@@ -23,6 +23,16 @@ import struct
 import string
 
 from pykeg.core import util
+from pykeg.external.gflags import gflags
+
+FLAGS = gflags.FLAGS
+
+gflags.DEFINE_string('kegboard_device', '/dev/ttyUSB0',
+    'An explicit device file (eg /dev/ttyUSB0) on which to listen for kegboard '
+    'packets.')
+
+gflags.DEFINE_integer('kegboard_speed', 115200,
+    'Baud rate of device at --kegboard_device')
 
 KBSP_PREFIX = "KBSP v1:"
 

@@ -37,15 +37,19 @@ exchange data.  The address and port of the core is specified with the flags
 --kb_core_hostname and --kb_core_port.
 """
 
-import Queue
-import asyncore
 import asynchat
-import socket
+import asyncore
 import cStringIO
 import logging
+import os
+import Queue
+import socket
 import sys
 
 import serial
+
+if not os.environ.get('DJANGO_SETTINGS_MODULE'):
+  os.environ['DJANGO_SETTINGS_MODULE'] = 'pykeg.settings'
 
 from pykeg.core import kb_app
 from pykeg.core import kb_common
@@ -55,14 +59,6 @@ from pykeg.hw.kegboard import kegboard
 from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
-
-gflags.DEFINE_string('kegboard_device', '/dev/ttyUSB0',
-    'An explicit device file (eg /dev/ttyUSB0) on which to listen for kegboard '
-    'packets.  This mechanism can be used in addtion to (or instead of) the '
-    '--use_udev feature.)')
-
-gflags.DEFINE_integer('kegboard_speed', 115200,
-    'Baud rate of --kegboard_device')
 
 gflags.DEFINE_string('kegboard_name', 'mykegboard',
     'Name to use for this kegboard.')

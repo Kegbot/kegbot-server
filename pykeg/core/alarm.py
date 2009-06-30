@@ -31,10 +31,19 @@ class Alarm(object):
     self._fire_time = fire_time
 
   def __cmp__(self, other):
-    return cmp(self.FireTime(), other.FireTime())
+    return cmp(self.fire_time(), other.fire_time())
 
-  def FireTime(self):
+  def name(self):
+    return self._name
+
+  def fire_time(self):
     return self._fire_time
+
+  def set_fire_time(self, fire_time):
+    self._fire_time = fire_time
+
+  def event(self):
+    return self._event
 
 
 class AlarmManager(object):
@@ -43,7 +52,7 @@ class AlarmManager(object):
     self._alarms_by_name = {}
     self._wake_event = threading.Event()
     self._wake_event.clear()
-    self._heap_lock = threading.Lock()
+    self._heap_lock = threading.RLock()
 
   def _WakeEventWait(self, amt):
     self._wake_event.wait(amt)
@@ -86,7 +95,7 @@ class AlarmManager(object):
       # Now, we wait until the nearest alarm is due to fire. We can wake up
       # early if the wake_event gets set (which indicates the alarm list has
       # changed, meaning we should start over again).
-      sleep_amt = max(0, next_alarm.FireTime() - now)
+      sleep_amt = max(0, next_alarm.fire_time() - now)
 
       # An alarm is ready now; remove it from the heap and process it.
       if sleep_amt == 0:
@@ -111,25 +120,44 @@ class AlarmManager(object):
   def _DoAddAlarm(self, alarm):
     self._heap_lock.acquire()
     heapq.heappush(self._alarm_heap, alarm)
+    self._alarms_by_name[alarm.name()] = alarm
     self._wake_event.set()
     self._heap_lock.release()
 
-  def AddAlarm(self, name, expires_in, fire_event, oneshot=True):
-    """Add a new alarm that posts |fire_event| in |expires_in| seconds"""
-    a = Alarm(name, fire_event, time.time()+expires_in)
+  def AddAlarm(self, name, expires_at, fire_event):
+    """Add a new alarm that posts |fire_event| at |expires_at| time"""
+    a = Alarm(name, fire_event, expires_at)
     self._DoAddAlarm(a)
     return a
 
   def CancelAlarm(self, name):
-    # TODO(mikey)
-    raise NotImplementedError
+    self._heap_lock.acquire()
+    match = None
+    for alarm in self._alarm_heap:
+      if alarm.name() == name:
+        match = alarm
+        break
+    if match:
+      del self._alarms_by_name[name]
+      self._alarm_heap.remove(match)
+      self._SortAlarms()
+      self._wake_event.set()
+    self._heap_lock.release()
 
-  def UpdateAlarm(self, name, new_expires_in):
+  def UpdateAlarm(self, name, new_expires_at):
     """Replace an alarm's expiry with new time"""
-    # TODO(mikey)
-    raise NotImplementedError
+    self._heap_lock.acquire()
+    if name not in self._alarms_by_name:
+      self._heap_lock.release()
+      return
+    alarm = self._alarms_by_name[name]
+    alarm.set_fire_time(new_expires_at)
+    self._SortAlarms()
+    self._heap_lock.release()
 
   def _SortAlarms(self):
-    # TODO(mikey)
-    raise NotImplementedError
+    self._heap_lock.acquire()
+    heapq.heapify(self._alarm_heap)
+    self._wake_event.set()
+    self._heap_lock.release()
 

@@ -23,8 +23,11 @@ protocol.
 """
 
 import logging
+
+from pykeg.external import protobufrpc
 from protobufrpc.synchronous import Proxy
 from protobufrpc.synchronous import TcpChannel
+
 from pykeg.core.net import net
 from pykeg.core.net import service
 from pykeg.core.net.proto import kegnet_pb2

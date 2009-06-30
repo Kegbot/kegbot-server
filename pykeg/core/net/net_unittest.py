@@ -5,8 +5,10 @@
 import asyncore
 import unittest
 
+from pykeg.external import protobufrpc
 from protobufrpc.synchronous import Proxy
 from protobufrpc.synchronous import TcpChannel
+
 from pykeg.core.net import net
 from pykeg.core import util
 from pykeg.core.net.proto import unittest_pb2

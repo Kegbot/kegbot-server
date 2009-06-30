@@ -25,8 +25,10 @@ import cStringIO
 import logging
 import struct
 
+from pykeg.external import protobufrpc
 from protobufrpc import common as protobufrpc_common
 from protobufrpc import protobufrpc_pb2
+
 from pykeg.core import event
 from pykeg.core import util
 

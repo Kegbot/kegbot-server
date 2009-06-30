@@ -1,4 +1,5 @@
 import asyncore
+import datetime
 import logging
 import Queue
 import threading
@@ -8,7 +9,7 @@ from pykeg.core import alarm
 from pykeg.core import event
 from pykeg.core import kb_common
 from pykeg.core import util
-from pykeg.core.net import net
+from pykeg.core.net import kegnet
 from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
@@ -66,6 +67,24 @@ class EventHubServiceThread(CoreThread):
       hub.DispatchNextEvent(timeout=0.5)
 
 
+class FlowMonitorThread(CoreThread):
+  """Watches flows for idleness."""
+
+  def run(self):
+    hub = self._kb_env.GetEventHub()
+    max_idle = datetime.timedelta(seconds=10)
+    while not self._quit:
+      time.sleep(2.0)
+      flows = self._kb_env.GetFlowManager().GetActiveFlows()
+      for flow in flows:
+        if flow.GetIdleTime() > max_idle:
+          self._IdleOutFlow(flow)
+
+  def _IdleOutFlow(self, flow):
+    self._logger.info("Idling flow: %s" % flow)
+    self._kb_env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.FLOW_DEV_IDLE,
+        device_name=flow.GetChannel().GetName())
+
 class AlarmManagerThread(CoreThread):
 
   def run(self):
@@ -74,7 +93,8 @@ class AlarmManagerThread(CoreThread):
       alarm = am.WaitForNextAlarm(1.0)
       if alarm is not None:
         self._logger.info('firing alarm: %s' % alarm)
-        alarm.Fire()
+        event = alarm.event()
+        self._kb_env.GetEventHub().CreateAndPublishEvent(event)
 
 
 class EventHandlerThread(CoreThread):
@@ -144,10 +164,9 @@ class EventHandlerThread(CoreThread):
 class NetProtocolThread(CoreThread):
   def __init__(self, kb_env, name):
     CoreThread.__init__(self, kb_env, name)
-    self._server = net.KegnetServer(name='kegnet',
-                                    kb_env=self._kb_env,
-                                    addr=FLAGS.kegnet_server_bind_addr,
-                                    port=FLAGS.kegnet_server_bind_port)
+    addr = (FLAGS.kegnet_server_bind_addr, FLAGS.kegnet_server_bind_port)
+    self._server = kegnet.KegnetServer(name='kegnet', kb_env=self._kb_env,
+        addr=addr)
 
   def run(self):
     self._logger.info("network thread started")

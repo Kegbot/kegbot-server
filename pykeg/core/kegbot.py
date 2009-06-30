@@ -56,28 +56,37 @@ class KegbotEnv(object):
 
     # Build managers and services
     self._alarm_manager = alarm.AlarmManager()
-    self._flow_manager = manager.FlowManager()
+    self._channel_manager = manager.ChannelManager()
+    self._flow_manager = manager.FlowManager(self._channel_manager)
+
     self._drink_db_service = service.DrinkDatabaseService('drink_db_service', self)
-    self._flow_service = service.FlowManagerService('flow_service', self)
+    self._flow_service = service.FlowManagerService('channel_service', self)
+
     self._backend = backend.KegbotBackend()
     self._backend.CheckSchemaVersion()
 
     # Build threads
     self._threads = set()
     self._service_thread = kb_threads.EventHandlerThread(self, 'service-thread')
-    self._service_thread.AddService(self._drink_db_service)
     self._service_thread.AddService(self._flow_service)
+    self._service_thread.AddService(self._drink_db_service)
     self.AddThread(self._service_thread)
 
     self.AddThread(kb_threads.EventHubServiceThread(self, 'eventhub-thread'))
     self.AddThread(kb_threads.NetProtocolThread(self, 'net-thread'))
-    self.AddThread(kb_threads.WatchdogThread(self, 'watchdog-thread'))
     self.AddThread(kb_threads.AlarmManagerThread(self, 'alarmmanager-thread'))
+    self.AddThread(kb_threads.FlowMonitorThread(self, 'flowmonitor-thread'))
+
+    self._watchdog_thread = kb_threads.WatchdogThread(self, 'watchdog-thread')
+    self.AddThread(self._watchdog_thread)
 
   def AddThread(self, thr):
     self._threads.add(thr)
     if isinstance(thr, kb_threads.CoreThread):
       self.GetEventHub().AddListener(thr)
+
+  def GetWatchdogThread(self):
+    return self._watchdog_thread
 
   def GetAlarmManager(self):
     return self._alarm_manager
@@ -87,6 +96,9 @@ class KegbotEnv(object):
 
   def GetEventHub(self):
     return self._event_hub
+
+  def GetChannelManager(self):
+    return self._channel_manager
 
   def GetFlowManager(self):
     return self._flow_manager
@@ -102,11 +114,18 @@ class KegbotCoreApp(kb_app.App):
 
   def _MainLoop(self):
     self._env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.START_COMPLETE)
+    watchdog = self._env.GetWatchdogThread()
     while not self._do_quit:
       try:
-        time.sleep(1000)
+        watchdog.join(1)
+        if not watchdog.isAlive():
+          self._logger.error("Watchdog thread exited, quitting")
+          self.Quit()
+          return
       except KeyboardInterrupt:
+        self._logger.info("Got keyboard interrupt, quitting")
         self.Quit()
+        return
 
   def _Setup(self):
     kb_app.App._Setup(self)

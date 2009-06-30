@@ -16,7 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Kegbot service implementations."""
+"""Kegbot service implementations.
+
+This module contains KegbotService implementations (or "services").  Generally,
+a service implementation is the glue between the core EventHub, and an
+underlying manager implementation (which knows nothing of the EventHub).
+"""
 
 import logging
 
@@ -54,6 +59,10 @@ class KegbotService(object):
   def EventMap(self):
     return self._event_map
 
+  def _CreateAndPublishEvent(self, event_name, **kwargs):
+    """Convenience alias for EventHub.CreateAndPublishEvent"""
+    self._kb_env.GetEventHub().CreateAndPublishEvent(event_name, **kwargs)
+
 
 ### Implementations
 
@@ -62,7 +71,7 @@ class DrinkDatabaseService(KegbotService):
 
   def _LoadEventMap(self):
     ret = {
-        KB_EVENT.FLOW_COMPLETE : self._HandleFlowCompleteEvent,
+        KB_EVENT.FLOW_ENDED: self._HandleFlowCompleteEvent,
         KB_EVENT.DRINK_CREATED : self._HandleDrinkCreatedEvent,
     }
     return ret
@@ -72,22 +81,24 @@ class DrinkDatabaseService(KegbotService):
     self._logger.info('Flow completed')
     flow = ev.flow
 
-    volume = flow.GetVolume()
-    volume_ml = volume.ConvertTo.Milliliter
+    ticks = flow.GetVolume()
+    volume_native = units.Quantity(ticks, units.UNITS.KbMeterTick)
+    volume_ml = volume_native.ConvertTo.Milliliter
+
     if volume_ml <= kb_common.MIN_VOLUME_TO_RECORD:
       self._logger.info('Not recording flow: volume (%i) <= '
         'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
       return
 
-    keg = flow.GetKeg()
+    keg = None
     user = flow.GetUser()
     if user is None:
       user = self._kb_env.GetBackend().GetDefaultUser()
       self._logger.info('User unknown, using default: %s' % (user.username,))
 
     # log the drink
-    d = models.Drink(ticks=int(volume),
-                     volume=volume.Amount(units.RECORD_UNIT),
+    d = models.Drink(ticks=int(ticks),
+                     volume=volume_native.Amount(units.RECORD_UNIT),
                      starttime=flow.GetStartTime(), endtime=flow.GetEndTime(), user=user,
                      keg=keg, status='valid')
     d.save()
@@ -95,12 +106,13 @@ class DrinkDatabaseService(KegbotService):
     keg_id = None
     if d.keg:
       keg_id = d.keg.id
-    self._logger.info('Logged drink %i user:%s keg:%s ounces:%.2f' % (
-      d.id, d.user.username, keg_id, d.Volume().ConvertTo.Ounce))
+
+    self._logger.info('Logged drink %i user=%s keg=%s ounces=%s ticks=%i' % (
+      d.id, d.user.username, keg_id, d.Volume().ConvertTo.Ounce,
+      int(d.Volume())))
 
     # notify listeners
-    ev = event.Event(kb_common.KB_EVENT.DRINK_CREATED, drink=d, flow=flow)
-    self._kb_env.GetEventHub().PublishEvent(ev)
+    self._CreateAndPublishEvent(KB_EVENT.DRINK_CREATED, drink=d, flow=flow)
 
   def _HandleDrinkCreatedEvent(self, ev):
     drink = ev.drink
@@ -113,7 +125,7 @@ class DrinkDatabaseService(KegbotService):
 
 
 class FlowManagerService(KegbotService):
-  """ Bridges a FlowManager to the KegbotCore event hub. """
+  """ Bridges a FlowManager to the KegbotCore event hub."""
 
   def __init__(self, name, kb_env):
     super(FlowManagerService, self).__init__(name, kb_env)
@@ -121,36 +133,34 @@ class FlowManagerService(KegbotService):
 
   def _LoadEventMap(self):
     ret = {
-        KB_EVENT.FLOW_DEV_ACTIVITY : self._HandleFlowDevActivityEvent,
-        KB_EVENT.FLOW_DEV_IDLE : self._HandleFlowDevIdleEvent,
-        KB_EVENT.FLOW_END: self._HandleFlowEndEvent,
+        KB_EVENT.FLOW_DEV_ACTIVITY : self._HandleChannelActivityEvent,
+        KB_EVENT.FLOW_DEV_IDLE: self._HandleChannelIdleEvent,
+        KB_EVENT.END_FLOW: self._HandleChannelEndFlowEvent,
     }
     return ret
 
-  def _HandleFlowDevActivityEvent(self, ev):
-    self._logger.debug('Handling activity event')
-    try:
-      flow, is_new = self._flow_manager.UpdateDeviceReading(name=ev.device_name,
-          value=ev.meter_reading)
-      self._logger.debug('Got flow %s %s' % (is_new, flow))
-    except (manager.FlowManagerError, e):
-      self._logger.error('Activity error: %s' % e)
-      return
+  def _HandleChannelActivityEvent(self, ev):
+    """Handles the FLOW_DEV_ACTIVITY event.
 
-    if is_new:
-      self._kb_env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.FLOW_START,
-          flow=flow)
-    self._kb_env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.FLOW_UPDATE,
-        flow=flow)
+    The handler accquires the FlowManager, and calls FlowUpdate.  This may
+    result in one of three outcomes:
+      - New flow created. A FLOW_STARTED event is emitted, followed by a
+        FLOW_UPDATE event.
+      - Existing flow updated. A FLOW_UPDATE event is emitted.
+      - Update refused.  The channel is unknown by the FlowManager.  No events
+        are emitted.
+    """
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow_instance, is_new = flow_mgr.UpdateFlow(ev.device_name,
+        ev.meter_reading)
 
+  def _HandleChannelIdleEvent(self, ev):
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.EndFlow(ev.device_name)
+    self._CreateAndPublishEvent(KB_EVENT.FLOW_ENDED, flow=flow)
 
-  def _HandleFlowDevIdleEvent(self, ev):
-    pass
-
-  def _HandleFlowEndEvent(self, ev):
-    flow = self._flow_manager.EndFlow(name=ev.device_name)
-    if not flow:
-      return
-    ev = event.Event(kb_common.KB_EVENT.FLOW_COMPLETE, flow=flow)
-    self._kb_env.GetEventHub().PublishEvent(ev)
+  def _HandleChannelEndFlowEvent(self, ev):
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.EndFlow(ev.device_name)
+    self._CreateAndPublishEvent(KB_EVENT.FLOW_ENDED, flow=flow)
 

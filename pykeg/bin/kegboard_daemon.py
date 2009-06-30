@@ -29,30 +29,12 @@ kegbot system.  The process is responsible for several tasks, including:
 The kegboard daemon is compatible with any device that speaks the Kegboard
 Serial Protocol. See http://kegbot.org/docs for the complete specification.
 
-The daemon should run on any machine which is attached to kegboard hardware. The
-daemon will use the following logic to build up a list of known kegboards:
-  - at startup, any board specified with the --kegboard_device field is added
-  - (TODO) walk /sys looking for kegboard product codes
-  - (TODO) listen to udev socket
-  - (TODO) listen to private socket
+The daemon should run on any machine which is attached to kegboard hardware.
 
 The daemon must connect to a Kegbot Core in order to publish data (such as flow
 and temperature events).  This is a TCP connection, using the Kegnet Protocol to
-exchange data.  The address and port of the core can be specified in one of two
-ways: either explicitly (using the --kb_core_addr flag), or by doing automatic
-core discovery (again using the --kb_core_addr flag, with the special value
-'__auto__').
-
-If automatic core discovery is used, the follow search algorithm is used:
-  1) First check for a listening core on localhost:9900 (the default kegbot core
-     listen address). If found, stop.
-  2) Listen for kegbot core 'beacon' packets on 0.0.0.0:9901. These packets
-     may be broadcast periodically by a kegbot core.
-  3) When a 'beacon' packet is discovered, attempt to connect to the given
-     address. If success, stop. If fail, go back to step 2.
-
-With default settings, the kegboard_daemon configures itself completely
-automatically.
+exchange data.  The address and port of the core is specified with the flags
+--kb_core_hostname and --kb_core_port.
 """
 
 import Queue
@@ -68,7 +50,7 @@ import serial
 from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import util
-from pykeg.core.net import net
+from pykeg.core.net import kegnet
 from pykeg.hw.kegboard import kegboard
 from pykeg.external.gflags import gflags
 
@@ -103,7 +85,10 @@ class KegboardManagerApp(kb_app.App):
     kb_app.App._Setup(self)
 
     net_addr = (FLAGS.kb_core_hostname, FLAGS.kb_core_port)
-    self._network_thr = KegboardNetworkThread('network', FLAGS.kegboard_name, net_addr)
+    client = kegnet.KegnetClient(net_addr, FLAGS.kegboard_name)
+
+    self._network_thr = KegboardNetworkThread('network', FLAGS.kegboard_name,
+        client)
     self._AddAppThread(self._network_thr)
 
     self._manager_thr = KegboardManagerThread('kegboard-manager',
@@ -148,12 +133,13 @@ class KegboardManagerThread(util.KegbotThread):
       curr_val = msg.meter_reading.GetValue()
       last_val = self._meter_cache.get(meter_name)
       if last_val is None or curr_val > last_val:
-        client.SendFlowUpdate(meter_name, curr_val)
+        client.FlowUpdate(meter_name, curr_val)
       self._meter_cache[meter_name] = curr_val
     elif isinstance(msg, kegboard.TemperatureReadingMessage):
       # Thermo update
-      client.SendThermoStatus(msg.sensor_name.GetValue(),
-          msg.sensor_reading.GetValue())
+      #client.SendThermoStatus(msg.sensor_name.GetValue(),
+      #    msg.sensor_reading.GetValue())
+      pass
 
 
 class KegboardDeviceIoThread(util.KegbotThread):
@@ -194,29 +180,20 @@ class KegboardDeviceIoThread(util.KegbotThread):
 
 class KegboardNetworkThread(util.KegbotThread):
   """ Object that connects a kegboard stream to a KegnetProtocolClient. """
-  def __init__(self, name, device_name, addr):
+  def __init__(self, name, device_name, client):
     util.KegbotThread.__init__(self, name)
     self._device_name = device_name
-    self._addr = addr
     self._sock_map = {}
-
-    self._client = None
+    self._client = client
 
   def _Register(self):
     self._logger.info("Registering device.")
-    # register the client
-    self._client.SendConnect(self._device_name)
-
-    # register flow meters
-    # TODO(mikey): to support other boards, this should be done dynamically.
-    self._client.SendRegisterFlowDevice('flow0')
-    self._client.SendRegisterFlowDevice('flow1')
+    self._client.Login()
 
   def GetClient(self, device_name):
     return self._client
 
   def run(self):
-    self._client = net.KegnetProtocolClient(self._addr, self._sock_map)
     self._Register()
     self._logger.info("Running asyncore loop.")
     asyncore.loop(map=self._sock_map)

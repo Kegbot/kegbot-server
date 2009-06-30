@@ -18,6 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
+if not os.environ.get('DJANGO_SETTINGS_MODULE'):
+  os.environ['DJANGO_SETTINGS_MODULE'] = 'pykeg.settings'
+
 from pykeg.core import kegbot
 
 __doc__ = kegbot.__doc__

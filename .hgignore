@@ -1,0 +1,7 @@
+syntax: glob
+
+### global stuff
+*.pyc
+
+### docs
+docs/build

@@ -1,6 +1,5 @@
-.. Kegbot documentation master file, created by sphinx-quickstart on Sun Jan 11 17:19:21 2009.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. This is the index of kegbot documentation.  These files are best viewed in
+   HTML format at http://kegbot.org/docs/
 
 Welcome to Kegbot's documentation!
 ==================================
@@ -16,8 +15,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   kegbot-howto/index
    kegerator-howto/index
+   kegbot-howto/index
    user-guide/index
    kegboard-guide/index
 

@@ -18,10 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Clone of django-admin.py, with pykeg import hacks."""
+
 import importhacks
-from pykeg.core import kegbot
+from django.core import management
 
-__doc__ = kegbot.__doc__
-
-if __name__ == '__main__':
-  kegbot.KegbotCoreApp.BuildAndRun()
+if __name__ == "__main__":
+  management.execute_from_command_line()

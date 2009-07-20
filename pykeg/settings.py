@@ -9,13 +9,6 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'sqlite3'    # 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'pykeg.sqlite.bin' # Or path to database file if using sqlite3.
-DATABASE_USER = ''             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
-
 # Local time zone for this installation. All choices can be found here:
 # http://www.postgresql.org/docs/current/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
 TIME_ZONE = 'America/Los_Angeles'
@@ -26,22 +19,6 @@ TIME_ZONE = 'America/Los_Angeles'
 LANGUAGE_CODE = 'en-us'
 
 SITE_ID = 1
-
-# Absolute path to the directory that holds media.
-# Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = ''
-
-# URL that handles the media served from MEDIA_ROOT.
-# Example: "http://media.lawrence.com"
-MEDIA_URL = ''
-
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
-# trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
-
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'p7jep28p$+7kb8n=qr+1!i80&5d&!2q_lruhs-%rs(urq4)f*j'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -78,3 +55,10 @@ INSTALLED_APPS = (
 
 AUTH_PROFILE_MODULE = "core.UserProfile"
 LOGIN_REDIRECT_URL = "/account/"
+
+try:
+  import pykeg_settings
+  from pykeg_settings import *
+  print 'Loaded local settings:', pykeg_settings.__file__
+except ImportError:
+  pass

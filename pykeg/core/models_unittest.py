@@ -57,22 +57,7 @@ class CoreModelsTestCase(unittest.TestCase):
         username='kb_tester2',
     )
 
-    self.user_profile = models.UserProfile.objects.create(
-        user=self.user,
-        gender='male',
-        weight=150.0,
-    )
-
-    self.user2_profile = models.UserProfile.objects.create(
-        user=self.user2,
-        gender='male',
-        weight=150.0,
-    )
-
-
   def tearDown(self):
-    self.user_profile.delete()
-    self.user2_profile.delete()
     self.user.delete()
     self.user2.delete()
     self.keg.delete()

@@ -1,5 +1,25 @@
+# Copyright 2003-2009 Mike Wakerly <opensource@hoho.com>
+#
+# This file is part of the Pykeg package of the Kegbot project.
+# For more information on Pykeg or Kegbot, see http://kegbot.org/
+#
+# Pykeg is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# Pykeg is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+
+from pykeg.core import backend
 from pykeg.core import models
 from pykeg.core import units
+
 
 def db_is_installed():
   try:
@@ -7,17 +27,6 @@ def db_is_installed():
     return True
   except models.Config.DoesNotExist:
     return False
-
-def new_user(username, gender="male", weight=180):
-   u = models.User(username=username)
-   u.save()
-   u.set_password(username)
-   u.save()
-   p = u.get_profile()
-   p.gender = gender
-   p.weight = weight
-   p.save()
-   return u
 
 def add_label(user, labelname):
   res = models.UserLabel.objects.filter(labelname__exact=labelname)
@@ -46,7 +55,7 @@ def set_defaults():
      rec.save()
 
   # user defaults
-  guest_user = new_user('guest')
+  guest_user = backend.KegbotBackend.CreateNewUser('guest')
 
   # brewer defaults
   unk_brewer = models.Brewer(name='Unknown Brewer')

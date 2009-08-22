@@ -71,3 +71,14 @@ class KegbotBackend(object):
     if not matches.count() == 1:
       return None
     return matches[0]
+
+  @classmethod
+  def CreateNewUser(cls, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
+      weight=kb_common.DEFAULT_NEW_USER_WEIGHT):
+    u = models.User(username=username)
+    u.save()
+    p = u.get_profile()
+    p.gender = gender
+    p.weight = weight
+    p.save()
+    return u

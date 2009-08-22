@@ -2,15 +2,10 @@
 
 import datetime
 
-from pykeg.core import models, units
+from pykeg.core import backend
+from pykeg.core import models
+from pykeg.core import units
 from django.contrib.auth.models import User
-
-def new_user(username, gender="male", weight=180):
-   u = User(username=username)
-   u.save()
-   p = models.UserProfile(user=u, gender=gender, weight=weight)
-   p.save()
-   return u
 
 
 def set_data():
@@ -55,8 +50,7 @@ def set_data():
    usernames = ['abe', 'bort', 'charlie']
    users = []
    for name in usernames:
-      u = new_user(name)
-      users.append(u)
+      users.append(backend.KegbotBackend.CreateNewUser(name))
 
    half_barrel = models.KegSize(name="half barrel", volume=10000)
    half_barrel.save()

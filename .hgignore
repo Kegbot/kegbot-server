@@ -5,3 +5,6 @@ syntax: glob
 
 ### docs
 docs/build
+
+### pykeg
+pykeg/kegbot.log

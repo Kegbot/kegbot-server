@@ -1,0 +1,45 @@
+# Local settings for kegbot.
+# Edit settings, then copy this file to /etc/kegbot/pykeg_settings.py or
+# ~/.kegbot/pykeg_settings.py
+
+### Database configuration
+
+# sqlite3 (default)
+DATABASE_ENGINE = 'sqlite3'
+DATABASE_NAME = '/usr/local/kegbot/kegbot.sqlite'
+
+# Other databases ('postgresql', 'mysql', or 'ado_mssql')
+#DATABASE_ENGINE = 'mysql'
+#DATABASE_NAME = 'kegbot'
+#DATABASE_USER = 'kegbot_user'
+#DATABASE_PASSWORD = 'kegbot_password'
+#DATABASE_HOST = '' # Set to empty string for localhost.
+#DATABASE_PORT = '' # Set to empty string for default port.
+
+### Timezone and language
+
+# Local time zone for this installation. All choices can be found here:
+# http://www.postgresql.org/docs/current/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
+TIME_ZONE = 'America/Los_Angeles'
+
+# Language code for this installation. All choices can be found here:
+# http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
+# http://blogs.law.harvard.edu/tech/stories/storyReader$15
+LANGUAGE_CODE = 'en-us'
+
+SITE_ID = 1
+
+### Other stuff
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = 'p7jep28p$+7kb8n=qr+1!i80&5d&!2q_lruhs-%rs(urq4)f*j'
+
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+ADMINS = (
+    # ('Your Name', 'your_email@domain.com'),
+)
+
+MANAGERS = ADMINS
+

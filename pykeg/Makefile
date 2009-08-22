@@ -24,7 +24,7 @@ admin:
 	$(PROD_ADMIN_COMMAND) createsuperuser $(PROD_ADMIN_ARGS)
 
 clean:
-	rm -f keg.log
+	rm -f kegbot.log
 	rm -rf build
 	find . -name "*.pyc" | xargs rm -f
 

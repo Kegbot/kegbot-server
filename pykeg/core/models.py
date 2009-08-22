@@ -39,16 +39,12 @@ class UserPicture(models.Model):
   image = models.ImageField(upload_to='mugshots')
   active = models.BooleanField(default=True)
 
-admin.site.register(UserPicture)
-
 
 class UserLabel(models.Model):
   labelname = models.CharField(max_length=128)
 
   def __str__(self):
     return str(self.labelname)
-
-admin.site.register(UserLabel)
 
 
 class UserProfile(models.Model):
@@ -72,8 +68,6 @@ class UserProfile(models.Model):
   labels = models.ManyToManyField(UserLabel)
   #mugshot = models.ForeignKey(UserPicture, blank=True, null=True)
 
-admin.site.register(UserProfile)
-
 def user_post_save(sender, instance, **kwargs):
   defaults = {
     'weight': kb_common.DEFAULT_NEW_USER_WEIGHT,
@@ -82,6 +76,7 @@ def user_post_save(sender, instance, **kwargs):
   profile, new = UserProfile.objects.get_or_create(user=instance,
       defaults=defaults)
 models.signals.post_save.connect(user_post_save, sender=User)
+
 
 class Brewer(models.Model):
   name = models.CharField(max_length=128)
@@ -102,16 +97,12 @@ class Brewer(models.Model):
     return "%s (%s, %s, %s)" % (self.name, self.origin_city,
                                 self.origin_state, self.origin_country)
 
-admin.site.register(Brewer)
-
 
 class BeerStyle(models.Model):
   name = models.CharField(max_length=128)
 
   def __str__(self):
     return self.name
-
-admin.site.register(BeerStyle)
 
 
 class BeerType(models.Model):
@@ -131,12 +122,6 @@ class BeerType(models.Model):
     return "%s by %s" % (self.name, self.brewer)
 
 
-class BeerTypeAdmin(admin.ModelAdmin):
-  list_display = ('name', 'brewer', 'style')
-
-admin.site.register(BeerType, BeerTypeAdmin)
-
-
 class KegSize(models.Model):
   """ A convenient table of common Keg sizes """
   def Volume(self):
@@ -147,8 +132,6 @@ class KegSize(models.Model):
 
   name = models.CharField(max_length=128)
   volume = models.IntegerField()
-
-admin.site.register(KegSize)
 
 
 class Keg(models.Model):
@@ -187,11 +170,6 @@ class Keg(models.Model):
      ('coming soon', 'coming soon')))
   description = models.CharField(max_length=256)
   origcost = models.FloatField(default=0)
-
-class KegAdmin(admin.ModelAdmin):
-  list_display = ('id', 'type')
-
-admin.site.register(Keg, KegAdmin)
 
 
 class Drink(models.Model):
@@ -251,8 +229,6 @@ class Drink(models.Model):
      ('invalid', 'invalid'),
      ), default = 'valid')
 
-admin.site.register(Drink)
-
 
 class Token(models.Model):
   """ An arbitrary secret key, used by the authentication system.
@@ -266,8 +242,6 @@ class Token(models.Model):
   user = models.ForeignKey(User)
   keyinfo = models.TextField()
   created = models.DateTimeField(default=datetime.datetime.now)
-
-admin.site.register(Token)
 
 
 class BAC(models.Model):
@@ -314,7 +288,6 @@ class BAC(models.Model):
     b = BAC(user=d.user, drink=d, rectime=d.endtime, bac=now+prev_bac)
     b.save()
 
-admin.site.register(BAC)
 
 def find_object_in_window(qset, start, end, window):
   # Match objects containing the start-end range
@@ -345,6 +318,7 @@ def find_object_in_window(qset, start, end, window):
     return newer[0]
 
   return None
+
 
 class UserDrinkingSession(models.Model):
   """ A derived table grouping a sequence of drinks by a user.
@@ -389,8 +363,6 @@ class UserDrinkingSession(models.Model):
 
     return session
 
-admin.site.register(UserDrinkingSession)
-
 
 class UserDrinkingSessionAssignment(models.Model):
   drink = models.ForeignKey(Drink)
@@ -410,8 +382,6 @@ class UserDrinkingSessionAssignment(models.Model):
         session=session)
     dg.save()
     return dg
-
-admin.site.register(UserDrinkingSessionAssignment)
 
 
 class DrinkingSessionGroup(models.Model):
@@ -457,16 +427,12 @@ class Thermolog(models.Model):
   temp = models.FloatField()
   time = models.DateTimeField()
 
-admin.site.register(Thermolog)
-
 
 class RelayLog(models.Model):
   """ A log from an IRelay device of relay events/ """
   name = models.CharField(max_length=128)
   status = models.CharField(max_length=32)
   time = models.DateTimeField()
-
-admin.site.register(RelayLog)
 
 
 class Config(models.Model):
@@ -475,5 +441,3 @@ class Config(models.Model):
 
   key = models.CharField(max_length=128)
   value = models.TextField()
-
-admin.site.register(Config)

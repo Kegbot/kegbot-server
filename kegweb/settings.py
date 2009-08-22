@@ -1,29 +1,6 @@
-# Django settings for pykeg project.
-
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-
-ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
-)
-
-MANAGERS = ADMINS
-
-DATABASE_ENGINE = 'sqlite3'    # 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'pykeg.sqlite.bin' # Or path to database file if using sqlite3.
-DATABASE_USER = ''             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
-
-# Local time zone for this installation. All choices can be found here:
-# http://www.postgresql.org/docs/current/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
-TIME_ZONE = 'America/Los_Angeles'
-
-# Language code for this installation. All choices can be found here:
-# http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
-# http://blogs.law.harvard.edu/tech/stories/storyReader$15
-LANGUAGE_CODE = 'en-us'
+# Kegweb main settings file.
+# Note: YOU SHOULD NOT NEED TO EDIT THIS FILE.  Instead, see the instructions in
+# common_settings.py.example in the pykeg package.
 
 SITE_ID = 1
 
@@ -40,14 +17,10 @@ MEDIA_URL = ''
 # Examples: "http://foo.com/media/", "/media/".
 ADMIN_MEDIA_PREFIX = '/media/'
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'p7jep28p$+7kb8n=qr+1!i80&5d&!2q_lruhs-%rs(urq4)f*j'
-
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -81,3 +54,37 @@ INSTALLED_APPS = (
 
 AUTH_PROFILE_MODULE = "core.UserProfile"
 LOGIN_REDIRECT_URL = "/account/"
+
+### Begin importhacks excerpt
+
+import os
+import sys
+
+SYSTEM_SETTINGS_DIR = "/etc/kegbot"
+HOME_DIR = os.environ.get('HOME')
+USER_SETTINGS_DIR = os.path.join(HOME_DIR, '.kegbot')
+
+# Greatest precedence: $HOME/.kegbot/
+if USER_SETTINGS_DIR not in sys.path:
+  sys.path.append(USER_SETTINGS_DIR)
+
+# Next precedence: /etc/kegbot
+if SYSTEM_SETTINGS_DIR not in sys.path:
+  sys.path.append(SYSTEM_SETTINGS_DIR)
+
+### End importhacks excerpt
+
+
+# Import local common settings
+try:
+  import common_settings
+  from common_settings import *
+except ImportError:
+  print 'Error: Could not find common_settings.py'
+  print 'Most likely, this means kegbot has not been configured properly.'
+  print 'Consult setup documentation.  Exiting...'
+  raise
+  import sys
+  sys.exit(1)
+
+# Import local kegweb settings (todo)

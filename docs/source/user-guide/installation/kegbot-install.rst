@@ -70,9 +70,9 @@ use.
 #. Copy the example settings file (from the ``pykeg/`` directory) into your new
    local directory::
 
-	% cp local_settings.py.example ~/.kegbot/pykeg_settings.py
+	% cp common_settings.py.example ~/.kegbot/common_settings.py
 
-#. Edit ``pykeg_settings.py`` as appropriate for your installation.
+#. Edit ``common_settings.py`` as appropriate for your installation.
 
 Look at the comments in this file for an idea of what settings you will need to
 change.  At minimum, you should set the ``DATABASE_`` variables.

@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Channel (single path of fluid) management module."""
+"""Tap (single path of fluid) management module."""
 
 import datetime
 import logging
@@ -24,17 +24,17 @@ import logging
 from pykeg.core import flow_meter
 
 
-class ChannelManagerError(Exception):
-  """ Generic ChannelManager error """
+class TapManagerError(Exception):
+  """ Generic TapManager error """
 
-class AlreadyRegisteredError(ChannelManagerError):
+class AlreadyRegisteredError(TapManagerError):
   """ Raised when attempting to register an already-registered name """
 
-class UnknownChannelError(ChannelManagerError):
-  """ Raised when channel requested does not exist """
+class UnknownTapError(TapManagerError):
+  """ Raised when tap requested does not exist """
 
 
-class Channel(object):
+class Tap(object):
   def __init__(self, name):
     self._name = name
     self._meter = flow_meter.FlowMeter(name)
@@ -49,50 +49,50 @@ class Channel(object):
     return self._meter
 
 
-class ChannelManager(object):
+class TapManager(object):
   """Maintains listing of available fluid paths.
 
-  This manager maintains the set of available beer channels.  Channels have a
+  This manager maintains the set of available beer taps.  Taps have a
   one-to-one correspondence with beer taps.  For example, a kegboard controller
   is capable of reading from two flow sensors; thus, it provides two beer
-  channels.
+  taps.
   """
 
   def __init__(self):
-    self._logger = logging.getLogger('channel-manager')
-    self._channels = {}
+    self._logger = logging.getLogger('tap-manager')
+    self._taps = {}
 
-  def _ChannelExists(self, name):
-    return name in self._channels
+  def _TapExists(self, name):
+    return name in self._taps
 
-  def _CheckChannelExists(self, name):
-    if not self._ChannelExists(name):
-      raise UnknownChannelError
+  def _CheckTapExists(self, name):
+    if not self._TapExists(name):
+      raise UnknownTapError
 
-  def RegisterChannel(self, name):
-    self._logger.info('Registering new channel: %s' % name)
-    if self._ChannelExists(name):
+  def RegisterTap(self, name):
+    self._logger.info('Registering new tap: %s' % name)
+    if self._TapExists(name):
       raise AlreadyRegisteredError
-    self._channels[name] = Channel(name)
+    self._taps[name] = Tap(name)
 
-  def UnregisterChannel(self, name):
-    self._logger.info('Unregistering channel: %s' % name)
-    self._CheckChannelExists(name)
-    del self._channels[name]
+  def UnregisterTap(self, name):
+    self._logger.info('Unregistering tap: %s' % name)
+    self._CheckTapExists(name)
+    del self._taps[name]
 
-  def GetChannel(self, name):
-    self._CheckChannelExists(name)
-    return self._channels[name]
+  def GetTap(self, name):
+    self._CheckTapExists(name)
+    return self._taps[name]
 
   def UpdateDeviceReading(self, name, value):
-    meter = self.GetChannel(name).GetMeter()
+    meter = self.GetTap(name).GetMeter()
     delta = meter.SetVolume(value)
     return delta
 
 
 class Flow:
-  def __init__(self, channel):
-    self._channel = channel
+  def __init__(self, tap):
+    self._tap = tap
     self._start_volume = None
     self._end_volume = None
 
@@ -104,8 +104,8 @@ class Flow:
     self._last_log_time = None
 
   def UpdateFromMeter(self):
-    current_volume = self._channel.GetMeter().GetVolume()
-    last_activity_time = self._channel.GetMeter().GetLastActivity()
+    current_volume = self._tap.GetMeter().GetVolume()
+    last_activity_time = self._tap.GetMeter().GetLastActivity()
 
     if self._start_volume is None:
       self._start_volume = current_volume
@@ -135,63 +135,63 @@ class Flow:
       end_time = self._start_time
     return datetime.datetime.now() - end_time
 
-  def GetChannel(self):
-    return self._channel
+  def GetTap(self):
+    return self._tap
 
 
 class FlowManager(object):
   """Class reponsible for maintaining and servicing flows.
 
   The manager is responsible for creating Flow instances and managing their
-  lifecycle.  It is one layer above the the ChannelManager, in that it does not
+  lifecycle.  It is one layer above the the TapManager, in that it does not
   deal with devices directly.
 
   Flows can be started in multiple ways:
     - Explicitly, by a call to StartFlow
-    - Implicitly, by a call to HandleChannelActivity
+    - Implicitly, by a call to HandleTapActivity
   """
-  def __init__(self, channel_manager):
-    self._channel_manager = channel_manager
+  def __init__(self, tap_manager):
+    self._tap_manager = tap_manager
     self._flow_map = {}
     self._logger = logging.getLogger("flowmanager")
 
   def GetActiveFlows(self):
     return self._flow_map.values()
 
-  def _GetFlow(self, channel):
-    name = channel.GetName()
+  def _GetFlow(self, tap):
+    name = tap.GetName()
     return self._flow_map.get(name)
 
-  def StartFlow(self, channel):
-    assert not self._GetFlow(channel), "StartFlow while already active!"
-    self._flow_map[channel.GetName()] = Flow(channel)
-    self._logger.info("Flow created on channel %s" % (channel,))
-    return self._GetFlow(channel)
+  def StartFlow(self, tap):
+    assert not self._GetFlow(tap), "StartFlow while already active!"
+    self._flow_map[tap.GetName()] = Flow(tap)
+    self._logger.info("Flow created on tap %s" % (tap,))
+    return self._GetFlow(tap)
 
-  def EndFlow(self, channel_name):
-    channel = self._channel_manager.GetChannel(channel_name)
-    flow = self._GetFlow(channel)
-    assert flow is not None, "EndFlow on inactive channel!"
-    del self._flow_map[channel.GetName()]
-    self._logger.info("Flow ended on channel %s" % (channel,))
+  def EndFlow(self, tap_name):
+    tap = self._tap_manager.GetTap(tap_name)
+    flow = self._GetFlow(tap)
+    assert flow is not None, "EndFlow on inactive tap!"
+    del self._flow_map[tap.GetName()]
+    self._logger.info("Flow ended on tap %s" % (tap,))
     return flow
 
-  def UpdateFlow(self, channel_name, volume):
+  def UpdateFlow(self, tap_name, volume):
     try:
-      channel = self._channel_manager.GetChannel(channel_name)
-    except ChannelManagerError:
-      # channel is unknown or not available
+      tap = self._tap_manager.GetTap(tap_name)
+    except TapManagerError:
+      # tap is unknown or not available
       return None, None
 
     is_new = False
 
     # Get the flow instance; create a new one if needed
-    flow = self._GetFlow(channel)
+    flow = self._GetFlow(tap)
     if not flow:
-      flow = self.StartFlow(channel)
+      flow = self.StartFlow(tap)
       is_new = True
 
-    delta = self._channel_manager.UpdateDeviceReading(channel.GetName(), volume)
+    delta = self._tap_manager.UpdateDeviceReading(tap.GetName(), volume)
     flow.UpdateFromMeter()
 
     return flow, is_new

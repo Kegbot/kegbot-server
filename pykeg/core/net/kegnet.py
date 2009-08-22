@@ -61,16 +61,16 @@ class KegnetClient:
     request.value = amt
     self._proxy.Core.PostMeterReading(request)
 
-  def StartFlow(self, channel_name):
-    request = kegnet_pb2.FlowChannelRequest()
+  def StartFlow(self, tap_name):
+    request = kegnet_pb2.TapRequest()
     request.handle.MergeFrom(self._handle)
-    request.channel_info.name = channel_name
+    request.tap_info.name = tap_name
     self._proxy.Core.StartFlow(request)
 
-  def StopFlow(self, channel_name):
-    request = kegnet_pb2.FlowChannelRequest()
+  def StopFlow(self, tap_name):
+    request = kegnet_pb2.TapRequest()
     request.handle.MergeFrom(self._handle)
-    request.channel_info.name = channel_name
+    request.tap_info.name = tap_name
     self._proxy.Core.StopFlow(request)
 
 

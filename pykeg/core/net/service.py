@@ -65,7 +65,7 @@ class CoreService(kegnet_pb2.Core):
 
   def StopFlow(self, rpc_controller, request, done):
     client = self._GetClientFromHandle(request.handle)
-    client.FlowEnd(request.channel_info.name)
+    client.FlowEnd(request.tap_info.name)
     done(REPLY_OK)
 
   ### Internal methods
@@ -76,7 +76,7 @@ class CoreService(kegnet_pb2.Core):
   def _CreateClient(self, client_name):
     """ Creates a new client.
 
-    A client is associated with a connection to the server. If the channel dies,
+    A client is associated with a connection to the server. If the tap dies,
     the client is removed and all devices registered to the client should be
     removed as well.
     """
@@ -149,9 +149,9 @@ class KegnetClientState(object):
 
   def _RegisterDevice(self, device):
     if isinstance(device, KegnetFlowDevice):
-      channel_manager = self._kb_env.GetChannelManager()
+      tap_manager = self._kb_env.GetTapManager()
       try:
-        channel_manager.RegisterChannel(device.GetGlobalName())
+        tap_manager.RegisterTap(device.GetGlobalName())
       except manager.AlreadyRegisteredError:
         return False
       self._devices[device.GetType()][device.GetLocalName()] = device
@@ -160,10 +160,10 @@ class KegnetClientState(object):
     return False
 
   def Cleanup(self):
-    channel_manager = self._kb_env.GetChannelManager()
+    tap_manager = self._kb_env.GetTapManager()
     for name, device in self._devices['flow'].iteritems():
       self._logger.info('Removing device: %s' % name)
-      channel_manager.UnregisterDevice(device.GetGlobalName())
+      tap_manager.UnregisterDevice(device.GetGlobalName())
 
   def RegisterFlowDevice(self, name):
     device = self._GetFlowDevice(name)

@@ -56,11 +56,11 @@ class KegbotEnv(object):
 
     # Build managers and services
     self._alarm_manager = alarm.AlarmManager()
-    self._channel_manager = manager.ChannelManager()
-    self._flow_manager = manager.FlowManager(self._channel_manager)
+    self._tap_manager = manager.TapManager()
+    self._flow_manager = manager.FlowManager(self._tap_manager)
 
     self._drink_db_service = service.DrinkDatabaseService('drink_db_service', self)
-    self._flow_service = service.FlowManagerService('channel_service', self)
+    self._flow_service = service.FlowManagerService('flow_service', self)
 
     self._backend = backend.KegbotBackend()
     self._backend.CheckSchemaVersion()
@@ -97,8 +97,8 @@ class KegbotEnv(object):
   def GetEventHub(self):
     return self._event_hub
 
-  def GetChannelManager(self):
-    return self._channel_manager
+  def GetTapManager(self):
+    return self._tap_manager
 
   def GetFlowManager(self):
     return self._flow_manager

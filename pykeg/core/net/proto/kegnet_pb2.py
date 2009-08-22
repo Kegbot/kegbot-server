@@ -95,14 +95,14 @@ _PINGMESSAGE = descriptor.Descriptor(
   options=None)
 
 
-_CHANNELINFO = descriptor.Descriptor(
-  name='ChannelInfo',
-  full_name='ChannelInfo',
+_TAPINFO = descriptor.Descriptor(
+  name='TapInfo',
+  full_name='TapInfo',
   filename='kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='name', full_name='ChannelInfo.name', index=0,
+      name='name', full_name='TapInfo.name', index=0,
       number=1, type=9, cpp_type=9, label=2,
       default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -117,21 +117,21 @@ _CHANNELINFO = descriptor.Descriptor(
   options=None)
 
 
-_FLOWCHANNELREQUEST = descriptor.Descriptor(
-  name='FlowChannelRequest',
-  full_name='FlowChannelRequest',
+_TAPREQUEST = descriptor.Descriptor(
+  name='TapRequest',
+  full_name='TapRequest',
   filename='kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='handle', full_name='FlowChannelRequest.handle', index=0,
+      name='handle', full_name='TapRequest.handle', index=0,
       number=1, type=11, cpp_type=10, label=2,
       default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='channel_info', full_name='FlowChannelRequest.channel_info', index=1,
+      name='tap_info', full_name='TapRequest.tap_info', index=1,
       number=2, type=11, cpp_type=10, label=2,
       default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -291,7 +291,7 @@ _FLOWCREDENTIALS = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='channel_name', full_name='FlowCredentials.channel_name', index=1,
+      name='tap_name', full_name='FlowCredentials.tap_name', index=1,
       number=2, type=9, cpp_type=9, label=2,
       default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -466,8 +466,8 @@ _CORESTATE = descriptor.Descriptor(
 
 
 _STATUSREPLY.fields_by_name['code'].enum_type = _STATUSREPLY_STATUSCODE
-_FLOWCHANNELREQUEST.fields_by_name['handle'].message_type = _CLIENTHANDLE
-_FLOWCHANNELREQUEST.fields_by_name['channel_info'].message_type = _CHANNELINFO
+_TAPREQUEST.fields_by_name['handle'].message_type = _CLIENTHANDLE
+_TAPREQUEST.fields_by_name['tap_info'].message_type = _TAPINFO
 _METERREADING.fields_by_name['handle'].message_type = _CLIENTHANDLE
 _THERMOREADING.fields_by_name['handle'].message_type = _CLIENTHANDLE
 _OUTPUTSTATUS.fields_by_name['handle'].message_type = _CLIENTHANDLE
@@ -485,13 +485,13 @@ class PingMessage(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _PINGMESSAGE
 
-class ChannelInfo(message.Message):
+class TapInfo(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _CHANNELINFO
+  DESCRIPTOR = _TAPINFO
 
-class FlowChannelRequest(message.Message):
+class TapRequest(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _FLOWCHANNELREQUEST
+  DESCRIPTOR = _TAPREQUEST
 
 class MeterReading(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
@@ -590,7 +590,7 @@ _CORE = descriptor.ServiceDescriptor(
     full_name='Core.StartFlow',
     index=5,
     containing_service=None,
-    input_type=_FLOWCHANNELREQUEST,
+    input_type=_TAPREQUEST,
     output_type=_STATUSREPLY,
     options=None,
   ),
@@ -599,7 +599,7 @@ _CORE = descriptor.ServiceDescriptor(
     full_name='Core.StopFlow',
     index=6,
     containing_service=None,
-    input_type=_FLOWCHANNELREQUEST,
+    input_type=_TAPREQUEST,
     output_type=_STATUSREPLY,
     options=None,
   ),

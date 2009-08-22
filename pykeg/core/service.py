@@ -133,13 +133,13 @@ class FlowManagerService(KegbotService):
 
   def _LoadEventMap(self):
     ret = {
-        KB_EVENT.FLOW_DEV_ACTIVITY : self._HandleChannelActivityEvent,
-        KB_EVENT.FLOW_DEV_IDLE: self._HandleChannelIdleEvent,
-        KB_EVENT.END_FLOW: self._HandleChannelEndFlowEvent,
+        KB_EVENT.FLOW_DEV_ACTIVITY : self._HandleFlowActivityEvent,
+        KB_EVENT.FLOW_DEV_IDLE: self._HandleFlowIdleEvent,
+        KB_EVENT.END_FLOW: self._HandleFlowEndFlowEvent,
     }
     return ret
 
-  def _HandleChannelActivityEvent(self, ev):
+  def _HandleFlowActivityEvent(self, ev):
     """Handles the FLOW_DEV_ACTIVITY event.
 
     The handler accquires the FlowManager, and calls FlowUpdate.  This may
@@ -154,12 +154,12 @@ class FlowManagerService(KegbotService):
     flow_instance, is_new = flow_mgr.UpdateFlow(ev.device_name,
         ev.meter_reading)
 
-  def _HandleChannelIdleEvent(self, ev):
+  def _HandleFlowIdleEvent(self, ev):
     flow_mgr = self._kb_env.GetFlowManager()
     flow = flow_mgr.EndFlow(ev.device_name)
     self._CreateAndPublishEvent(KB_EVENT.FLOW_ENDED, flow=flow)
 
-  def _HandleChannelEndFlowEvent(self, ev):
+  def _HandleFlowEndFlowEvent(self, ev):
     flow_mgr = self._kb_env.GetFlowManager()
     flow = flow_mgr.EndFlow(ev.device_name)
     self._CreateAndPublishEvent(KB_EVENT.FLOW_ENDED, flow=flow)

@@ -31,6 +31,9 @@ KEGNET_SERVER_BIND_ADDR = "127.0.0.1"
 # Port kegnet server should listen to
 KEGNET_SERVER_BIND_PORT = 9999
 
+DEFAULT_NEW_USER_WEIGHT = 140
+DEFAULT_NEW_USER_GENDER = 'male'
+
 ### Addresses and ports
 
 # Default port for JSON server

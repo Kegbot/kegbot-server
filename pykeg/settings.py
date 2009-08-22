@@ -13,6 +13,8 @@ INSTALLED_APPS = (
     'pykeg.core',
 )
 
+AUTH_PROFILE_MODULE = "core.UserProfile"
+
 try:
   import common_settings
   from common_settings import *

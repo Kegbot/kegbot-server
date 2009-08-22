@@ -74,6 +74,14 @@ class UserProfile(models.Model):
 
 admin.site.register(UserProfile)
 
+def user_post_save(sender, instance, **kwargs):
+  defaults = {
+    'weight': kb_common.DEFAULT_NEW_USER_WEIGHT,
+    'gender': kb_common.DEFAULT_NEW_USER_GENDER,
+  }
+  profile, new = UserProfile.objects.get_or_create(user=instance,
+      defaults=defaults)
+models.signals.post_save.connect(user_post_save, sender=User)
 
 class Brewer(models.Model):
   name = models.CharField(max_length=128)

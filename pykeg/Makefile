@@ -7,21 +7,22 @@ TEST_SETTINGS = pykeg.unittest_settings
 PROD_DJANGO_ENV = $(PYTHON_ENV) DJANGO_SETTINGS_MODULE=$(PROD_SETTINGS)
 TEST_DJANGO_ENV = $(PYTHON_ENV) DJANGO_SETTINGS_MODULE=$(TEST_SETTINGS)
 
-PROD_ADMIN_COMMAND = $(PROD_DJANGO_ENV) django-admin.py
+PROD_ADMIN_COMMAND = $(PYTHON_TOP)/pykeg/bin/kegbot_admin.py
 TEST_ADMIN_COMMAND = $(TEST_DJANGO_ENV) django-admin.py
 
 PROD_ADMIN_ARGS = --settings=$(PROD_SETTINGS)
 TEST_ADMIN_ARGS = --settings=$(TEST_SETTINGS)
 
-install:
-	python setup.py install
+setup: install_db admin
 
-setup:
-	$(PROD_ADMIN_COMMAND) syncdb $(PROD_ADMIN_ARGS) --noinput
-	$(PROD_DJANGO_ENV) scripts/setdefaults.py
+install_db:
+	@echo "--- Installing database"
+	@$(PROD_ADMIN_COMMAND) syncdb $(PROD_ADMIN_ARGS) --noinput
+	@$(PROD_ADMIN_COMMAND) kb_set_defaults $(PROD_ADMIN_ARGS)
 
 admin:
-	$(PROD_ADMIN_COMMAND) createsuperuser $(PROD_ADMIN_ARGS)
+	@echo "--- Creating super user"
+	@$(PROD_ADMIN_COMMAND) createsuperuser $(PROD_ADMIN_ARGS)
 
 clean:
 	rm -f kegbot.log
@@ -49,3 +50,8 @@ fixtures: distclean test
 
 fixtures_clean:
 	rm -f core/fixtures/initial_data.json
+
+.PHONY: setup install_db admin clean distclean test test_clean
+.PHONY: testdata fixtures fixtures_clean
+
+# vim: noet

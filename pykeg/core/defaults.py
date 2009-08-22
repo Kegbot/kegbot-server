@@ -1,5 +1,12 @@
 from pykeg.core import models
 
+def db_is_installed():
+  try:
+    version = models.Config.objects.get(key='db.schema_version')
+    return True
+  except models.Config.DoesNotExist:
+    return False
+
 def new_user(username, gender="male", weight=180):
    u = models.User(username=username)
    u.save()
@@ -20,6 +27,9 @@ def add_label(user, labelname):
 
 def set_defaults():
    """ default values (contents may change with schema) """
+   if db_is_installed():
+     raise RuntimeError, "Database is already installed."
+
    # config table defaults
    default_config = (
       ('logging.logfile', 'keg.log'),

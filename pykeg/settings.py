@@ -59,6 +59,6 @@ LOGIN_REDIRECT_URL = "/account/"
 try:
   import pykeg_settings
   from pykeg_settings import *
-  print 'Loaded local settings:', pykeg_settings.__file__
+  #print 'Loaded local settings:', pykeg_settings.__file__
 except ImportError:
   pass

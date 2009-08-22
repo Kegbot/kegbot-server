@@ -98,7 +98,7 @@ class FlowMeter(object):
     return self._last_volume
 
   def GetName(self):
-    return self._channel_name
+    return self._name
 
   def GetLastActivity(self):
     return self._last_activity

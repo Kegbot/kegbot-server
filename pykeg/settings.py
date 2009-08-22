@@ -1,4 +1,6 @@
-# Django settings for pykeg project.
+# Pykeg main settings file.
+# Note: YOU SHOULD NOT NEED TO EDIT THIS FILE.  Instead, see the instructions in
+# common_settings.py.example.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -24,7 +26,6 @@ SITE_ID = 1
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -33,8 +34,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
 )
-
-ROOT_URLCONF = 'pykeg.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates".
@@ -57,8 +56,11 @@ AUTH_PROFILE_MODULE = "core.UserProfile"
 LOGIN_REDIRECT_URL = "/account/"
 
 try:
-  import pykeg_settings
-  from pykeg_settings import *
-  #print 'Loaded local settings:', pykeg_settings.__file__
+  import common_settings
+  from common_settings import *
 except ImportError:
-  pass
+  print 'Error: Could not find common_settings.py'
+  print 'Most likely, this means kegbot has not been configured properly.'
+  print 'Consult setup documentation.  Exiting...'
+  import sys
+  sys.exit(1)

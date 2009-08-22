@@ -23,6 +23,8 @@
 This app attaches to a kegboard and prints all packets it receives.
 """
 
+import importhacks
+
 import os
 
 import serial

@@ -48,9 +48,7 @@ import sys
 
 import serial
 
-if not os.environ.get('DJANGO_SETTINGS_MODULE'):
-  os.environ['DJANGO_SETTINGS_MODULE'] = 'pykeg.settings'
-
+import importhacks
 from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import util

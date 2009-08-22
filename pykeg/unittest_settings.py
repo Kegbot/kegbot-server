@@ -49,3 +49,10 @@ INSTALLED_APPS = (
 )
 
 AUTH_PROFILE_MODULE = "core.UserProfile"
+
+# add external paths
+import os
+import sys
+_local_dir = os.path.dirname(sys.modules[__name__].__file__)
+_package_dir = os.path.normpath(os.path.join(_local_dir, '..'))
+sys.path.append(os.path.join(_package_dir, 'pykeg', 'external'))

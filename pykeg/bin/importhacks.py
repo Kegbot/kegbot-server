@@ -42,11 +42,15 @@ if not os.environ.get('DJANGO_SETTINGS_MODULE'):
 
 ### Extend the python path if import fails
 
+_local_dir = os.path.dirname(sys.modules[__name__].__file__)
+_package_dir = os.path.normpath(os.path.join(_local_dir, '../..'))
+
+# add external paths
+sys.path.append(os.path.join(_package_dir, 'pykeg', 'external'))
+
 try:
   import pykeg
 except ImportError:
-  _local_dir = os.path.dirname(sys.modules[__name__].__file__)
-  _package_dir = os.path.normpath(os.path.join(_local_dir, '../..'))
   print 'Adding to PYTHONPATH:', _package_dir
   sys.path.append(_package_dir)
 

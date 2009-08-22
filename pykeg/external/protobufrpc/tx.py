@@ -26,7 +26,6 @@ from twisted.internet.defer import Deferred
 from twisted.protocols.basic import Int32StringReceiver
 from twisted.internet.protocol import DatagramProtocol
 import google.protobuf.service
-from pykeg.external.protobufrpc import protobufrpc_pb2
 from protobufrpc_pb2 import Rpc, Request, Response, Error
 from common import Controller
 

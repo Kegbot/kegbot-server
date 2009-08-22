@@ -24,7 +24,6 @@ protocol.
 
 import logging
 
-from pykeg.external import protobufrpc
 from protobufrpc.synchronous import Proxy
 from protobufrpc.synchronous import TcpChannel
 

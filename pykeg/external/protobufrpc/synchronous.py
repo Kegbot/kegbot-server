@@ -21,7 +21,6 @@
 import socket
 import google.protobuf.service
 import threading
-from pykeg.external import protobufrpc
 from protobufrpc.common import Controller
 from protobufrpc.protobufrpc_pb2 import Rpc, Request, Response, Error
 import struct

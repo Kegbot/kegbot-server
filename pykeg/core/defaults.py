@@ -1,4 +1,5 @@
 from pykeg.core import models
+from pykeg.core import units
 
 def db_is_installed():
   try:
@@ -12,7 +13,9 @@ def new_user(username, gender="male", weight=180):
    u.save()
    u.set_password(username)
    u.save()
-   p = models.UserProfile(user=u, gender=gender, weight=weight)
+   p = u.get_profile()
+   p.gender = gender
+   p.weight = weight
    p.save()
    return u
 
@@ -26,37 +29,58 @@ def add_label(user, labelname):
   user.get_profile().labels.add(l)
 
 def set_defaults():
-   """ default values (contents may change with schema) """
-   if db_is_installed():
-     raise RuntimeError, "Database is already installed."
+  """ default values (contents may change with schema) """
+  if db_is_installed():
+    raise RuntimeError, "Database is already installed."
 
-   # config table defaults
-   default_config = (
-      ('logging.logfile', 'keg.log'),
-      ('logging.logformat', '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'),
-      ('logging.use_logfile', 'true'),
-      ('logging.use_stream', 'true'),
-      ('db.schema_version', str(models.SCHEMA_VERSION)),
-   )
-   for key, val in default_config:
-      rec = models.Config(key=key, value=val)
-      rec.save()
+  # config table defaults
+  default_config = (
+     ('logging.logfile', 'keg.log'),
+     ('logging.logformat', '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'),
+     ('logging.use_logfile', 'true'),
+     ('logging.use_stream', 'true'),
+     ('db.schema_version', str(models.SCHEMA_VERSION)),
+  )
+  for key, val in default_config:
+     rec = models.Config(key=key, value=val)
+     rec.save()
 
-   # user defaults
-   guest_user = new_user('guest')
+  # user defaults
+  guest_user = new_user('guest')
 
-   # brewer defaults
-   unk_brewer = models.Brewer(name='Unknown Brewer')
-   unk_brewer.save()
+  # brewer defaults
+  unk_brewer = models.Brewer(name='Unknown Brewer')
+  unk_brewer.save()
 
-   # beerstyle defaults
-   unk_style = models.BeerStyle(name='Unknown Style')
-   unk_style.save()
+  # beerstyle defaults
+  unk_style = models.BeerStyle(name='Unknown Style')
+  unk_style.save()
 
-   # beertype defaults
-   unk_type = models.BeerType(name="Unknown Beer", brewer=unk_brewer, style=unk_style)
-   unk_type.save()
+  # beertype defaults
+  unk_type = models.BeerType(name="Unknown Beer", brewer=unk_brewer, style=unk_style)
+  unk_type.save()
 
-   # userlabel defaults
-   add_label(guest_user, '__default_user__')
-   add_label(guest_user, '__no_bac__')
+  # userlabel defaults
+  add_label(guest_user, '__default_user__')
+  add_label(guest_user, '__no_bac__')
+
+  # KegSize defaults - from http://en.wikipedia.org/wiki/Keg#Size
+  default_sizes = (
+    (15.5, "Full Keg (half barrel)"),
+    (13.2, "Import Keg (European barrel)"),
+    (7.75, "Pony Keg (quarter barrel)"),
+    (6.6, "European Half Barrel"),
+    (5.23, "Sixth Barrel (torpedo keg)"),
+    (5.0, "Corny Keg"),
+    (1.0, "Mini Keg"),
+  )
+  for gallons, description in default_sizes:
+    volume = units.Quantity(gallons, units.UNITS.USGallon)
+    volume_int = volume.Amount(in_units=units.RECORD_UNIT)
+
+    ks = models.KegSize(
+      name=description,
+      volume=volume_int,
+    )
+    ks.save()
+

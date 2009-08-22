@@ -143,7 +143,7 @@ class KegSize(models.Model):
     return units.Quantity(self.volume, units.RECORD_UNIT)
 
   def __str__(self):
-    return "%s (%i ounces)" % (self.name, self.Volume().ConvertTo.Ounce)
+    return "%s [%.2f gal]" % (self.name, self.Volume().ConvertTo.USGallon)
 
   name = models.CharField(max_length=128)
   volume = models.IntegerField()

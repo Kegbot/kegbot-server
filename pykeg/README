@@ -1,19 +1,4 @@
-kegbot controller code readme
-mike wakerly
-updated 8/18/2005
---------------------------------------------------------------------------------
-WHAT IS HERE?
+Documentation for pykeg, and other components, is located in the `docs` tree
+(../docs/).
 
-   This is the source tree for the kegbot controller code. This is a bunch of
-   python stuff that forms the glue between the Kegboard controller board and
-   the back end (presently a MySQL database.)
-
-HOW TO SETUP KEGBOT
-
-   Kegbot isn't quite there yet with a nice general-purpose installer, but try
-   running 'configure.py' and see how far you get.
-
-HOW TO RUN KEGBOT
-
-   $ python kegbot.py
-
+For more help, visit http://kegbot.org/

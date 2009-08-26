@@ -15,8 +15,6 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   kegerator-howto/index
-   kegbot-howto/index
    user-guide/index
    kegboard-guide/index
 
@@ -38,7 +36,7 @@ these other Kegbot resources:
 **Kegbot wiki**
   The `Kegbot Wiki <http://kegbot.org/wiki>`_ is something of a scratchpad of
   notes and ideas; anyone can add and edit information on the wiki.
-  
+
   Unlike the official, published docs (which are intended to describe stable
   features and Kegbot releases), the wiki is a place for bleeding-edge notes and
   ideas (some of which may wind up here.)

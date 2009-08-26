@@ -14,7 +14,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   introduction
+   introduction/index
+   installation/index
+
+..
    architecture
    software-overview
    software-install

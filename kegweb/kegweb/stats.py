@@ -23,6 +23,7 @@
 from kegweb.kegweb import charts
 from kegweb.kegweb import view_util
 
+from pykeg.core import models
 from pykeg.core import units
 
 class UserStats:
@@ -90,7 +91,7 @@ class KegStats:
   def NextKeg(self):
     next_keg = models.Keg.objects.filter(channel=self.keg.channel)
     next_keg = models.Keg.objects.filter(status='offline')
-    next_keg = models.Keg.objects.filter(id__lt=keg.id)
+    next_keg = models.Keg.objects.filter(id__gt=self.keg.id)
     next_keg = next_keg.order_by('id')
     if next_keg.count():
       return next_keg[0]
@@ -103,7 +104,7 @@ class KegStats:
   def PreviousKeg(self):
     prev_keg = models.Keg.objects.filter(channel=self.keg.channel)
     prev_keg = models.Keg.objects.filter(status='offline')
-    prev_keg = models.Keg.objects.filter(id__lt=keg.id)
+    prev_keg = models.Keg.objects.filter(id__lt=self.keg.id)
     prev_keg = prev_keg.order_by('-id')
     if prev_keg.count():
       return prev_keg[0]

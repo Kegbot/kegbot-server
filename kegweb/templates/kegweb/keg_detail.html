@@ -11,15 +11,15 @@
    keg snapshot
 </div>
 <div class="content">
-   {% if prev_keg %}
+   {% if stats.PreviousKeg %}
    <div style="float:left">
-      <a href="/kegs/{{ prev_keg.id }}">&laquo; prev keg</a>
+      <a href="{% url kegweb.views.keg_detail stats.PreviousKeg.id %}">&laquo; prev keg</a>
    </div>
    {% endif %}
 
-   {% if next_keg %}
+   {% if stats.NextKeg %}
    <div style="float:right">
-      <a href="/kegs/{{ next_keg.id }}">next keg &raquo;</a>
+      <a href="{% url kegweb.views.keg_detail stats.NextKeg.id %}">next keg &raquo;</a>
    </div>
    {% endif %}
 

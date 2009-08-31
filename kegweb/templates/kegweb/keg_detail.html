@@ -5,6 +5,8 @@
 
 {% block content %}
 
+{% keg_stats keg as stats %}
+
 <div class="contenthead">
    keg snapshot
 </div>
@@ -27,8 +29,8 @@
   {{ keg.type }}
   </p>
   <p>
-  total poured: <b> {{ total_poured.ConvertTo.USGallon|floatformat:2 }} gallons</b>
-  ({{pct_full|floatformat:2}}% full)
+  total poured: <b> {{ stats.TotalPoured.ConvertTo.USGallon|floatformat:2 }} gallons</b>
+  ({{ stats.PercentFull|floatformat:2 }}% full)
   </p>
   {% ifequal keg.status "online" %}
   <p>
@@ -44,13 +46,13 @@
   day{{keg.keg_age.days|pluralize}}.
   {% endifequal %}
   </p>
-  {% if chart_pie %}
-  <img src="{{chart_pie}}&chf=bg,s,6699cc">
+  {% if stats.ChartUsersByVolume %}
+  <img src="{{ stats.ChartUsersByVolume }}&chf=bg,s,6699cc">
   {% endif %}
   <!--
   <p>
   cost by user:<br>
-  {% for pair in cost_by_user %}
+  {% for pair in stats.AllUsersByCost %}
   &nbsp;&nbsp;{{pair.1.username}} - ${{pair.0|floatformat:2}}<br>
   {% endfor %}
   </p>
@@ -77,7 +79,7 @@
       <td><b>when</b></td>
       <td><b>bac</b></td>
    </tr>
-   {% for drink in drinks %}
+   {% for drink in stats.AllDrinks %}
       {% ifchanged drink.GetGroup %} <tr><td colspan=6>&nbsp;</td></tr> {% endifchanged %}
       {% drink_span drink %}
    {% endfor %}

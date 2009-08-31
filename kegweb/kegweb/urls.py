@@ -26,8 +26,8 @@ urlpatterns = patterns('kegweb.kegweb.views',
 
       ### drinkers
       (r'^drinkers/$', 'user_list'),
-      (r'^drinkers/(?P<user_id>\d+)', 'user_detail'),
       (r'^drinkers/(?P<username>\w+)', 'user_detail'),
+      (r'^drinkers/(?P<user_id>\d+)', 'user_detail_by_id'),
       # redirects to the above for compatibility
       (r'^drinker/(?P<user_id>\d+)', 'redirect_to', {'url': '/drinkers/%(user_id)s'}),
       (r'^drinker/(?P<username>\w+)', 'redirect_to', {'url': '/drinkers/%(username)s'}),

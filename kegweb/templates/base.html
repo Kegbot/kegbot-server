@@ -12,16 +12,14 @@
    <div class="leadercol">
       {% block sidecol %}
       <div style="background:#003; font:12px Courier, sans-serif; text-align: center;color: #fff; border:1px solid #fff; border-top:0px;">
-         leaders:<br>
-         current keg
-         {{ kegweb.users.all }}
+         last 5 drinks
       </div>
 
-      {% for pair in top_5 %}
+      {% latest_drinks 5 as latest_drinks %}
+      {% for drink in latest_drinks %}
       <div style="text-align:center;">
-         {% mugshot_box pair.1 %}
-         {{pair.1.username}}<br>
-         {{pair.0|floatformat:2 }}
+         {% mugshot_box drink.user %}
+         {{drink.user.username}}<br>
       </div>
       {% endfor %}
       {% endblock %}
@@ -39,9 +37,9 @@
             <a href="/">main</a> |
             <a href="/kegs">kegs</a> |
             <a href="/leaders">leader board</a> |
-            {% if logged_in_user %}
+            {% if user.is_authenticated %}
             <a href="/account">account</a> |
-            <a href="/accounts/logout"><b>logout {{logged_in_user.username}}</b></a>
+            <a href="/accounts/logout"><b>logout {{user.username}}</b></a>
             {% else %}
             <a href="/accounts/login">login</a>
             {% endif %}

@@ -22,6 +22,11 @@
 
 from pykeg.core import models
 
+def all_valid_drinks():
+  drinks = models.Drink.objects.filter(status='valid')
+  drinks = drinks.filter(volume__gt=0)
+  return drinks
+
 def current_keg():
   q = models.Keg.objects.filter(status='online').order_by('-id')
   if len(q):

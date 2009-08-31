@@ -52,10 +52,10 @@
 <div class="content">
    <p>
 
-   {% if drinking_alone %}
+   {% if not drink.GetGroup %}
      <b>{{ drink.user.username }}</b> appeared to be drinking alone.
    {% else %}
-     {% show_drink_group drink_group %}
+     {% show_drink_group drink.GetGroup %}
    {% endif %}
 
    </p>

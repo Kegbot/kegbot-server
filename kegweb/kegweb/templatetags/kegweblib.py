@@ -1,10 +1,15 @@
 import time
 
 from django.template import Library
+from django.template import Node
+from django.template import TemplateSyntaxError
+from django.template import Variable
 from django.utils.safestring import mark_safe
 
 from pykeg.core import models
 from pykeg.core import units
+
+from kegweb.kegweb import stats
 
 register = Library()
 
@@ -34,6 +39,68 @@ register.inclusion_tag('kegweb/drink_group.html')(show_drink_group)
 def render_page(page):
    return {'page' : page}
 register.inclusion_tag('kegweb/page_block.html')(render_page)
+
+def latest_drinks(parser, token):
+  """ {% latest_drinks [number] as <context_var> %} """
+  tokens = token.contents.split()
+  if len(tokens) not in (3, 4):
+    raise TemplateSyntaxError('%s requires 0, 1, or 3 arguments' % (tokens[0],))
+
+  if len(tokens) > 3:
+    num_items = tokens[1]
+  else:
+    num_items = 5
+
+  if tokens[2] != 'as':
+    raise TemplateSyntaxError('%s Argument 2 must be "as"' % (tokens[0],))
+
+  var_name = tokens[3]
+  queryset = models.Drink.objects.all().order_by('-starttime')
+
+  return QueryNode(var_name, queryset, num_items)
+
+register.tag('latest_drinks', latest_drinks)
+
+class QueryNode(Node):
+  def __init__(self, var_name, queryset, limit):
+    self._queryset = queryset
+    self._var_name = var_name
+    self._limit_items = limit
+
+  def render(self, context):
+    context[self._var_name] = list(self._queryset[:self._limit_items])
+    return ''
+
+def user_stats(parser, token):
+  """ {% user_stats <user> as <context_var> %} """
+  tokens = token.contents.split()
+  if len(tokens) != 4:
+    raise TemplateSyntaxError('%s requires 3 arguments' % (tokens[0],))
+
+  return StatsNode(tokens[1], tokens[3], stats.UserStats)
+
+class StatsNode(Node):
+  def __init__(self, obj_name, var_name, stats_cls):
+    self._obj_var = Variable(obj_name)
+    self._var_name = var_name
+    self._stats_cls = stats_cls
+
+  def render(self, context):
+    obj = self._obj_var.resolve(context)
+    context[self._var_name] = self._stats_cls(obj)
+    return ''
+
+register.tag('user_stats', user_stats)
+
+def keg_stats(parser, token):
+  """ {% keg_stats <keg> as <context_var> %} """
+  tokens = token.contents.split()
+  if len(tokens) != 4:
+    raise TemplateSyntaxError('%s requires 3 arguments' % (tokens[0],))
+
+  return StatsNode(tokens[1], tokens[3], stats.KegStats)
+
+register.tag('keg_stats', keg_stats)
 
 ### filters
 
@@ -89,7 +156,7 @@ def humanizeTimeDiff(timestamp = None):
         return str
     elif minutes > 0:
         if minutes == 1:tStr = "min"
-        else:           tStr = "mins"           
+        else:           tStr = "mins"
         str = str + "%s %s ago" %(minutes, tStr)
         return str
     elif seconds > 0:

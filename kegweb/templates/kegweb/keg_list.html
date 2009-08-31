@@ -11,7 +11,7 @@
 <div class="content">
   <div class="box">
   <table class="sortable" cellspacing=0 border=0 width="430">
-  {% for keg in kegs %}
+  {% for keg in keg_list %}
   <tr>
     <td><a href="{% url kegweb.views.keg_detail keg.id %}">keg {{keg.id}}&nbsp;</a></td>
     <td>{{keg.type.name|lower}}&nbsp;</td>

@@ -5,8 +5,10 @@
 
 {% block content %}
 
+{% user_stats drinker as stats %}
+
 <div class="contenthead">
-   drinker info: {{ drinker.username }}
+   drinker info
 </div>
 <div class="content">
    <table width="100%" cellspacing=3 cellpadding=1 border=0>
@@ -15,7 +17,7 @@
             <div>
             {% mugshot_box drinker 128 %}
             </div>
-            <font size=+1>{{ rating }}</font><br>({{ avg_drinks_hour }} drinks/hour)
+            <font size=+1>{{ drinker.username }}</font>
          </td>
          <td valign="top">
 
@@ -24,22 +26,25 @@
             </div>
             <div class="plainbox" style="width:280px;">
                <table border=0>
+                  {% if stats.HasHadADrink %}
                   <tr>
                      <td align="right" valign="top"><b>first drink:&nbsp;</b></td>
                      <td colspan="1" align="left">
-                       {{ first_drink.starttime|humanizeTimeDiff|lower }}
+                       {{ stats.EarliestDrink.starttime|humanizeTimeDiff|lower }}
                      </td>
                   </tr>
                   <tr>
                      <td align="right" valign="top"><b>last drink:&nbsp;</b></td>
                      <td colspan="1" align="left">
-                       {{ last_drink.starttime|humanizeTimeDiff|lower }}
+                       {{ stats.LatestDrink.starttime|humanizeTimeDiff|lower }}
                      </td>
                   </tr>
                   <tr>
                      <td align="right" valign="top"><b>total drinks:&nbsp;</b></td>
-                     <td colspan="1" align="left">{{ drinks.count }}</td>
+                     <td colspan="1" align="left">{{ stats.AllDrinks.count }}</td>
                   </tr>
+                  {% else %}
+                  {% endif %}
                </table>
             </div>
 
@@ -51,9 +56,9 @@
                   <tr>
                      <td align="right" valign="top"><b>career:&nbsp;</b></td>
                      <td colspan="1" align="left">
-                      {{ total_volume.ConvertTo.Ounce|floatformat:2}} oz<br>
-                      = {{ total_volume.ConvertTo.Pint|floatformat:2}} pints<br>
-                      = {{ total_volume.ConvertTo.HalfBarrelKeg|floatformat:2}} kegs<br>
+                      {{ stats.TotalVolume.ConvertTo.Ounce|floatformat:2}} oz<br>
+                      = {{ stats.TotalVolume.ConvertTo.Pint|floatformat:2}} pints<br>
+                      = {{ stats.TotalVolume.ConvertTo.HalfBarrelKeg|floatformat:2}} kegs<br>
                      </td>
                   </tr>
                </table>
@@ -82,7 +87,7 @@
       <td><b>when</b></td>
       <td><b>bac</b></td>
    </tr>
-   {% for drink in drinks %}
+   {% for drink in stats.AllDrinks %}
       {% ifchanged drink.GetGroup %} <tr><td colspan=6>&nbsp;</td></tr> {% endifchanged %}
       {% drink_span drink %}
    {% endfor %}

@@ -12,7 +12,7 @@ also be possible to adapt the instructions to Windows or MacOS X.
 .. toctree::
   :maxdepth: 2
 
-  kegbot-install
   database-install
+  kegbot-install
   pykeg-install
   kegweb-install

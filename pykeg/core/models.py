@@ -19,9 +19,9 @@
 
 import datetime
 
+
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib import admin
 
 from pykeg.core import kb_common
 from pykeg.core import units
@@ -441,3 +441,10 @@ class Config(models.Model):
 
   key = models.CharField(max_length=128)
   value = models.TextField()
+
+  @classmethod
+  def get(cls, key, default=None):
+    try:
+      return cls.objects.get(key=key)
+    except cls.DoesNotExist:
+      return default

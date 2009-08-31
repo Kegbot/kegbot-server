@@ -10,12 +10,14 @@ def basedir():
    return os.path.abspath(os.path.dirname(__file__))
 
 urlpatterns = patterns('',
+    ### django admin site
     (r'^admin/(.*)', admin.site.root),
-    (r'', include('kegweb.kegweb.urls')),
-)
 
-urlpatterns += patterns('',
-      (r'^site_media/(.*)$',
-         'django.views.static.serve',
-         {'document_root': os.path.join(basedir(), 'media')}),
+    ### static media
+    (r'^site_media/(.*)$',
+     'django.views.static.serve',
+     {'document_root': os.path.join(basedir(), 'media')}),
+
+    ### main kegweg urls
+    (r'', include('kegweb.kegweb.urls')),
 )

@@ -21,15 +21,14 @@
 import logging
 
 from pykeg.core import kb_common
+from pykeg.core import config
 from pykeg.core import models
 from pykeg.core import SQLConfigParser
 
 class KegbotBackend(object):
   def __init__(self):
     self._logger = logging.getLogger('backend')
-    self._config = SQLConfigParser.DjangoConfigParser()
-
-    self._config.read(models.Config)
+    self._config = config.KegbotConfig()
 
   def GetConfig(self):
     return self._config
@@ -51,7 +50,7 @@ class KegbotBackend(object):
     return default_user
 
   def CheckSchemaVersion(self):
-    installed_schema = self._config.getint('db', 'schema_version')
+    installed_schema = self._config.get('db.schema_version')
     if installed_schema < models.SCHEMA_VERSION:
       self._logger.fatal('Error: outdated schema detected! (latest = %i, installed = %i)' %
             (installed_schema, models.SCHEMA_VERSION))

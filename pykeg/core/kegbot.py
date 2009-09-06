@@ -71,6 +71,12 @@ class KegbotEnv(object):
     self._service_thread.AddService(self._flow_service)
     self._service_thread.AddService(self._drink_db_service)
     self._service_thread.AddService(self._thermo_service)
+
+    if self._backend.GetConfig().IsFeatureEnabled('twitter'):
+      from pykeg.contrib.twitter import service as twitter_service
+      self._twitter_service = twitter_service.TwitterService('twitter', self)
+      self._service_thread.AddService(self._twitter_service)
+
     self.AddThread(self._service_thread)
 
     self.AddThread(kb_threads.EventHubServiceThread(self, 'eventhub-thread'))

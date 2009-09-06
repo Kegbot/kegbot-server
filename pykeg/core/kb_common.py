@@ -24,12 +24,7 @@ GROUP_SESSION_TIME_MINUTES = 90
 MAX_METER_READING_DELTA = 2200*2
 
 # Address the kegnet server should bind to.
-#KEGNET_SERVER_BIND_ADDR = "127.0.0.1"   # listen on localhost only
-#KEGNET_SERVER_BIND_ADDR = ""            # listen on all network interface
-KEGNET_SERVER_BIND_ADDR = "127.0.0.1"
-
-# Port kegnet server should listen to
-KEGNET_SERVER_BIND_PORT = 9999
+KB_CORE_DEFAULT_ADDR = 'localhost:9805'
 
 DEFAULT_NEW_USER_WEIGHT = 140
 DEFAULT_NEW_USER_GENDER = 'male'

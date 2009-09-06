@@ -24,19 +24,15 @@ import logging
 import socket
 import urllib
 
+from pykeg.core import kb_common
+from pykeg.core import util
 from pykeg.core.net import kegnet_message
 from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_string('kb_core_hostname', 'localhost',
-    'Hostname or ip address of the kegbot core to connect to.  If the special '
-    'value "_auto_" is given (default), the program will attempt to locate '
-    'the kegbot core automatically. ')
-
-gflags.DEFINE_integer('kb_core_port', 9999,
-    'Port number of host at --kb_core_hostname to connect to.  Note that this '
-    'value is ignored if --kb_core_hostname=_auto_.')
+gflags.DEFINE_string('kb_core_addr', kb_common.KB_CORE_DEFAULT_ADDR,
+    'The address of the kb_core host, as "<hostname>:<port>".')
 
 gflags.DEFINE_string('client_name', 'mykegboard',
     'Name to use for this client connection.')
@@ -52,7 +48,7 @@ class ClientException(Exception):
 class BaseClient:
   def __init__(self, server_addr=None, client_name=None):
     if server_addr is None:
-      server_addr = (FLAGS.kb_core_hostname, FLAGS.kb_core_port)
+      server_addr = util.str_to_addr(FLAGS.kb_core_addr)
     if client_name is None:
       client_name = FLAGS.client_name
     self._server_host, self._server_port = server_addr

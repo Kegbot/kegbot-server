@@ -10,17 +10,6 @@ from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_string('kegnet_server_bind_addr',
-    kb_common.KEGNET_SERVER_BIND_ADDR,
-    'Address that the kegnet server should bind to')
-
-gflags.DEFINE_integer('kegnet_server_bind_port',
-    kb_common.KEGNET_SERVER_BIND_PORT,
-    'Port that the kegnet server should bind to',
-    lower_bound=1,
-    upper_bound=2**16 - 1)
-
-
 ### Base kegbot thread class
 
 class CoreThread(util.KegbotThread):
@@ -160,8 +149,7 @@ class EventHandlerThread(CoreThread):
 class NetProtocolThread(CoreThread):
   def __init__(self, kb_env, name):
     CoreThread.__init__(self, kb_env, name)
-    addr = (FLAGS.kegnet_server_bind_addr, FLAGS.kegnet_server_bind_port)
-    self._server = kegnet_server.KegnetServer(addr, self._kb_env)
+    self._server = kegnet_server.KegnetServer(self._kb_env)
     self._server.AddService(kegnet_server.KegnetBaseService)
     self._server.AddService(kegnet_server.KegnetFlowService)
 

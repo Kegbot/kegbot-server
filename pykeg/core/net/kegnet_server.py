@@ -33,15 +33,28 @@ from pykeg.core import kb_common
 from pykeg.core import util
 from pykeg.core.net import kegnet_message
 
+from pykeg.external.gflags import gflags
+
+FLAGS = gflags.FLAGS
+
+gflags.DEFINE_string('kb_core_bind_addr', kb_common.KB_CORE_DEFAULT_ADDR,
+    'Address that the kegnet server should bind to.')
+
+
 class KegnetServer(HTTPServer):
-  def __init__(self, addr, kb_env):
-    self._addr = addr
+  def __init__(self, kb_env, bind_addr=None):
+    if bind_addr is None:
+      bind_addr = FLAGS.kb_core_bind_addr
+    if isinstance(bind_addr, basestring):
+      self._addr = util.str_to_addr(bind_addr)
+    else:
+      self._addr = addr
     self._kb_env = kb_env
     self._services = {}
     self._handlers = {}
     self._lock = threading.Lock()
     self._logger = logging.getLogger('kegnet-server')
-    HTTPServer.__init__(self, addr, KegnetServerRequestHandler)
+    HTTPServer.__init__(self, self._addr, KegnetServerRequestHandler)
 
   def AddService(self, service_cls):
     if service_cls in self._services:

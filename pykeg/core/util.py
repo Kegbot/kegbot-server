@@ -188,6 +188,17 @@ def instantBAC(gender, weight, alcpct, ounces):
 def decomposeBAC(bac,seconds_ago,rate=0.02):
   return max(0.0,bac - (rate * (seconds_ago/3600.0)))
 
+def str_to_addr(strdata, default_host=None, default_port=None):
+  """Extract a tuple of (hostname, port) from a string.
+
+  The string is specified as <hostname>:<port>
+  """
+  parts = strdata.split(':')
+
+  if len(parts) == 2:
+    return parts[0], int(parts[1])
+  raise ValueError
+
 def synchronized(f):
   """Decorator that synchronizes a class method with self._lock"""
   def new_f(self, *args, **kwargs):

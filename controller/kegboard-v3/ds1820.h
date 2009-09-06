@@ -1,3 +1,5 @@
+#define INVALID_TEMPERATURE_VALUE 0x7fffffff;
+
 class OneWire;
 
 class DS1820Sensor {

@@ -141,7 +141,7 @@ void writeOutputPacket()
 
 void writeHelloPacket()
 {
-  int foo = 0xef;
+  int foo = PROTOCOL_VERSION;
   gOutputPacket.Reset();
   gOutputPacket.SetType(KB_MESSAGE_TYPE_HELLO_ID);
   gOutputPacket.AddTag(KB_MESSAGE_TYPE_HELLO_TAG_PROTOCOL_VERSION, sizeof(foo), (char*)&foo);

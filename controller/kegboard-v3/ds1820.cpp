@@ -92,16 +92,20 @@ bool DS1820Sensor::FetchConversion()
 
 long DS1820Sensor::GetTemp(void)
 {
-  long scaled_temp = -999000;
+  long scaled_temp = INVALID_TEMPERATURE_VALUE;
   if (!m_temp_is_valid)
     return scaled_temp;
 
-  // DS18B20 reports temp in units of .125 degrees C.
-  // Start by calculating the absolute value in degreesC/1000.
-  // First 9 bits are temperature, rest is sign extended.
-  scaled_temp = 125 * (m_temp & 0x07ff);
+  // The DS18B20 reports temperature as a 16 bit value.  The least significant
+  // 12 bits are the temperature value, in increments of 1/16th deg C.  The most
+  // significant bits carry the sign extension.
+  //
+  // This method returns the temperature in 1/10^6 deg C, so the value is scaled
+  // up by (10^3/16) = 62500.
+  scaled_temp = (m_temp & 0x0fff) * 62500;
 
-  bool negative = (m_temp & 0xf800) ? true : false;
+  // Check sign extension
+  bool negative = (m_temp & 0xf000) ? true : false;
 
   if (negative)
     scaled_temp = -1 * scaled_temp;
@@ -111,6 +115,6 @@ long DS1820Sensor::GetTemp(void)
 
 void DS1820Sensor::PrintTemp(void)
 {
-  long temp = GetTemp() / 1000;
+  long temp = GetTemp() / 1000000;
   Serial.print(temp);
 }

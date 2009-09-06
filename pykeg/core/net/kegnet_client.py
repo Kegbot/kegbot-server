@@ -132,6 +132,7 @@ class KegnetClient(BaseClient):
 
   def SendFlowStop(self, tap_name):
     message = kegnet_message.FlowStopRequestMessage(tap_name=tap_name)
+    return self.SendMessage('flow/stop', message)
 
   def SendThermoUpdate(self, sensor_name, sensor_value):
     message = kegnet_message.ThermoUpdateMessage(sensor_name=sensor_name,

@@ -67,6 +67,8 @@ KB_EVENT = util.Enum(*(
   'FLOW_UPDATE',
   'FLOW_END',
 
+  'THERMO_UPDATE',
+
 ))
 
 

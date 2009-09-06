@@ -15,8 +15,7 @@ from pykeg.core import defaults
 from pykeg.core import event
 from pykeg.core import models
 from pykeg.core import kb_common
-from pykeg.core.net import kegnet
-from pykeg.scripts import gentestdata
+from pykeg.core.net import kegnet_client
 
 LOGGER = logging.getLogger('unittest')
 
@@ -24,7 +23,7 @@ class KegbotTestCase(TestCase):
   def setUp(self):
     del logging.root.handlers[:]
     defaults.set_defaults()
-    gentestdata.set_data()
+    defaults.gentestdata()
 
     self.kegbot = kegbot.KegbotCoreApp(daemon=False)
     self.env = self.kegbot._env
@@ -46,20 +45,17 @@ class KegbotTestCase(TestCase):
     del self.env
 
   def testSimpleFlow(self):
-    addr = (kb_common.KEGNET_SERVER_BIND_ADDR,
-            kb_common.KEGNET_SERVER_BIND_PORT)
-    client = kegnet.KegnetClient(addr, 'testclient')
-    client.Login()
+    client = kegnet_client.KegnetClient()
 
     # Synthesize a 2100-tick flow. The FlowManager should zero on the initial
     # reading of 1000.
-    client.StartFlow('meter0')
-    client.FlowUpdate('meter0', 1000)
-    client.FlowUpdate('meter0', 1100)
-    client.FlowUpdate('meter0', 2100)
-    client.FlowUpdate('meter0', 3100)
-    client.FlowUpdate('meter0', 3200)
-    client.StopFlow('meter0')
+    client.SendFlowStart('meter0')
+    client.SendFlowUpdate('meter0', 1000)
+    client.SendFlowUpdate('meter0', 1100)
+    client.SendFlowUpdate('meter0', 2100)
+    client.SendFlowUpdate('meter0', 3100)
+    client.SendFlowUpdate('meter0', 3200)
+    client.SendFlowStop('meter0')
 
     self.service_thread._FlushEvents()
 

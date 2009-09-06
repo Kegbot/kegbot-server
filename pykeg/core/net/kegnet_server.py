@@ -182,3 +182,16 @@ class KegnetFlowService(KegnetService):
     ev = event.Event(kb_common.KB_EVENT.END_FLOW)
     ev.device_name = msg['tap_name'].GetValue()
     self._kb_env.GetEventHub().PublishEvent(ev)
+
+
+class KegnetSensorService(KegnetService):
+  """Service that handles temperature sensors."""
+
+  @ApiEndpoint('sensor/update')
+  def HandleSensorUpdate(self, request):
+    """Updates the Kegbot core with a new sensor value."""
+    msg = kegnet_message.ThermoUpdateMessage(initial=request.http.params)
+    ev = event.Event(kb_common.KB_EVENT.THERMO_UPDATE)
+    ev.sensor_name = msg['sensor_name'].GetValue()
+    ev.sensor_value = msg['sensor_value'].GetValue()
+    self._kb_env.GetEventHub().PublishEvent(ev)

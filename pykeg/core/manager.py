@@ -62,16 +62,16 @@ class TapManager(object):
     self._logger = logging.getLogger('tap-manager')
     self._taps = {}
 
-  def _TapExists(self, name):
+  def TapExists(self, name):
     return name in self._taps
 
   def _CheckTapExists(self, name):
-    if not self._TapExists(name):
+    if not self.TapExists(name):
       raise UnknownTapError
 
   def RegisterTap(self, name):
     self._logger.info('Registering new tap: %s' % name)
-    if self._TapExists(name):
+    if self.TapExists(name):
       raise AlreadyRegisteredError
     self._taps[name] = Tap(name)
 

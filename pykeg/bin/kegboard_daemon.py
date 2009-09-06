@@ -33,8 +33,7 @@ The daemon should run on any machine which is attached to kegboard hardware.
 
 The daemon must connect to a Kegbot Core in order to publish data (such as flow
 and temperature events).  This is a TCP connection, using the Kegnet Protocol to
-exchange data.  The address and port of the core is specified with the flags
---kb_core_hostname and --kb_core_port.
+exchange data.
 """
 
 import asynchat
@@ -52,24 +51,11 @@ import importhacks
 from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import util
-from pykeg.core.net import kegnet
+from pykeg.core.net import kegnet_client
 from pykeg.hw.kegboard import kegboard
 from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
-
-gflags.DEFINE_string('kegboard_name', 'mykegboard',
-    'Name to use for this kegboard.')
-
-gflags.DEFINE_string('kb_core_hostname', 'localhost',
-    'Hostname or ip address of the kegbot core to connect to.  If the special '
-    'value "_auto_" is given (default), the program will attempt to locate '
-    'the kegbot core automatically. ')
-
-gflags.DEFINE_integer('kb_core_port', 9999,
-    'Port number of host at --kb_core_hostname to connect to.  Note that this '
-    'value is ignored if --kb_core_hostname=_auto_.')
-
 
 class KegboardManagerApp(kb_app.App):
   def __init__(self, name='core', daemon=FLAGS.daemon):
@@ -78,30 +64,24 @@ class KegboardManagerApp(kb_app.App):
   def _Setup(self):
     kb_app.App._Setup(self)
 
-    net_addr = (FLAGS.kb_core_hostname, FLAGS.kb_core_port)
-    client = kegnet.KegnetClient(net_addr, FLAGS.kegboard_name)
-
-    self._network_thr = KegboardNetworkThread('network', FLAGS.kegboard_name,
-        client)
-    self._AddAppThread(self._network_thr)
+    self._client = kegnet_client.KegnetClient()
 
     self._manager_thr = KegboardManagerThread('kegboard-manager',
-        self._network_thr)
+        self._client)
     self._AddAppThread(self._manager_thr)
 
     self._device_io_thr = KegboardDeviceIoThread('device-io', self._manager_thr,
-        FLAGS.kegboard_name, FLAGS.kegboard_device, FLAGS.kegboard_speed)
+        FLAGS.kegboard_device, FLAGS.kegboard_speed)
     self._AddAppThread(self._device_io_thr)
 
 
 class KegboardManagerThread(util.KegbotThread):
   """Manager of local kegboard devices."""
 
-  def __init__(self, name, net_thread):
+  def __init__(self, name, client):
     util.KegbotThread.__init__(self, name)
-    self._net_thread = net_thread
+    self._client = client
     self._message_queue = Queue.Queue()
-
     self._meter_cache = {}
 
   def PostDeviceMessage(self, device_name, device_message):
@@ -119,19 +99,22 @@ class KegboardManagerThread(util.KegbotThread):
     self._logger.info('Exiting main loop.')
 
   def _HandleDeviceMessage(self, device_name, msg):
-    client = self._net_thread.GetClient(device_name)
-
     if isinstance(msg, kegboard.MeterStatusMessage):
       # Flow update: compare to last value and send a message if needed
       meter_name = msg.meter_name.GetValue()
       curr_val = msg.meter_reading.GetValue()
       last_val = self._meter_cache.get(meter_name)
-      if last_val is None or curr_val > last_val:
-        client.FlowUpdate(meter_name, curr_val)
-      self._meter_cache[meter_name] = curr_val
+
+      try:
+        if last_val is None or curr_val > last_val:
+          self._client.SendFlowUpdate(meter_name, curr_val)
+        self._meter_cache[meter_name] = curr_val
+      except kegnet_client.ClientException, e:
+        self._logger.warning('Got error during send: %s' % (e,))
+
     elif isinstance(msg, kegboard.TemperatureReadingMessage):
       # Thermo update
-      #client.SendThermoStatus(msg.sensor_name.GetValue(),
+      #self._client.SendThermoStatus(msg.sensor_name.GetValue(),
       #    msg.sensor_reading.GetValue())
       pass
 
@@ -142,10 +125,9 @@ class KegboardDeviceIoThread(util.KegbotThread):
   This thread continuously reads from attached kegboard devices and passes
   messages to the KegboardManagerThread.
   """
-  def __init__(self, name, manager, device_name, device_path, device_speed):
+  def __init__(self, name, manager, device_path, device_speed):
     util.KegbotThread.__init__(self, name)
     self._manager = manager
-    self._device_name = device_name
     self._device_path = device_path
     self._device_speed = device_speed
 
@@ -155,7 +137,7 @@ class KegboardDeviceIoThread(util.KegbotThread):
   def _SetupSerial(self):
     self._logger.info('Setting up serial port...')
     self._serial_fd = serial.Serial(self._device_path, self._device_speed)
-    self._reader = kegboard.KegboardReader(self._serial_fd, self._device_name)
+    self._reader = kegboard.KegboardReader(self._serial_fd)
 
   def run(self):
     self._SetupSerial()
@@ -168,7 +150,7 @@ class KegboardDeviceIoThread(util.KegbotThread):
     self._logger.info('Starting reader loop...')
     while not self._quit:
       msg = self._reader.GetNextMessage()
-      self._manager.PostDeviceMessage(self._device_name, msg)
+      self._manager.PostDeviceMessage('kegboard', msg)
     self._logger.info('Reader loop ended.')
 
 
@@ -180,15 +162,10 @@ class KegboardNetworkThread(util.KegbotThread):
     self._sock_map = {}
     self._client = client
 
-  def _Register(self):
-    self._logger.info("Registering device.")
-    self._client.Login()
-
   def GetClient(self, device_name):
     return self._client
 
   def run(self):
-    self._Register()
     self._logger.info("Running asyncore loop.")
     asyncore.loop(map=self._sock_map)
 

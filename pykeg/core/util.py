@@ -188,5 +188,15 @@ def instantBAC(gender, weight, alcpct, ounces):
 def decomposeBAC(bac,seconds_ago,rate=0.02):
   return max(0.0,bac - (rate * (seconds_ago/3600.0)))
 
+def synchronized(f):
+  """Decorator that synchronizes a class method with self._lock"""
+  def new_f(self, *args, **kwargs):
+    self._lock.acquire()
+    try:
+      return f(self, *args, **kwargs)
+    finally:
+      self._lock.release()
+  return new_f
+
 def CtoF(t):
   return ((9.0/5.0)*t) + 32

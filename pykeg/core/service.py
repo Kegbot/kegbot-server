@@ -71,7 +71,7 @@ class DrinkDatabaseService(KegbotService):
 
   def _LoadEventMap(self):
     ret = {
-        KB_EVENT.FLOW_ENDED: self._HandleFlowCompleteEvent,
+        KB_EVENT.FLOW_END: self._HandleFlowCompleteEvent,
         KB_EVENT.DRINK_CREATED : self._HandleDrinkCreatedEvent,
     }
     return ret
@@ -135,6 +135,7 @@ class FlowManagerService(KegbotService):
     ret = {
         KB_EVENT.FLOW_DEV_ACTIVITY : self._HandleFlowActivityEvent,
         KB_EVENT.FLOW_DEV_IDLE: self._HandleFlowIdleEvent,
+        KB_EVENT.START_FLOW: self._HandleFlowStartFlowEvent,
         KB_EVENT.END_FLOW: self._HandleFlowEndFlowEvent,
     }
     return ret
@@ -144,12 +145,15 @@ class FlowManagerService(KegbotService):
 
     The handler accquires the FlowManager, and calls FlowUpdate.  This may
     result in one of three outcomes:
-      - New flow created. A FLOW_STARTED event is emitted, followed by a
+      - New flow created. A FLOW_START event is emitted, followed by a
         FLOW_UPDATE event.
       - Existing flow updated. A FLOW_UPDATE event is emitted.
       - Update refused.  The channel is unknown by the FlowManager.  No events
         are emitted.
     """
+    tap_mgr = self._kb_env.GetTapManager()
+    if not tap_mgr.TapExists(ev.device_name):
+      tap_mgr.RegisterTap(ev.device_name)
     flow_mgr = self._kb_env.GetFlowManager()
     flow_instance, is_new = flow_mgr.UpdateFlow(ev.device_name,
         ev.meter_reading)
@@ -157,10 +161,15 @@ class FlowManagerService(KegbotService):
   def _HandleFlowIdleEvent(self, ev):
     flow_mgr = self._kb_env.GetFlowManager()
     flow = flow_mgr.EndFlow(ev.device_name)
-    self._CreateAndPublishEvent(KB_EVENT.FLOW_ENDED, flow=flow)
+    self._CreateAndPublishEvent(KB_EVENT.FLOW_END, flow=flow)
+
+  def _HandleFlowStartFlowEvent(self, ev):
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.StartFlow(ev.device_name)
+    self._CreateAndPublishEvent(KB_EVENT.FLOW_START, flow=flow)
 
   def _HandleFlowEndFlowEvent(self, ev):
     flow_mgr = self._kb_env.GetFlowManager()
     flow = flow_mgr.EndFlow(ev.device_name)
-    self._CreateAndPublishEvent(KB_EVENT.FLOW_ENDED, flow=flow)
+    self._CreateAndPublishEvent(KB_EVENT.FLOW_END, flow=flow)
 

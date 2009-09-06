@@ -265,9 +265,8 @@ def GetMessageForBytes(bytes):
 
 
 class KegboardReader(object):
-  def __init__(self, fd, name):
-    self._name = name
-    self._logger = logging.getLogger('reader-%s' % self._name)
+  def __init__(self, fd):
+    self._logger = logging.getLogger('kegboard-reader')
     self._fd = fd
     self._framing_lost_count = 0
 

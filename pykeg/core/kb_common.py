@@ -60,10 +60,12 @@ KB_EVENT = util.Enum(*(
   'FLOW_DEV_ACTIVITY',
   'FLOW_DEV_IDLE',
 
+  'START_FLOW',
+  'END_FLOW',
+
   'FLOW_START',
   'FLOW_UPDATE',
-  'FLOW_ENDED',
-  'END_FLOW',
+  'FLOW_END',
 
 ))
 

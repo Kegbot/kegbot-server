@@ -22,9 +22,6 @@ import simplejson
 
 ### Field classes
 class Field(object):
-  def __init__(self, value=None):
-    self._value = value
-
   def _Validate(self, value):
     pass
 
@@ -37,30 +34,27 @@ class Field(object):
       return value[0]
     return value
 
-  def SetValue(self, value):
+  def ParseValue(self, value):
     self._Validate(value)
-    self._value = value
-
-  def GetValue(self):
-    return self._value
+    return value
 
 class StringField(Field):
-  def SetValue(self, val):
+  def ParseValue(self, val):
     val = self._FlattenListValue(val)
-    self._value = str(val)
+    return str(val)
 
 class PositiveIntegerField(Field):
-  def SetValue(self, val):
+  def ParseValue(self, val):
     val = self._FlattenListValue(val)
     intval = int(val)
     if intval < 0:
       raise ValueError, 'A positive integer is required'
-    self._value = intval
+    return intval
 
 class FloatField(Field):
-  def SetValue(self, val):
+  def ParseValue(self, val):
     val = self._FlattenListValue(val)
-    self._value = float(val)
+    return float(val)
 
 ### Message classes
 # These metaclasses are modeled after Ian Bicking's example:
@@ -90,6 +84,12 @@ class BaseMessage(Declarative):
   def add_field(cls, name, field):
     cls.class_fields[name] = field
     field.name = name
+    def getter(self, name=name):
+      return self._values[name]
+    def setter(self, value, name=name):
+      parser = self._fields[name]
+      self._values[name] = parser.ParseValue(value)
+    setattr(cls, name, property(getter, setter))
 
 
 class Message(BaseMessage):
@@ -103,9 +103,7 @@ class Message(BaseMessage):
 
   def __init__(self, initial=None, **kwargs):
     self._fields = self.class_fields.copy()
-    #for name, field in self._fields.iteritems():
-    #  prop = property(field.GetValue, field.SetValue)
-    #  setattr(self, name, prop)
+    self._values = dict((k, None) for k in self.class_fields.keys())
 
     if initial is not None:
       self._UpdateFromDict(initial)
@@ -113,21 +111,19 @@ class Message(BaseMessage):
       self._UpdateFromDict(kwargs)
 
   def __str__(self):
-    vallist = ('%s=%s' % (k, v.GetValue()) for k, v in self._fields.iteritems())
+    vallist = ('%s=%s' % (k, v) for k, v in self._values.iteritems())
     return '<%s>' % (', '.join(vallist))
 
   def __iter__(self):
-    for name, field in self._fields.items():
+    for name, field in self._GetFields().items():
       yield field
 
-  def __getitem__(self, name):
-    return self._fields[name]
+  def _GetFields(self):
+    return self._fields
 
   def _UpdateFromDict(self, d):
     for k, v in d.iteritems():
-      if k not in self._fields:
-        raise ValueError, 'Unknown key: %s' % k
-      self._fields[k].SetValue(v)
+      setattr(self, k, v)
 
   @classmethod
   def FromJson(cls, json_str):
@@ -137,7 +133,7 @@ class Message(BaseMessage):
   def AsDict(self):
     ret = {}
     for k, v in self._fields.iteritems():
-      ret[k] = v.GetValue()
+      ret[k] = self._values.get(k)
     return ret
 
   def AsJson(self):
@@ -161,3 +157,7 @@ class ThermoUpdateMessage(Message):
   sensor_name = StringField()
   sensor_value = FloatField()
 
+m = ThermoUpdateMessage()
+m.sensor_name = 'foo'
+print m
+print m.sensor_name

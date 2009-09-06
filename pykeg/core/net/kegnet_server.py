@@ -176,8 +176,8 @@ class KegnetFlowService(KegnetService):
     """Updates the Kegbot core with a new flow meter reading."""
     msg = kegnet_message.FlowUpdateMessage(initial=request.http.params)
     ev = event.Event(kb_common.KB_EVENT.FLOW_DEV_ACTIVITY)
-    ev.device_name = msg['tap_name'].GetValue()
-    ev.meter_reading = msg['meter_reading'].GetValue()
+    ev.device_name = msg.tap_name
+    ev.meter_reading = msg.meter_reading
     self._kb_env.GetEventHub().PublishEvent(ev)
 
   @ApiEndpoint('flow/start')
@@ -185,7 +185,7 @@ class KegnetFlowService(KegnetService):
     """Force-starts a flow on the requested tap."""
     msg = kegnet_message.FlowStartMessage(initial=request.http.params)
     ev = event.Event(kb_common.KB_EVENT.FLOW_START)
-    ev.device_name = msg['tap_name'].GetValue()
+    ev.device_name = msg.tap_name
     self._kb_env.GetEventHub().PublishEvent(ev)
 
   @ApiEndpoint('flow/stop')
@@ -193,7 +193,7 @@ class KegnetFlowService(KegnetService):
     """Force-stops a flow on the requested tap."""
     msg = kegnet_message.FlowStopMessage(initial=request.http.params)
     ev = event.Event(kb_common.KB_EVENT.END_FLOW)
-    ev.device_name = msg['tap_name'].GetValue()
+    ev.device_name = msg.tap_name
     self._kb_env.GetEventHub().PublishEvent(ev)
 
 
@@ -205,6 +205,6 @@ class KegnetSensorService(KegnetService):
     """Updates the Kegbot core with a new sensor value."""
     msg = kegnet_message.ThermoUpdateMessage(initial=request.http.params)
     ev = event.Event(kb_common.KB_EVENT.THERMO_UPDATE)
-    ev.sensor_name = msg['sensor_name'].GetValue()
-    ev.sensor_value = msg['sensor_value'].GetValue()
+    ev.sensor_name = msg.sensor_name
+    ev.sensor_value = msg.sensor_value
     self._kb_env.GetEventHub().PublishEvent(ev)

@@ -42,8 +42,6 @@ test_clean:
 
 
 ### These targets are obsolete or rarely used
-testdata: distclean setup
-	$(PROD_DJANGO_ENV) scripts/gentestdata.py
 
 fixtures: distclean test
 	$(PROD_ADMIN_COMMAND) dumpdata $(PROD_ADMIN_ARGS) --format=json > core/fixtures/initial_data.json

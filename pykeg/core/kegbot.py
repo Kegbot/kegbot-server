@@ -35,7 +35,6 @@ import time
 from pykeg.core import alarm
 from pykeg.core import backend
 from pykeg.core import event
-from pykeg.core import Interfaces
 from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import kb_threads

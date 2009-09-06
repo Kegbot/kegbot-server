@@ -20,6 +20,8 @@
 
 import simplejson
 
+from pykeg.core import util
+
 ### Field classes
 class Field(object):
   def _Validate(self, value):
@@ -56,22 +58,11 @@ class FloatField(Field):
     val = self._FlattenListValue(val)
     return float(val)
 
+class DateTimeField(Field):
+  pass
+
 ### Message classes
-# These metaclasses are modeled after Ian Bicking's example:
-# http://blog.ianbicking.org/a-conservative-metaclass.html
-
-class DeclarativeMeta(type):
-  def __new__(meta, class_name, bases, new_attrs):
-    cls = type.__new__(meta, class_name, bases, new_attrs)
-    cls.__classinit__.im_func(cls, new_attrs)
-    return cls
-
-class Declarative(object):
-  __metaclass__ = DeclarativeMeta
-  def __classinit__(cls, new_attrs):
-    pass
-
-class BaseMessage(Declarative):
+class BaseMessage(util.Declarative):
   class_fields = {}
 
   def __classinit__(cls, new_attrs):
@@ -140,24 +131,70 @@ class Message(BaseMessage):
     return simplejson.dumps(self.AsDict())
 
 
-class FlowUpdateMessage(Message):
+class MeterUpdateMessage(Message):
+  """Message emitted when a meter reading changes."""
   tap_name = StringField()
   meter_reading = PositiveIntegerField()
 
 
-class FlowStartMessage(Message):
+class FlowStartRequestMessage(Message):
+  """Message emitted to request force-start of a flow."""
   tap_name = StringField()
 
 
-class FlowStopMessage(Message):
+class FlowStopRequestMessage(Message):
+  """Message emitted to request force-stop of a flow."""
+  tap_name = StringField()
+
+
+class TapIdleMessage(Message):
+  """Message emitted when a flow has become idle."""
   tap_name = StringField()
 
 
 class ThermoUpdateMessage(Message):
+  """Message emitted when a temperature sensor reading changes."""
   sensor_name = StringField()
   sensor_value = FloatField()
 
-m = ThermoUpdateMessage()
-m.sensor_name = 'foo'
-print m
-print m.sensor_name
+
+class FlowUpdateMessage(Message):
+  tap_name = StringField()
+  start_time = DateTimeField()
+  end_time = DateTimeField()
+  volume = PositiveIntegerField()
+  user = StringField()
+
+  @classmethod
+  def FromFlow(cls, flow):
+    msg = cls()
+    msg.tap_name = flow.GetTap().GetName()
+    msg.start_time = flow.GetStartTime()
+    msg.end_time = flow.GetEndTime()
+    msg.volume = flow.GetVolume()
+    msg.user = flow.GetUser()
+    return msg
+
+class DrinkCreatedMessage(Message):
+  tap_name = StringField()
+  drink_id = PositiveIntegerField()
+  keg_id = PositiveIntegerField()
+  start_time = DateTimeField()
+  end_time = DateTimeField()
+  volume = PositiveIntegerField()
+  user = StringField()
+
+  @classmethod
+  def FromFlowAndDrink(cls, flow, drink):
+    msg = cls()
+    msg.tap_name = flow.tap_name
+    msg.start_time = drink.starttime
+    msg.end_time = drink.endtime
+    msg.volume = drink.volume
+    if drink.keg:
+      msg.keg_id = drink.keg.id
+    else:
+      msg.keg_id = 0
+    msg.user = drink.user.username
+    msg.drink_id = drink.id
+    return msg

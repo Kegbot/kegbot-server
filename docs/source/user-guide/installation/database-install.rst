@@ -1,14 +1,13 @@
 .. _database-install:
 
-Installing the Kegbot database
-==============================
+Installing the database
+=======================
 
-Kegbot relies on the presence of a database system to store lots of data,
-including keg and drink information.  Kegbot currently supports `all databases
-supported by Django <http://docs.djangoproject.com/en/dev/ref/databases/>`_,
-though we've only tested `MySQL
-<http://docs.djangoproject.com/en/dev/ref/databases/>`_ and `SQLite
-<http://www.sqlite.org/>`_.
+Kegbot relies on a database system to store all data, including keg and drink
+information.  Kegbot currently supports `all databases supported by Django
+<http://docs.djangoproject.com/en/dev/ref/databases/>`_, though we've only
+tested `MySQL <http://docs.djangoproject.com/en/dev/ref/databases/>`_ and
+`SQLite <http://www.sqlite.org/>`_.
 
 This chapter covers selecting and installing a database for use by Kegbot.
 

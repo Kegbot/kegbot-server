@@ -82,7 +82,7 @@ class FakeKegboardApp(kb_app.App):
     for amt in flow:
       self._logger.info('Sending flow update: %i' % amt)
       try:
-        client.SendFlowUpdate(FLAGS.tap_name, amt)
+        client.SendMeterUpdate(FLAGS.tap_name, amt)
       except kegnet_client.ClientException, e:
         self._logger.warning('Got error during send: %s' % (e,))
       if FLAGS.delay_seconds:

@@ -64,17 +64,12 @@ class EventHub(object):
     if listener in self._event_listeners:
       self._event_listeners.remove(listener)
 
-  def PublishEvent(self, event):
+  def PublishEvent(self, type, payload=None):
     """Add a new event to the queue of events to publish.
 
     Events are dispatched to listeners in the DispatchNextEvent method.
     """
-    self._event_queue.put(event)
-
-  def CreateAndPublishEvent(self, event_name, **kwargs):
-    """Creates an event, and calls PublishEvent on it"""
-    ev = Event(event_name, **kwargs)
-    self.PublishEvent(ev)
+    self._event_queue.put(Event(type, payload=payload))
 
   def _IterEventListeners(self):
     """Iterate through all listeners."""

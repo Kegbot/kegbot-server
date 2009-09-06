@@ -16,6 +16,7 @@ Contents:
 
    introduction/index
    installation/index
+   getting-started/index
 
 ..
    architecture

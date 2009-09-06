@@ -5,6 +5,7 @@ import time
 
 from pykeg.core import kb_common
 from pykeg.core import util
+from pykeg.core.net import kegnet_message
 from pykeg.core.net import kegnet_server
 from pykeg.external.gflags import gflags
 
@@ -37,7 +38,7 @@ class WatchdogThread(CoreThread):
             continue
           if not self._quit and not thr.isAlive():
             self._logger.error('Thread %s died unexpectedly' % thr.getName())
-            self._kb_env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.QUIT)
+            self._kb_env.GetEventHub().PublishEvent(kb_common.KB_EVENT.QUIT)
             fault_detected = True
             break
       time.sleep(1.0)
@@ -67,8 +68,10 @@ class FlowMonitorThread(CoreThread):
 
   def _IdleOutFlow(self, flow):
     self._logger.info("Idling flow: %s" % flow)
-    self._kb_env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.FLOW_DEV_IDLE,
-        device_name=flow.GetTap().GetName())
+    msg = kegnet_message.TapIdleMessage()
+    msg.tap_name = flow.GetTap().GetName()
+    self._kb_env.GetEventHub().PublishEvent(kb_common.KB_EVENT.FLOW_DEV_IDLE,
+        msg)
 
 class AlarmManagerThread(CoreThread):
 
@@ -79,7 +82,7 @@ class AlarmManagerThread(CoreThread):
       if alarm is not None:
         self._logger.info('firing alarm: %s' % alarm)
         event = alarm.event()
-        self._kb_env.GetEventHub().CreateAndPublishEvent(event)
+        self._kb_env.GetEventHub().PublishEvent(event)
 
 
 class EventHandlerThread(CoreThread):

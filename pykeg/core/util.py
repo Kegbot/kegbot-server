@@ -130,6 +130,21 @@ class SimpleGraph:
     return shortest
 
 
+# These metaclasses are modeled after Ian Bicking's examples:
+# http://blog.ianbicking.org/a-conservative-metaclass.html
+
+class DeclarativeMeta(type):
+  def __new__(meta, class_name, bases, new_attrs):
+    cls = type.__new__(meta, class_name, bases, new_attrs)
+    cls.__classinit__.im_func(cls, new_attrs)
+    return cls
+
+class Declarative(object):
+  __metaclass__ = DeclarativeMeta
+  def __classinit__(cls, new_attrs):
+    pass
+
+
 ### Misc functions
 
 def daemonize():

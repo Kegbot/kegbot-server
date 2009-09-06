@@ -112,7 +112,7 @@ class KegbotCoreApp(kb_app.App):
     self._env = KegbotEnv()
 
   def _MainLoop(self):
-    self._env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.START_COMPLETE)
+    self._env.GetEventHub().PublishEvent(kb_common.KB_EVENT.START_COMPLETE)
     watchdog = self._env.GetWatchdogThread()
     while not self._do_quit:
       try:
@@ -133,7 +133,7 @@ class KegbotCoreApp(kb_app.App):
 
   def Quit(self):
     self._do_quit = True
-    self._env.GetEventHub().CreateAndPublishEvent(kb_common.KB_EVENT.QUIT)
+    self._env.GetEventHub().PublishEvent(kb_common.KB_EVENT.QUIT)
     time.sleep(1.0)
 
     self._logger.info('Stopping any remaining threads')

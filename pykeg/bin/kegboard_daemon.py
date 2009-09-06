@@ -107,7 +107,7 @@ class KegboardManagerThread(util.KegbotThread):
 
       try:
         if last_val is None or curr_val > last_val:
-          self._client.SendFlowUpdate(meter_name, curr_val)
+          self._client.SendMeterUpdate(meter_name, curr_val)
         self._meter_cache[meter_name] = curr_val
       except kegnet_client.ClientException, e:
         self._logger.warning('Got error during send: %s' % (e,))

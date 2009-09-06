@@ -40,6 +40,7 @@ FLAGS = gflags.FLAGS
 gflags.DEFINE_string('kb_core_bind_addr', kb_common.KB_CORE_DEFAULT_ADDR,
     'Address that the kegnet server should bind to.')
 
+KB_EVENT = kb_common.KB_EVENT
 
 class KegnetServer(HTTPServer):
   def __init__(self, kb_env, bind_addr=None):
@@ -146,6 +147,9 @@ class KegnetService(object):
     self._server = server
     self._kb_env = kb_env
 
+  def _PublishEvent(self, event, payload=None):
+    self._kb_env.GetEventHub().PublishEvent(event, payload)
+
 
 class KegnetBaseService(KegnetService):
   """Base service that must be implemented by all Kegnet servers.
@@ -171,30 +175,23 @@ class KegnetBaseService(KegnetService):
 class KegnetFlowService(KegnetService):
   """Service that handles flow related requests."""
 
-  @ApiEndpoint('flow/update')
+  @ApiEndpoint('meter/update')
   def HandleFlowUpdate(self, request):
     """Updates the Kegbot core with a new flow meter reading."""
-    msg = kegnet_message.FlowUpdateMessage(initial=request.http.params)
-    ev = event.Event(kb_common.KB_EVENT.FLOW_DEV_ACTIVITY)
-    ev.device_name = msg.tap_name
-    ev.meter_reading = msg.meter_reading
-    self._kb_env.GetEventHub().PublishEvent(ev)
+    msg = kegnet_message.MeterUpdateMessage(initial=request.http.params)
+    self._PublishEvent(KB_EVENT.FLOW_DEV_ACTIVITY, msg)
 
   @ApiEndpoint('flow/start')
   def HandleFlowStart(self, request):
     """Force-starts a flow on the requested tap."""
-    msg = kegnet_message.FlowStartMessage(initial=request.http.params)
-    ev = event.Event(kb_common.KB_EVENT.FLOW_START)
-    ev.device_name = msg.tap_name
-    self._kb_env.GetEventHub().PublishEvent(ev)
+    msg = kegnet_message.FlowStartRequestMessage(initial=request.http.params)
+    self._PublishEvent(KB_EVENT.FLOW_START, msg)
 
   @ApiEndpoint('flow/stop')
   def HandleFlowStop(self, request):
     """Force-stops a flow on the requested tap."""
-    msg = kegnet_message.FlowStopMessage(initial=request.http.params)
-    ev = event.Event(kb_common.KB_EVENT.END_FLOW)
-    ev.device_name = msg.tap_name
-    self._kb_env.GetEventHub().PublishEvent(ev)
+    msg = kegnet_message.FlowStopRequestMessage(initial=request.http.params)
+    self._PublishEvent(KB_EVENT.END_FLOW, msg)
 
 
 class KegnetSensorService(KegnetService):
@@ -204,7 +201,4 @@ class KegnetSensorService(KegnetService):
   def HandleSensorUpdate(self, request):
     """Updates the Kegbot core with a new sensor value."""
     msg = kegnet_message.ThermoUpdateMessage(initial=request.http.params)
-    ev = event.Event(kb_common.KB_EVENT.THERMO_UPDATE)
-    ev.sensor_name = msg.sensor_name
-    ev.sensor_value = msg.sensor_value
-    self._kb_env.GetEventHub().PublishEvent(ev)
+    self._PublishEvent(KB_EVENT.THERMO_UPDATE, msg)

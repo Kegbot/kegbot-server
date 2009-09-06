@@ -114,22 +114,22 @@ class BaseClient:
     code = response.status
     if code != httplib.OK:
       response_str = '%i %s' % (code, httplib.responses[code])
-      self._logger.warning('Unhappy response: %s' (response_str,))
+      self._logger.warning('Unhappy response: %s' % (response_str,))
 
     return data
 
 
 class KegnetClient(BaseClient):
 
-  def SendFlowUpdate(self, tap_name, meter_reading):
-    message = kegnet_message.FlowUpdateMessage(tap_name=tap_name,
+  def SendMeterUpdate(self, tap_name, meter_reading):
+    message = kegnet_message.MeterUpdateMessage(tap_name=tap_name,
         meter_reading=meter_reading)
-    return self.SendMessage('flow/update', message)
+    return self.SendMessage('meter/update', message)
 
   def SendFlowStart(self, tap_name):
-    message = kegnet_message.FlowStartMessage(tap_name=tap_name)
+    message = kegnet_message.FlowStartRequestMessage(tap_name=tap_name)
     return self.SendMessage('flow/start', message)
 
   def SendFlowStop(self, tap_name):
-    message = kegnet_message.FlowStopMessage(tap_name=tap_name)
+    message = kegnet_message.FlowStopRequestMessage(tap_name=tap_name)
     return self.SendMessage('flow/stop', message)

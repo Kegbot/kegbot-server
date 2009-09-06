@@ -41,6 +41,10 @@ gflags.DEFINE_integer('kb_core_port', 9999,
 gflags.DEFINE_string('client_name', 'mykegboard',
     'Name to use for this client connection.')
 
+gflags.DEFINE_boolean('persistent_connection', True,
+    'If True, the client will use an HTTP/1.1 persistent connection '
+    'to the Kegnet core.')
+
 
 class ClientException(Exception):
   """A generic exception."""
@@ -62,15 +66,16 @@ class BaseClient:
       self._conn = httplib.HTTPConnection(*addr)
     return self._conn
 
+  def _CloseConnection(self):
+    if self._conn:
+      try:
+        self._conn.close()
+      finally:
+        self._conn = None
+
   def _ResetConnection(self):
     self._logger.info('Resetting connection')
-    conn = self._conn
-    self._conn = None
-    if conn:
-      try:
-        conn.close()
-      finally:
-        pass
+    self._CloseConnection()
 
   def SendMessage(self, endpoint, message):
     params = message.AsDict()
@@ -100,14 +105,23 @@ class BaseClient:
       conn = self._GetConnection()
       self._logger.info('resending request')
       conn.request(method, endpoint)
+
     self._logger.debug('awaiting response')
     response = conn.getresponse()
     self._logger.debug('got response: %s' % response.status)
 
-    if response.status != httplib.OK:
-      print 'bad response:', response.status
-    else:
-      return response.read()
+    data = response.read()
+
+    if not FLAGS.persistent_connection:
+      self._CloseConnection()
+
+    code = response.status
+    if code != httplib.OK:
+      response_str = '%i %s' % (code, httplib.responses[code])
+      self._logger.warning('Unhappy response: %s' (response_str,))
+
+    return data
+
 
 class KegnetClient(BaseClient):
 

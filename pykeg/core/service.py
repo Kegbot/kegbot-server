@@ -23,6 +23,7 @@ a service implementation is the glue between the core EventHub, and an
 underlying manager implementation (which knows nothing of the EventHub).
 """
 
+import datetime
 import logging
 
 from pykeg.core import event
@@ -132,6 +133,44 @@ class DrinkDatabaseService(KegbotService):
 
     models.UserDrinkingSessionAssignment.RecordDrink(drink)
     self._logger.info('Processed UserDrinkGroupAssignment for drink %i' % (drink.id,))
+
+class ThermoService(KegbotService):
+  def __init__(self, name, kb_env):
+    KegbotService.__init__(self, name, kb_env)
+    self._last_record = {}
+    self._same_value_min_delta = datetime.timedelta(minutes=1)
+    self._new_value_min_delta = datetime.timedelta(seconds=30)
+
+
+  def _LoadEventMap(self):
+    ret = {
+        KB_EVENT.THERMO_UPDATE: self._HandleThermoUpdateEvent,
+    }
+    return ret
+
+  def _HandleThermoUpdateEvent(self, ev):
+    sensor_name = ev.payload.sensor_name
+    sensor_value = ev.payload.sensor_value
+    now = datetime.datetime.now()
+    last_record = self._last_record.get(sensor_name)
+
+    if last_record is not None:
+      delta = now - last_record.time
+      is_new_value = sensor_value != last_record.temp
+
+      if is_new_value and (delta < self._new_value_min_delta):
+        # New value, but arrived too soon: drop it.
+        self._logger.debug('Dropping new sensor reading, value=%s delta=%s' % (sensor_value, delta))
+        return
+      elif not is_new_value and (delta < self._same_value_min_delta):
+        self._logger.debug('Dropping same sensor reading, value=%s delta=%s' % (sensor_value, delta))
+        # Unchanged value, but arrived too soon: drop it.
+        return
+
+    self._logger.debug('Recording sensor reading, value=%s' % (sensor_value,))
+    new_record = models.Thermolog(name=sensor_name, temp=sensor_value, time=now)
+    new_record.save()
+    self._last_record[sensor_name] = new_record
 
 
 class FlowManagerService(KegbotService):

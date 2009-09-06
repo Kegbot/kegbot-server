@@ -39,6 +39,7 @@ exchange data.
 import asynchat
 import asyncore
 import cStringIO
+import datetime
 import logging
 import os
 import Queue
@@ -57,6 +58,38 @@ from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 
+gflags.DEFINE_integer('cache_seconds', 60,
+    'If nonzero, the kegnet client will suppress duplicate sensor '
+    'readings for this many seconds.')
+
+class DuplicateSuppressingCache:
+  def __init__(self, max_age=FLAGS.cache_seconds):
+    self._max_delta = datetime.timedelta(seconds=max_age)
+    self._last_reading_time = {}
+    self._last_reading_value = {}
+
+  def ShouldSuppress(self, key, value):
+    now = datetime.datetime.now()
+    last_time = self._last_reading_time.get(key)
+    last_value = self._last_reading_value.get(key)
+
+    if last_time is None:
+      self._last_reading_time[key] = now
+      self._last_reading_value[key] = value
+      return False
+    elif value != last_value:
+      self._last_reading_time[key] = now
+      self._last_reading_value[key] = value
+      return False
+    else:
+      # Values are the same
+      if (now - last_time) < self._max_delta:
+        return True
+      else:
+        self._last_reading_time[key] = now
+        self._last_reading_value[key] = value
+        return False
+
 class KegboardManagerApp(kb_app.App):
   def __init__(self, name='core', daemon=FLAGS.daemon):
     kb_app.App.__init__(self, name, daemon)
@@ -74,7 +107,6 @@ class KegboardManagerApp(kb_app.App):
         FLAGS.kegboard_device, FLAGS.kegboard_speed)
     self._AddAppThread(self._device_io_thr)
 
-
 class KegboardManagerThread(util.KegbotThread):
   """Manager of local kegboard devices."""
 
@@ -82,7 +114,7 @@ class KegboardManagerThread(util.KegbotThread):
     util.KegbotThread.__init__(self, name)
     self._client = client
     self._message_queue = Queue.Queue()
-    self._meter_cache = {}
+    self._cache = DuplicateSuppressingCache()
 
   def PostDeviceMessage(self, device_name, device_message):
     """Receive a message from a device, for processing."""
@@ -95,7 +127,12 @@ class KegboardManagerThread(util.KegbotThread):
         device_name, device_message = self._message_queue.get(timeout=1.0)
       except Queue.Empty:
         continue
-      self._HandleDeviceMessage(device_name, device_message)
+
+      try:
+        self._HandleDeviceMessage(device_name, device_message)
+      except kegnet_client.ClientException, e:
+        self._logger.warning('Got error during send: %s' % (e,))
+
     self._logger.info('Exiting main loop.')
 
   def _HandleDeviceMessage(self, device_name, msg):
@@ -103,20 +140,18 @@ class KegboardManagerThread(util.KegbotThread):
       # Flow update: compare to last value and send a message if needed
       meter_name = msg.meter_name.GetValue()
       curr_val = msg.meter_reading.GetValue()
-      last_val = self._meter_cache.get(meter_name)
+      suppress = self._cache.ShouldSuppress(('meter', meter_name), curr_val)
 
-      try:
-        if last_val is None or curr_val > last_val:
-          self._client.SendMeterUpdate(meter_name, curr_val)
-        self._meter_cache[meter_name] = curr_val
-      except kegnet_client.ClientException, e:
-        self._logger.warning('Got error during send: %s' % (e,))
+      if not suppress:
+        self._client.SendMeterUpdate(meter_name, curr_val)
 
     elif isinstance(msg, kegboard.TemperatureReadingMessage):
-      # Thermo update
-      #self._client.SendThermoStatus(msg.sensor_name.GetValue(),
-      #    msg.sensor_reading.GetValue())
-      pass
+      sensor_name = msg.sensor_name.GetValue()
+      sensor_value = msg.sensor_reading.GetValue()
+      suppress = self._cache.ShouldSuppress(('thermo', sensor_name), sensor_value)
+
+      if not suppress:
+        self._client.SendThermoUpdate(sensor_name, sensor_value)
 
 
 class KegboardDeviceIoThread(util.KegbotThread):

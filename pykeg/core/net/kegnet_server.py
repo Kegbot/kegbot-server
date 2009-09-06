@@ -193,12 +193,8 @@ class KegnetFlowService(KegnetService):
     msg = kegnet_message.FlowStopRequestMessage(initial=request.http.params)
     self._PublishEvent(KB_EVENT.END_FLOW, msg)
 
-
-class KegnetSensorService(KegnetService):
-  """Service that handles temperature sensors."""
-
-  @ApiEndpoint('sensor/update')
-  def HandleSensorUpdate(self, request):
+  @ApiEndpoint('thermo/update')
+  def HandleThermoUpdate(self, request):
     """Updates the Kegbot core with a new sensor value."""
     msg = kegnet_message.ThermoUpdateMessage(initial=request.http.params)
     self._PublishEvent(KB_EVENT.THERMO_UPDATE, msg)

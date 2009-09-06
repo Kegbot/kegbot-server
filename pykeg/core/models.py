@@ -427,6 +427,9 @@ class Thermolog(models.Model):
   temp = models.FloatField()
   time = models.DateTimeField()
 
+  def __str__(self):
+    return '%s %.2f %s' % (self.name, self.temp, self.time)
+
 
 class RelayLog(models.Model):
   """ A log from an IRelay device of relay events/ """

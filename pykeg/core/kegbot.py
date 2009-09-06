@@ -60,6 +60,7 @@ class KegbotEnv(object):
 
     self._drink_db_service = service.DrinkDatabaseService('drink_db_service', self)
     self._flow_service = service.FlowManagerService('flow_service', self)
+    self._thermo_service = service.ThermoService('thermo_service', self)
 
     self._backend = backend.KegbotBackend()
     self._backend.CheckSchemaVersion()
@@ -69,6 +70,7 @@ class KegbotEnv(object):
     self._service_thread = kb_threads.EventHandlerThread(self, 'service-thread')
     self._service_thread.AddService(self._flow_service)
     self._service_thread.AddService(self._drink_db_service)
+    self._service_thread.AddService(self._thermo_service)
     self.AddThread(self._service_thread)
 
     self.AddThread(kb_threads.EventHubServiceThread(self, 'eventhub-thread'))

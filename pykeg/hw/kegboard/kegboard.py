@@ -73,6 +73,9 @@ class Field(object):
     if value is not None:
       self.SetValue(value)
 
+  def __str__(self):
+    return str(self._value)
+
   def SetBytes(self, bytes):
     raise NotImplementedError
 
@@ -126,7 +129,9 @@ class OutputField(Uint16Field):
 
 
 class TempField(Uint32Field):
-  pass
+  def SetValue(self, value):
+    Uint32Field.SetValue(self, value)
+    self._value /= 1000000.0
 
 
 ### Message types
@@ -158,7 +163,8 @@ class Message(object):
   def __str__(self):
     vallist = []
     for k in self._map_name_to_tag.keys():
-      vallist.append((k, getattr(self, k).GetValue()))
+      field = getattr(self, k)
+      vallist.append((k, str(field)))
     valstr = ' '.join(('%s=%s' % x for x in vallist))
     return '<%s %s>' % (self._TYPE, valstr)
 

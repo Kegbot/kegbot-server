@@ -84,7 +84,8 @@ class KegnetServerRequestHandler(BaseHTTPRequestHandler):
       self.path = self.path[:qpos]
 
   def log_request(self, code='-', size='-'):
-    msg = '%s %s %s %s ' % (self.command, self.client_address, code, self.path)
+    client_addr = '%s:%i' % self.client_address
+    msg = ' '.join(map(str, (code, client_addr, self.command, self.path)))
     self.server._logger.info(msg)
 
   def do_GET(self):

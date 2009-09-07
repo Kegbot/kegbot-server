@@ -20,6 +20,7 @@
 from django.contrib import admin
 
 from pykeg.core import models
+from pykeg.core import util
 
 admin.site.register(models.UserPicture)
 admin.site.register(models.UserLabel)
@@ -44,6 +45,17 @@ admin.site.register(models.BAC)
 admin.site.register(models.UserDrinkingSession)
 admin.site.register(models.UserDrinkingSessionAssignment)
 admin.site.register(models.DrinkingSessionGroup)
-admin.site.register(models.Thermolog)
+
+def thermolog_deg_c(obj):
+  return '%.2f C' % (obj.temp,)
+
+def thermolog_deg_f(obj):
+  return '%.2f F' % (util.CtoF(obj.temp),)
+
+class ThermologAdmin(admin.ModelAdmin):
+  list_display = ('name', thermolog_deg_c, thermolog_deg_f, 'time')
+  list_filter = ('name', 'time')
+
+admin.site.register(models.Thermolog, ThermologAdmin)
 admin.site.register(models.RelayLog)
 admin.site.register(models.Config)

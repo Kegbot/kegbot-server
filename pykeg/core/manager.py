@@ -21,6 +21,7 @@
 import datetime
 import logging
 
+from pykeg.core import models
 from pykeg.core import flow_meter
 
 
@@ -61,6 +62,9 @@ class TapManager(object):
   def __init__(self):
     self._logger = logging.getLogger('tap-manager')
     self._taps = {}
+    all_taps = models.KegTap.objects.all()
+    for tap in all_taps:
+      self.RegisterTap(tap.meter_name)
 
   def TapExists(self, name):
     return name in self._taps
@@ -123,6 +127,9 @@ class Flow:
   def GetUser(self):
     return self._bound_user
 
+  def SetUser(self, user):
+    self._bound_user = user
+
   def GetStartTime(self):
     return self._start_time
 
@@ -158,22 +165,26 @@ class FlowManager(object):
   def GetActiveFlows(self):
     return self._flow_map.values()
 
-  def _GetFlow(self, tap):
-    name = tap.GetName()
-    return self._flow_map.get(name)
+  def GetFlow(self, tap_name):
+    return self._flow_map.get(tap_name)
 
-  def StartFlow(self, tap):
-    assert not self._GetFlow(tap), "StartFlow while already active!"
-    self._flow_map[tap.GetName()] = Flow(tap)
-    self._logger.info("Flow created on tap %s" % (tap,))
-    return self._GetFlow(tap)
+  def StartFlow(self, tap_name):
+    if not self.GetFlow(tap_name):
+      tap = self._tap_manager.GetTap(tap_name)
+      self._flow_map[tap_name] = Flow(tap)
+      self._logger.info('StartFlow: Flow created on %s' % (tap_name,))
+    else:
+      self._logger.info('StartFlow: Flow already exists on %s' % tap_name)
+    return self.GetFlow(tap_name)
 
   def EndFlow(self, tap_name):
-    tap = self._tap_manager.GetTap(tap_name)
-    flow = self._GetFlow(tap)
-    assert flow is not None, "EndFlow on inactive tap!"
-    del self._flow_map[tap.GetName()]
-    self._logger.info("Flow ended on tap %s" % (tap,))
+    flow = self.GetFlow(tap_name)
+    if flow:
+      tap = flow.GetTap()
+      del self._flow_map[tap_name]
+      self._logger.info('EndFlow: Flow ended on tap %s' % (tap_name,))
+    else:
+      self._logger.info('EndFlow: No existing flow on tap %s' % (tap_name,))
     return flow
 
   def UpdateFlow(self, tap_name, volume):
@@ -186,12 +197,21 @@ class FlowManager(object):
     is_new = False
 
     # Get the flow instance; create a new one if needed
-    flow = self._GetFlow(tap)
-    if not flow:
-      flow = self.StartFlow(tap)
+    delta = self._tap_manager.UpdateDeviceReading(tap.GetName(), volume)
+    flow = self.GetFlow(tap_name)
+    if not flow and delta:
+      flow = self.StartFlow(tap_name)
       is_new = True
 
-    delta = self._tap_manager.UpdateDeviceReading(tap.GetName(), volume)
-    flow.UpdateFromMeter()
+    if flow:
+      flow.UpdateFromMeter()
 
     return flow, is_new
+
+
+class AuthenticationManager(object):
+  def _GetUserAtTap(self, tap):
+    """Returns the currently authorized user at the tap."""
+
+  def _TapIdle(self, tap):
+    """Called when the given tap has become idle."""

@@ -57,6 +57,7 @@ class KegbotEnv(object):
     self._alarm_manager = alarm.AlarmManager()
     self._tap_manager = manager.TapManager()
     self._flow_manager = manager.FlowManager(self._tap_manager)
+    self._authentication_manager = manager.AuthenticationManager()
 
     self._drink_db_service = service.DrinkDatabaseService('drink_db_service', self)
     self._flow_service = service.FlowManagerService('flow_service', self)
@@ -109,6 +110,9 @@ class KegbotEnv(object):
 
   def GetFlowManager(self):
     return self._flow_manager
+
+  def GetAuthenticationManager(self):
+    return self._authentication_manager
 
   def GetThreads(self):
     return self._threads

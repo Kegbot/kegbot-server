@@ -64,6 +64,9 @@ KB_EVENT = util.Enum(*(
 
   'THERMO_UPDATE',
 
+  'AUTH_USER_ADDED',
+  'AUTH_USER_REMOVED',
+
 ))
 
 

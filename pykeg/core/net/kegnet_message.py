@@ -198,3 +198,14 @@ class DrinkCreatedMessage(Message):
     msg.user = drink.user.username
     msg.drink_id = drink.id
     return msg
+
+
+class AuthUserAddMessage(Message):
+  tap_name = StringField()
+  user_name = StringField()
+
+
+class AuthUserRemoveMessage(Message):
+  tap_name = StringField()
+  user_name = StringField()
+

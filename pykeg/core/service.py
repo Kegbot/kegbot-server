@@ -193,6 +193,8 @@ class FlowManagerService(KegbotService):
         KB_EVENT.FLOW_DEV_IDLE: self._HandleFlowIdleEvent,
         KB_EVENT.START_FLOW: self._HandleFlowStartFlowEvent,
         KB_EVENT.END_FLOW: self._HandleFlowEndFlowEvent,
+        KB_EVENT.AUTH_USER_ADDED: self._HandleAuthUserAddedEvent,
+        KB_EVENT.AUTH_USER_REMOVED: self._HandleAuthUserRemovedEvent,
     }
     return ret
 
@@ -232,4 +234,21 @@ class FlowManagerService(KegbotService):
     flow = flow_mgr.EndFlow(ev.payload.tap_name)
     msg = kegnet_message.FlowUpdateMessage.FromFlow(flow)
     self._PublishEvent(KB_EVENT.FLOW_END, msg)
+
+  def _HandleAuthUserAddedEvent(self, ev):
+    auth = self._kb_env.GetAuthenticationManager()
+    msg = ev.payload
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.StartFlow(msg.tap_name)
+    try:
+      user = models.User.objects.get(username=msg.user_name)
+      flow.SetUser(user)
+    except models.User.DoesNotExist:
+      pass
+
+  def _HandleAuthUserRemovedEvent(self, ev):
+    auth = self._kb_env.GetAuthenticationManager()
+    msg = ev.payload
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.EndFlow(msg.tap_name)
 

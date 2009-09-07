@@ -20,6 +20,7 @@
 
 from BaseHTTPServer import BaseHTTPRequestHandler
 from BaseHTTPServer import HTTPServer
+from SocketServer import ThreadingMixIn
 import cgi
 import httplib
 import inspect
@@ -42,7 +43,7 @@ gflags.DEFINE_string('kb_core_bind_addr', kb_common.KB_CORE_DEFAULT_ADDR,
 
 KB_EVENT = kb_common.KB_EVENT
 
-class KegnetServer(HTTPServer):
+class KegnetServer(ThreadingMixIn, HTTPServer):
   def __init__(self, kb_env, bind_addr=None):
     if bind_addr is None:
       bind_addr = FLAGS.kb_core_bind_addr
@@ -198,3 +199,16 @@ class KegnetFlowService(KegnetService):
     """Updates the Kegbot core with a new sensor value."""
     msg = kegnet_message.ThermoUpdateMessage(initial=request.http.params)
     self._PublishEvent(KB_EVENT.THERMO_UPDATE, msg)
+
+  @ApiEndpoint('auth/useradd')
+  def HandleAuthUserAdd(self, request):
+    """Indicates a user was added to an auth device."""
+    msg = kegnet_message.AuthUserAddMessage(initial=request.http.params)
+    self._PublishEvent(KB_EVENT.AUTH_USER_ADDED, msg)
+
+  @ApiEndpoint('auth/userremove')
+  def HandleAuthUserRemove(self, request):
+    """Indicates a user was removed from an auth device."""
+    msg = kegnet_message.AuthUserAddMessage(initial=request.http.params)
+    self._PublishEvent(KB_EVENT.AUTH_USER_REMOVED, msg)
+

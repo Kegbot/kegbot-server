@@ -23,7 +23,6 @@ import logging
 from pykeg.core import kb_common
 from pykeg.core import config
 from pykeg.core import models
-from pykeg.core import SQLConfigParser
 
 class KegbotBackend(object):
   def __init__(self):

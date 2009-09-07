@@ -11,6 +11,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.markup',
     'pykeg.core',
+    'pykeg.contrib.twitter',
 )
 
 AUTH_PROFILE_MODULE = "core.UserProfile"

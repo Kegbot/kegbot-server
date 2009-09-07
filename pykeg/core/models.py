@@ -441,7 +441,8 @@ class Thermolog(models.Model):
   time = models.DateTimeField()
 
   def __str__(self):
-    return '%s %.2f %s' % (self.name, self.temp, self.time)
+    degf = util.CtoF(self.temp)
+    return '%s %.2f C / %.2f F [%s]' % (self.name, self.temp, degf, self.time)
 
 
 class RelayLog(models.Model):

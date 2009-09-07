@@ -93,6 +93,13 @@ class DrinkDatabaseService(KegbotService):
       return
 
     keg = None
+    try:
+      tap = models.KegTap.objects.get(meter_name=flow_update.tap_name)
+      if tap.current_keg:
+        keg = tap.current_keg
+        self._logger.info('Binding drink to keg: %s' % keg)
+    except models.KegTap.DoesNotExist:
+      self._logger.warning('No tap found for meter %s' % flow_update.tap_name)
 
     try:
       user = models.User.objects.get(username=flow_update.user)

@@ -50,7 +50,7 @@ class KegbotBackend(object):
     return default_user
 
   def CheckSchemaVersion(self):
-    installed_schema = self._config.get('db.schema_version')
+    installed_schema = int(self._config.get('db.schema_version'))
     if installed_schema < models.SCHEMA_VERSION:
       self._logger.fatal('Error: outdated schema detected! (latest = %i, installed = %i)' %
             (installed_schema, models.SCHEMA_VERSION))

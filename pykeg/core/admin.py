@@ -32,6 +32,7 @@ class BeerTypeAdmin(admin.ModelAdmin):
 admin.site.register(models.BeerType, BeerTypeAdmin)
 
 admin.site.register(models.KegSize)
+admin.site.register(models.KegTap)
 
 class KegAdmin(admin.ModelAdmin):
   list_display = ('id', 'type')

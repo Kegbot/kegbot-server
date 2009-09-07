@@ -19,15 +19,15 @@
 
 import datetime
 
-
 from django.db import models
+from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 
 from pykeg.core import kb_common
 from pykeg.core import units
 from pykeg.core import util
 
-SCHEMA_VERSION = 21
+SCHEMA_VERSION = 22
 
 # This is a Django models definition for the kegbot database
 
@@ -82,7 +82,8 @@ class Brewer(models.Model):
   name = models.CharField(max_length=128)
   origin_country = models.CharField(max_length=128, default='')
   origin_state = models.CharField(max_length=128, default='')
-  origin_city = models.CharField(max_length=128, default='')
+  origin_city = models.CharField(max_length=128, default='', blank=True,
+      null=True)
   distribution = models.CharField(max_length=128,
       choices = ( ('retail', 'retail'),
                   ('homebrew', 'homebrew'),
@@ -90,8 +91,8 @@ class Brewer(models.Model):
       ),
       default = 'unknown',
   )
-  url = models.URLField(verify_exists=False, default='')
-  comment = models.TextField(default='')
+  url = models.URLField(verify_exists=False, default='', blank=True, null=True)
+  comment = models.TextField(default='', blank=True, null=True)
 
   def __str__(self):
     return "%s (%s, %s, %s)" % (self.name, self.origin_city,
@@ -134,6 +135,14 @@ class KegSize(models.Model):
   volume = models.IntegerField()
 
 
+class KegTap(models.Model):
+  """A physical tap of beer."""
+  name = models.CharField(max_length=128)
+  meter_name = models.CharField(max_length=128)
+  description = models.TextField(blank=True, null=True)
+  current_keg = models.ForeignKey('Keg', blank=True, null=True)
+
+
 class Keg(models.Model):
   """ Record for each installed Keg. """
   def full_volume(self):
@@ -163,7 +172,7 @@ class Keg(models.Model):
   size = models.ForeignKey(KegSize)
   startdate = models.DateTimeField('start date', default=datetime.datetime.now)
   enddate = models.DateTimeField('end date', default=datetime.datetime.now)
-  channel = models.IntegerField()
+  channel = models.IntegerField()  ### FIXME: deprecated
   status = models.CharField(max_length=128, choices=(
      ('online', 'online'),
      ('offline', 'offline'),
@@ -191,6 +200,10 @@ class Drink(models.Model):
     if sess:
       return sess.group
     return None
+
+  def ShortUrl(self):
+    domain = Site.objects.get_current().domain
+    return 'http://%s/d/%i' % (domain, self.id)
 
   def calories(self):
     cal = self.keg.type.calories_oz * self.Volume().ConvertTo.Ounce

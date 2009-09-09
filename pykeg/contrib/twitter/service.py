@@ -121,7 +121,11 @@ class TwitterService(service.KegbotService):
     if tweet_to:
       tweet_to = '@'+tweet_to
     else:
-      tweet_to = TWITTER_NAME_UNKNOWN
+      default_user = self._kb_env.GetBackend().GetDefaultUser()
+      if drink.user == default_user:
+        tweet_to = TWITTER_NAME_UNKNOWN
+      else:
+        tweet_to = drink.user.username
 
     smug_remark = models.DrinkRemark.GetRemarkForDrink(drink)
     if smug_remark:

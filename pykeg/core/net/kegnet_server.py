@@ -93,10 +93,14 @@ class KegnetServerRequestHandler(BaseHTTPRequestHandler):
   def _ExtractParams(self):
     """Extract HTTP GET parameters from path."""
     self.params = {}
+    self.callback = ''
     qpos = self.path.find('?')
     if qpos >= 0:
       self.params = cgi.parse_qs(self.path[qpos+1:], keep_blank_values=1)
       self.path = self.path[:qpos]
+      if 'callback' in self.params:
+        self.callback = self.params.get('callback')[0]
+        del self.params['callback']
 
   def log_request(self, code='-', size='-'):
     client_addr = '%s:%i' % self.client_address
@@ -115,7 +119,9 @@ class KegnetServerRequestHandler(BaseHTTPRequestHandler):
       result = handler(wrapper)
       if result is not None:
         if isinstance(result, kegnet_message.Message):
-          body = message.AsJson()
+          body = result.AsJson()
+          if self.callback:
+            body = self.callback + '(' + body + ')'
         else:
           body = simplejson.dumps(result)
       else:
@@ -124,6 +130,8 @@ class KegnetServerRequestHandler(BaseHTTPRequestHandler):
     except Exception, e:
       msg = traceback.print_exc()
       self._DoResponse(msg, code=httplib.BAD_REQUEST)
+
+  do_OPTIONS = do_GET
 
   def _DoResponse(self, body=None, code=httplib.OK, type="text/plain"):
     if code != httplib.OK and body is None:
@@ -193,6 +201,16 @@ class KegnetFlowService(KegnetService):
     """Force-stops a flow on the requested tap."""
     msg = kegnet_message.FlowStopRequestMessage(initial=request.http.params)
     self._PublishEvent(KB_EVENT.END_FLOW, msg)
+
+  @ApiEndpoint('flow/status')
+  def HandleFlowStatus(self, request):
+    msg = kegnet_message.FlowStatusRequestMessage(initial=request.http.params)
+    tap = msg.tap_name
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.GetFlow(tap)
+    if flow:
+      ret = kegnet_message.FlowUpdateMessage.FromFlow(flow)
+      return ret
 
   @ApiEndpoint('thermo/update')
   def HandleThermoUpdate(self, request):

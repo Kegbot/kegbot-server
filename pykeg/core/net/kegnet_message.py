@@ -59,7 +59,8 @@ class FloatField(Field):
     return float(val)
 
 class DateTimeField(Field):
-  pass
+  def ParseValue(self, val):
+    return str(val)
 
 ### Message classes
 class BaseMessage(util.Declarative):
@@ -128,7 +129,7 @@ class Message(BaseMessage):
     return ret
 
   def AsJson(self):
-    return simplejson.dumps(self.AsDict())
+    return simplejson.dumps(self.AsDict(), sort_keys=True, indent=4)
 
 
 class MeterUpdateMessage(Message):
@@ -143,6 +144,11 @@ class FlowStartRequestMessage(Message):
 
 
 class FlowStopRequestMessage(Message):
+  """Message emitted to request force-stop of a flow."""
+  tap_name = StringField()
+
+
+class FlowStatusRequestMessage(Message):
   """Message emitted to request force-stop of a flow."""
   tap_name = StringField()
 
@@ -163,6 +169,7 @@ class FlowUpdateMessage(Message):
   start_time = DateTimeField()
   end_time = DateTimeField()
   volume = PositiveIntegerField()
+  volume_oz = FloatField()
   user = StringField()
 
   @classmethod
@@ -172,6 +179,7 @@ class FlowUpdateMessage(Message):
     msg.start_time = flow.GetStartTime()
     msg.end_time = flow.GetEndTime()
     msg.volume = flow.GetVolume()
+    msg.volume_oz = flow.GetOunces()
     msg.user = flow.GetUser()
     return msg
 

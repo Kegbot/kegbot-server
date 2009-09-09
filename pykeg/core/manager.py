@@ -22,6 +22,7 @@ import datetime
 import logging
 
 from pykeg.core import models
+from pykeg.core import units
 from pykeg.core import flow_meter
 
 
@@ -123,6 +124,11 @@ class Flow:
     if self._start_volume is None:
       return 0
     return self._end_volume - self._start_volume
+
+  def GetOunces(self):
+    volume = self.GetVolume()
+    quantity = units.Quantity(volume, units=units.RECORD_UNIT)
+    return quantity.ConvertTo.Ounce
 
   def GetUser(self):
     return self._bound_user

@@ -1,0 +1,7 @@
+This directory contains mirrors of several open source packages necessary to run
+pykeg.  Unless explicitly noted, no modifications have been made; the packages
+are simply included out of convenience to kegbot users.
+
+See the README file in each directory for more details on individual packages.
+
+TODO(mikey): Move pykeg to distutils, and gather dependencies that way.

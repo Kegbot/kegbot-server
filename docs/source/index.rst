@@ -29,8 +29,9 @@ still working on improving and completing the Kegbot documentation.
 If the published documentation hasn't solved your issue, you may have luck with
 these other Kegbot resources:
 
-**Kegbot discussion forums**
-  The `Kegbot Discussion Forums <http://kegbot.org/kegbb/>`_ may or may not
+**Mailing list**
+  The `kegbot-dev Mailing List
+  <http://kegbot.org/cgi-bin/mailman/listinfo/kegbot-dev/>`_ may or may not
   be a vibrant community for help and exchanging ideas.
 
 **Kegbot wiki**

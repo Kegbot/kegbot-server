@@ -18,7 +18,7 @@ def mugshot_box(user, boxsize=100):
    img_url = '/site_media/images/unknown-drinker.png'
    if len(q):
      pic = q[0]
-     img_url = pic.image.url
+     img_url = '/media/' + pic.image.url
 
    return {
        'user' : user,

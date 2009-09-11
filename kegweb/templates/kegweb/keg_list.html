@@ -13,7 +13,7 @@
   <table class="sortable" cellspacing=0 border=0 width="430">
   {% for keg in keg_list %}
   <tr>
-    <td><a href="{% url kegweb.views.keg_detail keg.id %}">keg {{keg.id}}&nbsp;</a></td>
+    <td><a href="{% url kegweb.kegweb.views.keg_detail keg.id %}">keg {{keg.id}}&nbsp;</a></td>
     <td>{{keg.type.name|lower}}&nbsp;</td>
     <td>{{keg.full_volume.ConvertTo.USGallon|floatformat:1}} gal&nbsp;</td>
     <td>{{keg.startdate|timesince|lower}} ago</td>

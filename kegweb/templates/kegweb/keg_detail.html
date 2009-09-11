@@ -13,13 +13,13 @@
 <div class="content">
    {% if stats.PreviousKeg %}
    <div style="float:left">
-      <a href="{% url kegweb.views.keg_detail stats.PreviousKeg.id %}">&laquo; prev keg</a>
+      <a href="{% url kegweb.kegweb.views.keg_detail stats.PreviousKeg.id %}">&laquo; prev keg</a>
    </div>
    {% endif %}
 
    {% if stats.NextKeg %}
    <div style="float:right">
-      <a href="{% url kegweb.views.keg_detail stats.NextKeg.id %}">next keg &raquo;</a>
+      <a href="{% url kegweb.kegweb.views.keg_detail stats.NextKeg.id %}">next keg &raquo;</a>
    </div>
    {% endif %}
 

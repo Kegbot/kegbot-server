@@ -77,10 +77,3 @@ use.
 Look at the comments in this file for an idea of what settings you will need to
 change.  At minimum, you should set the ``DATABASE_`` variables.
 
-
-Configure Kegweb
-----------------
-
-
-Run Tests
----------

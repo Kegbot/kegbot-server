@@ -14,9 +14,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   introduction/index
-   installation/index
-   getting-started/index
+   introduction/overview
+   introduction/getting-involved
+   installation/database-install
+   installation/kegbot-install
+   getting-started/running-kegbot
 
 ..
    architecture

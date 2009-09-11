@@ -29,12 +29,12 @@
   {{ keg.type }}
   </p>
   <p>
-  total poured: <b> {{ stats.TotalPoured.ConvertTo.USGallon|floatformat:2 }} gallons</b>
+  total poured: <b> {{ stats.VolumePoured.ConvertTo.USGallon|floatformat:2 }} gallons</b>
   ({{ stats.PercentFull|floatformat:2 }}% full)
   </p>
   {% ifequal keg.status "online" %}
   <p>
-  remaining: <b> {{ keg.remaining_volume.ConvertTo.USGallon|floatformat:2 }} gallons</b>
+  remaining: <b> {{ stats.VolumeRemaining.ConvertTo.USGallon|floatformat:2 }} gallons</b>
   </p>
   {% endifequal %}
   <p>

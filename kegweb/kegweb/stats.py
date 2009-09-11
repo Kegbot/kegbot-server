@@ -89,7 +89,6 @@ class KegStats:
     return charts.volume_chart(self.AllUsersByVolume())
 
   def NextKeg(self):
-    next_keg = models.Keg.objects.filter(channel=self.keg.channel)
     next_keg = models.Keg.objects.filter(status='offline')
     next_keg = models.Keg.objects.filter(id__gt=self.keg.id)
     next_keg = next_keg.order_by('id')
@@ -110,4 +109,10 @@ class KegStats:
       return prev_keg[0]
     else:
       return None
+
+  def VolumePoured(self):
+    return self.keg.served_volume()
+
+  def VolumeRemaining(self):
+    return self.keg.remaining_volume()
 

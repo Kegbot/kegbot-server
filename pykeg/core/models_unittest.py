@@ -43,7 +43,6 @@ class CoreModelsTestCase(unittest.TestCase):
         size=self.keg_size,
         startdate=datetime.datetime(2000, 4, 1),
         enddate=datetime.datetime(2000, 5, 1),
-        channel=0,
         status='online',
         description='Our first keg!',
         origcost=99.0,

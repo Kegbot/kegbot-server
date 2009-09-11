@@ -142,7 +142,7 @@ def gentestdata():
    half_barrel = models.KegSize(name="half barrel", volume=10000)
    half_barrel.save()
 
-   k = models.Keg(type=as_pa, size=half_barrel, status='online', channel=0,
+   k = models.Keg(type=as_pa, size=half_barrel, status='online',
                   origcost=100)
    k.save()
 

@@ -172,7 +172,6 @@ class Keg(models.Model):
   size = models.ForeignKey(KegSize)
   startdate = models.DateTimeField('start date', default=datetime.datetime.now)
   enddate = models.DateTimeField('end date', default=datetime.datetime.now)
-  channel = models.IntegerField()  ### FIXME: deprecated
   status = models.CharField(max_length=128, choices=(
      ('online', 'online'),
      ('offline', 'offline'),

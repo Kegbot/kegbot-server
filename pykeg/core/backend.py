@@ -56,14 +56,6 @@ class KegbotBackend(object):
       self._logger.fatal('Aborting.')
       raise kb_common.ConfigurationError, "Outdated schema"
 
-  def GetKegForChannel(self, channel):
-    channel_name = channel.channel_id()
-    q = models.Keg.objects.filter(status='online', channel=channel_name)
-    if len(q) == 0:
-      return None
-    else:
-      return q[0]
-
   def GetUserFromUsername(self, username):
     matches = models.User.objects.filter(username=username)
     if not matches.count() == 1:

@@ -30,13 +30,13 @@
                   <tr>
                      <td align="right" valign="top"><b>first drink:&nbsp;</b></td>
                      <td colspan="1" align="left">
-                       {{ stats.EarliestDrink.starttime|humanizeTimeDiff|lower }}
+                       {{ stats.EarliestDrink.starttime|timesince|lower }}
                      </td>
                   </tr>
                   <tr>
                      <td align="right" valign="top"><b>last drink:&nbsp;</b></td>
                      <td colspan="1" align="left">
-                       {{ stats.LatestDrink.starttime|humanizeTimeDiff|lower }}
+                       {{ stats.LatestDrink.starttime|timesince|lower }}
                      </td>
                   </tr>
                   <tr>

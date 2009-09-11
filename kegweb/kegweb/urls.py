@@ -37,6 +37,7 @@ urlpatterns = patterns('kegweb.kegweb.views',
       (r'^drinks/(?P<drink_id>\d+)', 'drink_detail'),
       # redirects to the above for compatibility
       (r'^drink/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
+      (r'^d/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
 )
 
 ### accounts and registration

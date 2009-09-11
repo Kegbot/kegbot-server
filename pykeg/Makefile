@@ -18,6 +18,7 @@ setup: install_db admin
 install_db:
 	@echo "--- Installing database"
 	@$(PROD_ADMIN_COMMAND) syncdb $(PROD_ADMIN_ARGS) --noinput
+	@$(PROD_ADMIN_COMMAND) migrate
 	@$(PROD_ADMIN_COMMAND) kb_set_defaults $(PROD_ADMIN_ARGS)
 
 admin:

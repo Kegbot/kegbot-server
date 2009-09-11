@@ -39,11 +39,11 @@ class UserStats:
     self._total_volume = volume
 
   def AllDrinks(self):
-    drinks = view_util.all_valid_drinks().order_by('-starttime')
+    drinks = view_util.all_valid_drinks().filter(user=self.user).order_by('-starttime')
     return drinks
 
   def AllDrinksAsc(self):
-    drinks = view_util.all_valid_drinks().order_by('starttime')
+    drinks = view_util.all_valid_drinks().filter(user=self.user).order_by('starttime')
     return drinks
 
   def AllSessions(self):
@@ -80,13 +80,13 @@ class KegStats:
     return view_util.keg_drinks(self.keg).order_by('-id')
 
   def AllUsersByVolume(self):
-    return view_util.drinks_by_volume(self.AllDrinks())
+    return view_util.drinkers_by_volume(self.AllDrinks())
 
   def AllUsersByCost(self):
     return view_util.drinkers_by_cost(self.AllDrinks())
 
   def ChartUsersByVolume(self):
-    return charts.volume_chart(self.AllUsersByVolume())
+    return charts.volume_chart(self.AllUsersByVolume()).get_url()
 
   def NextKeg(self):
     next_keg = models.Keg.objects.filter(status='offline')

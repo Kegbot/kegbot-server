@@ -8,3 +8,6 @@ docs/build
 
 ### pykeg
 pykeg/kegbot.log
+
+### controller
+controller/kegboard-v3/build-cli

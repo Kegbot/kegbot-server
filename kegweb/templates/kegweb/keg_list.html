@@ -16,7 +16,7 @@
     <td><a href="{% url kegweb.views.keg_detail keg.id %}">keg {{keg.id}}&nbsp;</a></td>
     <td>{{keg.type.name|lower}}&nbsp;</td>
     <td>{{keg.full_volume.ConvertTo.USGallon|floatformat:1}} gal&nbsp;</td>
-    <td>{{keg.startdate|timesince|lower}}</td>
+    <td>{{keg.startdate|timesince|lower}} ago</td>
   </tr>
   {% endfor %}
   </table>

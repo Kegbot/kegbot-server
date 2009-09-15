@@ -194,7 +194,7 @@ class KegnetFlowService(KegnetService):
   def HandleFlowStart(self, request):
     """Force-starts a flow on the requested tap."""
     msg = kegnet_message.FlowStartRequestMessage(initial=request.http.params)
-    self._PublishEvent(KB_EVENT.FLOW_START, msg)
+    self._PublishEvent(KB_EVENT.START_FLOW, msg)
 
   @ApiEndpoint('flow/stop')
   def HandleFlowStop(self, request):

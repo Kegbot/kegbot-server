@@ -10,20 +10,19 @@ TEST_DJANGO_ENV = $(PYTHON_ENV) DJANGO_SETTINGS_MODULE=$(TEST_SETTINGS)
 PROD_ADMIN_COMMAND = $(PYTHON_TOP)/pykeg/bin/kegbot_admin.py
 TEST_ADMIN_COMMAND = $(TEST_DJANGO_ENV) django-admin.py
 
-PROD_ADMIN_ARGS = --settings=$(PROD_SETTINGS)
 TEST_ADMIN_ARGS = --settings=$(TEST_SETTINGS)
 
 setup: install_db admin
 
 install_db:
 	@echo "--- Installing database"
-	@$(PROD_ADMIN_COMMAND) syncdb $(PROD_ADMIN_ARGS) --noinput
-	@$(PROD_ADMIN_COMMAND) migrate
-	@$(PROD_ADMIN_COMMAND) kb_set_defaults $(PROD_ADMIN_ARGS)
+	@$(PROD_ADMIN_COMMAND) syncdb --all --noinput
+	@$(PROD_ADMIN_COMMAND) migrate --all --fake
+	@$(PROD_ADMIN_COMMAND) kb_set_defaults
 
 admin:
 	@echo "--- Creating super user"
-	@$(PROD_ADMIN_COMMAND) createsuperuser $(PROD_ADMIN_ARGS)
+	@$(PROD_ADMIN_COMMAND) createsuperuser
 
 clean:
 	rm -f kegbot.log

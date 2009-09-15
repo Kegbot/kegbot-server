@@ -33,7 +33,7 @@ from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_string('tap_name', 'test0',
+gflags.DEFINE_string('tap_name', 'meter0',
     'Name of the tap to use in updates.')
 
 gflags.DEFINE_integer('ticks', 1000,

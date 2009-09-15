@@ -47,15 +47,15 @@ class KegbotTestCase(TestCase):
   def testSimpleFlow(self):
     client = kegnet_client.KegnetClient()
 
-    # Synthesize a 2100-tick flow. The FlowManager should zero on the initial
+    # Synthesize a 2200-tick flow. The FlowManager should zero on the initial
     # reading of 1000.
-    client.SendFlowStart('meter0')
-    client.SendMeterUpdate('meter0', 1000)
-    client.SendMeterUpdate('meter0', 1100)
-    client.SendMeterUpdate('meter0', 2100)
-    client.SendMeterUpdate('meter0', 3100)
-    client.SendMeterUpdate('meter0', 3200)
-    client.SendFlowStop('meter0')
+    client.SendFlowStart('flow0')
+    client.SendMeterUpdate('flow0', 1000)
+    client.SendMeterUpdate('flow0', 1100)
+    client.SendMeterUpdate('flow0', 2100)
+    client.SendMeterUpdate('flow0', 3100)
+    client.SendMeterUpdate('flow0', 3200)
+    client.SendFlowStop('flow0')
 
     self.service_thread._FlushEvents()
 

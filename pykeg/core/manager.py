@@ -98,32 +98,25 @@ class TapManager(object):
 class Flow:
   def __init__(self, tap):
     self._tap = tap
-    self._start_volume = None
-    self._end_volume = None
-
-    self._start_time = datetime.datetime.now()
+    self._start_time = None
     self._end_time = None
-
     self._bound_user = None
-
     self._last_log_time = None
+    self._volume = 0L
 
-  def UpdateFromMeter(self):
-    current_volume = self._tap.GetMeter().GetVolume()
-    last_activity_time = self._tap.GetMeter().GetLastActivity()
+    self._start_volume = self._tap.GetMeter().GetVolume()
+    self._end_volume = self._start_volume
 
-    if self._start_volume is None:
-      self._start_volume = current_volume
-    self._end_volume = current_volume
-
+  def AddVolume(self, amount, when=None):
+    self._volume += amount
+    if when is None:
+      when = datetime.datetime.now()
     if self._start_time is None:
-      self._start_time = last_activity_time
-    self._end_time = last_activity_time
+      self._start_time = when
+    self._end_time = when
 
   def GetVolume(self):
-    if self._start_volume is None:
-      return 0
-    return self._end_volume - self._start_volume
+    return self._volume
 
   def GetOunces(self):
     volume = self.GetVolume()
@@ -146,6 +139,8 @@ class Flow:
     end_time = self._end_time
     if end_time is None:
       end_time = self._start_time
+    if end_time is None:
+      return datetime.timedelta(0)
     return datetime.datetime.now() - end_time
 
   def GetTap(self):
@@ -198,19 +193,23 @@ class FlowManager(object):
       tap = self._tap_manager.GetTap(tap_name)
     except TapManagerError:
       # tap is unknown or not available
+      # TODO(mikey): guard against this happening
+      return None, None
+
+    delta = self._tap_manager.UpdateDeviceReading(tap.GetName(), volume)
+    self._logger.debug('Flow update: tap=%s volume=%i (delta=%i)' %
+        (tap_name, volume, delta))
+
+    if delta == 0:
       return None, None
 
     is_new = False
-
-    # Get the flow instance; create a new one if needed
-    delta = self._tap_manager.UpdateDeviceReading(tap.GetName(), volume)
     flow = self.GetFlow(tap_name)
-    if not flow and delta:
+    if flow is None:
+      self._logger.debug('Starting flow implicitly due to activity.')
       flow = self.StartFlow(tap_name)
       is_new = True
-
-    if flow:
-      flow.UpdateFromMeter()
+    flow.AddVolume(delta, datetime.datetime.now())
 
     return flow, is_new
 

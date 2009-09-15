@@ -212,7 +212,9 @@ class FlowManagerService(KegbotService):
     msg = ev.payload
     tap_mgr = self._kb_env.GetTapManager()
     if not tap_mgr.TapExists(msg.tap_name):
-      tap_mgr.RegisterTap(msg.tap_name)
+      self._logger.warning('Dropping flow update event for unknown tap: %s' %
+          (msg.tap_name,))
+      return
     flow_mgr = self._kb_env.GetFlowManager()
     flow_instance, is_new = flow_mgr.UpdateFlow(msg.tap_name,
         msg.meter_reading)

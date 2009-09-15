@@ -10,4 +10,4 @@ docs/build
 pykeg/kegbot.log
 
 ### controller
-controller/kegboard-v3/build-cli
+controller/kegboard/build-cli

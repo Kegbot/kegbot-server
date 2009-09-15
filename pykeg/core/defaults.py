@@ -56,6 +56,12 @@ def set_defaults():
      rec = models.Config(key=key, value=val)
      rec.save()
 
+  # KegTap defaults
+  main_tap = models.KegTap(name='Main Tap', meter_name='flow0')
+  main_tap.save()
+  secondary_tap = models.KegTap(name='Second Tap', meter_name='flow1')
+  secondary_tap.save()
+
   # user defaults
   guest_user = backend.KegbotBackend.CreateNewUser('guest')
 

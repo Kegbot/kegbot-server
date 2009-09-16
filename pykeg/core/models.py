@@ -458,7 +458,7 @@ class Config(models.Model):
   def __str__(self):
     return '%s=%s' % (self.key, self.value)
 
-  key = models.CharField(max_length=256, unique=True)
+  key = models.CharField(max_length=255, unique=True)
   value = models.TextField()
 
   @classmethod

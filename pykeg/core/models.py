@@ -139,6 +139,7 @@ class KegTap(models.Model):
   """A physical tap of beer."""
   name = models.CharField(max_length=128)
   meter_name = models.CharField(max_length=128)
+  ml_per_tick = models.FloatField(default=(1000.0/2200.0))
   description = models.TextField(blank=True, null=True)
   current_keg = models.ForeignKey('Keg', blank=True, null=True)
 

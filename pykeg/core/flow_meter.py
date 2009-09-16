@@ -22,40 +22,40 @@ import datetime
 
 class FlowMeter(object):
   """Represents a path of fluid volume."""
-  def __init__(self, name, max_delta=0, start_volume=None):
+  def __init__(self, name, max_delta=0, start_ticks=None):
     self._name = name
     self._max_delta = max_delta
-    self._last_volume = start_volume
-    self._total_volume = 0
+    self._last_ticks = start_ticks
+    self._total_ticks = 0
     self._last_activity = datetime.datetime.fromtimestamp(0)
 
   def __str__(self):
-    return "[Channel vol=%i]" % (self._total_volume,)
+    return "<FlowMeter %s ticks=%i>" % (self._name, self.GetTicks())
 
-  def SetVolume(self, volume, when=None):
-    """Report the instantaneous volume of fluid.
+  def SetTicks(self, ticks, when=None):
+    """Report the instantaneous reading of the meter.
 
     Clients of this interface should provide a monotonically-increasing,
-    "odometer-style" value as the volume parameter.  Internally, the FlowMeter
-    instance will compute the difference in volume based on any previously
-    reported volume.
+    "odometer-style" value as the ticks parameter.  Internally, the FlowMeter
+    instance will compute the difference in ticks based on any previously
+    reported ticks.
 
-    If the volume has not yet been reported, the value is simply saved for the
-    next report (without incrementing the volume.)
+    If a value for ticks has not yet been reported, the value is simply saved
+    for the next report (without incrementing the total ticks.)
     """
-    volume = long(volume)
-    if volume < 0:
-      raise ValueError, "SetVolume only accepts positive values"
+    ticks = long(ticks)
+    if ticks < 0:
+      raise ValueError, "SetTicks only accepts positive values"
 
-    last_reading = self._last_volume
+    last_reading = self._last_ticks
     if last_reading is None:
-      last_reading = volume
+      last_reading = ticks
 
-    self._last_volume = volume
+    self._last_ticks = ticks
 
-    if volume >= last_reading:
+    if ticks >= last_reading:
       # Normal case: zero or positive delta from last reading.
-      delta = volume - last_reading
+      delta = ticks - last_reading
     else:
       # Possible overflow. Resolution algorithm: assume overflow occured at
       # the next power of two following the last reading. Compute the delta to
@@ -68,16 +68,16 @@ class FlowMeter(object):
       for power_of_two in (2**16, 2**32, 2**64):
         if last_reading < power_of_two:
           break
-      delta = power_of_two - last_reading + volume
+      delta = power_of_two - last_reading + ticks
 
     if self._max_delta and delta > self._max_delta:
       # TODO: should warn and/or accumulate stats
       return 0
 
-    # If there was actually a change, increment total volume and update activity
+    # If there was actually a change, increment total ticks and update activity
     # time.
     if delta > 0:
-      self._total_volume += delta
+      self._total_ticks += delta
       self._SetActivity(when)
       return delta
 
@@ -91,11 +91,11 @@ class FlowMeter(object):
     self._last_activity = when
 
   ### Accessors
-  def GetVolume(self):
-    return self._total_volume
+  def GetTicks(self):
+    return self._total_ticks
 
   def GetLastReading(self):
-    return self._last_volume
+    return self._last_ticks
 
   def GetName(self):
     return self._name

@@ -35,25 +35,25 @@ class FlowMeterTestCase(unittest.TestCase):
 
   def _testSequence(self, meter, sequence, expected_total):
     for reading in sequence:
-      meter.SetVolume(reading)
-    total = meter.GetVolume()
+      meter.SetTicks(reading)
+    total = meter.GetTicks()
     self.assertEqual(total, expected_total)
 
   def testBasicMeterUse(self):
     """Create a new flow device, perform basic operations on it."""
-    # Our new device should have accumulated 0 volume thus far.
-    reading = self.meter.GetVolume()
+    # Our new device should have accumulated 0 ticks thus far.
+    reading = self.meter.GetTicks()
     self.assertEqual(reading, 0L)
 
     # Report an instantaneous reading of 2000 ticks. Since this is the first
-    # reading, this should cause no change in the device volume.
-    self.meter.SetVolume(2000)
-    reading = self.meter.GetVolume()
+    # reading, this should cause no change in the device ticks.
+    self.meter.SetTicks(2000)
+    reading = self.meter.GetTicks()
     self.assertEqual(reading, 0L)
 
     # Report another instantaneous reading, which should now increment the flow
-    self.meter.SetVolume(2100)
-    reading = self.meter.GetVolume()
+    self.meter.SetTicks(2100)
+    reading = self.meter.GetTicks()
     self.assertEqual(reading, 100L)
 
     # The FlowManager saves the last reading value; check it.
@@ -65,9 +65,9 @@ class FlowMeterTestCase(unittest.TestCase):
     # the FlowManager.
     illegal_delta = MAX_DELTA + 1
     new_reading = last_reading + illegal_delta
-    self.meter.SetVolume(new_reading)
-    # The illegal update should not affect the volume.
-    vol = self.meter.GetVolume()
+    self.meter.SetTicks(new_reading)
+    # The illegal update should not affect the ticks.
+    vol = self.meter.GetTicks()
     self.assertEqual(vol, 100L)
     # The value of the last update should be recorded, however.
     last_reading = self.meter.GetLastReading()
@@ -81,58 +81,58 @@ class FlowMeterTestCase(unittest.TestCase):
     second_reading = 2**32 - 50    # increment by 50
     overflow_reading = 10          # increment by 50+10 (overflow)
 
-    self.meter.SetVolume(first_reading)
-    curr_reading = self.meter.GetVolume()
+    self.meter.SetTicks(first_reading)
+    curr_reading = self.meter.GetTicks()
     self.assertEqual(curr_reading, 0)
 
-    self.meter.SetVolume(second_reading)
-    curr_reading = self.meter.GetVolume()
+    self.meter.SetTicks(second_reading)
+    curr_reading = self.meter.GetTicks()
     self.assertEqual(curr_reading, 50)
 
-    self.meter.SetVolume(overflow_reading)
-    curr_reading = self.meter.GetVolume()
+    self.meter.SetTicks(overflow_reading)
+    curr_reading = self.meter.GetTicks()
     self.assertEqual(curr_reading, 110)
 
   def testNoOverflow(self):
-    self.meter.SetVolume(0)
-    curr_reading = self.meter.GetVolume()
+    self.meter.SetTicks(0)
+    curr_reading = self.meter.GetTicks()
     self.assertEqual(curr_reading, 0)
 
-    self.meter.SetVolume(100)
-    curr_reading = self.meter.GetVolume()
+    self.meter.SetTicks(100)
+    curr_reading = self.meter.GetTicks()
     self.assertEqual(curr_reading, 100)
 
-    self.meter.SetVolume(10)
-    curr_reading = self.meter.GetVolume()
+    self.meter.SetTicks(10)
+    curr_reading = self.meter.GetTicks()
     self.assertEqual(curr_reading, 100)
 
-    self.meter.SetVolume(20)
-    curr_reading = self.meter.GetVolume()
+    self.meter.SetTicks(20)
+    curr_reading = self.meter.GetTicks()
     self.assertEqual(curr_reading, 110)
 
   def testActivityMonitoring(self):
     d = lambda x: datetime.datetime.fromtimestamp(x)
-    self.meter.SetVolume(0, when=d(0))
+    self.meter.SetTicks(0, when=d(0))
 
     # initial idle time should be infinite (should return `now`)
     idle_time = self.meter.GetIdleTime(now=d(1000))
     self.assertEqual(idle_time, datetime.timedelta(seconds=1000))
 
-    self.meter.SetVolume(10, when=d(1000))
-    self.meter.SetVolume(30, when=d(1015))
+    self.meter.SetTicks(10, when=d(1000))
+    self.meter.SetTicks(30, when=d(1015))
 
     idle_time = self.meter.GetIdleTime(now=d(1020))
     self.assertEqual(idle_time, datetime.timedelta(seconds=5))
 
     # Updating the device again with zero delta should not clear existing idle
     # time.
-    self.meter.SetVolume(30, when=d(1030))
+    self.meter.SetTicks(30, when=d(1030))
     idle_time = self.meter.GetIdleTime(now=d(1040))
     self.assertEqual(idle_time, datetime.timedelta(seconds=25))
 
     # Updating the device with negative delta should also leave idle time
     # unchanged.
-    self.meter.SetVolume(10, when=d(1050))
+    self.meter.SetTicks(10, when=d(1050))
     idle_time = self.meter.GetIdleTime(now=d(1060))
     self.assertEqual(idle_time, datetime.timedelta(seconds=45))
 

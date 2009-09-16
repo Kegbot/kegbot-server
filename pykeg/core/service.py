@@ -83,12 +83,11 @@ class DrinkDatabaseService(KegbotService):
     self._logger.info('Flow completed')
     flow_update = ev.payload
 
-    ticks = flow_update.volume
-    volume_native = units.Quantity(ticks, units.UNITS.KbMeterTick)
-    volume_ml = volume_native.ConvertTo.Milliliter
+    ticks = flow_update.ticks
+    volume_ml = flow_update.volume_ml
 
     if volume_ml <= kb_common.MIN_VOLUME_TO_RECORD:
-      self._logger.info('Not recording flow: volume (%i) <= '
+      self._logger.info('Not recording flow: volume (%i mL) <= '
         'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
       return
 
@@ -104,15 +103,12 @@ class DrinkDatabaseService(KegbotService):
     try:
       user = models.User.objects.get(username=flow_update.user)
     except models.User.DoesNotExist:
-      user = None
-
-    if user is None:
       user = self._kb_env.GetBackend().GetDefaultUser()
       self._logger.info('User unknown, using default: %s' % (user.username,))
 
     # log the drink
     d = models.Drink(ticks=int(ticks),
-                     volume_ml=volume_native.Amount(units.RECORD_UNIT),
+                     volume_ml=volume_ml,
                      starttime=flow_update.start_time,
                      endtime=flow_update.end_time,
                      user=user,
@@ -126,7 +122,7 @@ class DrinkDatabaseService(KegbotService):
 
     self._logger.info('Logged drink %i user=%s keg=%s ounces=%s ticks=%i' % (
       d.id, d.user.username, keg_id, d.Volume().ConvertTo.Ounce,
-      int(d.Volume())))
+      d.ticks))
 
     # notify listeners
     msg = kegnet_message.DrinkCreatedMessage.FromFlowAndDrink(flow_update, d)

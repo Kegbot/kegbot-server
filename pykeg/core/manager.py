@@ -37,8 +37,9 @@ class UnknownTapError(TapManagerError):
 
 
 class Tap(object):
-  def __init__(self, name):
+  def __init__(self, name, ml_per_tick):
     self._name = name
+    self._ml_per_tick = ml_per_tick
     self._meter = flow_meter.FlowMeter(name)
 
   def __str__(self):
@@ -49,6 +50,9 @@ class Tap(object):
 
   def GetMeter(self):
     return self._meter
+
+  def TicksToMilliliters(self, amt):
+    return self._ml_per_tick * float(amt)
 
 
 class TapManager(object):
@@ -65,7 +69,7 @@ class TapManager(object):
     self._taps = {}
     all_taps = models.KegTap.objects.all()
     for tap in all_taps:
-      self.RegisterTap(tap.meter_name)
+      self.RegisterTap(tap.meter_name, tap.ml_per_tick)
 
   def TapExists(self, name):
     return name in self._taps
@@ -74,11 +78,11 @@ class TapManager(object):
     if not self.TapExists(name):
       raise UnknownTapError
 
-  def RegisterTap(self, name):
+  def RegisterTap(self, name, ml_per_tick):
     self._logger.info('Registering new tap: %s' % name)
     if self.TapExists(name):
       raise AlreadyRegisteredError
-    self._taps[name] = Tap(name)
+    self._taps[name] = Tap(name, ml_per_tick)
 
   def UnregisterTap(self, name):
     self._logger.info('Unregistering tap: %s' % name)
@@ -91,7 +95,7 @@ class TapManager(object):
 
   def UpdateDeviceReading(self, name, value):
     meter = self.GetTap(name).GetMeter()
-    delta = meter.SetVolume(value)
+    delta = meter.SetTicks(value)
     return delta
 
 
@@ -102,26 +106,21 @@ class Flow:
     self._end_time = None
     self._bound_user = None
     self._last_log_time = None
-    self._volume = 0L
+    self._total_ticks = 0L
 
-    self._start_volume = self._tap.GetMeter().GetVolume()
-    self._end_volume = self._start_volume
-
-  def AddVolume(self, amount, when=None):
-    self._volume += amount
+  def AddTicks(self, amount, when=None):
+    self._total_ticks += amount
     if when is None:
       when = datetime.datetime.now()
     if self._start_time is None:
       self._start_time = when
     self._end_time = when
 
-  def GetVolume(self):
-    return self._volume
+  def GetTicks(self):
+    return self._total_ticks
 
-  def GetOunces(self):
-    volume = self.GetVolume()
-    quantity = units.Quantity(volume, units=units.RECORD_UNIT)
-    return quantity.ConvertTo.Ounce
+  def GetVolumeMl(self):
+    return self._tap.TicksToMilliliters(self._total_ticks)
 
   def GetUser(self):
     return self._bound_user
@@ -209,7 +208,7 @@ class FlowManager(object):
       self._logger.debug('Starting flow implicitly due to activity.')
       flow = self.StartFlow(tap_name)
       is_new = True
-    flow.AddVolume(delta, datetime.datetime.now())
+    flow.AddTicks(delta, datetime.datetime.now())
 
     return flow, is_new
 

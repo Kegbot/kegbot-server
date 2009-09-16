@@ -24,6 +24,7 @@ Module for common logic for a command line or daemon application.
 """
 
 import logging
+import os
 import signal
 import sys
 import threading
@@ -51,7 +52,7 @@ gflags.DEFINE_boolean('log_to_file', True,
 gflags.DEFINE_boolean('log_to_stdout', True,
     'Send log messages to the console')
 
-gflags.DEFINE_boolean('verbose', False,
+gflags.DEFINE_boolean('verbose', os.environ.get('VERBOSE') is not None,
     'Generate extra logging information.')
 
 

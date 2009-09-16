@@ -168,8 +168,8 @@ class FlowUpdateMessage(Message):
   tap_name = StringField()
   start_time = DateTimeField()
   end_time = DateTimeField()
-  volume = FloatField()
-  volume_oz = FloatField()
+  ticks = FloatField()
+  volume_ml = FloatField()
   user = StringField()
 
   @classmethod
@@ -178,8 +178,8 @@ class FlowUpdateMessage(Message):
     msg.tap_name = flow.GetTap().GetName()
     msg.start_time = flow.GetStartTime()
     msg.end_time = flow.GetEndTime()
-    msg.volume = float(flow.GetVolume())
-    msg.volume_oz = flow.GetOunces()
+    msg.ticks = flow.GetTicks()
+    msg.volume_ml = flow.GetVolumeMl()
     msg.user = flow.GetUser()
     return msg
 

@@ -35,7 +35,7 @@ class CoreModelsTestCase(unittest.TestCase):
                                                units.RECORD_UNIT)
     self.keg_size = models.KegSize.objects.create(
         name='Tiny Keg',
-        volume=self.keg_vol,
+        volume_ml=self.keg_vol,
     )
 
     self.keg = models.Keg.objects.create(
@@ -78,7 +78,7 @@ class CoreModelsTestCase(unittest.TestCase):
 
     d = models.Drink.objects.create(
         ticks=vol.ConvertTo.KbMeterTick,
-        volume=vol.ConvertTo.KbMeterTick,
+        volume_ml=vol.ConvertTo.KbMeterTick,
         starttime=datetime.datetime.now(),
         endtime=datetime.datetime.now(),
         user=self.user,
@@ -86,7 +86,7 @@ class CoreModelsTestCase(unittest.TestCase):
         status='valid',
     )
 
-    self.assertEqual(self.keg.served_volume(), d.volume)
+    self.assertEqual(self.keg.served_volume(), d.volume_ml)
 
   def testDrinkSessions(self):
     """ Checks for the UserDrinkingSession and DrinkingSessionGroup tables """
@@ -106,30 +106,30 @@ class CoreModelsTestCase(unittest.TestCase):
     drinks[u1] = (
         # t=0
         models.Drink.objects.create(
-          ticks=ticks, volume=volume, user=u1, keg=self.keg,
+          ticks=ticks, volume_ml=volume, user=u1, keg=self.keg,
           starttime=base_time, endtime=base_time),
         # t=10
         models.Drink.objects.create(
-          ticks=ticks, volume=volume, user=u1, keg=self.keg,
+          ticks=ticks, volume_ml=volume, user=u1, keg=self.keg,
           starttime=base_time+td_10m, endtime=base_time+td_10m),
         # t=200
         models.Drink.objects.create(
-          ticks=ticks, volume=volume, user=u1, keg=self.keg,
+          ticks=ticks, volume_ml=volume, user=u1, keg=self.keg,
           starttime=base_time+td_200m, endtime=base_time+td_200m),
     )
 
     drinks[u2] = (
         # t=0
         models.Drink.objects.create(
-          ticks=ticks, volume=volume, user=u2, keg=self.keg,
+          ticks=ticks, volume_ml=volume, user=u2, keg=self.keg,
           starttime=base_time, endtime=base_time),
         # t=200
         models.Drink.objects.create(
-          ticks=ticks, volume=volume, user=u2, keg=self.keg,
+          ticks=ticks, volume_ml=volume, user=u2, keg=self.keg,
           starttime=base_time+td_200m, endtime=base_time+td_200m),
         # t=190
         models.Drink.objects.create(
-          ticks=ticks, volume=volume, user=u2, keg=self.keg,
+          ticks=ticks, volume_ml=volume, user=u2, keg=self.keg,
           starttime=base_time+td_190m, endtime=base_time+td_190m),
     )
 

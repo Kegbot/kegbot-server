@@ -40,7 +40,7 @@ UNITS = util.Enum(*(
 ))
 
 # This constant defines the unit type used for the database "volume" field
-RECORD_UNIT = UNITS.KbMeterTick
+RECORD_UNIT = UNITS.Milliliter
 
 CONVERSIONS = {
     (UNITS.Milliliter, UNITS.KbMeterTick) : 2.2,

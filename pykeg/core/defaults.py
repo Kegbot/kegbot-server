@@ -97,7 +97,7 @@ def set_defaults():
 
     ks = models.KegSize(
       name=description,
-      volume=volume_int,
+      volume_ml=volume_int,
     )
     ks.save()
 
@@ -145,7 +145,7 @@ def gentestdata():
    for name in usernames:
       users.append(backend.KegbotBackend.CreateNewUser(name))
 
-   half_barrel = models.KegSize(name="half barrel", volume=10000)
+   half_barrel = models.KegSize(name="half barrel", volume_ml=10000)
    half_barrel.save()
 
    k = models.Keg(type=as_pa, size=half_barrel, status='online',
@@ -156,8 +156,8 @@ def gentestdata():
    drink_interval = datetime.timedelta(seconds=600)
    drink_num = 0
    drink_vols = []
-   for size in (11.5, 12.5, 16, 11, 12, 22):
-     drink_vols.append(units.Quantity(size, from_units=units.UNITS.Ounce))
+   for ml in (2200, 1100, 550, 715, 780):
+     drink_vols.append(units.Quantity(ml, from_units=units.UNITS.KbMeterTick))
 
    # generate some drinks
    times = (drink_base, drink_base + datetime.timedelta(days=1))
@@ -169,7 +169,7 @@ def gentestdata():
            end = start + datetime.timedelta(seconds=10)
            vol = drink_vols[drink_num%len(drink_vols)]
            drink = models.Drink(ticks=vol.ConvertTo.KbMeterTick,
-                                volume=vol.Amount(units.RECORD_UNIT),
+                                volume_ml=vol.Amount(units.RECORD_UNIT),
                                 starttime=start, endtime=end, user=u, keg=k,
                                 status='valid')
            drink.save()

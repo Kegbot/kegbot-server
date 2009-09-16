@@ -126,13 +126,13 @@ class BeerType(models.Model):
 class KegSize(models.Model):
   """ A convenient table of common Keg sizes """
   def Volume(self):
-    return units.Quantity(self.volume, units.RECORD_UNIT)
+    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
 
   def __str__(self):
     return "%s [%.2f gal]" % (self.name, self.Volume().ConvertTo.USGallon)
 
   name = models.CharField(max_length=128)
-  volume = models.IntegerField()
+  volume_ml = models.FloatField()
 
 
 class KegTap(models.Model):
@@ -189,7 +189,7 @@ class Drink(models.Model):
     get_latest_by = "starttime"
 
   def Volume(self):
-    return units.Quantity(self.volume, units.RECORD_UNIT)
+    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
 
   def GetSession(self):
     q = self.userdrinkingsessionassignment_set.all()
@@ -226,7 +226,7 @@ class Drink(models.Model):
   # allow calibration. Kegbot code never touches the ticks field after saving
   # it; all operations concerning volume use the volume field.
   ticks = models.PositiveIntegerField()
-  volume = models.PositiveIntegerField()
+  volume_ml = models.FloatField()
 
   # Similarly, recording both the start and end times of a drink may seem odd.
   # The idea was to someday add metrics to the web page showing pour speeds.

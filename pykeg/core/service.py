@@ -112,7 +112,7 @@ class DrinkDatabaseService(KegbotService):
 
     # log the drink
     d = models.Drink(ticks=int(ticks),
-                     volume=volume_native.Amount(units.RECORD_UNIT),
+                     volume_ml=volume_native.Amount(units.RECORD_UNIT),
                      starttime=flow_update.start_time,
                      endtime=flow_update.end_time,
                      user=user,

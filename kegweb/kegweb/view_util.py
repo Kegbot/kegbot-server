@@ -24,7 +24,7 @@ from pykeg.core import models
 
 def all_valid_drinks():
   drinks = models.Drink.objects.filter(status='valid')
-  drinks = drinks.filter(volume__gt=0)
+  drinks = drinks.filter(volume_ml__gt=0)
   return drinks
 
 def current_keg():
@@ -43,7 +43,7 @@ def user_is_hidden(user):
 def keg_drinks(keg):
   if not keg:
     return []
-  return models.Drink.objects.filter(status='valid', keg=keg, volume__gt=0)
+  return models.Drink.objects.filter(status='valid', keg=keg, volume_ml__gt=0)
 
 def keg_drinkers_by_volume(keg):
   return drinkers_by_volume(keg_drinks(keg))
@@ -63,9 +63,9 @@ def drinkers_by_volume(drinks):
 def drinkers_by_cost(drinks):
   cost_map = {}
   for d in drinks:
-    keg_volume = float(d.keg.size.volume)
+    keg_volume = d.keg.size.Volume()
     keg_cost = d.keg.origcost
-    drink_pct_keg = d.volume / keg_volume
+    drink_pct_keg = d.Volume() / keg_volume
     drink_cost = keg_cost * drink_pct_keg
     cost_map[d.user] = cost_map.get(d.user, 0.0) + drink_cost
   ret = [(v, k) for (k, v) in cost_map.iteritems()]

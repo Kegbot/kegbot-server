@@ -168,7 +168,7 @@ class FlowUpdateMessage(Message):
   tap_name = StringField()
   start_time = DateTimeField()
   end_time = DateTimeField()
-  volume = PositiveIntegerField()
+  volume = FloatField()
   volume_oz = FloatField()
   user = StringField()
 
@@ -178,7 +178,7 @@ class FlowUpdateMessage(Message):
     msg.tap_name = flow.GetTap().GetName()
     msg.start_time = flow.GetStartTime()
     msg.end_time = flow.GetEndTime()
-    msg.volume = flow.GetVolume()
+    msg.volume = float(flow.GetVolume())
     msg.volume_oz = flow.GetOunces()
     msg.user = flow.GetUser()
     return msg
@@ -189,7 +189,7 @@ class DrinkCreatedMessage(Message):
   keg_id = PositiveIntegerField()
   start_time = DateTimeField()
   end_time = DateTimeField()
-  volume = PositiveIntegerField()
+  volume = FloatField()
   user = StringField()
 
   @classmethod
@@ -198,7 +198,7 @@ class DrinkCreatedMessage(Message):
     msg.tap_name = flow.tap_name
     msg.start_time = drink.starttime
     msg.end_time = drink.endtime
-    msg.volume = drink.volume
+    msg.volume = float(drink.Volume())
     if drink.keg:
       msg.keg_id = drink.keg.id
     else:

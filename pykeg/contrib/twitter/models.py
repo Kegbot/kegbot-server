@@ -43,24 +43,24 @@ class DrinkTweetLog(models.Model):
 
 class DrinkClassification(models.Model):
   name = models.CharField(max_length=256)
-  minimum_volume = models.IntegerField()
+  minimum_volume_ml = models.FloatField()
 
   def __str__(self):
-    vol = units.Quantity(self.minimum_volume, units.RECORD_UNIT)
+    vol = units.Quantity(self.minimum_volume_ml, units.UNITS.Milliliter)
     oz = vol.ConvertTo.Ounce
     return '%s (%.1foz or more)' % (self.name, oz)
 
   @classmethod
   def GetClassForDrink(cls, drink):
-    all_classes = list(cls.objects.all().order_by('minimum_volume'))
+    all_classes = list(cls.objects.all().order_by('minimum_volume_ml'))
     if not all_classes:
       return None
 
     best = all_classes[0]
-    if drink.volume < best.minimum_volume:
+    if drink.volume_ml < best.minimum_volume_ml:
       return None
     for drink_class in all_classes[1:]:
-      if drink.volume < drink_class.minimum_volume:
+      if drink.volume_ml < drink_class.minimum_volume_ml:
         return best
       best = drink_class
     return best

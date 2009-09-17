@@ -41,5 +41,9 @@ ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
 
+TEMPLATE_DIRS = (
+    '/path/to/kegbot/pykeg/templates',
+)
+
 MANAGERS = ADMINS
 

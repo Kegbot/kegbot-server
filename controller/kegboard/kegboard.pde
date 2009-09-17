@@ -1,5 +1,5 @@
 /**
- * kegboard-v3.pde - Kegboard v3 Arduino project
+ * kegboard.pde - Kegboard v3 Arduino project
  * Copyright 2003-2009 Mike Wakerly <opensource@hoho.com>
  *
  * This file is part of the Kegbot package of the Kegbot project.
@@ -148,6 +148,7 @@ void writeHelloPacket()
   writeOutputPacket();
 }
 
+#if KB_ENABLE_ONEWIRE
 void writeThermoPacket(int channel)
 {
   char name[] = "thermoX";
@@ -162,6 +163,7 @@ void writeThermoPacket(int channel)
   gOutputPacket.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_READING, sizeof(temp), (char*)(&temp));
   writeOutputPacket();
 }
+#endif
 
 void writeRelayPacket(int channel)
 {

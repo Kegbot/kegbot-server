@@ -33,5 +33,3 @@
 
 #define STATE_SEARCH 0
 #define STATE_UPDATE 1
-
-#define ONEWIRE_FAMILY_DS1820 0x10

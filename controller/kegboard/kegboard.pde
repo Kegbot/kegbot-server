@@ -279,7 +279,8 @@ int stepThermoBusSearch() {
   }
   if (OneWire::crc8(addr, 7) != addr[7]) {
     // crc invalid, skip
-  } else if (addr[0] == ONEWIRE_FAMILY_DS1820) {
+  } else if (addr[0] == ONEWIRE_FAMILY_DS18B20 ||
+      addr[0] == ONEWIRE_FAMILY_DS18S20) {
     for (int i = 0; i < KB_MAX_THERMO; i++) {
       DS1820Sensor* sensor = &(gThermoSensors[i]);
       if (sensor->Initialized()) {
@@ -313,6 +314,7 @@ int stepThermoBusUpdate() {
       sensor->Update(clock);
       if (!sensor->Busy()) {
         writeThermoPacket(sensor);
+        sensor->Reset();
       } else {
         busy = 1;
       }

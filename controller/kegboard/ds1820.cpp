@@ -11,12 +11,16 @@ static uint8_t null_addr[] = {0,0,0,0,0,0,0,0};
 
 DS1820Sensor::DS1820Sensor() {
   m_bus = 0;
+  m_initialized = false;
+  Reset();
+}
+
+void DS1820Sensor::Reset() {
   m_converting = false;
   m_next_conversion_clock = 0;
   m_conversion_start_clock = 0;
-  m_temp = 0;
+  m_temp = INVALID_TEMPERATURE_VALUE;
   m_temp_is_valid = false;
-  m_initialized = false;
 }
 
 void DS1820Sensor::Initialize(OneWire* bus, uint8_t* addr)
@@ -97,33 +101,29 @@ bool DS1820Sensor::FetchConversion()
     return false;
   }
 
-  m_temp = ((data[1] << 8) | data[0] );
+  m_temp = ((data[1] << 8) | data[0]);
   return true;
 }
 
 long DS1820Sensor::GetTemp(void)
 {
-  long scaled_temp = INVALID_TEMPERATURE_VALUE;
   if (!m_temp_is_valid)
-    return scaled_temp;
+    return INVALID_TEMPERATURE_VALUE;
 
-  // The DS18B20 reports temperature as a 16 bit value.  The least significant
-  // 12 bits are the temperature value, in increments of 1/16th deg C.  The most
-  // significant bits carry the sign extension.
+  // The value returned by the DS18B20 is a 16-bit 2's complement sign-extended
+  // value.  The value is the temperature, either increments of 1/16th deg C
+  // (DS18B20 default) or 1/2 deg C (DS18S20 default).
   //
   // This method returns the temperature in 1/10^6 deg C, so the value is scaled
-  // up by (10^3/16) = 62500.
-  //
-  // TODO(mikey): support ds18s20 ?
-  scaled_temp = (m_temp & 0x0fff) * 62500;
-
-  // Check sign extension
-  bool negative = (m_temp & 0xf000) ? true : false;
-
-  if (negative)
-    scaled_temp = -1 * scaled_temp;
-
-  return scaled_temp;
+  // up by (10^6/16) = 62500 or (10^6/2) = 500000.
+  switch (m_addr[0]) {
+    case ONEWIRE_FAMILY_DS18B20:
+      return m_temp * 62500;
+    case ONEWIRE_FAMILY_DS18S20:
+      return m_temp * 500000;
+    default:
+      return INVALID_TEMPERATURE_VALUE;
+  }
 }
 
 bool DS1820Sensor::Busy() {

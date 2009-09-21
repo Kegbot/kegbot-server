@@ -6,12 +6,10 @@ History
 =======
 
 The Kegboard is the most important device in a kegbot system; a reliable
-Kegboard is essential to accurately recording all pour data. The current
-Kegboard design, reflects improvements and lessons learned from earlier
-attempts.
+Kegboard is essential to accurately recording all pour data.
 
-The current Kegboard design is based on the popular Arduino board.  Compared to
-earlier, PIC-based designs, this board has several advantages, including:
+The current Kegboard is based on the popular Arduino AVR development board, and
+reflects several improvements from previous designs::
 
 * Onboard in FT232 serial-to-usb converter
 * Completely programmable via USB; no special programmer needed
@@ -33,7 +31,7 @@ Basic features of Kegboard v3.0 include:
 * Two independent flow sensing channels
 * Two controllable relay outputs
 * Up to two DS18S20 temperature sensors
-* Standard serial protocol (:ref:`kegboard-serial-protocol`) for interfacing with
+* Documented protocol (:ref:`kegboard-serial-protocol`) for interfacing with
   software; supported by pykeg
 * Easily built from widely-available Arduino board; no hardware programmer
   necessary
@@ -64,18 +62,4 @@ A basic kegboard setup includes:
 * One Arduino Decimilia (or similar) AVR microcontroller board. This board can
   be purchased for around $30 at `SparkFun <http://www.sparkfun.com>`_.
 * (Optional) Up to two DS18S20 temperature sensors.
-
-
-Pin Connections
-===============
-
-The following is the default Kegboard pin configuration:
-
-* Pin 2: ``flow_0`` input
-* Pin 3: ``flow_1`` input
-* Pin 4: ``relay_0`` output
-* Pin 5: ``relay_1`` output
-* Pin 7: ``thermo_0`` 1-wire bus
-* Pin 8: ``thermo_1`` 1-wire bus
-* Pin 12: selftest jumper
 

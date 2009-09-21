@@ -6,7 +6,10 @@
 // safe.
 
 // Check for & report 1-wire temperature sensors?
-#define KB_ENABLE_ONEWIRE   1
+#define KB_ENABLE_ONEWIRE_THERMO   1
+
+// Check for & report 1-wire devices on the ID bus?
+#define KB_ENABLE_ONEWIRE_PRESENCE 1
 
 // Enable a selftest pulse?
 #define KB_ENABLE_SELFTEST  1
@@ -27,23 +30,23 @@
 //   4 - relay 0 control (output)
 //   5 - relay 1 control (output)
 //   6
-//   7 - thermo 0 (1-wire, input/output)
-//   8 - thermo 1 (1-wire, input/output)
-//   9 - alarm output
+//   7 - thermo onewire bus (1-wire, input/output)
+//   8 - presence onewire bus (1-wire, input/output)
+//   9 - alarm (output)
 //   10
-//   11 - buzzer output
+//   11 - buzzer (output)
 //   12 - test pulse train (output)
-//   13
+//   13 - arduino onboard LED (if applicable)
 
-#define KB_PIN_METER_A      2
-#define KB_PIN_METER_B      3
-#define KB_PIN_RELAY_A      4
-#define KB_PIN_RELAY_B      5
-#define KB_PIN_THERMO_A     7
-#define KB_PIN_THERMO_B     8
-#define KB_PIN_ALARM        9
-#define KB_PIN_BUZZER       11
-#define KB_PIN_TEST_PULSE   12
+#define KB_PIN_METER_A            2
+#define KB_PIN_METER_B            3
+#define KB_PIN_RELAY_A            4
+#define KB_PIN_RELAY_B            5
+#define KB_PIN_ONEWIRE_THERMO     7
+#define KB_PIN_ONEWIRE_PRESENCE   8
+#define KB_PIN_ALARM              9
+#define KB_PIN_BUZZER             11
+#define KB_PIN_TEST_PULSE         12
 
 //
 // Device configuration defaults
@@ -51,5 +54,5 @@
 
 #define KB_DEFAULT_BOARDNAME          "kegboard"
 #define KB_DEFAULT_BOARDNAME_LEN      8  // must match #chars above
-#define KB_DEFAULT_UPDATE_INTERVAL    500
+#define KB_DEFAULT_UPDATE_INTERVAL    250
 #define KB_DEFAULT_BAUD_RATE          115200

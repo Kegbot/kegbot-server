@@ -141,6 +141,8 @@ serialized in **little-endian** format.
 +--------------+--------+------------------------------------------------------+
 | ``uint32``   | 4      | 32-bit unsigned integer                              |
 +--------------+--------+------------------------------------------------------+
+| ``uint64``   | 8      | 64-bit unsigned integer                              |
++--------------+--------+------------------------------------------------------+
 | ``string``   | Varies | Null-terminated C string                             |
 +--------------+--------+------------------------------------------------------+
 | ``output_t`` | 2      | Boolean (0=disabled, 1=enabled); like ``uint16``     |
@@ -274,6 +276,28 @@ Payload:
 +---------+-----------------+----------+---------------------------------------+
 | 0x02    | output_reading  | output_t | Status of the output.                 |
 +---------+-----------------+----------+---------------------------------------+
+
+.. _onewire-presence-message:
+
+``onewire_presence`` message (0x13)
+-----------------------------------
+
+When a 1-wire device is detected on the presence bus, this message is generated
+and sent.  Messages will be sent continuously while the device is present, and
+there is no explicit 'removed' message; thus, clients should aggregate these
+messages to detect transitions.
+
+.. todo:: Document update frequency and describe how to change it (it is the main loop update interval.)
+
+Payload:
+
++---------+-----------------+----------+---------------------------------------+
+| Tag ID  | Name            | Type     | Description                           |
++=========+=================+==========+=======================================+
+| 0x01    | device_id       | uint64   | ID of 1-wire device now present.      |
++---------+-----------------+----------+---------------------------------------+
+
+
 
 .. _last-event-message:
 

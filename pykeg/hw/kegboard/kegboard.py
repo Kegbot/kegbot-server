@@ -112,6 +112,15 @@ class Uint32Field(StructField):
   _STRUCT_FORMAT = '<I'
 
 
+class Uint64Field(StructField):
+  _STRUCT_FORMAT = '<Q'
+
+
+class OnewireIdField(Uint64Field):
+  def __str__(self):
+    return "0x%x" % (self._value,)
+
+
 class StringField(Field):
   def SetBytes(self, bytes):
     self.SetValue(bytes.strip('\x00'))
@@ -142,6 +151,7 @@ MESSAGE_ID = util.Enum(*(
   ('METER_STATUS', 0x10),
   ('TEMPERATURE_READING', 0x11),
   ('OUTPUT_STATUS', 0x12),
+  ('ONEWIRE_PRESENCE', 0x13),
 ))
 
 
@@ -246,6 +256,13 @@ class OutputStatusMessage(Message):
   _FIELDS = (
     (0x01, 'output_name', StringField),
     (0x02, 'output_reading', OutputField),
+  )
+
+
+class OnewirePresenceMessage(Message):
+  _TYPE = MESSAGE_ID.ONEWIRE_PRESENCE
+  _FIELDS = (
+    (0x01, 'device_id', OnewireIdField),
   )
 
 

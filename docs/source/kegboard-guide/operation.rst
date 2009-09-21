@@ -36,18 +36,21 @@ interrupt service routine increments a counter for each interrupt, keeping a
 running total of each meter's volume, similar to an odometer.
 
 
-Temperature Sensing
-===================
+OneWire Presence and Temperature Sensing
+========================================
+
+The Kegboard firmware is configured to support two separate 1-wire busses: the
+"thermo" bus, and the "presence" bus.  Use of these features is optional.
 
 The Kegboard firmware includes support for reading the Maxim DS18B20 1-wire
-temperature sensors.  Two inputs on the Arduino are designated for temperature
-sensors; the software assumes there will be at most one sensor attached to each
-pin.  Temperature devices are polled and reported every 5 seconds.
+temperature sensors.  These sensors should be attached to the "thermo" OneWire
+bus, which is reserved exclusively for temperature sensors.  Currently, a
+maximum of two temperature sensors may share this single bus.
 
-.. note::
-  The 1-wire protocol allows multiple sensors to share a single physical bus,
-  but for simplicity this is not supported in the Kegboard firmware.  Patches
-  welcome :-)
+The firmware also supports a second OneWire bus, which is continuously polled
+for 1-wire devices.  The 1-wire device ids seen on this bus are reported in a
+:ref:`kegboard-serial-protocol` message. This allows the Kegboard to double as
+an iButton reader/auth device.
 
 
 Host Watchdog

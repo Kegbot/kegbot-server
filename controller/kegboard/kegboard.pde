@@ -47,7 +47,7 @@
 
 #include <util/crc16.h>
 
-#if KB_ENABLE_ONEWIRE
+#if (KB_ENABLE_ONEWIRE_THERMO || KB_ENABLE_ONEWIRE_PRESENCE)
 #include "OneWire.h"
 #endif
 
@@ -71,6 +71,7 @@ static int gUpdateInterval = KB_DEFAULT_UPDATE_INTERVAL;
 //
 
 static unsigned long volatile gMeters[] = {0, 0};
+static unsigned long volatile gLastMeters[] = {0, 0};
 static KegboardPacket gOutputPacket;
 
 #if KB_ENABLE_BUZZER
@@ -97,13 +98,18 @@ struct MelodyNote ALARM_MELODY[] = {
 };
 #endif
 
-#if KB_ENABLE_ONEWIRE
-static OneWire gThermoBusA(KB_PIN_THERMO_A);
-static OneWire gThermoBusB(KB_PIN_THERMO_B);
+#if KB_ENABLE_ONEWIRE_THERMO
+static OneWire gOnewireThermoBus(KB_PIN_ONEWIRE_THERMO);
 static DS1820Sensor gThermoSensors[] = {
-  DS1820Sensor(&gThermoBusA),
-  DS1820Sensor(&gThermoBusB),
+  DS1820Sensor(),
+  DS1820Sensor(),
 };
+static int gThermoBusState = 0;
+static int gStartReadingTemps = 1;
+#endif
+
+#if KB_ENABLE_ONEWIRE_PRESENCE
+static OneWire gOnewireIdBus(KB_PIN_ONEWIRE_PRESENCE);
 #endif
 
 //
@@ -148,18 +154,34 @@ void writeHelloPacket()
   writeOutputPacket();
 }
 
-#if KB_ENABLE_ONEWIRE
-void writeThermoPacket(int channel)
+#if KB_ENABLE_ONEWIRE_THERMO
+void byteToChars(uint8_t byte, char* out) {
+  for (int i=0; i<2; i++) {
+    uint8_t val = (byte >> (4*i)) & 0xf;
+    if (val < 10) {
+      out[1-i] = (char) ('0' + val);
+    } else if (val < 16) {
+      out[1-i] = (char) ('a' + (val - 10));
+    }
+  }
+}
+
+void writeThermoPacket(DS1820Sensor *sensor)
 {
-  char name[] = "thermoX";
-  long temp;
+  long temp = sensor->GetTemp();
+  if (temp == INVALID_TEMPERATURE_VALUE) {
+    return;
+  }
 
-  name[6] = 0x30 + channel;
-  temp = gThermoSensors[channel].GetTemp();
-
+  char name[23] = "thermo-";
+  char* pos = (name + 7);
+  for (int i=7; i>=0; i--) {
+    byteToChars(sensor->m_addr[i], pos);
+    pos += 2;
+  }
   gOutputPacket.Reset();
   gOutputPacket.SetType(KB_MESSAGE_TYPE_THERMO_READING);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_NAME, 8, name);
+  gOutputPacket.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_NAME, 23, name);
   gOutputPacket.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_READING, sizeof(temp), (char*)(&temp));
   writeOutputPacket();
 }
@@ -181,6 +203,11 @@ void writeMeterPacket(int channel)
 {
   char name[] = "flowX";
   unsigned long status = gMeters[channel];
+  if (status == gLastMeters[channel]) {
+    return;
+  } else {
+    gLastMeters[channel] = status;
+  }
   name[4] = 0x30 + channel;
   gOutputPacket.Reset();
   gOutputPacket.SetType(KB_MESSAGE_TYPE_METER_STATUS);
@@ -188,6 +215,15 @@ void writeMeterPacket(int channel)
   gOutputPacket.AddTag(KB_MESSAGE_TYPE_METER_STATUS_TAG_METER_READING, sizeof(status), (char*)(&status));
   writeOutputPacket();
 }
+
+#if KB_ENABLE_ONEWIRE_PRESENCE
+void writeOnewirePresencePacket(uint8_t* id) {
+  gOutputPacket.Reset();
+  gOutputPacket.SetType(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE);
+  gOutputPacket.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_DEVICE_ID, 8, (char*)id);
+  writeOutputPacket();
+}
+#endif
 
 #if KB_ENABLE_SELFTEST
 void doTestPulse()
@@ -229,26 +265,105 @@ void setup()
   setupBuzzer();
   playMelody(BOOT_MELODY);
 #endif
+  writeHelloPacket();
 }
+
+#if KB_ENABLE_ONEWIRE_THERMO
+int stepThermoBusSearch() {
+  uint8_t addr[8];
+
+  int more_search = gOnewireThermoBus.search(addr);
+  if (!more_search) {
+    gOnewireThermoBus.reset_search();
+    return 0;
+  }
+  if (OneWire::crc8(addr, 7) != addr[7]) {
+    // crc invalid, skip
+  } else if (addr[0] == ONEWIRE_FAMILY_DS1820) {
+    for (int i = 0; i < KB_MAX_THERMO; i++) {
+      DS1820Sensor* sensor = &(gThermoSensors[i]);
+      if (sensor->Initialized()) {
+        if (sensor->CompareId(addr) == 0) {
+          // already tracking this sensor
+          break;
+        }
+      } else {
+        // new sensor, start tracking it
+        sensor->Initialize(&gOnewireThermoBus, addr);
+        break;
+      }
+    }
+    // if we made it this far, we don't have space for the sensor so will ignore
+    // it for all eternity. TODO(mikey): evict old sensors
+  }
+  return 1;
+}
+
+int stepThermoBusUpdate() {
+  int busy = 0;
+  unsigned long clock = millis();
+  if (gStartReadingTemps) {
+    gOnewireThermoBus.reset();
+  }
+  for (int i = 0; i < KB_MAX_THERMO; i++) {
+    DS1820Sensor* sensor = &(gThermoSensors[i]);
+    if (!sensor->Initialized()) {
+      continue;
+    } else if (gStartReadingTemps || sensor->Busy()) {
+      sensor->Update(clock);
+      if (!sensor->Busy()) {
+        writeThermoPacket(sensor);
+      } else {
+        busy = 1;
+      }
+    }
+  }
+  gStartReadingTemps = 0;
+  return busy;
+}
+
+void stepOnewireThermoBus() {
+  if (gThermoBusState == STATE_SEARCH) {
+    if (!stepThermoBusSearch()) {
+      gThermoBusState = STATE_UPDATE;
+      gStartReadingTemps = 1;
+    }
+  } else {
+    if (!stepThermoBusUpdate()) {
+      gThermoBusState = STATE_SEARCH;
+    }
+  }
+}
+#endif
+
+#if KB_ENABLE_ONEWIRE_PRESENCE
+void stepOnewireIdBus() {
+  uint8_t addr[8];
+  if (!gOnewireIdBus.search(addr)) {
+    gOnewireIdBus.reset_search();
+  } else {
+    if (OneWire::crc8(addr, 7) == addr[7]) {
+      writeOnewirePresencePacket(addr);
+    }
+  }
+}
+#endif
 
 void loop()
 {
-  writeHelloPacket();
 
   writeMeterPacket(0);
   writeMeterPacket(1);
 
-  writeRelayPacket(0);
-  writeRelayPacket(1);
+  //writeRelayPacket(0);
+  //writeRelayPacket(1);
 
-#if KB_ENABLE_ONEWIRE
-  {
-    unsigned long clock = millis();
-    gThermoSensors[0].Update(clock);
-    gThermoSensors[1].Update(clock);
-  }
-  writeThermoPacket(0);
-  writeThermoPacket(1);
+#if KB_ENABLE_ONEWIRE_THERMO
+  stepOnewireThermoBus();
+#endif
+
+#if KB_ENABLE_ONEWIRE_PRESENCE
+  stepOnewireIdBus();
 #endif
 
 #if KB_ENABLE_SELFTEST

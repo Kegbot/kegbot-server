@@ -246,18 +246,34 @@ class Drink(models.Model):
      ), default = 'valid')
 
 
-class Token(models.Model):
-  """ An arbitrary secret key, used by the authentication system.
+class AuthenticationToken(models.Model):
+  """A secret token to authenticate a user, optionally pin-protected."""
+  class Meta:
+    unique_together = ("auth_device", "token_value")
 
-  This table may need to change as more authentication modules are added.
-  TODO(mikey): fix this
-  """
   def __str__(self):
-    return "Token %s for %s" % (self.id, self.user)
+    ret = "%s: %s" % (self.auth_device, self.token_value)
+    if self.user is not None:
+      ret = "%s (%s)" % (ret, self.user.username)
+    return ret
 
-  user = models.ForeignKey(User)
-  keyinfo = models.TextField()
-  created = models.DateTimeField(default=datetime.datetime.now)
+  auth_device = models.CharField(max_length=256)
+  token_value = models.CharField(max_length=256)
+  pin = models.CharField(max_length=256, blank=True, null=True)
+  user = models.ForeignKey(User, blank=True, null=True)
+  created = models.DateTimeField(auto_now_add=True)
+  enabled = models.BooleanField(default=True)
+  expires = models.DateTimeField(blank=True, null=True)
+
+  def IsAssigned(self):
+    return self.user is not None
+
+  def IsActive(self):
+    if not self.enabled:
+      return False
+    if not self.expires:
+      return True
+    return datetime.datetime.now() < self.expires
 
 
 class BAC(models.Model):

@@ -25,7 +25,16 @@ from pykeg.core import util
 admin.site.register(models.UserPicture)
 admin.site.register(models.UserLabel)
 admin.site.register(models.UserProfile)
-admin.site.register(models.Brewer)
+
+class BeerTypeInline(admin.TabularInline):
+  model = models.BeerType
+
+class BrewerAdmin(admin.ModelAdmin):
+  inlines = [
+    BeerTypeInline,
+  ]
+
+admin.site.register(models.Brewer, BrewerAdmin)
 admin.site.register(models.BeerStyle)
 
 class BeerTypeAdmin(admin.ModelAdmin):
@@ -33,14 +42,27 @@ class BeerTypeAdmin(admin.ModelAdmin):
 admin.site.register(models.BeerType, BeerTypeAdmin)
 
 admin.site.register(models.KegSize)
-admin.site.register(models.KegTap)
+
+class KegTapAdmin(admin.ModelAdmin):
+  list_display = ('name', 'meter_name', 'current_keg')
+admin.site.register(models.KegTap, KegTapAdmin)
 
 class KegAdmin(admin.ModelAdmin):
   list_display = ('id', 'type')
 admin.site.register(models.Keg, KegAdmin)
 
-admin.site.register(models.Drink)
-admin.site.register(models.Token)
+class DrinkAdmin(admin.ModelAdmin):
+  list_display = ('id', 'user', 'keg', 'endtime')
+  list_filter = ('keg', 'status', 'endtime')
+  search_fields = ('id', 'user__username')
+admin.site.register(models.Drink, DrinkAdmin)
+
+class AuthenticationTokenAdmin(admin.ModelAdmin):
+  list_display = ('auth_device', 'user', 'token_value', 'enabled', 'IsActive')
+  list_filter = ('auth_device', 'enabled')
+  search_fields = ('user__username', 'token_value')
+admin.site.register(models.AuthenticationToken, AuthenticationTokenAdmin)
+
 admin.site.register(models.BAC)
 admin.site.register(models.UserDrinkingSession)
 admin.site.register(models.UserDrinkingSessionAssignment)
@@ -58,4 +80,8 @@ class ThermologAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Thermolog, ThermologAdmin)
 admin.site.register(models.RelayLog)
-admin.site.register(models.Config)
+
+class ConfigAdmin(admin.ModelAdmin):
+  list_display = ('key', 'value')
+  search_fields = ('key', 'value')
+admin.site.register(models.Config, ConfigAdmin)

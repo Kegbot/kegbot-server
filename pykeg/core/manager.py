@@ -444,7 +444,7 @@ class AuthenticationManager(Manager):
     msg = ev.payload
     tap_name = msg.tap_name
     auth_device_name = msg.auth_device_name
-    token_value = msg.token_value
+    token_value = msg.token_value.lower()
     token_pair = (auth_device_name, token_value)
 
     if self._present_tokens.present(token_pair):

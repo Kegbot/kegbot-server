@@ -17,7 +17,6 @@ DS1820Sensor::DS1820Sensor() {
 
 void DS1820Sensor::Reset() {
   m_converting = false;
-  m_next_conversion_clock = 0;
   m_conversion_start_clock = 0;
   m_temp = INVALID_TEMPERATURE_VALUE;
   m_temp_is_valid = false;
@@ -36,7 +35,7 @@ bool DS1820Sensor::Initialized() {
   return m_initialized;
 }
 
-void DS1820Sensor::Update(unsigned long clock)
+bool DS1820Sensor::Update(unsigned long clock)
 {
   if (clock < m_conversion_start_clock) { // overflow of clock
     m_conversion_start_clock = 0;
@@ -44,7 +43,7 @@ void DS1820Sensor::Update(unsigned long clock)
 
   unsigned long delta = clock - m_conversion_start_clock;
 
-  if (!m_converting && clock >= m_next_conversion_clock) {
+  if (!m_converting) {
     // we're not converting, and it is time to start
     m_converting = true;
     m_conversion_start_clock = clock;
@@ -53,16 +52,17 @@ void DS1820Sensor::Update(unsigned long clock)
     // we're converting and it is time to fetch
     m_converting = false;
 
-    m_next_conversion_clock = clock + REFRESH_MS;
     if (FetchConversion()) {
       m_temp_is_valid = true;
     } else {
       m_temp_is_valid = false;
     }
+    return true;
   } else {
     // we're either in the middle of a conversion, or it is too soon to start
     // the next cycle.
   }
+  return false;
 
 }
 

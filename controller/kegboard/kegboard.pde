@@ -100,12 +100,7 @@ struct MelodyNote ALARM_MELODY[] = {
 
 #if KB_ENABLE_ONEWIRE_THERMO
 static OneWire gOnewireThermoBus(KB_PIN_ONEWIRE_THERMO);
-static DS1820Sensor gThermoSensors[] = {
-  DS1820Sensor(),
-  DS1820Sensor(),
-};
-static int gThermoBusState = 0;
-static int gStartReadingTemps = 1;
+static DS1820Sensor gThermoSensor;
 #endif
 
 #if KB_ENABLE_ONEWIRE_PRESENCE
@@ -269,72 +264,37 @@ void setup()
 }
 
 #if KB_ENABLE_ONEWIRE_THERMO
-int stepThermoBusSearch() {
+int stepOnewireThermoBus() {
   uint8_t addr[8];
 
+  // Are we already working on a sensor? service it, possibly emitting a a
+  // thermo packet.
+  if (gThermoSensor.Initialized() || gThermoSensor.Busy()) {
+    if (gThermoSensor.Update(millis())) {
+      // Just finished conversion
+      writeThermoPacket(&gThermoSensor);
+      gThermoSensor.Reset();
+    } else if (gThermoSensor.Busy()) {
+      // More cycles needed on this sensor
+      return 1;
+    } else {
+      // finished or not started
+    }
+  }
+
+  // First time, or finished with last sensor; clean up, and look more more
+  // devices.
   int more_search = gOnewireThermoBus.search(addr);
   if (!more_search) {
+    // Bus exhausted; start over
     gOnewireThermoBus.reset_search();
     return 0;
   }
-  if (OneWire::crc8(addr, 7) != addr[7]) {
-    // crc invalid, skip
-  } else if (addr[0] == ONEWIRE_FAMILY_DS18B20 ||
-      addr[0] == ONEWIRE_FAMILY_DS18S20) {
-    for (int i = 0; i < KB_MAX_THERMO; i++) {
-      DS1820Sensor* sensor = &(gThermoSensors[i]);
-      if (sensor->Initialized()) {
-        if (sensor->CompareId(addr) == 0) {
-          // already tracking this sensor
-          break;
-        }
-      } else {
-        // new sensor, start tracking it
-        sensor->Initialize(&gOnewireThermoBus, addr);
-        break;
-      }
-    }
-    // if we made it this far, we don't have space for the sensor so will ignore
-    // it for all eternity. TODO(mikey): evict old sensors
-  }
+
+  // New sensor. Initialize and start work.
+  gThermoSensor.Initialize(&gOnewireThermoBus, addr);
+  gThermoSensor.Update(millis());
   return 1;
-}
-
-int stepThermoBusUpdate() {
-  int busy = 0;
-  unsigned long clock = millis();
-  if (gStartReadingTemps) {
-    gOnewireThermoBus.reset();
-  }
-  for (int i = 0; i < KB_MAX_THERMO; i++) {
-    DS1820Sensor* sensor = &(gThermoSensors[i]);
-    if (!sensor->Initialized()) {
-      continue;
-    } else if (gStartReadingTemps || sensor->Busy()) {
-      sensor->Update(clock);
-      if (!sensor->Busy()) {
-        writeThermoPacket(sensor);
-        sensor->Reset();
-      } else {
-        busy = 1;
-      }
-    }
-  }
-  gStartReadingTemps = 0;
-  return busy;
-}
-
-void stepOnewireThermoBus() {
-  if (gThermoBusState == STATE_SEARCH) {
-    if (!stepThermoBusSearch()) {
-      gThermoBusState = STATE_UPDATE;
-      gStartReadingTemps = 1;
-    }
-  } else {
-    if (!stepThermoBusUpdate()) {
-      gThermoBusState = STATE_SEARCH;
-    }
-  }
 }
 #endif
 

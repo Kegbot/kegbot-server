@@ -7,7 +7,7 @@ class OneWire;
 class DS1820Sensor {
   public:
    DS1820Sensor();
-   void Update(unsigned long clock);
+   bool Update(unsigned long clock);
    void PrintTemp(void);
    long GetTemp();
    bool Busy();
@@ -30,7 +30,6 @@ class DS1820Sensor {
 
    bool m_initialized;
    bool m_converting;
-   unsigned long m_next_conversion_clock;
    unsigned long m_conversion_start_clock;
    unsigned long m_temp;
    bool m_temp_is_valid;

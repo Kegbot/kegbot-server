@@ -30,6 +30,3 @@
 
 // Max number of sensors
 #define KB_MAX_THERMO 2
-
-#define STATE_SEARCH 0
-#define STATE_UPDATE 1

@@ -124,7 +124,7 @@ tables into the new database::
 Run Kegbot Core
 ---------------
 
-You're now ready to run the Kegbot core process!::
+You're now ready to run the Kegbot core process::
 
 	% ./bin/kegbot_core.py
 	2009-09-10 00:23:36,259 INFO     (tap-manager) Registering new tap: flow0
@@ -181,4 +181,29 @@ or ``--helpshort`` flags::
 			IMPORTANT: flags in this list that have arguments MUST use the --flag=value
 			format.
 			(default: '')
+
+Start up kegboard daemon
+------------------------
+
+TODO
+
+Start up Kegweb
+---------------
+
+You can now start Kegweb. Try running the built in development server::
+
+	% ./bin/kegbot_admin.py runserver 0.0.0.0:8000
+	Validating models...
+	0 errors found
+
+	Django version 1.0.2 final, using settings 'pykeg.settings'
+	Development server is running at http://0.0.0.0:8000/
+	Quit the server with CONTROL-C.
+
+Go to the kegweb URL in your browser, eg http://localhost/
+
+Create a Keg
+------------
+
+TODO
 

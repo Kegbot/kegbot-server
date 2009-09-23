@@ -44,8 +44,9 @@ The Kegboard firmware is configured to support two separate 1-wire busses: the
 
 The Kegboard firmware includes support for reading the Maxim DS18B20 1-wire
 temperature sensors.  These sensors should be attached to the "thermo" OneWire
-bus, which is reserved exclusively for temperature sensors.  Currently, a
-maximum of two temperature sensors may share this single bus.
+bus, which is reserved exclusively for temperature sensors.  Any number of
+sensors may be attached.  *OneWire devices not matching the DS18B20 or DS18S20
+family codes will be ignored on this bus.*
 
 The firmware also supports a second OneWire bus, which is continuously polled
 for 1-wire devices.  The 1-wire device ids seen on this bus are reported in a

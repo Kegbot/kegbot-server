@@ -248,6 +248,9 @@ This message describes the instantaneous reading of a single temperature sensor.
 For a kegboard with multiple sensors, multiple messages may be sent.  Note that
 the temperature is presumed to be valid at the time the message is sent.
 
+The value of ``sensor_name`` will include the full 128-bit 1-wire device id, for
+example, ``thermo-f800080012345610``.
+
 Payload:
 
 +---------+-----------------+----------+---------------------------------------+

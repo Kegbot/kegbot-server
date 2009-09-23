@@ -26,11 +26,13 @@ build a working Kegboard!
 Features
 ========
 
-Basic features of Kegboard v3.0 include:
+Primary features of Kegboard include:
 
-* Two independent flow sensing channels
+* Two independent flow meter inputs (monitor up to two kegs from one board)
 * Two controllable relay outputs
-* Up to two DS18S20 temperature sensors
+* Support for any number of DS1820 temperature sensors
+* OneWire bus master dedicated to device detection (use iButtons to authenticate
+  to Kegbot through the kegboard)
 * Documented protocol (:ref:`kegboard-serial-protocol`) for interfacing with
   software; supported by pykeg
 * Easily built from widely-available Arduino board; no hardware programmer
@@ -54,12 +56,12 @@ The full bill of materials (BOM) for a Kegboard setup is show below.
 +-----+------------+----------------------------------------------------------+
 | 2   | $5         | DS18B20 Temperature Sensor                               |
 +-----+------------+----------------------------------------------------------+
-| 4   | $0.25      | 10kohm Resistor (flowmeter and temperature sensor)       |
+| 4   | $0.25      | 5kohm Resistor (flowmeter and temperature sensor)        |
 +-----+------------+----------------------------------------------------------+
 
 A basic kegboard setup includes:
 
 * One Arduino Decimilia (or similar) AVR microcontroller board. This board can
   be purchased for around $30 at `SparkFun <http://www.sparkfun.com>`_.
-* (Optional) Up to two DS18S20 temperature sensors.
+* (Optional) DS18S20 or DS18B20 temperature sensor(s).
 

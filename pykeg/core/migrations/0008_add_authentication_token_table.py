@@ -73,13 +73,13 @@ class Migration:
         },
         'core.authenticationtoken': {
             'Meta': {'unique_together': "(('auth_device', 'token_value'),)"},
-            'auth_device': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
+            'auth_device': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'blank': 'True'}),
             'expires': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'pin': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
-            'token_value': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
+            'token_value': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'})
         },
         'core.bac': {

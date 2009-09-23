@@ -39,7 +39,6 @@ from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import kb_threads
 from pykeg.core import manager
-from pykeg.core import service
 from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
@@ -53,15 +52,13 @@ class KegbotEnv(object):
   def __init__(self):
     self._event_hub = event.EventHub()
 
-    # Build managers and services
+    # Build managers
     self._alarm_manager = alarm.AlarmManager()
-    self._tap_manager = manager.TapManager()
-    self._flow_manager = manager.FlowManager(self._tap_manager)
-    self._authentication_manager = manager.AuthenticationManager()
-
-    self._drink_db_service = service.DrinkDatabaseService('drink_db_service', self)
-    self._flow_service = service.FlowManagerService('flow_service', self)
-    self._thermo_service = service.ThermoService('thermo_service', self)
+    self._tap_manager = manager.TapManager('tap-manager', self)
+    self._flow_manager = manager.FlowManager('flow-manager', self)
+    self._drink_manager = manager.DrinkManager('drink-manager', self)
+    self._thermo_manager = manager.ThermoManager('thermo-manager', self)
+    self._authentication_manager = manager.AuthenticationManager('authentication-manager', self)
 
     self._backend = backend.KegbotBackend()
     self._backend.CheckSchemaVersion()
@@ -69,14 +66,16 @@ class KegbotEnv(object):
     # Build threads
     self._threads = set()
     self._service_thread = kb_threads.EventHandlerThread(self, 'service-thread')
-    self._service_thread.AddService(self._flow_service)
-    self._service_thread.AddService(self._drink_db_service)
-    self._service_thread.AddService(self._thermo_service)
+    self._service_thread.AddEventHandler(self._tap_manager)
+    self._service_thread.AddEventHandler(self._flow_manager)
+    self._service_thread.AddEventHandler(self._drink_manager)
+    self._service_thread.AddEventHandler(self._thermo_manager)
+    self._service_thread.AddEventHandler(self._authentication_manager)
 
     if self._backend.GetConfig().IsFeatureEnabled('twitter'):
-      from pykeg.contrib.twitter import service as twitter_service
-      self._twitter_service = twitter_service.TwitterService('twitter', self)
-      self._service_thread.AddService(self._twitter_service)
+      from pykeg.contrib.twitter import service as twitter_manager
+      self._twitter_manager = twitter_manager.TwitterManager('twitter', self)
+      self._service_thread.AddEventHandler(self._twitter_manager)
 
     self.AddThread(self._service_thread)
 

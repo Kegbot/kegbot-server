@@ -90,19 +90,20 @@ class EventHandlerThread(CoreThread):
   def __init__(self, kb_env, name):
     CoreThread.__init__(self, kb_env, name)
     self._event_queue = Queue.Queue()
-    self._services = set()
+    self._event_handlers = set()
     self._all_event_map = {}
 
-  def AddService(self, service):
-    self._services.add(service)
+  def AddEventHandler(self, event_handler):
+    self._event_handlers.add(event_handler)
     self._RefreshEventMap()
 
   def _RefreshEventMap(self):
-    for svc in self._services:
-      for event, cmd in svc.EventMap().iteritems():
-        if self._all_event_map.get(event) is None:
-          self._all_event_map[event] = set()
-        self._all_event_map[event].add(cmd)
+    for svc in self._event_handlers:
+      for event_type, callback_list in svc.GetEventHandlers().iteritems():
+        if self._all_event_map.get(event_type) is None:
+          self._all_event_map[event_type] = set()
+        for cb in callback_list:
+          self._all_event_map[event_type].add(cb)
 
   def run(self):
     while not self._quit:
@@ -131,6 +132,7 @@ class EventHandlerThread(CoreThread):
 
   def _ProcessEvent(self, event):
     """ Execute the event callback associated with the event, if present. """
+    self._logger.debug('Processing event: %s' % event)
     if event.name() == kb_common.KB_EVENT.QUIT:
       self._logger.info('got quit event, quitting')
       self.Quit()

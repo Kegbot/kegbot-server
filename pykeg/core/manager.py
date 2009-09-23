@@ -19,11 +19,17 @@
 """Tap (single path of fluid) management module."""
 
 import datetime
+import inspect
 import logging
 
+from pykeg.core import event
+from pykeg.core import flow_meter
+from pykeg.core import kb_common
 from pykeg.core import models
 from pykeg.core import units
-from pykeg.core import flow_meter
+from pykeg.core.net import kegnet_message
+
+KB_EVENT = kb_common.KB_EVENT
 
 
 class TapManagerError(Exception):
@@ -34,6 +40,37 @@ class AlreadyRegisteredError(TapManagerError):
 
 class UnknownTapError(TapManagerError):
   """ Raised when tap requested does not exist """
+
+
+def EventHandler(event_type):
+  def decorate(f):
+    if not hasattr(f, 'events'):
+      f.events = set()
+    f.events.add(event_type)
+    return f
+  return decorate
+
+
+class Manager(object):
+  def __init__(self, name, kb_env):
+    self._name = name
+    self._kb_env = kb_env
+    self._logger = logging.getLogger(self._name)
+
+  def GetEventHandlers(self):
+    ret = {}
+    for name, method in inspect.getmembers(self, inspect.ismethod):
+      if not hasattr(method, 'events'):
+        continue
+      for event_type in method.events:
+        if event_type not in ret:
+          ret[event_type] = set()
+        ret[event_type].add(method)
+    return ret
+
+  def _PublishEvent(self, event, payload=None):
+    """Convenience alias for EventHub.PublishEvent"""
+    self._kb_env.GetEventHub().PublishEvent(event, payload)
 
 
 class Tap(object):
@@ -55,7 +92,7 @@ class Tap(object):
     return self._ml_per_tick * float(amt)
 
 
-class TapManager(object):
+class TapManager(Manager):
   """Maintains listing of available fluid paths.
 
   This manager maintains the set of available beer taps.  Taps have a
@@ -64,8 +101,8 @@ class TapManager(object):
   taps.
   """
 
-  def __init__(self):
-    self._logger = logging.getLogger('tap-manager')
+  def __init__(self, name, kb_env):
+    Manager.__init__(self, name, kb_env)
     self._taps = {}
     all_taps = models.KegTap.objects.all()
     for tap in all_taps:
@@ -146,7 +183,7 @@ class Flow:
     return self._tap
 
 
-class FlowManager(object):
+class FlowManager(Manager):
   """Class reponsible for maintaining and servicing flows.
 
   The manager is responsible for creating Flow instances and managing their
@@ -157,8 +194,8 @@ class FlowManager(object):
     - Explicitly, by a call to StartFlow
     - Implicitly, by a call to HandleTapActivity
   """
-  def __init__(self, tap_manager):
-    self._tap_manager = tap_manager
+  def __init__(self, name, kb_env):
+    Manager.__init__(self, name, kb_env)
     self._flow_map = {}
     self._logger = logging.getLogger("flowmanager")
 
@@ -170,7 +207,8 @@ class FlowManager(object):
 
   def StartFlow(self, tap_name):
     if not self.GetFlow(tap_name):
-      tap = self._tap_manager.GetTap(tap_name)
+      tap_manager = self._kb_env.GetTapManager()
+      tap = tap_manager.GetTap(tap_name)
       self._flow_map[tap_name] = Flow(tap)
       self._logger.info('StartFlow: Flow created on %s' % (tap_name,))
     else:
@@ -189,13 +227,14 @@ class FlowManager(object):
 
   def UpdateFlow(self, tap_name, volume):
     try:
-      tap = self._tap_manager.GetTap(tap_name)
+      tap_manager = self._kb_env.GetTapManager()
+      tap = tap_manager.GetTap(tap_name)
     except TapManagerError:
       # tap is unknown or not available
       # TODO(mikey): guard against this happening
       return None, None
 
-    delta = self._tap_manager.UpdateDeviceReading(tap.GetName(), volume)
+    delta = tap_manager.UpdateDeviceReading(tap.GetName(), volume)
     self._logger.debug('Flow update: tap=%s volume=%i (delta=%i)' %
         (tap_name, volume, delta))
 
@@ -212,10 +251,155 @@ class FlowManager(object):
 
     return flow, is_new
 
+  @EventHandler(KB_EVENT.FLOW_DEV_ACTIVITY)
+  def HandleFlowActivityEvent(self, ev):
+    """Handles the FLOW_DEV_ACTIVITY event.
 
-class AuthenticationManager(object):
-  def _GetUserAtTap(self, tap):
-    """Returns the currently authorized user at the tap."""
+    The handler accquires the FlowManager, and calls FlowUpdate.  This may
+    result in one of three outcomes:
+      - New flow created. A FLOW_START event is emitted, followed by a
+        FLOW_UPDATE event.
+      - Existing flow updated. A FLOW_UPDATE event is emitted.
+      - Update refused.  The channel is unknown by the FlowManager.  No events
+        are emitted.
+    """
+    msg = ev.payload
+    tap_mgr = self._kb_env.GetTapManager()
+    if not tap_mgr.TapExists(msg.tap_name):
+      self._logger.warning('Dropping flow update event for unknown tap: %s' %
+          (msg.tap_name,))
+      return
+    flow_instance, is_new = self.UpdateFlow(msg.tap_name, msg.meter_reading)
 
-  def _TapIdle(self, tap):
-    """Called when the given tap has become idle."""
+  @EventHandler(KB_EVENT.FLOW_DEV_IDLE)
+  def HandleFlowIdleEvent(self, ev):
+    flow = self.EndFlow(ev.payload.tap_name)
+    msg = kegnet_message.FlowUpdateMessage.FromFlow(flow)
+    self._PublishEvent(KB_EVENT.FLOW_END, msg)
+
+  @EventHandler(KB_EVENT.START_FLOW)
+  def _HandleStartFlowEvent(self, ev):
+    flow = self.StartFlow(ev.payload.tap_name)
+    msg = kegnet_message.FlowUpdateMessage.FromFlow(flow)
+    self._PublishEvent(KB_EVENT.FLOW_START, msg)
+
+  @EventHandler(KB_EVENT.END_FLOW)
+  def _HandleFlowEndFlowEvent(self, ev):
+    flow = self.EndFlow(ev.payload.tap_name)
+    msg = kegnet_message.FlowUpdateMessage.FromFlow(flow)
+    self._PublishEvent(KB_EVENT.FLOW_END, msg)
+
+class DrinkManager(Manager):
+
+  @EventHandler(KB_EVENT.FLOW_END)
+  def HandleFlowEndedEvent(self, ev):
+    """Attempt to save a drink record and derived data for |flow|"""
+    self._logger.info('Flow completed')
+    flow_update = ev.payload
+
+    ticks = flow_update.ticks
+    volume_ml = flow_update.volume_ml
+
+    if volume_ml <= kb_common.MIN_VOLUME_TO_RECORD:
+      self._logger.info('Not recording flow: volume (%i mL) <= '
+        'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
+      return
+
+    keg = None
+    try:
+      tap = models.KegTap.objects.get(meter_name=flow_update.tap_name)
+      if tap.current_keg:
+        keg = tap.current_keg
+        self._logger.info('Binding drink to keg: %s' % keg)
+    except models.KegTap.DoesNotExist:
+      self._logger.warning('No tap found for meter %s' % flow_update.tap_name)
+
+    try:
+      user = models.User.objects.get(username=flow_update.user)
+    except models.User.DoesNotExist:
+      user = self._kb_env.GetBackend().GetDefaultUser()
+      self._logger.info('User unknown, using default: %s' % (user.username,))
+
+    # log the drink
+    d = models.Drink(ticks=int(ticks),
+                     volume_ml=volume_ml,
+                     starttime=flow_update.start_time,
+                     endtime=flow_update.end_time,
+                     user=user,
+                     keg=keg,
+                     status='valid')
+    d.save()
+
+    keg_id = None
+    if d.keg:
+      keg_id = d.keg.id
+
+    self._logger.info('Logged drink %i user=%s keg=%s ounces=%s ticks=%i' % (
+      d.id, d.user.username, keg_id, d.Volume().ConvertTo.Ounce,
+      d.ticks))
+
+    # notify listeners
+    msg = kegnet_message.DrinkCreatedMessage.FromFlowAndDrink(flow_update, d)
+    self._PublishEvent(KB_EVENT.DRINK_CREATED, msg)
+
+  @EventHandler(KB_EVENT.DRINK_CREATED)
+  def HandleDrinkCreatedEvent(self, ev):
+    drink = models.Drink.objects.get(id=ev.payload.drink_id)
+
+    models.BAC.ProcessDrink(drink)
+    self._logger.info('Processed BAC for drink %i' % (drink.id,))
+
+    models.UserDrinkingSessionAssignment.RecordDrink(drink)
+    self._logger.info('Processed UserDrinkGroupAssignment for drink %i' % (drink.id,))
+
+
+class ThermoManager(Manager):
+  def __init__(self, name, kb_env):
+    Manager.__init__(self, name, kb_env)
+    self._last_record = {}
+    self._same_value_min_delta = datetime.timedelta(minutes=1)
+    self._new_value_min_delta = datetime.timedelta(seconds=30)
+
+  @EventHandler(KB_EVENT.THERMO_UPDATE)
+  def _HandleThermoUpdateEvent(self, ev):
+    sensor_name = ev.payload.sensor_name
+    sensor_value = ev.payload.sensor_value
+    now = datetime.datetime.now()
+    last_record = self._last_record.get(sensor_name)
+
+    if last_record is not None:
+      delta = now - last_record.time
+      is_new_value = sensor_value != last_record.temp
+
+      if is_new_value and (delta < self._new_value_min_delta):
+        # New value, but arrived too soon: drop it.
+        self._logger.debug('Dropping new sensor reading, value=%s delta=%s' % (sensor_value, delta))
+        return
+      elif not is_new_value and (delta < self._same_value_min_delta):
+        self._logger.debug('Dropping same sensor reading, value=%s delta=%s' % (sensor_value, delta))
+        # Unchanged value, but arrived too soon: drop it.
+        return
+
+    self._logger.debug('Recording sensor reading, value=%s' % (sensor_value,))
+    new_record = models.Thermolog(name=sensor_name, temp=sensor_value, time=now)
+    new_record.save()
+    self._last_record[sensor_name] = new_record
+
+
+class AuthenticationManager(Manager):
+  @EventHandler(KB_EVENT.AUTH_USER_ADDED)
+  def HandleAuthUserAddedEvent(self, ev):
+    msg = ev.payload
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.StartFlow(msg.tap_name)
+    try:
+      user = models.User.objects.get(username=msg.user_name)
+      flow.SetUser(user)
+    except models.User.DoesNotExist:
+      pass
+
+  @EventHandler(KB_EVENT.AUTH_USER_REMOVED)
+  def HandleAuthUserRemovedEvent(self, ev):
+    msg = ev.payload
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.EndFlow(msg.tap_name)

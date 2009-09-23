@@ -257,8 +257,8 @@ class AuthenticationToken(models.Model):
       ret = "%s (%s)" % (ret, self.user.username)
     return ret
 
-  auth_device = models.CharField(max_length=256)
-  token_value = models.CharField(max_length=256)
+  auth_device = models.CharField(max_length=64)
+  token_value = models.CharField(max_length=128)
   pin = models.CharField(max_length=256, blank=True, null=True)
   user = models.ForeignKey(User, blank=True, null=True)
   created = models.DateTimeField(auto_now_add=True)

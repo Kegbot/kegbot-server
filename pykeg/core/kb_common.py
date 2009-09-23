@@ -66,6 +66,7 @@ KB_EVENT = util.Enum(*(
 
   'AUTH_USER_ADDED',
   'AUTH_USER_REMOVED',
+  'AUTH_TOKEN_ADDED',
 
 ))
 

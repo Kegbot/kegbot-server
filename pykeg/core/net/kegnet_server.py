@@ -230,3 +230,8 @@ class KegnetFlowService(KegnetService):
     msg = kegnet_message.AuthUserAddMessage(initial=request.http.params)
     self._PublishEvent(KB_EVENT.AUTH_USER_REMOVED, msg)
 
+  @ApiEndpoint('auth/tokenadd')
+  def HandleAuthTokenAdd(self, request):
+    """Indicates a token was added to an auth device."""
+    msg = kegnet_message.AuthTokenAddMessage(initial=request.http.params)
+    self._PublishEvent(KB_EVENT.AUTH_TOKEN_ADDED, msg)

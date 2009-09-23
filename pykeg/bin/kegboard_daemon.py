@@ -153,6 +153,11 @@ class KegboardManagerThread(util.KegbotThread):
       if not suppress:
         self._client.SendThermoUpdate(sensor_name, sensor_value)
 
+    elif isinstance(msg, kegboard.OnewirePresenceMessage):
+      strval = '%16x' % msg.device_id.GetValue()
+      for tap_name in 'flow0', 'flow1':
+        self._client.SendAuthTokenAdd(tap_name, 'core.onewire', strval)
+
 
 class KegboardDeviceIoThread(util.KegbotThread):
   """Manages all device I/O.

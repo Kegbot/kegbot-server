@@ -139,11 +139,15 @@ class TapManager(Manager):
 class Flow:
   def __init__(self, tap):
     self._tap = tap
-    self._start_time = None
+    self._start_time = datetime.datetime.now()
     self._end_time = None
     self._bound_user = None
     self._last_log_time = None
     self._total_ticks = 0L
+
+  def __str__(self):
+    return '<Flow %s ticks=%s user=%s>' % (self._tap, self._total_ticks,
+        self._bound_user)
 
   def AddTicks(self, amount, when=None):
     self._total_ticks += amount
@@ -209,8 +213,9 @@ class FlowManager(Manager):
     if not self.GetFlow(tap_name):
       tap_manager = self._kb_env.GetTapManager()
       tap = tap_manager.GetTap(tap_name)
-      self._flow_map[tap_name] = Flow(tap)
-      self._logger.info('StartFlow: Flow created on %s' % (tap_name,))
+      new_flow = Flow(tap)
+      self._flow_map[tap_name] = new_flow
+      self._logger.info('StartFlow: Flow created: %s' % new_flow)
     else:
       self._logger.info('StartFlow: Flow already exists on %s' % tap_name)
     return self.GetFlow(tap_name)
@@ -220,7 +225,7 @@ class FlowManager(Manager):
     if flow:
       tap = flow.GetTap()
       del self._flow_map[tap_name]
-      self._logger.info('EndFlow: Flow ended on tap %s' % (tap_name,))
+      self._logger.info('EndFlow: Flow ended: %s' % flow)
     else:
       self._logger.info('EndFlow: No existing flow on tap %s' % (tap_name,))
     return flow
@@ -385,8 +390,38 @@ class ThermoManager(Manager):
     new_record.save()
     self._last_record[sensor_name] = new_record
 
+class TimeoutCache:
+  def __init__(self, maxage):
+    self._max_delta = maxage
+    self._entries = {}
+
+  def present(self, k):
+    now = datetime.datetime.now()
+    if k in self._entries:
+      age = now - self._entries[k]
+      if age > self._max_delta:
+        self.remove(k)
+        return False
+      else:
+        return True
+    return False
+
+  def touch(self, k):
+    if k in self._entries:
+      self._entries[k] = datetime.datetime.now()
+
+  def remove(self, k):
+    del self._entries[k]
+
+  def put(self, k):
+    self._entries[k] = datetime.datetime.now()
+
 
 class AuthenticationManager(Manager):
+  def __init__(self, name, kb_env):
+    Manager.__init__(self, name, kb_env)
+    self._present_tokens = TimeoutCache(datetime.timedelta(seconds=3))
+
   @EventHandler(KB_EVENT.AUTH_USER_ADDED)
   def HandleAuthUserAddedEvent(self, ev):
     msg = ev.payload
@@ -403,3 +438,34 @@ class AuthenticationManager(Manager):
     msg = ev.payload
     flow_mgr = self._kb_env.GetFlowManager()
     flow = flow_mgr.EndFlow(msg.tap_name)
+
+  @EventHandler(KB_EVENT.AUTH_TOKEN_ADDED)
+  def HandleAuthTokenAddedEvent(self, ev):
+    msg = ev.payload
+    tap_name = msg.tap_name
+    auth_device_name = msg.auth_device_name
+    token_value = msg.token_value
+    token_pair = (auth_device_name, token_value)
+
+    if self._present_tokens.present(token_pair):
+      # we already know about this token; process no further
+      self._present_tokens.touch(token_pair)
+      return
+    else:
+      self._present_tokens.put(token_pair)
+
+    try:
+      token = models.AuthenticationToken.objects.get(auth_device=auth_device_name,
+          token_value=token_value)
+    except models.AuthenticationToken.DoesNotExist:
+      self._logger.info('Token does not exist: %s.%s' % (auth_device_name, token_value))
+      return
+
+    if not token.user:
+      self._logger.info('Token not assigned.')
+      return
+
+    message = kegnet_message.AuthUserAddMessage(tap_name=tap_name,
+        user_name=token.user.username)
+
+    self._PublishEvent(KB_EVENT.AUTH_USER_ADDED, message)

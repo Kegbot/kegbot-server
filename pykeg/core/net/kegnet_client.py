@@ -74,6 +74,7 @@ class BaseClient:
     self._CloseConnection()
 
   def SendMessage(self, endpoint, message):
+    self._logger.debug('Sending message: %s' % message)
     params = message.AsDict()
     return self.Request(endpoint, params)
 
@@ -138,3 +139,8 @@ class KegnetClient(BaseClient):
     message = kegnet_message.ThermoUpdateMessage(sensor_name=sensor_name,
         sensor_value=sensor_value)
     return self.SendMessage('thermo/update', message)
+
+  def SendAuthTokenAdd(self, tap_name, auth_device_name, token_value):
+    message = kegnet_message.AuthTokenAddMessage(tap_name=tap_name,
+        auth_device_name=auth_device_name, token_value=token_value)
+    return self.SendMessage('auth/tokenadd', message)

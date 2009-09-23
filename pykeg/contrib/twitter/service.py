@@ -29,7 +29,7 @@ To enable, you must:
 import random
 
 from pykeg.core import kb_common
-from pykeg.core import service
+from pykeg.core import manager
 from pykeg.core import models as core_models
 from pykeg.contrib.twitter import models
 
@@ -47,13 +47,9 @@ TWEET_TEMPLATE = (
 )
 
 
-class TwitterService(service.KegbotService):
-  def _LoadEventMap(self):
-    ret = {
-        KB_EVENT.DRINK_CREATED : self._HandleDrinkCreatedEvent,
-    }
-    return ret
+class TwitterManager(manager.Manager):
 
+  @manager.EventHander(KB_EVENT.DRINK_CREATED)
   def _HandleDrinkCreatedEvent(self, ev):
     self._logger.info('Handling new drink')
     drink = core_models.Drink.objects.get(id=ev.payload.drink_id)

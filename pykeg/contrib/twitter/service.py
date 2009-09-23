@@ -49,7 +49,7 @@ TWEET_TEMPLATE = (
 
 class TwitterManager(manager.Manager):
 
-  @manager.EventHander(KB_EVENT.DRINK_CREATED)
+  @manager.EventHandler(KB_EVENT.DRINK_CREATED)
   def _HandleDrinkCreatedEvent(self, ev):
     self._logger.info('Handling new drink')
     drink = core_models.Drink.objects.get(id=ev.payload.drink_id)

@@ -111,6 +111,9 @@ class TapManager(Manager):
   def TapExists(self, name):
     return name in self._taps
 
+  def GetAllTaps(self):
+    return self._taps.values()
+
   def _CheckTapExists(self, name):
     if not self.TapExists(name):
       raise UnknownTapError
@@ -422,6 +425,13 @@ class AuthenticationManager(Manager):
     Manager.__init__(self, name, kb_env)
     self._present_tokens = TimeoutCache(datetime.timedelta(seconds=3))
 
+  def _GetTapsForTapName(self, tap_name):
+    tap_manager = self._kb_env.GetTapManager()
+    if tap_name == kb_common.ALIAS_ALL_TAPS:
+      return tap_manager.GetAllTaps()
+    else:
+      return tap_manager.GetTap(tap_name)
+
   @EventHandler(KB_EVENT.AUTH_USER_ADDED)
   def HandleAuthUserAddedEvent(self, ev):
     msg = ev.payload
@@ -465,7 +475,9 @@ class AuthenticationManager(Manager):
       self._logger.info('Token not assigned.')
       return
 
-    message = kegnet_message.AuthUserAddMessage(tap_name=tap_name,
-        user_name=token.user.username)
+    # TODO(mikey): should virtual taps (__all_taps__) be handled elsewhere?
+    for tap in self._GetTapsForTapName(tap_name):
+      message = kegnet_message.AuthUserAddMessage(tap_name=tap.GetName(),
+          user_name=token.user.username)
 
     self._PublishEvent(KB_EVENT.AUTH_USER_ADDED, message)

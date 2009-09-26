@@ -155,8 +155,8 @@ class KegboardManagerThread(util.KegbotThread):
 
     elif isinstance(msg, kegboard.OnewirePresenceMessage):
       strval = '%016x' % msg.device_id.GetValue()
-      for tap_name in 'flow0', 'flow1':
-        self._client.SendAuthTokenAdd(tap_name, 'core.onewire', strval)
+      self._client.SendAuthTokenAdd(FLAGS.tap_name,
+          kb_common.AUTH_MODULE_CORE_ONEWIRE, strval)
 
 
 class KegboardDeviceIoThread(util.KegbotThread):

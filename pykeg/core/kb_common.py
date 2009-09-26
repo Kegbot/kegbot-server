@@ -29,6 +29,13 @@ KB_CORE_DEFAULT_ADDR = 'localhost:9805'
 DEFAULT_NEW_USER_WEIGHT = 140
 DEFAULT_NEW_USER_GENDER = 'male'
 
+# String name for all taps
+ALIAS_ALL_TAPS = '__all_taps__'
+
+# Device names
+AUTH_MODULE_CORE_ONEWIRE = 'core.onewire'
+AUTH_MODULE_CONTRIB_PHIDGET_RFID = 'contrib.phidget.rfid'
+
 ### Addresses and ports
 
 # Default port for JSON server

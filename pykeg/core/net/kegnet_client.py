@@ -21,6 +21,7 @@
 
 import httplib
 import logging
+import simplejson
 import socket
 import urllib
 
@@ -36,6 +37,11 @@ gflags.DEFINE_string('kb_core_addr', kb_common.KB_CORE_DEFAULT_ADDR,
 
 gflags.DEFINE_string('client_name', 'mykegboard',
     'Name to use for this client connection.')
+
+gflags.DEFINE_string('tap_name', kb_common.ALIAS_ALL_TAPS,
+    'Name of tap that this session should bind to.  The special name '
+    '"%s" indicates all available taps should be used.' %
+    kb_common.ALIAS_ALL_TAPS)
 
 gflags.DEFINE_boolean('persistent_connection', True,
     'If True, the client will use an HTTP/1.1 persistent connection '
@@ -84,7 +90,7 @@ class BaseClient:
     except httplib.HTTPException, e:
       raise ClientException, str(e)
     except socket.error, e:
-      raise ClientException, str(e)
+      self._logger.error('Error sending request: %s' % e)
 
   def _Request(self, endpoint, params=None, timeout=5, method='GET'):
     if params is not None:
@@ -144,3 +150,13 @@ class KegnetClient(BaseClient):
     message = kegnet_message.AuthTokenAddMessage(tap_name=tap_name,
         auth_device_name=auth_device_name, token_value=token_value)
     return self.SendMessage('auth/tokenadd', message)
+
+  def GetFlowStatus(self, tap_name):
+    message = kegnet_message.FlowStatusRequestMessage(tap_name=tap_name)
+    result = self.SendMessage('flow/status', message)
+    print 'result:', result
+    try:
+      return kegnet_message.FlowUpdateMessage.FromJson(result)
+    except (ValueError, TypeError):
+      raise
+      #return None

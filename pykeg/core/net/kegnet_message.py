@@ -43,7 +43,10 @@ class Field(object):
 class StringField(Field):
   def ParseValue(self, val):
     val = self._FlattenListValue(val)
-    return str(val)
+    if val is not None:
+      return str(val)
+    else:
+      return None
 
 class PositiveIntegerField(Field):
   def ParseValue(self, val):

@@ -120,10 +120,10 @@ class KegnetServerRequestHandler(BaseHTTPRequestHandler):
       if result is not None:
         if isinstance(result, kegnet_message.Message):
           body = result.AsJson()
-          if self.callback:
-            body = self.callback + '(' + body + ')'
         else:
           body = simplejson.dumps(result)
+        if self.callback:
+          body = self.callback + '(' + body + ')'
       else:
         body = ''
       self._DoResponse(body)
@@ -211,6 +211,8 @@ class KegnetFlowService(KegnetService):
     if flow:
       ret = kegnet_message.FlowUpdateMessage.FromFlow(flow)
       return ret
+    else:
+      return {}
 
   @ApiEndpoint('thermo/update')
   def HandleThermoUpdate(self, request):

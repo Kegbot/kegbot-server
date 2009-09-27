@@ -60,6 +60,12 @@ class TwitterManager(manager.Manager):
       self._logger.warning('Profile for user %s does not exist' % (drink.user,))
       return
 
+    if drink.user == self._kb_env.GetBackend().GetDefaultUser():
+      config = self._kb_env.GetBackend().GetConfig()
+      if not config.getboolean('contrib.twitter.tweet_unknown'):
+        self._logger.info('Tweeting for unknown users is disabled.')
+        return
+
     try:
       twitter_link = models.UserTwitterLink.objects.get(user_profile=profile)
       tweet_to = twitter_link.twitter_name

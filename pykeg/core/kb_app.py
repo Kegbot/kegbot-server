@@ -63,7 +63,7 @@ class App(object):
   subclass App, and implement some or all of _Setup and _MainLoop.
   """
 
-  def __init__(self, name='main', daemon=False):
+  def __init__(self, name='main', daemon=FLAGS.daemon):
     self._name = name
     self._is_daemon = daemon
     self._do_quit = False

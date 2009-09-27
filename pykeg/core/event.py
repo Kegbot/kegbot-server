@@ -89,6 +89,8 @@ class EventHub(object):
     ev = self._WaitForEvent(timeout)
     if ev:
       self._logger.debug('Publishing event: %s' % (ev,))
+      if hasattr(ev, 'payload'):
+        self._logger.debug(str(ev.payload))
       for listener in self._IterEventListeners():
         listener.PostEvent(ev)
 

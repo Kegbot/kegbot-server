@@ -479,5 +479,4 @@ class AuthenticationManager(Manager):
     for tap in self._GetTapsForTapName(tap_name):
       message = kegnet_message.AuthUserAddMessage(tap_name=tap.GetName(),
           user_name=token.user.username)
-
-    self._PublishEvent(KB_EVENT.AUTH_USER_ADDED, message)
+      self._PublishEvent(KB_EVENT.AUTH_USER_ADDED, message)

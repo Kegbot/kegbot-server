@@ -305,6 +305,8 @@ class BAC(models.Model):
       return
     if profile.HasLabel('__no_bac__'):
       return
+    if not d.keg:
+      return
 
     # TODO: delete/update previous bac for this drink iff exists
 

@@ -57,18 +57,21 @@ class FlowMeter(object):
       # Normal case: zero or positive delta from last reading.
       delta = ticks - last_reading
     else:
-      # Possible overflow. Resolution algorithm: assume overflow occured at
-      # the next power of two following the last reading. Compute the delta to
-      # be the difference between last_reading and that power of two, plus
-      # whatever the current reading is.
-      #
-      # This may assume overflow where non occured; for example, if the meter
-      # was suddenly reset. MAX_METER_READING_DELTA should be low enough to
-      # mitigate this problem.
-      for power_of_two in (2**16, 2**32, 2**64):
-        if last_reading < power_of_two:
-          break
-      delta = power_of_two - last_reading + ticks
+      # Overflow case: ticks < last ticks
+      # If the value is less than the max delta, then use it. Some ticks will be
+      # lost, since we can't be sure where the overflow occurred. Drop the
+      # reading otherwise.
+      if ticks < self._max_delta:
+        # The value is less than the max delta. In this case, assume the device
+        # wrapped around or reset to zero, and use the current reading as the
+        # absolute value. Some ticks may be lost.
+        # TODO(mikey): should warn and/or accumulate stats
+        delta = ticks
+      else:
+        # The value is greater than the maximum delta; drop the reading, since
+        # we cannot safely accept it.
+        # TODO(mikey): should warn and/or accumulate stats
+        delta = 0
 
     if self._max_delta and delta > self._max_delta:
       # TODO: should warn and/or accumulate stats

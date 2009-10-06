@@ -51,10 +51,10 @@ class KegbotTestCase(TestCase):
     # reading of 1000.
     client.SendFlowStart('flow0')
     client.SendMeterUpdate('flow0', 1000)
-    client.SendMeterUpdate('flow0', 1100)
-    client.SendMeterUpdate('flow0', 2100)
-    client.SendMeterUpdate('flow0', 3100)
-    client.SendMeterUpdate('flow0', 3200)
+    count = 0
+    while count < 2200:
+      count += 100
+      client.SendMeterUpdate('flow0', 1000+count)
     client.SendFlowStop('flow0')
 
     self.service_thread._FlushEvents()

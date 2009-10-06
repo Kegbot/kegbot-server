@@ -74,10 +74,10 @@ class Manager(object):
 
 
 class Tap(object):
-  def __init__(self, name, ml_per_tick):
+  def __init__(self, name, ml_per_tick, max_tick_delta):
     self._name = name
     self._ml_per_tick = ml_per_tick
-    self._meter = flow_meter.FlowMeter(name)
+    self._meter = flow_meter.FlowMeter(name, max_delta=max_tick_delta)
 
   def __str__(self):
     return self._name
@@ -106,7 +106,7 @@ class TapManager(Manager):
     self._taps = {}
     all_taps = models.KegTap.objects.all()
     for tap in all_taps:
-      self.RegisterTap(tap.meter_name, tap.ml_per_tick)
+      self.RegisterTap(tap.meter_name, tap.ml_per_tick, tap.max_tick_delta)
 
   def TapExists(self, name):
     return name in self._taps
@@ -118,11 +118,11 @@ class TapManager(Manager):
     if not self.TapExists(name):
       raise UnknownTapError
 
-  def RegisterTap(self, name, ml_per_tick):
+  def RegisterTap(self, name, ml_per_tick, max_tick_delta):
     self._logger.info('Registering new tap: %s' % name)
     if self.TapExists(name):
       raise AlreadyRegisteredError
-    self._taps[name] = Tap(name, ml_per_tick)
+    self._taps[name] = Tap(name, ml_per_tick, max_tick_delta)
 
   def UnregisterTap(self, name):
     self._logger.info('Unregistering tap: %s' % name)

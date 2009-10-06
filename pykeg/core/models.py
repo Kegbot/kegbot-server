@@ -142,6 +142,7 @@ class KegTap(models.Model):
   ml_per_tick = models.FloatField(default=(1000.0/2200.0))
   description = models.TextField(blank=True, null=True)
   current_keg = models.ForeignKey('Keg', blank=True, null=True)
+  max_tick_delta = models.PositiveIntegerField(default=100)
 
   def __str__(self):
     return "%s: %s" % (self.meter_name, self.name)

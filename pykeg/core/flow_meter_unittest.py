@@ -91,7 +91,7 @@ class FlowMeterTestCase(unittest.TestCase):
 
     self.meter.SetTicks(overflow_reading)
     curr_reading = self.meter.GetTicks()
-    self.assertEqual(curr_reading, 110)
+    self.assertEqual(curr_reading, 60)
 
   def testNoOverflow(self):
     self.meter.SetTicks(0)
@@ -104,11 +104,11 @@ class FlowMeterTestCase(unittest.TestCase):
 
     self.meter.SetTicks(10)
     curr_reading = self.meter.GetTicks()
-    self.assertEqual(curr_reading, 100)
+    self.assertEqual(curr_reading, 110)
 
     self.meter.SetTicks(20)
     curr_reading = self.meter.GetTicks()
-    self.assertEqual(curr_reading, 110)
+    self.assertEqual(curr_reading, 120)
 
   def testActivityMonitoring(self):
     d = lambda x: datetime.datetime.fromtimestamp(x)
@@ -130,11 +130,14 @@ class FlowMeterTestCase(unittest.TestCase):
     idle_time = self.meter.GetIdleTime(now=d(1040))
     self.assertEqual(idle_time, datetime.timedelta(seconds=25))
 
-    # Updating the device with negative delta should also leave idle time
-    # unchanged.
-    self.meter.SetTicks(10, when=d(1050))
+    # Updating the device with invalid and negative delta should also leave idle
+    # time unchanged.
+    self.meter.SetTicks(9000, when=d(1050))
     idle_time = self.meter.GetIdleTime(now=d(1060))
     self.assertEqual(idle_time, datetime.timedelta(seconds=45))
+    self.meter.SetTicks(8000, when=d(1070))
+    idle_time = self.meter.GetIdleTime(now=d(1080))
+    self.assertEqual(idle_time, datetime.timedelta(seconds=65))
 
 
 if __name__ == '__main__':

@@ -43,10 +43,10 @@ gflags.DEFINE_string('logformat',
     'Default format to use for log messages.')
 
 gflags.DEFINE_string('logfile',
-    'kegbot.log',
+    '%s.log' % os.path.basename(sys.argv[0].replace('.py','')),
     'Default log file for log messages')
 
-gflags.DEFINE_boolean('log_to_file', True,
+gflags.DEFINE_boolean('log_to_file', False,
     'Send log messages to the log file defined by --logfile')
 
 gflags.DEFINE_boolean('log_to_stdout', True,

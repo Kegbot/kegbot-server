@@ -113,6 +113,11 @@ class Message(BaseMessage):
     for name, field in self._GetFields().items():
       yield field
 
+  def __cmp__(self, other):
+    if not other or type(other) != type(self):
+      return -1
+    return cmp(self._values, other._values)
+
   def _GetFields(self):
     return self._fields
 

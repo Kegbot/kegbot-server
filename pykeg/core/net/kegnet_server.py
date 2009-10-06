@@ -105,7 +105,7 @@ class KegnetServerRequestHandler(BaseHTTPRequestHandler):
   def log_request(self, code='-', size='-'):
     client_addr = '%s:%i' % self.client_address
     msg = ' '.join(map(str, (code, client_addr, self.command, self.path)))
-    self.server._logger.info(msg)
+    self.server._logger.debug(msg)
 
   def do_GET(self):
     self._ExtractParams()

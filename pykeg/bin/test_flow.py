@@ -33,9 +33,6 @@ from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_string('tap_name', 'flow0',
-    'Name of the tap to use in updates.')
-
 gflags.DEFINE_integer('ticks', 1000,
     'Number of ticks to send.',
     lower_bound=1)

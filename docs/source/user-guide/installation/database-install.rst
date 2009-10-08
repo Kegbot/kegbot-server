@@ -4,36 +4,31 @@ Installing the database
 =======================
 
 Kegbot relies on a database system to store all data, including keg and drink
-information.  Kegbot currently supports `all databases supported by Django
-<http://docs.djangoproject.com/en/dev/ref/databases/>`_, though we've only
-tested `MySQL <http://docs.djangoproject.com/en/dev/ref/databases/>`_ and
-`SQLite <http://www.sqlite.org/>`_.
+information.  At the moment, Kegbot supports `MySQL <http://www.mysql.org/>` as
+its database.
 
-This chapter covers selecting and installing a database for use by Kegbot.
+This chapter covers installing an initializing a database for use by Kegbot.
 
-Selecting a database system
----------------------------
+.. note::
+  In theory Kegbot should support `all databases supported by Django
+  <http://docs.djangoproject.com/en/dev/ref/databases/>`_. However, Kegbot
+  requires a third-party Django extension, `South
+  <http://south.aeracode.org/>`_, for performing schema migrations.  South does
+  not completely support other backends (such as sqlite), so we're unable to
+  support it for now.
 
-We've found a basic Kegbot system can work fine with either MySQL or SQLite.
-
-There are major, intentional differences between these two systems: MySQL is a
-complete relational database server, while SQLite is a simple (but powerful)
-embeddable SQL engine.
-
-We think SQLite kicks ass, and is great for certain situations, but we recommend
-MySQL as the default for new Kegbot systems.  Although it may take slightly more
-work to set up, there is plenty of good documentation out there.
-
-That said, there are no problems that we're aware of with SQLite.  Because it is
-an embedded database engine, it will not be able to scale to high levels of
-concurrency; you probably shouldn't launch a popular kegbot website using only
-SQLite.  It is perfectly fine for tinkering with Kegbot, though.
 
 Installing MySQL
 ----------------
 
-First, you will need to install the MySQL software. The following should work on
-(Debian/Ubuntu)::
+.. note::
+  This section is not intended to be a complete guide to installing and
+  maintaining a MySQL server. Generally, there's not much to it, but if you're
+  not already familiar with MySQL (or if you encounter problems), we suggest you
+  consult the official documentation for your Linux distro and/or MySQL.
+
+If you do not already have a MySQL daemon running on your system, you will need
+to install it. The following should work on (Debian/Ubuntu)::
 
 	% sudo apt-get install mysql-server
 
@@ -63,6 +58,10 @@ Your MySQL system seems to be working. Exit the shell::
 	Bye
 	%
 
+
+Creating the Kegbot database
+----------------------------
+
 You now need to create a database within MySQL for Kegbot to use.  We will
 create a new database, named ``kegbot``, with the following command::
 
@@ -87,6 +86,9 @@ verify that the database was created by trying to use it in a MySQL shell::
 
 	Database changed
 	mysql>
+
+Creating the `kegbot` MySQL user
+--------------------------------
 
 Finally, create a new MySQL user named ``kegbot`` for MySQL access by the Kegbot
 system::
@@ -123,13 +125,3 @@ Done! You have successfully set up a MySQL database for Kegbot.  In the next
 chapter, you will install and configure Kegbot to use this database and populate
 it with tables.
 
-
-Installing SQLite
------------------
-
-Since SQLite operates on a flat file database, it is considerably simpler to set
-up.  Be sure you have the necessary libraries and command-line tools::
-
-	% sudo apt-get install python-sqlite
-
-That's it.

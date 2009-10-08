@@ -5,7 +5,8 @@ Running Kegbot
 
 Congratulations! You're now ready to start up Kegbot.  There are a few programs
 included in the ``bin/`` directory of ``pykeg`` that you will now become
-familiar with::
+familiar with:
+
 * ``kegbot_admin.py``, an administrative utility tool
 * ``kegbot_core.py``, the core kegbot daemon
 * ``kegboard_daemon.py``, the daemon that listens to the kegboard

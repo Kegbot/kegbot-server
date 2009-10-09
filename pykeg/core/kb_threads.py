@@ -1,6 +1,7 @@
 import asyncore
 import datetime
 import Queue
+import sys
 import time
 
 from pykeg.core import kb_common
@@ -160,7 +161,8 @@ class NetProtocolThread(CoreThread):
 
   def run(self):
     self._logger.info("network thread started")
-    self._server.serve_forever()
+    self._server.RunServer()
 
   def Quit(self):
-    self._server.shutdown()
+    self._server.StopServer()
+    self._logger.info("network thread stopped")

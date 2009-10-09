@@ -128,6 +128,10 @@ class BaseClient:
 
 class KegnetClient(BaseClient):
 
+  def SendPing(self):
+    message = kegnet_message.PingMessage()
+    return self.SendMessage('status/ping', message)
+
   def SendMeterUpdate(self, tap_name, meter_reading):
     message = kegnet_message.MeterUpdateMessage(tap_name=tap_name,
         meter_reading=meter_reading)

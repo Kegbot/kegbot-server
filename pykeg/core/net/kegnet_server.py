@@ -32,6 +32,7 @@ import threading
 from pykeg.core import event
 from pykeg.core import kb_common
 from pykeg.core import util
+from pykeg.core.net import kegnet_client  # needed for Quit
 from pykeg.core.net import kegnet_message
 
 from pykeg.external.gflags import gflags
@@ -56,6 +57,12 @@ class KegnetServer(ThreadingMixIn, HTTPServer):
     self._handlers = {}
     self._lock = threading.Lock()
     self._logger = logging.getLogger('kegnet-server')
+
+    # Flag if this version of Python supports HTTPServer.shutdown()
+    # TODO(mikey): verify python version.
+    self._can_quit_async = hasattr(self, 'shutdown')
+    self._do_quit = False
+
     HTTPServer.__init__(self, self._addr, KegnetServerRequestHandler)
 
   def AddService(self, service_cls):
@@ -64,6 +71,30 @@ class KegnetServer(ThreadingMixIn, HTTPServer):
     service_inst = service_cls(self, self._kb_env)
     self._services[service_cls] = service_inst
     self._UpdateHandlers()
+
+  def RunServer(self):
+    if self._can_quit_async:
+      self.serve_forever()
+    else:
+      while not self._do_quit:
+        self.handle_request()
+
+  def StopServer(self):
+    if self._can_quit_async:
+      self.shutdown()
+    else:
+      self._do_quit = True
+      # Send a fake request to unblock the blocking select.
+      # TODO(mikey): This will be flaky and is a poor reason to add a client to
+      # the server implementation; either don't support pre-python 2.6, or write
+      # a better select loop for HTTPServer that can get an async quit message.
+      self._logger.info('Sending self quit message.')
+      try:
+        client = kegnet_client.KegnetClient(server_addr=self._addr)
+        client.SendPing()
+      finally:
+        self._logger.info('Done sending quit message.')
+        pass
 
   @util.synchronized
   def GetHandler(self, path):

@@ -140,6 +140,10 @@ class Message(BaseMessage):
     return simplejson.dumps(self.AsDict(), sort_keys=True, indent=4)
 
 
+class PingMessage(Message):
+  """No-op message."""
+
+
 class MeterUpdateMessage(Message):
   """Message emitted when a meter reading changes."""
   tap_name = StringField()

@@ -17,9 +17,9 @@ class KegbotRegistrationForm(RegistrationForm):
                                                                 profile_callback=profile_callback)
     new_user.is_active = True
     new_user.save()
-    new_profile = UserProfile.objects.create(user=new_user,
-      gender=self.cleaned_data['gender'],
-      weight=self.cleaned_data['weight'])
+    new_profile, is_new = UserProfile.objects.get_or_create(user=new_user)
+    new_profile.gender = self.cleaned_data['gender']
+    new_profile.weight = self.cleaned_data['weight']
     new_profile.save()
     return new_user
 

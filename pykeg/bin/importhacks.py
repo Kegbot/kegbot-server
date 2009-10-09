@@ -27,9 +27,19 @@ SYSTEM_SETTINGS_DIR = "/etc/kegbot"
 HOME_DIR = os.environ.get('HOME')
 USER_SETTINGS_DIR = os.path.join(HOME_DIR, '.kegbot')
 
+# Greatest precedence: $HOME/.kegbot/
+# Next precedence: /etc/kegbot
+SEARCH_DIRS = (
+    USER_SETTINGS_DIR,
+    SYSTEM_SETTINGS_DIR,
+)
+
 def _Debug(message):
   if _DEBUG:
-    print 'importhacks:', message
+    sys.stderr.write('importhacks: %s\n' % (message,))
+
+def _Warning(message):
+  sys.stderr.write('importhacks: %s\n' % (message,))
 
 def _AppendToSysPath(path):
   path = os.path.abspath(path)
@@ -41,9 +51,7 @@ def _AppendToSysPath(path):
 
 def _ExtendSysPath():
   """ Add some paths where we'll look for user settings. """
-  # Greatest precedence: $HOME/.kegbot/
-  # Next precedence: /etc/kegbot
-  for dir in (USER_SETTINGS_DIR, SYSTEM_SETTINGS_DIR):
+  for dir in SEARCH_DIRS:
     _AppendToSysPath(dir)
     if _DEBUG:
       test_settings = os.path.join(dir, 'common_settings.py')
@@ -73,25 +81,24 @@ def _FixAll():
   _ExtendSysPath()
   _SetDjangoSettingsEnv()
 
-  if _DEBUG:
-    try:
-      import pykeg
-      pykeg_dir = os.path.dirname(pykeg.__file__)
-      _Debug('Pykeg loaded from dir: %s' % pykeg_dir)
-    except ImportError:
-      print 'Warning: pykeg could not be imported'
-    try:
-      import pykeg.external
-      external_dir = os.path.dirname(pykeg.external.__file__)
-      _Debug('Pykeg external loaded from dir: %s' % external_dir)
-    except ImportError:
-      print 'Warning: pykeg.external could not be imported'
-    try:
-      import common_settings
-      common_dir = os.path.dirname(common_settings.__file__)
-      _Debug('common_settings loaded from dir: %s' % common_dir)
-    except ImportError:
-      print 'Warning: common_settings could not be imported'
+  try:
+    import pykeg
+    pykeg_dir = os.path.dirname(pykeg.__file__)
+    _Debug('Pykeg loaded from dir: %s' % pykeg_dir)
+  except ImportError:
+    _Warning('Warning: pykeg could not be imported')
+  try:
+    import pykeg.external
+    external_dir = os.path.dirname(pykeg.external.__file__)
+    _Debug('Pykeg external loaded from dir: %s' % external_dir)
+  except ImportError:
+    _Warning('Warning: pykeg.external could not be imported')
+  try:
+    import common_settings
+    common_dir = os.path.dirname(common_settings.__file__)
+    _Debug('common_settings loaded from dir: %s' % common_dir)
+  except ImportError:
+    _Warning('Warning: common_settings could not be imported')
 
 if __name__ == '__main__' or os.environ.get('DEBUG_IMPORT_HACKS'):
   # When run as a program, or DEBUG_IMPORT_HACKS is set: print debug info

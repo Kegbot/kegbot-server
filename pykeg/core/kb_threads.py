@@ -1,7 +1,6 @@
 import asyncore
 import datetime
 import Queue
-import sys
 import time
 
 from pykeg.core import kb_common

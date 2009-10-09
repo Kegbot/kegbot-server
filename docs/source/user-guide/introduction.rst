@@ -61,7 +61,7 @@ The following pieces of software are required:
 
 * `Python <http://python.org>`_ version 2.4 or later
 * `Django <http://www.djangoproject.org/>`_ version 1.0 or later
-* `Mysql <http://www.mysql.org/>`_ or `Sqlite <http://www.sqlite.org/>`_
+* `Mysql <http://www.mysql.org/>`_ version 5.0 or later
 
 Getting Help
 ============

@@ -1,6 +1,0 @@
-========
-Appendix
-========
-
-About these documents
-=====================

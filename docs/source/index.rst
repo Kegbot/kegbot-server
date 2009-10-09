@@ -13,10 +13,11 @@ pykeg software distribution.
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+  :maxdepth: 2
 
-   user-guide/index
-   kegboard-guide/index
+  user-guide/index
+  kegboard-guide/index
+  developer-notes/index
 
 
 
@@ -33,6 +34,10 @@ these other Kegbot resources:
   The `kegbot-dev Mailing List
   <http://kegbot.org/cgi-bin/mailman/listinfo/kegbot-dev/>`_ may or may not
   be a vibrant community for help and exchanging ideas.
+
+**Bug Tracker**
+  Please use our `issue tracker <http://code.google.com/p/kegbot/issues/list>`_
+  to search for and file new bugs.
 
 **Kegbot wiki**
   The `Kegbot Wiki <http://kegbot.org/wiki>`_ is something of a scratchpad of

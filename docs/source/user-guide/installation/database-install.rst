@@ -4,7 +4,7 @@ Installing the database
 =======================
 
 Kegbot relies on a database system to store all data, including keg and drink
-information.  At the moment, Kegbot supports `MySQL <http://www.mysql.org/>` as
+information.  At the moment, Kegbot supports `MySQL <http://www.mysql.org/>`_ as
 its database.
 
 This chapter covers installing an initializing a database for use by Kegbot.

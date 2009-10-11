@@ -9,6 +9,9 @@ with us and pardon the dust.
 This document is intended for anyone interested in building or extending a
 Kegbot system.
 
+If you want to get started right now, you can jump straight to
+:ref:`install-overview`.
+
 Contents:
 
 .. toctree::
@@ -16,6 +19,7 @@ Contents:
 
    introduction/overview
    introduction/getting-involved
+   installation/index
    installation/database-install
    installation/kegbot-install
    getting-started/running-kegbot

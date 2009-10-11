@@ -56,10 +56,15 @@ Target: v0.7.0
 * Core: Add centralized reporting mechanism.
 
 
+Target: v0.8.0
+--------------
+* Core: More advanced access control mechanisms (time-of-day/calendar access
+  restrictions).
+* Core: Billing/accounting module, credit system, tie-in with access control.
+
+
 Target: Future/Wishlist
 -----------------------
-* Billing/accounting module -- generate statements, tie-in with access control
-  systems.
 * Alert manager -- generate alerts to a variety of configurable, per-user sinks
   (email, twitter, IM, SMS) on various events (keg change, new drinker record,
   temperature alerting, and so on.)

@@ -51,10 +51,14 @@ A single message includes:
 
 * A 12-byte header section, identifying the message being sent.
 * A variable-length payload section, typically in TLV (tag-length-value) format.
+  The payload can be from zero to 240 bytes in size.
 * A 4-byte footer section, containing a CRC of the entire packet.
 
-Here is an example of the raw byte stream, capturing two packets sent from the
-Kegboard to the host::
+Given the section sizes above, the maximum length of a complete message is 256
+bytes.
+
+Here is an example of two messages in a raw byte stream, showing two frames
+sent from the Kegboard to the host::
 
   # <HELLO protocol_version=1>
   \x4b\x42\x53\x50\x20\x76\x31\x3a\x01\x00\x04\x00\x01\x02\x01\x00\xad\xce\x0d\x0a
@@ -97,7 +101,8 @@ Payload Section
 ---------------
 
 The payload of a message varies depending on the message type, described in
-:ref:`message-types-section`.
+:ref:`message-types-section`.  The payload section may be empty, and has a
+maximum length of 240 bytes.
 
 All payloads are serialized in `type-length-value
 <http://en.wikipedia.org/wiki/Type-length-value>`_ style. This format makes it
@@ -116,11 +121,12 @@ Each message includes a 4-byte footer section::
   |           crc (2)             |         trailer (2)           |
   +-------------------------------+-------------------------------+
 
-The `crc` field is a ``CRC-16-CCITT`` CRC of the header and payload fields. This
-CRC is used by the host to verify the integrity of messages from the board.
+The `crc` field is a `CRC-16-CCITT
+<http://en.wikipedia.org/wiki/Cyclic_redundancy_check>`_ of the header and
+payload fields. This CRC is used by the host to verify the integrity of messages
+from the board.
 
-The string ``\r\n`` is always written in the `trailer` field; this is simply a
-convenience for clients which may be line-buffered.
+The string ``\r\n`` is always written in the `trailer` field.
 
 
 Field Types
@@ -167,7 +173,7 @@ The following table gives example values for the ``temp_t`` type.
 | 0xffffc103    |  -16.125 deg C  |
 +---------------+-----------------+
 
-In some cases, the kegboard will use the value of "-999.0" to indicate an
+In some cases, the Kegboard will use the value of "-999.0" to indicate an
 invalid reading.  Clients should ignore any reading with this value.
 
 .. _message-types-section:
@@ -406,5 +412,5 @@ This section describes major updates to this protocol.
 +---------+-----------------+--------------------------------------------------+
 | Version | Date            | Remarks                                          |
 +=========+=================+==================================================+
-| 1.0     | current         | Initial version.                                 |
+| 1       | current         | Initial version.                                 |
 +---------+-----------------+--------------------------------------------------+

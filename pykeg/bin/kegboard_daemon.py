@@ -62,6 +62,11 @@ gflags.DEFINE_integer('cache_seconds', 20,
     'If nonzero, the kegnet client will suppress reporting duplicate sensor '
     'readings for this many seconds.')
 
+gflags.DEFINE_string('kegboard_name', 'kegboard',
+    'Name of this kegboard that will be used when talking to the core. '
+    'If you are using multiple kegboards, you will want to run different '
+    'daemons with different names. Otherwise, the default is fine.')
+
 class DuplicateSuppressingCache:
   def __init__(self, max_age=FLAGS.cache_seconds):
     self._max_delta = datetime.timedelta(seconds=max_age)
@@ -116,6 +121,9 @@ class KegboardManagerThread(util.KegbotThread):
     self._message_queue = Queue.Queue()
     self._cache = DuplicateSuppressingCache()
 
+  def _DeviceName(self, base_name):
+    return '%s.%s' % (FLAGS.kegboard_name, base_name)
+
   def PostDeviceMessage(self, device_name, device_message):
     """Receive a message from a device, for processing."""
     self._message_queue.put((device_name, device_message))
@@ -138,7 +146,7 @@ class KegboardManagerThread(util.KegbotThread):
   def _HandleDeviceMessage(self, device_name, msg):
     if isinstance(msg, kegboard.MeterStatusMessage):
       # Flow update: compare to last value and send a message if needed
-      meter_name = msg.meter_name
+      meter_name = self._DeviceName(msg.meter_name)
       curr_val = msg.meter_reading
       suppress = self._cache.ShouldSuppress(('meter', meter_name), curr_val)
 
@@ -146,7 +154,7 @@ class KegboardManagerThread(util.KegbotThread):
         self._client.SendMeterUpdate(meter_name, curr_val)
 
     elif isinstance(msg, kegboard.TemperatureReadingMessage):
-      sensor_name = msg.sensor_name
+      sensor_name = self._DeviceName(msg.sensor_name)
       sensor_value = msg.sensor_reading
       suppress = self._cache.ShouldSuppress(('thermo', sensor_name), sensor_value)
 

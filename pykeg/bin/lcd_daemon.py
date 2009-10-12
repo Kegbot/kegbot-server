@@ -169,7 +169,7 @@ class KegnetMonitorThread(util.KegbotThread):
     while not self._quit:
       # TODO(mikey): kegnet sorely needs an event-driven api, this polling
       # sucks...
-      flow_status = self._client.GetFlowStatus('flow0')
+      flow_status = self._client.GetFlowStatus('kegboard.flow0')
       self._kb_lcdui.HandleFlowStatus(flow_status)
       if flow_status:
         time.sleep(0.5)

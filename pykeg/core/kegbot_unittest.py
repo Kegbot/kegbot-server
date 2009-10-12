@@ -49,13 +49,13 @@ class KegbotTestCase(TestCase):
 
     # Synthesize a 2200-tick flow. The FlowManager should zero on the initial
     # reading of 1000.
-    client.SendFlowStart('flow0')
-    client.SendMeterUpdate('flow0', 1000)
+    client.SendFlowStart('kegboard.flow0')
+    client.SendMeterUpdate('kegboard.flow0', 1000)
     count = 0
     while count < 2200:
       count += 100
-      client.SendMeterUpdate('flow0', 1000+count)
-    client.SendFlowStop('flow0')
+      client.SendMeterUpdate('kegboard.flow0', 1000+count)
+    client.SendFlowStop('kegboard.flow0')
 
     self.service_thread._FlushEvents()
 

@@ -17,6 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import math
 
 from pykeg.core import backend
 from pykeg.core import models
@@ -176,3 +177,15 @@ def gentestdata():
            models.BAC.ProcessDrink(drink)
            models.UserDrinkingSessionAssignment.RecordDrink(drink)
            drink_num += 1
+
+   # fake thermo data
+   thermo_start = datetime.datetime.now() - datetime.timedelta(hours=24)
+   sensor_name = "thermo-0000000000000000"
+   for minute in xrange(60*24):
+     temp_time = thermo_start + datetime.timedelta(minutes=minute)
+     slot = (minute + 1)/30.0
+     var = math.cos(2 * math.pi * slot)
+     temp_value = 5.0 + 2.0*var
+     record = models.Thermolog(name=sensor_name, temp=temp_value,
+                               time=temp_time)
+     record.save()

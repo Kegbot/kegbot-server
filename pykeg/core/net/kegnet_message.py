@@ -23,10 +23,9 @@ import simplejson
 from pykeg.core import util
 
 ### Field classes
-class Field(object):
-  def _Validate(self, value):
-    pass
 
+# TODO(mikey): rename me to something more descriptive
+class Field(util.BaseField):
   def _FlattenListValue(self, value):
     if isinstance(value, basestring):
       return value
@@ -34,10 +33,6 @@ class Field(object):
       if len(value) != 1:
         raise ValueError, 'Must give exactly one item'
       return value[0]
-    return value
-
-  def ParseValue(self, value):
-    self._Validate(value)
     return value
 
 class StringField(Field):
@@ -66,28 +61,8 @@ class DateTimeField(Field):
     return str(val)
 
 ### Message classes
-class BaseMessage(util.Declarative):
-  class_fields = {}
 
-  def __classinit__(cls, new_attrs):
-    cls.class_fields = cls.class_fields.copy()
-    for name, value in new_attrs.items():
-      if isinstance(value, Field):
-        cls.add_field(name, value)
-
-  @classmethod
-  def add_field(cls, name, field):
-    cls.class_fields[name] = field
-    field.name = name
-    def getter(self, name=name):
-      return self._values[name]
-    def setter(self, value, name=name):
-      parser = self._fields[name]
-      self._values[name] = parser.ParseValue(value)
-    setattr(cls, name, property(getter, setter))
-
-
-class Message(BaseMessage):
+class Message(util.BaseMessage):
 
   class ValidationError(Exception):
     """Raised when message is not valid."""
@@ -96,45 +71,10 @@ class Message(BaseMessage):
     """Raises an exception if message is not valid."""
     raise NotImplementedError
 
-  def __init__(self, initial=None, **kwargs):
-    self._fields = self.class_fields.copy()
-    self._values = dict((k, None) for k in self.class_fields.keys())
-
-    if initial is not None:
-      self._UpdateFromDict(initial)
-    else:
-      self._UpdateFromDict(kwargs)
-
-  def __str__(self):
-    vallist = ('%s=%s' % (k, v) for k, v in self._values.iteritems())
-    return '<%s>' % (', '.join(vallist))
-
-  def __iter__(self):
-    for name, field in self._GetFields().items():
-      yield field
-
-  def __cmp__(self, other):
-    if not other or type(other) != type(self):
-      return -1
-    return cmp(self._values, other._values)
-
-  def _GetFields(self):
-    return self._fields
-
-  def _UpdateFromDict(self, d):
-    for k, v in d.iteritems():
-      setattr(self, k, v)
-
   @classmethod
   def FromJson(cls, json_str):
     d = simplejson.loads(json_str)
     return cls(initial=d)
-
-  def AsDict(self):
-    ret = {}
-    for k, v in self._fields.iteritems():
-      ret[k] = self._values.get(k)
-    return ret
 
   def AsJson(self):
     return simplejson.dumps(self.AsDict(), sort_keys=True, indent=4)

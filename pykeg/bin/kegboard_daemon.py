@@ -58,8 +58,8 @@ from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_integer('cache_seconds', 60,
-    'If nonzero, the kegnet client will suppress duplicate sensor '
+gflags.DEFINE_integer('cache_seconds', 20,
+    'If nonzero, the kegnet client will suppress reporting duplicate sensor '
     'readings for this many seconds.')
 
 class DuplicateSuppressingCache:
@@ -138,23 +138,23 @@ class KegboardManagerThread(util.KegbotThread):
   def _HandleDeviceMessage(self, device_name, msg):
     if isinstance(msg, kegboard.MeterStatusMessage):
       # Flow update: compare to last value and send a message if needed
-      meter_name = msg.meter_name.GetValue()
-      curr_val = msg.meter_reading.GetValue()
+      meter_name = msg.meter_name
+      curr_val = msg.meter_reading
       suppress = self._cache.ShouldSuppress(('meter', meter_name), curr_val)
 
       if not suppress:
         self._client.SendMeterUpdate(meter_name, curr_val)
 
     elif isinstance(msg, kegboard.TemperatureReadingMessage):
-      sensor_name = msg.sensor_name.GetValue()
-      sensor_value = msg.sensor_reading.GetValue()
+      sensor_name = msg.sensor_name
+      sensor_value = msg.sensor_reading
       suppress = self._cache.ShouldSuppress(('thermo', sensor_name), sensor_value)
 
       if not suppress:
         self._client.SendThermoUpdate(sensor_name, sensor_value)
 
     elif isinstance(msg, kegboard.OnewirePresenceMessage):
-      strval = '%016x' % msg.device_id.GetValue()
+      strval = '%016x' % msg.device_id
       self._client.SendAuthTokenAdd(FLAGS.tap_name,
           kb_common.AUTH_MODULE_CORE_ONEWIRE, strval)
 

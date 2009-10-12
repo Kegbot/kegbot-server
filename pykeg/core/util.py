@@ -139,10 +139,84 @@ class DeclarativeMeta(type):
     cls.__classinit__.im_func(cls, new_attrs)
     return cls
 
+
 class Declarative(object):
   __metaclass__ = DeclarativeMeta
   def __classinit__(cls, new_attrs):
     pass
+
+
+class BaseField(object):
+  def _Validate(self, value):
+    pass
+
+  def ParseValue(self, value):
+    self._Validate(value)
+    return value
+
+  def ToString(self, value):
+    return str(value)
+
+
+class BaseMessage(Declarative):
+  class_fields = {}
+
+  def __classinit__(cls, new_attrs):
+    cls.class_fields = cls.class_fields.copy()
+    for name, value in new_attrs.items():
+      if isinstance(value, BaseField):
+        cls.add_field(name, value)
+
+  @classmethod
+  def add_field(cls, name, field):
+    cls.class_fields[name] = field
+    field.name = name
+    def getter(self, name=name):
+      return self._values[name]
+    def setter(self, value, name=name):
+      parser = self._fields[name]
+      self._values[name] = parser.ParseValue(value)
+    setattr(cls, name, property(getter, setter))
+
+  def __init__(self, initial=None, **kwargs):
+    self._fields = self.class_fields.copy()
+    self._values = dict((k, None) for k in self.class_fields.keys())
+
+    if initial is not None:
+      self._UpdateFromDict(initial)
+    else:
+      self._UpdateFromDict(kwargs)
+
+  def __str__(self):
+    clsname = self.__class__.__name__
+    vallist = []
+    for fieldname, fieldvalue in self._values.iteritems():
+      field = self._fields[fieldname]
+      vallist.append('%s=%s' % (fieldname, field.ToString(fieldvalue)))
+    valstr = (' '.join(vallist))
+    return '<%s: %s>' % (clsname, valstr)
+
+  def __iter__(self):
+    for name, field in self._GetFields().items():
+      yield field
+
+  def __cmp__(self, other):
+    if not other or type(other) != type(self):
+      return -1
+    return cmp(self._values, other._values)
+
+  def _GetFields(self):
+    return self._fields
+
+  def _UpdateFromDict(self, d):
+    for k, v in d.iteritems():
+      setattr(self, k, v)
+
+  def AsDict(self):
+    ret = {}
+    for k, v in self._fields.iteritems():
+      ret[k] = self._values.get(k)
+    return ret
 
 
 ### Misc functions

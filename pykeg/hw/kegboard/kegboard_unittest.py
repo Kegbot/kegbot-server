@@ -14,10 +14,10 @@ class MessageTestCase(unittest.TestCase):
   def testMessageCreate(self):
     hello_bytes = kegboard.KBSP_PREFIX + '\x01\x00\x04\x00\x01\x02\x03\x00\x3f\x29'
     m = kegboard.HelloMessage(bytes=hello_bytes)
-    self.assertEqual(m.protocol_version.GetValue(), 3)
+    self.assertEqual(m.protocol_version, 3)
 
     m = kegboard.GetMessageForBytes(hello_bytes)
-    self.assertEqual(m.protocol_version.GetValue(), 3)
+    self.assertEqual(m.protocol_version, 3)
     print m
 
   def testCapture(self):
@@ -48,7 +48,7 @@ class KegboardReaderTestCase(unittest.TestCase):
     fd.read(1)
     m = kbr.GetNextMessage()
     self.assert_(isinstance(m, kegboard.OutputStatusMessage))
-    self.assertEqual(m.output_name.GetValue(), "output0")
+    self.assertEqual(m.output_name, "output0")
 
     print m
 

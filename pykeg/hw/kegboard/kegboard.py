@@ -49,59 +49,33 @@ class UnknownMessageError(MessageError):
 class FramingError(KegboardError):
   """Problem synchronizing with serial stream"""
 
-### helpers
-
-def str_to_bytes(bytes):
-  return ''.join('\\x%02x' % ord(x) for x in bytes)
-
-def str_to_printable(bytes):
-  printable = lambda x: ('.', x)[x in string.letters or x in string.digits]
-  return ''.join('%s  ' % printable(x) for x in bytes)
-
 
 ### Fields
 
-class Field(object):
-  def __init__(self, bytes=None, value=None):
-    if bytes is not None and value is not None:
-      raise ValueError, "Must specify only one of: bytes, value"
+class Field(util.BaseField):
+  def __init__(self, tagnum):
+    self._tagnum = tagnum
 
-    self._value = None
-
-    if bytes is not None:
-      self.SetBytes(bytes)
-    if value is not None:
-      self.SetValue(value)
-
-  def __str__(self):
-    return str(self._value)
-
-  def SetBytes(self, bytes):
+  def ToBytes(self, value):
     raise NotImplementedError
 
-  def SetValue(self, value):
-    self._value = value
-
-  def GetBytes(self):
-    raise NotImplementedError
-
-  def GetValue(self):
-    return self._value
+  def ToString(self, value):
+    return str(value)
 
 
 class StructField(Field):
   _STRUCT_FORMAT = '<'
-  def __init__(self, bytes=None, value=None):
-    Field.__init__(self, bytes, value)
+  def __init__(self, tagnum):
+    Field.__init__(self, tagnum)
     self._packed_size = struct.calcsize(self._STRUCT_FORMAT)
 
-  def SetBytes(self, bytes):
-    if len(bytes) != self._packed_size:
+  def ParseValue(self, value):
+    if len(value) != self._packed_size:
       raise ValueError, "Bad length, must be exactly %i bytes" % (self._packed_size,)
-    self.SetValue(struct.unpack(self._STRUCT_FORMAT, bytes)[0])
+    return struct.unpack(self._STRUCT_FORMAT, value)[0]
 
-  def GetBytes(self):
-    return struct.pack(self._STRUCT_FORMAT, self._value)
+  def ToBytes(self, value):
+    return struct.pack(self._STRUCT_FORMAT, value)
 
 
 class Uint16Field(StructField):
@@ -117,66 +91,49 @@ class Uint64Field(StructField):
 
 
 class OnewireIdField(Uint64Field):
-  def __str__(self):
-    return "0x%x" % (self._value,)
+  def ToString(self, value):
+    return "0x%x" % (value,)
 
 
 class StringField(Field):
-  def SetBytes(self, bytes):
-    self.SetValue(bytes.strip('\x00'))
+  def ParseValue(self, bytes):
+    return bytes.strip('\x00')
 
-  def GetBytes(self):
-    return self._value + '\x00'
+  def ToBytes(self, value):
+    return str(self._value) + '\x00'
 
 
 class OutputField(Uint16Field):
-  def SetBytes(self, bytes):
+  def ParseValue(self, bytes):
     if bytes.strip('\x00'):
-      self.SetValue(1)
+      return 1
     else:
-      self.SetValue(0)
+      return 0
+
+  def ToString(self, value):
+    if value:
+      return 'on'
+    else:
+      return 'off'
 
 
 class TempField(Uint32Field):
-  def SetValue(self, value):
-    Uint32Field.SetValue(self, value)
-    self._value /= 1000000.0
+  def ParseValue(self, value):
+    value = Uint32Field.ParseValue(self, value)
+    value /= 1000000.0
+    return value
 
 
 ### Message types
 
-MESSAGE_ID = util.Enum(*(
-  ('HELLO', 0x01),
-  ('CONFIGURATION', 0x02),
-  ('METER_STATUS', 0x10),
-  ('TEMPERATURE_READING', 0x11),
-  ('OUTPUT_STATUS', 0x12),
-  ('ONEWIRE_PRESENCE', 0x13),
-))
-
-
-class Message(object):
-  def __init__(self, bytes=None):
-    self._map_tag_to_field = {}
-    self._map_name_to_tag = {}
-    slots = ['_map_tag_to_field', '_map_name_to_tag']
-    for tag, name, fieldtype in self._FIELDS:
-      var = fieldtype()
-      self._map_tag_to_field[tag] = var
-      self._map_name_to_tag[name] = tag
-      setattr(self, name, var)
-      slots.append(name)
-    self.__slots__ = slots
+class Message(util.BaseMessage):
+  def __init__(self, initial=None, bytes=None, **kwargs):
+    util.BaseMessage.__init__(self, initial, **kwargs)
+    self._tag_to_field = {}
+    for field in self._fields.itervalues():
+      self._tag_to_field[field._tagnum] = field
     if bytes is not None:
       self.UnpackFromBytes(bytes)
-
-  def __str__(self):
-    vallist = []
-    for k in self._map_name_to_tag.keys():
-      field = getattr(self, k)
-      vallist.append((k, str(field)))
-    valstr = ' '.join(('%s=%s' % x for x in vallist))
-    return '<%s %s>' % (self._TYPE, valstr)
 
   def UnpackFromBytes(self, bytes):
     if len(bytes) < 14:
@@ -206,69 +163,55 @@ class Message(object):
       pos += 2
       valbytes = payload[pos:pos+vallen]
       pos += vallen
-      field = self._map_tag_to_field.get(tag)
+      field = self._tag_to_field.get(tag)
       if field:
-        field.SetBytes(valbytes)
-
-
-  def GetBytes(self):
-    payload = ''
-    for tag, name, fieldtype in self._FIELDS:
-      bytes = getattr(self, name).GetBytes()
-      payload += struct.pack('<CC', tag, len(bytes))
-      payload += bytes
-    return res
+        setattr(self, field.name, valbytes)
+      else:
+        # unknown tag
+        pass
 
 
 class HelloMessage(Message):
-  _TYPE = MESSAGE_ID.HELLO
-  _FIELDS = (
-    (0x01, 'protocol_version', Uint16Field),
-  )
+  MESSAGE_ID = 0x01
+  protocol_version = Uint16Field(0x01)
 
 
 class ConfigurationMessage(Message):
-  _TYPE = MESSAGE_ID.CONFIGURATION
-  _FIELDS = (
-    (0x01, 'board_name', StringField),
-    (0x02, 'baud_rate', Uint16Field),
-    (0x03, 'update_interval', Uint16Field),
-  )
+  MESSAGE_ID = 0x02
+  board_name = StringField(0x01)
+  baud_rate = Uint16Field(0x02)
+  update_interval = Uint16Field(0x03)
 
 
 class MeterStatusMessage(Message):
-  _TYPE = MESSAGE_ID.METER_STATUS
-  _FIELDS = (
-    (0x01, 'meter_name', StringField),
-    (0x02, 'meter_reading', Uint32Field),
-  )
+  MESSAGE_ID = 0x10
+  meter_name = StringField(0x01)
+  meter_reading = Uint32Field(0x02)
+
 
 class TemperatureReadingMessage(Message):
-  _TYPE = MESSAGE_ID.TEMPERATURE_READING
-  _FIELDS = (
-      (0x01, 'sensor_name', StringField),
-      (0x02, 'sensor_reading', TempField),
-  )
+  MESSAGE_ID = 0x11
+  sensor_name = StringField(0x01)
+  sensor_reading = TempField(0x02)
 
 
 class OutputStatusMessage(Message):
-  _TYPE = MESSAGE_ID.OUTPUT_STATUS
-  _FIELDS = (
-    (0x01, 'output_name', StringField),
-    (0x02, 'output_reading', OutputField),
-  )
+  MESSAGE_ID = 0x12
+  output_name = StringField(0x01)
+  output_reading = OutputField(0x02)
 
 
 class OnewirePresenceMessage(Message):
-  _TYPE = MESSAGE_ID.ONEWIRE_PRESENCE
-  _FIELDS = (
-    (0x01, 'device_id', OnewireIdField),
-  )
+  MESSAGE_ID = 0x13
+  device_id = OnewireIdField(0x01)
 
 
 MESSAGE_ID_TO_CLASS = {}
 for cls in Message.__subclasses__():
-  MESSAGE_ID_TO_CLASS[cls._TYPE.Value] = cls
+  idnum = cls.MESSAGE_ID
+  if idnum in MESSAGE_ID_TO_CLASS:
+    raise RuntimeError, "More than one message for id: %i" % (idnum,)
+  MESSAGE_ID_TO_CLASS[idnum] = cls
 
 
 def GetHeaderFromBytes(bytes):
@@ -319,4 +262,3 @@ class KegboardReader(object):
     payload = self._fd.read(message_len)
     trailer = self._fd.read(4)
     return GetMessageForBytes(header + payload + trailer)
-

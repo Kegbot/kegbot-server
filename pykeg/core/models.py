@@ -143,6 +143,7 @@ class KegTap(models.Model):
   description = models.TextField(blank=True, null=True)
   current_keg = models.ForeignKey('Keg', blank=True, null=True)
   max_tick_delta = models.PositiveIntegerField(default=100)
+  temperature_sensor = models.ForeignKey('ThermoSensor', blank=True, null=True)
 
   def __str__(self):
     return "%s: %s" % (self.meter_name, self.name)

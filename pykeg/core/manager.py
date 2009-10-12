@@ -20,6 +20,7 @@
 
 import datetime
 import inspect
+import time
 import logging
 
 from pykeg.core import event
@@ -297,6 +298,7 @@ class FlowManager(Manager):
     msg = kegnet_message.FlowUpdateMessage.FromFlow(flow)
     self._PublishEvent(KB_EVENT.FLOW_END, msg)
 
+
 class DrinkManager(Manager):
 
   @EventHandler(KB_EVENT.FLOW_END)
@@ -364,34 +366,28 @@ class DrinkManager(Manager):
 class ThermoManager(Manager):
   def __init__(self, name, kb_env):
     Manager.__init__(self, name, kb_env)
-    self._last_record = {}
-    self._same_value_min_delta = datetime.timedelta(minutes=1)
-    self._new_value_min_delta = datetime.timedelta(seconds=30)
+    self._sensor_to_last_record = {}
+    seconds = kb_common.THERMO_RECORD_DELTA_SECONDS
+    self._record_interval = datetime.timedelta(seconds=seconds)
 
   @EventHandler(KB_EVENT.THERMO_UPDATE)
   def _HandleThermoUpdateEvent(self, ev):
+    now = time.time()
+    now = now - (now % (kb_common.THERMO_RECORD_DELTA_SECONDS))
+    now = datetime.datetime.fromtimestamp(now)
     sensor_name = ev.payload.sensor_name
     sensor_value = ev.payload.sensor_value
-    now = datetime.datetime.now()
-    last_record = self._last_record.get(sensor_name)
+    last_record = self._sensor_to_last_record.get(sensor_name)
 
-    if last_record is not None:
-      delta = now - last_record.time
-      is_new_value = sensor_value != last_record.temp
+    if last_record and last_record.time == now:
+      return
 
-      if is_new_value and (delta < self._new_value_min_delta):
-        # New value, but arrived too soon: drop it.
-        self._logger.debug('Dropping new sensor reading, value=%s delta=%s' % (sensor_value, delta))
-        return
-      elif not is_new_value and (delta < self._same_value_min_delta):
-        self._logger.debug('Dropping same sensor reading, value=%s delta=%s' % (sensor_value, delta))
-        # Unchanged value, but arrived too soon: drop it.
-        return
-
-    self._logger.debug('Recording sensor reading, value=%s' % (sensor_value,))
+    self._logger.info('Recording temperature sensor=%s value=%s' %
+                      (sensor_name, sensor_value))
     new_record = models.Thermolog(name=sensor_name, temp=sensor_value, time=now)
     new_record.save()
-    self._last_record[sensor_name] = new_record
+    self._sensor_to_last_record[sensor_name] = new_record
+
 
 class TimeoutCache:
   def __init__(self, maxage):
@@ -461,18 +457,20 @@ class AuthenticationManager(Manager):
       # we already know about this token; process no further
       self._present_tokens.touch(token_pair)
       return
-    else:
-      self._present_tokens.put(token_pair)
 
-    try:
-      token = models.AuthenticationToken.objects.get(auth_device=auth_device_name,
-          token_value=token_value)
-    except models.AuthenticationToken.DoesNotExist:
-      self._logger.info('Token does not exist: %s.%s' % (auth_device_name, token_value))
-      return
+    self._logger.info('Token attached: %s %s' % (auth_device_name, token_value))
+    self._present_tokens.put(token_pair)
+
+    token, created = models.AuthenticationToken.objects.get_or_create(
+        auth_device=auth_device_name,
+        token_value=token_value)
+
+    if created:
+      self._logger.info('Token unknown, created: %s %s' %
+                        (auth_device_name, token_value))
 
     if not token.user:
-      self._logger.info('Token not assigned.')
+      self._logger.info('Token is not assigned.')
       return
 
     # TODO(mikey): should virtual taps (__all_taps__) be handled elsewhere?

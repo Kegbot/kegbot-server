@@ -36,6 +36,9 @@ ALIAS_ALL_TAPS = '__all_taps__'
 AUTH_MODULE_CORE_ONEWIRE = 'core.onewire'
 AUTH_MODULE_CONTRIB_PHIDGET_RFID = 'contrib.phidget.rfid'
 
+# How often to record a thermo reading?
+THERMO_RECORD_DELTA_SECONDS = 60
+
 ### Addresses and ports
 
 # Default port for JSON server

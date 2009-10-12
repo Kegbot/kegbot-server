@@ -181,11 +181,12 @@ def gentestdata():
    # fake thermo data
    thermo_start = datetime.datetime.now() - datetime.timedelta(hours=24)
    sensor_name = "thermo-0000000000000000"
+   sensor = models.ThermoSensor.objects.create(raw_name=sensor_name,
+       nice_name='Test sensor')
    for minute in xrange(60*24):
      temp_time = thermo_start + datetime.timedelta(minutes=minute)
      slot = (minute + 1)/30.0
      var = math.cos(2 * math.pi * slot)
      temp_value = 5.0 + 2.0*var
-     record = models.Thermolog(name=sensor_name, temp=temp_value,
-                               time=temp_time)
+     record = models.Thermolog(sensor=sensor, temp=temp_value, time=temp_time)
      record.save()

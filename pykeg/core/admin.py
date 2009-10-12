@@ -68,6 +68,11 @@ admin.site.register(models.UserDrinkingSession)
 admin.site.register(models.UserDrinkingSessionAssignment)
 admin.site.register(models.DrinkingSessionGroup)
 
+class ThermoSensorAdmin(admin.ModelAdmin):
+  list_display = ('nice_name', 'raw_name')
+
+admin.site.register(models.ThermoSensor, ThermoSensorAdmin)
+
 def thermolog_deg_c(obj):
   return '%.2f C' % (obj.temp,)
 
@@ -75,8 +80,8 @@ def thermolog_deg_f(obj):
   return '%.2f F' % (util.CtoF(obj.temp),)
 
 class ThermologAdmin(admin.ModelAdmin):
-  list_display = ('name', thermolog_deg_c, thermolog_deg_f, 'time')
-  list_filter = ('name', 'time')
+  list_display = ('sensor', thermolog_deg_c, thermolog_deg_f, 'time')
+  list_filter = ('sensor', 'time')
 
 admin.site.register(models.Thermolog, ThermologAdmin)
 admin.site.register(models.RelayLog)

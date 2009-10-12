@@ -456,15 +456,23 @@ class DrinkingSessionGroup(models.Model):
     return group
 
 
+class ThermoSensor(models.Model):
+  raw_name = models.CharField(max_length=256)
+  nice_name = models.CharField(max_length=128)
+
+  def __str__(self):
+    return self.nice_name
+
+
 class Thermolog(models.Model):
   """ A log from an ITemperatureSensor device of periodic measurements. """
-  name = models.CharField(max_length=128)
+  sensor = models.ForeignKey(ThermoSensor)
   temp = models.FloatField()
   time = models.DateTimeField()
 
   def __str__(self):
     degf = util.CtoF(self.temp)
-    return '%s %.2f C / %.2f F [%s]' % (self.name, self.temp, degf, self.time)
+    return '%s %.2f C / %.2f F [%s]' % (self.sensor, self.temp, degf, self.time)
 
 
 class RelayLog(models.Model):

@@ -408,6 +408,7 @@ class ThermoManager(Manager):
   def __init__(self, name, kb_env):
     Manager.__init__(self, name, kb_env)
     self._sensor_to_last_record = {}
+    self._sensor_cache = {}
     seconds = kb_common.THERMO_RECORD_DELTA_SECONDS
     self._record_interval = datetime.timedelta(seconds=seconds)
 
@@ -430,12 +431,20 @@ class ThermoManager(Manager):
     sensor_value = float(ev.payload.sensor_value)
     last_record = self._sensor_to_last_record.get(sensor_name)
 
+    if sensor_name not in self._sensor_cache:
+      sensor, created = models.ThermoSensor.objects.get_or_create(
+          raw_name=sensor_name,
+          defaults={'nice_name': sensor_name})
+      self._sensor_cache[sensor_name] = sensor
+    else:
+      sensor = self._sensor_cache[sensor_name]
+
     if last_record and last_record.time == now:
       return
 
     self._logger.info('Recording temperature sensor=%s value=%s' %
-                      (sensor_name, sensor_value))
-    new_record = models.Thermolog(name=sensor_name, temp=sensor_value, time=now)
+                      (sensor.nice_name, sensor_value))
+    new_record = models.Thermolog(sensor=sensor, temp=sensor_value, time=now)
     new_record.save()
     self._sensor_to_last_record[sensor_name] = new_record
 

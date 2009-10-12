@@ -105,6 +105,18 @@ class EventHandlerThread(CoreThread):
         for cb in callback_list:
           self._all_event_map[event_type].add(cb)
 
+  def GetStatus(self):
+    lines = []
+    for handler in self._event_handlers:
+      handler_lines = handler.GetStatus()
+      if handler_lines:
+        name = handler.__class__.__name__
+        lines.append('>> %s' % name)
+        for h_line in handler_lines:
+          lines.append('  %s' % h_line)
+        lines.append('')
+    return lines
+
   def run(self):
     while not self._quit:
       self._Step(timeout=0.5)

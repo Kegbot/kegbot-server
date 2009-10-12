@@ -146,7 +146,12 @@ class App(object):
         thrstatus = 'running'
       else:
         thrstatus = '   DEAD'
-      self._logger.info('  %s:  %s' % (thrstatus, thr.getName()))
+      self._logger.info('%s: %s' % (thr.getName(), thrstatus))
+      lines = thr.GetStatus()
+      if lines:
+        for line in lines:
+          self._logger.info(line)
+        self._logger.info('')
     self._logger.info('-------- End Status Dump --------')
 
   def _AddAppThread(self, thr):

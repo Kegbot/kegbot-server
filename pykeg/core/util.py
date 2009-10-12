@@ -97,6 +97,9 @@ class KegbotThread(threading.Thread):
   def Quit(self):
     self._quit = True
 
+  def GetStatus(self):
+    return []
+
   def start(self):
     self._started = True
     threading.Thread.start(self)

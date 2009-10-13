@@ -5,6 +5,8 @@ from django.db import models
 from pykeg.core.models import *
 
 class Migration:
+
+    no_dry_run = True
     
     def forwards(self, orm):
         

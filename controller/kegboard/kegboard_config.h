@@ -48,6 +48,19 @@
 #define KB_PIN_BUZZER             11
 #define KB_PIN_TEST_PULSE         12
 
+// Atmega1280 (aka Arduino mega) section
+#ifdef __AVR_ATmega1280__
+#define KB_ATMEGA_1280            1
+#define KB_NUM_METERS             6
+
+#define KB_PIN_METER_C            21
+#define KB_PIN_METER_D            20
+#define KB_PIN_METER_E            19
+#define KB_PIN_METER_F            18
+#else
+#define KB_NUM_METERS             2
+#endif
+
 //
 // Device configuration defaults
 //

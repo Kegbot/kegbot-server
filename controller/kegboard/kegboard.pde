@@ -70,8 +70,9 @@ static int gUpdateInterval = KB_DEFAULT_UPDATE_INTERVAL;
 // Other Globals
 //
 
-static unsigned long volatile gMeters[] = {0, 0};
-static unsigned long volatile gLastMeters[] = {0, 0};
+// Up to 6 meters supported if using Arduino Mega
+static unsigned long volatile gMeters[] = {0, 0, 0, 0, 0, 0};
+static unsigned long volatile gLastMeters[] = {0, 0, 0, 0, 0, 0};
 static KegboardPacket gOutputPacket;
 
 #if KB_ENABLE_BUZZER
@@ -120,6 +121,34 @@ void meterInterruptB()
 {
   gMeters[1] += 1;
 }
+
+#ifdef KB_PIN_METER_C
+void meterInterruptC()
+{
+  gMeters[2] += 1;
+}
+#endif
+
+#ifdef KB_PIN_METER_D
+void meterInterruptD()
+{
+  gMeters[3] += 1;
+}
+#endif
+
+#ifdef KB_PIN_METER_E
+void meterInterruptE()
+{
+  gMeters[4] += 1;
+}
+#endif
+
+#ifdef KB_PIN_METER_F
+void meterInterruptF()
+{
+  gMeters[5] += 1;
+}
+#endif
 
 //
 // Serial I/O
@@ -238,15 +267,39 @@ void doTestPulse()
 
 void setup()
 {
+  // Flow meter steup. Enable internal weak pullup to prevent disconnected line
+  // from ticking away.
   pinMode(KB_PIN_METER_A, INPUT);
-  pinMode(KB_PIN_METER_B, INPUT);
-
-  // enable internal pullup to prevent disconnected line from ticking away
   digitalWrite(KB_PIN_METER_A, HIGH);
-  digitalWrite(KB_PIN_METER_B, HIGH);
-
   attachInterrupt(0, meterInterruptA, RISING);
+
+  pinMode(KB_PIN_METER_B, INPUT);
+  digitalWrite(KB_PIN_METER_B, HIGH);
   attachInterrupt(1, meterInterruptB, RISING);
+
+#ifdef KB_PIN_METER_C
+  pinMode(KB_PIN_METER_C, INPUT);
+  digitalWrite(KB_PIN_METER_C, HIGH);
+  attachInterrupt(2, meterInterruptC, RISING);
+#endif
+
+#ifdef KB_PIN_METER_D
+  pinMode(KB_PIN_METER_D, INPUT);
+  digitalWrite(KB_PIN_METER_D, HIGH);
+  attachInterrupt(3, meterInterruptD, RISING);
+#endif
+
+#ifdef KB_PIN_METER_E
+  pinMode(KB_PIN_METER_E, INPUT);
+  digitalWrite(KB_PIN_METER_E, HIGH);
+  attachInterrupt(4, meterInterruptE, RISING);
+#endif
+
+#ifdef KB_PIN_METER_F
+  pinMode(KB_PIN_METER_F, INPUT);
+  digitalWrite(KB_PIN_METER_F, HIGH);
+  attachInterrupt(5, meterInterruptF, RISING);
+#endif
 
   pinMode(KB_PIN_RELAY_A, OUTPUT);
   pinMode(KB_PIN_RELAY_B, OUTPUT);
@@ -316,6 +369,18 @@ void loop()
 
   writeMeterPacket(0);
   writeMeterPacket(1);
+#ifdef KB_PIN_METER_C
+  writeMeterPacket(2);
+#endif
+#ifdef KB_PIN_METER_D
+  writeMeterPacket(3);
+#endif
+#ifdef KB_PIN_METER_E
+  writeMeterPacket(4);
+#endif
+#ifdef KB_PIN_METER_F
+  writeMeterPacket(5);
+#endif
 
   //writeRelayPacket(0);
   //writeRelayPacket(1);

@@ -1,4 +1,7 @@
+import math
+import datetime
 import time
+import pygooglechart
 
 from django.template import Library
 from django.template import Node
@@ -18,7 +21,7 @@ def mugshot_box(user, boxsize=100):
    img_url = '/site_media/images/unknown-drinker.png'
    if len(q):
      pic = q[0]
-     img_url = '/media/' + pic.image.url
+     img_url = pic.image.url
 
    return {
        'user' : user,
@@ -60,6 +63,97 @@ def latest_drinks(parser, token):
   return QueryNode(var_name, queryset, num_items)
 
 register.tag('latest_drinks', latest_drinks)
+
+
+def sensor_chart(parser, token):
+  """{% sensor_chart <name> as <context_var> %}"""
+  tokens = token.contents.split()
+  if len(tokens) != 4:
+    raise TemplateSyntaxError('%s requires 4 arguments' % (tokens[0],))
+
+  return SensorChartNode(tokens[3], tokens[1])
+
+
+class SensorChartNode(Node):
+  def __init__(self, var_name, sensor_name):
+    self._var_name = var_name
+    self._sensor_name_var = Variable(sensor_name)
+
+  def render(self, context):
+    sensor_name = self._sensor_name_var.resolve(context)
+    try:
+      sensor = models.ThermoSensor.objects.get(nice_name=sensor_name)
+    except models.ThermoSensor.DoesNotExist:
+      return ''
+
+    hours = 2
+
+    now = datetime.datetime.now()
+    start = now - (datetime.timedelta(hours=hours))
+    start = start - (datetime.timedelta(seconds=start.second))
+
+    points = sensor.thermolog_set.filter(time__gte=start).order_by('time')
+
+    curr = start
+    temps = []
+    for point in points:
+      while curr <= point.time:
+        curr += datetime.timedelta(minutes=1)
+        if curr < point.time:
+          temps.append(None)
+        else:
+          temps.append(point.temp)
+
+    chart = pygooglechart.SimpleLineChart(200, 125)
+    chart.add_data(temps)
+    chart.fill_solid(pygooglechart.Chart.BACKGROUND, '00000000')
+    legend = ['%.1fC' % x for x in chart.data_y_range()]
+    chart.set_axis_labels(pygooglechart.Axis.LEFT, legend)
+    mid = start + ((curr - start) / 2)
+    times = [x.strftime('%I%p').lower() for x in (start, mid, curr)]
+    chart.set_axis_labels(pygooglechart.Axis.BOTTOM, times)
+    context[self._var_name] = chart.get_url()
+    return ''
+
+register.tag('sensor_chart', sensor_chart)
+
+
+def keg_volume_chart(parser, token):
+  """{% keg_volume_chart <keg> as <context_var> %}"""
+  tokens = token.contents.split()
+  if len(tokens) != 4:
+    raise TemplateSyntaxError('%s requires 4 arguments' % (tokens[0],))
+
+  return KegVolumeChartNode(tokens[3], tokens[1])
+
+
+class KegVolumeChartNode(Node):
+  def __init__(self, var_name, keg_var):
+    self._var_name = var_name
+    self._keg_var = Variable(keg_var)
+
+  def render(self, context):
+    keg = self._keg_var.resolve(context)
+    served = keg.served_volume()
+    full = keg.full_volume()
+
+    served_pints = served.ConvertTo.Pint
+    remain_pints = (full - served).ConvertTo.Pint
+
+    chart = pygooglechart.PieChart2D(300, 125)
+    chart.add_data([float(served_pints), float(remain_pints)])
+    chart.fill_solid(pygooglechart.Chart.BACKGROUND, '00000000')
+    labels = [
+        '%i pints served' % served_pints,
+        '%i pints remain' % remain_pints,
+    ]
+    chart.set_pie_labels(labels)
+    context[self._var_name] = chart.get_url()
+    return ''
+
+register.tag('keg_volume_chart', keg_volume_chart)
+
+
 
 class QueryNode(Node):
   def __init__(self, var_name, queryset, limit):

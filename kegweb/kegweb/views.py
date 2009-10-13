@@ -51,6 +51,7 @@ def index(request):
   context['page_node'] = page
   context['last_drinks'] = view_util.all_valid_drinks().order_by('-id')[:5]
   context['template'] = 'index.html'
+  context['taps'] = models.KegTap.objects.all()
   return render_to_response('index.html', context)
 
 @cache_page(30)
@@ -127,6 +128,11 @@ def drink_detail(request, drink_id):
       template_name='kegweb/drink_detail.html',
       template_object_name='drink')
 
+### auth
+
+def webauth(request):
+  context = {}
+  return render_to_response('kegweb/webauth.html', context)
 
 ### account stuff
 

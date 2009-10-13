@@ -23,7 +23,7 @@
 # This module requires pygooglechart. If pygooglechart is unavailable, all
 # functions that can return a chart will instead return None.
 try:
-  from pygooglechart import PieChart2D
+  import pygooglechart
   USE_GOOGLE_CHARTS = True
 except ImportError:
   USE_GOOGLE_CHARTS = False
@@ -38,7 +38,8 @@ def volume_chart(vol_by_user):
   """
   if not USE_GOOGLE_CHARTS:
     return None
-  chart = PieChart2D(500, 300)
+  chart = pygooglechart.PieChart2D(500, 300)
   chart.add_data([x[0] for x in vol_by_user])
   chart.set_pie_labels(["%s (%i oz)" % (x[1].username, x[0]) for x in vol_by_user])
   return chart
+

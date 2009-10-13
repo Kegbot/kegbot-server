@@ -28,7 +28,7 @@
 
    <p>
    <div class="box">
-   <table class="sortable" id="recent_drinks" cellspacing=0 border=0 width="430">
+   <table class="sortable" id="recent_drinks" cellspacing=0 border=0 width="100%">
    <tr>
       <td>&nbsp;</td>
       <td align="left"><b>size</b></td>
@@ -50,5 +50,42 @@
    </p>
 {% endif %}
 </div>
+
+{% if taps %}
+<div class="contenthead">
+  on tap
+</div>
+<div class="content">
+{% for tap in taps %}
+
+  <table border="0">
+  <tr>
+  <td>
+    <b>{{ tap.name }}</b><br>
+    {% if tap.current_keg %}
+      <a href="{% url kegweb.kegweb.views.keg_detail tap.current_keg.id %}">keg
+      {{ tap.current_keg.id }}</a> ({{tap.current_keg.size.name}})<br>
+      {% if tap.current_keg.type %}
+        {{tap.current_keg.type.name}}<br>
+        {{tap.current_keg.type.brewer.name}}
+      {% endif %}
+    {% endif %}
+  </td>
+  <td>
+  {% keg_volume_chart tap.current_keg as vol_url %}
+  <div style="float:left;"><img src="{{ vol_url }}"></div>
+  {% if tap.temperature_sensor %}
+    {% sensor_chart tap.temperature_sensor.nice_name as thermo1_url %}
+    <div style="float:left;"><img src="{{ thermo1_url }}"></div>
+  {% endif %}
+  </td>
+  </tr>
+  </table>
+  <br>
+{% endfor %}
+</div>
+
+{% endif %}
+
 {% endblock %}
 

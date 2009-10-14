@@ -154,15 +154,6 @@ void meterInterruptF()
 // Serial I/O
 //
 
-uint16_t genCrc(unsigned long val)
-{
-  uint16_t crc=0;
-  int i=0;
-  for (i=3;i>=0;i--)
-    crc = _crc_xmodem_update(crc, (val >> (8*i)) & 0xff);
-  return crc;
-}
-
 void writeOutputPacket()
 {
   gOutputPacket.Print();
@@ -366,7 +357,6 @@ void stepOnewireIdBus() {
 
 void loop()
 {
-
   writeMeterPacket(0);
   writeMeterPacket(1);
 #ifdef KB_PIN_METER_C

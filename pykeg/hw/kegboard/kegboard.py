@@ -24,6 +24,7 @@ import string
 
 from pykeg.core import util
 from pykeg.external.gflags import gflags
+from pykeg.hw.kegboard import crc16
 
 FLAGS = gflags.FLAGS
 
@@ -54,7 +55,7 @@ class FramingError(KegboardError):
 
 class Field(util.BaseField):
   def __init__(self, tagnum):
-    self._tagnum = tagnum
+    self.tagnum = tagnum
 
   def ToBytes(self, value):
     raise NotImplementedError
@@ -100,7 +101,7 @@ class StringField(Field):
     return bytes.strip('\x00')
 
   def ToBytes(self, value):
-    return str(self._value) + '\x00'
+    return str(value) + '\x00'
 
 
 class OutputField(Uint16Field):
@@ -131,31 +132,26 @@ class Message(util.BaseMessage):
     util.BaseMessage.__init__(self, initial, **kwargs)
     self._tag_to_field = {}
     for field in self._fields.itervalues():
-      self._tag_to_field[field._tagnum] = field
+      self._tag_to_field[field.tagnum] = field
     if bytes is not None:
       self.UnpackFromBytes(bytes)
 
   def UnpackFromBytes(self, bytes):
-    if len(bytes) < 14:
+    if len(bytes) < 16:
       raise ValueError, "Not enough bytes"
 
     header = bytes[:12]
-    bytes = bytes[12:]
+    payload = bytes[12:-4]
+    trailer = bytes[-4:]
+    crcd_bytes = bytes[:-2]
 
     prefix, message_id, message_len = struct.unpack('<8sHH', header)
 
-    payload = bytes[:message_len]
-    bytes = bytes[message_len:]
-
-    crc = bytes[:2]
-    bytes = bytes[2:]
-
-    trailer = bytes
-
     if len(payload) != message_len:
       raise ValueError, "Payload size does not match tag"
-    if len(crc) != 2:
-      raise ValueError, "Trailer section size incorrect (%s)" % len(crc)
+
+    checked_crc = crc16.crc16_ccitt(crcd_bytes)
+    # TODO(mikey): assert checked_crc == 0
 
     pos = 0
     while pos+2 <= len(payload):
@@ -170,6 +166,20 @@ class Message(util.BaseMessage):
         # unknown tag
         pass
 
+  def ToBytes(self):
+    payload = ''
+    for field_name, field in self._fields.iteritems():
+      field_bytes = field.ToBytes(self._values[field_name])
+      payload += struct.pack('<BB', field.tagnum, len(field_bytes))
+      payload += field_bytes
+
+    out = 'KBSP v1:'
+    out += struct.pack('<HH', self.MESSAGE_ID, len(payload))
+    out += payload
+    crc = crc16.crc16_ccitt(out)
+    out += struct.pack('<H', crc)
+    out += '\r\n'
+    return out
 
 class HelloMessage(Message):
   MESSAGE_ID = 0x01

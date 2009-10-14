@@ -221,6 +221,11 @@ class BaseMessage(Declarative):
       ret[k] = self._values.get(k)
     return ret
 
+  def SetValue(self, fieldname, value):
+    if fieldname not in self._values:
+      raise KeyError
+    self._values[fieldname] = value
+
 
 ### Misc functions
 

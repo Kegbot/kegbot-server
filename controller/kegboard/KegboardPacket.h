@@ -11,5 +11,5 @@ class KegboardPacket {
   private:
    int m_type;
    int m_len;
-   char m_payload[128];
+   uint8_t m_payload[KBSP_PAYLOAD_MAXLEN];
 };

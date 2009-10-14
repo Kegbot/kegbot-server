@@ -4,15 +4,17 @@
 
 import os
 import unittest
+import struct
 
 from pykeg.hw.kegboard import kegboard
 
 TESTDATA_PATH = os.path.join(os.path.dirname(kegboard.__file__), 'testdata')
 CAP_FILE = os.path.join(TESTDATA_PATH, 'one_flow_active.bin')
 
+
 class MessageTestCase(unittest.TestCase):
   def testMessageCreate(self):
-    hello_bytes = kegboard.KBSP_PREFIX + '\x01\x00\x04\x00\x01\x02\x03\x00\x3f\x29'
+    hello_bytes = kegboard.KBSP_PREFIX + '\x01\x00\x04\x00\x01\x02\x03\x00\x3f\x29\r\n'
     m = kegboard.HelloMessage(bytes=hello_bytes)
     self.assertEqual(m.protocol_version, 3)
 
@@ -20,37 +22,30 @@ class MessageTestCase(unittest.TestCase):
     self.assertEqual(m.protocol_version, 3)
     print m
 
-  def testCapture(self):
-    fd = open(CAP_FILE, 'rb')
-    messages = []
-    for frame in fd.readlines():
-      msg = kegboard.GetMessageForBytes(frame[:-2])
-      print msg
-      messages.append(msg)
-
 
 class KegboardReaderTestCase(unittest.TestCase):
   def testBasicUse(self):
     fd = open(CAP_FILE, 'rb')
     kbr = kegboard.KegboardReader(fd)
 
-    m = kbr.GetNextMessage()
-    self.assert_(isinstance(m, kegboard.HelloMessage))
+    # read the first 8 messages
+    messages = []
+    for i in xrange(8):
+      messages.append(kbr.GetNextMessage())
+    print 'messages:'
+    print '\n'.join('  %s' % msg for msg in messages)
 
-    m = kbr.GetNextMessage()
-    self.assert_(isinstance(m, kegboard.MeterStatusMessage))
+    hello_message = kegboard.HelloMessage()
+    hello_message.SetValue('protocol_version', 3)
+    self.assertEqual(messages[0], hello_message)
 
-    # Next two messages in the cap file are:
-    #   METER_STATUS (for flow1)
-    #   OUTPUT_STATUS (for output0)
-    # Test the framing recovery mechanism by skipping a byte. The mechanism
-    # should recover and parse the output0 message.
-    fd.read(1)
-    m = kbr.GetNextMessage()
-    self.assert_(isinstance(m, kegboard.OutputStatusMessage))
-    self.assertEqual(m.output_name, "output0")
+    onewire_message = kegboard.OnewirePresenceMessage()
+    onewire_message.SetValue('device_id', 0)
+    self.assertEqual(messages[1], onewire_message)
 
-    print m
+    message_bytes = messages[2].ToBytes()
+    new_message = kegboard.GetMessageForBytes(message_bytes)
+    self.assertEqual(message_bytes, new_message.ToBytes())
 
   def testAgainstBogusData(self):
     pass

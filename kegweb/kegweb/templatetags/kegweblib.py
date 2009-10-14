@@ -66,17 +66,16 @@ register.tag('latest_drinks', latest_drinks)
 
 
 def sensor_chart(parser, token):
-  """{% sensor_chart <name> as <context_var> %}"""
+  """{% sensor_chart <name> %}"""
   tokens = token.contents.split()
-  if len(tokens) != 4:
-    raise TemplateSyntaxError('%s requires 4 arguments' % (tokens[0],))
+  if len(tokens) != 2:
+    raise TemplateSyntaxError('%s requires 2 arguments' % (tokens[0],))
 
-  return SensorChartNode(tokens[3], tokens[1])
+  return SensorChartNode(tokens[1])
 
 
 class SensorChartNode(Node):
-  def __init__(self, var_name, sensor_name):
-    self._var_name = var_name
+  def __init__(self, sensor_name):
     self._sensor_name_var = Variable(sensor_name)
 
   def render(self, context):
@@ -112,24 +111,22 @@ class SensorChartNode(Node):
     mid = start + ((curr - start) / 2)
     times = [x.strftime('%I%p').lower() for x in (start, mid, curr)]
     chart.set_axis_labels(pygooglechart.Axis.BOTTOM, times)
-    context[self._var_name] = chart.get_url()
-    return ''
+    return chart.get_url()
 
 register.tag('sensor_chart', sensor_chart)
 
 
 def keg_volume_chart(parser, token):
-  """{% keg_volume_chart <keg> as <context_var> %}"""
+  """{% keg_volume_chart <keg> %}"""
   tokens = token.contents.split()
-  if len(tokens) != 4:
-    raise TemplateSyntaxError('%s requires 4 arguments' % (tokens[0],))
+  if len(tokens) != 2:
+    raise TemplateSyntaxError('%s requires 2 arguments' % (tokens[0],))
 
-  return KegVolumeChartNode(tokens[3], tokens[1])
+  return KegVolumeChartNode(tokens[1])
 
 
 class KegVolumeChartNode(Node):
-  def __init__(self, var_name, keg_var):
-    self._var_name = var_name
+  def __init__(self, keg_var):
     self._keg_var = Variable(keg_var)
 
   def render(self, context):
@@ -151,8 +148,7 @@ class KegVolumeChartNode(Node):
         '%i pints remain' % remain_pints,
     ]
     chart.set_pie_labels(labels)
-    context[self._var_name] = chart.get_url()
-    return ''
+    return chart.get_url()
 
 register.tag('keg_volume_chart', keg_volume_chart)
 
@@ -217,4 +213,3 @@ def bac_format(text):
    if f > 0.08:
       ret = '<b>%s</b>' % ret
    return mark_safe(ret)
-

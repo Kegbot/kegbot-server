@@ -59,27 +59,36 @@
 {% for tap in taps %}
 
   <table border="0">
-  <tr>
-  <td>
-    <b>{{ tap.name }}</b><br>
-    {% if tap.current_keg %}
-      <a href="{% url kegweb.kegweb.views.keg_detail tap.current_keg.id %}">keg
-      {{ tap.current_keg.id }}</a> ({{tap.current_keg.size.name}})<br>
-      {% if tap.current_keg.type %}
-        {{tap.current_keg.type.name}}<br>
-        {{tap.current_keg.type.brewer.name}}
-      {% endif %}
-    {% endif %}
-  </td>
-  <td>
-  {% keg_volume_chart tap.current_keg as vol_url %}
-  <div style="float:left;"><img src="{{ vol_url }}"></div>
-  {% if tap.temperature_sensor %}
-    {% sensor_chart tap.temperature_sensor.nice_name as thermo1_url %}
-    <div style="float:left;"><img src="{{ thermo1_url }}"></div>
-  {% endif %}
-  </td>
-  </tr>
+    <tr>
+      <td>
+        <b>{{ tap.name }}</b><br>
+
+        {% if tap.current_keg %}
+          <a href="{% url kegweb.kegweb.views.keg_detail tap.current_keg.id %}">keg
+          {{ tap.current_keg.id }}</a> ({{tap.current_keg.size.name}})<br>
+          {% if tap.current_keg.type %}
+            {{tap.current_keg.type.name}}<br>
+            {{tap.current_keg.type.brewer.name}}
+          {% endif %}
+        {% endif %}
+
+      </td>
+      <td>
+
+        {% if tap.current_keg %}
+        <div style="float:left;">
+          <img src="{% keg_volume_chart tap.current_keg %}">
+        </div>
+        {% endif %}
+
+        {% if tap.temperature_sensor %}
+        <div style="float:left;">
+          <img src="{% sensor_chart tap.temperature_sensor.nice_name %}">
+        </div>
+        {% endif %}
+
+      </td>
+    </tr>
   </table>
   <br>
 {% endfor %}

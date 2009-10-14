@@ -134,6 +134,9 @@ class KegVolumeChartNode(Node):
 
   def render(self, context):
     keg = self._keg_var.resolve(context)
+    if not keg or not isinstance(keg, models.Keg):
+      return ''
+
     served = keg.served_volume()
     full = keg.full_volume()
 

@@ -18,6 +18,8 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import os
+import random
 
 from django.db import models
 from django.contrib.sites.models import Site
@@ -31,12 +33,18 @@ SCHEMA_VERSION = 22
 
 # This is a Django models definition for the kegbot database
 
+def mugshot_file_name(instance, filename):
+  rand_salt = random.randrange(0xffff)
+  new_filename = '%04x-%s' % (rand_salt, filename)
+  return os.path.join('mugshots', instance.user.username, new_filename)
+
+
 class UserPicture(models.Model):
   def __str__(self):
     return "%s UserPicture" % (self.user,)
 
   user = models.OneToOneField(User)
-  image = models.ImageField(upload_to='mugshots')
+  image = models.ImageField(upload_to=mugshot_file_name)
   active = models.BooleanField(default=True)
 
 
@@ -66,7 +74,7 @@ class UserProfile(models.Model):
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
   labels = models.ManyToManyField(UserLabel)
-  #mugshot = models.ForeignKey(UserPicture, blank=True, null=True)
+  mugshot = models.ForeignKey(UserPicture, blank=True, null=True)
 
 def user_post_save(sender, instance, **kwargs):
   defaults = {

@@ -29,6 +29,16 @@ LANGUAGE_CODE = 'en-us'
 
 SITE_ID = 1
 
+### Media
+
+# Absolute path to the directory where uploaded media (profile pictures, etc)
+# should go.
+MEDIA_ROOT = 'media/'
+
+# URL of the directory above. The default is '/media/'. Note that the directory
+# name given in MEDIA_ROOT does not affect this.
+MEDIA_URL = '/media/'
+
 ### Other stuff
 
 # Make this unique, and don't share it with anybody.
@@ -46,4 +56,3 @@ TEMPLATE_DIRS = (
 )
 
 MANAGERS = ADMINS
-

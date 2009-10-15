@@ -96,6 +96,7 @@ class SensorChartNode(Node):
 
     curr = start
     temps = []
+    have_temps = False
     for point in points:
       while curr <= point.time:
         curr += datetime.timedelta(minutes=1)
@@ -103,12 +104,19 @@ class SensorChartNode(Node):
           temps.append(None)
         else:
           temps.append(point.temp)
+          have_temps = True
+
+    if not have_temps:
+      return ''
 
     chart = pygooglechart.SimpleLineChart(200, 125)
     chart.add_data(temps)
     chart.fill_solid(pygooglechart.Chart.BACKGROUND, '00000000')
-    legend = ['%.1fC' % x for x in chart.data_y_range()]
-    chart.set_axis_labels(pygooglechart.Axis.LEFT, legend)
+
+    if chart.data_y_range():
+      legend = ['%.1fC' % x for x in chart.data_y_range()]
+      chart.set_axis_labels(pygooglechart.Axis.LEFT, legend)
+
     mid = start + ((curr - start) / 2)
     times = [x.strftime('%I%p').lower() for x in (start, mid, curr)]
     chart.set_axis_labels(pygooglechart.Axis.BOTTOM, times)

@@ -23,6 +23,16 @@
   <input type="submit" name="submit" value="submit">
   </form>
   </p>
+
+  <p>
+  <form enctype="multipart/form-data" method="post" action="/account/update_mugshots/">
+    your current mugshot:
+    {% mugshot_box user %}
+    {{mugshot_form.as_p}}
+  <input type="submit" name="submit" value="submit">
+  </form>
+  </p>
+
 </div>
 
 <div class="contenthead">

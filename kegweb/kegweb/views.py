@@ -144,6 +144,8 @@ def account_view(request):
   context['payments'] = user.payment_set.all().order_by('-payment_date')
   context['user'] = user
   context['profile_form'] = forms.UserProfileForm(instance=user.get_profile())
+  mf = forms.MugshotForm()
+  context['mugshot_form'] = mf
 
   # TODO unbilled activity
 
@@ -157,4 +159,21 @@ def update_profile(request):
   form = forms.UserProfileForm(request.POST, instance=orig_profile)
   if form.is_valid():
     new_profile = form.save()
+  return redirect_to(request, url='/account/')
+
+@login_required
+def update_mugshots(request):
+  if request.method != 'POST':
+    raise Http404
+
+  form = forms.MugshotForm(request.POST, request.FILES)
+  if form.is_valid():
+    pic = models.UserPicture.objects.create(user=request.user)
+    image = request.FILES['new_mugshot']
+    pic.image.save(image.name, image)
+    pic.save()
+
+    profile = request.user.get_profile()
+    profile.mugshot = pic
+    profile.save()
   return redirect_to(request, url='/account/')

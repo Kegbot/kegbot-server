@@ -14,6 +14,7 @@ urlpatterns = patterns('kegweb.kegweb.views',
       ### accountpage
       (r'^account/$', 'account_view'),
       (r'^account/update_profile/$', 'update_profile'),
+      (r'^account/update_mugshots/$', 'update_mugshots'),
 
       ### leader board
       (r'^leaders/$', 'leaders'),

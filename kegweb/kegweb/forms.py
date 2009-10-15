@@ -29,3 +29,6 @@ class UserProfileForm(forms.ModelForm):
     model = UserProfile
     fields = ('gender', 'weight')
 
+
+class MugshotForm(forms.Form):
+  new_mugshot = forms.ImageField(required=False)

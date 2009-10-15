@@ -51,20 +51,22 @@ A single message includes:
 
 * A 12-byte header section, identifying the message being sent.
 * A variable-length payload section, typically in TLV (tag-length-value) format.
-  The payload can be from zero to 240 bytes in size.
+  The payload can be from zero to 112 bytes in size.
 * A 4-byte footer section, containing a CRC of the entire packet.
 
-Given the section sizes above, the maximum length of a complete message is 256
+Given the section sizes above, the maximum length of a complete message is 128
 bytes.
 
-Here is an example of two messages in a raw byte stream, showing two frames
-sent from the Kegboard to the host::
+Here are examples of two messages in a raw byte stream, showing two frames sent
+from the Kegboard to the host. For each message, the first line is a
+human-readable version of the message; the second line is a sequence of bytes
+forming the complete message.::
 
-  # <HELLO protocol_version=1>
-  \x4b\x42\x53\x50\x20\x76\x31\x3a\x01\x00\x04\x00\x01\x02\x01\x00\xad\xce\x0d\x0a
+  # <HelloMessage: protocol_version=3>
+  \x4b\x42\x53\x50\x20\x76\x31\x3a\x01\x00\x04\x00\x01\x02\x03\x00\x2e\x54\x0d\x0a
 
-  # <METER_STATUS meter_name=flow1 meter_reading=20>
-  \x4b\x42\x53\x50\x20\x76\x31\x3a\x10\x00\x0d\x00\x01\x05\x66\x6c\x6f\x77\x31\x02\x04\x14\x00\x00\x00\x1c\x1e\x0d\x0a
+  # <MeterStatusMessage: meter_name=flow1 meter_reading=4>
+  \x4b\x42\x53\x50\x20\x76\x31\x3a\x10\x00\x0e\x00\x01\x06\x66\x6c\x6f\x77\x31\x00\x02\x04\x04\x00\x00\x00\x55\x0a\x0d\x0a
 
 
 Header Section
@@ -123,10 +125,11 @@ Each message includes a 4-byte footer section::
 
 The `crc` field is a `CRC-16-CCITT
 <http://en.wikipedia.org/wiki/Cyclic_redundancy_check>`_ of the header and
-payload fields. This CRC is used by the host to verify the integrity of messages
-from the board.
+payload fields; in other words, the entire message up to the CRC. This CRC is
+used by the host to verify the integrity of messages from the board.
 
-The string ``\r\n`` is always written in the `trailer` field.
+The string ``\r\n`` is always written in the `trailer` field. This field is not
+included in the CRC.
 
 
 Field Types

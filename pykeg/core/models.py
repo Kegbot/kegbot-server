@@ -43,7 +43,7 @@ class UserPicture(models.Model):
   def __str__(self):
     return "%s UserPicture" % (self.user,)
 
-  user = models.OneToOneField(User)
+  user = models.ForeignKey(User)
   image = models.ImageField(upload_to=mugshot_file_name)
   active = models.BooleanField(default=True)
 

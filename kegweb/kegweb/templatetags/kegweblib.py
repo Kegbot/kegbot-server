@@ -113,8 +113,9 @@ class SensorChartNode(Node):
     chart.add_data(temps)
     chart.fill_solid(pygooglechart.Chart.BACKGROUND, '00000000')
 
-    if chart.data_y_range():
-      legend = ['%.1fC' % x for x in chart.data_y_range()]
+    range = chart.data_y_range()
+    if range and None not in range:
+      legend = ['%.1fC' % x for x in range]
       chart.set_axis_labels(pygooglechart.Axis.LEFT, legend)
 
     mid = start + ((curr - start) / 2)

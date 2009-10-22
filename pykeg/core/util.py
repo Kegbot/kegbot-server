@@ -18,6 +18,7 @@
 
 """General purpose utilities, bits, and bobs"""
 
+import errno
 import os
 import sys
 import types
@@ -308,3 +309,11 @@ def synchronized(f):
 
 def CtoF(t):
   return ((9.0/5.0)*t) + 32
+
+def PidIsAlive(pid):
+  try:
+    os.kill(pid, 0)
+  except OSError, e:
+    if e.errno == errno.ESRCH:
+      return False
+  return True

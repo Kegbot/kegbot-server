@@ -1,0 +1,85 @@
+### kegbot_master config file
+
+# This file lists applications to run as daemons.  They can be collectively
+# started and stopped with kegbot_master.py.
+#
+# There are a few conventions to be aware of:
+#   - the section named DEFAULTS list configuration default values
+#   - all values in the DEFAULT section are automatically copied to all other
+#     sections
+#   - all other sections describe an application to run
+#   - in each section, all values that do NOT begin with an underscore are
+#     passed to the program as a flags.
+#
+# TODO(mikey): expand on me
+
+[DEFAULT]
+
+### Internal variables
+
+# Default base directory for pid files. Be sure the directory exists and is
+# writable by the user running kegbot_master.
+_pidfile_dir = /var/run/kegbot
+
+# Default base directory for log files. Be sure the directory exists and is
+# writable by the user running kegbot_master.
+_logfile_dir = /var/log/kegbot
+
+# Default value for whether or not the app is enabled. If the app is not
+# enabled, it will not be started, stopped, or show up in status.
+_enabled = False
+
+# Name of the program to run. By default, it is inferred from the section name;
+# for example, a section named "[kegboard_daemon]" will have _program_name set to
+# "kegboard_daemon.py".  You need to override this if you wish to run multiple
+# instances of the same program (see 'second_kegboard' example section).
+_program_name = %(__name__)s.py
+
+### Default flags
+
+# Location of the pidfile. You probably don't need to change this, provided the
+# internal variable _pidfile_dir is something reasonable.
+pidfile = %(_pidfile_dir)s/%(__name__)s.pid
+
+# Run the app as a daemon. It would be quite odd to use any value other than
+# `True` here...
+daemon = True
+
+# Disable stdout logging, since it would not do anything.
+log_to_stdout = False
+
+# Enable file logging. You might want to disable this, since there's currently
+# no limit on log file sizes (and no built-in log rotation).
+log_to_file = True
+
+# Log file path. The default is probably fine, provided the internal variable
+# _logfile_dir is set appropriately.
+logfile = %(_logfile_dir)s/%(__name__)s.log
+
+### Apps
+
+[kegbot_core]
+_enabled = True
+
+[kegboard_daemon]
+_enabled = True
+kegboard_device = /dev/ttyUSB0
+
+[lcd_daemon]
+_enabled = False
+
+[second_kegboard]
+# Example showing a second instance of kegboard_daemon.
+_enabled = False
+
+# Normally, the section name is used to automatically generate the value of
+# _program_name. However, we want to run kegboard_daemon twice, and we can't
+# have two sections named '[kegboard_daemon]'.
+#
+# To get around this, we name this section whatever we want ([second_kegboard]),
+# and manually specify the _program_name variable.
+_program_name = kegboard_daemon.py
+
+# Other kegboard_daemon flags.
+kegboard_name = second_tap
+kegboard_device = /dev/ttyUSB2

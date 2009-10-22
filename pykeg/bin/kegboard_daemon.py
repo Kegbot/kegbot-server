@@ -96,8 +96,8 @@ class DuplicateSuppressingCache:
         return False
 
 class KegboardManagerApp(kb_app.App):
-  def __init__(self, name='core', daemon=FLAGS.daemon):
-    kb_app.App.__init__(self, name, daemon)
+  def __init__(self, name='core'):
+    kb_app.App.__init__(self, name)
 
   def _Setup(self):
     kb_app.App._Setup(self)

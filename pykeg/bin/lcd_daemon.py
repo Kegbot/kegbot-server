@@ -137,8 +137,8 @@ class KegUi:
 
 
 class LcdDaemonApp(kb_app.App):
-  def __init__(self, name='lcd_daemon', daemon=FLAGS.daemon):
-    kb_app.App.__init__(self, name, daemon)
+  def __init__(self, name='lcd_daemon'):
+    kb_app.App.__init__(self, name)
 
   def _Setup(self):
     kb_app.App._Setup(self)

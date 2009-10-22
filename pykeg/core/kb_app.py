@@ -38,6 +38,9 @@ FLAGS = gflags.FLAGS
 gflags.DEFINE_boolean('daemon', False,
     'Run application in daemon mode')
 
+gflags.DEFINE_string('pidfile', '',
+    "If specified, logs the application's process id to this file.")
+
 gflags.DEFINE_string('logformat',
     '%(asctime)s %(levelname)-8s (%(name)s) %(message)s',
     'Default format to use for log messages.')
@@ -63,38 +66,44 @@ class App(object):
   subclass App, and implement some or all of _Setup and _MainLoop.
   """
 
-  def __init__(self, name='main', daemon=FLAGS.daemon):
+  def __init__(self, name='main', daemon=None):
     self._name = name
+
+    try:
+      self._extra_argv = FLAGS(sys.argv)  # parse flags
+    except gflags.FlagsError, e:
+      print 'Usage: %s ARGS\n%s\n\nError: %s' % (sys.argv[0], FLAGS, e)
+      sys.exit(1)
+
+    if daemon is None:
+      daemon = FLAGS.daemon
+
     self._is_daemon = daemon
     self._do_quit = False
     self._quit_event = threading.Event()
     self._threads = set()
-
-    try:
-      argv = FLAGS(sys.argv)  # parse flags
-    except gflags.FlagsError, e:
-      print 'Usage: %s ARGS\n%s\n\nError: %s' % (sys.argv[0], FLAGS, e)
-      sys.exit(1)
 
     self._SetupLogging()
     self._SetupSignalHandlers()
     self._logger = logging.getLogger(self._name)
 
   @classmethod
-  def BuildAndRun(cls, name='main', daemon=False):
+  def BuildAndRun(cls, name='main'):
     """Convenience class method to create and Start the app."""
     if sys.version_info < (2,4):
       print>>sys.stderr, 'kegbot requires Python 2.4 or later; aborting'
       sys.exit(1)
 
-    app = cls(name, daemon)
+    app = cls(name)
     app.Start()
 
   def Start(self):
     """Perform setup and run the application main loop."""
     self._Setup()
+    self._CheckAndRecordPid()
     self._StartThreads()
     self._MainLoop()
+    self._Teardown()
 
   def _Setup(self):
     """Perform app-specific setup.
@@ -106,6 +115,33 @@ class App(object):
       self._logger.info('Daemon mode requested, switching to background.')
       util.daemonize()
       self._logger.info('Running in background.')
+
+  def _CheckAndRecordPid(self):
+    if not FLAGS.pidfile:
+      return
+    my_pid = os.getpid()
+    self._logger.info('Logging PID (%i) to file %s' % (my_pid,
+        FLAGS.pidfile))
+    if os.path.exists(FLAGS.pidfile):
+      self._logger.warning('Pidfile already exists, checking liveness')
+      try:
+        pid_fd = open(FLAGS.pidfile)
+        old_pid = int(pid_fd.readline().strip())
+        pid_fd.close()
+      except (IOError, ValueError):
+        self._logger.error('Could not read pid, abort.')
+        sys.exit(1)
+      if util.PidIsAlive(old_pid):
+        self._logger.error('Old pid %i is still alive, aborting' % old_pid)
+        sys.exit(1)
+
+    try:
+      pid_fd = open(FLAGS.pidfile, 'w')
+      pid_fd.write('%i\n' % my_pid)
+      pid_fd.close()
+    except IOError:
+      self._logger.error('Error writing pid to %s' % FLAGS.pidfile)
+      sys.exit(1)
 
   def _StartThreads(self):
     """Start any threading.Thread objects registered in _threads."""
@@ -136,6 +172,11 @@ class App(object):
     while not self._do_quit:
       self._quit_event.wait(timeout=1.0)
     self._logger.info('Exiting main loop')
+
+  def _Teardown(self):
+    """Clean up before quitting."""
+    if FLAGS.pidfile:
+      os.unlink(FLAGS.pidfile)
 
   def _DumpStatus(self):
     self._logger.info('-------- Begin Status Dump --------')

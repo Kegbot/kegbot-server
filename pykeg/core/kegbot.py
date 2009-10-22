@@ -118,8 +118,8 @@ class KegbotEnv(object):
 
 
 class KegbotCoreApp(kb_app.App):
-  def __init__(self, name='core', daemon=FLAGS.daemon):
-    kb_app.App.__init__(self, name, daemon)
+  def __init__(self, name='core'):
+    kb_app.App.__init__(self, name)
     self._env = KegbotEnv()
 
   def _MainLoop(self):

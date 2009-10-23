@@ -27,6 +27,7 @@ import importhacks
 
 import ConfigParser
 import commands
+from cStringIO import StringIO
 import os
 import signal
 import sys
@@ -42,16 +43,81 @@ FLAGS = gflags.FLAGS
 gflags.DEFINE_string('master_config', '/etc/kegbot/master.cfg',
     'Path to the master config file.')
 
+gflags.DEFINE_string('logfile_dir', '/var/log/kegbot',
+    'Default directory for log files.  This value is used as the '
+    'default for internal variable `_logfile_dir`.  An application may '
+    'override the default by specifying `logfile = /path/to/file`.')
+
+gflags.DEFINE_string('pidfile_dir', '/var/run/kegbot',
+    'Default directory for pid files.  This value is used as the '
+    'default for internal variable `_pidfile_dir`.  An application may '
+    'override the default by specifying `pidfile = /path/to/file`.')
+
 STATUS_UNKNOWN = -1
 STATUS_ALIVE = 1
 STATUS_DEAD = 2
 STATUS_STOPPED = 3
 
+DEFAULT_CONFIG_DATA = """
+[DEFAULT]
+
+### Internal variables
+
+# Default base directory for pid files. Be sure the directory exists and is
+# writable by the user running kegbot_master.
+_pidfile_dir = %(_flag_pidfile_dir)s
+
+# Default base directory for log files. Be sure the directory exists and is
+# writable by the user running kegbot_master.
+_logfile_dir = %(_flag_logfile_dir)s
+
+# Default value for whether or not the app is enabled. If the app is not
+# enabled, it will not be started, stopped, or show up in status.
+_enabled = False
+
+# Name of the program to run. By default, it is inferred from the section name;
+# for example, a section named "[kegboard_daemon]" will have _program_name set to
+# "kegboard_daemon.py".  You need to override this if you wish to run multiple
+# instances of the same program (see 'second_kegboard' example section).
+_program_name = %(__name__)s.py
+
+### Default flags
+
+# Location of the pidfile. You probably don't need to change this, provided the
+# internal variable _pidfile_dir is something reasonable.
+pidfile = %(_pidfile_dir)s/%(__name__)s.pid
+
+# Run the app as a daemon. It would be quite odd to use any value other than
+# `True` here...
+daemon = True
+
+# Disable stdout logging, since it would not do anything.
+log_to_stdout = False
+
+# Enable file logging. You might want to disable this, since there's currently
+# no limit on log file sizes (and no built-in log rotation).
+log_to_file = True
+
+# Log file path. The default is probably fine, provided the internal variable
+# _logfile_dir is set appropriately.
+logfile = %(_logfile_dir)s/%(__name__)s.log
+"""
+
+def _GetConfigParser():
+  default_values = {
+    '_flag_logfile_dir': FLAGS.logfile_dir,
+    '_flag_pidfile_dir': FLAGS.pidfile_dir,
+  }
+  config = ConfigParser.SafeConfigParser(defaults=default_values)
+  default_cfg_fp = StringIO(DEFAULT_CONFIG_DATA)
+  config.readfp(default_cfg_fp)
+  config.read(FLAGS.master_config)
+  return config
+
 class KegbotMasterApp(kb_app.App):
   def _Setup(self):
     kb_app.App._Setup(self)
-    self._config = ConfigParser.ConfigParser()
-    self._config.read(FLAGS.master_config)
+    self._config = _GetConfigParser()
     self._commands = {}
 
     for app in self._EnabledApps():

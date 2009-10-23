@@ -3,58 +3,38 @@
 # This file lists applications to run as daemons.  They can be collectively
 # started and stopped with kegbot_master.py.
 #
-# There are a few conventions to be aware of:
-#   - the section named DEFAULTS list configuration default values
-#   - all values in the DEFAULT section are automatically copied to all other
-#     sections
-#   - all other sections describe an application to run
-#   - in each section, all values that do NOT begin with an underscore are
-#     passed to the program as a flags.
+# Each section defines an application to run; the name of the section is
+# typically the name of the program, but does not have to be (see example use of
+# _program_name below).
 #
-# TODO(mikey): expand on me
+# Each value in the section gives a command line flag and value to use.  Values
+# that begin with an underscore are special values that are only used by
+# kegbot_master.  Current special values:
+#   _pidfile_dir: the value of the kegbot_master flag --pidfile_dir
+#   _logfile_dir: the value of the kegbot_master flag --logfile_dir
+#   _enabled: indicates whether the app defined in this section should be
+#             started
+#
+# Each section also has several default flags and values, which can be
+# overridden on an app-by-app basis. Those flags are:
+#   pidfile: the default value is `<pidfile dir>/<app_name>.pid`
+#   daemon: the default value is True (and should not be changed)
+#   log_to_stdout: the default value is False (and should not be changed)
+#   log_to_file: the default value is True
+#   logfile: the default value is `<logfile dir>/<app_name>.log`
+#
+# You can substitute values in your flag definitions. For example:
+#   [myapp]
+#   _program_name = whatever.py
+#   logfile = /tmp/%(__name__)s.log
+#
+# In this example, the special value `__name__` is replaced with the name of the
+# application section (myapp). The final command that executes would be:
+#   whatever.py --logfile=/tmp/myapp.log [.. other defaults ..]
+#
+# You can run `kegbot_master.py configtest` to see what commands your config
+# file would execute if `start` was called.
 
-[DEFAULT]
-
-### Internal variables
-
-# Default base directory for pid files. Be sure the directory exists and is
-# writable by the user running kegbot_master.
-_pidfile_dir = /var/run/kegbot
-
-# Default base directory for log files. Be sure the directory exists and is
-# writable by the user running kegbot_master.
-_logfile_dir = /var/log/kegbot
-
-# Default value for whether or not the app is enabled. If the app is not
-# enabled, it will not be started, stopped, or show up in status.
-_enabled = False
-
-# Name of the program to run. By default, it is inferred from the section name;
-# for example, a section named "[kegboard_daemon]" will have _program_name set to
-# "kegboard_daemon.py".  You need to override this if you wish to run multiple
-# instances of the same program (see 'second_kegboard' example section).
-_program_name = %(__name__)s.py
-
-### Default flags
-
-# Location of the pidfile. You probably don't need to change this, provided the
-# internal variable _pidfile_dir is something reasonable.
-pidfile = %(_pidfile_dir)s/%(__name__)s.pid
-
-# Run the app as a daemon. It would be quite odd to use any value other than
-# `True` here...
-daemon = True
-
-# Disable stdout logging, since it would not do anything.
-log_to_stdout = False
-
-# Enable file logging. You might want to disable this, since there's currently
-# no limit on log file sizes (and no built-in log rotation).
-log_to_file = True
-
-# Log file path. The default is probably fine, provided the internal variable
-# _logfile_dir is set appropriately.
-logfile = %(_logfile_dir)s/%(__name__)s.log
 
 ### Apps
 
@@ -67,6 +47,7 @@ kegboard_device = /dev/ttyUSB0
 
 [lcd_daemon]
 _enabled = False
+lcd_device_path = /dev/ttyUSB1
 
 [second_kegboard]
 # Example showing a second instance of kegboard_daemon.

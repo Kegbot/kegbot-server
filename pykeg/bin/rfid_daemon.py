@@ -90,6 +90,8 @@ class RfidEventHandler:
 class RfidAuthenticationApp(kb_app.App):
 
   def _Setup(self):
+    kb_app.App._Setup(self)
+
     self._logger.info('Setting up kegnet client ...')
     self._client = kegnet_client.KegnetClient()
 

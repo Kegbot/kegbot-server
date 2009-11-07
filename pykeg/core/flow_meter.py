@@ -19,6 +19,7 @@
 """Utility module for summing flows."""
 
 import datetime
+import logging
 
 class FlowMeter(object):
   """Represents a path of fluid volume."""
@@ -28,6 +29,7 @@ class FlowMeter(object):
     self._last_ticks = start_ticks
     self._total_ticks = 0
     self._last_activity = datetime.datetime.fromtimestamp(0)
+    self._logger = logging.getLogger('flowmeter-%s' % self._name)
 
   def __str__(self):
     return "<FlowMeter %s ticks=%i>" % (self._name, self.GetTicks())
@@ -61,6 +63,8 @@ class FlowMeter(object):
       # If the value is less than the max delta, then use it. Some ticks will be
       # lost, since we can't be sure where the overflow occurred. Drop the
       # reading otherwise.
+      self._logger.warning('New ticks report less than previous: %i < %i' %
+          (ticks, last_reading))
       if ticks < self._max_delta:
         # The value is less than the max delta. In this case, assume the device
         # wrapped around or reset to zero, and use the current reading as the
@@ -74,7 +78,11 @@ class FlowMeter(object):
         delta = 0
 
     if self._max_delta and delta > self._max_delta:
-      # TODO: should warn and/or accumulate stats
+      self._logger.warning('Delta greater than maximum, dropping reading. '
+          '(%i > %i)' % (delta, self._max_delta))
+      # TODO(mikey): accumulate stat somewhere
+      # TODO(mikey): add sequence number to updates, or guard against reset by
+      # some other means..?
       return 0
 
     # If there was actually a change, increment total ticks and update activity

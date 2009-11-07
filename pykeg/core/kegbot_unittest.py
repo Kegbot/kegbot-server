@@ -25,7 +25,7 @@ class KegbotTestCase(TestCase):
     defaults.set_defaults()
     defaults.gentestdata()
 
-    self.kegbot = kegbot.KegbotCoreApp(daemon=False)
+    self.kegbot = kegbot.KegbotCoreApp()
     self.env = self.kegbot._env
 
     # Kill the kegbot flow processing thread so we can single step it.

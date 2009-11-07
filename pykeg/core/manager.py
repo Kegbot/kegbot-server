@@ -265,7 +265,7 @@ class FlowManager(Manager):
       self._logger.info('EndFlow: No existing flow on tap %s' % (tap_name,))
     return flow
 
-  def UpdateFlow(self, tap_name, volume):
+  def UpdateFlow(self, tap_name, meter_reading):
     try:
       tap_manager = self._kb_env.GetTapManager()
       tap = tap_manager.GetTap(tap_name)
@@ -274,9 +274,9 @@ class FlowManager(Manager):
       # TODO(mikey): guard against this happening
       return None, None
 
-    delta = tap_manager.UpdateDeviceReading(tap.GetName(), volume)
-    self._logger.debug('Flow update: tap=%s volume=%i (delta=%i)' %
-        (tap_name, volume, delta))
+    delta = tap_manager.UpdateDeviceReading(tap.GetName(), meter_reading)
+    self._logger.debug('Flow update: tap=%s meter_reading=%i (delta=%i)' %
+        (tap_name, meter_reading, delta))
 
     if delta == 0:
       return None, None

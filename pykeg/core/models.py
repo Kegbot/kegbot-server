@@ -511,15 +511,15 @@ class Thermolog(models.Model):
       print "%s\t%s\t%s\t%s\t%s" % (daily_date, num_readings, min_temp, max_temp,
           mean_temp)
       try:
-        ThermoSummaryLog.objects.get(date=base_date)
+        ThermoSummaryLog.objects.get(date=daily_date, period='daily')
         # Oops! Group already exists
-        print "Warning: log already exists for", base_date
+        print "Warning: log already exists for", daily_date
         return
       except ThermoSummaryLog.DoesNotExist:
         pass
       new_rec = ThermoSummaryLog.objects.create(
           sensor=sensor,
-          date=base_date,
+          date=daily_date,
           period='daily',
           num_readings=num_readings,
           min_temp=min_temp,

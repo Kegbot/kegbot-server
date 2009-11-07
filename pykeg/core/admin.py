@@ -84,6 +84,13 @@ class ThermologAdmin(admin.ModelAdmin):
   list_filter = ('sensor', 'time')
 
 admin.site.register(models.Thermolog, ThermologAdmin)
+
+class ThermoSummaryLogAdmin(admin.ModelAdmin):
+  list_display = ('sensor', 'date', 'min_temp', 'max_temp', 'mean_temp')
+  list_filter = ('sensor', 'date')
+
+admin.site.register(models.ThermoSummaryLog, ThermoSummaryLogAdmin)
+
 admin.site.register(models.RelayLog)
 
 class ConfigAdmin(admin.ModelAdmin):

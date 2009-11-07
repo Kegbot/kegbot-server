@@ -483,6 +483,86 @@ class Thermolog(models.Model):
     degf = util.CtoF(self.temp)
     return '%s %.2f C / %.2f F [%s]' % (self.sensor, self.temp, degf, self.time)
 
+  @classmethod
+  def CompressLogs(cls):
+    now = datetime.datetime.now()
+
+    # keep at least the most recent 24 hours
+    keep_time = now - datetime.timedelta(hours=24)
+
+    # round down to the start of the day
+    keep_date = datetime.datetime(year=keep_time.year, month=keep_time.month,
+        day=keep_time.day)
+
+    print "Compressing thermo logs prior to", keep_date
+
+    def _LogGroup(sensor, records):
+      num_readings = len(records)
+      temps = [x.temp for x in records]
+      min_temp = min(temps)
+      max_temp = max(temps)
+      sum_temps = sum(temps)
+      mean_temp = sum_temps / num_readings
+
+      base_date = records[0].time
+      daily_date = datetime.datetime(year=base_date.year,
+          month=base_date.month, day=base_date.day)
+
+      print "%s\t%s\t%s\t%s\t%s" % (daily_date, num_readings, min_temp, max_temp,
+          mean_temp)
+      try:
+        ThermoSummaryLog.objects.get(date=base_date)
+        # Oops! Group already exists
+        print "Warning: log already exists for", base_date
+        return
+      except ThermoSummaryLog.DoesNotExist:
+        pass
+      new_rec = ThermoSummaryLog.objects.create(
+          sensor=sensor,
+          date=base_date,
+          period='daily',
+          num_readings=num_readings,
+          min_temp=min_temp,
+          max_temp=max_temp,
+          mean_temp=mean_temp)
+
+    for sensor in ThermoSensor.objects.all():
+      old_entries = sensor.thermolog_set.filter(time__lt=keep_date).order_by('time')
+
+      group = []
+      group_date = None
+      for entry in old_entries:
+        entry_date = datetime.datetime(year=entry.time.year,
+            month=entry.time.month, day=entry.time.day)
+        if group_date is None:
+          group_date = entry_date
+        if group_date == entry_date:
+          group.append(entry)
+        else:
+          _LogGroup(sensor, group)
+          group = [entry]
+          group_date = entry_date
+
+      if group:
+        _LogGroup(sensor, group)
+
+      old_entries.delete()
+
+
+class ThermoSummaryLog(models.Model):
+  """A summarized temperature sensor log."""
+  PERIOD_CHOICES = (
+    ('daily', 'daily'),
+  )
+  sensor = models.ForeignKey(ThermoSensor)
+  date = models.DateTimeField()
+  period = models.CharField(max_length=64, choices=PERIOD_CHOICES,
+      default='daily')
+  num_readings = models.PositiveIntegerField()
+  min_temp = models.FloatField()
+  max_temp = models.FloatField()
+  mean_temp = models.FloatField()
+
 
 class RelayLog(models.Model):
   """ A log from an IRelay device of relay events/ """

@@ -36,9 +36,11 @@
 
 #define KBSP_PAYLOAD_MAXLEN 112
 
-// Max freq 10Hz, Min freq 0.1Hz
-#define KB_UPDATE_INTERVAL_MIN  100
-#define KB_UPDATE_INTERVAL_MAX  10000
-
 // Max number of sensors
 #define KB_MAX_THERMO 2
+
+// Interval between test pulse trains
+#define KB_SELFTEST_INTERVAL_MS 500
+
+// Number of pulses per test pulse train
+#define KB_SELFTEST_PULSES 10

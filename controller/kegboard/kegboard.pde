@@ -63,7 +63,6 @@
 static int gBaudRate = KB_DEFAULT_BAUD_RATE;
 static char gBoardName[KB_BOARDNAME_MAXLEN+1] = KB_DEFAULT_BOARDNAME;
 static int gBoardNameLen = KB_DEFAULT_BOARDNAME_LEN;
-static int gUpdateInterval = KB_DEFAULT_UPDATE_INTERVAL;
 
 
 //
@@ -74,6 +73,10 @@ static int gUpdateInterval = KB_DEFAULT_UPDATE_INTERVAL;
 static unsigned long volatile gMeters[] = {0, 0, 0, 0, 0, 0};
 static unsigned long volatile gLastMeters[] = {0, 0, 0, 0, 0, 0};
 static KegboardPacket gOutputPacket;
+
+#if KB_ENABLE_SELFTEST
+static unsigned long gLastTestPulseMillis = 0;
+#endif
 
 #if KB_ENABLE_BUZZER
 struct MelodyNote BOOT_MELODY[] = {
@@ -233,6 +236,18 @@ void writeMeterPacket(int channel)
 
 #if KB_ENABLE_ONEWIRE_PRESENCE
 void writeOnewirePresencePacket(uint8_t* id) {
+  // Hack: Ignore the 0x0 onewire id.
+  // TODO(mikey): Is it a bug that OneWire::search() is generating this?
+  bool null_id = true;
+  for (int i=0; i<8; i++) {
+    if (id[i] != 0) {
+      null_id = false;
+      break;
+    }
+  }
+  if (null_id) {
+    return;
+  }
   gOutputPacket.Reset();
   gOutputPacket.SetType(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE);
   gOutputPacket.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_DEVICE_ID, 8, (char*)id);
@@ -243,11 +258,15 @@ void writeOnewirePresencePacket(uint8_t* id) {
 #if KB_ENABLE_SELFTEST
 void doTestPulse()
 {
-  // Strobes the test pin 4 times.
-  int i=0;
-  for (i=0; i<4; i++) {
-    digitalWrite(KB_PIN_TEST_PULSE, 1);
-    digitalWrite(KB_PIN_TEST_PULSE, 0);
+  // Strobes the test pin `KB_SELFTEST_PULSES` times, every
+  // `KB_SELFTEST_INTERVAL_MS` milliseconds
+  unsigned long now = millis();
+  if ((now - gLastTestPulseMillis) >= KB_SELFTEST_INTERVAL_MS) {
+    gLastTestPulseMillis = now;
+    for (int i=0; i<KB_SELFTEST_PULSES; i++) {
+      digitalWrite(KB_PIN_TEST_PULSE, 1);
+      digitalWrite(KB_PIN_TEST_PULSE, 0);
+    }
   }
 }
 #endif
@@ -386,8 +405,6 @@ void loop()
 #if KB_ENABLE_SELFTEST
   doTestPulse();
 #endif
-
-  delay(gUpdateInterval);
 }
 
 // vim: syntax=c

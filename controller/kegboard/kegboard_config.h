@@ -67,5 +67,4 @@
 
 #define KB_DEFAULT_BOARDNAME          "kegboard"
 #define KB_DEFAULT_BOARDNAME_LEN      8  // must match #chars above
-#define KB_DEFAULT_UPDATE_INTERVAL    250
 #define KB_DEFAULT_BAUD_RATE          115200

@@ -20,6 +20,10 @@ void DS1820Sensor::Reset() {
   m_conversion_start_clock = 0;
   m_temp = INVALID_TEMPERATURE_VALUE;
   m_temp_is_valid = false;
+
+  for (int i=0; i<8; i++) {
+    m_addr[i] = 0;
+  }
 }
 
 void DS1820Sensor::Initialize(OneWire* bus, uint8_t* addr)
@@ -37,6 +41,10 @@ bool DS1820Sensor::Initialized() {
 
 bool DS1820Sensor::Update(unsigned long clock)
 {
+  if (!m_initialized) {
+    return false;
+  }
+
   if (clock < m_conversion_start_clock) { // overflow of clock
     m_conversion_start_clock = 0;
   }
@@ -48,7 +56,7 @@ bool DS1820Sensor::Update(unsigned long clock)
     m_converting = true;
     m_conversion_start_clock = clock;
     StartConversion();
-  } else if (m_converting && clock >= (m_conversion_start_clock + 1000)) {
+  } else if (m_converting && (clock - m_conversion_start_clock) >= 1000) {
     // we're converting and it is time to fetch
     m_converting = false;
 
@@ -92,8 +100,16 @@ bool DS1820Sensor::FetchConversion()
   uint8_t data[9];
   m_bus->write(0xBE); // read scratchpad
 
+  bool null_data = true;
   for (int i = 0; i < 9; i++) {
     data[i] = m_bus->read();
+    if (data[i] != 0) {
+      null_data = false;
+    }
+  }
+
+  if (null_data) {
+    return false;
   }
 
   if (OneWire::crc8(data, 8) != data[8]) {

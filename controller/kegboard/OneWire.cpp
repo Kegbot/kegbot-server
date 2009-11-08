@@ -232,49 +232,73 @@ void OneWire::reset_search()
 // 
 uint8_t OneWire::search(uint8_t *newAddr)
 {
-    uint8_t i;
-    char lastJunction = -1;
-    uint8_t done = 1;
-    
-    if ( searchExhausted) return 0;
-    
-    if ( !reset()) return 0;
-    write( 0xf0, 0);
-    
-    for( i = 0; i < 64; i++) {
-	uint8_t a = read_bit( );
-	uint8_t nota = read_bit( );
-	uint8_t ibyte = i/8;
-	uint8_t ibit = 1<<(i&7);
-	
-	if ( a && nota) return 0;  // I don't think this should happen, this means nothing responded, but maybe if
-	// something vanishes during the search it will come up.
-	if ( !a && !nota) {
-	    if ( i == searchJunction) {   // this is our time to decide differently, we went zero last time, go one.
-		a = 1;
-		searchJunction = lastJunction;
-	    } else if ( i < searchJunction) {   // take whatever we took last time, look in address
-		if ( address[ ibyte]&ibit) a = 1;
-		else {                            // Only 0s count as pending junctions, we've already exhasuted the 0 side of 1s
-		    a = 0;
-		    done = 0;
-		    lastJunction = i;
-		}
-	    } else {                            // we are blazing new tree, take the 0
-		a = 0;
-		searchJunction = i;
-		done = 0;
-	    }
-	    lastJunction = i;
-	}
-	if ( a) address[ ibyte] |= ibit;
-	else address[ ibyte] &= ~ibit;
-	
-	write_bit( a);
+  uint8_t i;
+  char lastJunction = -1;
+  uint8_t done = 1;
+
+  if (searchExhausted) {
+    return 0;
+  }
+
+  if (!reset()) {
+    return 0;
+  }
+
+  write(0xf0, 0);
+
+  for(i = 0; i < 64; i++) {
+    uint8_t a = read_bit();
+    uint8_t nota = read_bit();
+    uint8_t ibyte = i/8;
+    uint8_t ibit = 1<<(i&7);
+
+    if (a && nota) {
+      // Participaing device stopped responding (ie removed during search);
+      // search should be terminated and bus reset.
+      // Reference: http://www.maxim-ic.com/appnotes.cfm/an_pk/187
+      searchExhausted = 1;
+      return 0;
     }
-    if ( done) searchExhausted = 1;
-    for ( i = 0; i < 8; i++) newAddr[i] = address[i];
-    return 1;  
+
+    if (!a && !nota) {
+      if (i == searchJunction) {
+        // this is our time to decide differently, we went zero last time, go one.
+        a = 1;
+        searchJunction = lastJunction;
+      } else if ( i < searchJunction) {
+        // take whatever we took last time, look in address
+        if (address[ ibyte]&ibit) {
+          a = 1;
+        } else {
+          // Only 0s count as pending junctions, we've already exhasuted the 0 side of 1s
+          a = 0;
+          done = 0;
+          lastJunction = i;
+        }
+      } else {
+        // we are blazing new tree, take the 0
+        a = 0;
+        searchJunction = i;
+        done = 0;
+      }
+      lastJunction = i;
+    }
+
+    if (a) {
+      address[ibyte] |= ibit;
+    } else {
+      address[ibyte] &= ~ibit;
+    }
+
+    write_bit(a);
+  }
+  if (done) {
+    searchExhausted = 1;
+  }
+  for (i = 0; i < 8; i++) {
+    newAddr[i] = address[i];
+  }
+  return 1;
 }
 #endif
 
@@ -313,13 +337,13 @@ static uint8_t dscrc_table[] = {
 //
 uint8_t OneWire::crc8( uint8_t *addr, uint8_t len)
 {
-    uint8_t i;
-    uint8_t crc = 0;
-    
-    for ( i = 0; i < len; i++) {
-	crc  = dscrc_table[ crc ^ addr[i] ];
-    }
-    return crc;
+  uint8_t i;
+  uint8_t crc = 0;
+
+  for (i = 0; i < len; i++) {
+    crc  = dscrc_table[ crc ^ addr[i] ];
+  }
+  return crc;
 }
 #else
 //

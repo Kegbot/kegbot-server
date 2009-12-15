@@ -24,6 +24,8 @@
 #define KB_MESSAGE_TYPE_ONEWIRE_PRESENCE 0x13
 #define KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_DEVICE_ID  0x01
 
+#define KB_MESSAGE_TYPE_PING 0x81
+
 #define KBSP_PREFIX "KBSP v1:"
 #define KBSP_PREFIX_CRC 0xe3af
 #define KBSP_TRAILER "\r\n"
@@ -32,13 +34,15 @@
 #define KBSP_HEADER_PREFIX_LEN 8
 #define KBSP_HEADER_ID_LEN 2
 #define KBSP_HEADER_PAYLOADLEN_LEN 2
+
 #define KBSP_FOOTER_LEN 4
+#define KBSP_FOOTER_CRC_LEN 2
+#define KBSP_FOOTER_TRAILER_LEN 2
 
 #define KBSP_PAYLOAD_MAXLEN 112
 
-// Max number of sensors
-#define KB_MAX_THERMO 2
-
+// Milliseconds/day
+#define MS_PER_DAY  (1000*60*60*24)
 // Interval between test pulse trains
 #define KB_SELFTEST_INTERVAL_MS 500
 

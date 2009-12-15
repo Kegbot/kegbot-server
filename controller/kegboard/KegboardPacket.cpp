@@ -8,6 +8,10 @@ KegboardPacket::KegboardPacket()
   Reset();
 }
 
+bool KegboardPacket::IsReset() {
+  return (m_type == 0) && (m_len == 0);
+}
+
 void KegboardPacket::Reset()
 {
   m_len = 0;
@@ -19,6 +23,27 @@ void KegboardPacket::AddTag(int tag, int buflen, char *buf)
   int i=0;
   m_payload[m_len++] = tag;
   m_payload[m_len++] = buflen;
+  while (i < buflen && m_len < KBSP_PAYLOAD_MAXLEN) {
+    m_payload[m_len++] = (uint8_t) (*(buf+i));
+    i++;
+  }
+}
+
+uint8_t* KegboardPacket::FindTag(int tagnum) {
+  int pos=0;
+  while (pos < m_len && pos < KBSP_PAYLOAD_MAXLEN) {
+    int tag = m_payload[pos];
+    if (tag == tagnum) {
+      return m_payload+pos+1;
+    }
+    pos += m_payload[pos+1];
+  }
+  return 0;
+}
+
+void KegboardPacket::AppendBytes(char *buf, int buflen)
+{
+  int i=0;
   while (i < buflen && m_len < KBSP_PAYLOAD_MAXLEN) {
     m_payload[m_len++] = (uint8_t) (*(buf+i));
     i++;

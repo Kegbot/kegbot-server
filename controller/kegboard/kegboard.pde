@@ -64,7 +64,6 @@ static int gBaudRate = KB_DEFAULT_BAUD_RATE;
 static char gBoardName[KB_BOARDNAME_MAXLEN+1] = KB_DEFAULT_BOARDNAME;
 static int gBoardNameLen = KB_DEFAULT_BOARDNAME_LEN;
 
-
 //
 // Other Globals
 //
@@ -72,7 +71,27 @@ static int gBoardNameLen = KB_DEFAULT_BOARDNAME_LEN;
 // Up to 6 meters supported if using Arduino Mega
 static unsigned long volatile gMeters[] = {0, 0, 0, 0, 0, 0};
 static unsigned long volatile gLastMeters[] = {0, 0, 0, 0, 0, 0};
+static bool volatile gRelayStatus[] = {false, false};
+
 static KegboardPacket gOutputPacket;
+static KegboardPacket gInputPacket;
+
+typedef struct {
+  int header_bytes_read;
+  int payload_bytes_remain;
+  bool have_packet;
+} RxPacketStat;
+
+static RxPacketStat gPacketStat;
+
+typedef struct {
+  unsigned long uptime_ms;
+  unsigned long last_uptime_ms;
+  int uptime_days;
+} UptimeStat;
+
+static UptimeStat gUptimeStat;
+
 
 #if KB_ENABLE_SELFTEST
 static unsigned long gLastTestPulseMillis = 0;
@@ -207,19 +226,19 @@ void writeThermoPacket(DS1820Sensor *sensor)
 
 void writeRelayPacket(int channel)
 {
-  char name[] = "outputX";
-  int status=0;
+  char name[7] = "relay-";
+  int status = (int)(gRelayStatus[channel]);
   name[6] = 0x30 + channel;
   gOutputPacket.Reset();
   gOutputPacket.SetType(KB_MESSAGE_TYPE_OUTPUT_STATUS);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_OUTPUT_STATUS_TAG_OUTPUT_NAME, 8, name);
+  gOutputPacket.AddTag(KB_MESSAGE_TYPE_OUTPUT_STATUS_TAG_OUTPUT_NAME, 7, name);
   gOutputPacket.AddTag(KB_MESSAGE_TYPE_OUTPUT_STATUS_TAG_OUTPUT_READING, sizeof(status), (char*)(&status));
   writeOutputPacket();
 }
 
 void writeMeterPacket(int channel)
 {
-  char name[] = "flowX";
+  char name[5] = "flow";
   unsigned long status = gMeters[channel];
   if (status == gLastMeters[channel]) {
     return;
@@ -277,6 +296,9 @@ void doTestPulse()
 
 void setup()
 {
+  memset(&gUptimeStat, 0, sizeof(UptimeStat));
+  memset(&gPacketStat, 0, sizeof(RxPacketStat));
+
   // Flow meter steup. Enable internal weak pullup to prevent disconnected line
   // from ticking away.
   pinMode(KB_PIN_METER_A, INPUT);
@@ -324,6 +346,18 @@ void setup()
   playMelody(BOOT_MELODY);
 #endif
   writeHelloPacket();
+}
+
+void updateTimekeeping() {
+  // TODO(mikey): it would be more efficient to take control of timer0
+  unsigned long now = millis();
+  gUptimeStat.uptime_ms += now - gUptimeStat.last_uptime_ms;
+  gUptimeStat.last_uptime_ms = now;
+
+  if (gUptimeStat.uptime_ms >= MS_PER_DAY) {
+    gUptimeStat.uptime_days += 1;
+    gUptimeStat.uptime_ms -= MS_PER_DAY;
+  }
 }
 
 #if KB_ENABLE_ONEWIRE_THERMO
@@ -374,8 +408,133 @@ void stepOnewireIdBus() {
 }
 #endif
 
+static void readSerialBytes(char *dest_buf, int num_bytes, int offset) {
+  while (num_bytes-- != 0) {
+    dest_buf[offset++] = Serial.read();
+  }
+}
+
+void readIncomingSerialData() {
+  char serial_buf[KBSP_PAYLOAD_MAXLEN];
+  int bytes_to_read = 0;
+  int bytes_available = Serial.available();
+
+  if (bytes_available == 0) {
+    return;
+  }
+
+  // Do not read a new packet if we have one awiting processing.  This should
+  // never happen.
+  if (gPacketStat.have_packet) {
+    return;
+  }
+
+  // Look for a new packet.
+  if (gPacketStat.header_bytes_read != KBSP_HEADER_PREFIX_LEN) {
+    while (bytes_available > 0) {
+      char next_char = Serial.read();
+      bytes_available -= 1;
+      if (next_char == KBSP_PREFIX[gPacketStat.header_bytes_read]) {
+        gPacketStat.header_bytes_read++;
+        if (gPacketStat.header_bytes_read == KBSP_HEADER_PREFIX_LEN) {
+          // Found start of packet, break.
+          break;
+        }
+      } else {
+        // Wrong character in prefix; reset framing.
+        gPacketStat.header_bytes_read = 0;
+      }
+    }
+  }
+
+  // If we haven't yet found a frame, or there are no more bytes to read after
+  // finding a frame, bail out.
+  if (bytes_available == 0 || (gPacketStat.header_bytes_read < KBSP_HEADER_PREFIX_LEN)) {
+    return;
+  }
+
+  // Read the remainder of the header, if not yet found.
+  if (gPacketStat.header_bytes_read < KBSP_HEADER_LEN) {
+    if (bytes_available < 4) {
+      return;
+    }
+    gInputPacket.SetType((Serial.read() << 8) | Serial.read());
+    gPacketStat.payload_bytes_remain = (Serial.read() << 8) | Serial.read();
+    bytes_available -= 4;
+    gPacketStat.header_bytes_read += 4;
+
+    // Check that the 'len' field is not bogus. If it is, throw out the packet
+    // and reset.
+    if (gPacketStat.payload_bytes_remain < 0 ||
+        gPacketStat.payload_bytes_remain > KBSP_PAYLOAD_MAXLEN) {
+      goto out_reset;
+    }
+  }
+
+  if (bytes_available == 0) {
+    return;
+  }
+
+  // TODO(mikey): Just read directly into KegboardPacket.
+  bytes_to_read = (gPacketStat.payload_bytes_remain >= bytes_available) ?
+      gPacketStat.payload_bytes_remain : bytes_available;
+  readSerialBytes(serial_buf, bytes_to_read, 0);
+  gInputPacket.AppendBytes(serial_buf, bytes_to_read);
+  gPacketStat.payload_bytes_remain -= bytes_to_read;
+
+  // Need more payload bytes than are now available.
+  if (gPacketStat.payload_bytes_remain > 0) {
+    return;
+  }
+
+  // We have a complete payload. Now grab the footer.
+  if (!gPacketStat.have_packet) {
+    if (bytes_available < KBSP_FOOTER_LEN) {
+      return;
+    }
+    readSerialBytes(serial_buf, KBSP_FOOTER_LEN, 0);
+
+    // Check CRC
+
+    // Check trailer
+    if (strncmp((serial_buf + 2), KBSP_TRAILER, KBSP_FOOTER_TRAILER_LEN)) {
+      goto out_reset;
+    }
+    gPacketStat.have_packet = true;
+  }
+
+  // Done!
+
+  return;
+
+out_reset:
+  memset(&gPacketStat, 0, sizeof(RxPacketStat));
+  gInputPacket.Reset();
+}
+
+void handleInputPacket() {
+  if (!gPacketStat.have_packet) {
+    return;
+  }
+
+  // Process the input packet.
+  switch (gInputPacket.GetType()) {
+    case KB_MESSAGE_TYPE_PING:
+      writeHelloPacket();
+      break;
+  }
+
+  // Reset the input packet.
+  memset(&gPacketStat, 0, sizeof(RxPacketStat));
+}
+
 void loop()
 {
+  updateTimekeeping();
+
+  readIncomingSerialData();
+  handleInputPacket();
+
   writeMeterPacket(0);
   writeMeterPacket(1);
 #ifdef KB_PIN_METER_C

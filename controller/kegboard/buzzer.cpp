@@ -66,10 +66,12 @@ void playMidiNote(uint8_t octave, uint8_t note)
 
 // Play a sequence of MelodyNotes
 // Sequence must terminate with octave == -1
-void playMelody(uint16_t* notes)
+void playMelody(prog_uint16_t* notes)
 {
+  int i=0;
   while (true) {
-    uint16_t melody_note = *(notes++);
+    uint16_t melody_note = pgm_read_word_near(notes + i);
+    i++;
     uint8_t duration = DURATION(melody_note);
     if (duration == 0) {
       // Silence the buzzer at the end, in case the sequence did not do so.

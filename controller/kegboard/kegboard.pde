@@ -39,13 +39,14 @@
  *  - leak detect circuit/alarm support
  */
 
+#include <avr/pgmspace.h>
+#include <util/crc16.h>
+#include <util/delay.h>
+
 #include "kegboard.h"
 #include "kegboard_config.h"
 #include "ds1820.h"
 #include "KegboardPacket.h"
-#include <util/delay.h>
-
-#include <util/crc16.h>
 
 #if (KB_ENABLE_ONEWIRE_THERMO || KB_ENABLE_ONEWIRE_PRESENCE)
 #include "OneWire.h"
@@ -54,7 +55,6 @@
 #if KB_ENABLE_BUZZER
 #include "buzzer.h"
 #endif
-
 
 //
 // Other Globals
@@ -89,7 +89,7 @@ static unsigned long gLastTestPulseMillis = 0;
 #endif
 
 #if KB_ENABLE_BUZZER
-uint16_t BOOT_MELODY[] = {
+PROGMEM prog_uint16_t BOOT_MELODY[] = {
   MELODY_NOTE(4, 3, 100), MELODY_NOTE(0, NOTE_SILENCE, 100),
   MELODY_NOTE(4, 3, 70 ), MELODY_NOTE(0, NOTE_SILENCE, 25),
   MELODY_NOTE(4, 3, 100), MELODY_NOTE(0, NOTE_SILENCE, 25),

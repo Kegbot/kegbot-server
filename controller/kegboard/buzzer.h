@@ -15,8 +15,10 @@
 
 #define NOTE_SILENCE  0xf
 
+#include <avr/pgmspace.h>
+
 void setupBuzzer();
 void playMidiNote(uint8_t octave, uint8_t note);
-void playMelody(uint16_t* notes);
+void playMelody(prog_uint16_t* notes);
 
 #endif // BUZZER_H

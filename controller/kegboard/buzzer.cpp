@@ -26,7 +26,12 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+
+extern "C" {
+// For delay()
 #include <util/delay.h>
+#include "WConstants.h"
+}
 
 #include "buzzer.h"
 
@@ -48,11 +53,11 @@ void setupBuzzer()
   TCCR2A = (0<<COM0A1) | (1<<COM0A0) | (0<<WGM02) | (1<<WGM01) | (0<<WGM00);
 }
 
-// play the note (note=-1 turns off)
-void playMidiNote(int8_t octave, int8_t note)
+// play the note (note=NOTE_SILENCE turns off)
+void playMidiNote(uint8_t octave, uint8_t note)
 {
   TCCR2B &= ~PRESCALER_MASK;
-  if (note == -1) {
+  if (note == NOTE_SILENCE) {
     return;
   }
   TCCR2B |= pgm_read_byte_near(gPrescale + octave) & PRESCALER_MASK;
@@ -61,13 +66,22 @@ void playMidiNote(int8_t octave, int8_t note)
 
 // Play a sequence of MelodyNotes
 // Sequence must terminate with octave == -1
-void playMelody(struct MelodyNote* melody)
+void playMelody(uint16_t* notes)
 {
-  int i=0;
-  for (i=0; melody[i].octave != -1; i++) {
-    playMidiNote(melody[i].octave, melody[i].note);
-    _delay_ms(melody[i].duration);
+  while (true) {
+    uint16_t melody_note = *(notes++);
+    uint8_t duration = DURATION(melody_note);
+    if (duration == 0) {
+      // Silence the buzzer at the end, in case the sequence did not do so.
+      playMidiNote(0, NOTE_SILENCE);
+      return;
+    }
+    uint8_t octave = OCTAVE(melody_note);
+    uint8_t note = NOTE(melody_note);
+    playMidiNote(octave, note);
+
+    // NOTE(mikey): Originally, we used the busy-loop _delay_ms method to avoid
+    // tmr0. This was blowing up the program size as well.
+    delay(duration);
   }
-  // Silence the buzzer at the end, in case the sequence did not do so.
-  playMidiNote(-1, -1);
 }

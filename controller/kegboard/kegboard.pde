@@ -89,27 +89,27 @@ static unsigned long gLastTestPulseMillis = 0;
 #endif
 
 #if KB_ENABLE_BUZZER
-struct MelodyNote BOOT_MELODY[] = {
-  {4, 3, 100}, {0, -1, 100},
-  {4, 3, 70},  {0, -1, 25},
-  {4, 3, 100}, {0, -1, 25},
+uint16_t BOOT_MELODY[] = {
+  MELODY_NOTE(4, 3, 100), MELODY_NOTE(0, NOTE_SILENCE, 100),
+  MELODY_NOTE(4, 3, 70 ), MELODY_NOTE(0, NOTE_SILENCE, 25),
+  MELODY_NOTE(4, 3, 100), MELODY_NOTE(0, NOTE_SILENCE, 25),
 
-  {4, 0, 100}, {0, -1, 25},
-  {4, 0, 100}, {0, -1, 25},
-  {4, 0, 100}, {0, -1, 25},
+  MELODY_NOTE(4, 0, 100), MELODY_NOTE(0, NOTE_SILENCE, 25),
+  MELODY_NOTE(4, 0, 100), MELODY_NOTE(0, NOTE_SILENCE, 25),
+  MELODY_NOTE(4, 0, 100), MELODY_NOTE(0, NOTE_SILENCE, 25),
 
-  {4, 3, 100}, {0, -1, 25},
-  {4, 3, 100}, {0, -1, 25},
-  {4, 3, 100}, {0, -1, 25},
-  {4, 3, 100}, {4, 3, 100},
+  MELODY_NOTE(4, 3, 100), MELODY_NOTE(0, NOTE_SILENCE, 25),
+  MELODY_NOTE(4, 3, 100), MELODY_NOTE(0, NOTE_SILENCE, 25),
+  MELODY_NOTE(4, 3, 100), MELODY_NOTE(0, NOTE_SILENCE, 25),
+  MELODY_NOTE(4, 3, 100), MELODY_NOTE(4, 3, 100),
 
-  {-1, -1, -1},
+  MELODY_NOTE(0, NOTE_SILENCE, 0)
 };
 
-struct MelodyNote ALARM_MELODY[] = {
-  {3, 1, 500}, {5, 1, 500},
-  {-1, -1, -1},
-};
+//struct MelodyNote ALARM_MELODY[] = {
+//  {3, 1, 500}, {5, 1, 500},
+//  {-1, -1, -1},
+//};
 #endif
 
 #if KB_ENABLE_ONEWIRE_THERMO

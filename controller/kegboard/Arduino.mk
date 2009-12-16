@@ -332,6 +332,7 @@ $(OBJDIR):
 
 $(TARGET_ELF): 	$(OBJS)
 		$(CC) $(LDFLAGS) -o $@ $(OBJS) $(SYS_OBJS)
+		$(SIZE) -C --mcu=$(MCU) $@
 
 $(DEP_FILE):	$(OBJDIR) $(DEPS)
 		cat $(DEPS) > $(DEP_FILE)

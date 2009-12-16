@@ -47,7 +47,7 @@ void setupBuzzer()
 }
 
 // play the note (note=-1 turns off)
-void playMidiNote(int octave, int note)
+void playMidiNote(int8_t octave, int8_t note)
 {
   TCCR2B &= ~PRESCALER_MASK;
   if (note == -1) {

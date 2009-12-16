@@ -105,11 +105,6 @@ PROGMEM prog_uint16_t BOOT_MELODY[] = {
 
   MELODY_NOTE(0, NOTE_SILENCE, 0)
 };
-
-//struct MelodyNote ALARM_MELODY[] = {
-//  {3, 1, 500}, {5, 1, 500},
-//  {-1, -1, -1},
-//};
 #endif
 
 #if KB_ENABLE_ONEWIRE_THERMO

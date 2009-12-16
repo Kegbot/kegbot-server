@@ -7,8 +7,6 @@
 
 #define REFRESH_MS    5000
 
-static uint8_t null_addr[] = {0,0,0,0,0,0,0,0};
-
 DS1820Sensor::DS1820Sensor() {
   m_bus = 0;
   m_initialized = false;

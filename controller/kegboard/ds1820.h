@@ -26,7 +26,6 @@ class DS1820Sensor {
 
   private:
    OneWire* m_bus;
-   unsigned long m_refresh_ms;
 
    bool m_initialized;
    bool m_converting;

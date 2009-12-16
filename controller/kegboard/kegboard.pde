@@ -57,14 +57,6 @@
 
 
 //
-// Config Globals
-//
-
-static int gBaudRate = KB_DEFAULT_BAUD_RATE;
-static char gBoardName[KB_BOARDNAME_MAXLEN+1] = KB_DEFAULT_BOARDNAME;
-static int gBoardNameLen = KB_DEFAULT_BOARDNAME_LEN;
-
-//
 // Other Globals
 //
 
@@ -73,12 +65,11 @@ static unsigned long volatile gMeters[] = {0, 0, 0, 0, 0, 0};
 static unsigned long volatile gLastMeters[] = {0, 0, 0, 0, 0, 0};
 static bool volatile gRelayStatus[] = {false, false};
 
-static KegboardPacket gOutputPacket;
 static KegboardPacket gInputPacket;
 
 typedef struct {
-  int header_bytes_read;
-  int payload_bytes_remain;
+  uint8_t header_bytes_read;
+  uint8_t payload_bytes_remain;
   bool have_packet;
 } RxPacketStat;
 
@@ -176,19 +167,13 @@ void meterInterruptF()
 // Serial I/O
 //
 
-void writeOutputPacket()
-{
-  gOutputPacket.Print();
-  gOutputPacket.Reset();
-}
-
 void writeHelloPacket()
 {
   int foo = PROTOCOL_VERSION;
-  gOutputPacket.Reset();
-  gOutputPacket.SetType(KB_MESSAGE_TYPE_HELLO_ID);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_HELLO_TAG_PROTOCOL_VERSION, sizeof(foo), (char*)&foo);
-  writeOutputPacket();
+  KegboardPacket packet;
+  packet.SetType(KB_MESSAGE_TYPE_HELLO_ID);
+  packet.AddTag(KB_MESSAGE_TYPE_HELLO_TAG_PROTOCOL_VERSION, sizeof(foo), (char*)&foo);
+  packet.Print();
 }
 
 #if KB_ENABLE_ONEWIRE_THERMO
@@ -216,11 +201,11 @@ void writeThermoPacket(DS1820Sensor *sensor)
     byteToChars(sensor->m_addr[i], pos);
     pos += 2;
   }
-  gOutputPacket.Reset();
-  gOutputPacket.SetType(KB_MESSAGE_TYPE_THERMO_READING);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_NAME, 23, name);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_READING, sizeof(temp), (char*)(&temp));
-  writeOutputPacket();
+  KegboardPacket packet;
+  packet.SetType(KB_MESSAGE_TYPE_THERMO_READING);
+  packet.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_NAME, 23, name);
+  packet.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_READING, sizeof(temp), (char*)(&temp));
+  packet.Print();
 }
 #endif
 
@@ -229,11 +214,11 @@ void writeRelayPacket(int channel)
   char name[7] = "relay-";
   int status = (int)(gRelayStatus[channel]);
   name[6] = 0x30 + channel;
-  gOutputPacket.Reset();
-  gOutputPacket.SetType(KB_MESSAGE_TYPE_OUTPUT_STATUS);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_OUTPUT_STATUS_TAG_OUTPUT_NAME, 7, name);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_OUTPUT_STATUS_TAG_OUTPUT_READING, sizeof(status), (char*)(&status));
-  writeOutputPacket();
+  KegboardPacket packet;
+  packet.SetType(KB_MESSAGE_TYPE_OUTPUT_STATUS);
+  packet.AddTag(KB_MESSAGE_TYPE_OUTPUT_STATUS_TAG_OUTPUT_NAME, 7, name);
+  packet.AddTag(KB_MESSAGE_TYPE_OUTPUT_STATUS_TAG_OUTPUT_READING, sizeof(status), (char*)(&status));
+  packet.Print();
 }
 
 void writeMeterPacket(int channel)
@@ -246,11 +231,11 @@ void writeMeterPacket(int channel)
     gLastMeters[channel] = status;
   }
   name[4] = 0x30 + channel;
-  gOutputPacket.Reset();
-  gOutputPacket.SetType(KB_MESSAGE_TYPE_METER_STATUS);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_METER_STATUS_TAG_METER_NAME, 5, name);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_METER_STATUS_TAG_METER_READING, sizeof(status), (char*)(&status));
-  writeOutputPacket();
+  KegboardPacket packet;
+  packet.SetType(KB_MESSAGE_TYPE_METER_STATUS);
+  packet.AddTag(KB_MESSAGE_TYPE_METER_STATUS_TAG_METER_NAME, 5, name);
+  packet.AddTag(KB_MESSAGE_TYPE_METER_STATUS_TAG_METER_READING, sizeof(status), (char*)(&status));
+  packet.Print();
 }
 
 #if KB_ENABLE_ONEWIRE_PRESENCE
@@ -267,10 +252,10 @@ void writeOnewirePresencePacket(uint8_t* id) {
   if (null_id) {
     return;
   }
-  gOutputPacket.Reset();
-  gOutputPacket.SetType(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE);
-  gOutputPacket.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_DEVICE_ID, 8, (char*)id);
-  writeOutputPacket();
+  KegboardPacket packet;
+  packet.SetType(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE);
+  packet.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_DEVICE_ID, 8, (char*)id);
+  packet.Print();
 }
 #endif
 

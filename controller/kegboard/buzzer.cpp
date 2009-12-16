@@ -25,18 +25,20 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/pgmspace.h>
 #include <util/delay.h>
 
 #include "buzzer.h"
 
 #define PRESCALER_MASK  0x07
 
-static int oc[] = {
+PROGMEM prog_uchar gOctave[] = {
   239, 225, 213, 201, 190, 179, 169, 159, 150, 142, 134, 127,
-  119, 113, 106, 100, 95, 89, 84, 80, 75, 71, 67, 63};
+  119, 113, 106, 100, 95, 89, 84, 80, 75, 71, 67, 63
+};
 
 // prescale for octaves
-static int pre[] = {5, 5, 4, 4, 3, 3};
+PROGMEM prog_uchar gPrescale[] = {5, 5, 4, 4, 3, 3};
 
 void setupBuzzer()
 {
@@ -53,8 +55,8 @@ void playMidiNote(int8_t octave, int8_t note)
   if (note == -1) {
     return;
   }
-  TCCR2B |= (pre[octave] & PRESCALER_MASK);
-  OCR2A = oc[(octave%2)*12 + note];
+  TCCR2B |= pgm_read_byte_near(gPrescale + octave) & PRESCALER_MASK;
+  OCR2A = pgm_read_byte_near(gOctave + ((octave%2)*12 + note));
 }
 
 // Play a sequence of MelodyNotes

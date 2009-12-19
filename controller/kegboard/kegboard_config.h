@@ -17,6 +17,9 @@
 // Enable buzzer?
 #define KB_ENABLE_BUZZER    1
 
+// Enable serial LCD?
+#define KB_ENABLE_SERIAL_LCD 1
+
 //
 // Pin configuration
 //
@@ -47,6 +50,9 @@
 #define KB_PIN_ALARM              9
 #define KB_PIN_BUZZER             11
 #define KB_PIN_TEST_PULSE         12
+
+#define KB_PIN_SERIAL_LCD_TX 6
+#define KB_PIN_SERIAL_LCD_RX 10
 
 // Atmega1280 (aka Arduino mega) section
 #ifdef __AVR_ATmega1280__

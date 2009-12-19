@@ -56,6 +56,12 @@
 #include "buzzer.h"
 #endif
 
+#if KB_ENABLE_SERIAL_LCD
+#include <SoftwareSerial.h>
+SoftwareSerial gSerialLcd = SoftwareSerial(KB_PIN_SERIAL_LCD_RX,
+    KB_PIN_SERIAL_LCD_TX);
+#endif
+
 //
 // Other Globals
 //
@@ -325,6 +331,22 @@ void setup()
   setupBuzzer();
   playMelody(BOOT_MELODY);
 #endif
+
+#if KB_ENABLE_SERIAL_LCD
+  pinMode(KB_PIN_SERIAL_LCD_RX, INPUT);
+  pinMode(KB_PIN_SERIAL_LCD_TX, OUTPUT);
+  gSerialLcd.begin(9600);
+
+  // Clear display
+  gSerialLcd.print('\x0c');
+
+  // Disable cursor
+  gSerialLcd.print('\xfe');
+  gSerialLcd.print('\x54');
+
+  gSerialLcd.print("Kegbot!");
+#endif
+
   writeHelloPacket();
 }
 
@@ -394,14 +416,21 @@ static void readSerialBytes(char *dest_buf, int num_bytes, int offset) {
   }
 }
 
+void debug(const char* msg) {
+#if KB_ENABLE_SERIAL_LCD
+  gSerialLcd.print('\x0c');
+  gSerialLcd.print(msg);
+#endif
+}
+
+void resetInputPacket() {
+  memset(&gPacketStat, 0, sizeof(RxPacketStat));
+  gInputPacket.Reset();
+}
+
 void readIncomingSerialData() {
   char serial_buf[KBSP_PAYLOAD_MAXLEN];
-  int bytes_to_read = 0;
-  int bytes_available = Serial.available();
-
-  if (bytes_available == 0) {
-    return;
-  }
+  volatile uint8_t bytes_available = Serial.available();
 
   // Do not read a new packet if we have one awiting processing.  This should
   // never happen.
@@ -410,10 +439,11 @@ void readIncomingSerialData() {
   }
 
   // Look for a new packet.
-  if (gPacketStat.header_bytes_read != KBSP_HEADER_PREFIX_LEN) {
+  if (gPacketStat.header_bytes_read < KBSP_HEADER_PREFIX_LEN) {
     while (bytes_available > 0) {
       char next_char = Serial.read();
       bytes_available -= 1;
+
       if (next_char == KBSP_PREFIX[gPacketStat.header_bytes_read]) {
         gPacketStat.header_bytes_read++;
         if (gPacketStat.header_bytes_read == KBSP_HEADER_PREFIX_LEN) {
@@ -422,15 +452,13 @@ void readIncomingSerialData() {
         }
       } else {
         // Wrong character in prefix; reset framing.
-        gPacketStat.header_bytes_read = 0;
+        if (next_char == KBSP_PREFIX[0]) {
+          gPacketStat.header_bytes_read = 1;
+        } else {
+          gPacketStat.header_bytes_read = 0;
+        }
       }
     }
-  }
-
-  // If we haven't yet found a frame, or there are no more bytes to read after
-  // finding a frame, bail out.
-  if (bytes_available == 0 || (gPacketStat.header_bytes_read < KBSP_HEADER_PREFIX_LEN)) {
-    return;
   }
 
   // Read the remainder of the header, if not yet found.
@@ -438,29 +466,33 @@ void readIncomingSerialData() {
     if (bytes_available < 4) {
       return;
     }
-    gInputPacket.SetType((Serial.read() << 8) | Serial.read());
-    gPacketStat.payload_bytes_remain = (Serial.read() << 8) | Serial.read();
+    gInputPacket.SetType(Serial.read() | (Serial.read() << 8));
+    gPacketStat.payload_bytes_remain = Serial.read() | (Serial.read() << 8);
     bytes_available -= 4;
     gPacketStat.header_bytes_read += 4;
 
     // Check that the 'len' field is not bogus. If it is, throw out the packet
     // and reset.
-    if (gPacketStat.payload_bytes_remain < 0 ||
-        gPacketStat.payload_bytes_remain > KBSP_PAYLOAD_MAXLEN) {
+    if (gPacketStat.payload_bytes_remain > KBSP_PAYLOAD_MAXLEN) {
       goto out_reset;
     }
   }
 
-  if (bytes_available == 0) {
+  // If we haven't yet found a frame, or there are no more bytes to read after
+  // finding a frame, bail out.
+  if (bytes_available == 0 || (gPacketStat.header_bytes_read < KBSP_HEADER_LEN)) {
     return;
   }
 
   // TODO(mikey): Just read directly into KegboardPacket.
-  bytes_to_read = (gPacketStat.payload_bytes_remain >= bytes_available) ?
-      gPacketStat.payload_bytes_remain : bytes_available;
-  readSerialBytes(serial_buf, bytes_to_read, 0);
-  gInputPacket.AppendBytes(serial_buf, bytes_to_read);
-  gPacketStat.payload_bytes_remain -= bytes_to_read;
+  if (gPacketStat.payload_bytes_remain) {
+    int bytes_to_read = (gPacketStat.payload_bytes_remain >= bytes_available) ?
+        bytes_available : gPacketStat.payload_bytes_remain;
+    readSerialBytes(serial_buf, bytes_to_read, 0);
+    gInputPacket.AppendBytes(serial_buf, bytes_to_read);
+    gPacketStat.payload_bytes_remain -= bytes_to_read;
+    bytes_available -= bytes_to_read;
+  }
 
   // Need more payload bytes than are now available.
   if (gPacketStat.payload_bytes_remain > 0) {
@@ -484,12 +516,10 @@ void readIncomingSerialData() {
   }
 
   // Done!
-
   return;
 
 out_reset:
-  memset(&gPacketStat, 0, sizeof(RxPacketStat));
-  gInputPacket.Reset();
+  resetInputPacket();
 }
 
 void handleInputPacket() {
@@ -501,11 +531,12 @@ void handleInputPacket() {
   switch (gInputPacket.GetType()) {
     case KB_MESSAGE_TYPE_PING:
       writeHelloPacket();
+      digitalWrite(KB_PIN_RELAY_A, HIGH);
+      delay(50);
+      digitalWrite(KB_PIN_RELAY_A, LOW);
       break;
   }
-
-  // Reset the input packet.
-  memset(&gPacketStat, 0, sizeof(RxPacketStat));
+  resetInputPacket();
 }
 
 void loop()

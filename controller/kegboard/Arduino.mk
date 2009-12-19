@@ -151,8 +151,16 @@ CORE_OBJS       = $(patsubst $(ARDUINO_CORE_PATH)/%,  \
 endif
 endif
 
+SYS_LIBS      = $(patsubst %,$(ARDUINO_LIB_PATH)/%,$(ARDUINO_LIBS))
+SYS_INCLUDES  = $(patsubst %,-I%,$(SYS_LIBS))
+
+LIB_C_SRCS = $(wildcard $(patsubst %,%/*.c,$(SYS_LIBS)))
+LIB_CPP_SRCS = $(wildcard $(patsubst %,%/*.cpp,$(SYS_LIBS)))
+LIB_OBJ_FILES = $(LIB_C_SRCS:.c=.o) $(LIB_CPP_SRCS:.cpp=.o)
+LIB_OBJS = $(patsubst $(ARDUINO_LIB_PATH)/SoftwareSerial/%,$(OBJDIR)/%,$(LIB_OBJ_FILES))
+
 # all the objects!
-OBJS            = $(LOCAL_OBJS) $(CORE_OBJS)
+OBJS            = $(LOCAL_OBJS) $(CORE_OBJS) $(LIB_OBJS)
 
 ########################################################################
 # Options
@@ -188,9 +196,12 @@ CAT     = cat
 ECHO    = echo
 
 # General arguments
-SYS_LIBS      = $(patsubst %,$(ARDUINO_LIB_PATH)/%,$(ARDUINO_LIBS))
-SYS_INCLUDES  = $(patsubst %,-I%,$(SYS_LIBS))
-SYS_OBJS      = $(wildcard $(patsubst %,%/*.o,$(SYS_LIBS)))
+#SYS_LIBS      = $(patsubst %,$(ARDUINO_LIB_PATH)/%,$(ARDUINO_LIBS))
+#SYS_INCLUDES  = $(patsubst %,-I%,$(SYS_LIBS))
+#SYS_OBJS      = $(wildcard $(patsubst %,%/*.o,$(SYS_LIBS)))
+
+#SYS_SRCS      = $(wildcard $(patsubst %,%/*.cpp,$(SYS_LIBS)))
+#SYS_OBJS = $(patsubst %.cpp,%.o,$(SYS_SRCS))
 
 CPPFLAGS      = -mmcu=$(MCU) -DF_CPU=$(F_CPU) \
 			-I. -I$(ARDUINO_CORE_PATH) \
@@ -199,7 +210,7 @@ CPPFLAGS      = -mmcu=$(MCU) -DF_CPU=$(F_CPU) \
 CFLAGS        = -std=gnu99
 CXXFLAGS      = -fno-exceptions
 ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp
-LDFLAGS       = -mmcu=$(MCU) -lm -Wl,--gc-sections -Os
+LDFLAGS       = -mmcu=$(MCU) -lm -Wl,--gc-sections -Os -Wl,--relax
 
 # Rules for making a CPP file from the main sketch (.cpe)
 PDEHEADER      = \\\#include \"WProgram.h\"
@@ -262,6 +273,20 @@ $(OBJDIR)/%.o: $(ARDUINO_CORE_PATH)/%.c
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 $(OBJDIR)/%.o: $(ARDUINO_CORE_PATH)/%.cpp
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
+# lib files
+# TODO(mikey): Quick hack; need to build all libraries somehow.
+$(OBJDIR)/%.o: $(ARDUINO_LIB_PATH)/EEPROM/%.c
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+
+$(OBJDIR)/%.o: $(ARDUINO_LIB_PATH)/EEPROM/%.cpp
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
+$(OBJDIR)/%.o: $(ARDUINO_LIB_PATH)/SoftwareSerial/%.c
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+
+$(OBJDIR)/%.o: $(ARDUINO_LIB_PATH)/SoftwareSerial/%.cpp
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 # various object conversions

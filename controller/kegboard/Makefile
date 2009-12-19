@@ -1,7 +1,7 @@
 TARGET = kegboard-v3
 MCU = atmega168
 F_CPU = 16000000
-ARDUINO_LIBS = EEPROM
+ARDUINO_LIBS = EEPROM SoftwareSerial
 
 UNAME_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 

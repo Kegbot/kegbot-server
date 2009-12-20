@@ -154,10 +154,10 @@ endif
 SYS_LIBS      = $(patsubst %,$(ARDUINO_LIB_PATH)/%,$(ARDUINO_LIBS))
 SYS_INCLUDES  = $(patsubst %,-I%,$(SYS_LIBS))
 
-LIB_C_SRCS = $(wildcard $(patsubst %,%/*.c,$(SYS_LIBS)))
-LIB_CPP_SRCS = $(wildcard $(patsubst %,%/*.cpp,$(SYS_LIBS)))
-LIB_OBJ_FILES = $(LIB_C_SRCS:.c=.o) $(LIB_CPP_SRCS:.cpp=.o)
-LIB_OBJS = $(patsubst $(ARDUINO_LIB_PATH)/SoftwareSerial/%,$(OBJDIR)/%,$(LIB_OBJ_FILES))
+#LIB_C_SRCS = $(wildcard $(patsubst %,%/*.c,$(ARDUINO_LIBS)))
+#LIB_CPP_SRCS = $(wildcard $(patsubst %,%/*.cpp,$(SYS_LIBS)))
+#LIB_OBJ_FILES = $(LIB_C_SRCS:.c=.o) $(LIB_CPP_SRCS:.cpp=.o)
+LIB_OBJS = $(patsubst %,$(OBJDIR)/%.o,$(ARDUINO_LIBS))
 
 # all the objects!
 OBJS            = $(LOCAL_OBJS) $(CORE_OBJS) $(LIB_OBJS)
@@ -356,7 +356,7 @@ $(OBJDIR):
 		mkdir $(OBJDIR)
 
 $(TARGET_ELF): 	$(OBJS)
-		$(CC) $(LDFLAGS) -o $@ $(OBJS) $(SYS_OBJS)
+		$(CC) $(LDFLAGS) -o $@ $(OBJS)
 		$(SIZE) -C --mcu=$(MCU) $@
 
 $(DEP_FILE):	$(OBJDIR) $(DEPS)

@@ -1,6 +1,7 @@
 #include "kegboard.h"
 #include "KegboardPacket.h"
 #include <avr/io.h>
+#include <string.h>
 #include <util/crc16.h>
 
 KegboardPacket::KegboardPacket()
@@ -18,7 +19,7 @@ void KegboardPacket::Reset()
   m_type = 0;
 }
 
-void KegboardPacket::AddTag(int tag, int buflen, char *buf)
+void KegboardPacket::AddTag(uint8_t tag, uint8_t buflen, char *buf)
 {
   int i=0;
   m_payload[m_len++] = tag;
@@ -29,16 +30,35 @@ void KegboardPacket::AddTag(int tag, int buflen, char *buf)
   }
 }
 
-uint8_t* KegboardPacket::FindTag(int tagnum) {
-  int pos=0;
+uint8_t* KegboardPacket::FindTag(uint8_t tagnum) {
+  uint8_t pos=0;
   while (pos < m_len && pos < KBSP_PAYLOAD_MAXLEN) {
-    int tag = m_payload[pos];
+    uint8_t tag = m_payload[pos];
     if (tag == tagnum) {
-      return m_payload+pos+1;
+      return m_payload+pos;
     }
-    pos += m_payload[pos+1];
+    pos += 2 + m_payload[pos+1];
   }
-  return 0;
+  return NULL;
+}
+
+bool KegboardPacket::ReadTag(uint8_t tagnum, uint8_t *value) {
+  uint8_t *offptr = FindTag(tagnum);
+  if (offptr == NULL) {
+    return false;
+  }
+  *value = *(offptr+2);
+  return true;
+}
+
+bool KegboardPacket::ReadTag(uint8_t tagnum, uint8_t** value) {
+  uint8_t *offptr = FindTag(tagnum);
+  if (offptr == NULL) {
+    return false;
+  }
+  uint8_t slen = *(offptr+1);
+  memcpy(*value, (offptr+2), slen);
+  return true;
 }
 
 void KegboardPacket::AppendBytes(char *buf, int buflen)

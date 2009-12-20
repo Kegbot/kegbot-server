@@ -70,6 +70,7 @@ SoftwareSerial gSerialLcd = SoftwareSerial(KB_PIN_SERIAL_LCD_RX,
 static unsigned long volatile gMeters[] = {0, 0, 0, 0, 0, 0};
 static unsigned long volatile gLastMeters[] = {0, 0, 0, 0, 0, 0};
 static bool volatile gRelayStatus[] = {false, false};
+static uint8_t gOutputPins[] = {KB_PIN_RELAY_A, KB_PIN_RELAY_B};
 
 static KegboardPacket gInputPacket;
 
@@ -420,6 +421,7 @@ void debug(const char* msg) {
 #if KB_ENABLE_SERIAL_LCD
   gSerialLcd.print('\x0c');
   gSerialLcd.print(msg);
+  delay(500);
 #endif
 }
 
@@ -531,10 +533,27 @@ void handleInputPacket() {
   switch (gInputPacket.GetType()) {
     case KB_MESSAGE_TYPE_PING:
       writeHelloPacket();
-      digitalWrite(KB_PIN_RELAY_A, HIGH);
-      delay(50);
-      digitalWrite(KB_PIN_RELAY_A, LOW);
       break;
+
+    case KB_MESSAGE_TYPE_SET_OUTPUT: {
+      uint8_t id, mode;
+      if (!gInputPacket.ReadTag(KB_MESSAGE_TYPE_SET_OUTPUT_TAG_OUTPUT_ID, &id)
+        || !gInputPacket.ReadTag(KB_MESSAGE_TYPE_SET_OUTPUT_TAG_OUTPUT_MODE, &mode))
+        {
+          break;
+      }
+
+      // TODO(mikey): bounds check id
+      if (mode == OUTPUT_DISABLED) {
+        digitalWrite(gOutputPins[id], LOW);
+        gRelayStatus[id] = false;
+      } else {
+        digitalWrite(gOutputPins[id], HIGH);
+        gRelayStatus[id] = true;
+      }
+      writeRelayPacket(id);
+      break;
+    }
   }
   resetInputPacket();
 }

@@ -142,9 +142,13 @@ serialized in **little-endian** format.
 +--------------+--------+------------------------------------------------------+
 | Type name    | Size   | Interpretation                                       |
 +==============+========+======================================================+
+| ``int8``     | 1      | 8-bit signed integer (aka char)                      |
++--------------+--------+------------------------------------------------------+
 | ``int16``    | 2      | 16-bit signed integer                                |
 +--------------+--------+------------------------------------------------------+
 | ``int32``    | 4      | 32-bit signed integer                                |
++--------------+--------+------------------------------------------------------+
+| ``uint8``    | 1      | 8-bit unsigned integer (aka uchar)                   |
 +--------------+--------+------------------------------------------------------+
 | ``uint16``   | 2      | 16-bit unsigned integer                              |
 +--------------+--------+------------------------------------------------------+
@@ -154,7 +158,7 @@ serialized in **little-endian** format.
 +--------------+--------+------------------------------------------------------+
 | ``string``   | Varies | Null-terminated C string                             |
 +--------------+--------+------------------------------------------------------+
-| ``output_t`` | 2      | Boolean (0=disabled, 1=enabled); like ``uint16``     |
+| ``output_t`` | 1      | Boolean (0=disabled, 1=enabled); like ``uint8``      |
 +--------------+--------+------------------------------------------------------+
 | ``temp_t``   | 4      | (Degrees C / 1000); signed; like ``int32``           |
 +--------------+--------+------------------------------------------------------+
@@ -378,30 +382,45 @@ The configuration command is not acknowleged. Instead, the host should issue a
 Note that the current kegboard implementation requires a manual reset for any of
 the values to take effect.
 
+``set_output`` command (0x83)
+------------------------------------
+
+This command is sent to the board to enable or disable a device output.
+
+Payload:
+
++---------+-----------------+----------+---------------------------------------+
+| Tag ID  | Name            | Type     | Description                           |
++=========+=================+==========+=======================================+
+| 0x01    | output_id       | uint8_t  | Numerical output id (0-15).           |
++---------+-----------------+----------+---------------------------------------+
+| 0x02    | output_mode     | output_t | Mode to set the output.               |
++---------+-----------------+----------+---------------------------------------+
+
 .. _get-events-command:
 
-``get_events`` command (0x84)
+``get_events`` command (0x86)
 -----------------------------
 
 .. todo:: Write this section.
 
 .. _clear-events-command:
 
-``clear_events`` command (0x85)
+``clear_events`` command (0x87)
 -------------------------------
 
 .. todo:: Write this section.
 
 .. _pause-command:
 
-``pause`` command (0x86)
+``pause`` command (0x88)
 ------------------------
 
 .. todo:: Write this section.
 
 .. _resume-command:
 
-``resume`` command (0x87)
+``resume`` command (0x89)
 -------------------------
 
 .. todo:: Write this section.

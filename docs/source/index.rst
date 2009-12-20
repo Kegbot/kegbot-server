@@ -30,9 +30,9 @@ still working on improving and completing the Kegbot documentation.
 If the published documentation hasn't solved your issue, you may have luck with
 these other Kegbot resources:
 
-**Mailing list**
-  The `kegbot-dev Mailing List
-  <http://kegbot.org/cgi-bin/mailman/listinfo/kegbot-dev/>`_ may or may not
+**KegBB Forums**
+  The `KegBB Forums
+  <http://kegbot.org/kegbb/>`_ may or may not
   be a vibrant community for help and exchanging ideas.
 
 **Bug Tracker**

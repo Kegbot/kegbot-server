@@ -68,3 +68,12 @@
 #define KB_DEFAULT_BOARDNAME          "kegboard"
 #define KB_DEFAULT_BOARDNAME_LEN      8  // must match #chars above
 #define KB_DEFAULT_BAUD_RATE          115200
+
+// Size in entries of the onewire presence bus cache.  This many IDs can be
+// concurrently tracked on the bus.
+#define ONEWIRE_CACHE_SIZE 8
+
+// Number of full onewire bus searches to complete before considering a
+// non-responding onewire id missing.  This is used to dampen against glitches
+// where a device might be absent from a search.
+#define ONEWIRE_CACHE_MAX_MISSING_SEARCHES 4

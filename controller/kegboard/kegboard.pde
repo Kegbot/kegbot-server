@@ -67,6 +67,7 @@ static bool volatile gRelayStatus[] = {false, false};
 
 static KegboardPacket gInputPacket;
 
+// Structure that holds the state of incoming serial bytes.
 typedef struct {
   uint8_t header_bytes_read;
   uint8_t payload_bytes_remain;
@@ -75,6 +76,7 @@ typedef struct {
 
 static RxPacketStat gPacketStat;
 
+// Structure to keep information about this device's uptime. 
 typedef struct {
   unsigned long uptime_ms;
   unsigned long last_uptime_ms;
@@ -83,6 +85,16 @@ typedef struct {
 
 static UptimeStat gUptimeStat;
 
+#if KB_ENABLE_ONEWIRE_PRESENCE
+// Structure used to cache information about devices on the onewire bus.
+typedef struct {
+  uint64_t id;
+  bool valid;
+  uint8_t present_count;
+} OnewireEntry;
+
+static OnewireEntry gOnewireCache[ONEWIRE_CACHE_SIZE];
+#endif
 
 #if KB_ENABLE_SELFTEST
 static unsigned long gLastTestPulseMillis = 0;
@@ -234,22 +246,17 @@ void writeMeterPacket(int channel)
 }
 
 #if KB_ENABLE_ONEWIRE_PRESENCE
-void writeOnewirePresencePacket(uint8_t* id) {
+void writeOnewirePresencePacket(uint64_t* id, bool present) {
   // Hack: Ignore the 0x0 onewire id.
   // TODO(mikey): Is it a bug that OneWire::search() is generating this?
-  bool null_id = true;
-  for (int i=0; i<8; i++) {
-    if (id[i] != 0) {
-      null_id = false;
-      break;
-    }
-  }
-  if (null_id) {
+  if (id == 0) {
     return;
   }
+
   KegboardPacket packet;
   packet.SetType(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE);
   packet.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_DEVICE_ID, 8, (char*)id);
+  packet.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_STATUS, 1, (char*)present);
   packet.Print();
 }
 #endif
@@ -377,12 +384,61 @@ int stepOnewireThermoBus() {
 
 #if KB_ENABLE_ONEWIRE_PRESENCE
 void stepOnewireIdBus() {
-  uint8_t addr[8];
-  if (!gOnewireIdBus.search(addr)) {
+  uint64_t addr;
+  uint8_t* addr_ptr = (uint8_t*) &addr;
+
+  // No more devices on the bus; reset the bus.
+  if (!gOnewireIdBus.search(addr_ptr)) {
     gOnewireIdBus.reset_search();
-  } else {
-    if (OneWire::crc8(addr, 7) == addr[7]) {
-      writeOnewirePresencePacket(addr);
+
+    for (int i=0; i < ONEWIRE_CACHE_SIZE; i++) {
+      OnewireEntry* entry = &gOnewireCache[i];
+      if (!entry->valid) {
+        continue;
+      }
+
+      entry->present_count -= 1;
+      if (entry->present_count == 0) {
+        entry->valid = false;
+        writeOnewirePresencePacket(&entry->id, false);
+      }
+    }
+    return;
+  }
+
+  // We found a device; check the address CRC and ignore if invalid.
+  if (OneWire::crc8(addr_ptr, 7) != addr_ptr[7]) {
+    return;
+  }
+
+  // Ignore the null address. TODO(mikey): Is there a bug in OneWire.cpp that
+  // causes this to be reported?
+  if (addr == 0) {
+    return;
+  }
+
+  // Look for id in cache. If seen last time around, mark present (and do not
+  // emit packet).
+  for (int i=0; i < ONEWIRE_CACHE_SIZE; i++) {
+    OnewireEntry* entry = &gOnewireCache[i];
+    if (entry->valid && entry->id == addr) {
+      entry->present_count = ONEWIRE_CACHE_MAX_MISSING_SEARCHES;
+      return;
+    }
+  }
+
+  // Add id to cache and emit presence packet.
+  // NOTE(mikey): If the cache is full, no packet will be emitted. This is
+  // probably the best behavior; removing a device from the bus will clear up an
+  // entry in the cache.
+  for (int i=0; i < ONEWIRE_CACHE_SIZE; i++) {
+    OnewireEntry* entry = &gOnewireCache[i];
+    if (!entry->valid) {
+      entry->valid = true;
+      entry->present_count = ONEWIRE_CACHE_MAX_MISSING_SEARCHES;
+      entry->id = addr;
+      writeOnewirePresencePacket(&entry->id, true);
+      return;
     }
   }
 }

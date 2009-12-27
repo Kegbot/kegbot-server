@@ -4,6 +4,16 @@
 #include <string.h>
 #include <util/crc16.h>
 
+static uint16_t crc_ccitt_update_int(uint16_t crc, int value) {
+  crc = _crc_ccitt_update(crc, value & 0xff);
+  return _crc_ccitt_update(crc, (value >> 8) & 0xff);
+}
+
+static void serial_print_int(int value) {
+  Serial.print(value & 0xff, BYTE);
+  Serial.print((value >> 8) & 0xff, BYTE);
+}
+
 KegboardPacket::KegboardPacket()
 {
   Reset();
@@ -24,10 +34,7 @@ void KegboardPacket::AddTag(uint8_t tag, uint8_t buflen, char *buf)
   int i=0;
   m_payload[m_len++] = tag;
   m_payload[m_len++] = buflen;
-  while (i < buflen && m_len < KBSP_PAYLOAD_MAXLEN) {
-    m_payload[m_len++] = (uint8_t) (*(buf+i));
-    i++;
-  }
+  AppendBytes(buf+2, buflen);
 }
 
 uint8_t* KegboardPacket::FindTag(uint8_t tagnum) {
@@ -74,10 +81,8 @@ uint16_t KegboardPacket::GenCrc()
 {
   uint16_t crc = KBSP_PREFIX_CRC;
 
-  crc = _crc_ccitt_update(crc, m_type & 0xff);
-  crc = _crc_ccitt_update(crc, (m_type >> 8) & 0xff);
-  crc = _crc_ccitt_update(crc, m_len & 0xff);
-  crc = _crc_ccitt_update(crc, (m_len >> 8) & 0xff);
+  crc = crc_ccitt_update_int(crc, m_type);
+  crc = crc_ccitt_update_int(crc, m_len);
 
   for (int i=0; i<m_len; i++) {
     crc = _crc_ccitt_update(crc, m_payload[i]);
@@ -89,26 +94,28 @@ uint16_t KegboardPacket::GenCrc()
 void KegboardPacket::Print()
 {
   int i;
+  uint16_t crc = KBSP_PREFIX_CRC;
+
   // header
   // header: prefix
   Serial.print(KBSP_PREFIX);
 
   // header: message_id
-  Serial.print(m_type & 0xff, BYTE);
-  Serial.print((m_type >> 8) & 0xff, BYTE);
+  serial_print_int(m_type);
+  crc = crc_ccitt_update_int(crc, m_type);
+
   // header: payload_len
-  Serial.print(m_len & 0xff, BYTE);
-  Serial.print((m_len >> 8) & 0xff, BYTE);
+  serial_print_int(m_len);
+  crc = crc_ccitt_update_int(crc, m_len);
 
   // payload
   for (i=0; i<m_len; i++) {
     Serial.print(m_payload[i], BYTE);
+    crc = _crc_ccitt_update(crc, m_payload[i]);
   }
 
   // trailer
-  uint16_t crc = GenCrc();
-  Serial.print(crc & 0xff, BYTE);
-  Serial.print((crc >> 8) & 0xff, BYTE);
+  serial_print_int(crc);
   Serial.print('\r', BYTE);
   Serial.print('\n', BYTE);
 }

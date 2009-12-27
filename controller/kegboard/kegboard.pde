@@ -373,11 +373,12 @@ void updateTimekeeping() {
 #if KB_ENABLE_ONEWIRE_THERMO
 int stepOnewireThermoBus() {
   uint8_t addr[8];
+  unsigned long now = millis();
 
   // Are we already working on a sensor? service it, possibly emitting a a
   // thermo packet.
   if (gThermoSensor.Initialized() || gThermoSensor.Busy()) {
-    if (gThermoSensor.Update(millis())) {
+    if (gThermoSensor.Update(now)) {
       // Just finished conversion
       writeThermoPacket(&gThermoSensor);
       gThermoSensor.Reset();
@@ -400,7 +401,7 @@ int stepOnewireThermoBus() {
 
   // New sensor. Initialize and start work.
   gThermoSensor.Initialize(&gOnewireThermoBus, addr);
-  gThermoSensor.Update(millis());
+  gThermoSensor.Update(now);
   return 1;
 }
 #endif

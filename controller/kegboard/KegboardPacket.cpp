@@ -34,7 +34,7 @@ void KegboardPacket::AddTag(uint8_t tag, uint8_t buflen, char *buf)
   int i=0;
   m_payload[m_len++] = tag;
   m_payload[m_len++] = buflen;
-  AppendBytes(buf+2, buflen);
+  AppendBytes(buf, buflen);
 }
 
 uint8_t* KegboardPacket::FindTag(uint8_t tagnum) {

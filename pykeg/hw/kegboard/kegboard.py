@@ -18,6 +18,7 @@
 
 """Python interfaces to a Kegboard device."""
 
+import cStringIO
 import logging
 import struct
 import string
@@ -36,6 +37,8 @@ gflags.DEFINE_integer('kegboard_speed', 115200,
     'Baud rate of device at --kegboard_device')
 
 KBSP_PREFIX = "KBSP v1:"
+KBSP_PAYLOAD_MAXLEN = 112
+KBSP_TRAILER = "\r\n"
 
 
 class KegboardError(Exception):
@@ -77,6 +80,10 @@ class StructField(Field):
 
   def ToBytes(self, value):
     return struct.pack(self._STRUCT_FORMAT, value)
+
+
+class Uint8Field(StructField):
+  _STRUCT_FORMAT = 'B'
 
 
 class Uint16Field(StructField):
@@ -128,13 +135,15 @@ class TempField(Uint32Field):
 ### Message types
 
 class Message(util.BaseMessage):
-  def __init__(self, initial=None, bytes=None, **kwargs):
+  def __init__(self, initial=None, bytes=None, payload_bytes=None, **kwargs):
     util.BaseMessage.__init__(self, initial, **kwargs)
     self._tag_to_field = {}
     for field in self._fields.itervalues():
       self._tag_to_field[field.tagnum] = field
     if bytes is not None:
       self.UnpackFromBytes(bytes)
+    if payload_bytes is not None:
+      self.UnpackFromPayload(payload_bytes)
 
   def UnpackFromBytes(self, bytes):
     if len(bytes) < 16:
@@ -150,36 +159,44 @@ class Message(util.BaseMessage):
     if len(payload) != message_len:
       raise ValueError, "Payload size does not match tag"
 
-    checked_crc = crc16.crc16_ccitt(crcd_bytes)
     # TODO(mikey): assert checked_crc == 0
+    checked_crc = crc16.crc16_ccitt(crcd_bytes)
+    self.UnpackFromPayload(payload)
 
+  def UnpackFromPayload(self, payload):
     pos = 0
-    while pos+2 <= len(payload):
-      tag, vallen  = struct.unpack('<BB', payload[pos:pos+2])
-      pos += 2
-      valbytes = payload[pos:pos+vallen]
-      pos += vallen
-      field = self._tag_to_field.get(tag)
-      if field:
-        setattr(self, field.name, valbytes)
-      else:
-        # unknown tag
-        pass
+    payload_len = len(payload)
+    while (pos + 2) <= payload_len:
+      fieldlen = self._ParseField(payload[pos:])
+      pos += 2 + fieldlen
+
+  def _ParseField(self, field_bytes):
+    tag, length = struct.unpack('<BB', field_bytes[:2])
+    data = field_bytes[2:2+length]
+    # If field number is known, set its value. (Ignore it otherwise.)
+    field = self._tag_to_field.get(tag)
+    if field:
+      setattr(self, field.name, data)
+    return length
 
   def ToBytes(self):
-    payload = ''
+    payload = cStringIO.StringIO()
     for field_name, field in self._fields.iteritems():
       field_bytes = field.ToBytes(self._values[field_name])
-      payload += struct.pack('<BB', field.tagnum, len(field_bytes))
-      payload += field_bytes
+      payload.write(struct.pack('<BB', field.tagnum, len(field_bytes)))
+      payload.write(field_bytes)
 
-    out = 'KBSP v1:'
-    out += struct.pack('<HH', self.MESSAGE_ID, len(payload))
-    out += payload
-    crc = crc16.crc16_ccitt(out)
-    out += struct.pack('<H', crc)
-    out += '\r\n'
-    return out
+    payload_str = payload.getvalue()
+    payload.close()
+
+    out = cStringIO.StringIO()
+    out.write(KBSP_PREFIX)
+    out.write(struct.pack('<HH', self.MESSAGE_ID, len(payload_str)))
+    out.write(payload_str)
+    crc = crc16.crc16_ccitt(out.getvalue())
+    out.write(struct.pack('<H', crc))
+    out.write('\r\n')
+    return out.getvalue()
 
 class HelloMessage(Message):
   MESSAGE_ID = 0x01
@@ -214,6 +231,7 @@ class OutputStatusMessage(Message):
 class OnewirePresenceMessage(Message):
   MESSAGE_ID = 0x13
   device_id = OnewireIdField(0x01)
+  status = Uint8Field(0x01)
 
 
 MESSAGE_ID_TO_CLASS = {}
@@ -230,6 +248,7 @@ def GetHeaderFromBytes(bytes):
   prefix, message_id, message_len = struct.unpack('<8sHH', bytes[:12])
   return prefix, message_id, message_len
 
+
 def GetMessageForBytes(bytes):
   if len(bytes) < 6:
     raise ValueError, "Not enough bytes"
@@ -240,35 +259,58 @@ def GetMessageForBytes(bytes):
   return cls(bytes=bytes)
 
 
+def GetMessageById(message_id, payload_bytes=None):
+  cls = MESSAGE_ID_TO_CLASS.get(message_id)
+  if not cls:
+    raise UnknownMessageError
+  return cls(payload_bytes=payload_bytes)
+
+
 class KegboardReader(object):
   def __init__(self, fd):
     self._logger = logging.getLogger('kegboard-reader')
     self._fd = fd
-    self._framing_lost_count = 0
-
-  def FixFraming(self):
-    """Read the stream until a packet prefix is discovered."""
-    self._logger.info('Framing broken, fixing')
-    bytes_read = 0
-    found_prefix = ""
-    while True:
-      b = self._fd.read(1)
-      bytes_read += 1
-      found_prefix += b
-      if found_prefix.endswith(KBSP_PREFIX):
-        self._logger.info('Found start of frame, framing fixed.')
-        break
-      if bytes_read > 2048:
-        self._logger.error('Could not fix framing.')
-        raise FramingError, "Could not fix framing after 2048 bytes"
-    self._framing_lost_count += 1
 
   def GetNextMessage(self):
-    prefix = self._fd.read(8)
-    if prefix != KBSP_PREFIX:
-      self.FixFraming()
-    header = KBSP_PREFIX + self._fd.read(4)
-    prefix, message_id, message_len = GetHeaderFromBytes(header)
-    payload = self._fd.read(message_len)
-    trailer = self._fd.read(4)
-    return GetMessageForBytes(header + payload + trailer)
+    header_pos = 0
+    header_len = len(KBSP_PREFIX)
+    while True:
+      # Find the prefix, re-aligning the messages as needed.
+      logged_frame_error = False
+      while header_pos < header_len:
+        byte = self._fd.read(1)
+        if byte == KBSP_PREFIX[header_pos]:
+          header_pos += 1
+          if logged_frame_error:
+            self._logger.info('Packet framing fixed.')
+            logged_frame_error = False
+        else:
+          if not logged_frame_error:
+            self._logger.info('Packet framing broken (found "%s", expected "%s"'
+                              '); reframing.' % (byte, KBSP_PREFIX[header_pos]))
+            logged_frame_error = True
+          if byte == KBSP_PREFIX[0]:
+            header_pos = 0
+          else:
+            header_pos = 0
+
+      # Read message type and message length.
+      header_bytes = self._fd.read(4)
+      message_id, message_len = struct.unpack('<HH', header_bytes)
+      if message_len > KBSP_PAYLOAD_MAXLEN:
+        self._logger.warning('Bogus message length (%i), skipping message' %
+                             message_len)
+        continue
+
+      # Read payload and trailer.
+      payload = self._fd.read(message_len)
+      crc = self._fd.read(2)
+      trailer = self._fd.read(2)
+
+      if trailer != KBSP_TRAILER:
+        self._logger.warning('Bad trailer (%s), skipping message' %
+                             repr(trailer))
+        # Bogus trailer; start over.
+        continue
+
+      return GetMessageById(message_id, payload)

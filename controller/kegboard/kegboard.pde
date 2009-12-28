@@ -254,16 +254,12 @@ void writeMeterPacket(int channel)
 
 #if KB_ENABLE_ONEWIRE_PRESENCE
 void writeOnewirePresencePacket(uint64_t* id, bool present) {
-  // Hack: Ignore the 0x0 onewire id.
-  // TODO(mikey): Is it a bug that OneWire::search() is generating this?
-  if (id == 0) {
-    return;
-  }
+  char status = present ? 1 : 0;
 
   KegboardPacket packet;
   packet.SetType(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE);
   packet.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_DEVICE_ID, 8, (char*)id);
-  packet.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_STATUS, 1, (char*)present);
+  packet.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_STATUS, 1, &status);
   packet.Print();
 }
 #endif

@@ -215,7 +215,7 @@ void OneWire::reset_search()
 {
   uint8_t i;
 
-  searchJunction = -1;
+  last_discrepancy = -1;
   searchExhausted = 0;
   for(i = 7; ; i--) {
     address[i] = 0;
@@ -239,6 +239,7 @@ uint8_t OneWire::search(uint8_t *newAddr)
   uint8_t i;
   char lastJunction = -1;
   uint8_t done = 1;
+  uint8_t result = 0;
 
   if (searchExhausted) {
     return 0;
@@ -249,56 +250,57 @@ uint8_t OneWire::search(uint8_t *newAddr)
   }
 
   write(0xf0, 0);
+  last_zero = 0;
 
   for(i = 0; i < 64; i++) {
-    uint8_t a = read_bit();
-    uint8_t nota = read_bit();
+    uint8_t id_bit = read_bit();
+    uint8_t cmp_id_bit = read_bit();
     uint8_t ibyte = i/8;
     uint8_t ibit = 1<<(i&7);
+    uint8_t search_direction;
 
-    if (a && nota) {
+    if ((id_bit == 1) && (cmp_id_bit == 1)) {
       // Participaing device stopped responding (ie removed during search);
       // search should be terminated and bus reset.
       // Reference: http://www.maxim-ic.com/appnotes.cfm/an_pk/187
+      reset_search();
       searchExhausted = 1;
       return 0;
-    }
-
-    if (!a && !nota) {
-      if (i == searchJunction) {
-        // this is our time to decide differently, we went zero last time, go one.
-        a = 1;
-        searchJunction = lastJunction;
-      } else if ( i < searchJunction) {
-        // take whatever we took last time, look in address
-        if (address[ ibyte]&ibit) {
-          a = 1;
-        } else {
-          // Only 0s count as pending junctions, we've already exhasuted the 0 side of 1s
-          a = 0;
-          done = 0;
-          lastJunction = i;
-        }
+    } else if ((id_bit == 0) && (cmp_id_bit == 0)) {
+      if (i == last_discrepancy) {
+        search_direction = 1;
+      } else if (i > last_discrepancy) {
+        search_direction = 0;
       } else {
-        // we are blazing new tree, take the 0
-        a = 0;
-        searchJunction = i;
-        done = 0;
+        search_direction = (address[ibyte] >> (i%8)) & 0x1;
       }
-      lastJunction = i;
+      if (search_direction == 0) {
+        last_zero = i;
+      }
+    } else {
+      search_direction = id_bit;
     }
 
-    if (a) {
+    if (search_direction) {
       address[ibyte] |= ibit;
     } else {
       address[ibyte] &= ~ibit;
     }
 
-    write_bit(a);
+    write_bit(search_direction);
   }
-  if (done) {
+
+  last_discrepancy = last_zero;
+
+  if (last_discrepancy == 0) {
     searchExhausted = 1;
   }
+
+  if (OneWire::crc8(address, 7) != address[7]) {
+    reset_search();
+    return 0;
+  }
+
   for (i = 0; i < 8; i++) {
     newAddr[i] = address[i];
   }

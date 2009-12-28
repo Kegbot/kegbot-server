@@ -29,7 +29,8 @@ class OneWire
   private:
 #if ONEWIRE_SEARCH
     uint8_t address[8];
-    char searchJunction;
+    char last_discrepancy;
+    char last_zero;
     uint8_t searchExhausted;
 #endif
     uint8_t pin;

@@ -174,3 +174,9 @@ class AuthTokenAddMessage(Message):
   tap_name = StringField()
   auth_device_name = StringField()
   token_value = StringField()
+
+
+class AuthTokenRemoveMessage(Message):
+  tap_name = StringField()
+  auth_device_name = StringField()
+  token_value = StringField()

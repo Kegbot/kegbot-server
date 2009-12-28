@@ -155,6 +155,11 @@ class KegnetClient(BaseClient):
         auth_device_name=auth_device_name, token_value=token_value)
     return self.SendMessage('auth/tokenadd', message)
 
+  def SendAuthTokenRemove(self, tap_name, auth_device_name, token_value):
+    message = kegnet_message.AuthTokenRemoveMessage(tap_name=tap_name,
+        auth_device_name=auth_device_name, token_value=token_value)
+    return self.SendMessage('auth/tokenremove', message)
+
   def GetFlowStatus(self, tap_name):
     message = kegnet_message.FlowStatusRequestMessage(tap_name=tap_name)
     result = self.SendMessage('flow/status', message)

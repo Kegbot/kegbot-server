@@ -231,7 +231,7 @@ class OutputStatusMessage(Message):
 class OnewirePresenceMessage(Message):
   MESSAGE_ID = 0x13
   device_id = OnewireIdField(0x01)
-  status = Uint8Field(0x01)
+  status = Uint8Field(0x02)
 
 
 MESSAGE_ID_TO_CLASS = {}
@@ -240,13 +240,6 @@ for cls in Message.__subclasses__():
   if idnum in MESSAGE_ID_TO_CLASS:
     raise RuntimeError, "More than one message for id: %i" % (idnum,)
   MESSAGE_ID_TO_CLASS[idnum] = cls
-
-
-def GetHeaderFromBytes(bytes):
-  if len(bytes) < 12:
-    raise ValueError, "Not enough bytes to get header"
-  prefix, message_id, message_len = struct.unpack('<8sHH', bytes[:12])
-  return prefix, message_id, message_len
 
 
 def GetMessageForBytes(bytes):

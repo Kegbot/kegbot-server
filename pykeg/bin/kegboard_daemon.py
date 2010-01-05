@@ -67,6 +67,11 @@ gflags.DEFINE_boolean('show_messages', True,
     'Print all messages going to and from the kegboard. Useful for '
     'debugging.')
 
+gflags.DEFINE_integer('required_firmware_version', 4,
+    'Minimum firmware version required.  If the device has an older '
+    'firmware version, the daemon will refuse to service it.  This '
+    'value should probably not be changed.')
+
 
 class KegboardManagerApp(kb_app.App):
   def __init__(self, name='core'):
@@ -103,6 +108,8 @@ class KegboardManagerThread(util.KegbotThread):
 
   def run(self):
     self._logger.info('Starting main loop.')
+    initialized = False
+
     while not self._quit:
       try:
         device_name, device_message = self._message_queue.get(timeout=1.0)
@@ -111,6 +118,26 @@ class KegboardManagerThread(util.KegbotThread):
 
       if FLAGS.show_messages:
         self._logger.info('RX: %s' % str(device_message))
+
+      # Check the reported firmware version. If it is not acceptable, then
+      # drop all messages until it is updated.
+      # TODO(mikey): kill the application when this happens? It isn't strictly
+      # necessary, but is probably the most obvious way to get the point across.
+      if isinstance(device_message, kegboard.HelloMessage):
+        required = FLAGS.required_firmware_version
+        actual = device_message.firmware_version
+        if actual < required:
+          self._logger.error('Attached kegboard firmware version (%s) is '
+              'less than the required version (%s); please update this '
+              'kegboard.' % (actual, required))
+          self._logger.warning('Messages from this board will be ignored '
+              'until it is updated.')
+          initialized = False
+        else:
+          initialized = True
+      else:
+        self._logger.warning('Not initialized; dropping message.')
+        continue
 
       try:
         self._HandleDeviceMessage(device_name, device_message)
@@ -168,26 +195,15 @@ class KegboardDeviceIoThread(util.KegbotThread):
 
   def _MainLoop(self):
     self._logger.info('Starting reader loop...')
+
+    # Ping the board before going into the listen loop.
+    ping_message = kegboard.PingCommand()
+    self._serial_fd.write(ping_message.ToBytes())
+
     while not self._quit:
       msg = self._reader.GetNextMessage()
       self._manager.PostDeviceMessage('kegboard', msg)
     self._logger.info('Reader loop ended.')
-
-
-class KegboardNetworkThread(util.KegbotThread):
-  """ Object that connects a kegboard stream to a KegnetProtocolClient. """
-  def __init__(self, name, device_name, client):
-    util.KegbotThread.__init__(self, name)
-    self._device_name = device_name
-    self._sock_map = {}
-    self._client = client
-
-  def GetClient(self, device_name):
-    return self._client
-
-  def run(self):
-    self._logger.info("Running asyncore loop.")
-    asyncore.loop(map=self._sock_map)
 
 
 if __name__ == '__main__':

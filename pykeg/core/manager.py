@@ -476,37 +476,26 @@ class TimeoutCache:
     self._entries[k] = datetime.datetime.now()
 
 
-class AuthenticationManager(Manager):
+class TokenManager(Manager):
+  """Keeps track of tokens arriving and departing from taps."""
   def __init__(self, name, kb_env):
     Manager.__init__(self, name, kb_env)
     self._present_tokens = TimeoutCache(datetime.timedelta(seconds=3))
 
-  def _GetTapsForTapName(self, tap_name):
-    tap_manager = self._kb_env.GetTapManager()
-    if tap_name == kb_common.ALIAS_ALL_TAPS:
-      return tap_manager.GetAllTaps()
-    else:
-      return tap_manager.GetTap(tap_name)
-
-  @EventHandler(KB_EVENT.AUTH_USER_ADDED)
-  def HandleAuthUserAddedEvent(self, ev):
-    msg = ev.payload
-    flow_mgr = self._kb_env.GetFlowManager()
-    flow = flow_mgr.StartFlow(msg.tap_name)
-    try:
-      user = models.User.objects.get(username=msg.user_name)
-      flow.SetUser(user)
-    except models.User.DoesNotExist:
-      pass
-
-  @EventHandler(KB_EVENT.AUTH_USER_REMOVED)
-  def HandleAuthUserRemovedEvent(self, ev):
-    msg = ev.payload
-    flow_mgr = self._kb_env.GetFlowManager()
-    flow = flow_mgr.EndFlow(msg.tap_name)
-
   @EventHandler(KB_EVENT.AUTH_TOKEN_ADDED)
   def HandleAuthTokenAddedEvent(self, ev):
+    """Handles a newly added token.
+
+    When a token is added (reported as present), the manager should:
+      - Check the active_tokens cache.
+        - If the token is in the cache, update it and return: nothing new.
+        - If the token is NOT in the cache, add it to the cache and attempt to
+          start a new flow.
+
+    A token is removed from the cache in one of two ways:
+      - The token notseen timeout is reached
+      - An explicit AUTH_TOKEN_REMOVED event is received
+    """
     msg = ev.payload
     tap_name = msg.tap_name
     auth_device_name = msg.auth_device_name
@@ -538,3 +527,29 @@ class AuthenticationManager(Manager):
       message = kegnet_message.AuthUserAddMessage(tap_name=tap.GetName(),
           user_name=token.user.username)
       self._PublishEvent(KB_EVENT.AUTH_USER_ADDED, message)
+
+  def _GetTapsForTapName(self, tap_name):
+    tap_manager = self._kb_env.GetTapManager()
+    if tap_name == kb_common.ALIAS_ALL_TAPS:
+      return tap_manager.GetAllTaps()
+    else:
+      return tap_manager.GetTap(tap_name)
+
+
+class AuthenticationManager(Manager):
+  @EventHandler(KB_EVENT.AUTH_USER_ADDED)
+  def HandleAuthUserAddedEvent(self, ev):
+    msg = ev.payload
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.StartFlow(msg.tap_name)
+    try:
+      user = models.User.objects.get(username=msg.user_name)
+      flow.SetUser(user)
+    except models.User.DoesNotExist:
+      pass
+
+  @EventHandler(KB_EVENT.AUTH_USER_REMOVED)
+  def HandleAuthUserRemovedEvent(self, ev):
+    msg = ev.payload
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.EndFlow(msg.tap_name)

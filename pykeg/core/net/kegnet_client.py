@@ -163,9 +163,5 @@ class KegnetClient(BaseClient):
   def GetFlowStatus(self, tap_name):
     message = kegnet_message.FlowStatusRequestMessage(tap_name=tap_name)
     result = self.SendMessage('flow/status', message)
-    print 'result:', result
-    try:
+    if result:
       return kegnet_message.FlowUpdateMessage.FromJson(result)
-    except (ValueError, TypeError):
-      raise
-      #return None

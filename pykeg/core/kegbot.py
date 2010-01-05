@@ -59,6 +59,7 @@ class KegbotEnv(object):
     self._drink_manager = manager.DrinkManager('drink-manager', self)
     self._thermo_manager = manager.ThermoManager('thermo-manager', self)
     self._authentication_manager = manager.AuthenticationManager('authentication-manager', self)
+    self._token_manager = manager.TokenManager('token-manager', self)
 
     self._backend = backend.KegbotBackend()
     self._backend.CheckSchemaVersion()
@@ -71,6 +72,7 @@ class KegbotEnv(object):
     self._service_thread.AddEventHandler(self._drink_manager)
     self._service_thread.AddEventHandler(self._thermo_manager)
     self._service_thread.AddEventHandler(self._authentication_manager)
+    self._service_thread.AddEventHandler(self._token_manager)
 
     if self._backend.GetConfig().IsFeatureEnabled('twitter'):
       from pykeg.contrib.twitter import service as twitter_manager
@@ -112,6 +114,9 @@ class KegbotEnv(object):
 
   def GetAuthenticationManager(self):
     return self._authentication_manager
+
+  def GetTokenManager(self):
+    return self._token_manager
 
   def GetThreads(self):
     return self._threads

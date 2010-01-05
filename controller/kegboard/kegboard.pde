@@ -47,6 +47,7 @@
 #include "kegboard_config.h"
 #include "ds1820.h"
 #include "KegboardPacket.h"
+#include "version.h"
 
 #if (KB_ENABLE_ONEWIRE_THERMO || KB_ENABLE_ONEWIRE_PRESENCE)
 #include "OneWire.h"
@@ -183,10 +184,10 @@ void meterInterruptF()
 
 void writeHelloPacket()
 {
-  int foo = PROTOCOL_VERSION;
+  int foo = FIRMWARE_VERSION;
   KegboardPacket packet;
   packet.SetType(KB_MESSAGE_TYPE_HELLO_ID);
-  packet.AddTag(KB_MESSAGE_TYPE_HELLO_TAG_PROTOCOL_VERSION, sizeof(foo), (char*)&foo);
+  packet.AddTag(KB_MESSAGE_TYPE_HELLO_TAG_FIRMWARE_VERSION, sizeof(foo), (char*)&foo);
   packet.Print();
 }
 

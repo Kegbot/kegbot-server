@@ -200,7 +200,7 @@ class Message(util.BaseMessage):
 
 class HelloMessage(Message):
   MESSAGE_ID = 0x01
-  protocol_version = Uint16Field(0x01)
+  firmware_version = Uint16Field(0x01)
 
 
 class ConfigurationMessage(Message):
@@ -232,6 +232,10 @@ class OnewirePresenceMessage(Message):
   MESSAGE_ID = 0x13
   device_id = OnewireIdField(0x01)
   status = Uint8Field(0x02)
+
+
+class PingCommand(Message):
+  MESSAGE_ID = 0x81
 
 
 MESSAGE_ID_TO_CLASS = {}

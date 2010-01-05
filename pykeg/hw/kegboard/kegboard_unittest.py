@@ -16,10 +16,10 @@ class MessageTestCase(unittest.TestCase):
   def testMessageCreate(self):
     hello_bytes = kegboard.KBSP_PREFIX + '\x01\x00\x04\x00\x01\x02\x03\x00\x3f\x29\r\n'
     m = kegboard.HelloMessage(bytes=hello_bytes)
-    self.assertEqual(m.protocol_version, 3)
+    self.assertEqual(m.firmware_version, 3)
 
     m = kegboard.GetMessageForBytes(hello_bytes)
-    self.assertEqual(m.protocol_version, 3)
+    self.assertEqual(m.firmware_version, 3)
     print m
 
 
@@ -36,7 +36,7 @@ class KegboardReaderTestCase(unittest.TestCase):
     print '\n'.join('  %s' % msg for msg in messages)
 
     hello_message = kegboard.HelloMessage()
-    hello_message.SetValue('protocol_version', 3)
+    hello_message.SetValue('firmware_version', 3)
     self.assertEqual(messages[0], hello_message)
 
     onewire_message = kegboard.OnewirePresenceMessage()

@@ -63,6 +63,10 @@ gflags.DEFINE_string('kegboard_name', 'kegboard',
     'If you are using multiple kegboards, you will want to run different '
     'daemons with different names. Otherwise, the default is fine.')
 
+gflags.DEFINE_boolean('show_messages', True,
+    'Print all messages going to and from the kegboard. Useful for '
+    'debugging.')
+
 
 class KegboardManagerApp(kb_app.App):
   def __init__(self, name='core'):
@@ -104,6 +108,9 @@ class KegboardManagerThread(util.KegbotThread):
         device_name, device_message = self._message_queue.get(timeout=1.0)
       except Queue.Empty:
         continue
+
+      if FLAGS.show_messages:
+        self._logger.info('RX: %s' % str(device_message))
 
       try:
         self._HandleDeviceMessage(device_name, device_message)

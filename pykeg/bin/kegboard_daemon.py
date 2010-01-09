@@ -135,7 +135,8 @@ class KegboardManagerThread(util.KegbotThread):
           initialized = False
         else:
           initialized = True
-      else:
+
+      if not initialized:
         self._logger.warning('Not initialized; dropping message.')
         continue
 

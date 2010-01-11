@@ -15,7 +15,7 @@ from pykeg.core import defaults
 from pykeg.core import event
 from pykeg.core import models
 from pykeg.core import kb_common
-from pykeg.core.net import kegnet_client
+from pykeg.core.net import kegnet
 
 LOGGER = logging.getLogger('unittest')
 
@@ -45,7 +45,7 @@ class KegbotTestCase(TestCase):
     del self.env
 
   def testSimpleFlow(self):
-    client = kegnet_client.KegnetClient()
+    client = kegnet.KegnetClient()
 
     # Synthesize a 2200-tick flow. The FlowManager should zero on the initial
     # reading of 1000.

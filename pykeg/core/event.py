@@ -25,25 +25,6 @@ This module implements a very simple inter-process event passing system
 import logging
 import Queue
 
-class Event(object):
-  """Simple message object.
-
-  An event consists of a required event name, plus an arbitrary set of keyword
-  args, which are set as attributes of the event.
-  """
-  def __init__(self, event_name, **kwargs):
-    self._event_name = event_name
-    for k, v in kwargs.iteritems():
-      setattr(self, k, v)
-    self.__slots__ = list(kwargs.keys())
-
-  def name(self):
-    return self._event_name
-
-  def __str__(self):
-    return "<Event %s>" % self._event_name
-
-
 class EventHub(object):
   """Central sink and publish of events."""
   def __init__(self):
@@ -64,12 +45,12 @@ class EventHub(object):
     if listener in self._event_listeners:
       self._event_listeners.remove(listener)
 
-  def PublishEvent(self, type, payload=None):
+  def PublishEvent(self, event):
     """Add a new event to the queue of events to publish.
 
     Events are dispatched to listeners in the DispatchNextEvent method.
     """
-    self._event_queue.put(Event(type, payload=payload))
+    self._event_queue.put(event)
 
   def _IterEventListeners(self):
     """Iterate through all listeners."""
@@ -88,9 +69,7 @@ class EventHub(object):
     """Wait for an event, and dispatch it to all listeners."""
     ev = self._WaitForEvent(timeout)
     if ev:
-      self._logger.debug('Publishing event: %s' % (ev,))
-      if hasattr(ev, 'payload'):
-        self._logger.debug(str(ev.payload))
+      self._logger.debug('Publishing event: %s %s' % (ev.DESCRIPTOR.name, ev))
       for listener in self._IterEventListeners():
         listener.PostEvent(ev)
 

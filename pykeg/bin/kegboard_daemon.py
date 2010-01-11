@@ -52,7 +52,7 @@ import importhacks
 from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import util
-from pykeg.core.net import kegnet_client
+from pykeg.core.net import kegnet
 from pykeg.hw.kegboard import kegboard
 from pykeg.external.gflags import gflags
 
@@ -80,7 +80,7 @@ class KegboardManagerApp(kb_app.App):
   def _Setup(self):
     kb_app.App._Setup(self)
 
-    self._client = kegnet_client.KegnetClient()
+    self._client = kegnet.KegnetClient()
 
     self._manager_thr = KegboardManagerThread('kegboard-manager',
         self._client)
@@ -140,10 +140,7 @@ class KegboardManagerThread(util.KegbotThread):
         self._logger.warning('Not initialized; dropping message.')
         continue
 
-      try:
-        self._HandleDeviceMessage(device_name, device_message)
-      except kegnet_client.ClientException, e:
-        self._logger.warning('Got error during send: %s' % (e,))
+      self._HandleDeviceMessage(device_name, device_message)
 
     self._logger.info('Exiting main loop.')
 

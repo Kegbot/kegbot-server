@@ -28,7 +28,7 @@ import time
 from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import util
-from pykeg.core.net import kegnet_client
+from pykeg.core.net import kegnet
 from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
@@ -70,7 +70,7 @@ class SmoothFlow:
 
 class FakeKegboardApp(kb_app.App):
   def _MainLoop(self):
-    client = kegnet_client.KegnetClient()
+    client = kegnet.KegnetClient()
     flow = SmoothFlow(FLAGS.ticks, FLAGS.steps)
 
     if FLAGS.explicit_start_stop:
@@ -78,10 +78,7 @@ class FakeKegboardApp(kb_app.App):
 
     for amt in flow:
       self._logger.info('Sending flow update: %i' % amt)
-      try:
-        client.SendMeterUpdate(FLAGS.tap_name, amt)
-      except kegnet_client.ClientException, e:
-        self._logger.warning('Got error during send: %s' % (e,))
+      client.SendMeterUpdate(FLAGS.tap_name, amt)
       if FLAGS.delay_seconds:
         time.sleep(FLAGS.delay_seconds)
 

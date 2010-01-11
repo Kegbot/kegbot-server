@@ -28,7 +28,7 @@ import time
 from pykeg.core import kb_app
 from pykeg.core import units
 from pykeg.core import util
-from pykeg.core.net import kegnet_client
+from pykeg.core.net import kegnet
 from pykeg.external.gflags import gflags
 
 from lcdui.devices import CrystalFontz
@@ -161,7 +161,7 @@ class LcdUiThread(util.KegbotThread):
 class KegnetMonitorThread(util.KegbotThread):
   def __init__(self, name, kb_lcdui):
     util.KegbotThread.__init__(self, name)
-    self._client = kegnet_client.KegnetClient()
+    self._client = kegnet.KegnetClient()
     self._kb_lcdui = kb_lcdui
 
   def run(self):

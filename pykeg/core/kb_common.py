@@ -46,42 +46,6 @@ JSON_SERVER_PORT_DEFAULT = 9100
 
 ### Enums
 
-KB_EVENT = util.Enum(*(
-  # Common events
-  'QUIT',
-  'START_COMPLETE',
-  'HEARTBEAT_1S',
-  'HEARTBEAT_10S',
-
-  'CLIENT_CONNECTED',
-  'CLIENT_DISCONNECTED',
-
-  # DrinkDatabaseService-generated events
-  'DRINK_CREATED',
-
-  # FlowManagerService handled events
-  'FLOW_DEV_REGISTER',
-  'FLOW_DEV_UNREGISTER',
-  'FLOW_DEV_ACTIVITY',
-  'FLOW_DEV_IDLE',
-
-  'START_FLOW',
-  'END_FLOW',
-
-  'FLOW_START',
-  'FLOW_UPDATE',
-  'FLOW_END',
-
-  'THERMO_UPDATE',
-
-  'AUTH_USER_ADDED',
-  'AUTH_USER_REMOVED',
-  'AUTH_TOKEN_ADDED',
-  'AUTH_TOKEN_REMOVED',
-
-))
-
-
 KB_DEVICE_TYPE = util.Enum(*(
   'DEVICE_TYPE_UNKNOWN',
   'DEVICE_TYPE_FLOW_DEV',

@@ -28,14 +28,12 @@ To enable, you must:
 
 import random
 
-from pykeg.core import kb_common
 from pykeg.core import manager
 from pykeg.core import models as core_models
+from pykeg.core.net import kegnet_pb2
 from pykeg.contrib.twitter import models
 
 import twitter
-
-KB_EVENT = kb_common.KB_EVENT
 
 TWITTER_NAME_UNKNOWN = 'Someone'
 TWEET_MAX_LEN = 140
@@ -49,7 +47,7 @@ TWEET_TEMPLATE = (
 
 class TwitterManager(manager.Manager):
 
-  @manager.EventHandler(KB_EVENT.DRINK_CREATED)
+  @manager.EventHandler(kegnet_pb2.DrinkCreatedEvent)
   def _HandleDrinkCreatedEvent(self, ev):
     self._logger.info('Handling new drink')
     drink = core_models.Drink.objects.get(id=ev.payload.drink_id)

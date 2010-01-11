@@ -39,6 +39,7 @@ from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import kb_threads
 from pykeg.core import manager
+from pykeg.core.net import kegnet_pb2
 from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
@@ -128,7 +129,8 @@ class KegbotCoreApp(kb_app.App):
     self._env = KegbotEnv()
 
   def _MainLoop(self):
-    self._env.GetEventHub().PublishEvent(kb_common.KB_EVENT.START_COMPLETE)
+    event = kegnet_pb2.StartCompleteEvent()
+    self._env.GetEventHub().PublishEvent(event)
     watchdog = self._env.GetWatchdogThread()
     while not self._do_quit:
       try:
@@ -149,7 +151,8 @@ class KegbotCoreApp(kb_app.App):
 
   def Quit(self):
     self._do_quit = True
-    self._env.GetEventHub().PublishEvent(kb_common.KB_EVENT.QUIT)
+    event = kegnet_pb2.QuitEvent()
+    self._env.GetEventHub().PublishEvent(event)
     time.sleep(1.0)
 
     self._logger.info('Stopping any remaining threads')

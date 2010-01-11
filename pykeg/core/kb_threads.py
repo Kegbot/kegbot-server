@@ -5,8 +5,8 @@ import time
 
 from pykeg.core import kb_common
 from pykeg.core import util
-from pykeg.core.net import kegnet_message
-from pykeg.core.net import kegnet_server
+from pykeg.core.net import kegnet
+from pykeg.core.net import kegnet_pb2
 from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
@@ -20,8 +20,8 @@ class CoreThread(util.KegbotThread):
     self._kb_env = kb_env
 
   ### Event listener methods
-  def PostEvent(self, ev):
-    if ev.name() == kb_common.KB_EVENT.QUIT:
+  def PostEvent(self, event):
+    if isinstance(event, kegnet_pb2.QuitEvent):
       self._logger.info('got quit event, quitting')
       self.Quit()
 
@@ -38,7 +38,8 @@ class WatchdogThread(CoreThread):
             continue
           if not self._quit and not thr.isAlive():
             self._logger.error('Thread %s died unexpectedly' % thr.getName())
-            self._kb_env.GetEventHub().PublishEvent(kb_common.KB_EVENT.QUIT)
+            event = kegnet_pb2.QuitEvent()
+            self._kb_env.GetEventHub().PublishEvent(event)
             fault_detected = True
             break
       time.sleep(1.0)
@@ -68,10 +69,9 @@ class FlowMonitorThread(CoreThread):
 
   def _IdleOutFlow(self, flow):
     self._logger.info("Idling flow: %s" % flow)
-    msg = kegnet_message.TapIdleMessage()
-    msg.tap_name = flow.GetTap().GetName()
-    self._kb_env.GetEventHub().PublishEvent(kb_common.KB_EVENT.FLOW_DEV_IDLE,
-        msg)
+    event = kegnet_pb2.TapIdleEvent()
+    event.tap_name = flow.GetTap().GetName()
+    self._kb_env.GetEventHub().PublishEvent(event)
 
 class AlarmManagerThread(CoreThread):
 
@@ -131,8 +131,7 @@ class EventHandlerThread(CoreThread):
     self._event_queue.put(event)
 
   def _GetCallbacksForEvent(self, event):
-    name = event.name()
-    return self._all_event_map.get(name, tuple())
+    return self._all_event_map.get(event.__class__, tuple())
 
   def _WaitForEvent(self, timeout=0.5):
     """ Block until an event is posted, then process it """
@@ -144,8 +143,8 @@ class EventHandlerThread(CoreThread):
 
   def _ProcessEvent(self, event):
     """ Execute the event callback associated with the event, if present. """
-    self._logger.debug('Processing event: %s' % event)
-    if event.name() == kb_common.KB_EVENT.QUIT:
+    self._logger.debug('Processing event: %s' % event.DESCRIPTOR.name)
+    if isinstance(event, kegnet_pb2.QuitEvent):
       self._logger.info('got quit event, quitting')
       self.Quit()
       return
@@ -162,18 +161,15 @@ class EventHandlerThread(CoreThread):
 
 
 ### Service threads
-
 class NetProtocolThread(CoreThread):
   def __init__(self, kb_env, name):
     CoreThread.__init__(self, kb_env, name)
-    self._server = kegnet_server.KegnetServer(self._kb_env)
-    self._server.AddService(kegnet_server.KegnetBaseService)
-    self._server.AddService(kegnet_server.KegnetFlowService)
+    self._server = kegnet.KegnetServer(name='kegnet', kb_env=self._kb_env,
+        addr=FLAGS.kb_core_bind_addr)
 
   def run(self):
     self._logger.info("network thread started")
-    self._server.RunServer()
-
-  def Quit(self):
+    self._server.StartServer()
+    while not self._quit:
+      asyncore.loop(timeout=0.5, count=1)
     self._server.StopServer()
-    self._logger.info("network thread stopped")

@@ -31,7 +31,7 @@ from Phidgets.PhidgetException import PhidgetException
 
 from pykeg.core import kb_app
 from pykeg.core import kb_common
-from pykeg.core.net import kegnet_client
+from pykeg.core.net import kegnet
 from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
@@ -93,7 +93,7 @@ class RfidAuthenticationApp(kb_app.App):
     kb_app.App._Setup(self)
 
     self._logger.info('Setting up kegnet client ...')
-    self._client = kegnet_client.KegnetClient()
+    self._client = kegnet.kegnetClient()
 
     self._logger.info('Setting up RFID controller ...')
     self._rfid = RFID.RFID()

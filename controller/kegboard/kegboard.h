@@ -55,3 +55,8 @@
 
 // Number of pulses per test pulse train
 #define KB_SELFTEST_PULSES 10
+
+// Minimum time, in MS, between meter update packets. Setting this to zero will
+// cause the kegboard to send a meter update message for nearly every tick; this
+// is not recommended.
+#define KB_METER_UPDATE_INTERVAL_MS 100

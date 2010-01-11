@@ -6,7 +6,9 @@
 // Version history:
 //   v4 (2010-01-04)
 //     Initial version number.
-#define FIRMWARE_VERSION 4
+//   v5 (2010-01-10)
+//     Fix issue that caused flow events to be reported too frequently.
+#define FIRMWARE_VERSION 5
 
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__

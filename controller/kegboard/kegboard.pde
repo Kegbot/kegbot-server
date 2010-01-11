@@ -88,6 +88,7 @@ static RxPacketStat gPacketStat;
 typedef struct {
   unsigned long uptime_ms;
   unsigned long last_uptime_ms;
+  unsigned long last_meter_event;
   int uptime_days;
 } UptimeStat;
 
@@ -612,6 +613,32 @@ void handleInputPacket() {
   resetInputPacket();
 }
 
+void writeMeterPackets() {
+  unsigned long now = millis();
+
+  // Forcibly coalesce meter updates; we want to be responsive, but sending
+  // meter updates at every opportunity would cause too many messages to be
+  // sent.
+  if ((now - gUptimeStat.last_meter_event) > KB_METER_UPDATE_INTERVAL_MS) {
+    gUptimeStat.last_meter_event = now;
+
+    writeMeterPacket(0);
+    writeMeterPacket(1);
+#ifdef KB_PIN_METER_C
+    writeMeterPacket(2);
+#endif
+#ifdef KB_PIN_METER_D
+    writeMeterPacket(3);
+#endif
+#ifdef KB_PIN_METER_E
+    writeMeterPacket(4);
+#endif
+#ifdef KB_PIN_METER_F
+    writeMeterPacket(5);
+#endif
+  }
+}
+
 void loop()
 {
   updateTimekeeping();
@@ -619,20 +646,7 @@ void loop()
   readIncomingSerialData();
   handleInputPacket();
 
-  writeMeterPacket(0);
-  writeMeterPacket(1);
-#ifdef KB_PIN_METER_C
-  writeMeterPacket(2);
-#endif
-#ifdef KB_PIN_METER_D
-  writeMeterPacket(3);
-#endif
-#ifdef KB_PIN_METER_E
-  writeMeterPacket(4);
-#endif
-#ifdef KB_PIN_METER_F
-  writeMeterPacket(5);
-#endif
+  writeMeterPackets();
 
   //writeRelayPacket(0);
   //writeRelayPacket(1);

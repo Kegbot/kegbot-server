@@ -197,9 +197,10 @@ class KegboardDeviceIoThread(util.KegbotThread):
   def _MainLoop(self):
     self._logger.info('Starting reader loop...')
 
-    # Ping the board before going into the listen loop.
+    # Ping the board a couple of times before going into the listen loop.
     ping_message = kegboard.PingCommand()
-    self._serial_fd.write(ping_message.ToBytes())
+    self._reader.WriteMessage(ping_message)
+    self._reader.WriteMessage(ping_message)
 
     while not self._quit:
       msg = self._reader.GetNextMessage()

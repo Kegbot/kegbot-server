@@ -268,6 +268,11 @@ class KegboardReader(object):
     self._logger = logging.getLogger('kegboard-reader')
     self._fd = fd
 
+  def WriteMessage(self, message):
+    if not isinstance(message, Message):
+      raise ValueError, "WriteMessage must be called with a Message instance"
+    self._fd.write(message.ToBytes())
+
   def GetNextMessage(self):
     header_pos = 0
     header_len = len(KBSP_PREFIX)

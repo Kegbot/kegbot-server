@@ -162,14 +162,10 @@ class EventHandlerThread(CoreThread):
 
 ### Service threads
 class NetProtocolThread(CoreThread):
-  def __init__(self, kb_env, name):
-    CoreThread.__init__(self, kb_env, name)
-    self._server = kegnet.KegnetServer(name='kegnet', kb_env=self._kb_env,
-        addr=FLAGS.kb_core_bind_addr)
-
   def run(self):
     self._logger.info("network thread started")
-    self._server.StartServer()
+    server = self._kb_env.GetKegnetServer()
+    server.StartServer()
     while not self._quit:
       asyncore.loop(timeout=0.5, count=1)
-    self._server.StopServer()
+    server.StopServer()

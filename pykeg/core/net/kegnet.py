@@ -95,6 +95,12 @@ def JsonToProtoMessage(strmessage):
   message_class = NAME_TO_MESSAGE_CLASS[message_name]
   return DictToProtoMessage(message['params'], message_class())
 
+def ProtoMessageToShortStr(message):
+  name = message.DESCRIPTOR.name
+  values = str(message).replace('\n', ' ')
+  # TODO(mikey): show submessages properly
+  return '<%s: %s>' % (name, values)
+
 class KegnetProtocolHandler(asynchat.async_chat):
   """A general purpose request handler for the Kegnet protocol.
 
@@ -113,7 +119,6 @@ class KegnetProtocolHandler(asynchat.async_chat):
 
   ### async_chat methods
   def collect_incoming_data(self, data):
-    self._logger.info('got data: %s' % data)
     self._ibuffer.write(data)
 
   def found_terminator(self):
@@ -121,14 +126,12 @@ class KegnetProtocolHandler(asynchat.async_chat):
     self._ibuffer.seek(0)
     self._ibuffer.truncate()
 
-    self._logger.info('message complete')
-
     if not strbuf:
-      self._logger.info('Empty!')
+      self._logger.warning('Received empty message')
       self._HandleEmptyMessage()
     else:
-      self._logger.info('<- %s' % strbuf)
       message = JsonToProtoMessage(strbuf)
+      self._logger.info('<- %s' % ProtoMessageToShortStr(message))
       self.HandleNotification(message)
 
   def handle_close(self):
@@ -274,9 +277,14 @@ class KegnetServer(asyncore.dispatcher):
     self._clients.remove(channel)
 
   def SendEventToClients(self, event):
+    # TODO(mikey): filter events -- should be based on subscriptions & exclude
+    # internal events.
+    if not self._clients:
+      return
+    self._logger.info('Sending event to %i client(s): %s' %
+      (len(self._clients), ProtoMessageToShortStr(event)))
     str_message = ProtoMessageToJson(event)
     for client in self._clients:
-      self._logger.info('Pushing to %s: %s' % (client, str_message))
       client.push(str_message)
       client.push('\n\n')
 

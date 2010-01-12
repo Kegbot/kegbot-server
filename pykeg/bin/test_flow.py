@@ -69,6 +69,11 @@ class SmoothFlow:
 
 
 class FakeKegboardApp(kb_app.App):
+  def _Setup(self):
+    kb_app.App._Setup(self)
+    self._asyncore_thread = util.AsyncoreThread('asyncore')
+    self._AddAppThread(self._asyncore_thread)
+
   def _MainLoop(self):
     client = kegnet.KegnetClient()
     flow = SmoothFlow(FLAGS.ticks, FLAGS.steps)
@@ -84,6 +89,9 @@ class FakeKegboardApp(kb_app.App):
 
     if FLAGS.explicit_start_stop:
       client.SendFlowStop(FLAGS.tap_name)
+
+    client.close_when_done()
+    time.sleep(3.0)
 
 if __name__ == '__main__':
   FakeKegboardApp.BuildAndRun(name='test_flow')

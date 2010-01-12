@@ -28,6 +28,7 @@ import asynchat
 import socket
 import cStringIO
 import logging
+import Queue
 import simplejson
 import struct
 
@@ -46,6 +47,10 @@ gflags.DEFINE_string('kb_core_addr', kb_common.KB_CORE_DEFAULT_ADDR,
 gflags.DEFINE_string('kb_core_bind_addr', kb_common.KB_CORE_DEFAULT_ADDR,
     'Address that the kegnet server should bind to. '
     'Specify as "<hostname>:<port>".')
+
+gflags.DEFINE_string('tap_name', 'kegboard.flow0',
+    'Default tap name.')
+
 
 def ProtoMessageToDict(message):
   ret = {}
@@ -143,7 +148,6 @@ class KegnetProtocolHandler(asynchat.async_chat):
   def SendMessage(self, msg):
     str_message = ProtoMessageToJson(msg)
     self._logger.info('-> %s' % str_message)
-    print str_message
     self.push(str_message)
     self.push('\n\n')
 
@@ -154,6 +158,11 @@ class KegnetServerHandler(KegnetProtocolHandler):
     KegnetProtocolHandler.__init__(self, sock)
     self._server = server
     self._server.ChannelOpened(self)
+
+  def handle_close(self):
+    KegnetProtocolHandler.handle_close(self)
+    self._logger.info('Closing down...')
+    self._server.ChannelClosed(self)
 
   def _HandleBadMessage(self, strdata, exception):
     self._server._logger.warn("Unknown command from %s, closing connection" %
@@ -169,6 +178,7 @@ class KegnetServerHandler(KegnetProtocolHandler):
 
 class KegnetClient(KegnetProtocolHandler):
   def __init__(self, addr=FLAGS.kb_core_addr, map=None):
+    self._in_notifications = Queue.Queue()
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
     sock.connect(util.str_to_addr(addr))
@@ -180,9 +190,12 @@ class KegnetClient(KegnetProtocolHandler):
   def _HandleEmptyMessage(self, strdata):
     print "empty message!"
 
-  def HandleKegnetMessage(self, message):
-    print "OK message!"
-    print message
+  def HandleNotification(self, message):
+    self._logger.info('<- %s' % message)
+    self._in_notifications.put(message)
+
+  def PopNotification(self, timeout=None):
+    return self._in_notifications.get(timeout=timeout)
 
   ### convenience functions
   def SendPing(self):
@@ -238,6 +251,7 @@ class KegnetServer(asyncore.dispatcher):
     self._logger = logging.getLogger(self._name)
     self._bind_address = util.str_to_addr(addr)
     self._qsize = qsize
+    self._clients = set()
     asyncore.dispatcher.__init__(self)
 
   def StartServer(self):
@@ -253,19 +267,25 @@ class KegnetServer(asyncore.dispatcher):
 
   def ChannelOpened(self, channel):
     self._logger.info('Remote host connected: %s:%i' % channel.addr)
+    self._clients.add(channel)
 
   def ChannelClosed(self, channel):
-    """Called by a channel when the connection has closed.
+    self._logger.info('Remote host closed: %s:%i' % channel.addr)
+    self._clients.remove(channel)
 
-    This routine handles cleanup of a client that is going away.
-    """
-    self._logger.info('Remote host disconnected: %s:%i' % channel.addr)
+  def SendEventToClients(self, event):
+    str_message = ProtoMessageToJson(event)
+    for client in self._clients:
+      self._logger.info('Pushing to %s: %s' % (client, str_message))
+      client.push(str_message)
+      client.push('\n\n')
 
   ### asyncore.dispatcher methods
 
   def handle_accept(self):
     # TODO(mikey): error handling
     conn, addr = self.accept()
+    conn.settimeout(1)
     KegnetServerHandler(conn, self)
 
 

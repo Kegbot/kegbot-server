@@ -22,6 +22,8 @@
 
 import importhacks
 
+import asyncore
+import Queue
 import serial
 import time
 
@@ -29,6 +31,7 @@ from pykeg.core import kb_app
 from pykeg.core import units
 from pykeg.core import util
 from pykeg.core.net import kegnet
+from pykeg.core.net import kegnet_pb2
 from pykeg.external.gflags import gflags
 
 from lcdui.devices import CrystalFontz
@@ -46,13 +49,17 @@ class KegUi:
   STATE_MAIN = 'main'
   STATE_POUR = 'pour'
 
-  def __init__(self, path=FLAGS.lcd_device_path):
+  def __init__(self, path=None):
+    if not path:
+      path = FLAGS.lcd_device_path
     self._lcdobj = CrystalFontz.CFA635Display(path)
     self._lcdui = ui.LcdUi(self._lcdobj)
     self._last_flow_status = None
 
     self._main_frame = self._GetMainFrame()
     self._pour_frame = self._GetPourFrame()
+
+    self._flow_status_by_tap = {}
 
     self._frames = {
       'main': self._main_frame,
@@ -94,32 +101,25 @@ class KegUi:
         row=3, col=0)
     return f
 
-  def _UpdateFromFlow(self, status):
+  def _UpdateFromFlow(self, flow_update):
     f = self._pour_frame
     user_widget = f.GetWidget('user')
-    user_widget.set_contents(str(status.user))
+    user_widget.set_contents(str(flow_update.username))
 
-    amt = units.Quantity(status.volume_ml, units.UNITS.Milliliter)
+    amt = units.Quantity(flow_update.volume_ml, units.UNITS.Milliliter)
     ounces = amt.ConvertTo.Ounce
 
     ounces_widget = f.GetWidget('ounces')
     ounces_widget.set_contents('%.2f' % ounces)
 
-  def HandleFlowStatus(self, status):
-    # TODO(mikey): kegnet cleanup
-    if status and status.ticks is None:
-      status = None
+  def HandleFlowStatus(self, event):
+    tap_name = event.tap_name
+    last_status = self._flow_status_by_tap.get(tap_name)
+    self._flow_status_by_tap[tap_name] = event
 
-    if status != self._last_flow_status:
-      if not status or status.ticks is None:
-        self._SetState(self.STATE_MAIN)
-        return
-
-    self._last_flow_status = status
     self._lcdui.Activity()
     self._SetState(self.STATE_POUR)
-    if status:
-      self._UpdateFromFlow(status)
+    self._UpdateFromFlow(event)
 
   def _SetState(self, state):
     if state == self._state:
@@ -143,6 +143,7 @@ class LcdDaemonApp(kb_app.App):
   def _Setup(self):
     kb_app.App._Setup(self)
     kb_lcdui = KegUi()
+    self._AddAppThread(util.AsyncoreThread('asyncore'))
     self._AddAppThread(LcdUiThread('kb-lcdui', kb_lcdui))
     self._AddAppThread(KegnetMonitorThread('kegnet-monitor', kb_lcdui))
 
@@ -167,14 +168,13 @@ class KegnetMonitorThread(util.KegbotThread):
   def run(self):
     self._logger.info('Starting main loop.')
     while not self._quit:
-      # TODO(mikey): kegnet sorely needs an event-driven api, this polling
-      # sucks...
-      flow_status = self._client.GetFlowStatus('kegboard.flow0')
-      self._kb_lcdui.HandleFlowStatus(flow_status)
-      if flow_status:
-        time.sleep(0.5)
-      else:
-        time.sleep(2.0)
+      try:
+        event = self._client.PopNotification(timeout=0.5)
+      except Queue.Empty:
+        continue
+
+      if isinstance(event, kegnet_pb2.FlowUpdate):
+        self._kb_lcdui.HandleFlowStatus(event)
     self._logger.info('Exiting main loop.')
 
 

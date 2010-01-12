@@ -39,6 +39,7 @@ from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import kb_threads
 from pykeg.core import manager
+from pykeg.core.net import kegnet
 from pykeg.core.net import kegnet_pb2
 from pykeg.external.gflags import gflags
 
@@ -53,6 +54,9 @@ class KegbotEnv(object):
   def __init__(self):
     self._event_hub = event.EventHub()
 
+    self._kegnet_server = kegnet.KegnetServer(name='kegnet', kb_env=self,
+        addr=FLAGS.kb_core_bind_addr)
+
     # Build managers
     self._alarm_manager = alarm.AlarmManager()
     self._tap_manager = manager.TapManager('tap-manager', self)
@@ -61,6 +65,7 @@ class KegbotEnv(object):
     self._thermo_manager = manager.ThermoManager('thermo-manager', self)
     self._authentication_manager = manager.AuthenticationManager('authentication-manager', self)
     self._token_manager = manager.TokenManager('token-manager', self)
+    self._subscription_manager = manager.SubscriptionManager('pubsub', self)
 
     self._backend = backend.KegbotBackend()
     self._backend.CheckSchemaVersion()
@@ -74,6 +79,7 @@ class KegbotEnv(object):
     self._service_thread.AddEventHandler(self._thermo_manager)
     self._service_thread.AddEventHandler(self._authentication_manager)
     self._service_thread.AddEventHandler(self._token_manager)
+    self._service_thread.AddEventHandler(self._subscription_manager)
 
     if self._backend.GetConfig().IsFeatureEnabled('twitter'):
       from pykeg.contrib.twitter import service as twitter_manager
@@ -103,6 +109,9 @@ class KegbotEnv(object):
 
   def GetBackend(self):
     return self._backend
+
+  def GetKegnetServer(self):
+    return self._kegnet_server
 
   def GetEventHub(self):
     return self._event_hub

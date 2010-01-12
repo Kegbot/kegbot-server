@@ -601,3 +601,10 @@ class AuthenticationManager(Manager):
         pass
     else:
       flow = flow_mgr.EndFlow(event.tap_name)
+
+
+class SubscriptionManager(Manager):
+  @EventHandler(kegnet_pb2.FlowUpdate)
+  def HandleEvent(self, event):
+    server = self._kb_env.GetKegnetServer()
+    server.SendEventToClients(event)

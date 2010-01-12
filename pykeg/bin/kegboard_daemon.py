@@ -90,6 +90,9 @@ class KegboardManagerApp(kb_app.App):
         FLAGS.kegboard_device, FLAGS.kegboard_speed)
     self._AddAppThread(self._device_io_thr)
 
+    self._asyncore_thread = util.AsyncoreThread('asyncore')
+    self._AddAppThread(self._asyncore_thread)
+
 
 class KegboardManagerThread(util.KegbotThread):
   """Manager of local kegboard devices."""

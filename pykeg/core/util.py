@@ -18,6 +18,7 @@
 
 """General purpose utilities, bits, and bobs"""
 
+import asyncore
 import errno
 import os
 import sys
@@ -104,6 +105,14 @@ class KegbotThread(threading.Thread):
   def start(self):
     self._started = True
     threading.Thread.start(self)
+
+
+class AsyncoreThread(KegbotThread):
+  def run(self):
+    self._logger.info('Starting up')
+    while not self._quit:
+      asyncore.loop(timeout=0.5, count=1)
+    self._logger.info('Quitting')
 
 
 class SimpleGraph:

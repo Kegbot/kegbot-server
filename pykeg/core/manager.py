@@ -584,7 +584,7 @@ class TokenManager(Manager):
     if tap_name == kb_common.ALIAS_ALL_TAPS:
       return tap_manager.GetAllTaps()
     else:
-      return tap_manager.GetTap(tap_name)
+      return [tap_manager.GetTap(tap_name)]
 
 
 class AuthenticationManager(Manager):

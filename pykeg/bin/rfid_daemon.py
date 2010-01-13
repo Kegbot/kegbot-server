@@ -93,7 +93,10 @@ class RfidAuthenticationApp(kb_app.App):
     kb_app.App._Setup(self)
 
     self._logger.info('Setting up kegnet client ...')
-    self._client = kegnet.kegnetClient()
+    self._client = kegnet.KegnetClient()
+
+    self._asyncore_thread = util.AsyncoreThread('asyncore')
+    self._AddAppThread(self._asyncore_thread)
 
     self._logger.info('Setting up RFID controller ...')
     self._rfid = RFID.RFID()

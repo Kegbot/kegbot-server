@@ -242,7 +242,7 @@ class KegnetClient(KegnetProtocolHandler):
     message.tap_name = tap_name
     message.auth_device_name = auth_device_name
     message.token_value = token_value
-    message.status = message.TokenState.ADDED
+    message.status = message.TokenState.REMOVED
     return self.SendMessage(message)
 
 

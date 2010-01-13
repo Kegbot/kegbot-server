@@ -44,6 +44,9 @@ FLAGS = gflags.FLAGS
 gflags.DEFINE_string('lcd_device_path', '/dev/ttyUSB0',
     'Path to lcd device file.')
 
+gflags.DEFINE_integer('backlight_off_timeout_seconds', 300,
+    'Number of seconds of inactivity before LCD backlight will be disabled.')
+
 
 class KegUi:
   STATE_MAIN = 'main'
@@ -53,7 +56,7 @@ class KegUi:
     if not path:
       path = FLAGS.lcd_device_path
     self._lcdobj = CrystalFontz.CFA635Display(path)
-    self._lcdui = ui.LcdUi(self._lcdobj)
+    self._lcdui = ui.LcdUi(self._lcdobj, FLAGS.backlight_off_timeout_seconds)
     self._last_flow_status = None
 
     self._main_frame = self._GetMainFrame()

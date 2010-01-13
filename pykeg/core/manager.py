@@ -548,7 +548,7 @@ class TokenManager(Manager):
     """
     tap_name = event.tap_name
     auth_device_name = event.auth_device_name
-    token_value = msg.token_value.lower()
+    token_value = event.token_value.lower()
     token_pair = (auth_device_name, token_value)
 
     if self._present_tokens.present(token_pair):

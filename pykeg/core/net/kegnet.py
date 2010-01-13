@@ -230,19 +230,19 @@ class KegnetClient(KegnetProtocolHandler):
     return self.SendMessage(message)
 
   def SendAuthTokenAdd(self, tap_name, auth_device_name, token_value):
-    message = kegnet_pb2.AuthTokenAddMessage()
+    message = kegnet_pb2.TokenAuthEvent()
     message.tap_name = tap_name
     message.auth_device_name = auth_device_name
     message.token_value = token_value
-    message.status = message.TokenState.ADDED
+    message.status = message.ADDED
     return self.SendMessage(message)
 
   def SendAuthTokenRemove(self, tap_name, auth_device_name, token_value):
-    message = kegnet_pb2.AuthTokenAddMessage()
+    message = kegnet_pb2.TokenAuthEvent()
     message.tap_name = tap_name
     message.auth_device_name = auth_device_name
     message.token_value = token_value
-    message.status = message.TokenState.REMOVED
+    message.status = message.REMOVED
     return self.SendMessage(message)
 
 

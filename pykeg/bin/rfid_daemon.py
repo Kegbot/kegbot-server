@@ -31,6 +31,7 @@ from Phidgets.PhidgetException import PhidgetException
 
 from pykeg.core import kb_app
 from pykeg.core import kb_common
+from pykeg.core import util
 from pykeg.core.net import kegnet
 from pykeg.external.gflags import gflags
 

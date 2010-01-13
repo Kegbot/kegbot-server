@@ -48,9 +48,9 @@ TWEET_TEMPLATE = (
 class TwitterManager(manager.Manager):
 
   @manager.EventHandler(kegnet_pb2.DrinkCreatedEvent)
-  def _HandleDrinkCreatedEvent(self, ev):
+  def _HandleDrinkCreatedEvent(self, event):
     self._logger.info('Handling new drink')
-    drink = core_models.Drink.objects.get(id=ev.payload.drink_id)
+    drink = core_models.Drink.objects.get(id=event.drink_id)
 
     try:
       profile = drink.user.get_profile()

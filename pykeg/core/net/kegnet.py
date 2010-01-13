@@ -31,6 +31,7 @@ import logging
 import Queue
 import simplejson
 import struct
+import time
 
 from pykeg.core import kb_common
 from pykeg.core import util
@@ -182,9 +183,16 @@ class KegnetServerHandler(KegnetProtocolHandler):
 class KegnetClient(KegnetProtocolHandler):
   def __init__(self, addr=FLAGS.kb_core_addr, map=None):
     self._in_notifications = Queue.Queue()
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-    sock.connect(util.str_to_addr(addr))
+    while True:
+      try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        sock.connect(util.str_to_addr(addr))
+        break
+      except socket.error:
+        # TODO(mikey): quick hack. need much better retry hooks (logging,
+        # onDisconnect/onReconnect callbacks)
+        time.sleep(2)
     KegnetProtocolHandler.__init__(self, sock, map)
 
   def _HandleBadMessage(self, strdata, exception):

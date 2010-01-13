@@ -4,14 +4,14 @@ import threading
 import time
 
 class LcdUi:
-  def __init__(self, lcd):
+  def __init__(self, lcd, idle_timeout_seconds=300):
     self._lcd = lcd 
     self._frame_stack = []
 
     self._last_paint = None
     self._key_events = Queue.Queue()
     self._last_activity = datetime.datetime.now()
-    self._max_idle = datetime.timedelta(seconds=8)
+    self._max_idle = datetime.timedelta(seconds=idle_timeout_seconds)
     self._is_idle = False
 
     self._quit = threading.Event()

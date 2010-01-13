@@ -288,6 +288,10 @@ class FlowManager(Manager):
       self._logger.info('StartFlow: Flow already exists on %s' % tap_name)
     return self.GetFlow(tap_name)
 
+  def SetUser(self, flow, user):
+    flow.SetUser(user)
+    self._PublishUpdate(flow)
+
   def EndFlow(self, tap_name):
     flow = self.GetFlow(tap_name)
     if flow:
@@ -596,7 +600,7 @@ class AuthenticationManager(Manager):
       flow = flow_mgr.StartFlow(event.tap_name)
       try:
         user = models.User.objects.get(username=event.user_name)
-        flow.SetUser(user)
+        flow_mgr.SetUser(flow, user)
       except models.User.DoesNotExist:
         pass
     else:

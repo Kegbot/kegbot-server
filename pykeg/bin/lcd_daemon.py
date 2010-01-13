@@ -118,8 +118,12 @@ class KegUi:
     self._flow_status_by_tap[tap_name] = event
 
     self._lcdui.Activity()
-    self._SetState(self.STATE_POUR)
-    self._UpdateFromFlow(event)
+
+    if event.state == event.COMPLETED:
+      self._SetState(self.STATE_MAIN)
+    else:
+      self._SetState(self.STATE_POUR)
+      self._UpdateFromFlow(event)
 
   def _SetState(self, state):
     if state == self._state:

@@ -24,6 +24,7 @@ import os
 import sys
 import types
 import threading
+import traceback
 import logging
 
 ### Misc classes
@@ -106,9 +107,26 @@ class KegbotThread(threading.Thread):
     self._started = True
     threading.Thread.start(self)
 
+  def run(self):
+    try:
+      self.ThreadMain()
+    except Exception, e:
+      self._logger.error('Uncaught exception in thread %s. Stack trace:' %
+          self.getName())
+      stack = traceback.extract_tb(sys.exc_traceback)
+      for frame in traceback.format_list(stack):
+        for line in frame.split('\n'):
+          self._logger.error('    ' + line.strip())
+      self._logger.error('Error message: ' + str(e))
+      self._logger.error('Exiting thread.')
+      return
+
+  def ThreadMain(self):
+    pass
+
 
 class AsyncoreThread(KegbotThread):
-  def run(self):
+  def ThreadMain(self):
     self._logger.info('Starting up')
     while not self._quit:
       asyncore.loop(timeout=0.5, count=1)

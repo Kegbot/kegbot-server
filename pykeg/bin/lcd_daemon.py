@@ -160,7 +160,7 @@ class LcdUiThread(util.KegbotThread):
     util.KegbotThread.__init__(self, name)
     self._lcdui = ui
 
-  def run(self):
+  def ThreadMain(self):
     self._logger.info('Starting main loop.')
     self._lcdui.MainLoop()
     self._logger.info('Exited main loop.')
@@ -172,7 +172,7 @@ class KegnetMonitorThread(util.KegbotThread):
     self._client = kegnet.KegnetClient()
     self._kb_lcdui = kb_lcdui
 
-  def run(self):
+  def ThreadMain(self):
     self._logger.info('Starting main loop.')
     while not self._quit:
       try:

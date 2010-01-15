@@ -29,7 +29,7 @@ class CoreThread(util.KegbotThread):
 class WatchdogThread(CoreThread):
   """Monitors all threads in _kb_env for crashes."""
 
-  def run(self):
+  def ThreadMain(self):
     fault_detected = False
     while not self._quit:
       if not fault_detected:
@@ -48,7 +48,7 @@ class WatchdogThread(CoreThread):
 class EventHubServiceThread(CoreThread):
   """Handles all event dispatches for the event hub."""
 
-  def run(self):
+  def ThreadMain(self):
     hub = self._kb_env.GetEventHub()
     while not self._quit:
       hub.DispatchNextEvent(timeout=0.5)
@@ -57,7 +57,7 @@ class EventHubServiceThread(CoreThread):
 class FlowMonitorThread(CoreThread):
   """Watches flows for idleness."""
 
-  def run(self):
+  def ThreadMain(self):
     hub = self._kb_env.GetEventHub()
     max_idle = datetime.timedelta(seconds=10)
     while not self._quit:
@@ -75,7 +75,7 @@ class FlowMonitorThread(CoreThread):
 
 class AlarmManagerThread(CoreThread):
 
-  def run(self):
+  def ThreadMain(self):
     am = self._kb_env.GetAlarmManager()
     while not self._quit:
       alarm = am.WaitForNextAlarm(1.0)
@@ -117,7 +117,7 @@ class EventHandlerThread(CoreThread):
         lines.append('')
     return lines
 
-  def run(self):
+  def ThreadMain(self):
     while not self._quit:
       self._Step(timeout=0.5)
 
@@ -162,7 +162,7 @@ class EventHandlerThread(CoreThread):
 
 ### Service threads
 class NetProtocolThread(CoreThread):
-  def run(self):
+  def ThreadMain(self):
     self._logger.info("network thread started")
     server = self._kb_env.GetKegnetServer()
     server.StartServer()

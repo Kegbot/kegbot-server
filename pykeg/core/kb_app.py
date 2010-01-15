@@ -98,13 +98,14 @@ class App(object):
     try:
       app = cls(name)
       app.Start()
-    except:
+    except Exception, e:
       logger = logging.getLogger('app')
-      logger.error('Uncaught exception in app %s. Exception was:' % name)
+      logger.error('Uncaught exception in app %s. Stack trace:' % name)
       stack = traceback.extract_tb(sys.exc_traceback)
       for frame in traceback.format_list(stack):
         for line in frame.split('\n'):
-          logger.error('  ' + line.strip())
+          logger.error('    ' + line.strip())
+      logger.error('Error message: ' + str(e))
       logger.error('Aborting.')
       sys.exit(1)
 

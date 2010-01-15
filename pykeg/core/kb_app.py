@@ -29,6 +29,7 @@ import signal
 import sys
 import threading
 import time
+import traceback
 
 from pykeg.core import util
 from pykeg.external.gflags import gflags
@@ -94,8 +95,18 @@ class App(object):
       print>>sys.stderr, 'kegbot requires Python 2.4 or later; aborting'
       sys.exit(1)
 
-    app = cls(name)
-    app.Start()
+    try:
+      app = cls(name)
+      app.Start()
+    except:
+      logger = logging.getLogger('app')
+      logger.error('Uncaught exception in app %s. Exception was:' % name)
+      stack = traceback.extract_tb(sys.exc_traceback)
+      for frame in traceback.format_list(stack):
+        for line in frame.split('\n'):
+          logger.error('  ' + line.strip())
+      logger.error('Aborting.')
+      sys.exit(1)
 
   def Start(self):
     """Perform setup and run the application main loop."""

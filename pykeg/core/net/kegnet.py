@@ -31,6 +31,7 @@ import logging
 import Queue
 import simplejson
 import struct
+import threading
 import time
 
 from pykeg.core import kb_common
@@ -108,9 +109,6 @@ class KegnetProtocolHandler(asynchat.async_chat):
   This async_chat subclass can be used for client and server implementations.
   The handler will call _HandleKegnetMessage on receipt of a complete kegnet
   message.
-
-  The method _HandleBadMessage will be called when a malformed message was
-  received.
   """
   def __init__(self, sock=None, map=None):
     asynchat.async_chat.__init__(self, sock, map)
@@ -129,7 +127,6 @@ class KegnetProtocolHandler(asynchat.async_chat):
 
     if not strbuf:
       self._logger.warning('Received empty message')
-      self._HandleEmptyMessage()
     else:
       message = JsonToProtoMessage(strbuf)
       self._logger.info('<- %s' % ProtoMessageToShortStr(message))
@@ -195,12 +192,6 @@ class KegnetClient(KegnetProtocolHandler):
         time.sleep(2)
     KegnetProtocolHandler.__init__(self, sock, map)
 
-  def _HandleBadMessage(self, strdata, exception):
-    print "bad message"
-
-  def _HandleEmptyMessage(self, strdata):
-    print "empty message!"
-
   def HandleNotification(self, message):
     self._logger.info('<- %s' % message)
     self._in_notifications.put(message)
@@ -263,6 +254,7 @@ class KegnetServer(asyncore.dispatcher):
     self._bind_address = util.str_to_addr(addr)
     self._qsize = qsize
     self._clients = set()
+    self._lock = threading.Lock()
     asyncore.dispatcher.__init__(self)
 
   def StartServer(self):
@@ -276,14 +268,17 @@ class KegnetServer(asyncore.dispatcher):
     self._logger.info("Stopping server")
     self.close()
 
+  @util.synchronized
   def ChannelOpened(self, channel):
     self._logger.info('Remote host connected: %s:%i' % channel.addr)
     self._clients.add(channel)
 
+  @util.synchronized
   def ChannelClosed(self, channel):
     self._logger.info('Remote host closed: %s:%i' % channel.addr)
     self._clients.remove(channel)
 
+  @util.synchronized
   def SendEventToClients(self, event):
     # TODO(mikey): filter events -- should be based on subscriptions & exclude
     # internal events.
@@ -293,8 +288,11 @@ class KegnetServer(asyncore.dispatcher):
       (len(self._clients), ProtoMessageToShortStr(event)))
     str_message = ProtoMessageToJson(event)
     for client in self._clients:
-      client.push(str_message)
-      client.push('\n\n')
+      try:
+        client.push(str_message)
+        client.push('\n\n')
+      except IndexError:
+        self._logger.warning('Exception sending to %s' % client)
 
   ### asyncore.dispatcher methods
 

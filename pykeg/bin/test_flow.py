@@ -76,6 +76,10 @@ class FakeKegboardApp(kb_app.App):
 
   def _MainLoop(self):
     client = kegnet.KegnetClient()
+    connected = client.Reconnect()
+    if not connected:
+      self._logger.error('Could not connect to core.')
+      return
     flow = SmoothFlow(FLAGS.ticks, FLAGS.steps)
 
     if FLAGS.explicit_start_stop:

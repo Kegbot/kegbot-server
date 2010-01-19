@@ -114,6 +114,7 @@ class KegboardManagerThread(util.KegbotThread):
     initialized = False
 
     while not self._quit:
+      self._client.Reconnect()
       try:
         device_name, device_message = self._message_queue.get(timeout=1.0)
       except Queue.Empty:

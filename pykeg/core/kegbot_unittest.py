@@ -46,6 +46,7 @@ class KegbotTestCase(TestCase):
 
   def testSimpleFlow(self):
     client = kegnet.KegnetClient()
+    client.Reconnect()
 
     # Synthesize a 2200-tick flow. The FlowManager should zero on the initial
     # reading of 1000.

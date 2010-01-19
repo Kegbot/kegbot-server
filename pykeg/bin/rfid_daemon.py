@@ -104,6 +104,7 @@ class RfidAuthenticationApp(kb_app.App):
     self._rfid_handler = RfidEventHandler(self._client, self._rfid)
 
   def _MainLoop(self):
+    self._client.Reconnect()
     self._logger.info('Opening phidget connection ...')
     self._rfid.openPhidget()
     self._logger.info('Waiting for RFID device ...')
@@ -116,7 +117,8 @@ class RfidAuthenticationApp(kb_app.App):
     self._logger.info('Waiting for RFID events ...')
     while not self._do_quit:
       try:
-        time.sleep(0.5)
+        self._client.Reconnect()
+        time.sleep(1.0)
       except KeyboardInterrupt:
         self._logger.info('Got CTRL-C, exiting.')
         break

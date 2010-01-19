@@ -175,6 +175,7 @@ class KegnetMonitorThread(util.KegbotThread):
   def ThreadMain(self):
     self._logger.info('Starting main loop.')
     while not self._quit:
+      self._client.Reconnect()
       try:
         event = self._client.PopNotification(timeout=0.5)
       except Queue.Empty:

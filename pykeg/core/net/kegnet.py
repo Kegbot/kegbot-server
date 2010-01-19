@@ -91,11 +91,10 @@ NAME_TO_MESSAGE_CLASS = {}
 for cls in protobuf_message.Message.__subclasses__():
   NAME_TO_MESSAGE_CLASS[cls.DESCRIPTOR.name] = cls
 
-def JsonToProtoMessage(strmessage):
-  message = simplejson.loads(strmessage)
-  message_name = message['method']
+def MessageDictToProtoMessage(message_dict):
+  message_name = message_dict['method']
   message_class = NAME_TO_MESSAGE_CLASS[message_name]
-  return DictToProtoMessage(message['params'], message_class())
+  return DictToProtoMessage(message_dict['params'], message_class())
 
 def ProtoMessageToShortStr(message):
   name = message.DESCRIPTOR.name
@@ -115,6 +114,7 @@ class KegnetProtocolHandler(asynchat.async_chat):
     self.set_terminator('\n\n')
     self._ibuffer = cStringIO.StringIO()
     self._logger = logging.getLogger('kegnet')
+    self._in_notifications = Queue.Queue()
 
   ### async_chat methods
   def collect_incoming_data(self, data):
@@ -127,28 +127,56 @@ class KegnetProtocolHandler(asynchat.async_chat):
 
     if not strbuf:
       self._logger.warning('Received empty message')
+      return
+
+    try:
+      message_dict = simplejson.loads(strbuf)
+    except ValueError:
+      self._logger.warning('Received malformed message, dropping.')
+      return
+
+    # Distinguish between requests, responses, and notifications, using JSON-RPC
+    # v2.0 rules
+    # (http://groups.google.com/group/json-rpc/web/json-rpc-1-2-proposal):
+
+    self._logger.debug('Received message: %s' % message_dict)
+
+    if 'method' in message_dict and 'params' in message_dict:
+      # Requests and Notifications both have 'method' and 'param' fields;
+      # notifications have the 'id' field set to null (None).
+      if 'id' in message_dict and message_dict['id'] is not None:
+        # Message is a request.
+        self.HandleRequest(message_dict)
+      else:
+        # Message is a notification.
+        self.HandleNotification(message_dict)
+    elif 'result' in message_dict:
+      self.HandleResponse(message_dict)
     else:
-      message = JsonToProtoMessage(strbuf)
-      self._logger.info('<- %s' % ProtoMessageToShortStr(message))
-      self.HandleNotification(message)
+      self._logger.warning('Received unknown message type, dropping.')
 
   def handle_close(self):
     asynchat.async_chat.handle_close(self)
     #self._server.ChannelClosed(self)
 
   ### KegnetProtocolHandler methods
-  def HandleNotification(self, message):
+  def HandleNotification(self, message_dict):
+    self._logger.debug('Received notification: %s' % message_dict)
+    message = MessageDictToProtoMessage(message_dict)
+    self._in_notifications.put(message)
+
+  def HandleRequest(self, message_dict):
     pass
 
-  def HandleRequest(self, message):
+  def HandleResponse(self, message_dict):
     pass
 
-  def HandleResponse(self, message):
-    pass
+  def PopNotification(self, timeout=None):
+    return self._in_notifications.get(timeout=timeout)
 
   def SendMessage(self, msg):
     str_message = ProtoMessageToJson(msg)
-    self._logger.info('-> %s' % str_message)
+    self._logger.debug('Sending JSON message: %s' % str_message)
     self.push(str_message)
     self.push('\n\n')
 
@@ -172,32 +200,49 @@ class KegnetServerHandler(KegnetProtocolHandler):
     self._server.ChannelClosed(self)
     self.close()
 
-  def HandleNotification(self, message):
+  def HandleNotification(self, message_dict):
+    KegnetProtocolHandler.HandleNotification(self, message_dict)
     event_hub = self._server._kb_env.GetEventHub()
-    event_hub.PublishEvent(message)
+    event_hub.PublishEvent(self.PopNotification())
 
 
 class KegnetClient(KegnetProtocolHandler):
+  RECONNECT_BACKOFF = [5, 5, 10, 10, 20, 20, 60]
   def __init__(self, addr=FLAGS.kb_core_addr, map=None):
-    self._in_notifications = Queue.Queue()
-    while True:
-      try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        sock.connect(util.str_to_addr(addr))
-        break
-      except socket.error:
-        # TODO(mikey): quick hack. need much better retry hooks (logging,
-        # onDisconnect/onReconnect callbacks)
-        time.sleep(2)
-    KegnetProtocolHandler.__init__(self, sock, map)
+    self._addr = util.str_to_addr(addr)
+    self._last_reconnect = 0
+    self._num_retries = 0
+    KegnetProtocolHandler.__init__(self, map=map)
 
-  def HandleNotification(self, message):
-    self._logger.info('<- %s' % message)
-    self._in_notifications.put(message)
+  def Reconnect(self, force=False):
+    if self.connected:
+      return True
 
-  def PopNotification(self, timeout=None):
-    return self._in_notifications.get(timeout=timeout)
+    now = time.time()
+    last_attempt = now - self._last_reconnect
+    backoff_secs = self._ReconnectTimeout()
+    if last_attempt < backoff_secs and not force:
+      return False
+
+    self._last_reconnect = now
+    self._logger.info('Connecting to %s:%s' % self._addr)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    try:
+      sock.connect(self._addr)
+      self.set_socket(sock)
+      self._logger.info('Connected!')
+      self._num_retries = 0
+      return True
+    except socket.error:
+      self._num_retries += 1
+      self._logger.info('Connection failed. Retry in %i seconds.' %
+          backoff_secs)
+      return False
+
+  def _ReconnectTimeout(self):
+    pos = min(self._num_retries, len(self.RECONNECT_BACKOFF))
+    return self.RECONNECT_BACKOFF[pos]
 
   ### convenience functions
   def SendPing(self):

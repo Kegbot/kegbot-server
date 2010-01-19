@@ -113,7 +113,7 @@ class KegbotThread(threading.Thread):
     except Exception, e:
       self._logger.error('Uncaught exception in thread %s. Stack trace:' %
           self.getName())
-      stack = traceback.extract_tb(sys.exc_traceback)
+      stack = traceback.extract_tb(sys.exc_info()[2])
       for frame in traceback.format_list(stack):
         for line in frame.split('\n'):
           self._logger.error('    ' + line.strip())

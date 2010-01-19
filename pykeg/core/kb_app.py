@@ -101,7 +101,7 @@ class App(object):
     except Exception, e:
       logger = logging.getLogger('app')
       logger.error('Uncaught exception in app %s. Stack trace:' % name)
-      stack = traceback.extract_tb(sys.exc_traceback)
+      stack = traceback.extract_tb(sys.exc_info()[2])
       for frame in traceback.format_list(stack):
         for line in frame.split('\n'):
           logger.error('    ' + line.strip())

@@ -25,6 +25,7 @@ import importhacks
 import asyncore
 import Queue
 import serial
+import sys
 import time
 
 from pykeg.core import kb_app
@@ -33,6 +34,13 @@ from pykeg.core import util
 from pykeg.core.net import kegnet
 from pykeg.core.net import kegnet_pb2
 from pykeg.external.gflags import gflags
+
+try:
+  import lcdui
+except ImportError:
+  print>>sys.stderr, "Error: lcdui could not be imported."
+  print>>sys.stderr, "(Try: sudo easy_install --upgrade pylcdui)"
+  sys.exit(1)
 
 from lcdui.devices import CrystalFontz
 from lcdui.ui import frame
@@ -74,34 +82,28 @@ class KegUi:
 
   def _GetMainFrame(self):
     f = self._lcdui.FrameFactory(frame.Frame)
-    f.AddWidget('line0',
-        widget.LineWidget(contents=' ================== '),
-        row=0, col=0)
-    f.AddWidget('line1',
-        widget.LineWidget(contents='       kegbot!      '),
-        row=1, col=0)
-    f.AddWidget('line2',
-        widget.LineWidget(contents='      beer you.     '),
-        row=2, col=0)
-    f.AddWidget('line3',
-        widget.LineWidget(contents=' ================== '),
-        row=3, col=0)
+
+    f.BuildWidget(widget.LineWidget,
+        contents=' ================== ', row=0, col=0)
+    f.BuildWidget(widget.LineWidget,
+        contents='       kegbot!      ', row=1, col=0)
+    f.BuildWidget(widget.LineWidget,
+        contents='      beer you.     ', row=2, col=0)
+    f.BuildWidget(widget.LineWidget,
+        contents=' ================== ', row=3, col=0)
+
     return f
 
   def _GetPourFrame(self):
     f = self._lcdui.FrameFactory(frame.Frame)
-    f.AddWidget('line0',
-        widget.LineWidget(contents='_now pouring________'),
-        row=0, col=0)
-    f.AddWidget('user',
-        widget.LineWidget(prefix='|user: '),
-        row=1, col=0)
-    f.AddWidget('ounces',
-        widget.LineWidget(prefix='|oz: '),
-        row=2, col=0)
-    f.AddWidget('line3',
-        widget.LineWidget(contents='|                   '),
-        row=3, col=0)
+    f.BuildWidget(widget.LineWidget, name='line0',
+        contents='_now pouring________', row=0, col=0)
+    f.BuildWidget(widget.LineWidget, name='user',
+        prefix='|user: ', row=1, col=0)
+    f.BuildWidget(widget.LineWidget, name='ounces',
+        prefix='|oz: ', row=2, col=0)
+    f.BuildWidget(widget.LineWidget, name='line3',
+        contents='|                   ', row=3, col=0)
     return f
 
   def _UpdateFromFlow(self, flow_update):

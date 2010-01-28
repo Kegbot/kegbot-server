@@ -42,18 +42,31 @@ except ImportError:
   print>>sys.stderr, "(Try: sudo easy_install --upgrade pylcdui)"
   sys.exit(1)
 
-from lcdui.devices import CrystalFontz
 from lcdui.ui import frame
 from lcdui.ui import ui
 from lcdui.ui import widget
+
+DEVICE_CFA_635 = 'cfa635'
+DEVICE_MTXORB = 'mtxorb20x4'
+
+DEVICE_CHOICES = ', '.join((
+  DEVICE_CFA_635,
+  DEVICE_MTXORB
+))
 
 FLAGS = gflags.FLAGS
 
 gflags.DEFINE_string('lcd_device_path', '/dev/ttyUSB0',
     'Path to lcd device file.')
 
+gflags.DEFINE_integer('lcd_baud_rate', 115200,
+    'LCD baud rate.')
+
 gflags.DEFINE_integer('backlight_off_timeout_seconds', 300,
     'Number of seconds of inactivity before LCD backlight will be disabled.')
+
+gflags.DEFINE_string('lcd_device_type', DEVICE_CFA_635,
+    'Type of LCD device. Choices are: %s' % DEVICE_CHOICES)
 
 
 class KegUi:
@@ -63,7 +76,17 @@ class KegUi:
   def __init__(self, path=None):
     if not path:
       path = FLAGS.lcd_device_path
-    self._lcdobj = CrystalFontz.CFA635Display(path)
+
+    if FLAGS.lcd_device_type == DEVICE_CFA_635:
+      from lcdui.devices import CrystalFontz
+      self._lcdobj = CrystalFontz.CFA635Display(path, FLAGS.lcd_baud_rate)
+    elif FLAGS.lcd_device_type == DEVICE_MTXORB:
+      from lcdui.devices import MatrixOrbital
+      self._lcdobj = MatrixOrbital.MatrixOrbitalDisplay(path,
+          FLAGS.lcd_baud_rate)
+    else:
+      raise ValueError, "Bad device type: %s" % FLAGS.lcd_device_type
+
     self._lcdui = ui.LcdUi(self._lcdobj, FLAGS.backlight_off_timeout_seconds)
     self._last_flow_status = None
 

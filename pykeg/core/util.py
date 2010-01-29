@@ -349,14 +349,17 @@ def PidIsAlive(pid):
       return False
   return True
 
-def LogTraceback(log_method, tb_obj=None):
-  if tb_obj == None:
-    tb_obj = sys.exc_info()[2]
-  if tb_obj == None:
+def LogTraceback(log_method, tb_tuple=None):
+  if tb_tuple is None:
+    tb_tuple = sys.exc_info()
+
+  tb_type, tb_value, tb_obj = tb_tuple
+
+  if tb_obj is None:
     log_method('No exception')
     return
   stack = traceback.extract_tb(tb_obj)
   for frame in traceback.format_list(stack):
     for line in frame.split('\n'):
       log_method('    ' + line.strip())
-  #log_method('Error message: ' + str(e))
+  log_method('Error was: %s: %s' % (tb_type, tb_value))

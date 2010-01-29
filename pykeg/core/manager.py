@@ -91,6 +91,13 @@ class Tap(object):
   def GetMeter(self):
     return self._meter
 
+  def GetCurrentKeg(self):
+    try:
+      tap = models.KegTap.objects.get(meter_name=self._name)
+    except models.KegTap.DoesNotExist:
+      return None
+    return tap.current_keg
+
   def TicksToMilliliters(self, amt):
     return self._ml_per_tick * float(amt)
 
@@ -402,13 +409,11 @@ class DrinkManager(Manager):
         'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
       return
 
-    keg = None
-    try:
-      tap = models.KegTap.objects.get(meter_name=event.tap_name)
-      if tap.current_keg:
-        keg = tap.current_keg
-        self._logger.info('Binding drink to keg: %s' % keg)
-    except models.KegTap.DoesNotExist:
+    tap = self._kb_env.GetTapManager().GetTap(event.tap_name)
+    keg = tap.GetCurrentKeg()
+    if keg:
+      self._logger.info('Binding drink to keg: %s' % keg)
+    else:
       self._logger.warning('No tap found for meter %s' % event.tap_name)
 
     try:

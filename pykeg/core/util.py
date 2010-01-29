@@ -110,14 +110,10 @@ class KegbotThread(threading.Thread):
   def run(self):
     try:
       self.ThreadMain()
-    except Exception, e:
+    except:
       self._logger.error('Uncaught exception in thread %s. Stack trace:' %
           self.getName())
-      stack = traceback.extract_tb(sys.exc_info()[2])
-      for frame in traceback.format_list(stack):
-        for line in frame.split('\n'):
-          self._logger.error('    ' + line.strip())
-      self._logger.error('Error message: ' + str(e))
+      LogTraceback(self._logger.error)
       self._logger.error('Exiting thread.')
       return
 
@@ -352,3 +348,15 @@ def PidIsAlive(pid):
     if e.errno == errno.ESRCH:
       return False
   return True
+
+def LogTraceback(log_method, tb_obj=None):
+  if tb_obj == None:
+    tb_obj = sys.exc_info()[2]
+  if tb_obj == None:
+    log_method('No exception')
+    return
+  stack = traceback.extract_tb(tb_obj)
+  for frame in traceback.format_list(stack):
+    for line in frame.split('\n'):
+      log_method('    ' + line.strip())
+  #log_method('Error message: ' + str(e))

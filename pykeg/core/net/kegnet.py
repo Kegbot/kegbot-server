@@ -53,6 +53,7 @@ gflags.DEFINE_string('kb_core_bind_addr', kb_common.KB_CORE_DEFAULT_ADDR,
 gflags.DEFINE_string('tap_name', 'kegboard.flow0',
     'Default tap name.')
 
+MESSAGE_TERMINATOR = '\n\n'
 
 def ProtoMessageToDict(message):
   ret = {}
@@ -111,7 +112,7 @@ class KegnetProtocolHandler(asynchat.async_chat):
   """
   def __init__(self, sock=None, map=None):
     asynchat.async_chat.__init__(self, sock, map)
-    self.set_terminator('\n\n')
+    self.set_terminator(MESSAGE_TERMINATOR)
     self._ibuffer = cStringIO.StringIO()
     self._logger = logging.getLogger('kegnet')
     self._in_notifications = Queue.Queue()
@@ -177,8 +178,7 @@ class KegnetProtocolHandler(asynchat.async_chat):
   def SendMessage(self, msg):
     str_message = ProtoMessageToJson(msg)
     self._logger.debug('Sending JSON message: %s' % str_message)
-    self.push(str_message)
-    self.push('\n\n')
+    self.push(str_message + MESSAGE_TERMINATOR)
 
 
 class KegnetServerHandler(KegnetProtocolHandler):
@@ -334,8 +334,7 @@ class KegnetServer(asyncore.dispatcher):
     str_message = ProtoMessageToJson(event)
     for client in self._clients:
       try:
-        client.push(str_message)
-        client.push('\n\n')
+        client.push(str_message + MESSAGE_TERMINATOR)
       except IndexError:
         self._logger.warning('Exception sending to %s' % client)
 

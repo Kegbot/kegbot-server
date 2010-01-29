@@ -337,6 +337,7 @@ class KegnetServer(asyncore.dispatcher):
         client.push(str_message + MESSAGE_TERMINATOR)
       except IndexError:
         self._logger.warning('Exception sending to %s' % client)
+        util.LogTraceback(self._logger.warning)
 
   ### asyncore.dispatcher methods
 

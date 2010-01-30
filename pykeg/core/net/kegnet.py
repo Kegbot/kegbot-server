@@ -116,8 +116,13 @@ class KegnetProtocolHandler(asynchat.async_chat):
     self._ibuffer = cStringIO.StringIO()
     self._logger = logging.getLogger('kegnet')
     self._in_notifications = Queue.Queue()
+    self._lock = threading.Lock()
 
   ### async_chat methods
+  @util.synchronized
+  def push(self, data):
+    asynchat.async_chat.push(self, data)
+
   def collect_incoming_data(self, data):
     self._ibuffer.write(data)
 

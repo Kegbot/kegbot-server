@@ -27,16 +27,12 @@ system.
 For more information, please see the kegbot documentation.
 """
 
-import logging
-import signal
-import sys
 import time
 
 from pykeg.core import alarm
 from pykeg.core import backend
 from pykeg.core import event
 from pykeg.core import kb_app
-from pykeg.core import kb_common
 from pykeg.core import kb_threads
 from pykeg.core import manager
 from pykeg.core.net import kegnet

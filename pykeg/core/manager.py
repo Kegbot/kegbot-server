@@ -21,6 +21,7 @@
 import datetime
 import inspect
 import time
+import threading
 import logging
 
 from pykeg.core import event
@@ -28,6 +29,7 @@ from pykeg.core import flow_meter
 from pykeg.core import kb_common
 from pykeg.core import models
 from pykeg.core import units
+from pykeg.core import util
 from pykeg.core.net import kegnet_message
 from pykeg.core.net import kegnet_pb2
 
@@ -159,14 +161,10 @@ class TapManager(Manager):
     return delta
 
 
-NEXT_FLOW_ID = 1
-
 class Flow:
-  def __init__(self, tap):
+  def __init__(self, tap, flow_id):
     self._tap = tap
-    global NEXT_FLOW_ID
-    self._flow_id = NEXT_FLOW_ID
-    NEXT_FLOW_ID += 1
+    self._flow_id = flow_id
     self._state = kegnet_pb2.FlowUpdate.INITIAL
     self._start_time = datetime.datetime.now()
     self._end_time = None
@@ -206,6 +204,9 @@ class Flow:
     if self._start_time is None:
       self._start_time = when
     self._end_time = when
+
+  def GetId(self):
+    return self._flow_id
 
   def GetState(self):
     return self._state
@@ -258,6 +259,14 @@ class FlowManager(Manager):
     Manager.__init__(self, name, kb_env)
     self._flow_map = {}
     self._logger = logging.getLogger("flowmanager")
+    self._next_flow_id = int(time.time())
+    self._lock = threading.Lock()
+
+  @util.synchronized
+  def _GetNextFlowId(self):
+    ret = self._next_flow_id
+    self._next_flow_id += 1
+    return ret
 
   def GetStatus(self):
     ret = []
@@ -284,31 +293,37 @@ class FlowManager(Manager):
     return self._flow_map.get(tap_name)
 
   def StartFlow(self, tap_name):
-    if not self.GetFlow(tap_name):
-      tap_manager = self._kb_env.GetTapManager()
-      tap = tap_manager.GetTap(tap_name)
-      new_flow = Flow(tap)
-      self._flow_map[tap_name] = new_flow
-      self._logger.info('StartFlow: Flow created: %s' % new_flow)
-      self._PublishUpdate(new_flow)
-    else:
-      self._logger.info('StartFlow: Flow already exists on %s' % tap_name)
-    return self.GetFlow(tap_name)
+    try:
+      if not self.GetFlow(tap_name):
+        tap_manager = self._kb_env.GetTapManager()
+        tap = tap_manager.GetTap(tap_name)
+        new_flow = Flow(tap, self._GetNextFlowId())
+        self._flow_map[tap_name] = new_flow
+        self._logger.info('StartFlow: Flow created: %s' % new_flow)
+        self._PublishUpdate(new_flow)
+      else:
+        self._logger.info('StartFlow: Flow already exists on %s' % tap_name)
+      return self.GetFlow(tap_name)
+    except UnknownTapError:
+      return None
 
   def SetUser(self, flow, user):
     flow.SetUser(user)
     self._PublishUpdate(flow)
 
   def EndFlow(self, tap_name):
-    flow = self.GetFlow(tap_name)
-    if flow:
-      tap = flow.GetTap()
-      del self._flow_map[tap_name]
-      self._logger.info('EndFlow: Flow ended: %s' % flow)
-      self._StateChange(flow, kegnet_pb2.FlowUpdate.COMPLETED)
-    else:
-      self._logger.info('EndFlow: No existing flow on tap %s' % (tap_name,))
-    return flow
+    try:
+      flow = self.GetFlow(tap_name)
+      if flow:
+        tap = flow.GetTap()
+        del self._flow_map[tap_name]
+        self._logger.info('EndFlow: Flow ended: %s' % flow)
+        self._StateChange(flow, kegnet_pb2.FlowUpdate.COMPLETED)
+      else:
+        self._logger.info('EndFlow: No existing flow on tap %s' % (tap_name,))
+      return flow
+    except UnknownTapError:
+      return None
 
   def UpdateFlow(self, tap_name, meter_reading):
     try:
@@ -362,11 +377,10 @@ class FlowManager(Manager):
         are emitted.
     """
     tap_mgr = self._kb_env.GetTapManager()
-    if not tap_mgr.TapExists(event.tap_name):
-      self._logger.warning('Dropping flow update event for unknown tap: %s' %
-          (msg.tap_name,))
-      return
-    flow_instance, is_new = self.UpdateFlow(event.tap_name, event.reading)
+    try:
+      flow_instance, is_new = self.UpdateFlow(event.tap_name, event.reading)
+    except UnknownTapError:
+      return None
 
   @EventHandler(kegnet_pb2.TapIdleEvent)
   def HandleFlowIdleEvent(self, event):
@@ -381,6 +395,7 @@ class FlowManager(Manager):
       self.StartFlow(event.tap_name)
     elif event.request == event.STOP_FLOW:
       self.EndFlow(event.tap_name)
+
 
 class DrinkManager(Manager):
   def __init__(self, name, kb_env):

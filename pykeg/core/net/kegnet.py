@@ -120,8 +120,8 @@ class KegnetProtocolHandler(asynchat.async_chat):
 
   ### async_chat methods
   @util.synchronized
-  def push(self, data):
-    asynchat.async_chat.push(self, data)
+  def initiate_send(self):
+    return asynchat.async_chat.initiate_send(self)
 
   def collect_incoming_data(self, data):
     self._ibuffer.write(data)

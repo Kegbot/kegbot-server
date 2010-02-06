@@ -26,7 +26,7 @@ from pykeg.core import units
 
 def db_is_installed():
   try:
-    version = models.Config.objects.get(key='db.schema_version')
+    version = models.Config.objects.get(key='db.installed')
     return True
   except models.Config.DoesNotExist:
     return False
@@ -51,7 +51,7 @@ def set_defaults():
      ('logging.logformat', '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'),
      ('logging.use_logfile', 'true'),
      ('logging.use_stream', 'true'),
-     ('db.schema_version', str(models.SCHEMA_VERSION)),
+     ('db.installed', 'true'),
   )
   for key, val in default_config:
      rec = models.Config(key=key, value=val)

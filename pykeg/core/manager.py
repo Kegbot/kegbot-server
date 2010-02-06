@@ -452,16 +452,6 @@ class DrinkManager(Manager):
     created.username = d.user.username
     self._PublishEvent(created)
 
-  @EventHandler(kegnet_pb2.DrinkCreatedEvent)
-  def HandleDrinkCreatedEvent(self, event):
-    drink = models.Drink.objects.get(id=event.drink_id)
-
-    models.BAC.ProcessDrink(drink)
-    self._logger.info('Processed BAC for drink %i' % (drink.id,))
-
-    models.UserDrinkingSessionAssignment.RecordDrink(drink)
-    self._logger.info('Processed UserDrinkGroupAssignment for drink %i' % (drink.id,))
-
 
 class ThermoManager(Manager):
   def __init__(self, name, kb_env):

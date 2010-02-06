@@ -49,12 +49,8 @@ class KegbotBackend(object):
     return default_user
 
   def CheckSchemaVersion(self):
-    installed_schema = int(self._config.get('db.schema_version'))
-    if installed_schema < models.SCHEMA_VERSION:
-      self._logger.fatal('Error: outdated schema detected! (latest = %i, installed = %i)' %
-            (installed_schema, models.SCHEMA_VERSION))
-      self._logger.fatal('Aborting.')
-      raise kb_common.ConfigurationError, "Outdated schema"
+    # TODO(mikey): use South to determine if there are any pending migrations.
+    pass
 
   def GetUserFromUsername(self, username):
     matches = models.User.objects.filter(username=username)

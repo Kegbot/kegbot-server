@@ -103,6 +103,8 @@ class CoreModelsTestCase(unittest.TestCase):
     td_200m = datetime.timedelta(minutes=200)
     td_190m = td_200m - td_10m
 
+    num_inital_groups = len(models.DrinkingSessionGroup.objects.all())
+
     drinks[u1] = (
         # t=0
         models.Drink.objects.create(
@@ -133,10 +135,6 @@ class CoreModelsTestCase(unittest.TestCase):
           starttime=base_time+td_190m, endtime=base_time+td_190m),
     )
 
-    for u, ud in drinks.iteritems():
-      for d in ud:
-        models.UserDrinkingSessionAssignment.RecordDrink(d)
-
     u1_sessions = u1.userdrinkingsession_set.all()
     self.assertEqual(len(u1_sessions), 2)
 
@@ -166,7 +164,7 @@ class CoreModelsTestCase(unittest.TestCase):
 
     # Now check DrinkingSessionGroups were created correctly; there should be
     # two groups capturing all 4 sessions.
-    all_groups = models.DrinkingSessionGroup.objects.all()
+    all_groups = models.DrinkingSessionGroup.objects.all()[num_inital_groups:]
     self.assertEqual(len(all_groups), 2)
 
     self.assertEqual(all_groups[0].starttime, base_time)

@@ -22,6 +22,7 @@ import os
 import random
 
 from django.db import models
+from django.db.models.signals import post_save
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 
@@ -29,9 +30,7 @@ from pykeg.core import kb_common
 from pykeg.core import units
 from pykeg.core import util
 
-SCHEMA_VERSION = 22
-
-# This is a Django models definition for the kegbot database
+"""Django models definition for the kegbot database."""
 
 def mugshot_file_name(instance, filename):
   rand_salt = random.randrange(0xffff)
@@ -193,6 +192,18 @@ class Keg(models.Model):
   description = models.CharField(max_length=256)
   origcost = models.FloatField(default=0)
 
+def _KegPostSave(sender, instance, **kwargs):
+  keg = instance
+  if keg.status == 'offline':
+    last_drink_qs = keg.drink_set.all().order_by('-starttime')
+    if len(last_drink_qs):
+      last_drink = last_drink_qs[0]
+      if keg.enddate != last_drink.endtime:
+        keg.enddate = last_drink.endtime
+        keg.save()
+
+post_save.connect(_KegPostSave, sender=Keg)
+
 
 class Drink(models.Model):
   """ Table of drinks records """
@@ -255,6 +266,24 @@ class Drink(models.Model):
      ('invalid', 'invalid'),
      ), default = 'valid')
 
+def _DrinkPostSave(sender, instance, **kwargs):
+  BAC.ProcessDrink(instance)
+  UserDrinkingSessionAssignment.RecordDrink(instance)
+
+  keg = instance.keg
+  if keg:
+    if keg.startdate > instance.starttime:
+      keg.startdate = instance.starttime
+      keg.save()
+
+  user = instance.user
+  if user:
+    if user.date_joined > instance.starttime:
+      user.date_joined = instance.starttime
+      user.save()
+
+post_save.connect(_DrinkPostSave, sender=Drink)
+
 
 class AuthenticationToken(models.Model):
   """A secret token to authenticate a user, optionally pin-protected."""
@@ -308,6 +337,11 @@ class BAC(models.Model):
   @classmethod
   def ProcessDrink(cls, d):
     """Generate the bac for a drink"""
+    bac_qs = d.bac_set.all()
+    if len(bac_qs):
+      # Already has a recorded BAC.
+      return bac_qs[0]
+
     try:
       profile = d.user.get_profile()
     except UserProfile.DoesNotExist:
@@ -331,6 +365,7 @@ class BAC(models.Model):
                           d.Volume().ConvertTo.Ounce)
     b = BAC(user=d.user, drink=d, rectime=d.endtime, bac=now+prev_bac)
     b.save()
+    return b
 
 
 def find_object_in_window(qset, start, end, window):
@@ -419,6 +454,10 @@ class UserDrinkingSessionAssignment(models.Model):
     This method calles UserDrinkingSession.CreateOrUpdateSessionForDrink to find or
     create a UserDrinkingSession matching this drink.
     """
+    assignment_qs = d.userdrinkingsessionassignment_set.all()
+    if len(assignment_qs):
+      # Already assigned to a session.
+      return assignment_qs[0]
     session = UserDrinkingSession.CreateOrUpdateSessionForDrink(d)
     UserDrinkingSessionAssignment.objects.filter(drink=d).delete()
     dg = UserDrinkingSessionAssignment(

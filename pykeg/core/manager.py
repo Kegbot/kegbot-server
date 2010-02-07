@@ -162,13 +162,13 @@ class TapManager(Manager):
 
 
 class Flow:
-  def __init__(self, tap, flow_id):
+  def __init__(self, tap, flow_id, user=None):
     self._tap = tap
     self._flow_id = flow_id
+    self._bound_user = user
     self._state = kegnet_pb2.FlowUpdate.INITIAL
     self._start_time = datetime.datetime.now()
     self._end_time = None
-    self._bound_user = None
     self._last_log_time = None
     self._total_ticks = 0L
 
@@ -292,12 +292,12 @@ class FlowManager(Manager):
   def GetFlow(self, tap_name):
     return self._flow_map.get(tap_name)
 
-  def StartFlow(self, tap_name):
+  def StartFlow(self, tap_name, user=None):
     try:
       if not self.GetFlow(tap_name):
         tap_manager = self._kb_env.GetTapManager()
         tap = tap_manager.GetTap(tap_name)
-        new_flow = Flow(tap, self._GetNextFlowId())
+        new_flow = Flow(tap, self._GetNextFlowId(), user)
         self._flow_map[tap_name] = new_flow
         self._logger.info('StartFlow: Flow created: %s' % new_flow)
         self._PublishUpdate(new_flow)
@@ -390,7 +390,7 @@ class FlowManager(Manager):
       self.EndFlow(event.tap_name)
 
   @EventHandler(kegnet_pb2.FlowRequest)
-  def _HandleStartFlowEvent(self, event):
+  def _HandleFlowRequestEvent(self, event):
     if event.request == event.START_FLOW:
       self.StartFlow(event.tap_name)
     elif event.request == event.STOP_FLOW:
@@ -607,12 +607,11 @@ class AuthenticationManager(Manager):
     flow_mgr = self._kb_env.GetFlowManager()
 
     if event.state == event.ADDED:
-      flow = flow_mgr.StartFlow(event.tap_name)
       try:
         user = models.User.objects.get(username=event.user_name)
-        flow_mgr.SetUser(flow, user)
       except models.User.DoesNotExist:
-        pass
+        user = None
+      flow = flow_mgr.StartFlow(event.tap_name, user)
     else:
       flow = flow_mgr.EndFlow(event.tap_name)
 

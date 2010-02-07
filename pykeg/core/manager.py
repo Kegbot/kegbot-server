@@ -298,6 +298,10 @@ class FlowManager(Manager):
       if not self.GetFlow(tap_name):
         tap_manager = self._kb_env.GetTapManager()
         tap = tap_manager.GetTap(tap_name)
+        if user is None:
+          users = self._kb_env.GetAuthenticationManager().GetActiveUsers()
+          if users:
+            user = list(users)[0]
         new_flow = Flow(tap, self._GetNextFlowId(), user)
         self._flow_map[tap_name] = new_flow
         self._logger.info('StartFlow: Flow created: %s' % new_flow)

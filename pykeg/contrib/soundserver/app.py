@@ -51,6 +51,8 @@ gflags.DEFINE_string('cache_dir', '/tmp/sound_server_cache',
 
 OUNCE_TRIGGER_THRESHOLDS = (32, 24, 16, 12, 8, 1, 0)
 
+CREDIT_TRIGGER_THRESHOLDS = (100, 20, 10, 5, 1)
+
 
 class SoundServerApp(kb_app.App):
   def __init__(self, name='sound_server'):
@@ -170,8 +172,22 @@ class KegnetMonitorThread(util.KegbotThread):
 
       if isinstance(event, kegnet_pb2.FlowUpdate):
         self._HandleFlowStatus(event)
+      elif isinstance(event, kegnet_pb2.CreditAddedEvent):
+        self._HandleCreditEvent(event)
 
     self._logger.info('Exiting main loop.')
+
+  def _HandleCreditEvent(self, event):
+    amount = event.amount
+
+    for threshold in CREDIT_TRIGGER_THRESHOLDS:
+      if amount < threshold:
+        continue
+      events = self._GetMatchingEvents('credit.added.threshold', threshold)
+      if len(events):
+        soundevent = random.choice(events)
+        self.PlaySoundFile(soundevent.soundfile)
+        return
 
   def _HandleFlowStatus(self, event):
     flow_id = event.flow_id
@@ -195,9 +211,9 @@ class KegnetMonitorThread(util.KegbotThread):
         break
     self._flows[flow_id] = curr_ounces
 
-  def _GetMatchingEvents(self, event_name, predicate='', user=None):
+  def _GetMatchingEvents(self, event_name, predicate=None, user=None):
     events = self._event_map.get(event_name, [])
-    if predicate:
+    if predicate is not None:
       events = [e for e in events if e.event_predicate == str(predicate)]
     if user:
       events = [e for e in events if e.user == user]

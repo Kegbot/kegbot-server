@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load kegweblib %}
+
+{% block title %}claim_token{% endblock %}
+
+{% block content %}
+<div class="contenthead">
+   claim token
+</div>
+<div class="content">
+<p>
+<form method="POST" action="">
+<table>
+{{ form.as_table }}
+</table>
+<input type="submit">
+</form>
+
+</p>
+</div>
+
+{% endblock %}

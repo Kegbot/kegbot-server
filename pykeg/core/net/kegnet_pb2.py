@@ -96,7 +96,7 @@ _FLOWREQUEST_ACTION = descriptor.EnumDescriptor(
 _PING = descriptor.Descriptor(
   name='Ping',
   full_name='Ping',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
   ],
@@ -111,7 +111,7 @@ _PING = descriptor.Descriptor(
 _QUITEVENT = descriptor.Descriptor(
   name='QuitEvent',
   full_name='QuitEvent',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
   ],
@@ -126,7 +126,7 @@ _QUITEVENT = descriptor.Descriptor(
 _STARTCOMPLETEEVENT = descriptor.Descriptor(
   name='StartCompleteEvent',
   full_name='StartCompleteEvent',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
   ],
@@ -141,7 +141,7 @@ _STARTCOMPLETEEVENT = descriptor.Descriptor(
 _METERUPDATE = descriptor.Descriptor(
   name='MeterUpdate',
   full_name='MeterUpdate',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
@@ -170,7 +170,7 @@ _METERUPDATE = descriptor.Descriptor(
 _FLOWUPDATE = descriptor.Descriptor(
   name='FlowUpdate',
   full_name='FlowUpdate',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
@@ -242,7 +242,7 @@ _FLOWUPDATE = descriptor.Descriptor(
 _TAPIDLEEVENT = descriptor.Descriptor(
   name='TapIdleEvent',
   full_name='TapIdleEvent',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
@@ -264,7 +264,7 @@ _TAPIDLEEVENT = descriptor.Descriptor(
 _DRINKCREATEDEVENT = descriptor.Descriptor(
   name='DrinkCreatedEvent',
   full_name='DrinkCreatedEvent',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
@@ -321,7 +321,7 @@ _DRINKCREATEDEVENT = descriptor.Descriptor(
 _TOKENAUTHEVENT = descriptor.Descriptor(
   name='TokenAuthEvent',
   full_name='TokenAuthEvent',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
@@ -365,7 +365,7 @@ _TOKENAUTHEVENT = descriptor.Descriptor(
 _USERAUTHEVENT = descriptor.Descriptor(
   name='UserAuthEvent',
   full_name='UserAuthEvent',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
@@ -402,7 +402,7 @@ _USERAUTHEVENT = descriptor.Descriptor(
 _THERMOEVENT = descriptor.Descriptor(
   name='ThermoEvent',
   full_name='ThermoEvent',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
@@ -431,7 +431,7 @@ _THERMOEVENT = descriptor.Descriptor(
 _FLOWREQUEST = descriptor.Descriptor(
   name='FlowRequest',
   full_name='FlowRequest',
-  filename='kegnet.proto',
+  filename='core/net/kegnet.proto',
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
@@ -454,6 +454,80 @@ _FLOWREQUEST = descriptor.Descriptor(
   nested_types=[],  # TODO(robinson): Implement.
   enum_types=[
     _FLOWREQUEST_ACTION,
+  ],
+  options=None)
+
+
+_HEARTBEATSECONDEVENT = descriptor.Descriptor(
+  name='HeartbeatSecondEvent',
+  full_name='HeartbeatSecondEvent',
+  filename='core/net/kegnet.proto',
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_HEARTBEATMINUTEEVENT = descriptor.Descriptor(
+  name='HeartbeatMinuteEvent',
+  full_name='HeartbeatMinuteEvent',
+  filename='core/net/kegnet.proto',
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_HEARTBEATHOUREVENT = descriptor.Descriptor(
+  name='HeartbeatHourEvent',
+  full_name='HeartbeatHourEvent',
+  filename='core/net/kegnet.proto',
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
+  ],
+  options=None)
+
+
+_CREDITADDEDEVENT = descriptor.Descriptor(
+  name='CreditAddedEvent',
+  full_name='CreditAddedEvent',
+  filename='core/net/kegnet.proto',
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='amount', full_name='CreditAddedEvent.amount', index=0,
+      number=1, type=2, cpp_type=6, label=2,
+      default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='username', full_name='CreditAddedEvent.username', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],  # TODO(robinson): Implement.
+  enum_types=[
   ],
   options=None)
 
@@ -506,4 +580,20 @@ class ThermoEvent(message.Message):
 class FlowRequest(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _FLOWREQUEST
+
+class HeartbeatSecondEvent(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _HEARTBEATSECONDEVENT
+
+class HeartbeatMinuteEvent(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _HEARTBEATMINUTEEVENT
+
+class HeartbeatHourEvent(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _HEARTBEATHOUREVENT
+
+class CreditAddedEvent(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _CREDITADDEDEVENT
 

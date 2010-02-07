@@ -129,3 +129,17 @@ message FlowRequest {
   // Requested action.
   required Action request = 2;
 }
+
+message HeartbeatSecondEvent {
+}
+
+message HeartbeatMinuteEvent {
+}
+
+message HeartbeatHourEvent {
+}
+
+message CreditAddedEvent {
+  required float amount = 1;
+  optional string username = 2;
+}

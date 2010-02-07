@@ -61,6 +61,7 @@ class KegbotEnv(object):
     self._thermo_manager = manager.ThermoManager('thermo-manager', self)
     self._authentication_manager = manager.AuthenticationManager('authentication-manager', self)
     self._token_manager = manager.TokenManager('token-manager', self)
+    self._billing_manager = manager.BillingManager('billing', self)
     self._subscription_manager = manager.SubscriptionManager('pubsub', self)
 
     self._backend = backend.KegbotBackend()
@@ -75,6 +76,7 @@ class KegbotEnv(object):
     self._service_thread.AddEventHandler(self._thermo_manager)
     self._service_thread.AddEventHandler(self._authentication_manager)
     self._service_thread.AddEventHandler(self._token_manager)
+    self._service_thread.AddEventHandler(self._billing_manager)
     self._service_thread.AddEventHandler(self._subscription_manager)
 
     if self._backend.GetConfig().IsFeatureEnabled('twitter'):
@@ -88,6 +90,7 @@ class KegbotEnv(object):
     self.AddThread(kb_threads.NetProtocolThread(self, 'net-thread'))
     self.AddThread(kb_threads.AlarmManagerThread(self, 'alarmmanager-thread'))
     self.AddThread(kb_threads.FlowMonitorThread(self, 'flowmonitor-thread'))
+    self.AddThread(kb_threads.HeartbeatThread(self, 'heartbeat-thread'))
 
     self._watchdog_thread = kb_threads.WatchdogThread(self, 'watchdog-thread')
     self.AddThread(self._watchdog_thread)

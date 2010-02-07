@@ -1,4 +1,4 @@
-# Copyright 2009 Mike Wakerly <opensource@hoho.com>
+# Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -24,6 +24,7 @@ import time
 import threading
 import logging
 
+from pykeg.billing import models as billing_models
 from pykeg.core import event
 from pykeg.core import flow_meter
 from pykeg.core import kb_common
@@ -560,6 +561,53 @@ class TokenManager(Manager):
       - The token notseen timeout is reached
       - An explicit AUTH_TOKEN_REMOVED event is received
     """
+    if event.status == event.ADDED:
+      self._TokenAdded(event)
+    else:
+      self._TokenRemoved(event)
+
+  def _GetToken(self, token_pair):
+    auth_device_name, token_value = token_pair
+
+    token, created = models.AuthenticationToken.objects.get_or_create(
+        auth_device=auth_device_name,
+        token_value=token_value)
+
+    if created:
+      self._logger.info('Token unknown, created: %s %s' %
+                        (auth_device_name, token_value))
+
+    return token
+
+  def _PublishAuthEvent(self, tap_name, token, added):
+    message = kegnet_pb2.UserAuthEvent()
+    message.tap_name = tap_name
+    message.user_name = token.user.username
+    if added:
+      message.state = message.ADDED
+    else:
+      message.state = message.REMOVED
+    self._PublishEvent(message)
+
+  def _TokenRemoved(self, event):
+    tap_name = event.tap_name
+    auth_device_name = event.auth_device_name
+    token_value = event.token_value.lower()
+    token_pair = (auth_device_name, token_value)
+
+    try:
+      self._present_tokens.remove(token_pair)
+    except KeyError:
+      return
+
+    token = self._GetToken(token_pair)
+
+    if not token or not token.user:
+      return
+
+    self._PublishAuthEvent(tap_name, token, False)
+
+  def _TokenAdded(self, event):
     tap_name = event.tap_name
     auth_device_name = event.auth_device_name
     token_value = event.token_value.lower()
@@ -573,51 +621,132 @@ class TokenManager(Manager):
     self._logger.info('Token attached: %s %s' % (auth_device_name, token_value))
     self._present_tokens.put(token_pair)
 
-    token, created = models.AuthenticationToken.objects.get_or_create(
-        auth_device=auth_device_name,
-        token_value=token_value)
+    token = self._GetToken(token_pair)
 
-    if created:
-      self._logger.info('Token unknown, created: %s %s' %
-                        (auth_device_name, token_value))
-
-    if not token.user:
+    if not token or not token.user:
       self._logger.info('Token is not assigned.')
       return
 
-    # TODO(mikey): should virtual taps (__all_taps__) be handled elsewhere?
-    for tap in self._GetTapsForTapName(tap_name):
-      message = kegnet_pb2.UserAuthEvent()
-      message.tap_name = tap.GetName()
-      message.user_name = token.user.username
-      message.state = message.ADDED
-      self._PublishEvent(message)
+    self._PublishAuthEvent(tap_name, token, True)
+
+
+class AuthenticationManager(Manager):
+  def __init__(self, name, kb_env):
+    Manager.__init__(self, name, kb_env)
+    self._active_users = set()
+
+  @EventHandler(kegnet_pb2.UserAuthEvent)
+  def HandleUserAuthEvent(self, event):
+    flow_mgr = self._kb_env.GetFlowManager()
+
+    try:
+      user = models.User.objects.get(username=event.user_name)
+    except models.User.DoesNotExist:
+      user = None
+
+    if event.state == event.ADDED:
+      if user:
+        self._active_users.add(user)
+        self._logger.info('Added user: %s' % user)
+      for tap in self._GetTapsForTapName(event.tap_name):
+        flow_mgr.StartFlow(tap.GetName(), user)
+    else:
+      if user:
+        try:
+          self._active_users.remove(user)
+          self._logger.info('Removed user: %s' % user)
+        except KeyError:
+          pass
+      for tap in self._GetTapsForTapName(event.tap_name):
+        # XXX hack
+        flow_mgr.EndFlow(tap.GetName())
+
+  def GetActiveUsers(self):
+    return self._active_users
 
   def _GetTapsForTapName(self, tap_name):
     tap_manager = self._kb_env.GetTapManager()
     if tap_name == kb_common.ALIAS_ALL_TAPS:
       return tap_manager.GetAllTaps()
     else:
-      return [tap_manager.GetTap(tap_name)]
+      if tap_manager.TapExists(tap_name):
+        return [tap_manager.GetTap(tap_name)]
+      else:
+        return []
 
 
-class AuthenticationManager(Manager):
-  @EventHandler(kegnet_pb2.UserAuthEvent)
-  def HandleAuthUserAddedEvent(self, event):
-    flow_mgr = self._kb_env.GetFlowManager()
+class BillingManager(Manager):
+  MAX_DELTA = datetime.timedelta(seconds=1)
+  def __init__(self, name, kb_env):
+    Manager.__init__(self, name, kb_env)
+    self._acceptor = {}
+    self._counter = {}
+    self._active_credits = {}
 
-    if event.state == event.ADDED:
-      try:
-        user = models.User.objects.get(username=event.user_name)
-      except models.User.DoesNotExist:
-        user = None
-      flow = flow_mgr.StartFlow(event.tap_name, user)
+    for acceptor in billing_models.BillAcceptor.objects.all():
+      self._acceptor[acceptor.name] = acceptor
+      self._counter[acceptor.name] = 0
+
+  @EventHandler(kegnet_pb2.MeterUpdate)
+  def HandleMeterUpdateEvent(self, event):
+    name = event.tap_name
+    if name not in self._acceptor:
+      return
+
+    increment = self._acceptor[name].increment
+    curr_reading = event.reading
+    last_reading = self._counter[name]
+    if curr_reading < last_reading:
+      if curr_reading == 0:
+        delta = 0
+      else:
+        delta = increment
     else:
-      flow = flow_mgr.EndFlow(event.tap_name)
+      delta = increment * (curr_reading - last_reading)
+    self._counter[name] = curr_reading
+
+    activity, credit = self._active_credits.get(name, (None, 0))
+    if activity is None:
+      self._logger.info('New credit started')
+    credit += delta
+    self._active_credits[name] = (datetime.datetime.now(), credit)
+    self._logger.info('Acceptor "%s" credit: %.2f' % (name, credit))
+
+  @EventHandler(kegnet_pb2.HeartbeatSecondEvent)
+  def HandleHeartbeat(self, event):
+    if not self._active_credits:
+      return
+
+    now = datetime.datetime.now()
+    for acceptor_name in self._active_credits.keys():
+      last_activity, credit = self._active_credits[acceptor_name]
+      delta = now - last_activity
+      if delta >= self.MAX_DELTA:
+        self._ProcessCredit(acceptor_name, credit)
+        del self._active_credits[acceptor_name]
+
+  def _ProcessCredit(self, acceptor_name, credit_amount):
+    credit = billing_models.Credit(amount=credit_amount)
+    credit.acceptor = self._acceptor[acceptor_name]
+    am = self._kb_env.GetAuthenticationManager()
+    users = list(am.GetActiveUsers())
+    if users:
+      # XXX hack
+      credit.user = users[0]
+    credit.save()
+    self._logger.info('Logged credit for %s: %.2f' % (credit.user,
+        credit_amount))
+
+    event = kegnet_pb2.CreditAddedEvent()
+    event.amount = credit_amount
+    if credit.user:
+      event.username = credit.user.username
+    self._PublishEvent(event)
 
 
 class SubscriptionManager(Manager):
+  @EventHandler(kegnet_pb2.CreditAddedEvent)
   @EventHandler(kegnet_pb2.FlowUpdate)
-  def HandleEvent(self, event):
+  def RepostEvent(self, event):
     server = self._kb_env.GetKegnetServer()
     server.SendEventToClients(event)

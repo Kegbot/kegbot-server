@@ -6,6 +6,7 @@ from django.contrib import admin
 
 class Credit(models.Model):
   amount = models.FloatField()
+  acceptor = models.ForeignKey('BillAcceptor', blank=True, null=True)
   user = models.ForeignKey('auth.User', related_name='credits', blank=True,
       null=True)
   date = models.DateTimeField(default=datetime.datetime.now)
@@ -32,3 +33,13 @@ class Credit(models.Model):
   )
 
 admin.site.register(Credit)
+
+
+class BillAcceptor(models.Model):
+  name = models.CharField(max_length=128)
+  increment = models.FloatField(default=1.0)
+
+  def __str__(self):
+    return 'BillAcceptor "%s"' % (self.name,)
+
+admin.site.register(BillAcceptor)

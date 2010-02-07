@@ -177,3 +177,23 @@ def update_mugshots(request):
     profile.mugshot = pic
     profile.save()
   return redirect_to(request, url='/account/')
+
+@login_required
+def claim_token(request):
+  if request.method == 'POST':
+    form = forms.ClaimTokenForm(request.POST)
+
+    if form.is_valid():
+      user = form.cleaned_data['user']
+      token = form.cleaned_data['token']
+      # TODO(mikey): non-superusers should only be able to claim tokens for
+      # their own account.
+      token.user = user
+      token.save()
+  else:
+    form = forms.ClaimTokenForm()
+
+  context = RequestContext(request)
+  context['form'] = form
+  return render_to_response('kegweb/claim_token.html', context)
+

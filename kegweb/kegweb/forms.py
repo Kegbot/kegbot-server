@@ -3,7 +3,7 @@ from django import forms
 from registration.models import RegistrationProfile
 from registration.forms import RegistrationForm
 
-from pykeg.core.models import UserProfile
+from pykeg.core import models
 
 class KegbotRegistrationForm(RegistrationForm):
   gender = forms.CharField()
@@ -17,7 +17,7 @@ class KegbotRegistrationForm(RegistrationForm):
                                                                 profile_callback=profile_callback)
     new_user.is_active = True
     new_user.save()
-    new_profile, is_new = UserProfile.objects.get_or_create(user=new_user)
+    new_profile, is_new = models.UserProfile.objects.get_or_create(user=new_user)
     new_profile.gender = self.cleaned_data['gender']
     new_profile.weight = self.cleaned_data['weight']
     new_profile.save()
@@ -26,9 +26,17 @@ class KegbotRegistrationForm(RegistrationForm):
 
 class UserProfileForm(forms.ModelForm):
   class Meta:
-    model = UserProfile
+    model = models.UserProfile
     fields = ('gender', 'weight')
 
 
 class MugshotForm(forms.Form):
   new_mugshot = forms.ImageField(required=False)
+
+
+UNASSIGNED_TOKEN_QS = models.AuthenticationToken.objects.filter(user=None)
+NEW_USERS = models.User.objects.all().order_by('-date_joined')
+
+class ClaimTokenForm(forms.Form):
+  token = forms.ModelChoiceField(queryset=UNASSIGNED_TOKEN_QS)
+  user = forms.ModelChoiceField(queryset=NEW_USERS)

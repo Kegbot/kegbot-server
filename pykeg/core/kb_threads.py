@@ -73,6 +73,27 @@ class FlowMonitorThread(CoreThread):
     event.tap_name = flow.GetTap().GetName()
     self._kb_env.GetEventHub().PublishEvent(event)
 
+
+class HeartbeatThread(CoreThread):
+  """Generates periodic events."""
+
+  def ThreadMain(self):
+    hub = self._kb_env.GetEventHub()
+    seconds = 0
+    while not self._quit:
+      time.sleep(1.0)
+      seconds += 1
+      event = kegnet_pb2.HeartbeatSecondEvent()
+      hub.PublishEvent(event)
+      if (seconds % 60) == 0:
+        event = kegnet_pb2.HeartbeatMinuteEvent()
+        hub.PublishEvent(event)
+      if (seconds % 3600) == 0:
+        event = kegnet_pb2.HeartbeatHourEvent()
+        hub.PublishEvent(event)
+        seconds = 0
+
+
 class AlarmManagerThread(CoreThread):
 
   def ThreadMain(self):

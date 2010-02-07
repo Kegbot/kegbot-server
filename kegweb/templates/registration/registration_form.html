@@ -17,22 +17,9 @@
 {% endif %}
 <p>
 <form method="POST" action="/accounts/register/">
-username: <input type="text" name="username" size="30"><br>
-password: <input type="password" name="password1" size="30"><br>
-password again: <input type="password" name="password2" size="30"><br>
-email: <input type="text" name="email" size="30"><br>
-gender:
-<select name="gender">
-<option>male
-<option>female
-</select>
-<br>
-approx weight:<select name="weight">
-<option value="100">less than 100</option>
-<option value="120">100-130</option>
-<option value="150" selected>131-170</option>
-<option value="180">171+</option>
-</select>
+<table>
+{{form.as_table}}
+</table>
 <br>
 <input type="submit">
 </form>

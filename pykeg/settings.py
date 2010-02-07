@@ -12,8 +12,9 @@ INSTALLED_APPS = (
     'django.contrib.markup',
     'pykeg.core',
     'pykeg.contrib.twitter',
+    'pykeg.contrib.soundserver',
+    'pykeg.billing',
     'kegweb.kegweb',
-    'kegweb.accounting',
     'registration',
     'south',
 )

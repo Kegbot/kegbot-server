@@ -35,9 +35,19 @@ class SoundFile(models.Model):
   title = models.CharField(max_length=128)
   active = models.BooleanField(default=True)
 
+  def __str__(self):
+    return '%s (%s)' % (self.title, self.sound)
+
 
 class SoundEvent(models.Model):
   event_name = models.CharField(max_length=256)
   event_predicate = models.CharField(max_length=256, blank=True, null=True)
   soundfile = models.ForeignKey(SoundFile)
   user = models.ForeignKey(User, blank=True, null=True)
+
+  def SoundTitle(self):
+    return self.soundfile.title
+
+  def __str__(self):
+    return '%s(%s) -> %s' % (self.event_name, self.event_predicate,
+        self.soundfile.title)

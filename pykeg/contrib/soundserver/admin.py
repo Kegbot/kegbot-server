@@ -20,5 +20,12 @@ from django.contrib import admin
 
 from pykeg.contrib.soundserver import models
 
-admin.site.register(models.SoundFile)
-admin.site.register(models.SoundEvent)
+class SoundFileAdmin(admin.ModelAdmin):
+  list_display = ('title', 'sound', 'active')
+admin.site.register(models.SoundFile, SoundFileAdmin)
+
+class SoundEventAdmin(admin.ModelAdmin):
+  list_display = ('event_name', 'event_predicate', 'SoundTitle')
+  list_filter = ('event_name',)
+  search_fileds = ('event_name', 'SoundTitle')
+admin.site.register(models.SoundEvent, SoundEventAdmin)

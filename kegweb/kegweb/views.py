@@ -140,14 +140,11 @@ def webauth(request):
 def account_view(request):
   context = RequestContext(request)
   user = request.user
-  context['statements'] = user.billstatement_set.all().order_by('-statement_date')
   context['payments'] = user.payment_set.all().order_by('-payment_date')
   context['user'] = user
   context['profile_form'] = forms.UserProfileForm(instance=user.get_profile())
   mf = forms.MugshotForm()
   context['mugshot_form'] = mf
-
-  # TODO unbilled activity
 
   return render_to_response('kegweb/account.html', context)
 

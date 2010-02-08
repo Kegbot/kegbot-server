@@ -140,7 +140,6 @@ def webauth(request):
 def account_view(request):
   context = RequestContext(request)
   user = request.user
-  context['payments'] = user.payment_set.all().order_by('-payment_date')
   context['user'] = user
   context['profile_form'] = forms.UserProfileForm(instance=user.get_profile())
   mf = forms.MugshotForm()

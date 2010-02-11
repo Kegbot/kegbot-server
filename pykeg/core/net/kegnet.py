@@ -27,9 +27,9 @@ import asyncore
 import asynchat
 import socket
 import cStringIO
+import json
 import logging
 import Queue
-import simplejson
 import struct
 import threading
 import time
@@ -86,7 +86,7 @@ def ProtoMessageToJson(message):
     'id': None,
     'params': ProtoMessageToDict(message),
   }
-  return simplejson.dumps(wrapper)
+  return json.dumps(wrapper)
 
 NAME_TO_MESSAGE_CLASS = {}
 for cls in protobuf_message.Message.__subclasses__():
@@ -136,7 +136,7 @@ class KegnetProtocolHandler(asynchat.async_chat):
       return
 
     try:
-      message_dict = simplejson.loads(strbuf)
+      message_dict = json.loads(strbuf)
     except ValueError:
       self._logger.warning('Received malformed message, dropping.')
       return

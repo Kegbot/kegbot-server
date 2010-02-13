@@ -2,7 +2,6 @@
 import datetime
 
 from django.db import models
-from django.contrib import admin
 
 class Credit(models.Model):
   amount = models.FloatField()
@@ -32,8 +31,6 @@ class Credit(models.Model):
       default = 'complete',
   )
 
-admin.site.register(Credit)
-
 
 class BillAcceptor(models.Model):
   name = models.CharField(max_length=128)
@@ -41,5 +38,3 @@ class BillAcceptor(models.Model):
 
   def __str__(self):
     return 'BillAcceptor "%s"' % (self.name,)
-
-admin.site.register(BillAcceptor)

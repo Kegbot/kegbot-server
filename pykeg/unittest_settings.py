@@ -46,6 +46,10 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.humanize',
     'pykeg.core',
+    'pykeg.contrib.twitter',
+    'pykeg.contrib.soundserver',
+    'pykeg.billing',
+    'kegweb.kegweb',
 )
 
 AUTH_PROFILE_MODULE = "core.UserProfile"

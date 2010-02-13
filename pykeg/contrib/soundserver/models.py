@@ -29,8 +29,6 @@ def sound_file_name(instance, filename):
 
 
 class SoundFile(models.Model):
-  def __str__(self):
-    return self.title
   sound = models.FileField(upload_to=sound_file_name)
   title = models.CharField(max_length=128)
   active = models.BooleanField(default=True)

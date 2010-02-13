@@ -36,15 +36,7 @@ and temperature events).  This is a TCP connection, using the Kegnet Protocol to
 exchange data.
 """
 
-import asynchat
-import asyncore
-import cStringIO
-import datetime
-import logging
-import os
 import Queue
-import socket
-import sys
 
 import serial
 

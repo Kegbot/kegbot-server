@@ -230,6 +230,8 @@ class Drink(models.Model):
     return 'http://%s/d/%i' % (domain, self.id)
 
   def calories(self):
+    if not self.keg or not self.keg.type:
+      return 0
     cal = self.keg.type.calories_oz * self.Volume().ConvertTo.Ounce
     return cal
 

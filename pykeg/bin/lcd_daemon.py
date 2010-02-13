@@ -22,11 +22,8 @@
 
 import importhacks
 
-import asyncore
 import Queue
-import serial
 import sys
-import time
 
 from pykeg.core import kb_app
 from pykeg.core import units

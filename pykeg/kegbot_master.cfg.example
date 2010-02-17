@@ -49,6 +49,9 @@ kegboard_device = /dev/ttyUSB0
 _enabled = False
 lcd_device_path = /dev/ttyUSB1
 
+[sound_server]
+_enabled = True
+
 [second_kegboard]
 # Example showing a second instance of kegboard_daemon.
 _enabled = False

@@ -99,10 +99,10 @@ class App(object):
       app = cls(name)
       app.Start()
     except Exception, e:
-      logger = logging.getLogger('app')
-      logger.error('Uncaught exception in app %s. Stack trace:' % name)
-      util.LogTraceback(logger.error)
-      logger.error('Aborting.')
+      logger = lambda msg: sys.stderr.write('%s\n' % msg)
+      logger('Uncaught exception in app %s. Stack trace:' % name)
+      util.LogTraceback(logger)
+      logger('Aborting.')
       sys.exit(1)
 
   def Start(self):

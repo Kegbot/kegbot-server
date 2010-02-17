@@ -103,6 +103,14 @@ log_to_file = True
 logfile = %(_logfile_dir)s/%(__name__)s.log
 """
 
+def _ExtendPath():
+  """Appends directory name of this script to $PATH."""
+  local_dir = os.path.dirname(sys.modules[__name__].__file__)
+  current_paths = os.environ['PATH'].split(':')
+  if local_dir not in current_paths:
+    current_paths.append(local_dir)
+    os.environ['PATH'] = ':'.join(current_paths)
+
 def _GetConfigParser():
   default_values = {
     '_flag_logfile_dir': FLAGS.logfile_dir,
@@ -117,6 +125,7 @@ def _GetConfigParser():
 class KegbotMasterApp(kb_app.App):
   def _Setup(self):
     kb_app.App._Setup(self)
+    _ExtendPath()
     self._config = _GetConfigParser()
     self._commands = {}
 

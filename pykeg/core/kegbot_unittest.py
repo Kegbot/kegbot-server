@@ -3,6 +3,7 @@
 """Unittest for kegbot module"""
 
 import commands
+import datetime
 import time
 import logging
 import socket
@@ -152,6 +153,29 @@ class KegbotTestCase(TestCase):
     self.assertEquals(len(drinks), 2)
     self.assertEquals(drinks[0].user, self.test_user)
     self.assertEquals(drinks[1].user, self.test_user_2)
+
+  def testIdleFlow(self):
+    meter_name = self.test_tap.meter_name
+    self.client.SendFlowStart(meter_name)
+    self.client.SendMeterUpdate(meter_name, 0)
+    self.client.SendMeterUpdate(meter_name, 100)
+    time.sleep(1.0)
+    self.service_thread._FlushEvents()
+
+    flows = self.env.GetFlowManager().GetActiveFlows()
+    self.assertEquals(len(flows), 1)
+
+    # Rewind the flow activity clocks to simulate idleness.
+    flows[0]._start_time -= datetime.timedelta(minutes=10)
+    flows[0]._end_time = flows[0]._start_time
+
+    # Wait for the heartbeat event to kick in.
+    time.sleep(1.0)
+    self.service_thread._FlushEvents()
+
+    # Verify that the flow has been ended.
+    flows = self.env.GetFlowManager().GetActiveFlows()
+    self.assertEquals(len(flows), 0)
 
 
 if __name__ == '__main__':

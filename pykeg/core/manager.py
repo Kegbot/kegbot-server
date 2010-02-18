@@ -386,12 +386,16 @@ class FlowManager(Manager):
     except UnknownTapError:
       return None
 
-  @EventHandler(kegnet_pb2.TapIdleEvent)
-  def HandleFlowIdleEvent(self, event):
-    flow = self.GetFlow(event.tap_name)
-    if flow:
-      self._StateChange(flow, kegnet_pb2.FlowUpdate.IDLE)
-      self.EndFlow(event.tap_name)
+  @EventHandler(kegnet_pb2.HeartbeatSecondEvent)
+  def _HandleHeartbeatEvent(self, event):
+    # TODO(mikey): Allowable idle time must be configurable.
+    max_idle = datetime.timedelta(seconds=10)
+    for flow in self.GetActiveFlows():
+      idle_time = flow.GetIdleTime()
+      if idle_time > max_idle:
+        self._logger.info('Flow has become too idle, ending: %s' % flow)
+        self._StateChange(flow, kegnet_pb2.FlowUpdate.IDLE)
+        self.EndFlow(flow.GetTap().GetName())
 
   @EventHandler(kegnet_pb2.FlowRequest)
   def _HandleFlowRequestEvent(self, event):
@@ -463,7 +467,7 @@ class DrinkManager(Manager):
 
     # notify listeners
     created = kegnet_pb2.DrinkCreatedEvent()
-    created.flow_id = 0
+    created.flow_id = event.flow_id
     created.drink_id = d.id
     created.tap_name = event.tap_name
     created.start_time = int(time.mktime(d.starttime.timetuple()))

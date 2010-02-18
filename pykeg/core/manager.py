@@ -31,7 +31,6 @@ from pykeg.core import kb_common
 from pykeg.core import models
 from pykeg.core import units
 from pykeg.core import util
-from pykeg.core.net import kegnet_message
 from pykeg.core.net import kegnet_pb2
 
 

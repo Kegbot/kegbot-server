@@ -53,7 +53,7 @@ def EventHandler(event_type):
   return decorate
 
 
-class Manager(object):
+class Manager:
   def __init__(self, name, kb_env):
     self._name = name
     self._kb_env = kb_env
@@ -78,7 +78,7 @@ class Manager(object):
     self._kb_env.GetEventHub().PublishEvent(event)
 
 
-class Tap(object):
+class Tap:
   def __init__(self, name, ml_per_tick, max_tick_delta):
     self._name = name
     self._ml_per_tick = ml_per_tick
@@ -636,36 +636,68 @@ class TokenManager(Manager):
 class AuthenticationManager(Manager):
   def __init__(self, name, kb_env):
     Manager.__init__(self, name, kb_env)
-    self._active_users = set()
+    self._users_by_tap = {}
+
+  def _AddUser(self, user, tap):
+    tap_name = tap.GetName()
+    old_user = self._users_by_tap.get(tap_name)
+    if old_user:
+      if old_user == user:
+        self._logger.info('User %s@%s already authenticated' % (user, tap_name))
+        return
+      else:
+        self._RemoveUser(tap)
+    self._users_by_tap[tap_name] = user
+    self._logger.info('Authenticated user %s@%s' % (user, tap_name))
+
+    # Ask the flow manager to start a flow for this user & tap.
+    # TODO(mikey): FlowManager should do this as the result of an authentication
+    # event.
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow = flow_mgr.GetFlow(tap.GetName())
+    if flow is None:
+      flow_mgr.StartFlow(tap.GetName(), user)
+    else:
+      flow_mgr.SetUser(flow, user)
+
+  def _RemoveUser(self, tap):
+    tap_name = tap.GetName()
+    user = self._users_by_tap.get(tap_name)
+    if not user:
+      self._logger.warning('No user authenticated on tap %s' % tap_name)
+      return
+    del self._users_by_tap[tap_name]
+    self._logger.info('Deauthenticated user %s@%s' % (user, tap_name))
+
+    # Ask the flow manager to stop a flow on this tap.
+    # TODO(mikey): FlowManager should do this as the result of an authentication
+    # event.
+    flow_mgr = self._kb_env.GetFlowManager()
+    flow_mgr.EndFlow(tap.GetName())
 
   @EventHandler(kegnet_pb2.UserAuthEvent)
   def HandleUserAuthEvent(self, event):
-    flow_mgr = self._kb_env.GetFlowManager()
-
     try:
       user = models.User.objects.get(username=event.user_name)
     except models.User.DoesNotExist:
-      user = None
+      self._logger.warning('Ignoring auth event for unknown username %s' %
+          event.user_name)
+      return
 
-    if event.state == event.ADDED:
-      if user:
-        self._active_users.add(user)
-        self._logger.info('Added user: %s' % user)
-      for tap in self._GetTapsForTapName(event.tap_name):
-        flow_mgr.StartFlow(tap.GetName(), user)
-    else:
-      if user:
-        try:
-          self._active_users.remove(user)
-          self._logger.info('Removed user: %s' % user)
-        except KeyError:
-          pass
-      for tap in self._GetTapsForTapName(event.tap_name):
-        # XXX hack
-        flow_mgr.EndFlow(tap.GetName())
+    taps = self._GetTapsForTapName(event.tap_name)
+    if not taps:
+      self._logger.warning('Ignoring auth event for unknown tap %s' %
+          event.tap_name)
+      return
+
+    for tap in taps:
+      if event.state == event.ADDED:
+        self._AddUser(user, tap)
+      else:
+        self._RemoveUser(tap)
 
   def GetActiveUsers(self):
-    return self._active_users
+    return set(self._users_by_tap.values())
 
   def _GetTapsForTapName(self, tap_name):
     tap_manager = self._kb_env.GetTapManager()

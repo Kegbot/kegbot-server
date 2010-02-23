@@ -316,6 +316,7 @@ class FlowManager(Manager):
     self._PublishUpdate(flow)
 
   def EndFlow(self, tap_name):
+    self._logger.info('Ending flow on tap %s' % tap_name)
     try:
       flow = self.GetFlow(tap_name)
       if flow:
@@ -422,7 +423,7 @@ class DrinkManager(Manager):
       self._HandleFlowEnded(event)
 
   def _HandleFlowEnded(self, event):
-    self._logger.info('Flow completed')
+    self._logger.info('Flow completed for flow_id=%i' % event.flow_id)
 
     ticks = event.ticks
     volume_ml = event.volume_ml
@@ -520,73 +521,95 @@ class ThermoManager(Manager):
     new_record.save()
     self._sensor_to_last_record[sensor_name] = new_record
 
+class TokenRecord:
+  STATUS_ACTIVE = 1
+  STATUS_REMOVED = 2
 
-class TimeoutCache:
-  def __init__(self, maxage):
-    self._max_delta = maxage
-    self._entries = {}
+  def __init__(self, token, tap_name):
+    self.token = token
+    self.tap_name = tap_name
+    self.last_seen = datetime.datetime.now()
+    self.status = self.STATUS_ACTIVE
 
-  def present(self, k):
-    now = datetime.datetime.now()
-    if k in self._entries:
-      age = now - self._entries[k]
-      if age > self._max_delta:
-        self.remove(k)
-        return False
-      else:
-        return True
-    return False
+  def AsTuple(self):
+    return (self.token.auth_device, self.token.token_value, self.tap_name)
 
-  def touch(self, k):
-    if k in self._entries:
-      self._entries[k] = datetime.datetime.now()
+  def SetStatus(self, status):
+    self.status = status
 
-  def remove(self, k):
-    del self._entries[k]
+  def UpdateLastSeen(self):
+    self.SetStatus(self.STATUS_ACTIVE)
+    self.last_seen = datetime.datetime.now()
 
-  def put(self, k):
-    self._entries[k] = datetime.datetime.now()
+  def IdleTime(self):
+    return datetime.datetime.now() - self.last_seen
+
+  def MaxIdleTime(self):
+    amt = kb_common.AUTH_TOKEN_MAX_IDLE.get(self.token.auth_device, 0)
+    return datetime.timedelta(seconds=amt)
+
+  def IsIdle(self):
+    if self.status == self.STATUS_REMOVED:
+      return self.IdleTime() >= self.MaxIdleTime()
+    else:
+      return False
+
+  def __hash__(self):
+    return hash((self.AsTuple(), other.AsTuple()))
+
+  def __cmp__(self, other):
+    if not other:
+      return -1
+    return cmp(self.AsTuple(), other.AsTuple())
 
 
 class TokenManager(Manager):
   """Keeps track of tokens arriving and departing from taps."""
   def __init__(self, name, kb_env):
     Manager.__init__(self, name, kb_env)
-    self._present_tokens = TimeoutCache(datetime.timedelta(seconds=3))
+    self._tokens = {}
+    self._lock = threading.Lock()
 
   @EventHandler(kegnet_pb2.TokenAuthEvent)
   def HandleAuthTokenAddedEvent(self, event):
-    """Handles a newly added token.
-
-    When a token is added (reported as present), the manager should:
-      - Check the active_tokens cache.
-        - If the token is in the cache, update it and return: nothing new.
-        - If the token is NOT in the cache, add it to the cache and attempt to
-          start a new flow.
-
-    A token is removed from the cache in one of two ways:
-      - The token notseen timeout is reached
-      - An explicit AUTH_TOKEN_REMOVED event is received
-    """
     if event.status == event.ADDED:
       self._TokenAdded(event)
     else:
       self._TokenRemoved(event)
 
-  def _GetToken(self, token_pair):
-    auth_device_name, token_value = token_pair
+  @EventHandler(kegnet_pb2.HeartbeatSecondEvent)
+  def HandleHeartbeatEvent(self, event):
+    for tap_name, record in self._tokens.items():
+      if record.IsIdle():
+        self._logger.info('Token has been removed: %s' % record.token)
+        self._RemoveRecord(record)
+
+  def _GetRecordFromEvent(self, event):
+    auth_device = event.auth_device_name
+    token_value = event.token_value.lower()
+    tap_name = event.tap_name
+    return self._GetRecord(auth_device, token_value, tap_name)
+
+  def _GetRecord(self, auth_device, token_value, tap_name):
+    if tap_name in self._tokens:
+      record = self._tokens[tap_name]
+      new_tuple = (auth_device, token_value, tap_name)
+      if record.AsTuple() == new_tuple:
+        return record
 
     token, created = models.AuthenticationToken.objects.get_or_create(
-        auth_device=auth_device_name,
-        token_value=token_value)
+        auth_device=auth_device, token_value=token_value)
 
     if created:
-      self._logger.info('Token unknown, created: %s %s' %
-                        (auth_device_name, token_value))
+      self._logger.info('Token unknown, created: %s' % token)
 
-    return token
+    return TokenRecord(token, tap_name)
 
   def _PublishAuthEvent(self, tap_name, token, added):
+    if not token.user:
+      self._logger.info('Token not assigned: %s' % token)
+      return
+
     message = kegnet_pb2.UserAuthEvent()
     message.tap_name = tap_name
     message.user_name = token.user.username
@@ -597,44 +620,48 @@ class TokenManager(Manager):
     self._PublishEvent(message)
 
   def _TokenRemoved(self, event):
-    tap_name = event.tap_name
-    auth_device_name = event.auth_device_name
-    token_value = event.token_value.lower()
-    token_pair = (auth_device_name, token_value)
+    record = self._GetRecordFromEvent(event)
 
-    try:
-      self._present_tokens.remove(token_pair)
-    except KeyError:
+    if not record.token.user:
       return
 
-    token = self._GetToken(token_pair)
-
-    if not token or not token.user:
+    if record.tap_name not in self._tokens:
       return
 
-    self._PublishAuthEvent(tap_name, token, False)
+    if self._tokens[record.tap_name] != record:
+      return
+
+    record.SetStatus(record.STATUS_REMOVED)
+
+    # Depending on the authentication device token timeout, either remove the
+    # token immediately, or just wait for it to be idled out.
+    timeout = record.MaxIdleTime()
+    if not timeout:
+      self._logger.info('Immediately removing token %s' % record.token)
+      self._RemoveRecord(record)
+
+  @util.synchronized
+  def _RemoveRecord(self, record):
+    del self._tokens[record.tap_name]
+    self._logger.info('Removing record %s' % record.token)
+    self._PublishAuthEvent(record.tap_name, record.token, False)
 
   def _TokenAdded(self, event):
-    tap_name = event.tap_name
-    auth_device_name = event.auth_device_name
-    token_value = event.token_value.lower()
-    token_pair = (auth_device_name, token_value)
-
-    if self._present_tokens.present(token_pair):
-      # we already know about this token; process no further
-      self._present_tokens.touch(token_pair)
+    """Processes a TokenAuthEvent when a token is added."""
+    record = self._GetRecordFromEvent(event)
+    existing = self._tokens.get(record.tap_name)
+    if existing == record:
+      # Token is already known; nothing to do except update it.
+      record.UpdateLastSeen()
       return
 
-    self._logger.info('Token attached: %s %s' % (auth_device_name, token_value))
-    self._present_tokens.put(token_pair)
+    self._logger.info('Token attached: %s' % (record.token,))
+    if existing:
+      self._logger.info('Detaching previous token: %s' % existing.token)
+      self._RemoveRecord(existing)
 
-    token = self._GetToken(token_pair)
-
-    if not token or not token.user:
-      self._logger.info('Token is not assigned.')
-      return
-
-    self._PublishAuthEvent(tap_name, token, True)
+    self._tokens[record.tap_name] = record
+    self._PublishAuthEvent(record.tap_name, record.token, True)
 
 
 class AuthenticationManager(Manager):
@@ -650,6 +677,8 @@ class AuthenticationManager(Manager):
         self._logger.info('User %s@%s already authenticated' % (user, tap_name))
         return
       else:
+        self._logger.info('New user "%s" authenticated on tap %s, kicking old user "%s"' %
+            (user.username, tap_name, old_user.username))
         self._RemoveUser(tap)
     self._users_by_tap[tap_name] = user
     self._logger.info('Authenticated user %s@%s' % (user, tap_name))

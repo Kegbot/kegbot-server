@@ -18,6 +18,7 @@ from pykeg.core import models
 from pykeg.core import kb_common
 from pykeg.core import units
 from pykeg.core.net import kegnet
+from pykeg.core.net import kegnet_pb2
 
 LOGGER = logging.getLogger('unittest')
 
@@ -57,6 +58,7 @@ class KegbotTestCase(TestCase):
     self.test_token_2 = models.AuthenticationToken.objects.create(
         auth_device='core.onewire', token_value='baadcafebeeff00d',
         user=self.test_user_2)
+    kb_common.AUTH_TOKEN_MAX_IDLE['core.onewire'] = 2
 
     # Kill the kegbot flow processing thread so we can single step it.
     self.service_thread = self.env._service_thread
@@ -177,6 +179,59 @@ class KegbotTestCase(TestCase):
     flows = self.env.GetFlowManager().GetActiveFlows()
     self.assertEquals(len(flows), 0)
 
+  def testTokenDebounce(self):
+    meter_name = self.test_tap.meter_name
+    self.client.SendFlowStart(meter_name)
+    self.client.SendMeterUpdate(meter_name, 0)
+    self.client.SendMeterUpdate(meter_name, 100)
+    time.sleep(1.0)
+    self.service_thread._FlushEvents()
+
+    self.client.SendAuthTokenAdd(self.test_tap.meter_name,
+        auth_device_name=self.test_token.auth_device,
+        token_value=self.test_token.token_value)
+    time.sleep(1.0) # TODO(mikey): need a synchronous wait
+    self.service_thread._FlushEvents()
+
+    flows = self.env.GetFlowManager().GetActiveFlows()
+    self.assertEquals(len(flows), 1)
+    flow = flows[0]
+    self.assertEquals(flow.GetUser(), self.test_user)
+    original_flow_id = flow.GetId()
+
+    LOGGER.info('Removing token...')
+    self.client.SendAuthTokenRemove(self.test_tap.meter_name,
+        auth_device_name=self.test_token.auth_device,
+        token_value=self.test_token.token_value)
+    time.sleep(0.5)
+    self.service_thread._FlushEvents()
+
+    # The flow should still be active.
+    flows = self.env.GetFlowManager().GetActiveFlows()
+    self.assertEquals(len(flows), 1)
+    flow = flows[0]
+    self.assertEquals(flow.GetId(), original_flow_id)
+    self.assertEquals(flow.GetState(), kegnet_pb2.FlowUpdate.ACTIVE)
+
+    # Re-add the token; should be unchanged.
+    self.client.SendAuthTokenAdd(self.test_tap.meter_name,
+        auth_device_name=self.test_token.auth_device,
+        token_value=self.test_token.token_value)
+    time.sleep(0.5)
+    self.service_thread._FlushEvents()
+
+    # No change in flow
+    flows = self.env.GetFlowManager().GetActiveFlows()
+    self.assertEquals(len(flows), 1)
+    flow = flows[0]
+    self.assertEquals(flow.GetId(), original_flow_id)
+    self.assertEquals(flow.GetState(), kegnet_pb2.FlowUpdate.ACTIVE)
+
+    # Idle out. TODO(mikey): shift clock instead of sleeping.
+    time.sleep(2.5)
+    self.service_thread._FlushEvents()
+    flows = self.env.GetFlowManager().GetActiveFlows()
+    self.assertEquals(len(flows), 0)
 
 if __name__ == '__main__':
   unittest.main()

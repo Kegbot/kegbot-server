@@ -219,11 +219,11 @@ class KegnetServerHandler(KegnetProtocolHandler):
 
 class KegnetClient(KegnetProtocolHandler):
   RECONNECT_BACKOFF = [5, 5, 10, 10, 20, 20, 60]
-  def __init__(self, addr=FLAGS.kb_core_addr, map=None):
+  def __init__(self, addr=FLAGS.kb_core_addr):
     self._addr = util.str_to_addr(addr)
     self._last_reconnect = 0
     self._num_retries = 0
-    KegnetProtocolHandler.__init__(self, map=map)
+    KegnetProtocolHandler.__init__(self)
 
   def Reconnect(self, force=False):
     if self.connected:

@@ -252,7 +252,7 @@ class KegnetClient(KegnetProtocolHandler):
       return False
 
   def _ReconnectTimeout(self):
-    pos = min(self._num_retries, len(self.RECONNECT_BACKOFF))
+    pos = min(self._num_retries, len(self.RECONNECT_BACKOFF) - 1)
     return self.RECONNECT_BACKOFF[pos]
 
   ### convenience functions

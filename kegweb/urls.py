@@ -7,8 +7,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 def basedir():
-   """ Get the pwd of this module, eg for use setting absolute paths """
-   return os.path.abspath(os.path.dirname(__file__))
+  """ Get the pwd of this module, eg for use setting absolute paths """
+  return os.path.abspath(os.path.dirname(__file__))
 
 urlpatterns = patterns('',
     ### django admin site

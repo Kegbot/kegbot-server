@@ -8,6 +8,8 @@ docs/build
 
 ### pykeg
 pykeg/kegbot.log
+pykeg/media/mugshots
+pykeg/sounds
 
 ### controller
 controller/kegboard/build-cli

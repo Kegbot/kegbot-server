@@ -1,6 +1,4 @@
-import math
 import datetime
-import time
 import pygooglechart
 
 from django.template import Library
@@ -10,38 +8,36 @@ from django.template import Variable
 from django.utils.safestring import mark_safe
 
 from pykeg.core import models
-from pykeg.core import units
-
 from kegweb.kegweb import stats
 
 register = Library()
 
 def mugshot_box(user, boxsize=100):
-   img_url = '/site_media/images/unknown-drinker.png'
+  img_url = '/site_media/images/unknown-drinker.png'
 
-   profile = user.get_profile()
-   if profile:
-     if profile.mugshot:
-       img_url = profile.mugshot.image.url
+  profile = user.get_profile()
+  if profile:
+    if profile.mugshot:
+      img_url = profile.mugshot.image.url
 
-   return {
-       'user' : user,
-       'boxsize' : boxsize,
-       'user_url' : '/drinkers/%s' % user.username,
-       'img_url': img_url,
-   }
+  return {
+      'user' : user,
+      'boxsize' : boxsize,
+      'user_url' : '/drinkers/%s' % user.username,
+      'img_url': img_url,
+  }
 register.inclusion_tag('kegweb/mugshot_box.html')(mugshot_box)
 
 def drink_span(drink):
-   return {'drink' : drink}
+  return {'drink' : drink}
 register.inclusion_tag('kegweb/drink_span.html')(drink_span)
 
 def show_drink_group(group):
-   return {'group' : group}
+  return {'group' : group}
 register.inclusion_tag('kegweb/drink_group.html')(show_drink_group)
 
 def render_page(page):
-   return {'page' : page}
+  return {'page' : page}
 register.inclusion_tag('kegweb/page_block.html')(render_page)
 
 def latest_drinks(parser, token):
@@ -209,17 +205,17 @@ register.tag('keg_stats', keg_stats)
 
 @register.filter
 def bac_format(text):
-   try:
-      f = float(text)
-   except ValueError:
-      return ''
-   BAC_MAX = 0.16
-   STEPS = 32
-   colors = ['#%02x0000' % (x*8,) for x in range(STEPS)]
-   bacval = min(max(0, f), BAC_MAX)
-   colorstep = BAC_MAX/float(STEPS)
-   color = colors[min(STEPS-1, int(bacval/colorstep))]
-   ret = '<font color="%s">%.3f</font>' % (color, f)
-   if f > 0.08:
-      ret = '<b>%s</b>' % ret
-   return mark_safe(ret)
+  try:
+    f = float(text)
+  except ValueError:
+    return ''
+  BAC_MAX = 0.16
+  STEPS = 32
+  colors = ['#%02x0000' % (x*8,) for x in range(STEPS)]
+  bacval = min(max(0, f), BAC_MAX)
+  colorstep = BAC_MAX/float(STEPS)
+  color = colors[min(STEPS-1, int(bacval/colorstep))]
+  ret = '<font color="%s">%.3f</font>' % (color, f)
+  if f > 0.08:
+    ret = '<b>%s</b>' % ret
+  return mark_safe(ret)

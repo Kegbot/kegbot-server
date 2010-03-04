@@ -59,7 +59,7 @@ gflags.DEFINE_string('lcd_device_path', '/dev/ttyUSB0',
 gflags.DEFINE_integer('lcd_baud_rate', 115200,
     'LCD baud rate.')
 
-gflags.DEFINE_integer('backlight_off_timeout_seconds', 300,
+gflags.DEFINE_integer('backlight_timeout', 300,
     'Number of seconds of inactivity before LCD backlight will be disabled.')
 
 gflags.DEFINE_string('lcd_device_type', DEVICE_CFA_635,
@@ -84,7 +84,7 @@ class KegUi:
     else:
       raise ValueError, "Bad device type: %s" % FLAGS.lcd_device_type
 
-    self._lcdui = ui.LcdUi(self._lcdobj, FLAGS.backlight_off_timeout_seconds)
+    self._lcdui = ui.LcdUi(self._lcdobj, FLAGS.backlight_timeout)
     self._last_flow_status = None
 
     self._main_frame = self._GetMainFrame()

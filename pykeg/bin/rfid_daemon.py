@@ -83,9 +83,11 @@ class RfidEventHandler:
         kb_common.AUTH_MODULE_CONTRIB_PHIDGET_RFID, strval)
 
   def onRfidTagRemoved(self, event):
-    # TODO(mikey): report to kegnet
-    self._rfid.setLEDOn(0)
     self._logger.info('RFID removed: %s' % event.tag)
+    self._rfid.setLEDOn(0)
+    strval = str(event.tag).lower()
+    self._kegnet_client.SendAuthTokenRemove(FLAGS.tap_name,
+        kb_common.AUTH_MODULE_CONTRIB_PHIDGET_RFID, strval)
 
 
 class RfidAuthenticationApp(kb_app.App):

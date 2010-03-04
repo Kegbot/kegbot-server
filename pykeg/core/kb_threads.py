@@ -54,26 +54,6 @@ class EventHubServiceThread(CoreThread):
       hub.DispatchNextEvent(timeout=0.5)
 
 
-class FlowMonitorThread(CoreThread):
-  """Watches flows for idleness."""
-
-  def ThreadMain(self):
-    hub = self._kb_env.GetEventHub()
-    max_idle = datetime.timedelta(seconds=10)
-    while not self._quit:
-      time.sleep(2.0)
-      flows = self._kb_env.GetFlowManager().GetActiveFlows()
-      for flow in flows:
-        if flow.GetIdleTime() > max_idle:
-          self._IdleOutFlow(flow)
-
-  def _IdleOutFlow(self, flow):
-    self._logger.info("Idling flow: %s" % flow)
-    event = kegnet_pb2.TapIdleEvent()
-    event.tap_name = flow.GetTap().GetName()
-    self._kb_env.GetEventHub().PublishEvent(event)
-
-
 class HeartbeatThread(CoreThread):
   """Generates periodic events."""
 

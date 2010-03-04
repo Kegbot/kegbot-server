@@ -25,14 +25,20 @@
 
 import asyncore
 import asynchat
-import socket
 import cStringIO
-import json
 import logging
 import Queue
+import socket
 import struct
+import sys
 import threading
 import time
+
+# Use simplejson if python version is < 2.6
+if sys.version_info[:2] < (2, 6):
+  import simplejson as json
+else:
+  import json
 
 from pykeg.core import kb_common
 from pykeg.core import util
@@ -110,8 +116,8 @@ class KegnetProtocolHandler(asynchat.async_chat):
   The handler will call _HandleKegnetMessage on receipt of a complete kegnet
   message.
   """
-  def __init__(self, sock=None, map=None):
-    asynchat.async_chat.__init__(self, sock, map)
+  def __init__(self, sock=None):
+    asynchat.async_chat.__init__(self, sock)
     self.set_terminator(MESSAGE_TERMINATOR)
     self._ibuffer = cStringIO.StringIO()
     self._logger = logging.getLogger('kegnet')
@@ -213,11 +219,11 @@ class KegnetServerHandler(KegnetProtocolHandler):
 
 class KegnetClient(KegnetProtocolHandler):
   RECONNECT_BACKOFF = [5, 5, 10, 10, 20, 20, 60]
-  def __init__(self, addr=FLAGS.kb_core_addr, map=None):
+  def __init__(self, addr=FLAGS.kb_core_addr):
     self._addr = util.str_to_addr(addr)
     self._last_reconnect = 0
     self._num_retries = 0
-    KegnetProtocolHandler.__init__(self, map=map)
+    KegnetProtocolHandler.__init__(self)
 
   def Reconnect(self, force=False):
     if self.connected:

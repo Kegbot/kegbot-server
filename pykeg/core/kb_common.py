@@ -36,6 +36,15 @@ ALIAS_ALL_TAPS = '__all_taps__'
 AUTH_MODULE_CORE_ONEWIRE = 'core.onewire'
 AUTH_MODULE_CONTRIB_PHIDGET_RFID = 'contrib.phidget.rfid'
 
+# Maximum time in seconds an authentication token may be missing before the flow
+# will be ended.  A value of 0 will cause the fow to be ended immediately when
+# the token disappears.
+# TODO(mikey): expose configuration in db.
+AUTH_TOKEN_MAX_IDLE = {
+  AUTH_MODULE_CORE_ONEWIRE: 0,
+  AUTH_MODULE_CONTRIB_PHIDGET_RFID: 10,
+}
+
 # How often to record a thermo reading?
 THERMO_RECORD_DELTA_SECONDS = 60
 

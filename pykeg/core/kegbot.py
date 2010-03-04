@@ -89,7 +89,6 @@ class KegbotEnv(object):
     self.AddThread(kb_threads.EventHubServiceThread(self, 'eventhub-thread'))
     self.AddThread(kb_threads.NetProtocolThread(self, 'net-thread'))
     self.AddThread(kb_threads.AlarmManagerThread(self, 'alarmmanager-thread'))
-    self.AddThread(kb_threads.FlowMonitorThread(self, 'flowmonitor-thread'))
     self.AddThread(kb_threads.HeartbeatThread(self, 'heartbeat-thread'))
 
     self._watchdog_thread = kb_threads.WatchdogThread(self, 'watchdog-thread')

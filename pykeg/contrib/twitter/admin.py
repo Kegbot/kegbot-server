@@ -19,8 +19,20 @@
 from django.contrib import admin
 from pykeg.contrib.twitter import models
 
-admin.site.register(models.UserTwitterLink)
-admin.site.register(models.TweetLog)
-admin.site.register(models.DrinkTweetLog)
+class UserTwitterLinkAdmin(admin.ModelAdmin):
+  list_display =('twitter_name', 'user_profile', 'validated')
+admin.site.register(models.UserTwitterLink, UserTwitterLinkAdmin)
+
+class TweetLogAdmin(admin.ModelAdmin):
+  list_display =('twitter_id', 'tweet')
+admin.site.register(models.TweetLog, TweetLogAdmin)
+
+class DrinkTweetLogAdmin(admin.ModelAdmin):
+  list_display =('drink', 'tweet_log')
+admin.site.register(models.DrinkTweetLog, DrinkTweetLogAdmin)
+
 admin.site.register(models.DrinkClassification)
-admin.site.register(models.DrinkRemark)
+
+class DrinkRemarkAdmin(admin.ModelAdmin):
+  list_display =('drink_class', 'remark',)
+admin.site.register(models.DrinkRemark, DrinkRemarkAdmin)

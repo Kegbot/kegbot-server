@@ -41,9 +41,6 @@ urlpatterns = patterns('kegweb.kegweb.views',
       (r'^drink/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
       (r'^d/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
 
-      ### api related
-      (r'^api/recent-drinks/$', 'recent_drinks'),
-
 )
 
 ### accounts and registration

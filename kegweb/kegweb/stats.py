@@ -79,6 +79,12 @@ class KegStats:
   def AllDrinks(self):
     return view_util.keg_drinks(self.keg).order_by('-id')
 
+  def AllDrinkers(self):
+    return set(d.user for d in self.AllDrinks())
+
+  def AllDrinkersCount(self):
+    return len(self.AllDrinkers())
+
   def AllUsersByVolume(self):
     return view_util.drinkers_by_volume(self.AllDrinks())
 

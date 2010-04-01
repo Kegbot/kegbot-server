@@ -155,6 +155,13 @@ class KegTap(models.Model):
   def __str__(self):
     return "%s: %s" % (self.meter_name, self.name)
 
+  def Temperature(self):
+    if self.temperature_sensor:
+      last_rec = self.temperature_sensor.thermolog_set.all().order_by('-time')
+      if last_rec:
+        return last_rec[0]
+    return None
+
 
 class Keg(models.Model):
   """ Record for each installed Keg. """
@@ -177,6 +184,15 @@ class Keg(models.Model):
     else:
       end = self.enddate
     return end - self.startdate
+
+  def is_empty(self):
+    return float(self.remaining_volume()) <= 0
+
+  def tap(self):
+    q = self.kegtap_set.all()
+    if q:
+      return q[0]
+    return None
 
   def __str__(self):
     return "Keg #%s - %s" % (self.id, self.type)
@@ -521,8 +537,14 @@ class Thermolog(models.Model):
   time = models.DateTimeField()
 
   def __str__(self):
-    degf = util.CtoF(self.temp)
-    return '%s %.2f C / %.2f F [%s]' % (self.sensor, self.temp, degf, self.time)
+    return '%s %.2f C / %.2f F [%s]' % (self.sensor, self.TempC(),
+        self.TempF(), self.time)
+
+  def TempC(self):
+    return self.temp
+
+  def TempF(self):
+    return util.CtoF(self.temp)
 
   def save(self, force_insert=False, force_update=False):
     super(Thermolog, self).save(force_insert, force_update)

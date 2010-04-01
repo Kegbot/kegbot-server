@@ -1,92 +1,155 @@
-{% extends "base.html" %}
+{% extends "page-twocol.html" %}
 {% load kegweblib %}
 
 {% block title %}keg index{% endblock %}
 
-{% block content %}
+{% block kb-extrajs %}
+    {% keg_stats keg as stats %}
+    <script type="text/javascript">
+      // Load the Visualization API and the tablepackage.
+      google.load('visualization', '1', {'packages':['table']});
 
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.setOnLoadCallback(buildTable);
+
+      function buildTable() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Drink');
+        data.addColumn('number', 'Ounces');
+        data.addColumn('number', 'Calories');
+        data.addColumn('string', 'User');
+        data.addColumn('string', 'When');
+        data.addColumn('number', 'PBAC');
+        data.addRows({{stats.AllDrinks.count}});
+
+        {% for drink in stats.AllDrinks %}
+        data.setCell({{forloop.counter0}}, 0, '{{drink.id}}');
+        data.setCell({{forloop.counter0}}, 1, {{drink.Volume.ConvertTo.Ounce}},
+          '{{drink.Volume.ConvertTo.Ounce|floatformat}}');
+        data.setCell({{forloop.counter0}}, 2, {{drink.calories}},
+          '{{drink.calories|floatformat}}');
+        data.setCell({{forloop.counter0}}, 3, '<a href="{%url kegweb.kegweb.views.user_detail drink.user.username %}">{{ drink.user}}</a>');
+        data.setCell({{forloop.counter0}}, 4, '{{drink.endtime|timesince|lower}} ago');
+        data.setCell({{forloop.counter0}}, 5, {{drink.bac}}, '{{drink.bac|bac_format}}');
+        {% endfor %}
+        var table = new google.visualization.Table(document.getElementById('kb-keg-drinks-table'));
+        table.draw(data, {showRowNumber: false, allowHtml: true});
+      }
+
+    </script>
+{% endblock kb-extrajs %}
+
+
+{% block col-1 %}
 {% keg_stats keg as stats %}
 
-<div class="contenthead">
-   keg snapshot
+<div class="kb-contentbox-head">
+   keg {{keg.id}} snapshot
 </div>
-<div class="content">
-   {% if stats.PreviousKeg %}
-   <div style="float:left">
-      <a href="{% url kegweb.kegweb.views.keg_detail stats.PreviousKeg.id %}">&laquo; prev keg</a>
-   </div>
-   {% endif %}
 
-   {% if stats.NextKeg %}
-   <div style="float:right">
-      <a href="{% url kegweb.kegweb.views.keg_detail stats.NextKeg.id %}">next keg &raquo;</a>
-   </div>
-   {% endif %}
+<div class="kb-contentbox">
+  <table border="0" class="kb-statstable">
+    <tr>
+      <td colspan="2">
+        {{keg.type}}
+      </td>
+    </tr>
 
-   <br clear="all">
+    <tr>
+      <td colspan="2">&nbsp;</td>
+    </tr>
 
-  <p>
-  {{ keg.type }}
-  </p>
-  <p>
-  total poured: <b> {{ stats.VolumePoured.ConvertTo.USGallon|floatformat:2 }} gallons</b>
-  ({{ stats.PercentFull|floatformat:2 }}% full)
-  </p>
-  {% ifequal keg.status "online" %}
-  <p>
-  remaining: <b> {{ stats.VolumeRemaining.ConvertTo.USGallon|floatformat:2 }} gallons</b>
-  </p>
-  {% endifequal %}
-  <p>
-  {% ifequal keg.status "online" %}
-  this keg is <b>online</b>, and is {{ keg.keg_age.days }}
-  day{{keg.keg_age.days|pluralize}} old.
-  {% else %}
-  this keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
-  day{{keg.keg_age.days|pluralize}}.
-  {% endifequal %}
-  </p>
+    <tr>
+      <td valign="top" align="right">
+        <b>Total Poured</b>
+      </td>
+      <td rowspan="2">
+        <img src="{% keg_volume_chart keg %}">
+      </td>
+    </tr>
+
+    <tr>
+      <td valign="top" align="right">
+        {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
+        {% if keg.is_empty %}
+          (empty!)
+        {% else %}
+          ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
+        {% endif %}
+      </td>
+    </tr>
+
+    <tr>
+      <td align="right"><b>Percent Full</b></td>
+      <td>
+        {{ stats.PercentFull|floatformat:2 }}% full
+      </td>
+    </tr>
+
+    {% if keg.tap %}
+    {% if keg.tap.temperature_sensor %}
+    <tr>
+      <td valign="top" align="right">
+        <b>Temperature</b>
+      </td>
+      <td rowspan="2">
+        <img src="{% sensor_chart keg.tap.temperature_sensor.nice_name %}">
+      </td>
+    </tr>
+    <tr>
+      <td align="right">
+        {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C / 
+        {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
+      </td>
+    </tr>
+    {% endif %}
+    {% endif %}
+
+    <tr>
+      <td align="right"><b>Drink Count</b></td>
+      <td>
+        {{ stats.AllDrinks.count }} pours by {{ stats.AllDrinkersCount }}
+        unique drinkers.
+      </td>
+    </tr>
+
+    <tr>
+      <td align="right"><b>Keg Age</b></td>
+      <td>
+        {% ifequal keg.status "online" %}
+        this keg is <b>online</b>, and is {{ keg.keg_age.days }}
+        day{{keg.keg_age.days|pluralize}} old.
+        {% else %}
+        this keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
+        day{{keg.keg_age.days|pluralize}}.
+        {% endifequal %}
+      </td>
+    </tr>
+  </table>
+</div>
+
+{% endblock col-1 %}
+
+{% block col-2 %}
+  <h1>drinker breakdown</h1>
+  {% keg_stats keg as stats %}
   {% if stats.ChartUsersByVolume %}
-  <img src="{{ stats.ChartUsersByVolume }}&chf=bg,s,6699cc">
+  <img src="{{ stats.ChartUsersByVolume }}">
   {% endif %}
-  <!--
-  <p>
-  cost by user:<br>
-  {% for pair in stats.AllUsersByCost %}
-  &nbsp;&nbsp;{{pair.1.username}} - ${{pair.0|floatformat:2}}<br>
-  {% endfor %}
-  </p>
-  -->
+{% endblock col-2 %}
+
+{% block extra-content %}
+{% keg_stats keg as stats %}
+<div class="kb-main-content">
+  <div class="kb-contentbox-head">
+     full drink history
+  </div>
+  <div class="kb-contentbox">
+     <p>
+        full drink history for keg {{ keg.id }} is shown below.
+     </p>
+
+     <table id="kb-keg-drinks-table" cellspacing=0 border=0></table>
+  </div>
 </div>
-
-
-<div class="contenthead">
-   full drink history
-</div>
-<div class="content">
-   <p>
-      full drink history for keg {{ keg.id }} is shown below.
-   </p>
-
-   <p>
-   <div class="box">
-   <table class="sortable" id="recent_drinks" cellspacing=0 border=0 width="430">
-   <tr>
-      <td>&nbsp;</td>
-      <td align="left"><b>size</b></td>
-      <td align="right"><b>calories</b></td>
-      <td><b>user</b></td>
-      <td><b>when</b></td>
-      <td><b>bac</b></td>
-   </tr>
-   {% for drink in stats.AllDrinks %}
-      {% ifchanged drink.GetGroup %} <tr><td colspan=6>&nbsp;</td></tr> {% endifchanged %}
-      {% drink_span drink %}
-   {% endfor %}
-   </table>
-   </div>
-   </p>
-</div>
-
-
-{% endblock %}
+{% endblock extra-content %}

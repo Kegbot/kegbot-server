@@ -1,26 +1,53 @@
-{% extends "base.html" %}
+{% extends "page-twocol.html" %}
 {% load kegweblib %}
 
 {% block title %}keg index{% endblock %}
 
-{% block content %}
+{% block kb-extrajs %}
+    <script type="text/javascript">
+      // Load the Visualization API and the tablepackage.
+      google.load('visualization', '1', {'packages':['table']});
 
-<div class="contenthead">
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.setOnLoadCallback(buildTable);
+
+      function buildTable() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Keg');
+        data.addColumn('string', 'Type');
+        data.addColumn('string', 'Size');
+        data.addColumn('string', 'Age');
+        data.addColumn('string', 'Status');
+        data.addRows({{keg_list.count}});
+
+        {% for keg in keg_list %}
+        data.setCell({{forloop.counter0}}, 0, '<a href="{% url kegweb.kegweb.views.keg_detail keg.id %}">keg {{keg.id}}</a>');
+        data.setCell({{forloop.counter0}}, 1, '{{keg.type.name}}');
+        data.setCell({{forloop.counter0}}, 2, '{{keg.size}}');
+        data.setCell({{forloop.counter0}}, 3, '{{keg.startdate|timesince}}');
+        data.setCell({{forloop.counter0}}, 4, '{{keg.status}}');
+        {% endfor %}
+        var table = new google.visualization.Table(document.getElementById('kb-keg-table'));
+        table.draw(data, {showRowNumber: false, allowHtml: true});
+      }
+
+    </script>
+{% endblock kb-extrajs %}
+
+
+{% block col-1 %}
+
+<div class="kb-contentbox-head">
    all kegs
 </div>
-<div class="content">
-  <div class="box">
-  <table class="sortable" cellspacing=0 border=0 width="430">
-  {% for keg in keg_list %}
-  <tr>
-    <td><a href="{% url kegweb.kegweb.views.keg_detail keg.id %}">keg {{keg.id}}&nbsp;</a></td>
-    <td>{{keg.type.name|lower}}&nbsp;</td>
-    <td>{{keg.full_volume.ConvertTo.USGallon|floatformat:1}} gal&nbsp;</td>
-    <td>{{keg.startdate|timesince|lower}} ago</td>
-  </tr>
-  {% endfor %}
-  </table>
-  </div>
+<div class="kb-contentbox">
+  <br>
+  <table id="kb-keg-table" cellspacing=0 border=0></table>
+  <br>
 </div>
 
 {% endblock %}
+
+{% block col-2 %}
+
+{% endblock col-2 %}

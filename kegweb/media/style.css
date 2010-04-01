@@ -1,193 +1,249 @@
+/* @group Main Body */
+
 body {
-  font: 12px Arial, Verdana, sans-serif;
-  background: #3c729c;
-  padding: 0px;
+	background-color: #fff;
+	font-family: "Lucida Grande", Lucida, Verdana, sans-serif;
+	color: black;
   margin: 0px;
+  background-image: url(http://kegbot.org/kmedia/images/kegs-corner.png);
+  background-repeat: no-repeat;
 }
 
-a {
-  text-decoration:none;
-  font-weight:bold;
-  color:#600;
+/* @end */
+
+/* @group Links */
+
+a:link {
+	color: navy;
+	font-weight: bold;
+	text-decoration: none;
 }
+
+a:visited {
+	color: navy;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+a:active {
+	color: navy;
+	font-weight: bold;
+	text-decoration: none;
+}
+
 a:hover {
-  color:#630;
+	color: navy;
+	font-weight: bold;
+	text-decoration: none;
 }
 
-td {
-  margin: 0px;
-  padding: 0px 0px;
-  color: black;
+
+
+/* @end */
+
+/* @group Kegweb Elements */
+
+#kb-main-page {
+  margin-left: auto;
+  margin-right: auto;
+  width: 900px;
 }
 
-p {
-  margin: 0px;
-  padding: 0px 0px;
-  color: black;
-}
-
-div.plaincontent {
-  width: 700px;
-  margin-left: 130px;
-  margin-top: 0px;
-  margin-bottom: 10px;
-  padding-top: 8px;
-  padding-bottom: 5px;
-}
-div.content {
-   width:700px;
-   background:#69c;
-   border: 1px solid #030;
-   margin-left: 130px;
-   margin-top: 0px;
-   margin-bottom: 10px;
-   padding-top: 8px;
-   padding-bottom: 5px;
-}
-
-div.contenthead {
-   font-size: 16px/16px;
-   font-weight: bold;
-   background: #003;
-   color: #fff;
-   border: 1px solid #030;
-   border-bottom: none;
-   margin-left: 130px;
-   margin-top:0px;
-   margin-bottom:0px;
-   width: 700px;
-}
-
-div.mainheader {
-   font-size: 16px;
-   font-weight: bold;
-   background: #003;
-   color: #fff;
-   width: 700px;
-   background:#6   font: 12px Arial, Verdana, sans-serif;
-   background: #fff;
-   padding: 0px;
-   margin: 0px;
-9c;
-   border-left: 1px solid #000;
-   border-right: 1px solid #000;
-   border-bottom: 1px solid #000;
-   margin-left: 130px;
-   margin-top: 0px;
-   margin-bottom: 0px;
-   padding-top: 8px;
-   padding-bottom: 5px;
-   border-top:0px;
-   background-image:url('images/keg-header.png');
-   background-position: -40px;
-   background-repeat:no-repeat;
+#kb-main-container {
+	width: 900px;
 }
 
 #kb-main-header {
-  top: 0px;
-  margin: 0 auto;
-  width: 800px;
-  height: 60px;
-
-  text-align: center;
-
-  font-size: 48px;
-  color: #d2e2e3;
-
-  -webkit-border-bottom-left-raidus: 10px;
+	border-bottom: 1px solid gray;
+	background-color: #00B1FE;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-bottom: 16px;
+  width: 900px;
+  border-bottom: 2px solid #007BFE;
 }
 
-#kb-main-page {
-  align: center;
-  margin: 0 auto;
-  margin-top: 25px;
-  width: 800px;
+#kb-main-header-text {
+  font: bold 280%/100% "Lucida Grande", Arial, sans-serif;
+	color: #1A5568;
+  margin: 16px;
 }
 
-#kb-main-tabs {
-  width: 100%;
+#kb-main-header-links {
+	font: bold 12px "Lucida Grande", Lucida, Verdana, sans-serif;
+	color: gray;
+  margin-left: 16px;
 }
 
-#kb-tab-holder {
-  margin: 0 auto;
-}
-
-.kb-section-tab {
-  width: 100px;
-  margin-left: 10px;
-  margin-right: 10px;
-  text-align: center;
-  background: #d2e2e3;
-  border: 1px solid #3d3c59;
-  border-bottom: 0px;
-  font-weight: bold;
-  font-size: 1.2em;
+.kb-header-link {
+  height: 16px;
   float: left;
-  padding: 6px;
-
-  -webkit-border-top-left-radius: 3px;
-  -webkit-border-top-right-radius: 3px;
+  clear: all;
+  border-left: 1px solid #000;
+  padding-left: 2px;
+  padding-right: 16px;
 }
 
-#kb-main-content {
-  border: 1px solid #3d3c59;
-  background: #fff;
-  min-height: 300px;
-  padding: 10px;
+.kb-main-content {
+	background-color: white;
+	padding-left: 16px; /* match kb-main-header */
+  padding-top: 16px;
+  border: 1px solid #ACB6C0;
+	margin-bottom: 16px;
 }
 
-div.linkbar {
-   border: 1px dotted #000;
-   background:#69c;
-   min-width: 60px;
-   width:100%;
-   font: 12px/12px Courier, sans-serif;
-   font-weight: bold;
-   border-left:0px;
-   border-right:0px;
-   filter:alpha(opacity=60);-moz-opacity:0.6;
-   opacity: 0.6;
+#kb-footer {
+	font: 8px "Lucida Grande", Lucida, Verdana, sans-serif;
+  color: #C3C0C0;
+  text-align: center;
+  margin-top: 8px;
 }
 
-div.rightbox {
-   width: 100px;
-   margin-bottom: 10px;
-   margin-left: 650px;
-   background-color: #aaa;
+/* @end */
+
+#kb-main-page-kegs {
+  width: 500px;
+  height: 100%;
+  border-right: 1px #C3C0C0 dotted;
+  float: left;
+  margin-right: 8px;
 }
 
-div.leadercol {
-   position: absolute;
-   width: 100px;
-   background-color: #aaa;
+.kb-tapbox {
+  width: 480px;
+  border: 1px solid #C3C0C0;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
-div.leftnav {
-   background-image:url('images/keg-header.png'); 
-   background-repeat:no-repeat;
-   width: 100px;
-   min-height: 200px;
-   border-right: 1px solid #000;
-   border-bottom: 1px solid #000;
-   color: #000;
-   padding-top:5px;
-   text-align: right;
-   width:110px;
-   float: right;
-   position: absolute;
-   margin-left:0px;
-   background-color: #888888;
+.kb-tapbox-header {
+  background: #eee;
+  padding: 4px;
 }
 
-h1 {
-   font-size:14px;
-   padding-top:10px;
+.kb-tapbox-content {
+  padding: 4px;
 }
 
-div.minibox {
-   border: 1px solid #333;
-   padding: 5px;
-   background: #ccd;
+.kb-tapbox-image {
+  width: 96px;
+  height: 96px;
+  border: 1px dotted #C3C0C0;
+  float: left;
+  margin-top: auto;
+}
+
+.kb-tapbox-footer {
+	border-top: 1px solid #C3C0C0;
+	font: 12px "Lucida Grande", Lucida, Verdana, sans-serif;
+	text-align: right;
+	width: 100%;
+	margin-top: 4px;
+	padding: 1px;
+}
+
+.kb-tapbox-detail {
+  float: left;
+  font: 80%/100% "Lucida Grande", Arial, sans-serif;
+  margin-left: 4px;
+}
+
+.kb-main-content h1 {
+  font: bold 200%/100% "Lucida Grande", Arial, sans-serif;
+  position: relative;
+  margin: 0;
+  color: #000;
+  letter-spacing: -2px
+  margin-bottom: 16px;
+}
+
+.kb-main-content h2 {
+  font: bold 120%/80% "Lucida Grande", Arial, sans-serif;
+  position: relative;
+  margin: 0;
+  color: #000;
+  letter-spacing: -2px
+  margin-bottom: 16px;
+}
+
+#kb-main-page-activity {
+  float: left;
+}
+
+
+.kb-contentbox-head {
+  font: bold 200%/100% "Lucida Grande", Arial, sans-serif;
+  position: relative;
+  margin: 0;
+  color: #000;
+  letter-spacing: -2px
+  margin-bottom: 16px;
+}
+
+.kb-contentbox {
+}
+
+.kb-statstable {
+  font: 80%/100% "Lucida Grande", Arial, sans-serif;
+}
+
+.kb-drink-box {
+  width: 300px;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-bottom: 1px dotted #007BFE;
+}
+
+.kb-drink-box-mugshot {
+  float: left;
+  margin-right: 8px;
+}
+
+.kb-drink-box-details {
+  margin-left: 8px;
+}
+
+.kb-drink-box-details-headline {
+}
+
+.kb-drink-box-details-keginfo {
+  font-size: 0.7em;
+  color: #999;
+}
+
+.kb-drink-box-details-keginfo a:link,
+.kb-drink-box-details-keginfo a:visited {
+  color: #999;
+  text-decoration: underline;
+  font-weight: normal;
+}
+
+.kb-drink-box-details-dateline {
+  font-size: 0.7em;
+  color: #ccc;
+  margin-top: 4px;
+  font-style: italic;
+  text-align: right;
+}
+
+.clear {
+  clear:both;
+  height:1px;
+  overflow:hidden;
+}
+
+/* form stuff */
+.kb-form {
+}
+ul.errorlist {
+  color: #bb3333;
+  font-size: 11px;
+  font-weight: bold;
+  list-style-type: none;
+  margin: 0px;
+}
+ul.errorlist li {
+  margin-left: 0px;
 }
 
 div.plainboxhead {
@@ -201,79 +257,6 @@ div.plainbox {
    padding: 5px;
    background: #ccd;
 }
-div.boxhead {
-   width: 630px;
-   border: 1px solid #333;
-   border-bottom: 0px;
-   padding: 5px;
-   margin-left: 30px;
-   background: #369;
-   -moz-border-radius: 5px;
-}
 
-div.box {
-   width: 630px;
-   border: 1px solid #333;
-   padding: 5px;
-   margin-left: 30px;
-   background: #ccd;
-   -moz-border-radius: 5px;
-}
 
-div.sep {
-   width: 400px;
-   border-top: 1px dotted #333;
-   clear: both;
-}
-div.row {
-  clear: both;
-  padding-top: 0px;
-  padding-left: 20px;
-}
-.bgmain {
-   background: #ccd;
-}
-
-div.spacer {
-  clear: both;
-}
-div.row span.label {
-  clear: all;
-  float: left;
-  border: 0px dotted black;
-  width: 110px;
-  text-align: right;
-  font-weight: bold;
-  padding: 5px;
-  margin: 0px;
-}
-div.row span.data {
-  border: 0px dotted black;
-  width: 230px;
-  float: left;
-  padding: 5px;
-  text-align: left;
-  vertical-align: middle;
-}
-
-body>#leftnav {width:100px;}
-
-div.nav {
-   border: 1px dotted #999;
-   background: #eee;
-   min-width: 60px;
-   width:100%;
-   font: 10px/10px Courier, sans-serif;
-   border-left:0px;
-   border-right:0px;
-}
-
-.statementtotal_positive {
-  background: #0f0;
-}
-
-.statementtotal_negative {
-  background: #f00;
-  width:100%;
-  text-align: right;
-}
+/* vim sw=2 ts=2 noet */

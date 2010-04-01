@@ -4,62 +4,79 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-   <link rel="stylesheet" href="/site_media/style.css" />
-   <title>kegbot :: {% block title %}Default Page{% endblock %}</title>
+  <link rel="stylesheet" href="/site_media/style.css" />
+  <title>kegbot :: {% block title %}Default Page{% endblock %}</title>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("jquery", "1.4");
+      google.load("jqueryui", "1.8");
+    </script>
+    {% block kb-extrajs %}{%endblock%}
 </head>
 
 <body>
-   <div class="leadercol">
-      {% block sidecol %}
-      <div style="background:#003; font:12px Courier, sans-serif; text-align: center;color: #fff; border:1px solid #fff; border-top:0px;">
-         last 5 drinks
+
+  <div id="kb-main-page">
+
+    <div id="kb-main-header">
+      <div class="clear"></div>
+
+      <div id="kb-main-header-text">
+        kegbot beer device
       </div>
 
-      {% latest_drinks 5 as latest_drinks %}
-      {% for drink in latest_drinks %}
-      <div style="text-align:center;">
-         {% mugshot_box drink.user %}
-         {{drink.user.username}}<br>
+      <div id="kb-main-header-links">
+        <div class="kb-header-link">
+          <a href="/">main</a>
+        </div>
+
+        <div class="kb-header-link">
+          <a href="/kegs">kegs</a>
+        </div>
+
+        <div class="kb-header-link">
+          <a href="/leaders">leader board</a>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="kb-header-link">
+          <a href="/account">account</a>
+        </div>
+
+        <div class="kb-header-link">
+          <a href="/accounts/logout"><b>logout {{user.username}}</b></a>
+        </div>
+        {% else %}
+        <div class="kb-header-link">
+          <a href="/accounts/login">login</a>
+        </div>
+        {% endif %}
+        <div style="clear: both;"> </div>
       </div>
-      {% endfor %}
-      {% endblock %}
-   </div>
+    </div>
 
-   <div class="mainheader">
-      {% block header %}
-      <p>
-         <font size="+2" color="#ffffff">
-            <b>kegbot beer device...</b> beer me!
-         </font>
-      </p>
-      <div class="linkbar">
-         <div style="padding-left:30px;">
-            <a href="/">main</a> |
-            <a href="/kegs">kegs</a> |
-            <a href="/leaders">leader board</a> |
-            {% if user.is_authenticated %}
-            <a href="/account">account</a> |
-            <a href="/accounts/logout"><b>logout {{user.username}}</b></a>
-            {% else %}
-            <a href="/accounts/login">login</a>
-            {% endif %}
-         </div>
+    <div id="kb-main-container">
+
+      {% if page_node %}
+      <div class="kb-main-content">
+        {% render_page page_node %}
       </div>
-      {% endblock %}
-   </div>
+      {% endif %}
 
-   <div id="content">
+      <div class="kb-main-content">
+        {% block content %}{% endblock %}
+      </div> <!-- kb-main-content -->
 
-{% if page_node %}
-{% render_page page_node %}
-{% endif %}
+      {% block extra-content %}{% endblock %}
 
-      {% block content %}{% endblock %}
-   </div>
+    </div> <!-- kb-main-container -->
 
-   <div class="plaincontent" style="font:8px;">
-    <a href="http://kegbot.org/">kegbot</a>: &copy; 2004-{% now "Y" %} mike
-    wakerly
-   </div>
+    <div id="kb-footer">
+      this is <a href="http://kegbot.org/">kegbot</a>:
+      &copy; 2004-{% now "Y" %} mike wakerly
+    </div>
+
+  </div> <!-- kb-main-page -->
+
 </body>
 

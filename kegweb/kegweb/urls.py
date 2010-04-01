@@ -22,13 +22,13 @@ urlpatterns = patterns('kegweb.kegweb.views',
 
       ### keg related
       (r'^kegs/$', 'keg_list'),
-      (r'^kegs/(?P<keg_id>\d+)', 'keg_detail'),
+      url(r'^kegs/(?P<keg_id>\d+)', 'keg_detail', name='keg'),
       # redirects to the above for compatibility
       (r'^keg/(?P<keg_id>\d+)', 'redirect_to', {'url': '/kegs/%(keg_id)s'}),
 
       ### drinkers
       (r'^drinkers/$', 'user_list'),
-      (r'^drinkers/(?P<username>\w+)', 'user_detail'),
+      url(r'^drinkers/(?P<username>\w+)', 'user_detail', name='drinker'),
       (r'^drinkers/(?P<user_id>\d+)', 'user_detail_by_id'),
       # redirects to the above for compatibility
       (r'^drinker/(?P<user_id>\d+)', 'redirect_to', {'url': '/drinkers/%(user_id)s'}),
@@ -36,10 +36,14 @@ urlpatterns = patterns('kegweb.kegweb.views',
 
       ### drink related
       (r'^drinks/$', 'drink_list'),
-      (r'^drinks/(?P<drink_id>\d+)', 'drink_detail'),
+      url(r'^drinks/(?P<drink_id>\d+)', 'drink_detail', name='drink'),
       # redirects to the above for compatibility
       (r'^drink/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
       (r'^d/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
+
+      ### api related
+      (r'^api/recent-drinks/$', 'recent_drinks'),
+
 )
 
 ### accounts and registration

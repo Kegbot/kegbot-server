@@ -1,16 +1,15 @@
-{% extends "base.html" %}
+{% extends "page-twocol.html" %}
 {% load kegweblib %}
 
 {% block title %}leader board{% endblock %}
 
-{% block content %}
+{% block col-1 %}
 
 {% for keg,drinkpairs in top_volume_drinkers_by_keg %}
-
-<div class="contenthead">
+<div class="kb-contentbox-head">
    top drinkers: keg {{ keg.id }}
 </div>
-<div class="content">
+<div class="kb-contentbox">
   <table>
     <tr>
       <td valign="top">
@@ -24,11 +23,13 @@
 
 {% endfor %}
 
+{% endblock %}
 
-<div class="contenthead">
+{% block col-2 %}
+<div class="kb-contentbox-head">
    top drinkers: all time
 </div>
-<div class="content">
+<div class="kb-contentbox">
   <table>
     <tr>
       <td valign="top">
@@ -39,7 +40,4 @@
     </tr>
   </table>
 </div>
-
-
-
-{% endblock %}
+{% endblock col-2 %}

@@ -1,32 +1,32 @@
-{% extends "base.html" %}
+{% extends "page-twocol.html" %}
 {% load kegweblib %}
 
 {% block title %}your account: {{user.username}}{% endblock %}
 
-{% block content %}
-<div class="contenthead">
+{% block col-1 %}
+<div class="kb-contentbox-head">
   hello, {{user.username}}
 </div>
-<div class="content">
-  <p>
-    you are logged in.
-  </p>
-</div>
-
-<div class="contenthead">
-   profile
-</div>
-<div class="content">
-  <p>
+<div class="kb-contentbox">
   <form action="/account/update_profile/" method="POST">
-  {{profile_form.as_p}}
-  <input type="submit" name="submit" value="submit">
+    <table class="kb-form">
+      {{ profile_form.as_table }}
+      <tr>
+        <td colspan="2">
+          <input type="submit" value="update profile" />
+        </td>
+      </tr>
+    </table>
   </form>
-  </p>
+</div>
+{% endblock col-1 %}
 
-  <p>
+{% block col-2 %}
+<div class="kb-contentbox-head">
+  your mugshot
+</div>
+<div class="kb-contentbox">
   <form enctype="multipart/form-data" method="post" action="/account/update_mugshots/">
-    your current mugshot:
     {% mugshot_box user %}
     {{mugshot_form.as_p}}
   <input type="submit" name="submit" value="submit">
@@ -35,4 +35,4 @@
 
 </div>
 
-{% endblock %}
+{% endblock col-2 %}

@@ -4,26 +4,24 @@
 {% block title %}keg {{ keg.id }}{% endblock %}
 
 {% block content %}
-<div class="contenthead">
+<div class="kb-contentbox-head">
    account
 </div>
-<div class="content">
+<div class="kb-contentbox">
 
-  {% if form.errors %}
-    <p class="error">Sorry, that's not a valid username or password</p>
-  {% endif %}
+  <form action="" method="POST">
 
-  <form action='.' method='post'>
-    <label for="username">User name:</label>
-    <input type="text" name="username" value="" id="username">
-    <label for="password">Password:</label>
-    <input type="password" name="password" value="" id="password">
+    <table class="kb-form">
+    {{ form.as_table }}
+    <tr>
+      <td colspan="2">
+        <input type="submit" value="login" />
+      </td>
+    </tr>
+    </table>
 
-    <input type="submit" value="login" />
-    <input type="hidden" name="next" value="{{ next|escape }}" />
   </form>
-  </p>
-  <br>
+
   <!-- did you <a href="/accounts/password/reset/">forget your password?</a> -->
 </div>
 

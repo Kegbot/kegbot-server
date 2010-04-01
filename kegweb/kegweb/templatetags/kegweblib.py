@@ -82,7 +82,7 @@ class SensorChartNode(Node):
     except models.ThermoSensor.DoesNotExist:
       return ''
 
-    hours = 2
+    hours = 12
 
     now = datetime.datetime.now()
     start = now - (datetime.timedelta(hours=hours))
@@ -105,18 +105,10 @@ class SensorChartNode(Node):
     if not have_temps:
       return ''
 
-    chart = pygooglechart.SimpleLineChart(200, 125)
+    chart = pygooglechart.SparkLineChart(200, 20)
     chart.add_data(temps)
     chart.fill_solid(pygooglechart.Chart.BACKGROUND, '00000000')
-
-    range = chart.data_y_range()
-    if range and None not in range:
-      legend = ['%.1fC' % x for x in range]
-      chart.set_axis_labels(pygooglechart.Axis.LEFT, legend)
-
-    mid = start + ((curr - start) / 2)
-    times = [x.strftime('%I%p').lower() for x in (start, mid, curr)]
-    chart.set_axis_labels(pygooglechart.Axis.BOTTOM, times)
+    chart.set_colours(['4D89F9'])
     return chart.get_url()
 
 register.tag('sensor_chart', sensor_chart)
@@ -144,16 +136,15 @@ class KegVolumeChartNode(Node):
     full = keg.full_volume()
 
     served_pints = served.ConvertTo.Pint
+    full_pints = full.ConvertTo.Pint
     remain_pints = (full - served).ConvertTo.Pint
 
-    chart = pygooglechart.PieChart2D(300, 125)
-    chart.add_data([float(served_pints), float(remain_pints)])
-    chart.fill_solid(pygooglechart.Chart.BACKGROUND, '00000000')
-    labels = [
-        '%i pints served' % served_pints,
-        '%i pints remain' % remain_pints,
-    ]
-    chart.set_pie_labels(labels)
+    chart = pygooglechart.StackedHorizontalBarChart(200, 28,
+        x_range=(0, full_pints))
+    chart.set_bar_width(20)
+    chart.set_colours(['4D89F9','C6D9FD'])
+    chart.add_data([min(served_pints, full_pints)])
+    chart.add_data([full_pints])
     return chart.get_url()
 
 register.tag('keg_volume_chart', keg_volume_chart)

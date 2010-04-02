@@ -64,9 +64,7 @@ class AuthenticationTokenAdmin(admin.ModelAdmin):
 admin.site.register(models.AuthenticationToken, AuthenticationTokenAdmin)
 
 admin.site.register(models.BAC)
-admin.site.register(models.UserDrinkingSession)
-admin.site.register(models.UserDrinkingSessionAssignment)
-admin.site.register(models.DrinkingSessionGroup)
+admin.site.register(models.DrinkingSession)
 
 class ThermoSensorAdmin(admin.ModelAdmin):
   list_display = ('nice_name', 'raw_name')

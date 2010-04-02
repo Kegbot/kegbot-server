@@ -230,16 +230,7 @@ class Drink(models.Model):
     return units.Quantity(self.volume_ml, units.RECORD_UNIT)
 
   def GetSession(self):
-    q = self.userdrinkingsessionassignment_set.all()
-    if q.count() == 1:
-      return q[0].session
-    return None
-
-  def GetGroup(self):
-    sess = self.GetSession()
-    if sess:
-      return sess.group
-    return None
+    return DrinkingSession.SessionForDrink(self)
 
   def ShortUrl(self):
     domain = Site.objects.get_current().domain
@@ -286,7 +277,7 @@ class Drink(models.Model):
 
 def _DrinkPostSave(sender, instance, **kwargs):
   BAC.ProcessDrink(instance)
-  UserDrinkingSessionAssignment.RecordDrink(instance)
+  DrinkingSession.SessionForDrink(instance)
 
   keg = instance.keg
   if keg:
@@ -417,109 +408,50 @@ def find_object_in_window(qset, start, end, window):
   return None
 
 
-class UserDrinkingSession(models.Model):
-  """ A derived table grouping a sequence of drinks by a user.
-
-  A single row of this table exists for one or more UserDrinkingSessionAssignment
-  rows to point at.
-  """
-  user = models.ForeignKey(User)
+class DrinkingSession(models.Model):
+  """A collection of contiguous drinks. """
   starttime = models.DateTimeField()
   endtime = models.DateTimeField()
-  group = models.ForeignKey('DrinkingSessionGroup')
+  drinks = models.ManyToManyField(Drink)
+  users = models.ManyToManyField(User)
+  kegs = models.ManyToManyField(Keg)
 
-  def UpdateTimes(self, drink):
+  def UpdateFromDrink(self, drink):
+    dirty = False
     if self.starttime > drink.starttime:
       self.starttime = drink.starttime
+      dirty = True
     if self.endtime < drink.endtime:
       self.endtime = drink.endtime
-
-  def GetDrinks(self):
-    return (a.drink for a in self.userdrinkingsessionassignment_set.all())
-
-  def Volume(self):
-    tot = units.Quantity(0, units.RECORD_UNIT)
-    for d in self.GetDrinks():
-      tot += d.Volume()
-    return tot
+      dirty = True
+    self.drinks.add(drink)
+    self.users.add(drink.user)
+    if drink.keg:
+      self.kegs.add(drink.keg)
+    if dirty:
+      self.save()
 
   @classmethod
-  def CreateOrUpdateSessionForDrink(cls, d):
-    """ Create or update a UserDrinkingSession given a drink """
+  def SessionForDrink(cls, drink):
+    # Return existing session if already assigned.
+    q = drink.drinkingsession_set.all()
+    if q:
+      session = q[0]
+      return session
+
+    # Return last session if one already exists
+    q = DrinkingSession.objects.all()
     window = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
+    session = find_object_in_window(q, drink.starttime, drink.endtime, window)
+    if session:
+      session.UpdateFromDrink(drink)
+      return session
 
-    qset = d.user.userdrinkingsession_set
-    session = find_object_in_window(qset, d.starttime, d.endtime, window)
-    if not session:
-      session = UserDrinkingSession(user=d.user, starttime=d.starttime,
-                                    endtime=d.endtime)
-
-    session.UpdateTimes(d)
-    session.group = DrinkingSessionGroup.Assign(session)
+    # Create a new session
+    session = cls(starttime=drink.starttime, endtime=drink.endtime)
     session.save()
-
+    session.UpdateFromDrink(drink)
     return session
-
-
-class UserDrinkingSessionAssignment(models.Model):
-  drink = models.ForeignKey(Drink)
-  session = models.ForeignKey(UserDrinkingSession)
-
-  @classmethod
-  def RecordDrink(cls, d):
-    """ Create a new record for the drink |d|.
-
-    This method calles UserDrinkingSession.CreateOrUpdateSessionForDrink to find or
-    create a UserDrinkingSession matching this drink.
-    """
-    assignment_qs = d.userdrinkingsessionassignment_set.all()
-    if len(assignment_qs):
-      # Already assigned to a session.
-      return assignment_qs[0]
-    session = UserDrinkingSession.CreateOrUpdateSessionForDrink(d)
-    UserDrinkingSessionAssignment.objects.filter(drink=d).delete()
-    dg = UserDrinkingSessionAssignment(
-        drink=d,
-        session=session)
-    dg.save()
-    return dg
-
-
-class DrinkingSessionGroup(models.Model):
-  starttime = models.DateTimeField()
-  endtime = models.DateTimeField()
-
-  def UpdateTimes(self, session):
-    if self.starttime > session.starttime:
-      self.starttime = session.starttime
-    if self.endtime < session.endtime:
-      self.endtime = session.endtime
-
-  def TotalVolume(self):
-    tot = units.Quantity(0, units.RECORD_UNIT)
-    for sess in self.GetSessions():
-      tot += sess.Volume()
-    return tot
-
-  def GetSessions(self):
-    return self.userdrinkingsession_set.all()
-
-  def GetUsers(self):
-    return set(sess.user for sess in self.GetSessions())
-
-  @classmethod
-  def Assign(self, session):
-    window = datetime.timedelta(minutes=kb_common.GROUP_SESSION_TIME_MINUTES)
-    group = find_object_in_window(DrinkingSessionGroup.objects.all(),
-                                  session.starttime, session.endtime, window)
-    if not group:
-      group = DrinkingSessionGroup(starttime=session.starttime,
-                                   endtime=session.endtime)
-
-    group.UpdateTimes(session)
-    group.save()
-
-    return group
 
 
 class ThermoSensor(models.Model):

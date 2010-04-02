@@ -47,7 +47,7 @@ class UserStats:
     return drinks
 
   def AllSessions(self):
-    sessions = self.user.userdrinkingsession_set.all()
+    sessions = self.user.drinkingsession_set.all()
     sessions = sessions.order_by('-starttime')
     return sessions
 

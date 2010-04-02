@@ -416,6 +416,15 @@ class DrinkingSession(models.Model):
   users = models.ManyToManyField(User)
   kegs = models.ManyToManyField(Keg)
 
+  def Volume(self):
+    ret = units.Quantity(0, units.RECORD_UNIT)
+    for d in self.drinks.all():
+      ret += d.Volume()
+    return ret
+
+  def Duration(self):
+    return self.endtime - self.startime
+
   def UpdateFromDrink(self, drink):
     dirty = False
     if self.starttime > drink.starttime:

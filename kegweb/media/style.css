@@ -258,5 +258,20 @@ div.plainbox {
    background: #ccd;
 }
 
+.kb-keg-session {
+  width: 500px;
+  margin-bottom: 8px;
+  padding: 8px;
+  border: 1px dotted #007BFE;
+}
+
+.kb-award-box {
+  width: 96px;
+  height: 96px;
+  background: #4e4e4e;
+  color: #eee;
+  float: left;
+  margin-right: 8px;
+}
 
 /* vim sw=2 ts=2 noet */

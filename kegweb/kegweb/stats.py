@@ -103,6 +103,12 @@ class KegStats:
     else:
       return None
 
+  def Sessions(self):
+    return self.keg.drinkingsession_set.all()
+
+  def NumSessions(self):
+    return self.keg.drinkingsession_set.count()
+
   def PercentFull(self):
     return 100.0 * (float(self.keg.remaining_volume()) / float(self.keg.full_volume()))
 

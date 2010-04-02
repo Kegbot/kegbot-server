@@ -114,6 +114,13 @@
     </tr>
 
     <tr>
+      <td align="right"><b>Sessions</b></td>
+      <td>
+        {{ stats.NumSessions }} drinking sessions
+      </td>
+    </tr>
+
+    <tr>
       <td align="right"><b>Keg Age</b></td>
       <td>
         {% ifequal keg.status "online" %}
@@ -140,6 +147,21 @@
 
 {% block extra-content %}
 {% keg_stats keg as stats %}
+<div class="kb-main-content">
+  <div class="kb-contentbox-head">
+     sessions
+  </div>
+  <div class="kb-contentbox">
+     <p>
+        this keg has had <b>{{stats.NumSessions}}</b> drinking sessions.
+     </p>
+
+    {% for session in stats.Sessions %}
+      {% include "kegweb/keg-session.html" %}
+    {% endfor %}
+  </div>
+</div>
+
 <div class="kb-main-content">
   <div class="kb-contentbox-head">
      full drink history

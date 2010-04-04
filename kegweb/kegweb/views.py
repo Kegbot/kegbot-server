@@ -55,25 +55,11 @@ def index(request):
   return render_to_response('index.html', context)
 
 @cache_page(30)
-def leaders(request):
+def system_stats(request):
   context = RequestContext(request)
-
   all_drinks = view_util.all_valid_drinks()
-  context['top_volume_drinkers_alltime'] = view_util.drinkers_by_volume(all_drinks)
-
-  online_kegs = models.Keg.objects.filter(status='online').order_by('startdate')
-
-  online_keg_leaders = []
-  for keg in online_kegs:
-    drinkers = view_util.keg_drinkers_by_volume(keg)
-    online_keg_leaders.append( (keg, drinkers) )
-
-  context['top_volume_drinkers_by_keg'] = online_keg_leaders
-
-  context['top_bac_alltime'] = (bac.user for bac in
-                                models.BAC.objects.all().order_by('-bac') )
-
-  return render_to_response('kegweb/leaders.html', context)
+  context['top_volume_drinkers_alltime'] = view_util.drinkers_by_volume(all_drinks)[:10]
+  return render_to_response('kegweb/system-stats.html', context)
 
 
 ### object lists and detail (generic views)

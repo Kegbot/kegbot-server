@@ -205,15 +205,14 @@ class SessionsVolumeChartNode(Node):
 
     data = []
     avgs = []
+    avg_points = []
     total = 0.0
     for sess in sessions:
       vol = int(sess.Volume())
       data.append(vol)
-      total += vol
-      if len(data) < 5:
-        avgs.append(None)
-      else:
-        avgs.append(total / len(data))
+      avg_points.append(vol)
+      avg_points = avg_points[-5:]
+      avgs.append(sum(avg_points) / len(avg_points))
 
     chart = pygooglechart.SimpleLineChart(200, 64)
     chart.set_colours(['4D89F9','C6D9FD'])

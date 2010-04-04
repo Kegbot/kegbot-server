@@ -1,0 +1,27 @@
+{% extends "page-twocol.html" %}
+{% load kegweblib %}
+
+{% block title %}leader board{% endblock %}
+
+{% block col-1 %}
+<div class="kb-contentbox-head">
+  all-time stats
+</div>
+{% endblock col-1 %}
+
+{% block col-2 %}
+<div class="kb-contentbox-head">
+   top drinkers
+</div>
+<div class="kb-contentbox">
+  <table>
+    <tr>
+      <td valign="top">
+        {% for volume,user in top_volume_drinkers_alltime %}
+        {% include "kegweb/volume-user.html" %}
+        {% endfor %}
+      </td>
+    </tr>
+  </table>
+</div>
+{% endblock col-2 %}

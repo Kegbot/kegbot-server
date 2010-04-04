@@ -17,8 +17,9 @@ urlpatterns = patterns('kegweb.kegweb.views',
       (r'^account/update_mugshots/$', 'update_mugshots'),
       (r'^account/claim_token/$', 'claim_token'),
 
-      ### leader board
-      (r'^leaders/$', 'leaders'),
+      ### all-time stats
+      (r'^stats/$', 'system_stats'),
+      (r'^leaders/$', 'redirect_to', {'url': '/stats/'}),
 
       ### keg related
       (r'^kegs/$', 'keg_list'),

@@ -1,0 +1,22 @@
+{% load kegweblib %}
+<div class="kb-keg-session">
+  <div class="kb-award-box">
+    <table border="0" width="100%" height="100%">
+      <tr>
+        <td align="center" valign="center">
+          <div style="font-size: 200%;">
+            {{ session.Volume.ConvertTo.Pint|floatformat:0 }}
+          </div>
+          <div style="font-size: 8px;">
+            pints
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="kb-drink-box-details-headline">
+    {{ session.starttime|date:"l, F j, Y" }} at
+    {{ session.starttime|date:"P" }}
+  </div>
+  <div class="clear"></div>
+</div>

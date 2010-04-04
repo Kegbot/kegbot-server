@@ -51,6 +51,9 @@ class UserStats:
     sessions = sessions.order_by('-starttime')
     return sessions
 
+  def UserSessions(self):
+    return self.user.session_parts.all().order_by('-starttime')
+
   def EarliestDrink(self):
     drinks = self.AllDrinksAsc()
     if drinks.count():

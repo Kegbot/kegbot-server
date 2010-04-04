@@ -480,7 +480,7 @@ class DrinkingSessionUserPart(models.Model):
   class Meta:
     unique_together = ('session', 'user')
   session = models.ForeignKey(DrinkingSession, related_name='user_parts')
-  user = models.ForeignKey(User)
+  user = models.ForeignKey(User, related_name='session_parts')
   starttime = models.DateTimeField()
   endtime = models.DateTimeField()
   volume_ml = models.FloatField(default=0)
@@ -488,6 +488,8 @@ class DrinkingSessionUserPart(models.Model):
   def drinks(self):
     return session.drinks.filter(users=user)
 
+  def Volume(self):
+    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
 
 class ThermoSensor(models.Model):
   raw_name = models.CharField(max_length=256)

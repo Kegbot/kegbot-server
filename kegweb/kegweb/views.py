@@ -93,6 +93,7 @@ def keg_list(request):
       template_object_name='keg',
       template_name='kegweb/keg_list.html')
 
+@cache_page(30)
 def keg_detail(request, keg_id):
   all_kegs = models.Keg.objects.all()
   return object_detail(request,

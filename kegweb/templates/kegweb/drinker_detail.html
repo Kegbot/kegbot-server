@@ -67,3 +67,27 @@
 </div>
 
 {% endblock %}
+
+{% block col-2 %}
+{% user_stats drinker as stats %}
+<div class="kb-contentbox-head">
+  stats
+</div>
+<div class="kb-contentbox">
+  <table border="0" class="kb-statstable">
+    <tr>
+      <th>Activity by Day</th>
+      <td>
+        <img src="{% sessions_weekday_chart stats.UserSessions %}">
+      </td>
+    </tr>
+
+    <tr>
+      <th>Volume per Session</th>
+      <td>
+        <img src="{% sessions_volume_chart stats.UserSessions %}">
+      </td>
+    </tr>
+  </table>
+</div>
+{% endblock %}

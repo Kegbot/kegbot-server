@@ -185,6 +185,45 @@ class SessionsWeekdayChartNode(Node):
 register.tag('sessions_weekday_chart', sessions_weekday_chart)
 
 
+def sessions_volume_chart(parser, token):
+  """{% sessions_volume_chart sessions %}"""
+  tokens = token.contents.split()
+  if len(tokens) != 2:
+    raise TemplateSyntaxError('%s requires 2 arguments' % (tokens[0],))
+
+  return SessionsVolumeChartNode(tokens[1])
+
+
+class SessionsVolumeChartNode(Node):
+  def __init__(self, sessions_var):
+    self._sessions_var = Variable(sessions_var)
+
+  def render(self, context):
+    sessions = self._sessions_var.resolve(context)
+    if not sessions:
+      return ''
+
+    data = []
+    avgs = []
+    total = 0.0
+    for sess in sessions:
+      vol = int(sess.Volume())
+      data.append(vol)
+      total += vol
+      if len(data) < 5:
+        avgs.append(None)
+      else:
+        avgs.append(total / len(data))
+
+    chart = pygooglechart.SimpleLineChart(200, 64)
+    chart.set_colours(['4D89F9','C6D9FD'])
+    chart.add_data(data)
+    chart.add_data(avgs)
+    return chart.get_url()
+
+register.tag('sessions_volume_chart', sessions_volume_chart)
+
+
 
 class QueryNode(Node):
   def __init__(self, var_name, queryset, limit):

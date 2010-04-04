@@ -39,7 +39,13 @@ def volume_chart(vol_by_user):
   if not USE_GOOGLE_CHARTS:
     return None
   chart = pygooglechart.PieChart2D(300, 150)
-  chart.add_data([x[0] for x in vol_by_user])
-  chart.set_pie_labels(["%s (%i oz)" % (x[1].username, x[0]) for x in vol_by_user])
+  data = []
+  labels = []
+  for amount, user in vol_by_user:
+    ounces = amount.ConvertTo.Ounce
+    data.append(ounces)
+    labels.append("%s (%i oz)" % (user.username, ounces))
+  chart.add_data(data)
+  chart.set_pie_labels(labels)
   return chart
 

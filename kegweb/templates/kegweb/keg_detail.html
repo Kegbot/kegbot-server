@@ -150,28 +150,42 @@
 {% endblock col-1 %}
 
 {% block col-2 %}
-  <h1>drinker breakdown</h1>
+<div class="kb-contentbox-head">
+  drinker breakdown
+</div>
+<div class="kb-contentbox">
   {% keg_stats keg as stats %}
-  {% if stats.ChartUsersByVolume %}
   <img src="{{ stats.ChartUsersByVolume }}">
-  {% endif %}
+</div>
 {% endblock col-2 %}
 
 {% block extra-content %}
 {% keg_stats keg as stats %}
 <div class="kb-main-content">
-  <div class="kb-contentbox-head">
-     sessions
-  </div>
-  <div class="kb-contentbox">
-     <p>
-        this keg has had <b>{{stats.NumSessions}}</b> drinking sessions.
-     </p>
 
-    {% for session in stats.Sessions %}
-      {% include "kegweb/keg-session.html" %}
-    {% endfor %}
+  <div class="kb-twocol-left">
+    <div class="kb-contentbox-head">
+       sessions
+    </div>
+    <div class="kb-contentbox">
+      {% for session in stats.Sessions %}
+        {% include "kegweb/keg-session.html" %}
+      {% endfor %}
+    </div>
   </div>
+
+  <div class="kb-twocol-right">
+    <div class="kb-contentbox-head">
+       top drinkers
+    </div>
+    <div class="kb-contentbox">
+      {% for volume,user in stats.TopUsersByVolume %}
+        {% include "kegweb/volume-user.html" %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="clear">&nbsp;</div>
 </div>
 
 <div class="kb-main-content">
@@ -179,11 +193,10 @@
      full drink history
   </div>
   <div class="kb-contentbox">
-     <p>
-        full drink history for keg {{ keg.id }} is shown below.
-     </p>
-
-     <table id="kb-keg-drinks-table" cellspacing=0 border=0></table>
+    <p>
+       full drink history for keg {{ keg.id }} is shown below.
+    </p>
+    <table id="kb-keg-drinks-table" cellspacing=0 border=0></table>
   </div>
 </div>
 {% endblock extra-content %}

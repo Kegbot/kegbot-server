@@ -91,6 +91,9 @@ class KegStats:
   def AllUsersByVolume(self):
     return view_util.drinkers_by_volume(self.AllDrinks())
 
+  def TopUsersByVolume(self):
+    return self.AllUsersByVolume()[:5]
+
   def AllUsersByCost(self):
     return view_util.drinkers_by_cost(self.AllDrinks())
 

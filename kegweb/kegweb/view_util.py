@@ -21,6 +21,7 @@
 """Utility functions for use by the views module."""
 
 from pykeg.core import models
+from pykeg.core import units
 
 def all_valid_drinks():
   drinks = models.Drink.objects.filter(status='valid')
@@ -51,7 +52,7 @@ def keg_drinkers_by_volume(keg):
 def drinkers_by_volume(drinks):
   ret = {}
   for d in drinks:
-    ret[d.user] = ret.get(d.user, 0) + d.Volume().ConvertTo.Ounce
+    ret[d.user] = ret.get(d.user, units.Quantity(0, units.RECORD_UNIT)) + d.Volume()
   outlist = []
   for user, totalvol in ret.iteritems():
     if user_is_hidden(user):

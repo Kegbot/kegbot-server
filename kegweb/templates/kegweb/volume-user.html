@@ -1,0 +1,19 @@
+{% load kegweblib %}
+<div>
+  <table border="0">
+    <tr>
+      <td>
+        <div class="kb-drink-box-mugshot">
+          {% mugshot_box user 96 %}
+        </div>
+      </td>
+      <td align="left" valign="center">
+        <h2>{{ user.username }}</h2>
+        {{ volume.ConvertTo.Pint|floatformat:0 }} pints<br>
+        <span style="font-size:0.7em;"><i>{{ volume.ConvertTo.Ounce|floatformat:2 }}
+        oz</i></span>
+      </td>
+    </tr>
+  </table>
+</div>
+

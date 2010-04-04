@@ -1,55 +1,46 @@
-{% extends "base.html" %}
+{% extends "page-twocol.html" %}
 {% load kegweblib %}
 
 {% block title %}drink {{ drink.id }} by {{ drink.user.username }}{% endblock %}
 
-{% block content %}
+{% block col-1 %}
 
-<div class="contenthead">
-   drink information
+<div class="kb-contentbox-head">
+   drink {{ drink.id }} by {{ drink.user.username }}
 </div>
-<div class="content">
+<div class="kb-contentbox">
    <p>
-   <table cellspacing=3 border=0 width="430">
+   <table class="kb-statstable">
       <tr>
-         <td colspan="2" align="center">
-            <i>drink number {{ drink.id }}, consumed by {{ drink.user }}</i>
-         </td>
-         <td rowspan="7" align="right" valign="top">
-            <img src="/site_media/images/beerpint.png" width="50" height="94">
-         </td>
-      </tr>
-      <tr>
-         <td align="right"><b>drink size:</b></td>
+         <th>Drink Size</th>
          <td>{{ drink.Volume.ConvertTo.Ounce|floatformat:2 }} ounces</td>
       </tr>
       <tr>
-         <td align="right"><b>pour start:</b></td>
+         <th>Pour Start</th>
          <td>{{ drink.starttime }}</td>
       </tr>
-      <!-- TODO FIXME
       <tr>
-         <td align="right"><b>cost:</b></td>
-         <td>{$drink->getCost()|money_fmt}</td>
-      </tr>
-      -->
-      <tr>
-         <td align="right"><b>pour end:</b></td>
+         <th>Pour End</th>
          <td>{{ drink.endtime }}</td>
       </tr>
       <tr>
-         <td align="right"><b>keg:</b></td>
-         <td><a href="/kegs/{{drink.keg.id}}/">{{drink.keg}}</a></td>
+         <th>Keg</th>
+         <td>
+          <a href="{% url keg drink.keg.id %}">{{drink.keg.type.name}}</a>
+        </td>
       </tr>
 
    </table>
    </p>
 </div>
 
-<div class="contenthead">
-   drinking with {{ drink.user.username }}
+{% endblock %}
+
+{% block col-2 %}
+<div class="kb-contentbox-head">
+   also drinking
 </div>
-<div class="content">
+<div class="kb-contentbox">
    <p>
 
    {% if not drink.GetGroup %}

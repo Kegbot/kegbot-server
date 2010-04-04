@@ -86,7 +86,6 @@ a:hover {
 
 .kb-main-content {
 	background-color: white;
-	padding-left: 16px; /* match kb-main-header */
   padding-top: 16px;
   border: 1px solid #ACB6C0;
 	margin-bottom: 16px;
@@ -100,14 +99,6 @@ a:hover {
 }
 
 /* @end */
-
-#kb-main-page-kegs {
-  width: 500px;
-  height: 100%;
-  border-right: 1px #C3C0C0 dotted;
-  float: left;
-  margin-right: 8px;
-}
 
 .kb-tapbox {
   width: 480px;
@@ -166,7 +157,16 @@ a:hover {
   margin-bottom: 16px;
 }
 
-#kb-main-page-activity {
+.kb-twocol-left {
+  width: 500px;
+  height: 100%;
+  float: left;
+  margin-right: 8px;
+}
+
+.kb-twocol-right {
+  border-left: 1px #C3C0C0 dotted;
+  height: 100%;
   float: left;
 }
 
@@ -178,13 +178,20 @@ a:hover {
   color: #000;
   letter-spacing: -2px
   margin-bottom: 16px;
+	padding-left: 16px; /* match kb-main-header */
 }
 
 .kb-contentbox {
+	padding-left: 16px; /* match kb-main-header */
 }
 
 .kb-statstable {
   font: 80%/100% "Lucida Grande", Arial, sans-serif;
+}
+
+.kb-statstable th {
+  text-align: right;
+  margin-right: 4px;
 }
 
 .kb-drink-box {

@@ -150,6 +150,41 @@ class KegVolumeChartNode(Node):
 register.tag('keg_volume_chart', keg_volume_chart)
 
 
+def sessions_weekday_chart(parser, token):
+  """{% sessions_weekday_chart sessions %}"""
+  tokens = token.contents.split()
+  if len(tokens) != 2:
+    raise TemplateSyntaxError('%s requires 2 arguments' % (tokens[0],))
+
+  return SessionsWeekdayChartNode(tokens[1])
+
+
+class SessionsWeekdayChartNode(Node):
+  def __init__(self, sessions_var):
+    self._sessions_var = Variable(sessions_var)
+
+  def render(self, context):
+    sessions = self._sessions_var.resolve(context)
+    if not sessions:
+      return ''
+
+    weekdays = [0] * 7
+
+    for sess in sessions:
+      date = int(sess.starttime.strftime('%w'))
+      weekdays[date] += int(sess.Volume())
+
+    chart = pygooglechart.StackedVerticalBarChart(200, 64)
+    chart.set_bar_width(20)
+    chart.set_colours(['4D89F9','C6D9FD'])
+    chart.add_data(weekdays)
+    labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    chart.set_axis_labels('x', labels)
+    return chart.get_url()
+
+register.tag('sessions_weekday_chart', sessions_weekday_chart)
+
+
 
 class QueryNode(Node):
   def __init__(self, var_name, queryset, limit):

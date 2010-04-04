@@ -110,6 +110,15 @@
     </tr>
 
     <tr>
+      <td valign="top" align="right">
+        <b>Volume by Day</b>
+      </td>
+      <td>
+        <img src="{% sessions_weekday_chart stats.Sessions %}">
+      </td>
+    </tr>
+
+    <tr>
       <td align="right"><b>Drink Count</b></td>
       <td>
         {{ stats.AllDrinks.count }} pours by {{ stats.AllDrinkersCount }}
@@ -137,6 +146,7 @@
       </td>
     </tr>
   </table>
+
 </div>
 
 {% endblock col-1 %}

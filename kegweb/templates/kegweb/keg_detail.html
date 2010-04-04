@@ -14,7 +14,7 @@
 
       function buildTable() {
         var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Drink');
+        data.addColumn('number', 'Drink');
         data.addColumn('number', 'Ounces');
         data.addColumn('number', 'Calories');
         data.addColumn('string', 'User');
@@ -23,7 +23,8 @@
         data.addRows({{stats.AllDrinks.count}});
 
         {% for drink in stats.AllDrinks %}
-        data.setCell({{forloop.counter0}}, 0, '{{drink.id}}');
+        data.setCell({{forloop.counter0}}, 0, {{drink.id}},
+            '<a href="{% url drink drink.id %}">{{drink.id}}</a>');
         data.setCell({{forloop.counter0}}, 1, {{drink.Volume.ConvertTo.Ounce}},
           '{{drink.Volume.ConvertTo.Ounce|floatformat}}');
         data.setCell({{forloop.counter0}}, 2, {{drink.calories}},
@@ -33,7 +34,13 @@
         data.setCell({{forloop.counter0}}, 5, {{drink.bac}}, '{{drink.bac|bac_format}}');
         {% endfor %}
         var table = new google.visualization.Table(document.getElementById('kb-keg-drinks-table'));
-        table.draw(data, {showRowNumber: false, allowHtml: true});
+        var formatter = new google.visualization.BarFormat({width: 50});
+        formatter.format(data, 1);
+        table.draw(data, {
+          showRowNumber: false,
+          allowHtml: true,
+          page: 'enable',
+          pageSize: 20});
       }
 
     </script>

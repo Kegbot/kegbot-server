@@ -9,7 +9,6 @@
    drink {{ drink.id }} by {{ drink.user.username }}
 </div>
 <div class="kb-contentbox">
-   <p>
    <table class="kb-statstable">
       <tr>
          <th>Drink Size</th>
@@ -31,25 +30,27 @@
       </tr>
 
    </table>
-   </p>
 </div>
 
 {% endblock %}
 
 {% block col-2 %}
 <div class="kb-contentbox-head">
-   also drinking
+  this session
 </div>
 <div class="kb-contentbox">
-   <p>
-
-   {% if not drink.GetGroup %}
-     <b>{{ drink.user.username }}</b> appeared to be drinking alone.
-   {% else %}
-     {% show_drink_group drink.GetGroup %}
-   {% endif %}
-
-   </p>
+  {% with drink.GetSession as session %}
+  <table class="kb-statstable">
+  <tr>
+    <th>Drinkers</th>
+    <td>{{session.users.count}}</td>
+  </tr>
+  <tr>
+    <th>Volume</th>
+    <td>{{session.Volume.ConvertTo.Pint|floatformat:1}} pints</td>
+  </tr>
+  </table>
+  {% endwith %}
 </div>
 
 {% endblock %}

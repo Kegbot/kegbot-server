@@ -64,7 +64,7 @@
         <b>Total Poured</b>
       </td>
       <td rowspan="2">
-        <img src="{% keg_volume_chart keg %}">
+        <img src="{% chart keg_volume keg 200 28 %}">
       </td>
     </tr>
 
@@ -84,7 +84,7 @@
         <b>Temperature</b>
       </td>
       <td rowspan="2">
-        <img src="{% sensor_chart keg.tap.temperature_sensor.nice_name %}">
+        <img src="{% chart sensor keg.tap.temperature_sensor.nice_name 200 28 %}">
       </td>
     </tr>
     <tr>
@@ -112,7 +112,7 @@
         <b>Volume by Day</b>
       </td>
       <td>
-        <img src="{% sessions_weekday_chart stats.Sessions %}">
+        <img src="{% chart sessions_weekday stats.Sessions 200 64 %}">
       </td>
     </tr>
 

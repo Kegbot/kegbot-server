@@ -28,14 +28,6 @@ def mugshot_box(user, boxsize=100):
   }
 register.inclusion_tag('kegweb/mugshot_box.html')(mugshot_box)
 
-def drink_span(drink):
-  return {'drink' : drink}
-register.inclusion_tag('kegweb/drink_span.html')(drink_span)
-
-def show_drink_group(group):
-  return {'group' : group}
-register.inclusion_tag('kegweb/drink_group.html')(show_drink_group)
-
 def render_page(page):
   return {'page' : page}
 register.inclusion_tag('kegweb/page_block.html')(render_page)
@@ -61,29 +53,53 @@ def latest_drinks(parser, token):
 
 register.tag('latest_drinks', latest_drinks)
 
+def chart(parser, tokens):
+  """{% chart <charttype> [args] width height %}"""
+  tokens = tokens.contents.split()
+  if len(tokens) < 4:
+    raise TemplateSyntaxError('chart requires at least 4 arguments')
+  charttype = tokens[1]
+  try:
+    width = int(tokens[-2])
+    height = int(tokens[-1])
+  except ValueError:
+    raise TemplateSyntaxError('invalid width or height')
+  args = tokens[2:-2]
+  return ChartNode(charttype, width, height, args)
 
-def sensor_chart(parser, token):
-  """{% sensor_chart <name> %}"""
-  tokens = token.contents.split()
-  if len(tokens) != 2:
-    raise TemplateSyntaxError('%s requires 2 arguments' % (tokens[0],))
+register.tag('chart', chart)
 
-  return SensorChartNode(tokens[1])
+class ChartNode(Node):
+  def __init__(self, charttype, width, height, args):
+    self._charttype = charttype
+    self._width = width
+    self._height = height
+    self._args = args
 
-
-class SensorChartNode(Node):
-  def __init__(self, sensor_name):
-    self._sensor_name_var = Variable(sensor_name)
+    self._chart_fn = getattr(self, 'chart_%s' % (self._charttype,))
+    if not self._chart_fn:
+      raise TemplateSyntaxError('unknown chart type: %s' % self._charttype)
 
   def render(self, context):
-    sensor_name = self._sensor_name_var.resolve(context)
+    return self._chart_fn(context)
+
+  def chart_sensor(self, context):
+    """ Shows a simple line plot of a specific temperature sensor.
+
+    Syntax:
+      {% chart sensor <sensorname> width height %}
+    Args:
+      sensorname - the nice_name of a ThermoSensor
+    """
+    sensor_name_var = Variable(self._args[0])
+    sensor_name = sensor_name_var.resolve(context)
+
     try:
       sensor = models.ThermoSensor.objects.get(nice_name=sensor_name)
     except models.ThermoSensor.DoesNotExist:
-      return ''
+      return '' # TODO(mikey): unknown image
 
     hours = 12
-
     now = datetime.datetime.now()
     start = now - (datetime.timedelta(hours=hours))
     start = start - (datetime.timedelta(seconds=start.second))
@@ -105,30 +121,23 @@ class SensorChartNode(Node):
     if not have_temps:
       return ''
 
-    chart = pygooglechart.SparkLineChart(200, 20)
+    chart = pygooglechart.SparkLineChart(self._width, self._height)
     chart.add_data(temps)
     chart.fill_solid(pygooglechart.Chart.BACKGROUND, '00000000')
     chart.set_colours(['4D89F9'])
     return chart.get_url()
 
-register.tag('sensor_chart', sensor_chart)
+  def chart_keg_volume(self, context):
+    """ Shows a horizontal bar chart of keg served/remaining volume.
 
+    Syntax:
+      {% chart keg_volume <keg> width height %}
+    Args:
+      keg - the keg instance to chart
+    """
+    keg_var = Variable(self._args[0])
+    keg = keg_var.resolve(context)
 
-def keg_volume_chart(parser, token):
-  """{% keg_volume_chart <keg> %}"""
-  tokens = token.contents.split()
-  if len(tokens) != 2:
-    raise TemplateSyntaxError('%s requires 2 arguments' % (tokens[0],))
-
-  return KegVolumeChartNode(tokens[1])
-
-
-class KegVolumeChartNode(Node):
-  def __init__(self, keg_var):
-    self._keg_var = Variable(keg_var)
-
-  def render(self, context):
-    keg = self._keg_var.resolve(context)
     if not keg or not isinstance(keg, models.Keg):
       return ''
 
@@ -139,7 +148,7 @@ class KegVolumeChartNode(Node):
     full_pints = full.ConvertTo.Pint
     remain_pints = (full - served).ConvertTo.Pint
 
-    chart = pygooglechart.StackedHorizontalBarChart(200, 28,
+    chart = pygooglechart.StackedHorizontalBarChart(self._width, self._height,
         x_range=(0, full_pints))
     chart.set_bar_width(20)
     chart.set_colours(['4D89F9','C6D9FD'])
@@ -147,24 +156,17 @@ class KegVolumeChartNode(Node):
     chart.add_data([full_pints])
     return chart.get_url()
 
-register.tag('keg_volume_chart', keg_volume_chart)
+  def chart_sessions_weekday(self, context):
+    """ Vertical bar chart showing session volume by day of week.
 
-
-def sessions_weekday_chart(parser, token):
-  """{% sessions_weekday_chart sessions %}"""
-  tokens = token.contents.split()
-  if len(tokens) != 2:
-    raise TemplateSyntaxError('%s requires 2 arguments' % (tokens[0],))
-
-  return SessionsWeekdayChartNode(tokens[1])
-
-
-class SessionsWeekdayChartNode(Node):
-  def __init__(self, sessions_var):
-    self._sessions_var = Variable(sessions_var)
-
-  def render(self, context):
-    sessions = self._sessions_var.resolve(context)
+    Syntax:
+      {% chart sessions_weedkay <sessions> width height %}
+    Args:
+      sessions - an iterable of DrinkingSession or UserDrinkingSessionPart
+                 instances
+    """
+    sessions_var = Variable(self._args[0])
+    sessions = sessions_var.resolve(context)
     if not sessions:
       return ''
 
@@ -174,7 +176,7 @@ class SessionsWeekdayChartNode(Node):
       date = int(sess.starttime.strftime('%w'))
       weekdays[date] += int(sess.Volume())
 
-    chart = pygooglechart.StackedVerticalBarChart(200, 64)
+    chart = pygooglechart.StackedVerticalBarChart(self._width, self._height)
     chart.set_bar_width(20)
     chart.set_colours(['4D89F9','C6D9FD'])
     chart.add_data(weekdays)
@@ -182,24 +184,17 @@ class SessionsWeekdayChartNode(Node):
     chart.set_axis_labels('x', labels)
     return chart.get_url()
 
-register.tag('sessions_weekday_chart', sessions_weekday_chart)
+  def chart_sessions_volume(self, context):
+    """ Line chart showing session volumes.
 
-
-def sessions_volume_chart(parser, token):
-  """{% sessions_volume_chart sessions %}"""
-  tokens = token.contents.split()
-  if len(tokens) != 2:
-    raise TemplateSyntaxError('%s requires 2 arguments' % (tokens[0],))
-
-  return SessionsVolumeChartNode(tokens[1])
-
-
-class SessionsVolumeChartNode(Node):
-  def __init__(self, sessions_var):
-    self._sessions_var = Variable(sessions_var)
-
-  def render(self, context):
-    sessions = self._sessions_var.resolve(context)
+    Syntax:
+      {% chart sessions_volume <sessions> width height %}
+    Args:
+      sessions - an iterable of DrinkingSession or UserDrinkingSessionPart
+                 instances
+    """
+    sessions_var = Variable(self._args[0])
+    sessions = sessions_var.resolve(context)
     if not sessions:
       return ''
 
@@ -214,14 +209,11 @@ class SessionsVolumeChartNode(Node):
       avg_points = avg_points[-5:]
       avgs.append(sum(avg_points) / len(avg_points))
 
-    chart = pygooglechart.SimpleLineChart(200, 64)
+    chart = pygooglechart.SimpleLineChart(self._width, self._height)
     chart.set_colours(['4D89F9','C6D9FD'])
     chart.add_data(data)
     chart.add_data(avgs)
     return chart.get_url()
-
-register.tag('sessions_volume_chart', sessions_volume_chart)
-
 
 
 class QueryNode(Node):

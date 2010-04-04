@@ -1,5 +1,5 @@
 # -*- coding: latin-1 -*-
-# Copyright 2008 Mike Wakerly <opensource@hoho.com>
+# Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -425,7 +425,7 @@ class DrinkingSession(models.Model):
   def Duration(self):
     return self.endtime - self.startime
 
-  def UpdateFromDrink(self, drink):
+  def AddDrink(self, drink):
     dirty = False
     if self.starttime > drink.starttime:
       self.starttime = drink.starttime
@@ -440,27 +440,53 @@ class DrinkingSession(models.Model):
     if dirty:
       self.save()
 
+    self._UpdateUserPart(drink)
+
+  def _UpdateUserPart(self, drink):
+    defaults = {'starttime': drink.starttime, 'endtime': drink.endtime}
+    user_part, created = DrinkingSessionUserPart.objects.get_or_create(user=drink.user,
+        session=self, defaults=defaults)
+    if user_part.starttime > drink.starttime:
+      user_part.starttime = drink.starttime
+    if user_part.endtime < drink.endtime:
+      user_part.endtime = drink.endtime
+    user_part.volume_ml += drink.volume_ml
+    user_part.save()
+
   @classmethod
   def SessionForDrink(cls, drink):
     # Return existing session if already assigned.
-    q = drink.drinkingsession_set.all()
+    q = cls.objects.filter(drinks=drink)
     if q:
       session = q[0]
       return session
 
     # Return last session if one already exists
-    q = DrinkingSession.objects.all()
+    q = cls.objects.all()
     window = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
     session = find_object_in_window(q, drink.starttime, drink.endtime, window)
     if session:
-      session.UpdateFromDrink(drink)
+      session.AddDrink(drink)
       return session
 
     # Create a new session
     session = cls(starttime=drink.starttime, endtime=drink.endtime)
     session.save()
-    session.UpdateFromDrink(drink)
+    session.AddDrink(drink)
     return session
+
+
+class DrinkingSessionUserPart(models.Model):
+  class Meta:
+    unique_together = ('session', 'user')
+  session = models.ForeignKey(DrinkingSession, related_name='user_parts')
+  user = models.ForeignKey(User)
+  starttime = models.DateTimeField()
+  endtime = models.DateTimeField()
+  volume_ml = models.FloatField(default=0)
+
+  def drinks(self):
+    return session.drinks.filter(users=user)
 
 
 class ThermoSensor(models.Model):

@@ -79,13 +79,6 @@
       </td>
     </tr>
 
-    <tr>
-      <td align="right"><b>Percent Full</b></td>
-      <td>
-        {{ stats.PercentFull|floatformat:2 }}% full
-      </td>
-    </tr>
-
     {% if keg.tap %}
     {% if keg.tap.temperature_sensor %}
     <tr>
@@ -104,6 +97,17 @@
     </tr>
     {% endif %}
     {% endif %}
+
+    <tr>
+      <td align="right"><b>Percent Full</b></td>
+      <td>
+        {% if keg.is_empty %}
+          <i>empty</i>
+        {% else %}
+          {{ stats.PercentFull|floatformat:2 }}% full
+        {% endif %}
+      </td>
+    </tr>
 
     <tr>
       <td align="right"><b>Drink Count</b></td>

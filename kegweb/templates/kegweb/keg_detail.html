@@ -71,9 +71,7 @@
     <tr>
       <td valign="top" align="right">
         {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
-        {% if keg.is_empty %}
-          (empty!)
-        {% else %}
+        {% if not keg.is_empty %}
           ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
         {% endif %}
       </td>

@@ -38,13 +38,23 @@ def volume_chart(vol_by_user):
   """
   if not USE_GOOGLE_CHARTS:
     return None
-  chart = pygooglechart.PieChart2D(300, 150)
+  chart = pygooglechart.PieChart2D(300, 125)
   data = []
   labels = []
-  for amount, user in vol_by_user:
+
+  for amount, user in vol_by_user[:10]:
     ounces = amount.ConvertTo.Ounce
     data.append(ounces)
     labels.append("%s (%i oz)" % (user.username, ounces))
+
+  other_vol = 0
+  for amount, user in vol_by_user[10:]:
+    ounces = amount.ConvertTo.Ounce
+    other_vol += ounces
+  if other_vol:
+    data.append(other_vol)
+    labels.append("all others (%i oz)" % other_vol)
+
   chart.add_data(data)
   chart.set_pie_labels(labels)
   return chart

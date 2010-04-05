@@ -3,6 +3,43 @@
 
 {% block title %}drinker details for {{ drinker.username }}{% endblock %}
 
+{% block kb-extrajs %}
+    {% user_stats drinker as stats %}
+    <script type="text/javascript">
+      // Load the Visualization API and the tablepackage.
+      google.load('visualization', '1', {'packages':['table']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.setOnLoadCallback(buildTable);
+
+      function buildTable() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'When');
+        data.addColumn('number', 'Pints');
+        data.addColumn('number', 'Drinkers');
+        data.addRows({{stats.UserSessions.count}});
+
+        {% for session in stats.UserSessions %}
+        data.setCell({{forloop.counter0}}, 0,
+            new Date({{session.starttime|date:"Y,n,j"}}));
+        data.setCell({{forloop.counter0}}, 1, {{session.Volume.ConvertTo.Pint}},
+          '{{session.Volume.ConvertTo.Pint|floatformat:1}}');
+        data.setCell({{forloop.counter0}}, 2, {{session.session.users.count}});
+        {% endfor %}
+        var table = new google.visualization.Table(document.getElementById('kb-user-sessions-table'));
+        var formatter = new google.visualization.BarFormat({width: 50});
+        formatter.format(data, 1);
+        table.draw(data, {
+          showRowNumber: false,
+          allowHtml: true,
+          page: 'enable',
+          pageSize: 50});
+      }
+
+    </script>
+{% endblock kb-extrajs %}
+
+
 {% block col-1 %}
 {% user_stats drinker as stats %}
 <div class="kb-contentbox-head">
@@ -61,9 +98,7 @@
    all sessions
 </div>
 <div class="kb-contentbox">
-  {% for session in stats.UserSessions %}
-  {% include "kegweb/user-session.html" %}
-  {% endfor %}
+  <table border="0" class="kb-statstable" id="kb-user-sessions-table"></table>
 </div>
 
 {% endblock %}

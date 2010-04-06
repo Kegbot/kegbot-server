@@ -18,7 +18,7 @@ class Command(test.Command):
     
     def handle(self, *args, **kwargs):
         management.get_commands()
-        if not hasattr(settings, "SOUTH_TESTS_MIGRATE") or not settings.SOUTH_TESTS_MIGRATE:
+        if hasattr(settings, "SOUTH_TESTS_MIGRATE") and not settings.SOUTH_TESTS_MIGRATE:
             # point at the core syncdb command when creating tests
             # tests should always be up to date with the most recent model structure
             management._commands['syncdb'] = 'django.core'

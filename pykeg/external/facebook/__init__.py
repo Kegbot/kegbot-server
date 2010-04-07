@@ -1289,7 +1289,7 @@ class Facebook(object):
         if params.get('added') == '1':
             self.added = True
 
-        if params.get('expires'):
+        if params.get('expires') and params.get('expires') != "None":
             self.session_key_expires = int(params['expires'])
 
         if 'locale' in params:

@@ -42,7 +42,7 @@ AUTH_MODULE_CONTRIB_PHIDGET_RFID = 'contrib.phidget.rfid'
 # TODO(mikey): expose configuration in db.
 AUTH_TOKEN_MAX_IDLE = {
   AUTH_MODULE_CORE_ONEWIRE: 0,
-  AUTH_MODULE_CONTRIB_PHIDGET_RFID: 10,
+  AUTH_MODULE_CONTRIB_PHIDGET_RFID: 240,
 }
 
 # How often to record a thermo reading?

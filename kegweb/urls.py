@@ -26,3 +26,10 @@ urlpatterns = patterns('',
     ### main kegweg urls
     (r'', include('kegweb.kegweb.urls')),
 )
+
+if 'socialregistration' in settings.INSTALLED_APPS:
+  urlpatterns += patterns('',
+      ### socialregistration
+      (r'^sr/', include('socialregistration.urls')),
+  )
+

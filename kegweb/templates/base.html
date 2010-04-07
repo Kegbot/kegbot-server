@@ -1,5 +1,6 @@
 {% load kegweblib %}
 {% load humanize %}
+{% if USE_FACEBOOK %}{% load facebook_tags %}{% endif %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -11,6 +12,7 @@
       google.load("jquery", "1.4");
       google.load("jqueryui", "1.8");
     </script>
+    {% if USE_FACEBOOK %}{% facebook_js %}{% endif %}
     {% block kb-extrajs %}{%endblock%}
 </head>
 
@@ -44,7 +46,11 @@
         </div>
 
         <div class="kb-header-link">
-          <a href="/accounts/logout"><b>logout {{user.username}}</b></a>
+          {% if USE_FACEBOOK %}
+          <a href="#" onclick="FB.Connect.logoutAndRedirect('{% url auth_logout %}')">logout {{user.username}}</a>
+          {% else %}
+          <a href="{% url auth_logout %}">logout {{user.username}}</a>
+          {% endif %}
         </div>
         {% else %}
         <div class="kb-header-link">

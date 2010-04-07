@@ -41,6 +41,11 @@ MEDIA_URL = '/media/'
 
 ### Other stuff
 
+# Want to use Facebook Connect for registration/login? You will need to set
+# these values up to the correct strings.
+FACEBOOK_API_KEY = None
+FACEBOOK_SECRET_KEY = None
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'p7jep28p$+7kb8n=qr+1!i80&5d&!2q_lruhs-%rs(urq4)f*j'
 

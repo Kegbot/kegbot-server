@@ -1,9 +1,10 @@
-{% extends "base.html" %}
+{% extends "page-twocol.html" %}
 {% load kegweblib %}
+{% if USE_FACEBOOK %}{% load facebook_tags %}{% endif %}
 
 {% block title %}keg {{ keg.id }}{% endblock %}
 
-{% block content %}
+{% block col-1 %}
 <div class="kb-contentbox-head">
    account
 </div>
@@ -24,5 +25,18 @@
 
   <!-- did you <a href="/accounts/password/reset/">forget your password?</a> -->
 </div>
+
+{% endblock col-1 %}
+
+{% block col-2 %}
+
+{% if USE_FACEBOOK %}
+<div class="kb-contentbox-head">
+  or...
+</div>
+<div class="kb-contentbox">
+  {% facebook_button %}
+</div>
+{% endif %}
 
 {% endblock %}

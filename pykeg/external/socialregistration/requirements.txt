@@ -1,0 +1,5 @@
+django
+oauth
+python-openid
+
+-e git+git://github.com/sciyoshi/pyfacebook.git#egg=pyfacebook

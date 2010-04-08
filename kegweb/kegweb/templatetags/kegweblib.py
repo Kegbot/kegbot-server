@@ -275,3 +275,16 @@ def bac_format(text):
   if f > 0.08:
     ret = '<b>%s</b>' % ret
   return mark_safe(ret)
+
+@register.filter
+def datetime_js(val):
+  if not isinstance(val, datetime.datetime):
+    return "new Date(1970,0,1)"
+  vals = map(str, (
+      val.year,
+      val.month - 1,
+      val.day,
+      val.hour,
+      val.minute,
+      val.second))
+  return "new Date(%s)" % (",".join(vals))

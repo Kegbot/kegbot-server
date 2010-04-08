@@ -21,6 +21,7 @@ import datetime
 import os
 import random
 
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.sites.models import Site
@@ -68,6 +69,13 @@ class UserProfile(models.Model):
       if l.labelname == lbl:
         return True
     return False
+
+  def FacebookProfile(self):
+    if 'socialregistration' not in settings.INSTALLED_APPS:
+      return None
+    qs = self.user.facebookprofile_set.all()
+    if qs:
+      return qs[0]
 
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)

@@ -1,5 +1,6 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
+{% if USE_FACEBOOK %}{% load facebook_tags %}{% endif %}
 
 {% block title %}your account: {{user.username}}{% endblock %}
 
@@ -27,12 +28,51 @@
 </div>
 <div class="kb-contentbox">
   <form enctype="multipart/form-data" method="post" action="/account/update_mugshots/">
-    {% mugshot_box user %}
-    {{mugshot_form.as_p}}
-  <input type="submit" name="submit" value="submit">
+    <table class="kb-form">
+      <tr>
+        <td>
+          {% mugshot_box user %}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {{mugshot_form.new_mugshot}}
+        </td>
+      </tr>
+      <tr>
+        <td valign="top">
+          <input type="submit" value="update mugshot" />
+        </td>
+      </tr>
+    </table>
   </form>
-  </p>
-
 </div>
 
 {% endblock col-2 %}
+
+
+{% block extra-content %}
+
+{% if USE_FACEBOOK %}
+<div class="kb-main-content">
+
+  <div class="kb-contentbox-head">
+    facebook settings
+  </div>
+  <div class="kb-contentbox">
+    <p>
+    {% with user.get_profile.FacebookProfile as fbprofile %}
+    {% if fbprofile %}
+    your account is linked.
+    {% else %}
+    to link your facebook profile, click below.<br>
+    {% facebook_button %}
+    {% endif %}
+    {% endwith %}
+    </p>
+  </div>
+
+</div>
+{% endif %}
+
+{% endblock %}

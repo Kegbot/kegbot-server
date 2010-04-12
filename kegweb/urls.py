@@ -23,7 +23,13 @@ urlpatterns = patterns('',
      'django.views.static.serve',
      {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
 
-    ### main kegweg urls
+    ### socialregistration
+    (r'^sr/', include('socialregistration.urls')),
+
+    ### RESTful api
+    (r'^api/', include('kegweb.api.urls')),
+
+    ### main kegweb urls
     (r'', include('kegweb.kegweb.urls')),
 )
 

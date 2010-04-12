@@ -1,0 +1,189 @@
+// Describes a named beer variety, such as "India Pale Ale".
+message BeerStyle {
+
+  // The unique identifier for this beer style.
+  required uint32 id = 1;
+
+  // The name of the beer style.
+  required string name = 2;
+
+}
+
+// Describes a beer's brewer, style, and contents.
+message BeerType {
+
+  // The unique identifier for this beer type.
+  required uint32 id = 1;
+
+  // The brand name of the beer.
+  required string name = 2;
+
+  // Brewer information for the beer.  May refer to an 'unknown' or generic
+  // brewer record.
+  required uint32 brewer_id = 3;
+  optional Brewer brewer = 4;
+
+  // Style information for the beer.  May refer to an 'unknown' or generic beer
+  // style.
+  required uint32 style_id = 5;
+  optional BeerStyle style = 6;
+
+  // Number of calories per ounce of beverage.
+  required float calories_oz = 7 [default = 0.0];
+
+  // Number of carbohydrates per ounce of beverage.
+  required float carbs_oz = 8 [default = 0.0];
+
+  // Alcohol by volume, as a percentage of the total volume.
+  required float abv = 9 [default = 0.0];
+
+}
+
+// Describes a specific producer of our favorite beverage.
+message Brewer {
+
+  // The unique identifier for this beer type.
+  required uint32 id = 1;
+
+  // The name of the brewer.
+  required string name = 2;
+
+  // The country of the brewer's headquarters.
+  required string origin_country = 3 [default = ''];
+
+  // The state of the brewer's headquarters.
+  required string origin_state = 4 [default = ''];
+
+  // The city of the brewer's headquarters.
+  required string origin_city = 5 [default = ''];
+
+  // Type of production (usually either 'retail' or 'homebrew').
+  required string distribution = 6 [default = ''];
+
+}
+
+// Describes a single recorded pour from the Kegbot.
+message Drink {
+
+  // The unique identifier for this drink.
+  required uint32 id = 1;
+
+  // The number of meter ticks recorded for the drink.
+  required uint32 ticks = 2;
+
+  // The volume of the drink, in milliliters.
+  required float volume_ml = 3;
+
+  // Local time when the drink started, in seconds since epoch (unix timestamp).
+  required fixed32 starttime = 4;
+
+  // Local time when the drink ended, in seconds since epoch (unix timestamp).
+  required fixed32 endtime = 5;
+
+  // True if the drink is considered 'valid'.
+  required bool is_valid = 6 [default = true];
+
+  // The Keg from which the drink was poured.  May be unset if the drink could
+  // not be associated with a keg.
+  optional uint32 keg_id = 7;
+  optional Keg keg = 8;
+
+  // The User that poured the drink.  May refer to the anonymous 'unknown' user.
+  required string user_id = 9;
+  optional User user = 10;
+
+}
+
+// Describes a single instance of a Keg that is or was attached to the Kegbot.
+message Keg {
+
+  // The unique identifier for this keg.
+  required uint32 id = 1;
+
+  // The kind of beer within the keg.
+  required uint32 type_id = 2;
+  optional BeerType type = 3;
+
+  // The size of the keg.
+  required uint32 size_id = 4;
+  optional KegSize size = 5;
+
+  // Local time when the keg was 'started', in seconds since epoch (unix
+  // timestamp). This should be no later than the time of the first Drink.
+  required fixed32 startdate = 6;
+
+  // Local time when the keg was 'completed', in seconds since epoch (unix
+  // timestamp). This should be no sooner than the time of the most recent
+  // drink.  If the keg's `status` is not 'offline', then this value is
+  // meaningless.
+  required fixed32 enddate = 7;
+
+  // The adminstrator's description of this keg.
+  optional string description = 8;
+
+  // The original cost of this keg.
+  // TODO(mikey): deprecate this field.
+  optional float origcost = 9;
+
+}
+
+message KegSize {
+
+  // The unique identifier for this keg size.
+  required uint32 id = 1;
+
+  // The name of the size ("Half Barrel", "Pony keg", ...)
+  required string name = 2;
+
+  // The volume of the size, in milliliters.
+  required float volume_ml = 3;
+
+}
+
+// Describes a tap which is available for pouring beer.
+message KegTap {
+
+  // The unique identifier for this tap.
+  required uint32 id = 1;
+
+  // The name of the tap, a free-form string ("Main tap", "Wet bar", ...)
+  required string name = 2;
+
+  // A longer description of the tap.
+  optional string description = 3;
+
+  // The Keg currently assigned to the tap.  May be unset if there is no keg
+  // configured.
+  optional uint32 current_keg_id = 5;
+  optional Keg current_keg = 6;
+
+}
+
+// A drinker registered in the kegbot system.
+message User {
+
+  // The user's unique username.
+  required string username = 1;
+
+  // True if the user is active.  This value will be false for accounts which
+  // have been disabled by.
+  required bool is_active = 2 [default = true];
+
+  // A URL to the profile picture of the user.  May be unset if the user does
+  // not have a profile picture.
+  optional string mugshot_url = 3;
+
+  // True if the user is an unknown drinker.
+  required bool is_unknown = 4 [default = false];
+
+  // True if the user is a member of the system's staff.
+  required bool is_staff = 5 [default = false];
+
+  // True if the user is an administrator.
+  required bool is_superuser = 6 [default = false];
+
+  // Local time for the user's registration, in seconds since epoch (unix
+  // timestamp).
+  required fixed32 date_joined = 7;
+
+}

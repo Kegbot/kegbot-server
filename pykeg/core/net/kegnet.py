@@ -41,6 +41,7 @@ else:
   import json
 
 from pykeg.core import kb_common
+from pykeg.core import protolib
 from pykeg.core import util
 from pykeg.core.net import kegnet_pb2
 from pykeg.external.gflags import gflags
@@ -61,36 +62,11 @@ gflags.DEFINE_string('tap_name', 'kegboard.flow0',
 
 MESSAGE_TERMINATOR = '\n\n'
 
-def ProtoMessageToDict(message):
-  ret = {}
-  if not message.IsInitialized():
-    raise ValueError, message
-  for descriptor, value in message.ListFields():
-    if descriptor.type == descriptor.TYPE_MESSAGE:
-      ret[descriptor.name] = ToDict(value)
-    else:
-      ret[descriptor.name] = value
-  return ret
-
-def DictToProtoMessage(values, out_message):
-  for name, field in out_message.DESCRIPTOR.fields_by_name.iteritems():
-    if name not in values:
-      if field.label == field.LABEL_REQUIRED:
-        raise ValueError, "Missing required field %s" % name
-      continue
-
-    value = values.get(name)
-    if field.type == field.TYPE_MESSAGE:
-      inner_message = gettattr(out_message, name)
-      value = FromDict(inner_message, value)
-    setattr(out_message, name, value)
-  return out_message
-
 def ProtoMessageToJson(message):
   wrapper = {
     'method': message.DESCRIPTOR.name,
     'id': None,
-    'params': ProtoMessageToDict(message),
+    'params': protolib.ProtoMessageToDict(message),
   }
   return json.dumps(wrapper)
 
@@ -101,7 +77,7 @@ for cls in protobuf_message.Message.__subclasses__():
 def MessageDictToProtoMessage(message_dict):
   message_name = message_dict['method']
   message_class = NAME_TO_MESSAGE_CLASS[message_name]
-  return DictToProtoMessage(message_dict['params'], message_class())
+  return protolib.DictToProtoMessage(message_dict['params'], message_class())
 
 def ProtoMessageToShortStr(message):
   name = message.DESCRIPTOR.name

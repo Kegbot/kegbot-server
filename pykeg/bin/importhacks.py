@@ -41,18 +41,20 @@ def _Debug(message):
 def _Warning(message):
   sys.stderr.write('importhacks: %s\n' % (message,))
 
-def _AppendToSysPath(path):
-  path = os.path.abspath(path)
-  if path not in sys.path:
-    _Debug('Adding to sys.path: %s' % path)
-    sys.path.append(path)
-  else:
-    _Debug('Already in sys.path: %s' % path)
+def _AddToSysPath(paths):
+  for path in reversed(paths):
+    path = os.path.abspath(path)
+    if path not in sys.path:
+      _Debug('Adding to sys.path: %s' % path)
+      sys.path.insert(0, path)
+    else:
+      _Debug('Already in sys.path: %s' % path)
 
 def _ExtendSysPath():
   """ Add some paths where we'll look for user settings. """
+  paths = []
   for dir in SEARCH_DIRS:
-    _AppendToSysPath(dir)
+    paths.append(dir)
     if _DEBUG:
       test_settings = os.path.join(dir, 'common_settings.py')
       if os.path.exists(test_settings):
@@ -65,11 +67,13 @@ def _ExtendSysPath():
   # distutils.
   _local_dir = os.path.dirname(sys.modules[__name__].__file__)
   _package_dir = os.path.normpath(os.path.join(_local_dir, '../..'))
-  _AppendToSysPath(_package_dir)
+  paths.append(_package_dir)
 
   # Add pykeg/external to the path, too.
   _external_dir = os.path.join(_package_dir, 'pykeg', 'external')
-  _AppendToSysPath(_external_dir)
+  paths.append(_external_dir)
+
+  _AddToSysPath(paths)
 
 def _SetDjangoSettingsEnv(settings='pykeg.settings'):
   """ Set django settings if not set. """

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2009 Mike Wakerly <opensource@hoho.com>
+# Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -19,6 +19,9 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 """Clone of django-admin.py, with pykeg import hacks."""
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 import importhacks
 from django.core import management

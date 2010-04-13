@@ -2,6 +2,8 @@
 Kegboard Overview
 =================
 
+This page describes *Kegboard*, the Arduino firmware for Kegbot.
+
 History
 =======
 
@@ -9,7 +11,7 @@ The Kegboard is the most important device in a kegbot system; a reliable
 Kegboard is essential to accurately recording all pour data.
 
 The current Kegboard is based on the popular Arduino AVR development board, and
-reflects several improvements from previous designs::
+reflects several improvements from previous designs:
 
 * Onboard in FT232 serial-to-usb converter
 * Completely programmable via USB; no special programmer needed

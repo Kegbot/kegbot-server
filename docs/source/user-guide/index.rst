@@ -10,7 +10,7 @@ This document is intended for anyone interested in building or extending a
 Kegbot system.
 
 If you want to get started right now, you can jump straight to
-:ref:`install-overview`.
+:ref:`kegbot-install`.
 
 Contents:
 
@@ -19,9 +19,8 @@ Contents:
 
    introduction/overview
    introduction/getting-involved
-   installation/index
-   installation/database-install
    installation/kegbot-install
+   installation/database-install
    getting-started/running-kegbot
 
 ..

@@ -4,28 +4,59 @@ Installing the database
 =======================
 
 Kegbot relies on a database system to store all data, including keg and drink
-information.  At the moment, Kegbot supports `MySQL <http://www.mysql.org/>`_ as
-its database.
+information.  This chapter covers installing an initializing a database for use
+by Kegbot.
 
-This chapter covers installing an initializing a database for use by Kegbot.
+At the moment, Kegbot can support either `MySQL <http://www.mysql.org/>`_ or
+`Sqlite <http://sqlite.org/>`_ as the database backend.  We've not tested the
+`other databases supported by Django
+<http://docs.djangoproject.com/en/dev/ref/databases/>`_, though they might also
+work.
 
-.. note::
-  In theory Kegbot should support `all databases supported by Django
-  <http://docs.djangoproject.com/en/dev/ref/databases/>`_. However, Kegbot
-  requires a third-party Django extension, `South
-  <http://south.aeracode.org/>`_, for performing schema migrations.  South does
-  not completely support other backends (such as sqlite), so we're unable to
-  support it for now.
+Using SQLite
+------------
 
+Follow this section if you want to use SQLite as the Kegbot database.  SQLite is
+considerably simpler than MySQL to setup and maintain.
 
-Installing MySQL
-----------------
+Install SQLite
+^^^^^^^^^^^^^^
+
+Since SQLite operates on a flat file database, it is considerably simpler to set
+up.  Be sure you have the necessary libraries and command-line tools::
+
+  % sudo apt-get install python-sqlite
+
+Configure Kegbot for SQLite
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Before you can use SQLite, you need to decide where on disk it should store the
+database file. In this example, we assume the database will be store at
+``/home/kegbot/kegbot.sqlite``, though you can use another location.
+
+Open the file ``~/.kegbot/common_settings.py`` in your favorite text editor.
+Look for the section labeled "Database Configuration", and edit it to have the
+following lines to the file::
+
+  DATABASE_ENGINE = 'sqlite'
+  DATABASE_NAME = '/home/kegbot/kegbot.sqlite'
+
+Save the settings file; you may now proceed to :ref:`populate-databases`.
+
+Using MySQL
+----------
+
+Follow this section if you prefer to use MySQL as the Kegbot database.
 
 .. note::
   This section is not intended to be a complete guide to installing and
   maintaining a MySQL server. Generally, there's not much to it, but if you're
   not already familiar with MySQL (or if you encounter problems), we suggest you
   consult the official documentation for your Linux distro and/or MySQL.
+
+
+Installing MySQL
+^^^^^^^^^^^^^^^^
 
 If you do not already have a MySQL daemon running on your system, you will need
 to install it. The following should work on (Debian/Ubuntu)::
@@ -60,7 +91,7 @@ Your MySQL system seems to be working. Exit the shell::
 
 
 Creating the Kegbot database
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You now need to create a database within MySQL for Kegbot to use.  We will
 create a new database, named ``kegbot``, with the following command::
@@ -88,7 +119,7 @@ verify that the database was created by trying to use it in a MySQL shell::
 	mysql>
 
 Creating the `kegbot` MySQL user
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Finally, create a new MySQL user named ``kegbot`` for MySQL access by the Kegbot
 system::
@@ -121,7 +152,40 @@ Test your new user account::
 	mysql> exit
 	Bye
 
-Done! You have successfully set up a MySQL database for Kegbot.  In the next
-chapter, you will install and configure Kegbot to use this database and populate
-it with tables.
+Configure Kegbot for MySQL
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Finally, you need to point Kegbot at your new database.
+
+Open the file ``~/.kegbot/common_settings.py`` in your favorite text editor.
+Look for the section labeled "Database Configuration", and edit it to have the
+following lines to the file::
+
+  DATABASE_ENGINE = 'mysql'
+  DATABASE_NAME = 'kegbot'
+  DATABASE_USER = 'kegbot'
+  DATABASE_PASSWORD = 'your-password'
+
+Done! You have successfully set up a MySQL database for Kegbot.
+
+.. _populate-databases:
+
+Populate Databases
+------------------
+
+Now that the database is ready, you must install the various kegbot tables and
+defaults.  You will also set the admin account name and password in this step::
+
+  % cd $KEGBOT_HOME/pykeg
+  % make setup
+  --- Logging to: /home/kegbot/hg/kegbot/pykeg/setup.log
+  --- Installing database ...
+  --- Creating super user
+  Username (Leave blank to use 'admin'): admin
+  E-mail address: admin@example.com
+  Password: 
+  Password (again): 
+  Superuser created successfully.
+  %
+
 

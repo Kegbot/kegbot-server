@@ -46,7 +46,7 @@ with Subversion, Mercurial is pretty similar.)
    command::
 
 	% cd $KEGBOT_HOME
-	% hg clone https://kegbot.googlecode.com/hg/ kegbot-hg
+	% hg clone -r stableish https://kegbot.googlecode.com/hg/ kegbot-hg
 
 #. You should now have a complete working copy of the kegbot tree::
 
@@ -72,8 +72,6 @@ use.
 
 	% cp common_settings.py.example ~/.kegbot/common_settings.py
 
-#. Edit ``common_settings.py`` as appropriate for your installation.
-
-Look at the comments in this file for an idea of what settings you will need to
-change.  At minimum, you should set the ``DATABASE_`` variables.
+In the next section, you will set up the database and configure
+``common_settings.py`` to point to it.
 

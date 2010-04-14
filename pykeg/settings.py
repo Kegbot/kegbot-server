@@ -17,7 +17,7 @@ INSTALLED_APPS = (
     'kegweb.api',
     'kegweb.kegweb',
     'registration',
-    'socialregistration',
+    #'socialregistration',
     'south',
 )
 
@@ -69,14 +69,17 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'facebook.djangofb.FacebookMiddleware',
-    'socialregistration.middleware.FacebookMiddleware',
+    #'facebook.djangofb.FacebookMiddleware',
+    #'socialregistration.middleware.FacebookMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'socialregistration.auth.FacebookAuth',
+    #'socialregistration.auth.FacebookAuth',
 )
+
+### django-registration
+ACCOUNT_ACTIVATION_DAYS = 3
 
 # Bogus default values (to prevent djangofb from choking if unavailable);
 # replace with site-specific values in common_settings.py, if desired.

@@ -120,8 +120,15 @@ a:hover {
   width: 96px;
   height: 96px;
   border: 1px dotted #C3C0C0;
-  float: left;
   margin-top: auto;
+  float: left;
+}
+
+.kb-tapbox-detail {
+  font: 80%/100% "Lucida Grande", Arial, sans-serif;
+  margin-left: 12px;
+  float: left;
+  width: 350px;
 }
 
 .kb-tapbox-footer {
@@ -131,12 +138,6 @@ a:hover {
 	width: 100%;
 	margin-top: 4px;
 	padding: 1px;
-}
-
-.kb-tapbox-detail {
-  float: left;
-  font: 80%/100% "Lucida Grande", Arial, sans-serif;
-  margin-left: 4px;
 }
 
 .kb-main-content h1 {
@@ -279,6 +280,13 @@ div.plainbox {
   color: #eee;
   float: left;
   margin-right: 8px;
+}
+
+.kb-comment-box {
+  font-size: 0.7em;
+  width: 400px;
+  margin-bottom: 4px;
+  padding: 2px;
 }
 
 /* vim sw=2 ts=2 noet */

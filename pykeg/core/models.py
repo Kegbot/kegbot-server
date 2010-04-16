@@ -90,7 +90,7 @@ def user_post_save(sender, instance, **kwargs):
   }
   profile, new = UserProfile.objects.get_or_create(user=instance,
       defaults=defaults)
-models.signals.post_save.connect(user_post_save, sender=User)
+post_save.connect(user_post_save, sender=User)
 
 
 class Brewer(models.Model):

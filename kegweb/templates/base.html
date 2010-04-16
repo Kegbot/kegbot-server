@@ -1,3 +1,4 @@
+{% load comments %}
 {% load kegweblib %}
 {% load humanize %}
 {% if USE_FACEBOOK %}{% load facebook_tags %}{% endif %}
@@ -11,6 +12,11 @@
     <script type="text/javascript">
       google.load("jquery", "1.4");
       google.load("jqueryui", "1.8");
+    </script>
+    <script type="text/javascript">
+      function logout() {
+        $(location).attr('href', '{% url auth_logout %}');
+      }
     </script>
     {% if USE_FACEBOOK %}{% facebook_js %}{% endif %}
     {% block kb-extrajs %}{%endblock%}
@@ -47,7 +53,7 @@
 
         <div class="kb-header-link">
           {% if USE_FACEBOOK %}
-          <a href="#" onclick="FB.Connect.logoutAndRedirect('{% url auth_logout %}')">logout {{user.username}}</a>
+          <a href="#" onclick="FB.Connect.logout(logout)">logout {{user.username}}</a>
           {% else %}
           <a href="{% url auth_logout %}">logout {{user.username}}</a>
           {% endif %}

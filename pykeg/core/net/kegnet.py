@@ -99,6 +99,12 @@ class KegnetProtocolHandler(asynchat.async_chat):
     self._logger = logging.getLogger('kegnet')
     self._in_notifications = Queue.Queue()
     self._lock = threading.Lock()
+    self._quit = False
+
+  def stop(self):
+    self._quit = True
+    if self.socket:
+      self.close()
 
   ### async_chat methods
   @util.synchronized
@@ -208,9 +214,10 @@ class KegnetClient(KegnetProtocolHandler):
     now = time.time()
     last_attempt = now - self._last_reconnect
     backoff_secs = self._ReconnectTimeout()
-    if last_attempt < backoff_secs and not force:
-      return False
+    if backoff_secs:
+      time.sleep(backoff_secs)
 
+    now = time.time()
     self._last_reconnect = now
     self._logger.info('Connecting to %s:%s' % self._addr)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -218,7 +225,7 @@ class KegnetClient(KegnetProtocolHandler):
     try:
       sock.connect(self._addr)
       self.set_socket(sock)
-      self._logger.info('Connected!')
+      self.onConnected()
       self._num_retries = 0
       return True
     except socket.error:
@@ -275,6 +282,43 @@ class KegnetClient(KegnetProtocolHandler):
     message.token_value = token_value
     message.status = message.REMOVED
     return self.SendMessage(message)
+
+  def onConnected(self):
+    self._logger.info('Connected!')
+
+  def onDisconnected(self):
+    self._logger.info('Disconnected!')
+
+
+class SimpleKegnetClient(KegnetClient):
+
+  def serve_forever(self):
+    self.Reconnect()
+    while not self._quit:
+      if not asyncore.socket_map:
+        self.onDisconnected()
+        self.Reconnect()
+        continue
+      asyncore.loop(timeout=0.5, count=1)
+
+  def HandleNotification(self, message_dict):
+    self._logger.debug('Received notification: %s' % message_dict)
+    event = MessageDictToProtoMessage(message_dict)
+    if isinstance(event, kegnet_pb2.FlowUpdate):
+      self.onFlowUpdate(event)
+    elif isinstance(event, kegnet_pb2.DrinkCreatedEvent):
+      self.onDrinkCreated(event)
+    elif isinstance(event, kegnet_pb2.CreditAddedEvent):
+      self.onCreditAdded(event)
+
+  def onFlowUpdate(self, event):
+    pass
+
+  def onDrinkCreated(self, event):
+    pass
+
+  def onCreditAdded(self, event):
+    pass
 
 
 class KegnetServer(asyncore.dispatcher):

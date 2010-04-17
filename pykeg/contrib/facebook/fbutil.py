@@ -1,3 +1,5 @@
+from django.conf import settings
+
 import facebook
 
 def profile_for_user(user):

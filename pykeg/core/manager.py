@@ -814,6 +814,7 @@ class BillingManager(Manager):
 
 class SubscriptionManager(Manager):
   @EventHandler(kegnet_pb2.CreditAddedEvent)
+  @EventHandler(kegnet_pb2.DrinkCreatedEvent)
   @EventHandler(kegnet_pb2.FlowUpdate)
   def RepostEvent(self, event):
     server = self._kb_env.GetKegnetServer()

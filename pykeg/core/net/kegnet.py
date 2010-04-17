@@ -208,14 +208,14 @@ class KegnetClient(KegnetProtocolHandler):
     KegnetProtocolHandler.__init__(self)
 
   def Reconnect(self, force=False):
-    if self.connected:
-      return True
-
     now = time.time()
     last_attempt = now - self._last_reconnect
     backoff_secs = self._ReconnectTimeout()
     if backoff_secs:
       time.sleep(backoff_secs)
+
+    if self.connected:
+      return True
 
     now = time.time()
     self._last_reconnect = now

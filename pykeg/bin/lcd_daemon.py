@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2009 Mike Wakerly <opensource@hoho.com>
+# Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -172,7 +172,6 @@ class LcdDaemonApp(kb_app.App):
   def _Setup(self):
     kb_app.App._Setup(self)
     kb_lcdui = KegUi()
-    self._AddAppThread(util.AsyncoreThread('asyncore'))
     self._AddAppThread(LcdUiThread('kb-lcdui', kb_lcdui))
     self._AddAppThread(KegnetMonitorThread('kegnet-monitor', kb_lcdui))
 
@@ -188,24 +187,26 @@ class LcdUiThread(util.KegbotThread):
     self._logger.info('Exited main loop.')
 
 
+class LcdKegnetClient(kegnet.SimpleKegnetClient):
+  def __init__(self, kb_lcdui, addr=FLAGS.kb_core_addr):
+    kegnet.KegnetClient.__init__(self, addr)
+    self._kb_lcdui = kb_lcdui
+
+  def onFlowUpdate(self, event):
+    self._kb_lcdui.HandleFlowStatus(event)
+
+
 class KegnetMonitorThread(util.KegbotThread):
   def __init__(self, name, kb_lcdui):
     util.KegbotThread.__init__(self, name)
-    self._client = kegnet.KegnetClient()
     self._kb_lcdui = kb_lcdui
+    self._client = LcdKegnetClient(self._kb_lcdui)
 
   def ThreadMain(self):
     self._logger.info('Starting main loop.')
     while not self._quit:
-      self._client.Reconnect()
-      try:
-        event = self._client.PopNotification(timeout=0.5)
-      except Queue.Empty:
-        continue
-
-      if isinstance(event, kegnet_pb2.FlowUpdate):
-        self._kb_lcdui.HandleFlowStatus(event)
-    self._logger.info('Exiting main loop.')
+      self._client.serve_forever()
+    self._client.stop()
 
 
 if __name__ == '__main__':

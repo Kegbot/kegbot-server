@@ -60,16 +60,8 @@
     facebook settings
   </div>
   <div class="kb-contentbox">
-    <p>
-    {% with user.get_profile.FacebookProfile as fbprofile %}
-    {% if fbprofile %}
-    your account is linked.
-    {% else %}
-    to link your facebook profile, click below.<br>
-    {% facebook_button %}
-    {% endif %}
-    {% endwith %}
-    </p>
+    Please visit the <a href="{% url fb-account-settings%}">Facebook settings
+    page</a> to configure Facebook integration.
   </div>
 
 </div>

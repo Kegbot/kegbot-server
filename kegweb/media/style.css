@@ -242,7 +242,17 @@ a:hover {
 
 /* form stuff */
 .kb-form {
+  font-size: 0.8em;
 }
+
+.kb-form th {
+  text-align: right;
+  vertical-align: top;
+}
+
+.kb-form tr {
+}
+
 ul.errorlist {
   color: #bb3333;
   font-size: 11px;

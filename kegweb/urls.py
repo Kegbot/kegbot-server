@@ -1,5 +1,7 @@
 import os.path
 
+from pykeg.core import features
+
 from django.conf import settings
 from django.conf.urls.defaults import *
 
@@ -23,9 +25,6 @@ urlpatterns = patterns('',
      'django.views.static.serve',
      {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
 
-    ### socialregistration
-    (r'^sr/', include('socialregistration.urls')),
-
     ### RESTful api
     (r'^api/', include('kegweb.api.urls')),
 
@@ -33,9 +32,12 @@ urlpatterns = patterns('',
     (r'', include('kegweb.kegweb.urls')),
 )
 
-if 'socialregistration' in settings.INSTALLED_APPS:
+if features.use_facebook():
   urlpatterns += patterns('',
       ### socialregistration
       (r'^sr/', include('socialregistration.urls')),
+
+      ### facebook kegweb stuff
+      (r'^fb/', include('kegweb.contrib.facebook.urls')),
   )
 

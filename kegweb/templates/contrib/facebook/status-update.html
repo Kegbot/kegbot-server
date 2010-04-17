@@ -1,0 +1,23 @@
+{% extends "page-twocol.html" %}
+{% load kegweblib %}
+{% if USE_FACEBOOK %}{% load facebook_tags %}{% endif %}
+
+{% block title %}your account: {{user.username}}{% endblock %}
+
+{% block col-1 %}
+<div class="kb-contentbox-head">
+  status update
+</div>
+<div class="kb-contentbox">
+  <form action="" method="POST">
+    <table class="kb-form">
+      {{ form.as_table }}
+      <tr>
+        <td colspan="2">
+          <input type="submit" value="post!" />
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+{% endblock %}

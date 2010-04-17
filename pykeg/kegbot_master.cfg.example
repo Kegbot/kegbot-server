@@ -67,3 +67,6 @@ _program_name = kegboard_daemon.py
 # Other kegboard_daemon flags.
 kegboard_name = second_tap
 kegboard_device = /dev/ttyUSB2
+
+[fb_publisher]
+_enabled = False

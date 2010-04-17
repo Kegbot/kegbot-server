@@ -17,6 +17,15 @@ def session_for_user(user):
     return None
   return session[0]
 
+def settings_for_user(user):
+  profile = profile_for_user(user)
+  if not profile:
+    return None
+  settings = profile.settings.all()
+  if not settings:
+    return None # should never happen, due to post-save signal
+  return settings[0]
+
 def stream_publish(user, **kwargs):
   session = session_for_user(user)
   if not session:
@@ -26,3 +35,4 @@ def stream_publish(user, **kwargs):
   fb.session_key = session.session_id
   fb.session_key_expires = 0
   return fb.stream.publish(**kwargs)
+

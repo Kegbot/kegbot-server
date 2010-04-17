@@ -11,13 +11,14 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.markup',
     'pykeg.core',
-    'pykeg.contrib.twitter',
+    'pykeg.contrib.facebook',
     'pykeg.contrib.soundserver',
+    'pykeg.contrib.twitter',
     'pykeg.billing',
     'kegweb.api',
     'kegweb.kegweb',
     'registration',
-    #'socialregistration',
+    'socialregistration',
     'south',
 )
 
@@ -69,13 +70,13 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    #'facebook.djangofb.FacebookMiddleware',
-    #'socialregistration.middleware.FacebookMiddleware',
+    'facebook.djangofb.FacebookMiddleware',
+    'socialregistration.middleware.FacebookMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    #'socialregistration.auth.FacebookAuth',
+    'socialregistration.auth.FacebookAuth',
 )
 
 ### django-registration

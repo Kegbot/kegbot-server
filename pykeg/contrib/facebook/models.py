@@ -52,7 +52,7 @@ class FacebookSession(models.Model):
 def profile_post_save(sender, instance, **kwargs):
   """Create default settings on new profile."""
   settings, new = FacebookSettings.objects.get_or_create(
-      profile=instance.profile)
+      profile=instance)
 post_save.connect(profile_post_save, sender=sr_models.FacebookProfile)
 
 class FacebookPermission(models.Model):
@@ -75,7 +75,8 @@ class FacebookSettings(models.Model):
   publish_status = models.BooleanField(default=False,
       help_text='Update status on start of a new drinking session.')
 
-  privacy = models.CharField(max_length=64, default='ALL_FRIENDS',
+  privacy = models.CharField(max_length=64, choices=PRIVACY_CHOICES,
+      default='ALL_FRIENDS',
       help_text='Privacy setting for drink posts.')
 
 

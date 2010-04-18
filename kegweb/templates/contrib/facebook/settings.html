@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load kegweblib %}
+{% load facebook_tags %}
+
+{% block title %}facebook settings{% endblock %}
+
+{% block content %}
+  <div class="kb-contentbox-head">
+    facebook settings
+  </div>
+  <div class="kb-contentbox">
+    <p>
+    {% with user.get_profile.FacebookProfile as fbprofile %}
+    {% if fbprofile %}
+    your account is linked.
+    <script>
+
+    function permissionsDone(result) {
+      $.post("{% url fb-update-perms %}", {"perms_result" : result});
+    }
+
+    function requestPermissions() {
+      FB.Connect.showPermissionDialog("publish_stream,offline_access", permissionsDone, false, null);
+    }
+
+    </script>
+    <a href='#' onClick='requestPermissions();'>request
+    permission</a>
+
+    <form action="" method="POST">
+    <table class="kb-form">
+    {{ settings_form.as_table }}
+    <tr>
+      <td colspan=2><input type="submit" value="update settings"></td>
+    </tr>
+    </table>
+    </form>
+
+    {% else %}
+    to link your facebook profile, click below.<br>
+    {% facebook_button %}
+    {% endif %}
+    {% endwith %}
+    </p>
+  </div>
+{% endblock %}
+

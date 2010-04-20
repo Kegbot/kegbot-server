@@ -14,8 +14,11 @@ Download the software from the `Arduino Downloads Page
 <http://www.arduino.cc/en/Main/Software>`_. Packages are available for Linux,
 Mac OS X, and Windows.
 
+.. note::
+  The minimum supported version is Arduino 0018.
+
 When unzipped you will have a single directory that contains all the arduino
-software. The name will be something like ``arduino-0015/`` (the version number
+software. The name will be something like ``arduino-0018/`` (the version number
 may be different.)
 
 Place this directory somewhere appropriate. For Mac users, you can drag it to
@@ -33,9 +36,9 @@ the Arduino software installed, and you have a pykeg software tree somewhere,
 then you're most of the way there.
 
 The latest version of the Kegboard firmware is available in the **kegbot**
-distribution, under the directory ``controller/kegboard-v3/``.
+distribution, under the directory ``controller/kegboard/``.
 
-The file ``kegboard-v3.pde`` is the main source to the firmware. This file is a
+The file ``kegboard.pde`` is the main source to the firmware. This file is a
 C source file, using the file extension preferred by the Arduino development
 tools.
 
@@ -47,7 +50,7 @@ and navigate to the firmware's home:
 
 .. code-block:: none
 
-  cd kegbot/controller/kegboard-v3
+  cd kegbot/controller/kegboard
 
 Before we can build, we need to know where the arduino software is installed.
 Locate the path to the ``arduino-xxxx/`` directory and export it as shown below:
@@ -55,10 +58,10 @@ Locate the path to the ``arduino-xxxx/`` directory and export it as shown below:
 .. code-block:: none
 
   ### Mac example
-  export ARDUINO_DIR=/Applications/arduino-0015
+  export ARDUINO_DIR=/Applications/arduino-0018
 
   ### Linux example
-  export ARDUINO_DIR=/usr/local/arduino-0015
+  export ARDUINO_DIR=/usr/local/arduino-0018
 
 Finally, perform the build:
 
@@ -67,7 +70,7 @@ Finally, perform the build:
   make && echo SUCCESS || echo FAILURE
 
 If the build worked, you should now have a file called
-``build-cli/kegboard-v3.hex``; this is the compiled kegboard assembly. You're
+``build-cli/kegboard.hex``; this is the compiled kegboard assembly. You're
 ready to upload!
 
 To upload, run the following command:
@@ -80,7 +83,7 @@ To upload, run the following command:
 Build and Flash: GUI
 --------------------
 
-Open the file ``kegboard-v3.pde`` in the Arduino studio. You should see a listing
+Open the file ``kegboard.pde`` in the Arduino studio. You should see a listing
 of the source.
 
 You should not need to make any changes to the source file to have a working

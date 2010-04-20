@@ -116,8 +116,8 @@ ifndef AVRDUDE_CONF
 AVRDUDE_CONF     = $(ARDUINO_ETC_PATH)/avrdude.conf
 endif
 
-ARDUINO_LIB_PATH  = $(ARDUINO_DIR)/hardware/libraries
-ARDUINO_CORE_PATH = $(ARDUINO_DIR)/hardware/cores/arduino
+ARDUINO_LIB_PATH  = $(ARDUINO_DIR)/libraries
+ARDUINO_CORE_PATH = $(ARDUINO_DIR)/hardware/arduino/cores/arduino
 
 endif
 
@@ -214,7 +214,7 @@ LDFLAGS       = -mmcu=$(MCU) -lm -Wl,--gc-sections -Os -Wl,--relax
 
 # Rules for making a CPP file from the main sketch (.cpe)
 PDEHEADER      = \\\#include \"WProgram.h\"
-PDEFOOTER_FILE = $(ARDUINO_CORE_PATH)/main.cxx
+PDEFOOTER_FILE = $(ARDUINO_CORE_PATH)/main.cpp
 
 # Implicit rules for building everything (needed to get everything in
 # the right directory)

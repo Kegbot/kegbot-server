@@ -42,6 +42,7 @@
 #include <avr/pgmspace.h>
 #include <util/crc16.h>
 #include <util/delay.h>
+#include <wiring.h>
 
 #include "kegboard.h"
 #include "kegboard_config.h"

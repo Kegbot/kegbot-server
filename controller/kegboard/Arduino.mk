@@ -144,7 +144,7 @@ DEPS            = $(LOCAL_OBJS:.o=.d)
 ifeq ($(strip $(NO_CORE)),)
 ifdef ARDUINO_CORE_PATH
 CORE_C_SRCS     = $(wildcard $(ARDUINO_CORE_PATH)/*.c)
-CORE_CPP_SRCS   = $(wildcard $(ARDUINO_CORE_PATH)/*.cpp)
+CORE_CPP_SRCS   = $(filter-out $(ARDUINO_CORE_PATH)/main.cpp,$(wildcard $(ARDUINO_CORE_PATH)/*.cpp))
 CORE_OBJ_FILES  = $(CORE_C_SRCS:.c=.o) $(CORE_CPP_SRCS:.cpp=.o)
 CORE_OBJS       = $(patsubst $(ARDUINO_CORE_PATH)/%,  \
 			$(OBJDIR)/%,$(CORE_OBJ_FILES))

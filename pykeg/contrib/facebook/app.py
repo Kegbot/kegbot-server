@@ -73,7 +73,9 @@ class FBKegnetClient(kegnet.SimpleKegnetClient):
 
     privacy = settings.privacy
 
-    fbutil.stream_publish(user, message=message, privacy=privacy)
+    # TODO(mikey): pyfacebook streamPublish does not support privacy (?)
+    fbutil.stream_publish(user, message=message,
+        action_links=action_links)
 
 
 class FacebookApp(kb_app.App):

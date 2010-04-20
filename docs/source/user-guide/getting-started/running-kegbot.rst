@@ -11,6 +11,69 @@ familiar with:
 * ``kegbot_core.py``, the core kegbot daemon
 * ``kegboard_daemon.py``, the daemon that listens to the kegboard
 
+Overview of Kegbot Apps
+-----------------------
+
+Kegbot is actually comprised of several programs.  All programs are located in
+the `bin/` directory of the pykeg tree.
+
+All applications share some common command-line flags; you can run
+`<programname> --help` to see detailed command-line options for each program.
+This section gives a short overview of each.
+
+kegbot_admin.py
+^^^^^^^^^^^^^^^
+
+This program is clone of django's `django-admin.py` program; it contains a
+variety of tools and management commands.
+
+kegbot_core.py
+^^^^^^^^^^^^^^
+
+`kegbot_core` is the central manager of the kegbot system.  It listens to the
+microcontroller, authenticates users, and records drinks.
+
+kegboard_daemon.py
+^^^^^^^^^^^^^^^^^^
+
+This program implements a listener for the kegboard hardware device.  It
+connects to the kegbot core and reports sensor data.
+
+kegboard_monitor.py
+^^^^^^^^^^^^^^^^^^^
+
+A simple application which listens to a kegboard and dumps all packets it
+receives.  This is primarily useful in debugging.
+
+kegbot_master.py
+^^^^^^^^^^^^^^^^
+
+`kegbot_master` is a daemon manager; you can use it to start and stop several
+kegboard applications as daemons.
+
+lcd_daemon.py
+^^^^^^^^^^^^^
+
+A daemon that attaches to the kegbot core and an LCD device, and prints status
+updates to the LCD.  Supports Matrix-Orbital and Crystalfontz displays.
+
+rfid_daemon.py
+^^^^^^^^^^^^^^
+
+This daemon will attach to a Phidgets RFID device, and report the IDs of devices
+it reads to the kegbot core authentication system.
+
+sound_server.py
+^^^^^^^^^^^^^^^
+
+This optional daemon will play sound files when various flow events occur.
+
+test_flow.py
+^^^^^^^^^^^^
+
+This is a test application which synthesizes fake kegboard packets.
+
+
 Run Kegbot Core
 ---------------
 

@@ -6,9 +6,6 @@ be a comprehensive guide, covering how to plan, set up, and maintain a Kegbot
 system. Much of the documentation is still a work in progress, so please bear
 with us and pardon the dust.
 
-This document is intended for anyone interested in building or extending a
-Kegbot system.
-
 If you want to get started right now, you can jump straight to
 :ref:`kegbot-install`.
 

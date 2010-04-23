@@ -64,6 +64,8 @@ gflags.DEFINE_integer('required_firmware_version', 4,
     'firmware version, the daemon will refuse to service it.  This '
     'value should probably not be changed.')
 
+class KegboardKegnetClient(kegnet.SimpleKegnetClient):
+  pass
 
 class KegboardManagerApp(kb_app.App):
   def __init__(self, name='core'):
@@ -72,7 +74,10 @@ class KegboardManagerApp(kb_app.App):
   def _Setup(self):
     kb_app.App._Setup(self)
 
-    self._client = kegnet.KegnetClient()
+    self._client = KegboardKegnetClient()
+
+    self._client_thr = kegnet.KegnetClientThread('kegnet', self._client)
+    self._AddAppThread(self._client_thr)
 
     self._manager_thr = KegboardManagerThread('kegboard-manager',
         self._client)
@@ -81,9 +86,6 @@ class KegboardManagerApp(kb_app.App):
     self._device_io_thr = KegboardDeviceIoThread('device-io', self._manager_thr,
         FLAGS.kegboard_device, FLAGS.kegboard_speed)
     self._AddAppThread(self._device_io_thr)
-
-    self._asyncore_thread = util.AsyncoreThread('asyncore')
-    self._AddAppThread(self._asyncore_thread)
 
 
 class KegboardManagerThread(util.KegbotThread):
@@ -106,7 +108,6 @@ class KegboardManagerThread(util.KegbotThread):
     initialized = False
 
     while not self._quit:
-      self._client.Reconnect()
       try:
         device_name, device_message = self._message_queue.get(timeout=1.0)
       except Queue.Empty:

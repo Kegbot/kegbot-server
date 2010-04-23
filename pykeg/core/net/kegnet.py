@@ -321,6 +321,15 @@ class SimpleKegnetClient(KegnetClient):
     pass
 
 
+class KegnetClientThread(util.KegbotThread):
+  def __init__(self, name, client):
+    util.KegbotThread.__init__(self, name)
+    self._client = client
+
+  def run(self):
+    self._client.serve_forever()
+
+
 class KegnetServer(asyncore.dispatcher):
   """asyncore server implementation for Kegnet protocol"""
   def __init__(self, name, kb_env, addr='', port=0, qsize=5):

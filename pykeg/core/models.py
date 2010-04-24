@@ -213,8 +213,8 @@ class Keg(models.Model):
      ('online', 'online'),
      ('offline', 'offline'),
      ('coming soon', 'coming soon')))
-  description = models.CharField(max_length=256)
-  origcost = models.FloatField(default=0)
+  description = models.CharField(max_length=256, blank=True, null=True)
+  origcost = models.FloatField(default=0, blank=True, null=True)
 
 def _KegPostSave(sender, instance, **kwargs):
   keg = instance

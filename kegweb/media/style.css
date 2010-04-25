@@ -253,6 +253,11 @@ a:hover {
 .kb-form tr {
 }
 
+.kb-form td {
+  color: #888;
+  font-size: 0.7em;
+}
+
 ul.errorlist {
   color: #bb3333;
   font-size: 11px;

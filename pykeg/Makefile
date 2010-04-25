@@ -19,6 +19,11 @@ admin:
 	@echo "--- Creating super user ..."
 	@$(ADMIN_COMMAND) createsuperuser
 
+sync_and_migrate:
+	@echo "--- Syncing and migrating"
+	@$(ADMIN_COMMAND) syncdb
+	@$(ADMIN_COMMAND) migrate --all
+
 clean:
 	rm -f kegbot.log $(SETUP_LOGFILE)
 	rm -rf build
@@ -44,7 +49,7 @@ fixtures: distclean test
 fixtures_clean:
 	rm -f core/fixtures/initial_data.json
 
-.PHONY: setup install_db admin clean distclean test test_clean
+.PHONY: setup install_db admin clean distclean test test_clean sync_and_migrate
 .PHONY: testdata fixtures fixtures_clean
 
 # vim: noet

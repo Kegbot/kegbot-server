@@ -28,6 +28,9 @@ urlpatterns = patterns('',
     ### RESTful api
     (r'^api/', include('kegweb.api.urls')),
 
+    ### kegadmin
+    (r'^kegadmin/', include('kegweb.kegadmin.urls')),
+
     ### main kegweb urls
     (r'', include('kegweb.kegweb.urls')),
 )

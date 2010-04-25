@@ -1,0 +1,26 @@
+{% extends "page-twocol.html" %}
+{% load kegweblib %}
+
+{% block title %}tap admin{% endblock %}
+
+{% block col-1 %}
+<div class="kb-contentbox-head">
+  change/add keg
+</div>
+<div class="kb-contentbox">
+
+<table class="kb-form">
+  <form action="" method="POST">
+    <table class="kb-form">
+      {{change_keg_form.as_table}}
+      <tr>
+        <td colspan="2">
+          <input type="submit" value="change kegs" />
+        </td>
+      </tr>
+    </table>
+  </form>
+</table>
+
+</div>
+{% endblock %}

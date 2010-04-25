@@ -23,6 +23,7 @@ from pykeg.core import backend
 from pykeg.core import models
 from pykeg.core import units
 
+from pykeg.beerdb import models as bdb
 
 def db_is_installed():
   try:
@@ -67,15 +68,15 @@ def set_defaults():
   guest_user = backend.KegbotBackend.CreateNewUser('guest')
 
   # brewer defaults
-  unk_brewer = models.Brewer(name='Unknown Brewer')
+  unk_brewer = bdb.Brewer(name='Unknown Brewer')
   unk_brewer.save()
 
   # beerstyle defaults
-  unk_style = models.BeerStyle(name='Unknown Style')
+  unk_style = bdb.BeerStyle(name='Unknown Style')
   unk_style.save()
 
   # beertype defaults
-  unk_type = models.BeerType(name="Unknown Beer", brewer=unk_brewer, style=unk_style)
+  unk_type = bdb.BeerType(name="Unknown Beer", brewer=unk_brewer, style=unk_style)
   unk_type.save()
 
   # userlabel defaults
@@ -104,28 +105,28 @@ def set_defaults():
 
 def gentestdata():
   """ default values (contents may change with schema) """
-  sn = models.Brewer(name='Sierra Nevada Brewing Company',
-        origin_country='USA',
+  sn = bdb.Brewer(name='Sierra Nevada Brewing Company',
+        country='USA',
         origin_state='California',
         origin_city='Chico',
-        distribution='retail',
+        production='commercial',
         url='http://www.sierranevada.com/')
   sn.save()
 
-  an = models.Brewer(name='Anchor Brewing Company',
-        origin_country='USA',
+  an = bdb.Brewer(name='Anchor Brewing Company',
+        country='USA',
         origin_state='California',
         origin_city='San Francisco',
-        distribution='retail',
+        production='commercial',
         url='http://www.anchorsteam.com/')
   an.save()
 
   # beerstyle defaults
-  pale_ale = models.BeerStyle(name='Pale Ale')
+  pale_ale = bdb.BeerStyle(name='Pale Ale')
   pale_ale.save()
 
   # beertype defaults
-  sn_pa = models.BeerType(name="Sierra Nevada Pale Ale",
+  sn_pa = bdb.BeerType(name="Sierra Nevada Pale Ale",
         brewer=sn,
         style=pale_ale,
         calories_oz=10,
@@ -133,7 +134,7 @@ def gentestdata():
         abv=5.5)
   sn_pa.save()
 
-  as_pa = models.BeerType(name="Anchor Liberty Ale",
+  as_pa = bdb.BeerType(name="Anchor Liberty Ale",
         brewer=an,
         style=pale_ale,
         calories_oz=10,

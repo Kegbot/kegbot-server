@@ -31,6 +31,8 @@ from pykeg.core import kb_common
 from pykeg.core import units
 from pykeg.core import util
 
+from pykeg.beerdb import models as bdb
+
 """Django models definition for the kegbot database."""
 
 def mugshot_file_name(instance, filename):
@@ -205,7 +207,7 @@ class Keg(models.Model):
   def __str__(self):
     return "Keg #%s - %s" % (self.id, self.type)
 
-  type = models.ForeignKey(BeerType)
+  type = models.ForeignKey(bdb.BeerType)
   size = models.ForeignKey(KegSize)
   startdate = models.DateTimeField('start date', default=datetime.datetime.now)
   enddate = models.DateTimeField('end date', default=datetime.datetime.now)

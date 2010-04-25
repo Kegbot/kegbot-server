@@ -26,21 +26,6 @@ admin.site.register(models.UserPicture)
 admin.site.register(models.UserLabel)
 admin.site.register(models.UserProfile)
 
-class BeerTypeInline(admin.TabularInline):
-  model = models.BeerType
-
-class BrewerAdmin(admin.ModelAdmin):
-  inlines = [
-    BeerTypeInline,
-  ]
-
-admin.site.register(models.Brewer, BrewerAdmin)
-admin.site.register(models.BeerStyle)
-
-class BeerTypeAdmin(admin.ModelAdmin):
-  list_display = ('name', 'brewer', 'style')
-admin.site.register(models.BeerType, BeerTypeAdmin)
-
 admin.site.register(models.KegSize)
 
 class KegTapAdmin(admin.ModelAdmin):

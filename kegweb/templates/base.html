@@ -50,6 +50,12 @@
           <a href="/account">account</a>
         </div>
 
+        {% if user.is_staff %}
+        <div class="kb-header-link">
+          <a href="{% url kegadmin-main %}">keg admin</a>
+        </div>
+        {% endif %}
+
         <div class="kb-header-link">
           {% if USE_FACEBOOK %}
           <a href="#" onclick="FB.Connect.logout(logout)">logout {{user.username}}</a>
@@ -62,6 +68,7 @@
           <a href="/accounts/login">login</a>
         </div>
         {% endif %}
+
         <div style="clear: both;"> </div>
       </div>
     </div>

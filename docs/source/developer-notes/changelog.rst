@@ -25,6 +25,7 @@ Core
   daemons.
 * Improved support for CrystalFontz LCD devices; new support for Matrix-Orbital
   serial LCD displays.
+* Added Facebook publisher add-on.
 
 Kegboard
 ^^^^^^^^
@@ -35,9 +36,13 @@ Kegboard
 * Improved responsiveness of OneWire presence detect.
 * Shrunk size of firmware significantly.
 * Added experimental support for serial LCDs.
+* Added schematic files for Kegboard Arduino shield.
 
 Kegweb
 ^^^^^^
+* Design refresh; new HTML/CSS and many more graphs and stats.
+* Added keg administration tab.
+* Added experimental support for Facebook connect.
 * Fixed broken relative time display.
 * Fixed bug on submitting new user registration.
 

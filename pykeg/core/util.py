@@ -273,6 +273,9 @@ def daemonize():
   os.open('/dev/null', os.O_RDWR)
 
 def instantBAC(gender, weight, alcpct, ounces):
+  if alcpct <= 0:
+    return 0.0
+
   # calculate weight in metric KGs
   if weight <= 0:
     return 0.0

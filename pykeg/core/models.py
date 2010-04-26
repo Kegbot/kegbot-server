@@ -370,6 +370,8 @@ class BAC(models.Model):
       return
     if not d.keg:
       return
+    if not d.keg.type.abv:
+      return
 
     # TODO: delete/update previous bac for this drink iff exists
 

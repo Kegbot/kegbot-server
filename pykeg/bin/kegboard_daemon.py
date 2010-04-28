@@ -115,28 +115,6 @@ class KegboardManagerThread(util.KegbotThread):
 
       if FLAGS.show_messages:
         self._logger.info('RX: %s' % str(device_message))
-
-      # Check the reported firmware version. If it is not acceptable, then
-      # drop all messages until it is updated.
-      # TODO(mikey): kill the application when this happens? It isn't strictly
-      # necessary, but is probably the most obvious way to get the point across.
-      if isinstance(device_message, kegboard.HelloMessage):
-        required = FLAGS.required_firmware_version
-        actual = device_message.firmware_version
-        if actual < required:
-          self._logger.error('Attached kegboard firmware version (%s) is '
-              'less than the required version (%s); please update this '
-              'kegboard.' % (actual, required))
-          self._logger.warning('Messages from this board will be ignored '
-              'until it is updated.')
-          initialized = False
-        else:
-          initialized = True
-
-      if not initialized:
-        self._logger.warning('Not initialized; dropping message.')
-        continue
-
       self._HandleDeviceMessage(device_name, device_message)
 
     self._logger.info('Exiting main loop.')
@@ -188,16 +166,44 @@ class KegboardDeviceIoThread(util.KegbotThread):
     finally:
       self._serial_fd.close()
 
+  def Ping(self):
+    ping_message = kegboard.PingCommand()
+    self._reader.WriteMessage(ping_message)
+
   def _MainLoop(self):
     self._logger.info('Starting reader loop...')
 
     # Ping the board a couple of times before going into the listen loop.
-    ping_message = kegboard.PingCommand()
-    self._reader.WriteMessage(ping_message)
-    self._reader.WriteMessage(ping_message)
+    for i in xrange(2):
+      self.Ping()
 
+    initialized = False
     while not self._quit:
       msg = self._reader.GetNextMessage()
+
+      # Check the reported firmware version. If it is not acceptable, then
+      # drop all messages until it is updated.
+      # TODO(mikey): kill the application when this happens? It isn't strictly
+      # necessary, but is probably the most obvious way to get the point across.
+      if isinstance(msg, kegboard.HelloMessage):
+        version = msg.firmware_version
+        if version >= FLAGS.required_firmware_version:
+          if not initialized:
+            self._logger.info('Found a Kegboard! Firmware version %i' % version)
+            initialized = True
+        else:
+          self._logger.error('Attached kegboard firmware version (%s) is '
+              'less than the required version (%s); please update this '
+              'kegboard.' % (actual, required))
+          self._logger.warning('Messages from this board will be ignored '
+              'until it is updated.')
+          initialized = False
+
+      if not initialized:
+        self.Ping()
+        time.sleep(0.1)
+        continue
+
       self._manager.PostDeviceMessage('kegboard', msg)
     self._logger.info('Reader loop ended.')
 

@@ -39,6 +39,7 @@
  *  - leak detect circuit/alarm support
  */
 
+#include <WProgram.h>
 #include <avr/pgmspace.h>
 #include <string.h>
 #include <util/crc16.h>

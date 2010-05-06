@@ -2,7 +2,7 @@
 message BeerStyle {
 
   // The unique identifier for this beer style.
-  required uint32 id = 1;
+  required string id = 1;
 
   // The name of the beer style.
   required string name = 2;
@@ -13,29 +13,38 @@ message BeerStyle {
 message BeerType {
 
   // The unique identifier for this beer type.
-  required uint32 id = 1;
+  required string id = 1;
 
   // The brand name of the beer.
   required string name = 2;
 
   // Brewer information for the beer.  May refer to an 'unknown' or generic
   // brewer record.
-  required uint32 brewer_id = 3;
+  required string brewer_id = 3;
   optional Brewer brewer = 4;
 
   // Style information for the beer.  May refer to an 'unknown' or generic beer
   // style.
-  required uint32 style_id = 5;
+  required string style_id = 5;
   optional BeerStyle style = 6;
 
+  // For seasonal or special edition beers, the year or other edition name.
+  optional string edition = 12;
+
   // Number of calories per ounce of beverage.
-  required float calories_oz = 7 [default = 0.0];
+  optional float calories_oz = 7;
 
   // Number of carbohydrates per ounce of beverage.
-  required float carbs_oz = 8 [default = 0.0];
+  optional float carbs_oz = 8;
 
   // Alcohol by volume, as a percentage of the total volume.
-  required float abv = 9 [default = 0.0];
+  optional float abv = 9;
+
+  // Original gravity of the beer, if known.
+  optional float original_gravity = 10;
+
+  // Specific/final gravity of the beer, if known.
+  optional float specific_gravity = 11;
 
 }
 
@@ -43,22 +52,28 @@ message BeerType {
 message Brewer {
 
   // The unique identifier for this beer type.
-  required uint32 id = 1;
+  required string id = 1;
 
   // The name of the brewer.
   required string name = 2;
 
   // The country of the brewer's headquarters.
-  required string origin_country = 3 [default = ''];
+  required string country = 3 [default = ''];
 
   // The state of the brewer's headquarters.
-  required string origin_state = 4 [default = ''];
+  optional string origin_state = 4;
 
   // The city of the brewer's headquarters.
-  required string origin_city = 5 [default = ''];
+  optional string origin_city = 5;
 
   // Type of production (usually either 'retail' or 'homebrew').
-  required string distribution = 6 [default = ''];
+  optional string production = 6;
+
+  // URL of brewer.
+  optional string url = 7;
+
+  // Free-form description.
+  optional string description = 8;
 
 }
 

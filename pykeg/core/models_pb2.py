@@ -10,7 +10,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='core/models.proto',
   package='',
-  serialized_pb='\n\x11\x63ore/models.proto\"%\n\tBeerStyle\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\"\xba\x01\n\x08\x42\x65\x65rType\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tbrewer_id\x18\x03 \x02(\r\x12\x17\n\x06\x62rewer\x18\x04 \x01(\x0b\x32\x07.Brewer\x12\x10\n\x08style_id\x18\x05 \x02(\r\x12\x19\n\x05style\x18\x06 \x01(\x0b\x32\n.BeerStyle\x12\x16\n\x0b\x63\x61lories_oz\x18\x07 \x02(\x02:\x01\x30\x12\x13\n\x08\x63\x61rbs_oz\x18\x08 \x02(\x02:\x01\x30\x12\x0e\n\x03\x61\x62v\x18\t \x02(\x02:\x01\x30\"\x83\x01\n\x06\x42rewer\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x18\n\x0eorigin_country\x18\x03 \x02(\t:\x00\x12\x16\n\x0corigin_state\x18\x04 \x02(\t:\x00\x12\x15\n\x0borigin_city\x18\x05 \x02(\t:\x00\x12\x16\n\x0c\x64istribution\x18\x06 \x02(\t:\x00\"\xba\x01\n\x05\x44rink\x12\n\n\x02id\x18\x01 \x02(\r\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\x12\x11\n\tstarttime\x18\x04 \x02(\x07\x12\x0f\n\x07\x65ndtime\x18\x05 \x02(\x07\x12\x16\n\x08is_valid\x18\x06 \x02(\x08:\x04true\x12\x0e\n\x06keg_id\x18\x07 \x01(\r\x12\x11\n\x03keg\x18\x08 \x01(\x0b\x32\x04.Keg\x12\x0f\n\x07user_id\x18\t \x02(\t\x12\x13\n\x04user\x18\n \x01(\x0b\x32\x05.User\"\xaf\x01\n\x03Keg\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0f\n\x07type_id\x18\x02 \x02(\r\x12\x17\n\x04type\x18\x03 \x01(\x0b\x32\t.BeerType\x12\x0f\n\x07size_id\x18\x04 \x02(\r\x12\x16\n\x04size\x18\x05 \x01(\x0b\x32\x08.KegSize\x12\x11\n\tstartdate\x18\x06 \x02(\x07\x12\x0f\n\x07\x65nddate\x18\x07 \x02(\x07\x12\x13\n\x0b\x64\x65scription\x18\x08 \x01(\t\x12\x10\n\x08origcost\x18\t \x01(\x02\"6\n\x07KegSize\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\"j\n\x06KegTap\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x16\n\x0e\x63urrent_keg_id\x18\x05 \x01(\r\x12\x19\n\x0b\x63urrent_keg\x18\x06 \x01(\x0b\x32\x04.Keg\"\xac\x01\n\x04User\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x17\n\tis_active\x18\x02 \x02(\x08:\x04true\x12\x13\n\x0bmugshot_url\x18\x03 \x01(\t\x12\x19\n\nis_unknown\x18\x04 \x02(\x08:\x05\x66\x61lse\x12\x17\n\x08is_staff\x18\x05 \x02(\x08:\x05\x66\x61lse\x12\x1b\n\x0cis_superuser\x18\x06 \x02(\x08:\x05\x66\x61lse\x12\x13\n\x0b\x64\x61te_joined\x18\x07 \x02(\x07')
+  serialized_pb='\n\x11\x63ore/models.proto\"%\n\tBeerStyle\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\"\xf6\x01\n\x08\x42\x65\x65rType\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tbrewer_id\x18\x03 \x02(\t\x12\x17\n\x06\x62rewer\x18\x04 \x01(\x0b\x32\x07.Brewer\x12\x10\n\x08style_id\x18\x05 \x02(\t\x12\x19\n\x05style\x18\x06 \x01(\x0b\x32\n.BeerStyle\x12\x0f\n\x07\x65\x64ition\x18\x0c \x01(\t\x12\x13\n\x0b\x63\x61lories_oz\x18\x07 \x01(\x02\x12\x10\n\x08\x63\x61rbs_oz\x18\x08 \x01(\x02\x12\x0b\n\x03\x61\x62v\x18\t \x01(\x02\x12\x18\n\x10original_gravity\x18\n \x01(\x02\x12\x18\n\x10specific_gravity\x18\x0b \x01(\x02\"\x96\x01\n\x06\x42rewer\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\x07\x63ountry\x18\x03 \x02(\t:\x00\x12\x14\n\x0corigin_state\x18\x04 \x01(\t\x12\x13\n\x0borigin_city\x18\x05 \x01(\t\x12\x12\n\nproduction\x18\x06 \x01(\t\x12\x0b\n\x03url\x18\x07 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x08 \x01(\t\"\xba\x01\n\x05\x44rink\x12\n\n\x02id\x18\x01 \x02(\r\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\x12\x11\n\tstarttime\x18\x04 \x02(\x07\x12\x0f\n\x07\x65ndtime\x18\x05 \x02(\x07\x12\x16\n\x08is_valid\x18\x06 \x02(\x08:\x04true\x12\x0e\n\x06keg_id\x18\x07 \x01(\r\x12\x11\n\x03keg\x18\x08 \x01(\x0b\x32\x04.Keg\x12\x0f\n\x07user_id\x18\t \x02(\t\x12\x13\n\x04user\x18\n \x01(\x0b\x32\x05.User\"\xaf\x01\n\x03Keg\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0f\n\x07type_id\x18\x02 \x02(\r\x12\x17\n\x04type\x18\x03 \x01(\x0b\x32\t.BeerType\x12\x0f\n\x07size_id\x18\x04 \x02(\r\x12\x16\n\x04size\x18\x05 \x01(\x0b\x32\x08.KegSize\x12\x11\n\tstartdate\x18\x06 \x02(\x07\x12\x0f\n\x07\x65nddate\x18\x07 \x02(\x07\x12\x13\n\x0b\x64\x65scription\x18\x08 \x01(\t\x12\x10\n\x08origcost\x18\t \x01(\x02\"6\n\x07KegSize\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\"j\n\x06KegTap\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x16\n\x0e\x63urrent_keg_id\x18\x05 \x01(\r\x12\x19\n\x0b\x63urrent_keg\x18\x06 \x01(\x0b\x32\x04.Keg\"\xac\x01\n\x04User\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x17\n\tis_active\x18\x02 \x02(\x08:\x04true\x12\x13\n\x0bmugshot_url\x18\x03 \x01(\t\x12\x19\n\nis_unknown\x18\x04 \x02(\x08:\x05\x66\x61lse\x12\x17\n\x08is_staff\x18\x05 \x02(\x08:\x05\x66\x61lse\x12\x1b\n\x0cis_superuser\x18\x06 \x02(\x08:\x05\x66\x61lse\x12\x13\n\x0b\x64\x61te_joined\x18\x07 \x02(\x07')
 
 
 
@@ -24,8 +24,8 @@ _BEERSTYLE = descriptor.Descriptor(
   fields=[
     descriptor.FieldDescriptor(
       name='id', full_name='BeerStyle.id', index=0,
-      number=1, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -59,8 +59,8 @@ _BEERTYPE = descriptor.Descriptor(
   fields=[
     descriptor.FieldDescriptor(
       name='id', full_name='BeerType.id', index=0,
-      number=1, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -73,8 +73,8 @@ _BEERTYPE = descriptor.Descriptor(
       options=None),
     descriptor.FieldDescriptor(
       name='brewer_id', full_name='BeerType.brewer_id', index=2,
-      number=3, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
+      number=3, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -87,8 +87,8 @@ _BEERTYPE = descriptor.Descriptor(
       options=None),
     descriptor.FieldDescriptor(
       name='style_id', full_name='BeerType.style_id', index=4,
-      number=5, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
+      number=5, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -100,23 +100,44 @@ _BEERTYPE = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='calories_oz', full_name='BeerType.calories_oz', index=6,
-      number=7, type=2, cpp_type=6, label=2,
-      has_default_value=True, default_value=0,
+      name='edition', full_name='BeerType.edition', index=6,
+      number=12, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='carbs_oz', full_name='BeerType.carbs_oz', index=7,
-      number=8, type=2, cpp_type=6, label=2,
-      has_default_value=True, default_value=0,
+      name='calories_oz', full_name='BeerType.calories_oz', index=7,
+      number=7, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='abv', full_name='BeerType.abv', index=8,
-      number=9, type=2, cpp_type=6, label=2,
-      has_default_value=True, default_value=0,
+      name='carbs_oz', full_name='BeerType.carbs_oz', index=8,
+      number=8, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='abv', full_name='BeerType.abv', index=9,
+      number=9, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='original_gravity', full_name='BeerType.original_gravity', index=10,
+      number=10, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='specific_gravity', full_name='BeerType.specific_gravity', index=11,
+      number=11, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -130,7 +151,7 @@ _BEERTYPE = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=61,
-  serialized_end=247,
+  serialized_end=307,
 )
 
 
@@ -143,8 +164,8 @@ _BREWER = descriptor.Descriptor(
   fields=[
     descriptor.FieldDescriptor(
       name='id', full_name='Brewer.id', index=0,
-      number=1, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -156,7 +177,7 @@ _BREWER = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='origin_country', full_name='Brewer.origin_country', index=2,
+      name='country', full_name='Brewer.country', index=2,
       number=3, type=9, cpp_type=9, label=2,
       has_default_value=True, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -164,22 +185,36 @@ _BREWER = descriptor.Descriptor(
       options=None),
     descriptor.FieldDescriptor(
       name='origin_state', full_name='Brewer.origin_state', index=3,
-      number=4, type=9, cpp_type=9, label=2,
-      has_default_value=True, default_value=unicode("", "utf-8"),
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
       name='origin_city', full_name='Brewer.origin_city', index=4,
-      number=5, type=9, cpp_type=9, label=2,
-      has_default_value=True, default_value=unicode("", "utf-8"),
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='distribution', full_name='Brewer.distribution', index=5,
-      number=6, type=9, cpp_type=9, label=2,
-      has_default_value=True, default_value=unicode("", "utf-8"),
+      name='production', full_name='Brewer.production', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='url', full_name='Brewer.url', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='description', full_name='Brewer.description', index=7,
+      number=8, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -192,8 +227,8 @@ _BREWER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=250,
-  serialized_end=381,
+  serialized_start=310,
+  serialized_end=460,
 )
 
 
@@ -283,8 +318,8 @@ _DRINK = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=384,
-  serialized_end=570,
+  serialized_start=463,
+  serialized_end=649,
 )
 
 
@@ -367,8 +402,8 @@ _KEG = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=573,
-  serialized_end=748,
+  serialized_start=652,
+  serialized_end=827,
 )
 
 
@@ -409,8 +444,8 @@ _KEGSIZE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=750,
-  serialized_end=804,
+  serialized_start=829,
+  serialized_end=883,
 )
 
 
@@ -465,8 +500,8 @@ _KEGTAP = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=806,
-  serialized_end=912,
+  serialized_start=885,
+  serialized_end=991,
 )
 
 
@@ -535,8 +570,8 @@ _USER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=915,
-  serialized_end=1087,
+  serialized_start=994,
+  serialized_end=1166,
 )
 
 

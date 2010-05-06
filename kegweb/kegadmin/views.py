@@ -10,6 +10,11 @@ from kegweb.kegadmin import forms
 @staff_member_required
 def kegadmin_main(request):
   context = RequestContext(request)
+  return render_to_response('kegadmin/index.html', context)
+
+@staff_member_required
+def change_kegs(request):
+  context = RequestContext(request)
   form = forms.ChangeKegForm()
   if request.method == 'POST':
     form = forms.ChangeKegForm(request.POST)
@@ -31,4 +36,11 @@ def kegadmin_main(request):
       tap.save()
       form = forms.ChangeKegForm()
   context['change_keg_form'] = form
-  return render_to_response('kegadmin/index.html', context)
+  return render_to_response('kegadmin/change-kegs.html', context)
+
+@staff_member_required
+def edit_taps(request):
+  context = RequestContext(request)
+  tap_forms = [forms.TapForm(x) for x in models.KegTap.objects.all()]
+  context['forms'] = tap_forms
+  return render_to_response('kegadmin/edit-taps.html', context)

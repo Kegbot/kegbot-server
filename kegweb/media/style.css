@@ -304,4 +304,27 @@ div.plainbox {
   padding: 2px;
 }
 
+#kb-admin-nav {
+  float: left;
+  width: 160px;
+  margin-right:32px;
+  margin-bottom: 16px;
+  font-size: 0.9em;
+}
+
+.kb-admin-nav-tab {
+  width: 160px;
+  height: 32px;
+  line-height: 32px;
+  background-color: #eee;
+  margin-bottom: 2px;
+  padding-left: 4px;
+}
+
+.kb-admin-nav-tab-hover {
+  background-color: #aaa;
+  cursor: pointer;
+}
+
+
 /* vim sw=2 ts=2 noet */

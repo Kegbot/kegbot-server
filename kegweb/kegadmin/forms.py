@@ -28,4 +28,8 @@ class ChangeKegForm(forms.Form):
   description = forms.CharField(required=False,
       help_text='Public description of this specific keg (optional)')
 
+class TapForm(forms.ModelForm):
+  class Meta:
+    model = models.KegTap
+
 #BeerTypeFormSet = inlineformset_factory(models.Brewer, models.BeerType)

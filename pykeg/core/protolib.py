@@ -21,6 +21,7 @@
 import sys
 import time
 
+from pykeg.beerdb import models as bdb_models
 from pykeg.core import models
 from pykeg.core import models_pb2
 
@@ -96,7 +97,7 @@ def KegToProto(keg, full=True):
     ret.origcost = keg.origcost
   return ret
 
-@converts(models.BeerType)
+@converts(bdb_models.BeerType)
 def BeerTypeToProto(beertype, full=True):
   ret = models_pb2.BeerType()
   ret.id = beertype.id
@@ -107,12 +108,17 @@ def BeerTypeToProto(beertype, full=True):
   ret.style_id = beertype.style.id
   if full:
     ret.style.CopyFrom(ToProto(beertype.style))
-  ret.calories_oz = beertype.calories_oz
-  ret.carbs_oz = beertype.carbs_oz
-  ret.abv = beertype.abv
+  if beertype.edition is not None:
+    ret.edition = beertype.edition
+  if beertype.abv is not None:
+    ret.abv = beertype.abv
+  if beertype.calories_oz is not None:
+    ret.calories_oz = beertype.calories_oz
+  if beertype.carbs_oz is not None:
+    ret.carbs_oz = beertype.carbs_oz
   return ret
 
-@converts(models.Brewer)
+@converts(bdb_models.Brewer)
 def BrewerToProto(brewer, full=True):
   ret = models_pb2.Brewer()
   ret.id = brewer.id
@@ -124,7 +130,7 @@ def BrewerToProto(brewer, full=True):
   ret.distribution = brewer.distribution
   return ret
 
-@converts(models.BeerStyle)
+@converts(bdb_models.BeerStyle)
 def BeerStyleToProto(style, full=True):
   ret = models_pb2.BeerStyle()
   ret.id = style.id

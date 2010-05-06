@@ -95,51 +95,6 @@ def user_post_save(sender, instance, **kwargs):
 post_save.connect(user_post_save, sender=User)
 
 
-class Brewer(models.Model):
-  name = models.CharField(max_length=128)
-  origin_country = models.CharField(max_length=128, default='')
-  origin_state = models.CharField(max_length=128, default='')
-  origin_city = models.CharField(max_length=128, default='', blank=True,
-      null=True)
-  distribution = models.CharField(max_length=128,
-      choices = ( ('retail', 'retail'),
-                  ('homebrew', 'homebrew'),
-                  ('unknown', 'unknown'),
-      ),
-      default = 'unknown',
-  )
-  url = models.URLField(verify_exists=False, default='', blank=True, null=True)
-  comment = models.TextField(default='', blank=True, null=True)
-
-  def __str__(self):
-    return "%s (%s, %s, %s)" % (self.name, self.origin_city,
-                                self.origin_state, self.origin_country)
-
-
-class BeerStyle(models.Model):
-  name = models.CharField(max_length=128)
-
-  def __str__(self):
-    return self.name
-
-
-class BeerType(models.Model):
-  """ Record to link a beverage to its brewer and composition.
-
-  Each installed Keg must be assigned a BeerType so that various intake
-  estimates (BAC, calories, and so on) can be made.
-  """
-  name = models.CharField(max_length=128)
-  brewer = models.ForeignKey(Brewer)
-  style = models.ForeignKey(BeerStyle)
-  calories_oz = models.FloatField(default=0)
-  carbs_oz = models.FloatField(default=0)
-  abv = models.FloatField(default=0)
-
-  def __str__(self):
-    return "%s by %s" % (self.name, self.brewer)
-
-
 class KegSize(models.Model):
   """ A convenient table of common Keg sizes """
   def Volume(self):

@@ -20,6 +20,8 @@ from pykeg.core import units
 from pykeg.core.net import kegnet
 from pykeg.core.net import kegnet_pb2
 
+from pykeg.beerdb import models as bdb_models
+
 LOGGER = logging.getLogger('unittest')
 
 class KegbotTestCase(TestCase):
@@ -33,9 +35,9 @@ class KegbotTestCase(TestCase):
     self.keg_size = models.KegSize.objects.create(name='10Liter Keg',
         volume_ml=units.Quantity(10000))
 
-    self.beer_style = models.BeerStyle.objects.create(name='test style')
-    self.brewer = models.Brewer.objects.create(name='test brewer')
-    self.beer_type = models.BeerType.objects.create(name='test beer type',
+    self.beer_style = bdb_models.BeerStyle.objects.create(name='test style')
+    self.brewer = bdb_models.Brewer.objects.create(name='test brewer')
+    self.beer_type = bdb_models.BeerType.objects.create(name='test beer type',
         brewer=self.brewer, style=self.beer_style, calories_oz=10.0,
         carbs_oz=2.0, abv=5.0)
 

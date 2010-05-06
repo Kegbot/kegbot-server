@@ -6,23 +6,25 @@ import unittest
 from pykeg.core import models
 from pykeg.core import units
 
+from pykeg.beerdb import models as bdb_models
+
 class CoreModelsTestCase(unittest.TestCase):
   def setUp(self):
-    self.brewer = models.Brewer.objects.create(
+    self.brewer = bdb_models.Brewer.objects.create(
         name='Moonshine Beers',
-        origin_country='USA',
+        country='USA',
         origin_state='Anystate',
         origin_city='Bathtub',
-        distribution='retail',
+        production='retail',
         url='http://example.com/',
-        comment='Pretty bad beers.',
+        description='Pretty bad beers.',
     )
 
-    self.beer_style = models.BeerStyle.objects.create(
+    self.beer_style = bdb_models.BeerStyle.objects.create(
         name='Porter',
     )
 
-    self.beer_type = models.BeerType.objects.create(
+    self.beer_type = bdb_models.BeerType.objects.create(
         name='Moonshine Porter',
         brewer=self.brewer,
         style=self.beer_style,

@@ -20,4 +20,8 @@ from django.contrib import admin
 from pykeg.contrib.facebook import models
 
 admin.site.register(models.FacebookSession)
-admin.site.register(models.FacebookSettings)
+
+class FacebookSettingsAdmin(admin.ModelAdmin):
+  list_display = ('profile', 'publish_events', 'include_link', 'publish_status',
+    'privacy')
+admin.site.register(models.FacebookSettings, FacebookSettingsAdmin)

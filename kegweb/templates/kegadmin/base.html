@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}kegbot admin{% endblock %}
+
+{% block content %}
+<div class="kb-contentbox">
+
+  <div id="kb-admin-nav">
+
+    <div class="kb-admin-nav-tab" url="{% url kegadmin-main %}">
+      <a href="{% url kegadmin-main %}">kegadmin main</a>
+    </div>
+
+    <div class="kb-admin-nav-tab" url="{% url kegadmin-change-kegs %}">
+      <a href="{% url kegadmin-change-kegs %}">change kegs</a>
+    </div>
+
+    <div class="kb-admin-nav-tab" url="{% url kegadmin-edit-taps%}">
+      <a href="{% url kegadmin-edit-taps %}">edit taps</a>
+    </div>
+
+    <script>
+    $("div.kb-admin-nav-tab").click(
+    function()
+    {
+      window.location = $(this).attr("url");
+      return false;
+    });
+
+    $("div.kb-admin-nav-tab").hover(
+    function()
+    {
+      $(this).addClass("kb-admin-nav-tab-hover");
+    },
+    function()
+    {
+      $(this).removeClass("kb-admin-nav-tab-hover");
+    });
+
+    </script>
+
+  </div>
+
+<div style="float: left;">
+{% block kegadmin-main %}{%endblock%}
+</div>
+
+<div class="clear"></div>
+
+</div>
+
+{% endblock %}

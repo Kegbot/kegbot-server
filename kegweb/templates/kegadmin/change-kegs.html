@@ -1,0 +1,23 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+
+{% block title %}tap admin{% endblock %}
+
+{% block kegadmin-main %}
+<div class="kb-contentbox">
+<h1>change/add keg</h1>
+<table class="kb-form">
+  <form action="" method="POST">
+    <table class="kb-form">
+      {{change_keg_form.as_table}}
+      <tr>
+        <td colspan="2">
+          <input type="submit" value="change kegs" />
+        </td>
+      </tr>
+    </table>
+  </form>
+</table>
+
+</div>
+{% endblock %}

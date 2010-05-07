@@ -48,7 +48,6 @@
       return;
     }
     ALL_DRINKS.push(row['id']);
-    alert(ALL_DRINKS);
 
     var newDivName = 'kb-drink-' + row['id'];
     var newdiv = '<div id="' + newDivName + '">';
@@ -60,9 +59,8 @@
       $('#kb-recent-pours').prepend(newdiv);
     }
     if (animate) {
-      // TODO(mikey): fix me.
-      $('#' + newDivName).children().fadeIn('slow');
-      $('#kb-recent-pours').animate({ scrollTop: 0}, "slow");
+      $('#' + newDivName).hide().css("background-color", "#ffc800")
+          .fadeIn('fast').animate({ backgroundColor: "#ffffff" }, 1500);
     }
   }
 

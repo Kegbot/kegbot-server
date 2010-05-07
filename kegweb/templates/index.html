@@ -33,6 +33,11 @@
 </div>
 
 <script>
+  {% if drinks %}
+  var LAST_DRINK_ID = {{ drinks.0.id }};
+  {% else %}
+  var LAST_DRINK_ID = 0;
+  {% endif %}
   var ALL_DRINKS = Array();
   function addDrinkHtml(row, animate, append) {
     if (ALL_DRINKS.indexOf(row['id']) >= 0) {
@@ -56,7 +61,17 @@
     }
   }
 
+  function queryLastDrink() {
+    $.getJSON('/api/last-drink-id/', function(data) {
+      if (data['id'] > LAST_DRINK_ID) {
+        LAST_DRINK_ID = data['id'];
+        loadNewDrinks();
+      }
+    });
+  }
+
   function loadNewDrinks() {
+    alert('loading new drinks');
     $.getJSON('/api/last-drinks-html/', function(data) {
       for (var idx in data) {
         if (ALL_DRINKS.indexOf(data[idx]['id']) >= 0) {
@@ -68,7 +83,7 @@
   }
 
   // TODO(mikey): more intelligent timeout/backoff; idle sensitivity.
-  setInterval(loadNewDrinks, 30000);
+  setInterval(queryLastDrink, 10000);
 
   function loadInitialDrinks() {
     $.getJSON('/api/last-drinks-html/', function(data) {

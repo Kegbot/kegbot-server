@@ -118,3 +118,12 @@ def last_drinks_html(request):
     row['box_html'] = template.render(Context({'drink': d}))
     results.append(row)
   return results
+
+@py_to_json
+def last_drink_id(request):
+  last = view_util.all_valid_drinks().order_by('-endtime')
+  if len(last) == 0:
+    return {'id': 0}
+  else:
+    return {'id': last[0].id}
+

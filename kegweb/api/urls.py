@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 
 urlpatterns = patterns('kegweb.api.views',
+    url(r'^last-drink-id/$', 'last_drink_id'),
     url(r'^last-drinks/$', 'last_drinks'),
     url(r'^last-drinks-html/$', 'last_drinks_html'),
     url(r'^all-drinks/$', 'all_drinks'),

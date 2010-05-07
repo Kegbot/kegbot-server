@@ -24,7 +24,6 @@
 </div>
 <div class="kb-contentbox">
   <div id="kb-recent-pours">
-  <!-- Static drink list will be replaced by loadInitialDrinks() js -->
   {% latest_drinks 5 as drinks %}
   {% for drink in drinks %}
     {% include "kegweb/drink-box.html" %}
@@ -40,11 +39,17 @@
   {% endif %}
   var ALL_DRINKS = Array();
   function addDrinkHtml(row, animate, append) {
+    if (row['id'] <= LAST_DRINK_ID) {
+      return;
+    }
+    LAST_DRINK_ID = row['id'];
+
     if (ALL_DRINKS.indexOf(row['id']) >= 0) {
       return;
     }
-
     ALL_DRINKS.push(row['id']);
+    alert(ALL_DRINKS);
+
     var newDivName = 'kb-drink-' + row['id'];
     var newdiv = '<div id="' + newDivName + '">';
     newdiv += row['box_html'];
@@ -64,40 +69,22 @@
   function queryLastDrink() {
     $.getJSON('/api/last-drink-id/', function(data) {
       if (data['id'] > LAST_DRINK_ID) {
-        LAST_DRINK_ID = data['id'];
         loadNewDrinks();
       }
     });
   }
 
   function loadNewDrinks() {
-    alert('loading new drinks');
     $.getJSON('/api/last-drinks-html/', function(data) {
       for (var idx in data) {
-        if (ALL_DRINKS.indexOf(data[idx]['id']) >= 0) {
-          continue;
-        }
         addDrinkHtml(data[idx], true, false);
       }
     });
   }
 
-  // TODO(mikey): more intelligent timeout/backoff; idle sensitivity.
-  setInterval(queryLastDrink, 10000);
-
-  function loadInitialDrinks() {
-    $.getJSON('/api/last-drinks-html/', function(data) {
-      // Clear static drink list.
-      $('#kb-recent-pours').html('');
-
-      for (var idx in data) {
-        addDrinkHtml(data[idx], false, true);
-      }
-    });
-  }
-
   $(document).ready(function() {
-    loadInitialDrinks();
+    // TODO(mikey): more intelligent timeout/backoff; idle sensitivity.
+    setInterval(queryLastDrink, 10000);
   });
 </script>
 

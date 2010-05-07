@@ -26,6 +26,7 @@ urlpatterns = patterns('',
      {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
 
     ### RESTful api
+    (r'^api/beergoggle/', include('kegweb.contrib.beergoggle.urls')),
     (r'^api/', include('kegweb.api.urls')),
 
     ### kegadmin

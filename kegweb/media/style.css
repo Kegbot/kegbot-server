@@ -200,6 +200,7 @@ a:hover {
   margin-bottom: 8px;
   padding: 8px;
   border-bottom: 1px dotted #007BFE;
+  height: 50px;
 }
 
 .kb-drink-box-mugshot {
@@ -324,6 +325,12 @@ div.plainbox {
 .kb-admin-nav-tab-hover {
   background-color: #aaa;
   cursor: pointer;
+}
+
+#kb-recent-pours {
+  width: 340px;
+  height: 300px;
+  overflow: auto;
 }
 
 

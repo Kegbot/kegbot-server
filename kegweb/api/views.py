@@ -29,6 +29,8 @@ else:
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.template.loader import get_template
+from django.template import Context
 
 from pykeg.core import models
 from pykeg.core import protolib
@@ -42,7 +44,7 @@ def ToJsonError(e):
   # TODO(mikey): add api-specific exceptions with more helpful error messages.
   return {'error_code': 500, 'error_message': str(e)}
 
-def jsonhandler(f, full=False):
+class jsonhandler:
   """Decorator which translates function response to JSON.
 
   The wrapped function should return either a single Django model instance, or
@@ -55,11 +57,15 @@ def jsonhandler(f, full=False):
   TODO(mikey): revisit this layering as the API matures, or once a kegbot site
   needs to handle >0.1 qps :)
   """
-  def new_function(*args, **kwargs):
-    try:
+  def __init__(self, full=False):
+    self.full = full
+
+  def __call__(self, f):
+    @py_to_json
+    def new_function(*args, **kwargs):
       res = f(*args, **kwargs)
       request = args[0]
-      with_full = full
+      with_full = self.full
       if request.GET.get('full') == '1':
         with_full = True
       if hasattr(res, '__iter__'):
@@ -67,15 +73,25 @@ def jsonhandler(f, full=False):
         res = {'result': res}
       else:
         res = protolib.ProtoMessageToDict(protolib.ToProto(res, with_full))
+      return res
+    return new_function
+
+def py_to_json(f):
+  def new_function(*args, **kwargs):
+    try:
+      result = f(*args, **kwargs)
     except ValueError, e:
-      res = ToJsonError(e)
-    return HttpResponse(json.dumps(res, indent=INDENT),
+      result = ToJsonError(e)
+    return HttpResponse(json.dumps(result, indent=INDENT),
         mimetype='application/json')
   return new_function
 
+def _get_last_drinks():
+  return view_util.all_valid_drinks().order_by('-endtime')
+
 @jsonhandler
 def last_drinks(request):
-  return view_util.all_valid_drinks().order_by('-endtime')[:10]
+  return _get_last_drinks()
 
 @jsonhandler
 def all_kegs(request):
@@ -89,3 +105,16 @@ def all_drinks(request):
 def all_taps(request):
   return models.KegTap.objects.all().order_by('name')
 
+@py_to_json
+def last_drinks_html(request):
+  last_drinks = _get_last_drinks()
+
+  # render each drink
+  template = get_template('kegweb/drink-box.html')
+  results = []
+  for d in last_drinks[:10]:
+    row = {}
+    row['id'] = d.id
+    row['box_html'] = template.render(Context({'drink': d}))
+    results.append(row)
+  return results

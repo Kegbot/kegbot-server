@@ -17,13 +17,15 @@ urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
 
     ### static media
-    (r'^site_media/(.*)$',
-     'django.views.static.serve',
-     {'document_root': os.path.join(basedir(), 'media')}),
+    url(r'^site_media/(.*)$',
+      'django.views.static.serve',
+      {'document_root': os.path.join(basedir(), 'media')},
+      name='site-media'),
 
-    (r'^media/(.*)$',
+    url(r'^media/(.*)$',
      'django.views.static.serve',
-     {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+     {'document_root': settings.MEDIA_ROOT, 'show_indexes': True},
+     name='media'),
 
     ### RESTful api
     (r'^api/', include('kegweb.api.urls')),

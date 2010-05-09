@@ -22,6 +22,7 @@ import os
 import random
 
 from django.conf import settings
+from django.core import urlresolvers
 from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.sites.models import Site
@@ -78,6 +79,14 @@ class UserProfile(models.Model):
     qs = self.user.facebookprofile_set.all()
     if qs:
       return qs[0]
+
+  def MugshotUrl(self):
+    if self.mugshot:
+      img_url = self.mugshot.image.url
+    else:
+      args = ('images/unknown-drinker.png',)
+      img_url = urlresolvers.reverse('site-media', args=args)
+    return img_url
 
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)

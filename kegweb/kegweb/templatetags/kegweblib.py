@@ -13,12 +13,7 @@ from kegweb.kegweb import stats
 register = Library()
 
 def mugshot_box(user, boxsize=100):
-  img_url = '/site_media/images/unknown-drinker.png'
-
-  profile = user.get_profile()
-  if profile:
-    if profile.mugshot:
-      img_url = profile.mugshot.image.url
+  img_url = user.get_profile().MugshotUrl()
 
   return {
       'user' : user,

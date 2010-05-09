@@ -1,8 +1,14 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
-{% if USE_FACEBOOK %}{% load facebook_tags %}{% endif %}
 
 {% block title %}keg {{ keg.id }}{% endblock %}
+
+{% block kb-extrajs %}
+   {% if USE_FACEBOOK %}
+   {% load facebook_tags %}
+   {% facebook_js %}
+   {% endif %}
+{% endblock %}
 
 {% block col-1 %}
 <div class="kb-contentbox-head">

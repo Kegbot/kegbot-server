@@ -172,6 +172,9 @@ message KegTap {
   optional uint32 current_keg_id = 5;
   optional Keg current_keg = 6;
 
+  // The last recorded temperature, if known.
+  optional ThermoLog last_temperature = 7;
+
 }
 
 // A drinker registered in the kegbot system.
@@ -201,4 +204,15 @@ message User {
   // timestamp).
   required fixed32 date_joined = 7;
 
+}
+
+message ThermoLog {
+  // The name of the sensor.
+  required string sensor_name = 1;
+
+  // The temperature, in degrees C.
+  required float temperature_c = 2;
+
+  // The recording date.
+  required fixed32 date = 3;
 }

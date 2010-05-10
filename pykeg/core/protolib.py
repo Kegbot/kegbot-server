@@ -183,6 +183,10 @@ def KegTapToProto(tap, full=True):
     ret.current_keg_id = tap.current_keg.id
     if full:
       ret.current_keg.CopyFrom(ToProto(tap.current_keg))
+  if tap.temperature_sensor:
+    recs = tap.temperature_sensor.thermolog_set.all().order_by('-time')
+    if recs:
+      ret.last_temperature.CopyFrom(ToProto(recs[0]))
   return ret
 
 @converts(models.KegSize)
@@ -191,4 +195,12 @@ def KegSizeToProto(size, full=True):
   ret.id = size.id
   ret.name = size.name
   ret.volume_ml = size.volume_ml
+  return ret
+
+@converts(models.Thermolog)
+def ThermoLogToProto(record, full=True):
+  ret = models_pb2.ThermoLog()
+  ret.sensor_name = record.sensor.nice_name
+  ret.temperature_c = record.temp
+  ret.date = time_to_int(record.time)
   return ret

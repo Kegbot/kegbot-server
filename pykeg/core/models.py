@@ -29,10 +29,14 @@ from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 
 from pykeg.core import kb_common
+from pykeg.core import fields
+from pykeg.core import stats
 from pykeg.core import units
 from pykeg.core import util
 
 from pykeg.beerdb import models as bdb
+
+from django_extensions.db.fields.json import JSONField
 
 """Django models definition for the kegbot database."""
 
@@ -264,6 +268,13 @@ def _DrinkPostSave(sender, instance, **kwargs):
     if user.date_joined > instance.starttime:
       user.date_joined = instance.starttime
       user.save()
+
+  user_stats, created = UserStats.objects.get_or_create(user=user)
+  user_stats.UpdateStats(instance)
+
+  if instance.keg:
+    keg_stats, created = KegStats.objects.get_or_create(keg=keg)
+    keg_stats.UpdateStats(instance)
 
 post_save.connect(_DrinkPostSave, sender=Drink)
 
@@ -630,3 +641,33 @@ class Config(models.Model):
       return cls.objects.get(key=key)
     except cls.DoesNotExist:
       return default
+
+
+class _StatsModel(models.Model):
+  STATS_BUILDER = None
+  class Meta:
+    abstract = True
+  date = models.DateTimeField(default=datetime.datetime.now)
+  stats = fields.JSONField()
+  revision = models.PositiveIntegerField(default=0)
+
+  def UpdateStats(self, obj):
+    builder = self.STATS_BUILDER()
+    # TODO(mikey): use prev
+    self.stats = builder.Build(obj)
+    self.revision = builder.REVISION
+    self.save()
+
+
+class UserStats(_StatsModel):
+  STATS_BUILDER = stats.DrinkerStatsBuilder
+  user = models.ForeignKey(User, unique=True, related_name='stats')
+  def __str__(self):
+    return 'UserStats for %s' % self.user
+
+
+class KegStats(_StatsModel):
+  STATS_BUILDER = stats.KegStatsBuilder
+  keg = models.ForeignKey(Keg, unique=True, related_name='stats')
+  def __str__(self):
+    return 'KegStats for %s' % self.keg

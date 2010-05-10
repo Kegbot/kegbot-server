@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.translation import ugettext as _
 
+from django_extensions.db.fields.json import JSONField
+
 import uuid
 
 ### CountryField
@@ -256,6 +258,7 @@ class CountryField(models.CharField):
     def get_internal_type(self):
         return "CharField"
 
+
 try:
     from south.modelsinspector import add_introspection_rules
 except ImportError:
@@ -267,4 +270,12 @@ else:
             [],
             {},
         ),
-    ], ["^pykeg\.core.fields\.CountryField"])
+    ], ["^pykeg\.core\.fields\.CountryField"])
+
+    add_introspection_rules([
+        (
+            [JSONField],
+            [],
+            {},
+        ),
+    ], ["^django_extensions\.db\.fields\.json\.JSONField"])

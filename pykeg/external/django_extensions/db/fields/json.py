@@ -22,7 +22,7 @@ class JSONEncoder(simplejson.JSONEncoder):
         if isinstance(obj, Decimal):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
-            assert settings.TIME_ZONE == 'UTC'
+            #assert settings.TIME_ZONE == 'UTC'
             return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
         return simplejson.JSONEncoder.default(self, obj)
 

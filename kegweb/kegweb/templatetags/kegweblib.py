@@ -27,6 +27,27 @@ def render_page(page):
   return {'page' : page}
 register.inclusion_tag('kegweb/page_block.html')(render_page)
 
+def timeago(parser, token):
+  """{% timeago <timestamp> %}"""
+  tokens = token.contents.split()
+  if len(tokens) != 2:
+    raise TemplateSyntaxError, '%s requires 2 tokens' % tokens[0]
+  return TimeagoNode(tokens[1])
+register.tag('timeago', timeago)
+
+class TimeagoNode(Node):
+  def __init__(self, timestamp_varname):
+    self._timestamp_varname = timestamp_varname
+
+  def render(self, context):
+    tv = Variable(self._timestamp_varname)
+    ts = tv.resolve(context)
+
+    iso = ts.isoformat()
+    alt = ts.strftime("%A, %B %d, %Y %I:%M%p")
+    return '<abbr class="timeago" title="%s">%s</abbr>' % (iso, alt)
+
+
 def latest_drinks(parser, token):
   """ {% latest_drinks [number] as <context_var> %} """
   tokens = token.contents.split()
@@ -45,7 +66,6 @@ def latest_drinks(parser, token):
   queryset = models.Drink.objects.all().order_by('-starttime')
 
   return QueryNode(var_name, queryset, num_items)
-
 register.tag('latest_drinks', latest_drinks)
 
 def chart(parser, tokens):

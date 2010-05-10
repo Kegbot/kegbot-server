@@ -12,6 +12,12 @@
       google.load("jquery", "1.4");
       google.load("jqueryui", "1.8");
     </script>
+    <script type="text/javascript" src="/site_media/js/jquery.timeago.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+          $("abbr.timeago").timeago();
+      });
+    </script>
     {% block kb-extrajs %}{%endblock%}
 </head>
 

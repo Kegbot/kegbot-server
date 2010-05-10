@@ -62,6 +62,7 @@
       $('#' + newDivName).hide().css("background-color", "#ffc800")
           .fadeIn('fast').animate({ backgroundColor: "#ffffff" }, 1500);
     }
+    $("#kb-recent-pours").find("abbr.timeago").timeago();
   }
 
   function queryLastDrink() {

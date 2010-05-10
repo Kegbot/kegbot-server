@@ -69,7 +69,7 @@
       <div style="clear: both;"> </div>
     </div>
     <div class="kb-tapbox-footer">
-      tapped {{ keg.startdate|timesince }} ago |
+      tapped {% timeago keg.startdate %} |
       <a href="{% url kegweb.kegweb.views.keg_detail keg.id %}">full history &raquo;</a>
     </div>
   </div>

@@ -123,7 +123,7 @@ def BrewerToProto(brewer, full=True):
   ret = models_pb2.Brewer()
   ret.id = brewer.id
   ret.name = brewer.name
-  ret.country = brewer.origin_country
+  ret.country = brewer.country
   if brewer.origin_state is not None:
     ret.origin_state = brewer.origin_state
   if brewer.origin_city is not None:

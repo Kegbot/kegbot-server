@@ -123,11 +123,16 @@ def BrewerToProto(brewer, full=True):
   ret = models_pb2.Brewer()
   ret.id = brewer.id
   ret.name = brewer.name
-  ret.origin_country = brewer.origin_country
-  ret.origin_state = brewer.origin_state
+  ret.country = brewer.origin_country
+  if brewer.origin_state is not None:
+    ret.origin_state = brewer.origin_state
   if brewer.origin_city is not None:
     ret.origin_city = brewer.origin_city
-  ret.distribution = brewer.distribution
+  ret.production = brewer.production
+  if brewer.url is not None:
+    ret.url = brewer.url
+  if brewer.description is not None:
+    ret.description = brewer.description
   return ret
 
 @converts(bdb_models.BeerStyle)
@@ -159,7 +164,7 @@ def DrinkToProto(drink, full=True):
 def UserToProto(user, full=True):
   ret = models_pb2.User()
   ret.username = user.username
-  #ret.mugshot_url = ''
+  ret.mugshot_url = user.get_profile().MugshotUrl()
   ret.is_active = user.is_active
   ret.is_unknown = user.get_profile().HasLabel('__default_user__')
   ret.is_staff = user.is_staff

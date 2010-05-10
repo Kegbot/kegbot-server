@@ -116,7 +116,7 @@ message Keg {
   required uint32 id = 1;
 
   // The kind of beer within the keg.
-  required uint32 type_id = 2;
+  required string type_id = 2;
   optional BeerType type = 3;
 
   // The size of the keg.

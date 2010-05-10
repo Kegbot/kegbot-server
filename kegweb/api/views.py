@@ -44,6 +44,16 @@ def ToJsonError(e):
   # TODO(mikey): add api-specific exceptions with more helpful error messages.
   return {'error_code': 500, 'error_message': str(e)}
 
+def py_to_json(f):
+  def new_function(*args, **kwargs):
+    try:
+      result = f(*args, **kwargs)
+    except ValueError, e:
+      result = ToJsonError(e)
+    return HttpResponse(json.dumps(result, indent=INDENT),
+        mimetype='application/json')
+  return new_function
+
 class jsonhandler:
   """Decorator which translates function response to JSON.
 
@@ -57,34 +67,23 @@ class jsonhandler:
   TODO(mikey): revisit this layering as the API matures, or once a kegbot site
   needs to handle >0.1 qps :)
   """
-  def __init__(self, full=False):
+  def __init__(self, func, full=False):
+    self.func = func
     self.full = full
 
-  def __call__(self, f):
-    @py_to_json
-    def new_function(*args, **kwargs):
-      res = f(*args, **kwargs)
-      request = args[0]
-      with_full = self.full
-      if request.GET.get('full') == '1':
-        with_full = True
-      if hasattr(res, '__iter__'):
-        res = [protolib.ProtoMessageToDict(protolib.ToProto(x, with_full)) for x in res]
-        res = {'result': res}
-      else:
-        res = protolib.ProtoMessageToDict(protolib.ToProto(res, with_full))
-      return res
-    return new_function
-
-def py_to_json(f):
-  def new_function(*args, **kwargs):
-    try:
-      result = f(*args, **kwargs)
-    except ValueError, e:
-      result = ToJsonError(e)
-    return HttpResponse(json.dumps(result, indent=INDENT),
-        mimetype='application/json')
-  return new_function
+  @py_to_json
+  def __call__(self, *args, **kwargs):
+    res = self.func(*args, **kwargs)
+    request = args[0]
+    with_full = self.full
+    if request.GET.get('full') == '1':
+      with_full = True
+    if hasattr(res, '__iter__'):
+      res = [protolib.ProtoMessageToDict(protolib.ToProto(x, with_full)) for x in res]
+      res = {'result': res}
+    else:
+      res = protolib.ProtoMessageToDict(protolib.ToProto(res, with_full))
+    return res
 
 def _get_last_drinks():
   return view_util.all_valid_drinks().order_by('-endtime')

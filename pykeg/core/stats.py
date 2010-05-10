@@ -136,10 +136,11 @@ class BaseStatsBuilder(StatsBuilder):
 
 class DrinkerStatsBuilder(BaseStatsBuilder):
   """Builder of user-specific stats by drink."""
-  REVISION = 1
+  REVISION = 2
 
   def _PrevObjs(self, drink):
-    qs = drink.user.drink_set.filter(starttime__lt=drink.starttime)
+    qs = drink.user.drink_set.filter(status='valid',
+        volume_ml__gt=0, starttime__lt=drink.starttime)
     qs = qs.order_by('starttime')
     return qs
 
@@ -155,10 +156,11 @@ class DrinkerStatsBuilder(BaseStatsBuilder):
 
 class KegStatsBuilder(BaseStatsBuilder):
   """Builder of keg-specific stats."""
-  REVISION = 1
+  REVISION = 2
 
   def _PrevObjs(self, drink):
-    qs = drink.keg.drink_set.filter(starttime__lt=drink.starttime)
+    qs = drink.keg.drink_set.filter(status='valid',
+        volume_ml__gt=0, starttime__lt=drink.starttime)
     qs = qs.order_by('starttime')
     return qs
 

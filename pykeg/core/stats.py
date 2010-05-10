@@ -73,47 +73,46 @@ class BaseStatsBuilder(StatsBuilder):
   def TotalPours(self, obj, prev):
     return prev + 1
 
-  @stat('volume-avg', default=(0, 0))
+  @stat('volume-avg')
   def AverageVolume(self, obj, prev):
-    prev_count, prev_avg = prev
+    if prev:
+      prev_count, prev_avg = prev['count'], prev['average']
+    else:
+      prev_count, prev_avg = 0, 0
     curr_vol = float(obj.Volume())
     curr_count = prev_count + 1.0
     curr_avg = ((prev_avg * prev_count) + curr_vol) / curr_count
-    return (curr_count, curr_avg)
+    return {'count': curr_count, 'average': curr_avg}
 
   @stat('volume-max')
   def LargestVolume(self, obj, prev):
     vol = float(obj.Volume())
     if prev:
-      prev_vol, prev_id = prev
-      if prev_vol >= vol:
+      if prev['volume'] >= vol:
         return prev
-    return vol, obj.id
+    return {'volume': vol, 'id': obj.id}
 
   @stat('volume-min')
   def SmallestPour(self, obj, prev):
     vol = float(obj.Volume())
     if prev:
-      prev_vol, prev_id = prev
-      if prev_vol <= vol:
+      if prev['volume'] <= vol:
         return prev
-    return vol, obj.id
+    return {'volume': vol, 'id': obj.id}
 
   @stat('date-first')
   def FirstDate(self, obj, prev):
     if prev:
-      d_date, d_id = prev
-      if d_date <= obj.starttime:
+      if prev['date'] <= obj.starttime:
         return prev
-    return obj.starttime, obj.id
+    return {'date': obj.starttime, 'id': obj.id}
 
   @stat('date-last')
   def LastDate(self, obj, prev):
     if prev:
-      d_date, d_id = prev
-      if d_date >= obj.starttime:
+      if prev['date'] >= obj.starttime:
         return prev
-    return obj.starttime, obj.id
+    return {'date': obj.starttime, 'id': obj.id}
 
   @stat('volume-by-day-of-week')
   def VolumeByDayOfweek(self, obj, prev):
@@ -136,7 +135,7 @@ class BaseStatsBuilder(StatsBuilder):
 
 class DrinkerStatsBuilder(BaseStatsBuilder):
   """Builder of user-specific stats by drink."""
-  REVISION = 2
+  REVISION = 3
 
   def _PrevObjs(self, drink):
     qs = drink.user.drink_set.filter(status='valid',
@@ -156,13 +155,21 @@ class DrinkerStatsBuilder(BaseStatsBuilder):
 
 class KegStatsBuilder(BaseStatsBuilder):
   """Builder of keg-specific stats."""
-  REVISION = 2
+  REVISION = 3
 
   def _PrevObjs(self, drink):
     qs = drink.keg.drink_set.filter(status='valid',
         volume_ml__gt=0, starttime__lt=drink.starttime)
     qs = qs.order_by('starttime')
     return qs
+
+  @stat('drinkers')
+  def Drinkers(self, drink, prev):
+    if not prev:
+      prev = []
+    if drink.user.id not in prev:
+      prev.append(drink.user.id)
+    return prev
 
 
 def main():

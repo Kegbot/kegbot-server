@@ -1,4 +1,4 @@
-# Copyright 2009 Mike Wakerly <opensource@hoho.com>
+# Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -18,14 +18,12 @@
 
 """Miscellanous configuration from the database."""
 
-from pykeg.core import models
-
 class KegbotConfig:
+  def __init__(self, configdict):
+    self._configdict = configdict
+
   def get(self, option, default=None):
-    try:
-      return models.Config.objects.get(key=option).value
-    except models.Config.DoesNotExist:
-      return default
+    return self._configdict.get(option, default)
 
   def getboolean(self, option):
     val = self.get(option, 'false')

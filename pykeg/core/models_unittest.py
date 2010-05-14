@@ -91,7 +91,7 @@ class CoreModelsTestCase(unittest.TestCase):
     self.assertEqual(self.keg.served_volume(), d.volume_ml)
 
   def testDrinkSessions(self):
-    """ Checks for the UserDrinkingSession and DrinkingSessionGroup tables """
+    """ Checks for the DrinkingSession records. """
     u1 = self.user
     u2 = self.user2
     vol = units.Quantity(1200)
@@ -105,7 +105,7 @@ class CoreModelsTestCase(unittest.TestCase):
     td_200m = datetime.timedelta(minutes=200)
     td_190m = td_200m - td_10m
 
-    num_inital_groups = len(models.DrinkingSessionGroup.objects.all())
+    num_inital_groups = len(models.DrinkingSession.objects.all())
 
     drinks[u1] = (
         # t=0
@@ -137,36 +137,36 @@ class CoreModelsTestCase(unittest.TestCase):
           starttime=base_time+td_190m, endtime=base_time+td_190m),
     )
 
-    u1_sessions = u1.userdrinkingsession_set.all()
-    self.assertEqual(len(u1_sessions), 2)
+    u1_session_parts = u1.session_parts.all()
+    self.assertEqual(len(u1_session_parts), 2)
 
-    u2_sessions = u2.userdrinkingsession_set.all()
-    self.assertEqual(len(u2_sessions), 2)
+    u2_session_parts = u2.session_parts.all()
+    self.assertEqual(len(u2_session_parts), 2)
 
     # user1 session 1: should be 10 minutes long as created above
-    u1_s1 = u1_sessions[0]
+    u1_s1 = u1_session_parts[0].session
     self.assertEqual(u1_s1.starttime, base_time)
     self.assertEqual(u1_s1.starttime, drinks[u1][0].starttime)
     self.assertEqual(u1_s1.endtime, drinks[u1][1].endtime)
     self.assertEqual(u1_s1.endtime - u1_s1.starttime, td_10m)
-    self.assertEqual(len(list(u1_s1.GetDrinks())), 2)
+    self.assertEqual(len(list(u1_s1.drinks.all())), 2)
 
     # user1 session 2: at time 200, 1 drink
-    u1_s2 = u1_sessions[1]
+    u1_s2 = u1_session_parts[1].session
     self.assertEqual(u1_s2.starttime, base_time+td_200m)
     self.assertEqual(u1_s2.endtime, base_time+td_200m)
-    self.assertEqual(len(list(u1_s2.GetDrinks())), 1)
+    self.assertEqual(len(list(u1_s2.drinks.all())), 1)
 
     # user2 session2: drinks are added out of order to create this, ensure times
     # match
-    u2_s2 = u2_sessions[1]
+    u2_s2 = u2_session_parts[1].session
     self.assertEqual(u2_s2.starttime, base_time+td_190m)
     self.assertEqual(u2_s2.endtime, base_time+td_200m)
-    self.assertEqual(len(list(u2_s2.GetDrinks())), 2)
+    self.assertEqual(len(list(u2_s2.drinks.all())), 2)
 
-    # Now check DrinkingSessionGroups were created correctly; there should be
+    # Now check DrinkingSessions were created correctly; there should be
     # two groups capturing all 4 sessions.
-    all_groups = models.DrinkingSessionGroup.objects.all()[num_inital_groups:]
+    all_groups = models.DrinkingSession.objects.all()[num_inital_groups:]
     self.assertEqual(len(all_groups), 2)
 
     self.assertEqual(all_groups[0].starttime, base_time)

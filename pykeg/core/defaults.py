@@ -65,7 +65,8 @@ def set_defaults():
   secondary_tap.save()
 
   # user defaults
-  guest_user = backend.KegbotBackend.CreateNewUser('guest')
+  b = backend.KegbotBackend()
+  guest_user = b.CreateNewUser('guest')
 
   # brewer defaults
   unk_brewer = bdb.Brewer(name='Unknown Brewer')
@@ -144,8 +145,9 @@ def gentestdata():
 
   usernames = ['abe', 'bort', 'charlie']
   users = []
+  b = backend.KegbotBackend()
   for name in usernames:
-    users.append(backend.KegbotBackend.CreateNewUser(name))
+    users.append(b.CreateNewUser(name))
 
   half_barrel = models.KegSize(name="half barrel", volume_ml=10000)
   half_barrel.save()

@@ -65,7 +65,6 @@ class KegbotEnv(object):
     self._subscription_manager = manager.SubscriptionManager('pubsub', self)
 
     self._backend = backend.KegbotBackend()
-    self._backend.CheckSchemaVersion()
 
     # Build threads
     self._threads = set()
@@ -93,6 +92,13 @@ class KegbotEnv(object):
 
     self._watchdog_thread = kb_threads.WatchdogThread(self, 'watchdog-thread')
     self.AddThread(self._watchdog_thread)
+
+    for tap in self._backend.GetAllTaps():
+      self._tap_manager.RegisterTap(tap.meter_name, tap.ml_per_tick,
+          tap.max_tick_delta)
+
+    for acceptor in self._backend.GetBillAcceptors():
+      self._billing_manager.RegisterBillAcceptor(acceptor)
 
   def AddThread(self, thr):
     self._threads.add(thr)

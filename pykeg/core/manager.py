@@ -24,15 +24,10 @@ import time
 import threading
 import logging
 
-from pykeg.billing import models as billing_models
-from pykeg.core import event
 from pykeg.core import flow_meter
 from pykeg.core import kb_common
-from pykeg.core import models
-from pykeg.core import units
 from pykeg.core import util
 from pykeg.core.net import kegnet_pb2
-
 
 class TapManagerError(Exception):
   """ Generic TapManager error """
@@ -93,13 +88,6 @@ class Tap:
   def GetMeter(self):
     return self._meter
 
-  def GetCurrentKeg(self):
-    try:
-      tap = models.KegTap.objects.get(meter_name=self._name)
-    except models.KegTap.DoesNotExist:
-      return None
-    return tap.current_keg
-
   def TicksToMilliliters(self, amt):
     return self._ml_per_tick * float(amt)
 
@@ -116,9 +104,6 @@ class TapManager(Manager):
   def __init__(self, name, kb_env):
     Manager.__init__(self, name, kb_env)
     self._taps = {}
-    all_taps = models.KegTap.objects.all()
-    for tap in all_taps:
-      self.RegisterTap(tap.meter_name, tap.ml_per_tick, tap.max_tick_delta)
 
   def GetStatus(self):
     ret = []
@@ -433,28 +418,23 @@ class DrinkManager(Manager):
         'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
       return
 
+    backend = self._kb_env.GetBackend()
     tap = self._kb_env.GetTapManager().GetTap(event.tap_name)
-    keg = tap.GetCurrentKeg()
+    keg = backend.GetKegForTap(event.tap_name)
     if keg:
       self._logger.info('Binding drink to keg: %s' % keg)
     else:
       self._logger.warning('No tap found for meter %s' % event.tap_name)
 
-    try:
-      user = models.User.objects.get(username=event.username)
-    except models.User.DoesNotExist:
-      user = self._kb_env.GetBackend().GetDefaultUser()
+    user = backend.GetUserFromUsername(event.username)
+    if user is None:
+      user = backend.GetDefaultUser()
       self._logger.info('User unknown, using default: %s' % (user.username,))
 
     # log the drink
-    d = models.Drink(ticks=int(ticks),
-                     volume_ml=volume_ml,
-                     starttime=datetime.datetime.fromtimestamp(event.start_time),
-                     endtime=datetime.datetime.fromtimestamp(event.last_activity_time),
-                     user=user,
-                     keg=keg,
-                     status='valid')
-    d.save()
+    starttime = datetime.datetime.fromtimestamp(event.start_time)
+    endtime = datetime.datetime.fromtimestamp(event.last_activity_time)
+    d = backend.CreateDrink(ticks, volume_ml, starttime, endtime, user, keg)
 
     keg_id = None
     if d.keg:
@@ -504,10 +484,12 @@ class ThermoManager(Manager):
     sensor_value = event.sensor_value
     last_record = self._sensor_to_last_record.get(sensor_name)
 
+    backend = self._kb_env.GetBackend()
+
     if sensor_name not in self._sensor_cache:
-      sensor, created = models.ThermoSensor.objects.get_or_create(
-          raw_name=sensor_name,
-          defaults={'nice_name': sensor_name})
+      sensor = backend.GetSensorFromName(sensor_name)
+      if sensor is None:
+        sensor = backend.CreateSensor(sensor_name, sensor_name)
       self._sensor_cache[sensor_name] = sensor
     else:
       sensor = self._sensor_cache[sensor_name]
@@ -517,8 +499,7 @@ class ThermoManager(Manager):
 
     self._logger.info('Recording temperature sensor=%s value=%s' %
                       (sensor.nice_name, sensor_value))
-    new_record = models.Thermolog(sensor=sensor, temp=sensor_value, time=now)
-    new_record.save()
+    new_record = backend.LogSensorReading(sensor, sensor_value, now)
     self._sensor_to_last_record[sensor_name] = new_record
 
 class TokenRecord:
@@ -597,10 +578,10 @@ class TokenManager(Manager):
       if record.AsTuple() == new_tuple:
         return record
 
-    token, created = models.AuthenticationToken.objects.get_or_create(
-        auth_device=auth_device, token_value=token_value)
-
-    if created:
+    backend = self._kb_env.GetBackend()
+    token = backend.GetAuthToken(auth_device, token_value)
+    if token is None:
+      token = backend.CreateAuthToken(auth_device, token_value)
       self._logger.info('Token unknown, created: %s' % token)
 
     return TokenRecord(token, tap_name)
@@ -710,9 +691,9 @@ class AuthenticationManager(Manager):
 
   @EventHandler(kegnet_pb2.UserAuthEvent)
   def HandleUserAuthEvent(self, event):
-    try:
-      user = models.User.objects.get(username=event.user_name)
-    except models.User.DoesNotExist:
+    backend = self._kb_env.GetBackend()
+    user = backend.GetUserFromUsername(event.user_name)
+    if user is None:
       self._logger.warning('Ignoring auth event for unknown username %s' %
           event.user_name)
       return
@@ -751,7 +732,8 @@ class BillingManager(Manager):
     self._counter = {}
     self._active_credits = {}
 
-    for acceptor in billing_models.BillAcceptor.objects.all():
+  def RegisterBillAcceptor(self, acceptor):
+    if acceptor.name not in self._acceptor:
       self._acceptor[acceptor.name] = acceptor
       self._counter[acceptor.name] = 0
 
@@ -794,14 +776,17 @@ class BillingManager(Manager):
         del self._active_credits[acceptor_name]
 
   def _ProcessCredit(self, acceptor_name, credit_amount):
-    credit = billing_models.Credit(amount=credit_amount)
-    credit.acceptor = self._acceptor[acceptor_name]
+    acceptor = self._acceptor[acceptor_name]
+
+    user = None
     am = self._kb_env.GetAuthenticationManager()
     users = list(am.GetActiveUsers())
     if users:
       # XXX hack
       credit.user = users[0]
-    credit.save()
+
+    backend = self._kb_env.GetBackend()
+    credit = backend.RecordBillAcceptorCredit(credit_amount, acceptor, user)
     self._logger.info('Logged credit for %s: %.2f' % (credit.user,
         credit_amount))
 

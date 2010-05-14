@@ -671,3 +671,12 @@ class KegStats(_StatsModel):
   keg = models.ForeignKey(Keg, unique=True, related_name='stats')
   def __str__(self):
     return 'KegStats for %s' % self.keg
+
+
+#class ActivityLog(models.Model):
+#  name = models.CharField(max_length=255)
+#  date = models.DateTimeField(default=datetime.datetime.now)
+#  content_type = models.ForeignKey(ContentType, blank=True, null=True)
+#  object_id = models.PositiveIntegerField(blank=True, null=True)
+#  content_object = generic.GenericForeignKey('content_type', 'object_id',
+#      blank=True, null=True)

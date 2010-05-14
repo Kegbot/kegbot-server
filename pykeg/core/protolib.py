@@ -52,31 +52,6 @@ def ToProto(obj, full=True):
     return _CONVERSION_MAP[kind](obj, full)
   raise ValueError, "Unknown object type: %s" % kind
 
-def ProtoMessageToDict(message):
-  ret = {}
-  if not message.IsInitialized():
-    raise ValueError, 'Message not initialized'
-  for descriptor, value in message.ListFields():
-    if descriptor.type == descriptor.TYPE_MESSAGE:
-      ret[descriptor.name] = ProtoMessageToDict(value)
-    else:
-      ret[descriptor.name] = value
-  return ret
-
-def DictToProtoMessage(values, out_message):
-  for name, field in out_message.DESCRIPTOR.fields_by_name.iteritems():
-    if name not in values:
-      if field.label == field.LABEL_REQUIRED:
-        raise ValueError, "Missing required field %s" % name
-      continue
-
-    value = values.get(name)
-    if field.type == field.TYPE_MESSAGE:
-      inner_message = gettattr(out_message, name)
-      value = FromDict(inner_message, value)
-    setattr(out_message, name, value)
-  return out_message
-
 ### Model conversions
 
 @converts(models.Keg)

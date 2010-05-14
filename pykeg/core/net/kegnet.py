@@ -41,7 +41,7 @@ else:
   import json
 
 from pykeg.core import kb_common
-from pykeg.core import protolib
+from pykeg.core import protoutil
 from pykeg.core import util
 from pykeg.core.net import kegnet_pb2
 from pykeg.external.gflags import gflags
@@ -66,7 +66,7 @@ def ProtoMessageToJson(message):
   wrapper = {
     'method': message.DESCRIPTOR.name,
     'id': None,
-    'params': protolib.ProtoMessageToDict(message),
+    'params': protoutil.ProtoMessageToDict(message),
   }
   return json.dumps(wrapper)
 
@@ -77,7 +77,7 @@ for cls in protobuf_message.Message.__subclasses__():
 def MessageDictToProtoMessage(message_dict):
   message_name = message_dict['method']
   message_class = NAME_TO_MESSAGE_CLASS[message_name]
-  return protolib.DictToProtoMessage(message_dict['params'], message_class())
+  return protoutil.DictToProtoMessage(message_dict['params'], message_class())
 
 def ProtoMessageToShortStr(message):
   name = message.DESCRIPTOR.name

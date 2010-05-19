@@ -12,8 +12,12 @@
         <table border="0" width="100%" height="100%">
           <tr>
             <td align="center" valign="center">
+              {% if keg.type.GetImage %}
+              <img src="{{ keg.type.GetImage.thumbnail.url }}">
+              {% else %}
               <div style="font-size: 200%; color: #ccc;">?</div>
               <div style="font-size: 8px; color: #ccc;">no image</div>
+              {% endif %}
             </td>
           </tr>
         </table>

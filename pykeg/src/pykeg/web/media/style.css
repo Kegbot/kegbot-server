@@ -117,8 +117,8 @@ a:hover {
 }
 
 .kb-tapbox-image {
-  width: 96px;
-  height: 96px;
+  min-width: 96px;
+  min-height: 96px;
   border: 1px dotted #C3C0C0;
   margin-top: auto;
   float: left;
@@ -128,7 +128,7 @@ a:hover {
   font: 80%/100% "Lucida Grande", Arial, sans-serif;
   margin-left: 12px;
   float: left;
-  width: 350px;
+  width: 300px;
 }
 
 .kb-tapbox-footer {

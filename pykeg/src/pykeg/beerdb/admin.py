@@ -24,7 +24,7 @@ class BeerTypeInline(admin.TabularInline):
 
 class BrewerAdmin(admin.ModelAdmin):
   inlines = [
-    BeerTypeInline,
+      BeerTypeInline,
   ]
 
 admin.site.register(models.Brewer, BrewerAdmin)
@@ -33,3 +33,7 @@ admin.site.register(models.BeerStyle)
 class BeerTypeAdmin(admin.ModelAdmin):
   list_display = ('name', 'brewer', 'style')
 admin.site.register(models.BeerType, BeerTypeAdmin)
+
+class BeerImageAdmin(admin.ModelAdmin):
+  model = models.BeerImage
+admin.site.register(models.BeerImage, BeerImageAdmin)

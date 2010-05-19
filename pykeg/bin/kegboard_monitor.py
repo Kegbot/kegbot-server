@@ -27,10 +27,10 @@ import importhacks
 
 import os
 
+import gflags
 import serial
 
 from pykeg.core import kb_app
-from pykeg.external.gflags import gflags
 from pykeg.hw.kegboard import kegboard
 
 FLAGS = gflags.FLAGS

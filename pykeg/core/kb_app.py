@@ -31,8 +31,9 @@ import threading
 import time
 import traceback
 
+import gflags
+
 from pykeg.core import util
-from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 

@@ -40,11 +40,12 @@ if sys.version_info[:2] < (2, 6):
 else:
   import json
 
+import gflags
+
 from pykeg.core import kb_common
 from pykeg.core import protoutil
 from pykeg.core import util
 from pykeg.core.net import kegnet_pb2
-from pykeg.external.gflags import gflags
 from google.protobuf import message as protobuf_message
 
 FLAGS = gflags.FLAGS

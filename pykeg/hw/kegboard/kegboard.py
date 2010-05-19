@@ -23,8 +23,9 @@ import logging
 import struct
 import string
 
+import gflags
+
 from pykeg.core import util
-from pykeg.external.gflags import gflags
 from pykeg.hw.kegboard import crc16
 
 FLAGS = gflags.FLAGS
@@ -39,7 +40,6 @@ gflags.DEFINE_integer('kegboard_speed', 115200,
 KBSP_PREFIX = "KBSP v1:"
 KBSP_PAYLOAD_MAXLEN = 112
 KBSP_TRAILER = "\r\n"
-
 
 class KegboardError(Exception):
   """Generic error with Kegboard"""

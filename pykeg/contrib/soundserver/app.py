@@ -26,6 +26,7 @@ import random
 import Queue
 import urllib2
 
+import gflags
 import mad
 
 from django.db import settings
@@ -35,7 +36,6 @@ from pykeg.core import units
 from pykeg.core import util
 from pykeg.core.net import kegnet
 from pykeg.core.net import kegnet_pb2
-from pykeg.external.gflags import gflags
 
 from pykeg.contrib.soundserver import models
 

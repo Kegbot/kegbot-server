@@ -6,8 +6,9 @@ import asyncore
 import logging
 import unittest
 
+import gflags
+
 from pykeg.core.net import kegnet
-from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 

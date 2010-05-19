@@ -22,6 +22,7 @@
 
 import importhacks
 
+import gflags
 import Queue
 import sys
 
@@ -30,7 +31,6 @@ from pykeg.core import units
 from pykeg.core import util
 from pykeg.core.net import kegnet
 from pykeg.core.net import kegnet_pb2
-from pykeg.external.gflags import gflags
 
 try:
   import lcdui

@@ -38,6 +38,7 @@ exchange data.
 
 import Queue
 
+import gflags
 import serial
 
 import importhacks
@@ -46,7 +47,6 @@ from pykeg.core import kb_common
 from pykeg.core import util
 from pykeg.core.net import kegnet
 from pykeg.hw.kegboard import kegboard
-from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 

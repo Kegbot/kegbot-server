@@ -29,6 +29,8 @@ For more information, please see the kegbot documentation.
 
 import time
 
+import gflags
+
 from pykeg.core import alarm
 from pykeg.core import backend
 from pykeg.core import event
@@ -37,7 +39,6 @@ from pykeg.core import kb_threads
 from pykeg.core import manager
 from pykeg.core.net import kegnet
 from pykeg.core.net import kegnet_pb2
-from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 

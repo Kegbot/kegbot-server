@@ -22,6 +22,7 @@
 
 import importhacks
 
+import gflags
 import logging
 import os
 import time
@@ -33,9 +34,6 @@ from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import util
 from pykeg.core.net import kegnet
-from pykeg.external.gflags import gflags
-
-FLAGS = gflags.FLAGS
 
 
 gflags.DEFINE_integer('phidget_wait_seconds', 0,

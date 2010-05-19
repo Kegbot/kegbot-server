@@ -25,6 +25,8 @@ This program simplifies running multiple Kegbot processes as daemons.
 
 import importhacks
 
+import gflags
+
 import ConfigParser
 import commands
 from cStringIO import StringIO
@@ -35,8 +37,6 @@ import time
 
 from pykeg.core import kb_app
 from pykeg.core import util
-
-from pykeg.external.gflags import gflags
 
 FLAGS = gflags.FLAGS
 

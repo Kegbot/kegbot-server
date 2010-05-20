@@ -27,7 +27,7 @@ setup(
       '' : 'src',
     },
     data_files = [
-      ('/etc/pykeg', [
+      ('/etc/kegbot', [
           'common_settings.py.example',
           'kegbot_master.cfg.example',
       ]),

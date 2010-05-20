@@ -34,9 +34,9 @@ from django.views.generic.simple import redirect_to
 from pykeg.core import models
 from pykeg.core import units
 
-from kegweb.kegweb import forms
-from kegweb.kegweb import models as kegweb_models
-from kegweb.kegweb import view_util
+from pykeg.web.kegweb import forms
+from pykeg.web.kegweb import models as kegweb_models
+from pykeg.web.kegweb import view_util
 
 ### main views
 

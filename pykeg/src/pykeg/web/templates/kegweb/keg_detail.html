@@ -31,7 +31,7 @@
         data.setCell({{forloop.counter0}}, 2, {{drink.calories}},
           '{{drink.calories|floatformat}}');
         {% endif %}
-        data.setCell({{forloop.counter0}}, 3, '<a href="{%url kegweb.kegweb.views.user_detail drink.user.username %}">{{ drink.user}}</a>');
+        data.setCell({{forloop.counter0}}, 3, '<a href="{%url pykeg.web.kegweb.views.user_detail drink.user.username %}">{{ drink.user}}</a>');
         data.setCell({{forloop.counter0}}, 4, '{% timeago drink.endtime %}');
         data.setCell({{forloop.counter0}}, 5, {{drink.bac}}, '{{drink.bac|bac_format}}');
         {% endfor %}

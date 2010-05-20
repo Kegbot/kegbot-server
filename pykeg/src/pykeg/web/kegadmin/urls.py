@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('kegweb.kegadmin.views',
+urlpatterns = patterns('pykeg.web.kegadmin.views',
       ### main page
       url(r'^$', 'kegadmin_main', name='kegadmin-main'),
       url(r'^change-kegs/$', 'change_kegs', name='kegadmin-change-kegs'),

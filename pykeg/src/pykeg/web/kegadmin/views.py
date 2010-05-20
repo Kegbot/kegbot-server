@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response
 
 from pykeg.core import models
 
-from kegweb.kegadmin import forms
+from pykeg.web.kegadmin import forms
 
 @staff_member_required
 def kegadmin_main(request):

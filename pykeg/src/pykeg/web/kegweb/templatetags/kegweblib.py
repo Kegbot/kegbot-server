@@ -8,7 +8,7 @@ from django.template import Variable
 from django.utils.safestring import mark_safe
 
 from pykeg.core import models
-from kegweb.kegweb import stats
+from pykeg.web.kegweb import stats
 
 register = Library()
 

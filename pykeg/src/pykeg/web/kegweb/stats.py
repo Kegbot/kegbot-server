@@ -20,8 +20,8 @@
 
 # TODO(mikey): move this & dependencies to pykeg
 
-from kegweb.kegweb import charts
-from kegweb.kegweb import view_util
+from pykeg.web.kegweb import charts
+from pykeg.web.kegweb import view_util
 
 from pykeg.core import models
 from pykeg.core import units

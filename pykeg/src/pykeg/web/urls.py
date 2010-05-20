@@ -28,13 +28,13 @@ urlpatterns = patterns('',
      name='media'),
 
     ### RESTful api
-    (r'^api/', include('kegweb.api.urls')),
+    (r'^api/', include('pykeg.web.api.urls')),
 
     ### kegadmin
-    (r'^kegadmin/', include('kegweb.kegadmin.urls')),
+    (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 
     ### main kegweb urls
-    (r'', include('kegweb.kegweb.urls')),
+    (r'', include('pykeg.web.kegweb.urls')),
 )
 
 if features.use_facebook():
@@ -43,6 +43,6 @@ if features.use_facebook():
       (r'^sr/', include('socialregistration.urls')),
 
       ### facebook kegweb stuff
-      (r'^fb/', include('kegweb.contrib.facebook.urls')),
+      (r'^fb/', include('pykeg.web.contrib.facebook.urls')),
   )
 

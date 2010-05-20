@@ -10,14 +10,14 @@ INSTALLED_APPS = (
     'django.contrib.markup',
     'django.contrib.sessions',
     'django.contrib.sites',
-    'kegweb.api',
-    'kegweb.kegweb',
+    'pykeg.beerdb',
     'pykeg.billing',
     'pykeg.contrib.facebook',
     'pykeg.contrib.soundserver',
     'pykeg.contrib.twitter',
     'pykeg.core',
-    'pykeg.beerdb',
+    'pykeg.web.api',
+    'pykeg.web.kegweb',
     'registration',
     'socialregistration',
     'south',
@@ -28,12 +28,12 @@ LOGIN_REDIRECT_URL = "/account/"
 
 ### Kegweb specific stuff
 
-ROOT_URLCONF = 'kegweb.urls'
+ROOT_URLCONF = 'pykeg.web.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates".
     # Always use forward slashes, even on Windows.
-    "../kegweb/templates",
+    "web/templates",
 )
 
 SITE_ID = 1
@@ -63,7 +63,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.i18n',
     'django.core.context_processors.media',
     'django.core.context_processors.request',
-    'kegweb.context_processors.enabled_features',
+    'pykeg.web.context_processors.enabled_features',
 )
 
 MIDDLEWARE_CLASSES = (

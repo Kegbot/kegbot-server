@@ -34,7 +34,7 @@ from django.template import Context
 
 from pykeg.core import models
 from pykeg.core import protolib
-from kegweb.kegweb import view_util
+from pykeg.web.kegweb import view_util
 
 INDENT = 0
 if settings.DEBUG:

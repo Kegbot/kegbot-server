@@ -21,7 +21,7 @@
         data.addRows({{keg_list.count}});
 
         {% for keg in keg_list %}
-        data.setCell({{forloop.counter0}}, 0, '<a href="{% url kegweb.kegweb.views.keg_detail keg.id %}">keg {{keg.id}}</a>');
+        data.setCell({{forloop.counter0}}, 0, '<a href="{% url pykeg.web.kegweb.views.keg_detail keg.id %}">keg {{keg.id}}</a>');
         data.setCell({{forloop.counter0}}, 1, '{{keg.type.name}}');
         data.setCell({{forloop.counter0}}, 2, '{{keg.size.name}}');
         data.setCell({{forloop.counter0}}, 3, {{keg.startdate|datetime_js}});

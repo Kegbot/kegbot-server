@@ -2,7 +2,7 @@
 
 from south.db import db
 from django.db import models
-from kegweb.kegweb.models import *
+from pykeg.web.kegweb.models import *
 
 class Migration:
     

@@ -12,27 +12,12 @@ setup(
     author = "mike wakerly",
     author_email = "opensource@hoho.com",
     url = "http://kegbot.org/",
-    packages = find_packages('src', exclude=[
-        "*.tests",
-        "*.tests.*",
-        "*south*",
-        "*imagekit*",
-        "*gflags*",
-    ]),
-    package_data = {
-      'pykeg' : ['settings.py'],
-      'pykeg.templates' : ['*.html', '*/*.html'],
-    },
+    packages = find_packages('src'),
     package_dir = {
       '' : 'src',
     },
-    data_files = [
-      ('/etc/kegbot', [
-          'common_settings.py.example',
-          'kegbot_master.cfg.example',
-      ]),
-    ],
     scripts = [
+      'distribute_setup.py',
       'src/pykeg/bin/fb_publisher.py',
       'src/pykeg/bin/kegboard_daemon.py',
       'src/pykeg/bin/kegboard_monitor.py',
@@ -53,5 +38,6 @@ setup(
       #'MySQLdb>=1.2.1p2',
       #'pysqlite>=2.0.3',
     ],
+    include_package_data = True,
 
 )

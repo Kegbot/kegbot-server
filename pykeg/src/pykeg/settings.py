@@ -16,6 +16,7 @@ INSTALLED_APPS = (
     'pykeg.contrib.soundserver',
     'pykeg.contrib.twitter',
     'pykeg.core',
+    'pykeg.web',
     'pykeg.web.api',
     'pykeg.web.kegweb',
     'registration',

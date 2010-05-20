@@ -23,7 +23,7 @@
 This app attaches to a kegboard and prints all packets it receives.
 """
 
-import importhacks
+from pykeg.core import importhacks
 
 import os
 

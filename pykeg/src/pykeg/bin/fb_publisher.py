@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import importhacks
+from pykeg.core import importhacks
 from pykeg.contrib.facebook import app
 
 __doc__ = app.__doc__

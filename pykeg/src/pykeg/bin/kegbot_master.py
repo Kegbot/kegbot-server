@@ -23,7 +23,7 @@
 This program simplifies running multiple Kegbot processes as daemons.
 """
 
-import importhacks
+from pykeg.core import importhacks
 
 import gflags
 

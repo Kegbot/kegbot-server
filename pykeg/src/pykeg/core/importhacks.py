@@ -62,15 +62,9 @@ def _ExtendSysPath():
       else:
         _Debug('%s does NOT exist' % test_settings)
 
-  # Also extend the path to pick up the pykeg/ parent dir.
-  # TODO(mikey): this may need to be reconsidered when installing from
-  # distutils.
-  _local_dir = os.path.dirname(sys.modules[__name__].__file__)
-  _package_dir = os.path.normpath(os.path.join(_local_dir, '../..'))
-  paths.append(_package_dir)
-
-  # Add pykeg/external to the path, too.
-  _external_dir = os.path.join(_package_dir, 'pykeg', 'external')
+  # Add pykeg/external to the path.
+  import pykeg.external
+  _external_dir = os.path.dirname(pykeg.external.__file__)
   paths.append(_external_dir)
 
   _AddToSysPath(paths)
@@ -82,15 +76,17 @@ def _SetDjangoSettingsEnv(settings='pykeg.settings'):
     os.environ['DJANGO_SETTINGS_MODULE'] = settings
 
 def _FixAll():
-  _ExtendSysPath()
-  _SetDjangoSettingsEnv()
-
   try:
     import pykeg
     pykeg_dir = os.path.dirname(pykeg.__file__)
     _Debug('Pykeg loaded from dir: %s' % pykeg_dir)
   except ImportError:
-    _Warning('Warning: pykeg could not be imported')
+    _Warning('Error: pykeg could not be imported')
+    sys.exit(1)
+
+  _ExtendSysPath()
+  _SetDjangoSettingsEnv()
+
   try:
     import pykeg.external
     external_dir = os.path.dirname(pykeg.external.__file__)

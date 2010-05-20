@@ -20,7 +20,7 @@
 
 """Phidget RFID monitor authentication module."""
 
-import importhacks
+from pykeg.core import importhacks
 
 import gflags
 import logging

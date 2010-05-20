@@ -20,7 +20,7 @@
 
 """SoundServer app shell. See contrib/soundserver/app.py for implementation."""
 
-import importhacks
+from pykeg.core import importhacks
 from pykeg.contrib.soundserver import app
 
 if __name__ == '__main__':

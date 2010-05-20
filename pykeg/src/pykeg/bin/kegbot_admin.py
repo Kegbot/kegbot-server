@@ -23,7 +23,7 @@
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-import importhacks
+from pykeg.core import importhacks
 from django.core import management
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import importhacks
+from pykeg.core import importhacks
 from pykeg.core import kegbot
 
 __doc__ = kegbot.__doc__

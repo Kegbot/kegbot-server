@@ -20,7 +20,7 @@
 
 """A Kegnet client that sends a fake flow."""
 
-import importhacks
+from pykeg.core import importhacks
 
 import gflags
 import math

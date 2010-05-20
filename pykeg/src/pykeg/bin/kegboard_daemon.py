@@ -41,7 +41,7 @@ import Queue
 import gflags
 import serial
 
-import importhacks
+from pykeg.core import importhacks
 from pykeg.core import kb_app
 from pykeg.core import kb_common
 from pykeg.core import util

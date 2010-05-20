@@ -20,7 +20,7 @@
 
 """Kegbot LCD daemon."""
 
-import importhacks
+from pykeg.core import importhacks
 
 import gflags
 import Queue

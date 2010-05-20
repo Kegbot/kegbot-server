@@ -26,7 +26,7 @@ sync_and_migrate:
 
 clean:
 	rm -f kegbot.log $(SETUP_LOGFILE)
-	rm -rf build
+	rm -rf build dist src/kegbot.egg-info
 	find . -name "*.pyc" | xargs rm -f
 
 distclean: clean test_clean fixtures_clean

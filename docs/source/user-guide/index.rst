@@ -18,6 +18,7 @@ Contents:
    introduction/getting-involved
    installation/kegbot-install
    installation/database-install
+   installation/configure
    getting-started/running-kegbot
 
 ..

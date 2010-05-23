@@ -29,7 +29,6 @@ setup(
       'src/pykeg/bin/sound_server.py',
     ],
     install_requires = [
-      'distribute',
       'django >= 1.0',
       'django-imagekit >= 0.3.3',
       'pylcdui >= 0.5.4',

@@ -27,24 +27,8 @@ up.  Be sure you have the necessary libraries and command-line tools::
 
   % sudo apt-get install python-sqlite
 
-Configure Kegbot for SQLite
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Before you can use SQLite, you need to decide where on disk it should store the
-database file. In this example, we assume the database will be store at
-``/home/kegbot/kegbot.sqlite``, though you can use another location.
-
-Open the file ``~/.kegbot/common_settings.py`` in your favorite text editor.
-Look for the section labeled "Database Configuration", and edit it to have the
-following lines to the file::
-
-  DATABASE_ENGINE = 'sqlite'
-  DATABASE_NAME = '/home/kegbot/kegbot.sqlite'
-
-Save the settings file; you may now proceed to :ref:`populate-databases`.
-
 Using MySQL
-----------
+-----------
 
 Follow this section if you prefer to use MySQL as the Kegbot database.
 
@@ -118,6 +102,8 @@ verify that the database was created by trying to use it in a MySQL shell::
 	Database changed
 	mysql>
 
+.. _create-mysql-user:
+
 Creating the `kegbot` MySQL user
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -152,40 +138,5 @@ Test your new user account::
 	mysql> exit
 	Bye
 
-Configure Kegbot for MySQL
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Finally, you need to point Kegbot at your new database.
-
-Open the file ``~/.kegbot/common_settings.py`` in your favorite text editor.
-Look for the section labeled "Database Configuration", and edit it to have the
-following lines to the file::
-
-  DATABASE_ENGINE = 'mysql'
-  DATABASE_NAME = 'kegbot'
-  DATABASE_USER = 'kegbot'
-  DATABASE_PASSWORD = 'your-password'
-
 Done! You have successfully set up a MySQL database for Kegbot.
-
-.. _populate-databases:
-
-Populate Databases
-------------------
-
-Now that the database is ready, you must install the various kegbot tables and
-defaults.  You will also set the admin account name and password in this step::
-
-  % cd $KEGBOT_HOME/pykeg
-  % make setup
-  --- Logging to: /home/kegbot/hg/kegbot/pykeg/setup.log
-  --- Installing database ...
-  --- Creating super user
-  Username (Leave blank to use 'admin'): admin
-  E-mail address: admin@example.com
-  Password: 
-  Password (again): 
-  Superuser created successfully.
-  %
-
 

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load kegweblib %}
+
+{% block title %}keg index{% endblock %}
+
+{% block kb-extrajs %}
+    <script type="text/javascript">
+      // Load the Visualization API and the tablepackage.
+      google.load('visualization', '1', {'packages':['table']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.setOnLoadCallback(buildTable);
+
+      function buildTable() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Keg');
+        data.addColumn('string', 'Type');
+        data.addColumn('string', 'Size');
+        data.addColumn('date', 'Tapped');
+        data.addColumn('string', 'Status');
+        data.addRows({{keg_list.count}});
+
+        {% for keg in keg_list %}
+        data.setCell({{forloop.counter0}}, 0, '<a href="{% url pykeg.web.kegweb.views.keg_detail keg.id %}">keg {{keg.id}}</a>');
+        data.setCell({{forloop.counter0}}, 1, '{{keg.type.name}}');
+        data.setCell({{forloop.counter0}}, 2, '{{keg.size.name}}');
+        data.setCell({{forloop.counter0}}, 3, {{keg.startdate|datetime_js}});
+        data.setCell({{forloop.counter0}}, 4, '{{keg.status}}');
+        {% endfor %}
+        var table = new google.visualization.Table(document.getElementById('kb-keg-table'));
+        table.draw(data, {showRowNumber: false, allowHtml: true});
+      }
+
+    </script>
+{% endblock kb-extrajs %}
+
+
+{% block content %}
+
+<div class="kb-contentbox-head">
+   all kegs
+</div>
+<div class="kb-contentbox">
+  <br>
+  <table id="kb-keg-table" cellspacing=0 border=0></table>
+  <br>
+</div>
+
+{% endblock %}
+
+{% block col-2 %}
+
+{% endblock col-2 %}

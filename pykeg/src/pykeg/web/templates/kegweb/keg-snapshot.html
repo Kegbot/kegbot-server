@@ -1,0 +1,76 @@
+{% load kegweblib %}
+  <div class="kb-tapbox">
+
+    <div class="kb-tapbox-header">
+    {% if keg.tap %}
+      {{ keg.tap.name }} -
+    {% endif %}
+    <i>{{keg.type.name}}</i>
+    </div>
+    <div class="kb-tapbox-content">
+      <div class="kb-tapbox-image">
+        <table border="0" width="100%" height="100%">
+          <tr>
+            <td align="center" valign="center">
+              <div style="font-size: 200%; color: #ccc;">?</div>
+              <div style="font-size: 8px; color: #ccc;">no image</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="kb-tapbox-detail">
+        {% if keg.description %}
+          <div>
+            <i>"{{ keg.description }}"</i>
+          </div>
+          <br>
+        {% endif %}
+        <table border="0">
+        <tr>
+          <td valign="top" align="right">
+            <b>Total Poured</b>
+          </td>
+          <td rowspan="2">
+            <img src="{% chart keg_volume keg 200 28 %}">
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" align="right">
+            {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
+            {% if keg.is_empty %}
+              (empty!)
+            {% else %}
+              ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
+            {% endif %}
+          </td>
+        </tr>
+
+        {% if keg.tap %}
+        {% if keg.tap.temperature_sensor %}
+        <tr>
+          <td valign="top" align="right">
+            <b>Temperature</b>
+          </td>
+          <td rowspan="2">
+            <img src="{% chart sensor keg.tap.temperature_sensor.nice_name 200 28 %}">
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C / 
+            {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
+          </td>
+        </tr>
+        {% endif %}
+        {% endif %}
+
+      </table>
+      </div>
+      <div style="clear: both;"> </div>
+    </div>
+    <div class="kb-tapbox-footer">
+      tapped {% timeago keg.startdate %} |
+      <a href="{% url pykeg.web.kegweb.views.keg_detail keg.id %}">full history &raquo;</a>
+    </div>
+  </div>
+

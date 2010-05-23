@@ -7,10 +7,13 @@ syntax: glob
 docs/build
 
 ### pykeg
+pykeg/build
+pykeg/dist
 pykeg/kegbot.log
 pykeg/media/mugshots
 pykeg/setup.log
 pykeg/sounds
+pykeg/src/kegbot.egg-info
 
 ### controller
 controller/kegboard/build-cli

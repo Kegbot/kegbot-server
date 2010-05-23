@@ -11,9 +11,7 @@ setup: install_db admin
 install_db:
 	@echo "--- Logging to: $(SETUP_LOGFILE)"
 	@echo "--- Installing database ..."
-	@$(ADMIN_COMMAND) syncdb --all --noinput >> $(SETUP_LOGFILE)
-	@$(ADMIN_COMMAND) migrate --all --fake >> $(SETUP_LOGFILE)
-	@$(ADMIN_COMMAND) kb_set_defaults >> $(SETUP_LOGFILE)
+	@$(ADMIN_COMMAND) kb_setup >> $(SETUP_LOGFILE)
 
 admin:
 	@echo "--- Creating super user ..."
@@ -26,7 +24,7 @@ sync_and_migrate:
 
 clean:
 	rm -f kegbot.log $(SETUP_LOGFILE)
-	rm -rf build
+	rm -rf build dist src/kegbot.egg-info
 	find . -name "*.pyc" | xargs rm -f
 
 distclean: clean test_clean fixtures_clean

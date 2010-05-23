@@ -42,6 +42,8 @@ gflags.DEFINE_integer('phidget_wait_seconds', 0,
     'been found.',
     lower_bound=0)
 
+FLAGS = gflags.FLAGS
+
 
 class RfidEventHandler:
   """Collection of Phidget RFID event handlers to report status to kegnet."""

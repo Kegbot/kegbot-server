@@ -5,13 +5,13 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
-Current version (in development)
---------------------------------
+Version 0.7.0 (2010-05-23)
+--------------------------
 
-Initial release. (Changes are since hg revision 500:525e06329039).
+Initial numbered release! (Changes are since hg revision 500:525e06329039).
 
-Core
-^^^^
+Core / General
+^^^^^^^^^^^^^^
 * Vastly improved authentication device support.
 * New network protocol for Kegbot status and control (kegnet).
 * Temperatures are once again recorded. Temperature sensors can be associated
@@ -26,6 +26,7 @@ Core
 * Improved support for CrystalFontz LCD devices; new support for Matrix-Orbital
   serial LCD displays.
 * Added Facebook publisher add-on.
+* Packaging improvements; `setup.py install` works.
 
 Kegboard
 ^^^^^^^^

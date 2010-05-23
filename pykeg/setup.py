@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "kegbot",
-    version = "0.6.0",
+    version = "0.7.0",
     description = "Kegbot keg controller software",
     author = "mike wakerly",
     author_email = "opensource@hoho.com",

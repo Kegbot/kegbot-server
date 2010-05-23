@@ -78,18 +78,11 @@ Populate Databases
 ------------------
 
 Now that the database is ready, you must install the various kegbot tables and
-defaults.  You will also set the admin account name and password in this step::
+defaults::
 
-  % cd $KEGBOT_HOME/pykeg
-  % make setup
-  --- Logging to: /home/kegbot/hg/kegbot/pykeg/setup.log
-  --- Installing database ...
-  --- Creating super user
-  Username (Leave blank to use 'admin'): admin
-  E-mail address: admin@example.com
-  Password: 
-  Password (again): 
-  Superuser created successfully.
-  %
+  % kegbot_admin.py kb_setup
 
+And for the most important part, create your admin account!::
+
+  % kegbot_admin.py createsuperuser
 

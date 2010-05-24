@@ -5,6 +5,13 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Current version (in development)
+-------------------------------
+
+Core / General
+^^^^^^^^^^^^^^
+* Added missing dependencies to `setup.py`.
+
 Version 0.7.0 (2010-05-23)
 --------------------------
 

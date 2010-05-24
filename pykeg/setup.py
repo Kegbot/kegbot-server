@@ -31,13 +31,14 @@ setup(
     install_requires = [
       'django >= 1.0',
       'django-imagekit >= 0.3.3',
+      'django-registration',
+      'django-socialregistration',
+      'MySQL-python',
+      'pil',
       'pylcdui >= 0.5.4',
+      #'pysqlite>=2.0.3',
       'python-gflags >= 1.3',
       'South >= 0.7',
-      'MySQL-python',
-      'django-registration',
-      'pil',
-      #'pysqlite>=2.0.3',
     ],
     include_package_data = True,
 

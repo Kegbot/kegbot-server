@@ -126,7 +126,7 @@ kegbot locally, as if it was installed on your system.
 	% sudo apt-get install python-virtualenv
 
 #. Use `virtualenv` to create a home for a fake installation of kegbot
-   (in `~/kb/`).
+   (in `~/kb/`)::
 
 	% virtualenv ~/kb/
 	New python executable in /home/kegbot/kb/bin/python

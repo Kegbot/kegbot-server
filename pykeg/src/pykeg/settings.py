@@ -10,6 +10,8 @@ INSTALLED_APPS = (
     'django.contrib.markup',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django_extensions',
+    'imagekit',
     'pykeg.beerdb',
     'pykeg.billing',
     'pykeg.contrib.facebook',

@@ -40,6 +40,9 @@ setup(
       'python-gflags >= 1.3',
       'South >= 0.7',
     ],
+    dependency_links = [
+        'http://dist.repoze.org/PIL-1.1.6.tar.gz',
+    ],
     include_package_data = True,
 
 )

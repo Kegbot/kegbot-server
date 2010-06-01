@@ -1,10 +1,17 @@
-{% extends "base.html" %}
+{% extends "account/base.html" %}
 {% load kegweblib %}
 {% load facebook_tags %}
 
+{% block kb-extrajs %}
+   {% if USE_FACEBOOK %}
+   {% load facebook_tags %}
+   {% facebook_js %}
+   {% endif %}
+{% endblock %}
+
 {% block title %}facebook settings{% endblock %}
 
-{% block content %}
+{% block kb-account-main %}
   <div class="kb-contentbox-head">
     facebook settings
   </div>

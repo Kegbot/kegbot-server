@@ -121,46 +121,6 @@ def webauth(request):
   context = {}
   return render_to_response('kegweb/webauth.html', context)
 
-### account stuff
-
-@login_required
-def account_view(request):
-  context = RequestContext(request)
-  user = request.user
-  context['user'] = user
-  context['profile_form'] = forms.UserProfileForm(instance=user.get_profile())
-  mf = forms.MugshotForm()
-  context['mugshot_form'] = mf
-
-  return render_to_response('kegweb/account.html', context)
-
-@login_required
-def update_profile(request):
-  if request.method != 'POST':
-    raise Http404
-  orig_profile = request.user.get_profile()
-  form = forms.UserProfileForm(request.POST, instance=orig_profile)
-  if form.is_valid():
-    new_profile = form.save()
-  return redirect_to(request, url='/account/')
-
-@login_required
-def update_mugshots(request):
-  if request.method != 'POST':
-    raise Http404
-
-  form = forms.MugshotForm(request.POST, request.FILES)
-  if form.is_valid():
-    pic = models.UserPicture.objects.create(user=request.user)
-    image = request.FILES['new_mugshot']
-    pic.image.save(image.name, image)
-    pic.save()
-
-    profile = request.user.get_profile()
-    profile.mugshot = pic
-    profile.save()
-  return redirect_to(request, url='/account/')
-
 @login_required
 def claim_token(request):
   if request.method == 'POST':

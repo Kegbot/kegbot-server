@@ -30,6 +30,9 @@ urlpatterns = patterns('',
     ### RESTful api
     (r'^api/', include('pykeg.web.api.urls')),
 
+    ### account
+    (r'^account/', include('pykeg.web.account.urls')),
+
     ### kegadmin
     (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 

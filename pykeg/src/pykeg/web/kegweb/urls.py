@@ -12,10 +12,7 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
       (r'^$', 'index'),
 
       ### accountpage
-      (r'^account/$', 'account_view'),
-      (r'^account/update_profile/$', 'update_profile'),
-      (r'^account/update_mugshots/$', 'update_mugshots'),
-      (r'^account/claim_token/$', 'claim_token'),
+      (r'^claim_token/$', 'claim_token'),
 
       ### all-time stats
       (r'^stats/$', 'system_stats'),

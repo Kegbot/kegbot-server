@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}kegbot account{% endblock %}
+
+{% block content %}
+<div class="kb-contentbox">
+
+  <div id="kb-admin-nav">
+
+    <div class="kb-admin-nav-tab" url="{% url kb-account-main %}">
+      <a href="{% url kb-account-main %}">account main</a>
+    </div>
+
+    <div class="kb-admin-nav-tab" url="{% url account-mugshot %}">
+      <a href="{% url account-mugshot %}">mugshot</a>
+    </div>
+
+    <div class="kb-admin-nav-tab" url="{% url fb-account-settings %}">
+      <a href="{% url fb-account-settings %}">facebook options</a>
+    </div>
+
+    <div class="kb-admin-nav-tab" url="">
+      <a href="">twitter options</a>
+    </div>
+
+    <script>
+    $("div.kb-admin-nav-tab").click(
+    function()
+    {
+      window.location = $(this).attr("url");
+      return false;
+    });
+
+    $("div.kb-admin-nav-tab").hover(
+    function()
+    {
+      $(this).addClass("kb-admin-nav-tab-hover");
+    },
+    function()
+    {
+      $(this).removeClass("kb-admin-nav-tab-hover");
+    });
+
+    </script>
+
+  </div>
+
+<div style="float: left;">
+{% block kb-account-main %}{%endblock%}
+</div>
+
+<div class="clear"></div>
+
+</div>
+
+{% endblock %}

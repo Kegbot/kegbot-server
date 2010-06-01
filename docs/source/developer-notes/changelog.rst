@@ -12,6 +12,10 @@ Core / General
 ^^^^^^^^^^^^^^
 * Added missing dependencies to `setup.py`.
 
+Kegweb
+^^^^^^
+* Add password reset forms.
+
 Version 0.7.0 (2010-05-23)
 --------------------------
 

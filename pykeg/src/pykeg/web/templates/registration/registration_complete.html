@@ -1,15 +1,20 @@
 {% extends "base.html" %}
 {% load kegweblib %}
 
-{% block title %}main page{% endblock %}
+{% block title %}registered!{% endblock %}
 
 {% block content %}
-<div class="contenthead">
-   done
+<div class="kb-contentbox-head">
+   done!
 </div>
-<div class="content">
-start drinking now.
-</p>
+<div class="kb-contentbox">
+  <p>
+    begin drinking!
+  </p>
+  <p>
+    ... or perhaps <a href="{% url kb-account-main %}">edit your profile</a>, or
+    <a href="{% url account-mugshot %}">upload your mugshot</a>?
+  </p>
 </div>
 
 {% endblock %}

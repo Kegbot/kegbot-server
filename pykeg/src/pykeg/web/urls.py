@@ -4,7 +4,10 @@ from pykeg.core import features
 
 from django.conf import settings
 from django.conf.urls.defaults import *
-
+from django.contrib.auth.views import password_reset
+from django.contrib.auth.views import password_reset_done
+from django.contrib.auth.views import password_reset_confirm
+from django.contrib.auth.views import password_reset_complete
 from django.contrib import admin
 admin.autodiscover()
 
@@ -32,6 +35,14 @@ urlpatterns = patterns('',
 
     ### account
     (r'^account/', include('pykeg.web.account.urls')),
+    (r'^accounts/password/reset/$', password_reset, {'template_name':
+     'registration/password_reset.html'}),
+    (r'^accounts/password/reset/done/$', password_reset_done, {'template_name':
+     'registration/password_reset_done.html'}),
+    (r'^accounts/password/reset/confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', password_reset_confirm, {'template_name':
+     'registration/password_reset_confirm.html'}),
+    (r'^accounts/password/reset/complete/$', password_reset_complete, {'template_name':
+     'registration/password_reset_complete.html'}),
 
     ### kegadmin
     (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),

@@ -33,6 +33,7 @@ setup(
       'django-imagekit >= 0.3.3',
       'django-registration',
       'django-socialregistration',
+      'django_extensions',
       'MySQL-python',
       'pil',
       'pylcdui >= 0.5.4',

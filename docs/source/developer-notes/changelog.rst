@@ -14,6 +14,7 @@ Core / General
 
 Kegweb
 ^^^^^^
+* Reorganized account settings views.
 * Add password reset forms.
 
 Version 0.7.0 (2010-05-23)

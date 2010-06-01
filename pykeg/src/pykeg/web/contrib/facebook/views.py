@@ -20,9 +20,10 @@ def update_perms(request):
 
 @login_required
 def account_settings(request):
+  context = RequestContext(request)
   profile = fbutil.profile_for_user(request.user)
   if not profile:
-    raise Http404
+    return render_to_response('contrib/facebook/link.html', context)
 
   settings = profile.settings.all()[0]
   form = forms.FacebookSettingsForm(instance=settings)
@@ -35,9 +36,6 @@ def account_settings(request):
       settings = form.save(commit=False)
       settings.profile = profile
       settings.save()
-  else:
-    form = forms.FacebookSettingsForm()
-  context = RequestContext(request)
   context['settings_form'] = form
   return render_to_response('contrib/facebook/settings.html', context)
 

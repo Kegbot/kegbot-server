@@ -68,9 +68,9 @@ class FacebookSettings(models.Model):
 
   # stream.publish stuff
   # http://wiki.developers.facebook.com/index.php/Stream.publish
-  publish_events = models.BooleanField(default=True,
+  publish_events = models.BooleanField(default=False,
       help_text='Post each drink to your wall.')
-  include_link = models.BooleanField(default=True,
+  include_link = models.BooleanField(default=False,
       help_text='Add a link to this kegbot when publishing to wall.')
   publish_status = models.BooleanField(default=False,
       help_text='Update status on start of a new drinking session.')

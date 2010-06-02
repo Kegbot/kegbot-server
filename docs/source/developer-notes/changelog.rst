@@ -11,6 +11,7 @@ Current version (in development)
 Core / General
 ^^^^^^^^^^^^^^
 * Added missing dependencies to `setup.py`.
+* Removed a few locally-mirrored dependencies.
 
 Kegweb
 ^^^^^^

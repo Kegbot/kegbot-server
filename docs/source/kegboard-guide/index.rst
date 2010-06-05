@@ -1,3 +1,5 @@
+.. _kegboard-guide:
+
 Kegboard Guide
 ==============
 

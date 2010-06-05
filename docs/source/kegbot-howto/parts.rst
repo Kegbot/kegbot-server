@@ -1,4 +1,3 @@
-==================
 Kegbot Parts Guide
 ==================
 
@@ -6,7 +5,7 @@ This section is an attempt to consolidate information about the various
 equipment and parts you will need to assemble a Kegbot.
 
 Refrigerator
-============
+------------
 
 +-----------------------+------------------------------------------------------+
 | **Required?**         | Yes                                                  |
@@ -29,7 +28,7 @@ leaves you with many choices:
 
 
 Draft Beer Tap and Accessories
-==============================
+------------------------------
 
 +-----------------------+------------------------------------------------------+
 | **Required?**         | Yes                                                  |
@@ -40,7 +39,7 @@ Draft Beer Tap and Accessories
 +-----------------------+------------------------------------------------------+
 
 Controller Board (Kegboard) and Accessories
-===========================================
+-------------------------------------------
 
 +-----------------------+------------------------------------------------------+
 | **Required?**         | Yes                                                  |
@@ -53,14 +52,14 @@ Controller Board (Kegboard) and Accessories
 
 
 Flow Meter
-==========
+----------
 
 Relay Board
-============
+------------
 
 Solenoid Valve
-==============
+--------------
 
 iButton Reader and iButtons
-===========================
+---------------------------
 

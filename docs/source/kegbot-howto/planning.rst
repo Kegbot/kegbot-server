@@ -1,115 +1,96 @@
-=================================
-Getting started: Plan your Kegbot
-=================================
+Planning your Kegbot
+====================
 
-Your author can guarantee that building your Kegbot will be more fun than doing
-that lawn work or taking up knitting.  Your new gizmo will be the life of your
-next party, an endless source of new ideas, and just plain nerdy-cool.
+Lager, IPA, or Porter?  Sierra or Dogfish Head?  Half Barrel or Pony?  As beer
+drinkers, we all have different tastes -- and building your Kegbot system is no
+different. (Gosh, that was cheesy.)
 
-However, your author has also seen many eager-eyed metered-beer-lovers get
-stalled by mailase, overwhelmed by the steps involved, or put off by
-shortcomings in documentation.  This section is an attempt to get you started,
-with some tips we've learned along the way.
+A Kegbot system can be built a variety of different ways, and with any of
+several optional features enabled or disabled.  There are a number of decisions
+you will need to make over the course of building your Kegbot.
 
-Common Questions
-================
-
-Before we begin, we will answer the most common questions new kegbot builders
-often have.
-
-How much will it cost?
-----------------------
-
-For the most basic system, you can expect the following primary expenses:
-
-* $0-$1000 -- Refridgerator.  Any fridge large enough to accomodate a keg will
-  work; fancy commercial kegerators look nice but cost much more.
-* $40 -- Kegboard (Arduino board.)
-* $0-$300 -- Linux computer.  You won't need anything fancy, so an old PC or
-  laptop installed with your favorite Linux distro will do the trick.
-* $50 -- Flow meter.
-* $0-$100 -- Flow hardware.
-
-
-How long will it take to build?
--------------------------------
-
-It should be possible to find and assemble all the parts in a week.  No
-guarantees yet, thought: here at Kegbot HQ, we're still learning how to make
-things easier for others.
-
-
-What skills do I need to build one?
------------------------------------
-
-The minimum skills necessary to build a Kegbot system are:
-
-* **Linux.** You will need to set up and run the Kegbot software on a Linux
-  machine.  If you can find an old computer and make Ubuntu run on it, you're
-  good to go.
-* **Wiring.** You do *not* need to know how to solder, but you will need to
-  connect a few signal wires together to get your Kegboard working.  If you know
-  how to build Ikea furniture or lego kits, it's the same sort of effort.
-
-
-Kegerator: A Kegbot Prerequisite
-================================
-
-While it is certainly possible to build a Kegbot from scratch, your author
-recommends you begin by first building a plain old kegerator: no kegbot, no
-special hardware, just a refrigerated beer tap.
-
-Why not build a Kegbot from the get-go?  If you don't already have a kegerator,
-you'll want to at least enjoy one keg before you go messing it up.
-
-Seriously though, you won't mess it up, but there's no way around it: adding
-Kegbot hardware to your beer's line will make the path the beer takes more
-complicated.  An inline flowmeter will cause changes in pressure and other
-turbulence that could contribute to problems with your pours.  There are plenty
-of ways a new, unmodified kegerator could have flow problems, too; keeping the
-kegbot hardware out of the picture will make it easier for you to understand and
-tune your new kegerator.
-
-Whether you plan to build a kegerator from an old refridgerator, or buy one off
-the shelf, you can find more information in our guide, :ref:`kegerator-howto`.
-
-
-Decisions
-=========
+Note that most of decisions you make on the topics below can be fluid. For
+example, if you change your mind about access control or the number of taps you
+want, it is easy enough to alter the Kegbot configuration after it has bee
+built.
 
 
 Kegerator: Build vs Buy?
 ------------------------
 
+Do you want to build a Kegerator from scratch (by installing beer hardware on a
+freezer or refrigerator), or buy one off the shelf?
+
+This question actually doesn't have much bearing on your Kegbot system; either choice
+will work equally well.  Your author has done it both ways.
+
+If you are on a limited budget, and especially if you already have the
+refrigerator, going the conversion route could be much cheaper than purchasing a
+totally new unit.
+
+On the other hand, kegerators have become quite commonplace -- easy to find in
+online shops, or at brick-and-mortar appliance stores like Best Buy.  If you
+want to save time (and potentially end up with a nicer looking build), buying a
+pre-built kegerator can be a good choice.
+
+Build Kegerator first
+---------------------
+
+If you're building a Kegerator, do you want to use it without Kegbot first? (If
+you already have a working kegerator, this section isn't very relevant.)
+
+We often advise new users to start building a Kegbot by building (and enjoying!)
+a functioning kegerator first.  Doing so allows you to get to know your beer
+equipment, before you complicate it by adding Kegbot hardware.
+
+The main work of installing Kegbot into a kegerator involves splicing a
+flowmeter into the beer line.  You can always do this step later; enjoy a few
+beers and work out any beer line/pressure/foam issues while preparing the rest
+of the system.
+
 Number of Taps
 --------------
 
-Authentication Methods
+How many beer taps do you want to monitor?  This will affect the number of
+meters, controller boards, fittings, and other accessories you will need to buy.
+
+.. note::
+  Though the Kegboard controller boards have a limited number of flowmeter
+  inputs (2, or 6 if based on Arduino Mega), the Kegbot core can read from
+  multiple controllers at once.
+
+.. todo::
+  Add reference to multiple controller board support in :ref:`user-guide`.
+
+Authentication Support
 ----------------------
 
-Flow Control
-------------
+Do you want to make use of the per-user tracking in Kegbot?
 
+Though it is the most popular Kegbot feature, authentication isn't required:
+Kegbot will happily record drinks anonymously when pours occur with no user
+involvement. Skipping this feature can simplify your build, and save you some
+money (no need to buy id tokens.)
 
-Getting Organized
-=================
+If you *do* want authentication, then you still have choices: what sort of
+authentication device do you want to use?  At the moment, Kegbot supports two
+forms of authentication: RFIDs, and iButtons.
 
-Suggested Reading
------------------
+.. todo::
+  Add links to iButton and RFID setup instructions in :ref:`user-guide`.
 
-Start a project blog
---------------------
+Access Control (Solenoid Valve)
+-------------------------------
 
-Register your kegbot.org account
---------------------------------
+How concerned are you about unauthorized access to your Kegbot?  This feature
+increases the complexity of a pour by preventing unauthenticated users from
+pouring.  It also means additional fittings in your beer line, and electric
+relays in your controller board.
 
-Kegbot.org Forums
------------------
+.. note::
+  As of writing, access control support is temporarily broken (in core and
+  controller).
 
+.. todo::
+  Remove note after access control is fixed.
 
-Decide system architecture
-==========================
-
-
-Time and cost estimates
-=======================

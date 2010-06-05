@@ -5,7 +5,7 @@ use_setuptools()
 
 from setuptools import setup, find_packages
 
-VERSION = "0.7.1pre1"
+VERSION = "0.7.1"
 SHORT_DESCRIPTION = "Kegbot kegerator controller software"
 LONG_DESCRIPTION = """This package contains Kegbot core controller and Django
 frontend package.

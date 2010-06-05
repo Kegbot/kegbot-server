@@ -5,13 +5,14 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
-Current version (in development)
--------------------------------
+Version 0.7.1 (2010-06-04)
+--------------------------
 
 Core / General
 ^^^^^^^^^^^^^^
 * Added missing dependencies to `setup.py`.
 * Removed a few locally-mirrored dependencies.
+* Added protobuf source mirror to `setup.py`.
 
 Kegweb
 ^^^^^^

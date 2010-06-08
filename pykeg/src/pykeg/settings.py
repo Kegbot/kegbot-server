@@ -82,6 +82,7 @@ MIDDLEWARE_CLASSES = (
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'socialregistration.auth.FacebookAuth',
+    'socialregistration.auth.TwitterAuth',
 )
 
 ### django-registration
@@ -91,6 +92,13 @@ ACCOUNT_ACTIVATION_DAYS = 3
 # replace with site-specific values in common_settings.py, if desired.
 FACEBOOK_API_KEY = None
 FACEBOOK_SECRET_KEY = None
+
+TWITTER_CONSUMER_KEY = ''
+TWITTER_CONSUMER_SECRET_KEY =''
+TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
+TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
+TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
+
 
 try:
   import common_settings

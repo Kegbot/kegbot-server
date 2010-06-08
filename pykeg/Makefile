@@ -30,6 +30,7 @@ clean:
 distclean: clean test_clean fixtures_clean
 	rm -f pykeg.sqlite.bin
 	rm -f pykeg.sqlite.bin-journal
+	for f in $(hg status -ni .); do rm -i $f; done
 
 test: test_clean
 	DJANGO_SETTINGS_MODULE=$(TEST_SETTINGS) $(ADMIN_COMMAND) test core

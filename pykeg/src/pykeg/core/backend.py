@@ -20,10 +20,15 @@
 
 import logging
 
+from django.db.utils import DatabaseError
+
 from pykeg.billing import models as billing_models
 from pykeg.core import kb_common
 from pykeg.core import config
 from pykeg.core import models
+
+class BackendError(Exception):
+  """Base backend error exception."""
 
 class Backend:
   """Abstract base Kegbot backend class.
@@ -107,10 +112,13 @@ class KegbotBackend(Backend):
     self._config = config.KegbotConfig(self._GetConfigDict())
 
   def _GetConfigDict(self):
-    ret = {}
-    for row in models.Config.objects.all():
-      ret[row.key] = row.value
-    return ret
+    try:
+      ret = {}
+      for row in models.Config.objects.all():
+        ret[row.key] = row.value
+      return ret
+    except DatabaseError, e:
+      raise BackendError, e
 
   def GetDefaultUser(self):
     DEFAULT_USER_LABELNAME = '__default_user__'
@@ -194,4 +202,3 @@ class KegbotBackend(Backend):
   def RecordBillAcceptorCredit(self, amount, acceptor, user=None):
     return billing_models.Credit.objects.create(amount=amount,
         acceptor=acceptor, user=user)
-

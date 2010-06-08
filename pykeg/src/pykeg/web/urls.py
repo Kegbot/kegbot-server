@@ -47,15 +47,15 @@ urlpatterns = patterns('',
     ### kegadmin
     (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 
+    ### socialregistration
+    (r'^sr/', include('socialregistration.urls')),
+
     ### main kegweb urls
     (r'', include('pykeg.web.kegweb.urls')),
 )
 
 if features.use_facebook():
   urlpatterns += patterns('',
-      ### socialregistration
-      (r'^sr/', include('socialregistration.urls')),
-
       ### facebook kegweb stuff
       (r'^fb/', include('pykeg.web.contrib.facebook.urls')),
   )

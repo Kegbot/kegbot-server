@@ -3,8 +3,6 @@ from django.utils.translation import ugettext as _
 
 from pykeg.core.jsonfield import JSONField
 
-import uuid
-
 ### CountryField
 # Source: http://www.djangosnippets.org/snippets/1281/
 

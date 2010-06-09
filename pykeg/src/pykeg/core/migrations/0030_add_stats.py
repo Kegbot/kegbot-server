@@ -12,7 +12,7 @@ class Migration(SchemaMigration):
         db.create_table('core_kegstats', (
             ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('keg', self.gf('django.db.models.fields.related.ForeignKey')(related_name='stats', unique=True, to=orm['core.Keg'])),
-            ('stats', self.gf('django_extensions.db.fields.json.JSONField')(default='{}')),
+            ('stats', self.gf('pykeg.core.jsonfield.JSONField')(default='{}')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('revision', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
         ))
@@ -22,7 +22,7 @@ class Migration(SchemaMigration):
         db.create_table('core_userstats', (
             ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='stats', unique=True, to=orm['auth.User'])),
-            ('stats', self.gf('django_extensions.db.fields.json.JSONField')(default='{}')),
+            ('stats', self.gf('pykeg.core.jsonfield.JSONField')(default='{}')),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('revision', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
         ))
@@ -190,7 +190,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'keg': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stats'", 'unique': 'True', 'to': "orm['core.Keg']"}),
             'revision': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'stats': ('django_extensions.db.fields.json.JSONField', [], {'default': "'{}'"})
+            'stats': ('pykeg.core.jsonfield.JSONField', [], {'default': "'{}'"})
         },
         'core.kegtap': {
             'Meta': {'object_name': 'KegTap'},
@@ -260,7 +260,7 @@ class Migration(SchemaMigration):
             'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'revision': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'stats': ('django_extensions.db.fields.json.JSONField', [], {'default': "'{}'"}),
+            'stats': ('pykeg.core.jsonfield.JSONField', [], {'default': "'{}'"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stats'", 'unique': 'True', 'to': "orm['auth.User']"})
         }
     }

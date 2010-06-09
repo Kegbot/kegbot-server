@@ -36,8 +36,6 @@ from pykeg.core import util
 
 from pykeg.beerdb import models as bdb
 
-from django_extensions.db.fields.json import JSONField
-
 """Django models definition for the kegbot database."""
 
 def mugshot_file_name(instance, filename):

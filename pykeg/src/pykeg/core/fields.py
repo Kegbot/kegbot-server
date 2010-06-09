@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext as _
 
-from django_extensions.db.fields.json import JSONField
+from pykeg.core.jsonfield import JSONField
 
 import uuid
 
@@ -257,23 +257,6 @@ class CountryField(models.CharField):
 
     def get_internal_type(self):
         return "CharField"
-
-### JSONField
-# Monkey-patch django_extensions JSONEncoder to remove the timezone assertion.
-# TODO(mikey): Considering migrating Kegbot date/time storage to UTC everywhere.
-
-from django.utils import simplejson
-from decimal import Decimal
-
-class KBJSONEncoder(simplejson.JSONEncoder):
-  def default(self, obj):
-    if isinstance(obj, Decimal):
-      return str(obj)
-    elif isinstance(obj, datetime.datetime):
-      #assert settings.TIME_ZONE == 'UTC'
-      return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
-    return simplejson.JSONEncoder.default(self, obj)
-JSONField.JSONEncoder = KBJSONEncoder
 
 try:
     from south.modelsinspector import add_introspection_rules

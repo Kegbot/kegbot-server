@@ -25,6 +25,7 @@ INSTALLED_APPS = (
     'registration',
     'socialregistration',
     'south',
+    'django_nose', # must be after south
 )
 
 AUTH_PROFILE_MODULE = "core.UserProfile"
@@ -99,6 +100,7 @@ TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
 TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
 TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 try:
   import common_settings

@@ -1,8 +1,7 @@
 PYTHON_TOP = $(shell dirname $(shell pwd))
 PYTHON_ENV = PYTHONPATH=$(PYTHON_TOP)
 
-TEST_SETTINGS = pykeg.unittest_settings
-ADMIN_COMMAND = $(PYTHON_TOP)/pykeg/bin/kegbot_admin.py
+ADMIN_COMMAND = kegbot_admin.py
 
 SETUP_LOGFILE = $(PYTHON_TOP)/pykeg/setup.log
 
@@ -27,18 +26,17 @@ clean:
 	rm -rf build dist src/kegbot.egg-info
 	find . -name "*.pyc" | xargs rm -f
 
-distclean: clean test_clean fixtures_clean
+distclean: clean fixtures_clean
 	rm -f pykeg.sqlite.bin
 	rm -f pykeg.sqlite.bin-journal
 	for f in $(hg status -ni .); do rm -i $f; done
 
-test: test_clean
-	DJANGO_SETTINGS_MODULE=$(TEST_SETTINGS) $(ADMIN_COMMAND) test core
-
-test_clean:
-	rm -f unittest_db.sqlite.bin
-	rm -f unittest_db.sqlite.bin-journal
-
+test:
+	@echo "--- Running all tests"
+	@$(ADMIN_COMMAND) test --exe -i ".*_unittest" pykeg
+# Extra args for coverage:
+# --with-coverage --cover-package=pykeg --cover-html \
+# --cover-html-dir=buid/coverage 
 
 ### These targets are obsolete or rarely used
 
@@ -48,7 +46,7 @@ fixtures: distclean test
 fixtures_clean:
 	rm -f core/fixtures/initial_data.json
 
-.PHONY: setup install_db admin clean distclean test test_clean sync_and_migrate
+.PHONY: setup install_db admin clean distclean test sync_and_migrate
 .PHONY: testdata fixtures fixtures_clean
 
 # vim: noet

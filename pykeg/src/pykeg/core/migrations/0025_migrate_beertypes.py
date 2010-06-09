@@ -4,11 +4,10 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
-import uuid
-
 class Migration(DataMigration):
     
     def forwards(self, orm):
+        import uuid
         brewer_map = {}
         # Brewers
         for brewer in orm.Brewer.objects.all():

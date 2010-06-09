@@ -15,5 +15,4 @@ class Command(BaseCommand):
       print 'Error: database already installed, defaults cannot be set'
       return
 
-    print 'Setting database defaults.'
     defaults.set_defaults()

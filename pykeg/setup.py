@@ -5,7 +5,7 @@ use_setuptools()
 
 from setuptools import setup, find_packages
 
-VERSION = "0.7.1"
+VERSION = "0.7.2pre"
 SHORT_DESCRIPTION = "Kegbot kegerator controller software"
 LONG_DESCRIPTION = """This package contains Kegbot core controller and Django
 frontend package.
@@ -41,7 +41,7 @@ setup(
       'src/pykeg/bin/sound_server.py',
     ],
     install_requires = [
-      'django >= 1.0',
+      'django >= 1.2',
       'django-imagekit >= 0.3.3',
       'django-registration',
       'django-socialregistration',
@@ -53,6 +53,7 @@ setup(
       #'pysqlite>=2.0.3',
       'python-gflags >= 1.3',
       'South >= 0.7',
+      'django_nose',
     ],
     dependency_links = [
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',

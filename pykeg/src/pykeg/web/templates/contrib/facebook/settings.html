@@ -34,7 +34,7 @@
     <a href='#' onClick='requestPermissions();'>request
     permission</a>
 
-    <form action="" method="POST">
+    <form action="" method="POST">{% csrf_token %}
     <table class="kb-form">
     {{ settings_form.as_table }}
     <tr>

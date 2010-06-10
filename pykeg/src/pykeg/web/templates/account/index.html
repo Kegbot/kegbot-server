@@ -5,7 +5,7 @@
   hello, {{user.username}}
 </div>
 <div class="kb-contentbox">
-  <form action="" method="POST">
+  <form action="" method="POST">{% csrf_token %}
     <table class="kb-form">
       {{ profile_form.as_table }}
       <tr>

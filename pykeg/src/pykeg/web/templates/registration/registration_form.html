@@ -8,7 +8,7 @@
    register
 </div>
 <div class="kb-contentbox">
-  <form action="/accounts/register/" method="POST">
+  <form action="/accounts/register/" method="POST"> {% csrf_token %}
     <table class="kb-form">
       {{ form.as_table }}
       <tr>

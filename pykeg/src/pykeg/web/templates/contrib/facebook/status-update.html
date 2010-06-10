@@ -9,7 +9,7 @@
   status update
 </div>
 <div class="kb-contentbox">
-  <form action="" method="POST">
+  <form action="" method="POST">{% csrf_token %}
     <table class="kb-form">
       {{ form.as_table }}
       <tr>

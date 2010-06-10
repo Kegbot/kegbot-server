@@ -63,6 +63,9 @@ class BeerImage(BeerDBImageModel):
   original_image = models.ImageField(upload_to=beer_file_name)
   num_views = models.PositiveIntegerField(editable=False, default=0)
 
+  def __str__(self):
+    return '%s' % self.original_image.name
+
 
 class Brewer(BeerDBModel):
   """Describes a producer of beer."""

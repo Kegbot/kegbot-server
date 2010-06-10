@@ -29,13 +29,10 @@ import urllib2
 import gflags
 import mad
 
-from django.db import settings
-
 from pykeg.core import kb_app
 from pykeg.core import units
 from pykeg.core import util
 from pykeg.core.net import kegnet
-from pykeg.core.net import kegnet_pb2
 
 from pykeg.contrib.soundserver import models
 
@@ -60,10 +57,13 @@ class SoundServerApp(kb_app.App):
 
   def _Setup(self):
     kb_app.App._Setup(self)
+
     sound_thread = SoundThread('sound-playback')
-    self._AddAppThread(util.AsyncoreThread('asyncore'))
     self._AddAppThread(sound_thread)
-    self._AddAppThread(KegnetMonitorThread('kegnet-monitor', sound_thread))
+
+    self._client = SoundClient(sound_thread)
+    self._client_thr = kegnet.KegnetClientThread('kegnet', self._client)
+    self._AddAppThread(self._client_thr)
 
 
 class SoundThread(util.KegbotThread):
@@ -101,10 +101,9 @@ class SoundThread(util.KegbotThread):
       dev.write(buf)
 
 
-class KegnetMonitorThread(util.KegbotThread):
-  def __init__(self, name, sound_thread):
-    util.KegbotThread.__init__(self, name)
-    self._client = kegnet.KegnetClient()
+class SoundClient(kegnet.SimpleKegnetClient):
+  def __init__(self, sound_thread, addr=None):
+    kegnet.SimpleKegnetClient.__init__(self, addr)
     self._sound_thread = sound_thread
     self._event_map = {}
     self._sound_file_map = {}
@@ -160,24 +159,7 @@ class KegnetMonitorThread(util.KegbotThread):
     outfd.write(filedata)
     outfd.close()
 
-  def ThreadMain(self):
-    self._logger.info('Starting main loop.')
-    self.LoadEvents()
-    while not self._quit:
-      self._client.Reconnect()
-      try:
-        event = self._client.PopNotification(timeout=0.5)
-      except Queue.Empty:
-        continue
-
-      if isinstance(event, kegnet_pb2.FlowUpdate):
-        self._HandleFlowStatus(event)
-      elif isinstance(event, kegnet_pb2.CreditAddedEvent):
-        self._HandleCreditEvent(event)
-
-    self._logger.info('Exiting main loop.')
-
-  def _HandleCreditEvent(self, event):
+  def onCreditAdded(self, event):
     amount = event.amount
 
     for threshold in CREDIT_TRIGGER_THRESHOLDS:
@@ -189,7 +171,7 @@ class KegnetMonitorThread(util.KegbotThread):
         self.PlaySoundFile(soundevent.soundfile)
         return
 
-  def _HandleFlowStatus(self, event):
+  def onFlowUpdate(self, event):
     flow_id = event.flow_id
 
     if event.state == event.COMPLETED:

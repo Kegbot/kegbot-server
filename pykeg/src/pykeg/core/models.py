@@ -75,6 +75,9 @@ class UserProfile(models.Model):
         return True
     return False
 
+  def IsUnknownUser(self):
+    return self.HasLabel('__default_user__')
+
   def FacebookProfile(self):
     if 'socialregistration' not in settings.INSTALLED_APPS:
       return None

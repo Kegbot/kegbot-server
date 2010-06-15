@@ -37,10 +37,6 @@ class Backend:
   backend.
   """
 
-  def GetDefaultUser(self):
-    """Returns the User which should be used for pours with no known user."""
-    raise NotImplementedError
-
   def GetConfig(self):
     """Returns a KegbotConfig instance based on the current database values."""
     raise NotImplementedError
@@ -70,7 +66,7 @@ class Backend:
     """Returns the currently-active keg for the given tap name, or None."""
     raise NotImplementedError
 
-  def CreateDrink(self, ticks, volume_ml, starttime, endtime, user, keg=None,
+  def RecordDrink(self, ticks, volume_ml, starttime, endtime, user, keg=None,
       status='valid'):
     """Records a new drink with the given parameters."""
     raise NotImplementedError
@@ -120,7 +116,7 @@ class KegbotBackend(Backend):
     except DatabaseError, e:
       raise BackendError, e
 
-  def GetDefaultUser(self):
+  def _GetDefaultUser(self):
     DEFAULT_USER_LABELNAME = '__default_user__'
 
     label_q = models.UserLabel.objects.filter(labelname=DEFAULT_USER_LABELNAME)
@@ -164,8 +160,27 @@ class KegbotBackend(Backend):
     except models.KegTap.DoesNotExist:
       return None
 
-  def CreateDrink(self, ticks, volume_ml, starttime, endtime, user, keg=None,
-      status='valid'):
+  def RecordDrink(self, ticks, volume_ml, starttime, endtime, username=None,
+      tap_name=None, status='valid'):
+
+    # Look up the username, selecting the default user if unknown/invalid.
+    user = None
+    if username:
+      user = self.GetUserFromUsername(event.username)
+    if not user:
+      user = self._GetDefaultUser()
+
+    # Look up the tap name, assigning the current keg on the tap if valid.
+    keg = None
+    if tap_name:
+      try:
+        tap = models.KegTap.objects.get(name=tap_name)
+        if tap.current_keg and tap.current_keg.status == 'online':
+          keg = tap.current_keg
+      except models.KegTap.DoesNotExist:
+        # Tap invalid or no active keg, use None.
+        pass
+
     d = models.Drink(ticks=int(ticks), volume_ml=volume_ml, starttime=starttime,
         endtime=endtime, user=user, keg=keg, status=status)
     d.save()

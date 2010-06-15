@@ -411,7 +411,12 @@ class DrinkManager(Manager):
     self._logger.info('Flow completed for flow_id=%i' % event.flow_id)
 
     ticks = event.ticks
+    username = event.username
     volume_ml = event.volume_ml
+    tap_name = event.tap_name
+    starttime = datetime.datetime.fromtimestamp(event.start_time)
+    endtime = datetime.datetime.fromtimestamp(event.last_activity_time)
+    flow_id = event.flow_id
 
     if volume_ml <= kb_common.MIN_VOLUME_TO_RECORD:
       self._logger.info('Not recording flow: volume (%i mL) <= '
@@ -419,22 +424,13 @@ class DrinkManager(Manager):
       return
 
     backend = self._kb_env.GetBackend()
-    tap = self._kb_env.GetTapManager().GetTap(event.tap_name)
-    keg = backend.GetKegForTap(event.tap_name)
-    if keg:
-      self._logger.info('Binding drink to keg: %s' % keg)
-    else:
-      self._logger.warning('No tap found for meter %s' % event.tap_name)
 
-    user = backend.GetUserFromUsername(event.username)
-    if user is None:
-      user = backend.GetDefaultUser()
-      self._logger.info('User unknown, using default: %s' % (user.username,))
-
-    # log the drink
-    starttime = datetime.datetime.fromtimestamp(event.start_time)
-    endtime = datetime.datetime.fromtimestamp(event.last_activity_time)
-    d = backend.CreateDrink(ticks, volume_ml, starttime, endtime, user, keg)
+    # Log the drink.  If the username is empty or invalid, the backend will
+    # assign it to the default (anonymous) user.  Similarly, if the tap name is
+    # unknown, or the tap does not have an active keg, the drink will be
+    # recorded with None as the keg.
+    d = backend.RecordDrink(ticks, volume_ml, starttime, endtime, username,
+        tap_name)
 
     keg_id = None
     if d.keg:
@@ -448,9 +444,9 @@ class DrinkManager(Manager):
 
     # notify listeners
     created = kegnet_pb2.DrinkCreatedEvent()
-    created.flow_id = event.flow_id
+    created.flow_id = flow_id
     created.drink_id = d.id
-    created.tap_name = event.tap_name
+    created.tap_name = tap_name
     created.start_time = int(time.mktime(d.starttime.timetuple()))
     created.end_time = int(time.mktime(d.endtime.timetuple()))
     created.username = d.user.username

@@ -62,24 +62,12 @@ class Backend:
     """Returns all currently enabled taps."""
     raise NotImplementedError
 
-  def GetKegForTap(self, tap_name):
-    """Returns the currently-active keg for the given tap name, or None."""
-    raise NotImplementedError
-
   def RecordDrink(self, ticks, volume_ml, starttime, endtime, user, keg=None,
       status='valid'):
     """Records a new drink with the given parameters."""
     raise NotImplementedError
 
-  def GetSensorFromName(self, name):
-    """Returns a sensor instance corresponding to name, or None."""
-    raise NotImplementedError
-
-  def CreateSensor(self, raw_name, nice_name):
-    """Creates a new Sensor record with the raw_name and nice_name given."""
-    raise NotImplementedError
-
-  def LogSensorReading(self, sensor, temperature, when):
+  def LogSensorReading(self, sensor_name, temperature, when):
     """Records a new sensor reading."""
     raise NotImplementedError
 
@@ -131,6 +119,26 @@ class KegbotBackend(Backend):
     self._logger.info('Default user for unknown flows: %s' % str(default_user))
     return default_user
 
+  def _GetKegForTap(self, tap_name):
+    try:
+      tap = models.KegTap.objects.get(meter_name=tap_name)
+      if tap.current_keg and tap.current_keg.status == 'online':
+        return tap.current_keg
+    except models.KegTap.DoesNotExist:
+      pass
+    return None
+
+  def _GetSensorFromName(self, name, autocreate=True):
+    try:
+      return models.ThermoSensor.objects.get(raw_name=name)
+    except models.ThermoSensor.DoesNotExist:
+      if autocreate:
+        sensor = models.ThermoSensor(raw_name=name, nice_name=name)
+        sensor.save()
+        return sensor
+      else:
+        return None
+
   def GetConfig(self):
     return self._config
 
@@ -153,50 +161,28 @@ class KegbotBackend(Backend):
   def GetAllTaps(self):
     return models.KegTap.objects.all()
 
-  def GetKegForTap(self, tap_name):
-    try:
-      tap = models.KegTap.objects.get(meter_name=tap_name)
-      return tap.current_keg
-    except models.KegTap.DoesNotExist:
-      return None
-
   def RecordDrink(self, ticks, volume_ml, starttime, endtime, username=None,
       tap_name=None, status='valid'):
 
     # Look up the username, selecting the default user if unknown/invalid.
     user = None
     if username:
-      user = self.GetUserFromUsername(event.username)
+      user = self.GetUserFromUsername(username)
     if not user:
       user = self._GetDefaultUser()
 
     # Look up the tap name, assigning the current keg on the tap if valid.
     keg = None
     if tap_name:
-      try:
-        tap = models.KegTap.objects.get(name=tap_name)
-        if tap.current_keg and tap.current_keg.status == 'online':
-          keg = tap.current_keg
-      except models.KegTap.DoesNotExist:
-        # Tap invalid or no active keg, use None.
-        pass
+      keg = self._GetKegForTap(tap_name)
 
     d = models.Drink(ticks=int(ticks), volume_ml=volume_ml, starttime=starttime,
         endtime=endtime, user=user, keg=keg, status=status)
     d.save()
     return d
 
-  def GetSensorFromName(self, name):
-    try:
-      return models.ThermoSensor.objects.get(raw_name=name)
-    except models.ThermoSensor.DoesNotExist:
-      return None
-
-  def CreateSensor(self, raw_name, nice_name):
-    return models.ThermoSensor.objects.create(raw_name=raw_name,
-        nice_name=nice_name)
-
-  def LogSensorReading(self, sensor, temperature, when):
+  def LogSensorReading(self, sensor_name, temperature, when):
+    sensor = self._GetSensorFromName(sensor_name)
     return models.Thermolog.objects.create(sensor=sensor, temp=temperature,
         time=when)
 

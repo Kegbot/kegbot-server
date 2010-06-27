@@ -54,18 +54,25 @@ class KegbotEnv(object):
     self._kegnet_server = kegnet.KegnetServer(name='kegnet', kb_env=self,
         addr=FLAGS.kb_core_bind_addr)
 
+    self._backend = backend.KegbotBackend()
+
     # Build managers
     self._alarm_manager = alarm.AlarmManager()
-    self._tap_manager = manager.TapManager('tap-manager', self)
-    self._flow_manager = manager.FlowManager('flow-manager', self)
-    self._drink_manager = manager.DrinkManager('drink-manager', self)
-    self._thermo_manager = manager.ThermoManager('thermo-manager', self)
-    self._authentication_manager = manager.AuthenticationManager('authentication-manager', self)
-    self._token_manager = manager.TokenManager('token-manager', self)
-    self._billing_manager = manager.BillingManager('billing', self)
-    self._subscription_manager = manager.SubscriptionManager('pubsub', self)
-
-    self._backend = backend.KegbotBackend()
+    self._tap_manager = manager.TapManager('tap-manager', self._event_hub)
+    self._flow_manager = manager.FlowManager('flow-manager', self._event_hub,
+        self._tap_manager)
+    self._authentication_manager = manager.AuthenticationManager('auth-manager',
+        self._event_hub, self._flow_manager, self._tap_manager, self._backend)
+    self._drink_manager = manager.DrinkManager('drink-manager', self._event_hub,
+        self._backend)
+    self._thermo_manager = manager.ThermoManager('thermo-manager',
+        self._event_hub, self._backend)
+    self._token_manager = manager.TokenManager('token-manager', self._event_hub,
+        self._backend)
+    self._billing_manager = manager.BillingManager('billing', self._event_hub,
+        self._authentication_manager, self._backend)
+    self._subscription_manager = manager.SubscriptionManager('pubsub',
+        self._event_hub, self._kegnet_server)
 
     # Build threads
     self._threads = set()

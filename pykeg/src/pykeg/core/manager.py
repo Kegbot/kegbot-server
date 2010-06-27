@@ -49,9 +49,9 @@ def EventHandler(event_type):
 
 
 class Manager:
-  def __init__(self, name, kb_env):
+  def __init__(self, name, event_hub):
     self._name = name
-    self._kb_env = kb_env
+    self._event_hub = event_hub
     self._logger = logging.getLogger(self._name)
 
   def GetEventHandlers(self):
@@ -70,7 +70,7 @@ class Manager:
 
   def _PublishEvent(self, event):
     """Convenience alias for EventHub.PublishEvent"""
-    self._kb_env.GetEventHub().PublishEvent(event)
+    self._event_hub.PublishEvent(event)
 
 
 class Tap:
@@ -101,8 +101,8 @@ class TapManager(Manager):
   taps.
   """
 
-  def __init__(self, name, kb_env):
-    Manager.__init__(self, name, kb_env)
+  def __init__(self, name, event_hub):
+    Manager.__init__(self, name, event_hub)
     self._taps = {}
 
   def GetStatus(self):
@@ -240,8 +240,9 @@ class FlowManager(Manager):
     - Explicitly, by a call to StartFlow
     - Implicitly, by a call to HandleTapActivity
   """
-  def __init__(self, name, kb_env):
-    Manager.__init__(self, name, kb_env)
+  def __init__(self, name, event_hub, tap_manager):
+    Manager.__init__(self, name, event_hub)
+    self._tap_manager = tap_manager
     self._flow_map = {}
     self._logger = logging.getLogger("flowmanager")
     self._next_flow_id = int(time.time())
@@ -249,6 +250,10 @@ class FlowManager(Manager):
 
   @util.synchronized
   def _GetNextFlowId(self):
+    """Returns the next usable flow identifier.
+
+    Flow IDs are simply sequence numbers, used around the core to disambiguate
+    flows."""
     ret = self._next_flow_id
     self._next_flow_id += 1
     return ret
@@ -280,12 +285,11 @@ class FlowManager(Manager):
   def StartFlow(self, tap_name, user=None):
     try:
       if not self.GetFlow(tap_name):
-        tap_manager = self._kb_env.GetTapManager()
-        tap = tap_manager.GetTap(tap_name)
-        if user is None:
-          users = self._kb_env.GetAuthenticationManager().GetActiveUsers()
-          if users:
-            user = list(users)[0]
+        tap = self._tap_manager.GetTap(tap_name)
+        #if user is None:
+        #  users = self._auth_manager.GetActiveUsers()
+        #  if users:
+        #    user = list(users)[0]
         new_flow = Flow(tap, self._GetNextFlowId(), user)
         self._flow_map[tap_name] = new_flow
         self._logger.info('StartFlow: Flow created: %s' % new_flow)
@@ -317,14 +321,13 @@ class FlowManager(Manager):
 
   def UpdateFlow(self, tap_name, meter_reading):
     try:
-      tap_manager = self._kb_env.GetTapManager()
-      tap = tap_manager.GetTap(tap_name)
+      tap = self._tap_manager.GetTap(tap_name)
     except TapManagerError:
       # tap is unknown or not available
       # TODO(mikey): guard against this happening
       return None, None
 
-    delta = tap_manager.UpdateDeviceReading(tap.GetName(), meter_reading)
+    delta = self._tap_manager.UpdateDeviceReading(tap.GetName(), meter_reading)
     self._logger.debug('Flow update: tap=%s meter_reading=%i (delta=%i)' %
         (tap_name, meter_reading, delta))
 
@@ -352,7 +355,7 @@ class FlowManager(Manager):
 
   def _PublishUpdate(self, flow):
     event = flow.GetUpdateEvent()
-    self._kb_env.GetEventHub().PublishEvent(event)
+    self._PublishEvent(event)
 
   @EventHandler(kegnet_pb2.MeterUpdate)
   def HandleFlowActivityEvent(self, event):
@@ -366,7 +369,6 @@ class FlowManager(Manager):
       - Update refused.  The channel is unknown by the FlowManager.  No events
         are emitted.
     """
-    tap_mgr = self._kb_env.GetTapManager()
     try:
       flow_instance, is_new = self.UpdateFlow(event.tap_name, event.reading)
     except UnknownTapError:
@@ -392,8 +394,9 @@ class FlowManager(Manager):
 
 
 class DrinkManager(Manager):
-  def __init__(self, name, kb_env):
-    Manager.__init__(self, name, kb_env)
+  def __init__(self, name, event_hub, backend):
+    Manager.__init__(self, name, event_hub)
+    self._backend = backend
     self._last_drink = None
 
   def GetStatus(self):
@@ -423,13 +426,11 @@ class DrinkManager(Manager):
         'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
       return
 
-    backend = self._kb_env.GetBackend()
-
     # Log the drink.  If the username is empty or invalid, the backend will
     # assign it to the default (anonymous) user.  Similarly, if the tap name is
     # unknown, or the tap does not have an active keg, the drink will be
     # recorded with None as the keg.
-    d = backend.RecordDrink(ticks, volume_ml, starttime, endtime, username,
+    d = self._backend.RecordDrink(ticks, volume_ml, starttime, endtime, username,
         tap_name)
 
     keg_id = None
@@ -454,20 +455,20 @@ class DrinkManager(Manager):
 
 
 class ThermoManager(Manager):
-  def __init__(self, name, kb_env):
-    Manager.__init__(self, name, kb_env)
-    self._sensor_to_last_record = {}
-    self._sensor_cache = {}
+  def __init__(self, name, event_hub, backend):
+    Manager.__init__(self, name, event_hub)
+    self._backend = backend
+    self._name_to_last_record = {}
     seconds = kb_common.THERMO_RECORD_DELTA_SECONDS
     self._record_interval = datetime.timedelta(seconds=seconds)
 
   def GetStatus(self):
     ret = []
-    if not self._sensor_to_last_record:
+    if not self._name_to_last_record:
       ret.append('No readings.')
       return ret
     ret.append('Last recorded temperature(s):')
-    for sensor, value in self._sensor_to_last_record.iteritems():
+    for sensor, value in self._name_to_last_record.iteritems():
       ret.append('  %s: %.2f' % (sensor, value))
     return ret
 
@@ -478,38 +479,29 @@ class ThermoManager(Manager):
     now = datetime.datetime.fromtimestamp(now)
     sensor_name = event.sensor_name
     sensor_value = event.sensor_value
-    last_record = self._sensor_to_last_record.get(sensor_name)
 
-    backend = self._kb_env.GetBackend()
-
-    if sensor_name not in self._sensor_cache:
-      sensor = backend.GetSensorFromName(sensor_name)
-      if sensor is None:
-        sensor = backend.CreateSensor(sensor_name, sensor_name)
-      self._sensor_cache[sensor_name] = sensor
-    else:
-      sensor = self._sensor_cache[sensor_name]
-
+    last_record = self._name_to_last_record.get(sensor_name)
     if last_record and last_record.time == now:
       return
 
     self._logger.info('Recording temperature sensor=%s value=%s' %
-                      (sensor.nice_name, sensor_value))
-    new_record = backend.LogSensorReading(sensor, sensor_value, now)
+                      (sensor_name, sensor_value))
+    new_record = self._backend.LogSensorReading(sensor_name, sensor_value, now)
     self._sensor_to_last_record[sensor_name] = new_record
 
 class TokenRecord:
   STATUS_ACTIVE = 1
   STATUS_REMOVED = 2
 
-  def __init__(self, token, tap_name):
-    self.token = token
+  def __init__(self, auth_device, token_value, tap_name):
+    self.auth_device = auth_device
+    self.token_value = token_value
     self.tap_name = tap_name
     self.last_seen = datetime.datetime.now()
     self.status = self.STATUS_ACTIVE
 
   def AsTuple(self):
-    return (self.token.auth_device, self.token.token_value, self.tap_name)
+    return (self.auth_device, self.token_value, self.tap_name)
 
   def SetStatus(self, status):
     self.status = status
@@ -522,7 +514,7 @@ class TokenRecord:
     return datetime.datetime.now() - self.last_seen
 
   def MaxIdleTime(self):
-    amt = kb_common.AUTH_TOKEN_MAX_IDLE.get(self.token.auth_device, 0)
+    amt = kb_common.AUTH_TOKEN_MAX_IDLE.get(self.auth_device, 0)
     return datetime.timedelta(seconds=amt)
 
   def IsIdle(self):
@@ -541,14 +533,34 @@ class TokenRecord:
 
 
 class TokenManager(Manager):
-  """Keeps track of tokens arriving and departing from taps."""
-  def __init__(self, name, kb_env):
-    Manager.__init__(self, name, kb_env)
-    self._tokens = {}
+  """Keeps track of tokens arriving and departing from taps.
+
+  Token events have four components:
+    * the name of the tap on which the event is being reported;
+    * the name of the authentication device generating the event;
+    * the value of the token being reported, an opaque key;
+    * the sense of the event, whether the token was added or removed.
+
+  The TokenManager is responsible for generating UserAuthEvents as a result of
+  token events.  It is the primary (but not necessarily only) source of
+  authorization events.
+
+  If the token was added, the TokenManager should attempt to associate it with a
+  user, and generate a UserAuthEvent if valid.  If the token was detached, the
+  TokenManager will wait for a timeout (possibly zero) before considering the
+  token 'removed'.  If the token re-appears during this time, it is as if the
+  token was never removed.  Otherwise, the TokenManager issues a UserAuthEvent
+  de-authorizing the user.
+  """
+  def __init__(self, name, event_hub, backend):
+    Manager.__init__(self, name, event_hub)
+    self._backend = backend
+    self._tokens = {}  # mpas tap name to currently active token
+    self._authorized_users = {}
     self._lock = threading.Lock()
 
   @EventHandler(kegnet_pb2.TokenAuthEvent)
-  def HandleAuthTokenAddedEvent(self, event):
+  def HandleAuthTokenEvent(self, event):
     if event.status == event.ADDED:
       self._TokenAdded(event)
     else:
@@ -563,33 +575,33 @@ class TokenManager(Manager):
 
   def _GetRecordFromEvent(self, event):
     auth_device = event.auth_device_name
-    token_value = event.token_value.lower()
+    token_value = event.token_value
     tap_name = event.tap_name
-    return self._GetRecord(auth_device, token_value, tap_name)
 
-  def _GetRecord(self, auth_device, token_value, tap_name):
-    if tap_name in self._tokens:
-      record = self._tokens[tap_name]
-      new_tuple = (auth_device, token_value, tap_name)
-      if record.AsTuple() == new_tuple:
-        return record
+    new_rec = TokenRecord(auth_device, token_value, tap_name)
+    existing = self._tokens.get(event.tap_name)
 
-    backend = self._kb_env.GetBackend()
-    token = backend.GetAuthToken(auth_device, token_value)
-    if token is None:
-      token = backend.CreateAuthToken(auth_device, token_value)
-      self._logger.info('Token unknown, created: %s' % token)
+    if new_rec == existing:
+      return existing
 
-    return TokenRecord(token, tap_name)
+    return new_rec
 
-  def _PublishAuthEvent(self, tap_name, token, added):
-    if not token.user:
-      self._logger.info('Token not assigned: %s' % token)
+  def _PublishAuthEvent(self, record, added):
+    user = None
+    if added:
+      token = self._backend.GetAuthToken(record.auth_device, record.token_value)
+      if token:
+        user = token.user
+
+    if not user:
+      self._logger.info('Token not assigned: %s' % record)
       return
 
+    user_name = user.username
+
     message = kegnet_pb2.UserAuthEvent()
-    message.tap_name = tap_name
-    message.user_name = token.user.username
+    message.tap_name = record.tap_name
+    message.user_name = user_name
     if added:
       message.state = message.ADDED
     else:
@@ -599,19 +611,12 @@ class TokenManager(Manager):
   def _TokenRemoved(self, event):
     record = self._GetRecordFromEvent(event)
 
-    if not record.token.user:
+    if self._tokens.get(record.tap_name) != record:
       return
-
-    if record.tap_name not in self._tokens:
-      return
-
-    if self._tokens[record.tap_name] != record:
-      return
-
-    record.SetStatus(record.STATUS_REMOVED)
 
     # Depending on the authentication device token timeout, either remove the
     # token immediately, or just wait for it to be idled out.
+    record.SetStatus(record.STATUS_REMOVED)
     timeout = record.MaxIdleTime()
     if not timeout:
       self._logger.info('Immediately removing token %s' % record.token)
@@ -619,31 +624,39 @@ class TokenManager(Manager):
 
   @util.synchronized
   def _RemoveRecord(self, record):
+    record.SetStatus(record.STATUS_REMOVED)
     del self._tokens[record.tap_name]
-    self._logger.info('Removing record %s' % record.token)
-    self._PublishAuthEvent(record.tap_name, record.token, False)
+    self._logger.info('Removing record %s' % record)
+    self._PublishAuthEvent(record, False)
+
+  def _ActiveRecordForTap(self, tap_name):
+    return self._tokens.get(tap_name)
 
   def _TokenAdded(self, event):
     """Processes a TokenAuthEvent when a token is added."""
+    existing = self._ActiveRecordForTap(event.tap_name)
     record = self._GetRecordFromEvent(event)
-    existing = self._tokens.get(record.tap_name)
+
     if existing == record:
       # Token is already known; nothing to do except update it.
       record.UpdateLastSeen()
       return
 
-    self._logger.info('Token attached: %s' % (record.token,))
+    self._logger.info('Token attached: %s' % record)
     if existing:
-      self._logger.info('Detaching previous token: %s' % existing.token)
+      self._logger.info('Detaching previous token: %s' % existing)
       self._RemoveRecord(existing)
 
     self._tokens[record.tap_name] = record
-    self._PublishAuthEvent(record.tap_name, record.token, True)
+    self._PublishAuthEvent(record, True)
 
 
 class AuthenticationManager(Manager):
-  def __init__(self, name, kb_env):
-    Manager.__init__(self, name, kb_env)
+  def __init__(self, name, event_hub, flow_manager, tap_manager, backend):
+    Manager.__init__(self, name, event_hub)
+    self._flow_manager = flow_manager
+    self._tap_manager = tap_manager
+    self._backend = backend
     self._users_by_tap = {}
 
   def _AddUser(self, user, tap):
@@ -663,12 +676,11 @@ class AuthenticationManager(Manager):
     # Ask the flow manager to start a flow for this user & tap.
     # TODO(mikey): FlowManager should do this as the result of an authentication
     # event.
-    flow_mgr = self._kb_env.GetFlowManager()
-    flow = flow_mgr.GetFlow(tap.GetName())
+    flow = self._flow_manager.GetFlow(tap.GetName())
     if flow is None:
-      flow_mgr.StartFlow(tap.GetName(), user)
+      self._flow_manager.StartFlow(tap.GetName(), user)
     else:
-      flow_mgr.SetUser(flow, user)
+      self._flow_manager.SetUser(flow, user)
 
   def _RemoveUser(self, tap):
     tap_name = tap.GetName()
@@ -682,13 +694,11 @@ class AuthenticationManager(Manager):
     # Ask the flow manager to stop a flow on this tap.
     # TODO(mikey): FlowManager should do this as the result of an authentication
     # event.
-    flow_mgr = self._kb_env.GetFlowManager()
-    flow_mgr.EndFlow(tap.GetName())
+    self._flow_manager.EndFlow(tap.GetName())
 
   @EventHandler(kegnet_pb2.UserAuthEvent)
   def HandleUserAuthEvent(self, event):
-    backend = self._kb_env.GetBackend()
-    user = backend.GetUserFromUsername(event.user_name)
+    user = self._backend.GetUserFromUsername(event.user_name)
     if user is None:
       self._logger.warning('Ignoring auth event for unknown username %s' %
           event.user_name)
@@ -710,20 +720,21 @@ class AuthenticationManager(Manager):
     return set(self._users_by_tap.values())
 
   def _GetTapsForTapName(self, tap_name):
-    tap_manager = self._kb_env.GetTapManager()
     if tap_name == kb_common.ALIAS_ALL_TAPS:
-      return tap_manager.GetAllTaps()
+      return self._tap_manager.GetAllTaps()
     else:
-      if tap_manager.TapExists(tap_name):
-        return [tap_manager.GetTap(tap_name)]
+      if self._tap_manager.TapExists(tap_name):
+        return [self._tap_manager.GetTap(tap_name)]
       else:
         return []
 
 
 class BillingManager(Manager):
   MAX_DELTA = datetime.timedelta(seconds=1)
-  def __init__(self, name, kb_env):
-    Manager.__init__(self, name, kb_env)
+  def __init__(self, name, event_hub, auth_manager, backend):
+    Manager.__init__(self, name, event_hub)
+    self._auth_manager = auth_manager
+    self._backend = backend
     self._acceptor = {}
     self._counter = {}
     self._active_credits = {}
@@ -775,14 +786,12 @@ class BillingManager(Manager):
     acceptor = self._acceptor[acceptor_name]
 
     user = None
-    am = self._kb_env.GetAuthenticationManager()
-    users = list(am.GetActiveUsers())
+    users = list(self._auth_manager.GetActiveUsers())
     if users:
       # XXX hack
       credit.user = users[0]
 
-    backend = self._kb_env.GetBackend()
-    credit = backend.RecordBillAcceptorCredit(credit_amount, acceptor, user)
+    credit = self._backend.RecordBillAcceptorCredit(credit_amount, acceptor, user)
     self._logger.info('Logged credit for %s: %.2f' % (credit.user,
         credit_amount))
 
@@ -794,9 +803,11 @@ class BillingManager(Manager):
 
 
 class SubscriptionManager(Manager):
+  def __init__(self, name, event_hub, server):
+    Manager.__init__(self, name, event_hub)
+    self._server = server
   @EventHandler(kegnet_pb2.CreditAddedEvent)
   @EventHandler(kegnet_pb2.DrinkCreatedEvent)
   @EventHandler(kegnet_pb2.FlowUpdate)
   def RepostEvent(self, event):
-    server = self._kb_env.GetKegnetServer()
-    server.SendEventToClients(event)
+    self._server.SendEventToClients(event)

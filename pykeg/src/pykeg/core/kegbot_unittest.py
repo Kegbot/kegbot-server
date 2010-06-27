@@ -106,7 +106,7 @@ class KegbotTestCase(TestCase):
 
     self.assertEquals(last_drink.keg, self.test_keg)
 
-    guest_user = self.env._backend.GetDefaultUser()
+    guest_user = self.env._backend._GetDefaultUser()
     self.assertEquals(last_drink.user, guest_user)
 
   def testAuthenticatedFlow(self):

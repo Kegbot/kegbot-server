@@ -87,7 +87,7 @@ class jsonhandler:
     return res
 
 def _get_last_drinks():
-  return view_util.all_valid_drinks().order_by('-endtime')
+  return view_util.all_valid_drinks().order_by('-endtime')[:5]
 
 @jsonhandler
 def last_drinks(request):

@@ -95,6 +95,7 @@ If successful, you should see something like the above.
 
 You can also see options for any application in ``bin/`` by using the ``--help``
 or ``--helpshort`` flags::
+
 	% ./bin/kegbot_core.py --help
 	Kegbot Core Application.
 	

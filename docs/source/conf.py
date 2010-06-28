@@ -29,6 +29,7 @@ import sys, os
 extensions = [
     'sphinx.ext.graphviz',
     'sphinx.ext.todo',
+    'sphinx.ext.autodoc',
 ]
 todo_include_todos = True
 

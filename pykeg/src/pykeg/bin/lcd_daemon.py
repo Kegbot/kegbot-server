@@ -192,11 +192,8 @@ class KegUi:
   def UpdateFromTapStatus(self, tap_status_list):
     self._UpdateRotation(tap_status_list)
 
-  def UpdateLastDrink(self, drink_obj):
-    vol = units.Quantity(drink_obj.volume_ml, units.UNITS.Milliliter)
-    date = datetime.datetime.fromtimestamp(drink_obj.starttime)
-
-    username = str(drink_obj.user_id)
+  def UpdateLastDrink(self, username, volume_ml, date):
+    vol = units.Quantity(volume_ml, units.UNITS.Milliliter)
     size = '%.2f ounces' % vol.ConvertTo.Ounce
     when = date.strftime('%b %d %I:%M%p').lower()
 
@@ -213,6 +210,8 @@ class KegUi:
     self._lcdui.Activity()
 
     if event.state == event.COMPLETED:
+      self.UpdateLastDrink(str(event.username), event.volume_ml,
+          datetime.datetime.fromtimestamp(event.last_activity_time))
       self._SetState(self.STATE_MAIN)
     else:
       self._SetState(self.STATE_POUR)
@@ -274,7 +273,9 @@ class KrestUpdaterThread(util.KegbotThread):
         tap_status = self._client.TapStatus()
         self._lcdui.UpdateFromTapStatus(tap_status)
         last_drink = tuple(self._client.LastDrinks())[0]
-        self._lcdui.UpdateLastDrink(last_drink)
+        self._lcdui.UpdateLastDrink(str(last_drink.user.username),
+            last_drink.volume_ml,
+            datetime.datetime.fromtimestamp(last_drink.endtime))
       except IOError, e:
         self._logger.warning('Could not connect to kegweb: %s' % e)
       time.sleep(FLAGS.krest_update_interval)

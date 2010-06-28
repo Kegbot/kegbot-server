@@ -69,8 +69,13 @@ gflags.DEFINE_integer('backlight_timeout', 300,
 gflags.DEFINE_string('lcd_device_type', DEVICE_CFA_635,
     'Type of LCD device. Choices are: %s' % DEVICE_CHOICES)
 
-gflags.DEFINE_integer('rotation_time', 10.0,
-    'Seconds to pause between rotated tap/drink info screens.')
+gflags.DEFINE_integer('rotation_time', 10,
+    'Seconds to pause between rotated tap/drink info screens.',
+    lower_bound=1)
+
+gflags.DEFINE_integer('krest_update_interval', 60,
+    'Time between periodic refreshes of tap and drink information '
+    'by the Kegweb REST client.', lower_bound=10)
 
 
 class KegUi:
@@ -265,11 +270,14 @@ class KrestUpdaterThread(util.KegbotThread):
     self._logger.info('Starting main loop.')
     while not self._quit:
       self._logger.info('Fetching krest status')
-      tap_status = self._client.TapStatus()
-      self._lcdui.UpdateFromTapStatus(tap_status)
-      last_drink = tuple(self._client.LastDrinks())[0]
-      self._lcdui.UpdateLastDrink(last_drink)
-      time.sleep(60)
+      try:
+        tap_status = self._client.TapStatus()
+        self._lcdui.UpdateFromTapStatus(tap_status)
+        last_drink = tuple(self._client.LastDrinks())[0]
+        self._lcdui.UpdateLastDrink(last_drink)
+      except IOError, e:
+        self._logger.warning('Could not connect to kegweb: %s' % e)
+      time.sleep(FLAGS.krest_update_interval)
     self._logger.info('Exited main loop.')
 
 

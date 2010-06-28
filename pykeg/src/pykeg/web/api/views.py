@@ -34,6 +34,7 @@ from django.template import Context
 
 from pykeg.core import models
 from pykeg.core import protolib
+from pykeg.core import protoutil
 from pykeg.web.kegweb import view_util
 
 INDENT = 0
@@ -79,14 +80,14 @@ class jsonhandler:
     if request.GET.get('full') == '1':
       with_full = True
     if hasattr(res, '__iter__'):
-      res = [protolib.ProtoMessageToDict(protolib.ToProto(x, with_full)) for x in res]
+      res = [protoutil.ProtoMessageToDict(protolib.ToProto(x, with_full)) for x in res]
       res = {'result': res}
     else:
-      res = protolib.ProtoMessageToDict(protolib.ToProto(res, with_full))
+      res = protoutil.ProtoMessageToDict(protolib.ToProto(res, with_full))
     return res
 
 def _get_last_drinks():
-  return view_util.all_valid_drinks().order_by('-endtime')
+  return view_util.all_valid_drinks().order_by('-endtime')[:5]
 
 @jsonhandler
 def last_drinks(request):

@@ -64,6 +64,9 @@ def KegToProto(keg, full=True):
   ret.size_id = keg.size.id
   if full:
     ret.size.CopyFrom(ToProto(keg.size))
+    rem = float(keg.remaining_volume())
+    ret.volume_ml_remain = rem
+    ret.pct_full = rem / float(keg.full_volume())
   ret.startdate = time_to_int(keg.startdate)
   ret.enddate = time_to_int(keg.enddate)
   if keg.description:

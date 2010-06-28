@@ -5,6 +5,20 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Current Version (in development)
+--------------------------------
+
+Core / General
+^^^^^^^^^^^^^^
+* Django v1.2 is now **required**.
+* Added new dependency on ``django_nose`` for running unittests; ``make test``
+  works once again to run unittests
+
+Kegweb
+^^^^^^
+* Fix for bug #48: Facebook connect login broken.
+
+
 Version 0.7.1 (2010-06-04)
 --------------------------
 

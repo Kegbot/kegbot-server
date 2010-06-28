@@ -13,10 +13,16 @@ Core / General
 * Django v1.2 is now **required**.
 * Added new dependency on ``django_nose`` for running unittests; ``make test``
   works once again to run unittests
+* Improved LCD UI; now shows tap status, last pour information.
+* Fixed SoundServer, which had stopped working some time ago.
+* Miscellanous packaging fixes, which should make installation with ``pip`` work
+  a bit better.
 
 Kegweb
 ^^^^^^
 * Fix for bug #48: Facebook connect login broken.
+* Fixed/update CSRF detection on forms for Django 1.2.
+* Bugfixes for the Kegweb REST ('krest') API.
 
 
 Version 0.7.1 (2010-06-04)

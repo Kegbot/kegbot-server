@@ -140,6 +140,13 @@ message Keg {
   // TODO(mikey): deprecate this field.
   optional float origcost = 9;
 
+  // The percentage of the original volume that is remaining.
+  optional float pct_full = 10;
+
+  // The volume, in milliliters, remaning.  This is simply a convenience value
+  // that matches pct_full * size.volume_ml.
+  optional float volume_ml_remain = 11;
+
 }
 
 message KegSize {

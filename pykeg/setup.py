@@ -48,7 +48,7 @@ setup(
       'django_extensions',
       'MySQL-python',
       'pil',
-      'protobuf >= 2.3.0',
+      'protobuf >= 2.3.0-1',
       'pylcdui >= 0.5.4',
       #'pysqlite>=2.0.3',
       'python-gflags >= 1.3',

@@ -22,15 +22,19 @@
 
 from pykeg.core import importhacks
 
+import datetime
 import gflags
 import Queue
 import sys
+import time
 
 from pykeg.core import kb_app
 from pykeg.core import units
 from pykeg.core import util
 from pykeg.core.net import kegnet
 from pykeg.core.net import kegnet_pb2
+
+from pykeg.web.api.krest import KrestClient
 
 try:
   import lcdui
@@ -65,6 +69,9 @@ gflags.DEFINE_integer('backlight_timeout', 300,
 gflags.DEFINE_string('lcd_device_type', DEVICE_CFA_635,
     'Type of LCD device. Choices are: %s' % DEVICE_CHOICES)
 
+gflags.DEFINE_integer('rotation_time', 10.0,
+    'Seconds to pause between rotated tap/drink info screens.')
+
 
 class KegUi:
   STATE_MAIN = 'main'
@@ -87,34 +94,27 @@ class KegUi:
     self._lcdui = ui.LcdUi(self._lcdobj, FLAGS.backlight_timeout)
     self._last_flow_status = None
 
-    self._main_frame = self._GetMainFrame()
-    self._pour_frame = self._GetPourFrame()
+    self._multiframe = self._lcdui.FrameFactory(frame.MultiFrame)
+    self._splash_frame = self._BuildSplashFrame()
+    self._pour_frame = self._BuildPourFrame()
+    self._last_drink_frame = self._BuildLastDrinkFrame()
+
+    self._multiframe.AddFrame(self._splash_frame, 5)
 
     self._flow_status_by_tap = {}
-
-    self._frames = {
-      'main': self._main_frame,
-      'pour': self._pour_frame,
-    }
 
     self._state = None
     self._SetState(self.STATE_MAIN)
 
-  def _GetMainFrame(self):
-    f = self._lcdui.FrameFactory(frame.Frame)
-
-    f.BuildWidget(widget.LineWidget,
-        contents=' ================== ', row=0, col=0)
-    f.BuildWidget(widget.LineWidget,
-        contents='       kegbot!      ', row=1, col=0)
-    f.BuildWidget(widget.LineWidget,
-        contents='      beer you.     ', row=2, col=0)
-    f.BuildWidget(widget.LineWidget,
-        contents=' ================== ', row=3, col=0)
-
+  def _BuildSplashFrame(self):
+    f = self._lcdui.FrameFactory(frame.TextFrame)
+    f.AddLine(' ================== ')
+    f.AddLine('       kegbot!      ')
+    f.AddLine('      beer you.     ')
+    f.AddLine(' ================== ')
     return f
 
-  def _GetPourFrame(self):
+  def _BuildPourFrame(self):
     f = self._lcdui.FrameFactory(frame.Frame)
     f.BuildWidget(widget.LineWidget, name='line0',
         contents='_now pouring________', row=0, col=0)
@@ -124,6 +124,53 @@ class KegUi:
         prefix='|oz: ', row=2, col=0)
     f.BuildWidget(widget.LineWidget, name='line3',
         contents='|                   ', row=3, col=0)
+    return f
+
+  def _BuildLastDrinkFrame(self):
+    f = self._lcdui.FrameFactory(frame.Frame)
+    f.BuildWidget(widget.LineWidget, name='line0',
+        contents='_last pour__________', row=0, col=0)
+    f.BuildWidget(widget.LineWidget, name='user',
+        prefix='user: ', row=1, col=0)
+    f.BuildWidget(widget.LineWidget, name='when',
+        prefix='when: ', row=2, col=0)
+    f.BuildWidget(widget.LineWidget, name='size',
+        prefix='size: ', row=3, col=0)
+    return f
+
+  def _UpdateRotation(self, tap_status_list):
+    """Builds a ui.MultiFrame instance from tap status."""
+    self._multiframe.frames().clear()
+    self._multiframe.AddFrame(self._splash_frame, 5.0)
+    self._multiframe.AddFrame(self._last_drink_frame, FLAGS.rotation_time)
+
+    for tap in tap_status_list:
+      tap_name = tap.name
+      beer_name = 'Unknown Beer'
+      brewer_name = 'Unknown Brewer'
+      pct_full = 0
+      curr_temp = None
+      if tap.current_keg:
+        pct_full = tap.current_keg.pct_full
+        if tap.current_keg.type:
+          beer_name = tap.current_keg.type.name
+          brewer_name = tap.current_keg.type.brewer.name
+      if tap.last_temperature:
+        curr_temp = tap.last_temperature.temperature_c
+
+      f = self._BuildTapFrame(tap_name, beer_name, brewer_name, pct_full, curr_temp)
+      self._multiframe.AddFrame(f, 10.0)
+
+  def _BuildTapFrame(self, tap_name, beer_name, brewer_name, pct_full,
+      curr_temp=None):
+    f = self._lcdui.FrameFactory(frame.TextFrame)
+    f.SetTitle(str(tap_name))  # note: squash unicode
+    f.AddLine(beer_name)
+    f.AddLine(brewer_name)
+    status = '%.1f%% full' % (100 * pct_full)
+    if curr_temp is not None:
+      status = '%s  %.1fc' % (status, curr_temp)
+    f.AddLine(status)
     return f
 
   def _UpdateFromFlow(self, flow_update):
@@ -136,6 +183,22 @@ class KegUi:
 
     ounces_widget = f.GetWidget('ounces')
     ounces_widget.set_contents('%.2f' % ounces)
+
+  def UpdateFromTapStatus(self, tap_status_list):
+    self._UpdateRotation(tap_status_list)
+
+  def UpdateLastDrink(self, drink_obj):
+    vol = units.Quantity(drink_obj.volume_ml, units.UNITS.Milliliter)
+    date = datetime.datetime.fromtimestamp(drink_obj.starttime)
+
+    username = str(drink_obj.user_id)
+    size = '%.2f ounces' % vol.ConvertTo.Ounce
+    when = date.strftime('%b %d %I:%M%p').lower()
+
+    f = self._last_drink_frame
+    f.GetWidget('user').set_contents(username)
+    f.GetWidget('size').set_contents(size)
+    f.GetWidget('when').set_contents(when)
 
   def HandleFlowStatus(self, event):
     tap_name = event.tap_name
@@ -157,7 +220,7 @@ class KegUi:
     self._state = state
 
     if self._state == self.STATE_MAIN:
-      self._lcdui.SetFrame(self._main_frame)
+      self._lcdui.SetFrame(self._multiframe)
     elif self._state == self.STATE_POUR:
       self._lcdui.SetFrame(self._pour_frame)
 
@@ -170,10 +233,15 @@ class LcdDaemonApp(kb_app.App):
     kb_app.App.__init__(self, name)
 
   def _Setup(self):
+    if not FLAGS.krest_url:
+      self._logger.error('Error: --krest_url must point to <kegweb>/api')
+      self._logger.error('Add KEGWEB_BASE_URL to your common_settings.py.')
+      sys.exit(1)
     kb_app.App._Setup(self)
     kb_lcdui = KegUi()
     self._AddAppThread(LcdUiThread('kb-lcdui', kb_lcdui))
     self._AddAppThread(KegnetMonitorThread('kegnet-monitor', kb_lcdui))
+    self._AddAppThread(KrestUpdaterThread('krest-updater', kb_lcdui))
 
 
 class LcdUiThread(util.KegbotThread):
@@ -184,6 +252,24 @@ class LcdUiThread(util.KegbotThread):
   def ThreadMain(self):
     self._logger.info('Starting main loop.')
     self._lcdui.MainLoop()
+    self._logger.info('Exited main loop.')
+
+
+class KrestUpdaterThread(util.KegbotThread):
+  def __init__(self, name, ui):
+    util.KegbotThread.__init__(self, name)
+    self._lcdui = ui
+    self._client = KrestClient()
+
+  def ThreadMain(self):
+    self._logger.info('Starting main loop.')
+    while not self._quit:
+      self._logger.info('Fetching krest status')
+      tap_status = self._client.TapStatus()
+      self._lcdui.UpdateFromTapStatus(tap_status)
+      last_drink = tuple(self._client.LastDrinks())[0]
+      self._lcdui.UpdateLastDrink(last_drink)
+      time.sleep(60)
     self._logger.info('Exited main loop.')
 
 

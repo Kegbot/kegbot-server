@@ -45,8 +45,9 @@ def DictToProtoMessage(values, out_message):
 
     value = values.get(name)
     if field.type == field.TYPE_MESSAGE:
-      inner_message = gettattr(out_message, name)
-      value = DictToProtoMessage(inner_message, value)
-    setattr(out_message, name, value)
+      inner_message = getattr(out_message, name)
+      value = DictToProtoMessage(value, inner_message)
+    else:
+      setattr(out_message, name, value)
   return out_message
 

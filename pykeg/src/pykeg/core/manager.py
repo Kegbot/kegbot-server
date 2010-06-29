@@ -573,7 +573,7 @@ class TokenManager(Manager):
   def HandleHeartbeatEvent(self, event):
     for tap_name, record in self._tokens.items():
       if record.IsIdle():
-        self._logger.info('Token has been removed: %s' % record.token)
+        self._logger.info('Token has been removed: %s' % record)
         self._RemoveRecord(record)
 
   def _GetRecordFromEvent(self, event):

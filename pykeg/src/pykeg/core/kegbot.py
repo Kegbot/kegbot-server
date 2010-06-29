@@ -88,7 +88,8 @@ class KegbotEnv(object):
 
     if self._backend.GetConfig().IsFeatureEnabled('twitter'):
       from pykeg.contrib.twitter import service as twitter_manager
-      self._twitter_manager = twitter_manager.TwitterManager('twitter', self)
+      self._twitter_manager = twitter_manager.TwitterManager('twitter',
+          self._event_hub, self._backend)
       self._service_thread.AddEventHandler(self._twitter_manager)
 
     self.AddThread(self._service_thread)

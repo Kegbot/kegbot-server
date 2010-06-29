@@ -47,6 +47,10 @@ TWEET_TEMPLATE = (
 
 class TwitterManager(manager.Manager):
 
+  def __init__(self, name, event_hub, backend):
+    Manager.__init__(self, name, event_hub)
+    self._backend = backend
+
   @manager.EventHandler(kegnet_pb2.DrinkCreatedEvent)
   def _HandleDrinkCreatedEvent(self, event):
     self._logger.info('Handling new drink')
@@ -59,7 +63,7 @@ class TwitterManager(manager.Manager):
       return
 
     if profile.IsUnknownUser():
-      config = self._kb_env.GetBackend().GetConfig()
+      config = self._backend.GetConfig()
       if not config.getboolean('contrib.twitter.tweet_unknown'):
         self._logger.info('Tweeting for unknown users is disabled.')
         return
@@ -86,7 +90,7 @@ class TwitterManager(manager.Manager):
         tweet_log.tweet))
 
   def _DoTweet(self, tweet):
-    config = self._kb_env.GetBackend().GetConfig()
+    config = self._backend.GetConfig()
     twitter_name = config.get('contrib.twitter.login_name')
     twitter_pass = config.get('contrib.twitter.login_pass')
 
@@ -107,7 +111,7 @@ class TwitterManager(manager.Manager):
 
   def _GenerateTweet(self, drink, tweet_to):
     ounces = drink.Volume().ConvertTo.Ounce
-    config = self._kb_env.GetBackend().GetConfig()
+    config = self._backend.GetConfig()
 
     try:
       min_ounces = float(config.get('contrib.twitter.min_oz'))
@@ -121,7 +125,7 @@ class TwitterManager(manager.Manager):
     if tweet_to:
       tweet_to = '@'+tweet_to
     else:
-      default_user = self._kb_env.GetBackend().GetDefaultUser()
+      default_user = self._backend._GetDefaultUser()
       if drink.user == default_user:
         tweet_to = TWITTER_NAME_UNKNOWN
       else:

@@ -503,44 +503,6 @@ class Thermolog(models.Model):
   def TempF(self):
     return util.CtoF(self.temp)
 
-  def save(self, force_insert=False, force_update=False):
-    super(Thermolog, self).save(force_insert, force_update)
-    self._AddToDailyLog()
-
-  def _AddToDailyLog(self):
-    # TODO(mikey): prevent termolog entries from being changed; if a particular
-    # record is saved more than once, the average temperature will be invalid.
-    daily_date = datetime.datetime(year=self.time.year,
-        month=self.time.month,
-        day=self.time.day)
-    defaults = {
-        'num_readings': 0,
-        'min_temp': self.temp,
-        'max_temp': self.temp,
-        'mean_temp': 0,
-    }
-    daily_log, created = ThermoSummaryLog.objects.get_or_create(
-        sensor=self.sensor,
-        period='daily',
-        date=daily_date,
-        defaults=defaults)
-    if created:
-      daily_log.mean_temp = self.temp
-    else:
-      new_mean = daily_log.num_readings * daily_log.mean_temp + self.temp
-      new_mean /= daily_log.num_readings + 1
-      daily_log.mean_temp = new_mean
-
-    daily_log.num_readings += 1
-
-    if self.temp > daily_log.max_temp:
-      daily_log.max_temp = self.temp
-    if self.temp < daily_log.min_temp:
-      daily_log.min_temp = self.temp
-
-    daily_log.save()
-
-
   @classmethod
   def CompressLogs(cls):
     now = datetime.datetime.now()
@@ -605,6 +567,40 @@ class Thermolog(models.Model):
         _LogGroup(sensor, group)
 
       old_entries.delete()
+
+def thermolog_post_save(sender, instance, **kwargs):
+  # TODO(mikey): prevent thermolog entries from being changed; if a particular
+  # record is saved more than once, the average temperature will be invalid.
+  daily_date = datetime.datetime(year=instance.time.year,
+      month=instance.time.month,
+      day=instance.time.day)
+  defaults = {
+      'num_readings': 1,
+      'min_temp': instance.temp,
+      'max_temp': instance.temp,
+      'mean_temp': instance.temp,
+  }
+  daily_log, created = ThermoSummaryLog.objects.get_or_create(
+      sensor=instance.sensor,
+      period='daily',
+      date=daily_date,
+      defaults=defaults)
+
+  if not created:
+    new_mean = daily_log.num_readings * daily_log.mean_temp + instance.temp
+    new_mean /= daily_log.num_readings + 1
+    daily_log.mean_temp = new_mean
+
+    daily_log.num_readings += 1
+
+    if instance.temp > daily_log.max_temp:
+      daily_log.max_temp = instance.temp
+    if instance.temp < daily_log.min_temp:
+      daily_log.min_temp = instance.temp
+
+  daily_log.save()
+
+post_save.connect(thermolog_post_save, sender=Thermolog)
 
 
 class ThermoSummaryLog(models.Model):

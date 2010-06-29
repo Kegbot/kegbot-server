@@ -500,6 +500,9 @@ class TokenRecord:
     self.last_seen = datetime.datetime.now()
     self.status = self.STATUS_ACTIVE
 
+  def __str__(self):
+    return str(self.AsTuple())
+
   def AsTuple(self):
     return (self.auth_device, self.token_value, self.tap_name)
 
@@ -619,7 +622,7 @@ class TokenManager(Manager):
     record.SetStatus(record.STATUS_REMOVED)
     timeout = record.MaxIdleTime()
     if not timeout:
-      self._logger.info('Immediately removing token %s' % record.token)
+      self._logger.info('Immediately removing token %s' % record)
       self._RemoveRecord(record)
 
   @util.synchronized

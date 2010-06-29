@@ -183,8 +183,10 @@ class KegbotBackend(Backend):
 
   def LogSensorReading(self, sensor_name, temperature, when):
     sensor = self._GetSensorFromName(sensor_name)
-    return models.Thermolog.objects.create(sensor=sensor, temp=temperature,
+    res = models.Thermolog.objects.create(sensor=sensor, temp=temperature,
         time=when)
+    res.save()
+    return res
 
   def GetAuthToken(self, auth_device, token_value):
     try:
@@ -194,12 +196,16 @@ class KegbotBackend(Backend):
       return None
 
   def CreateAuthToken(self, auth_device, token_value):
-    return models.AuthenticationToken.objects.create(auth_device=auth_device,
+    res = models.AuthenticationToken.objects.create(auth_device=auth_device,
         token_value=token_value)
+    res.save()
+    return res
 
   def GetBillAcceptors(self):
     return billing_models.BillAcceptor.objects.all()
 
   def RecordBillAcceptorCredit(self, amount, acceptor, user=None):
-    return billing_models.Credit.objects.create(amount=amount,
+    res = billing_models.Credit.objects.create(amount=amount,
         acceptor=acceptor, user=user)
+    res.save()
+    return res

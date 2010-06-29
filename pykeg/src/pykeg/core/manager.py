@@ -487,7 +487,7 @@ class ThermoManager(Manager):
     self._logger.info('Recording temperature sensor=%s value=%s' %
                       (sensor_name, sensor_value))
     new_record = self._backend.LogSensorReading(sensor_name, sensor_value, now)
-    self._sensor_to_last_record[sensor_name] = new_record
+    self._name_to_last_record[sensor_name] = new_record
 
 class TokenRecord:
   STATUS_ACTIVE = 1

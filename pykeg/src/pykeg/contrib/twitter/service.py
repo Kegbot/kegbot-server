@@ -48,7 +48,7 @@ TWEET_TEMPLATE = (
 class TwitterManager(manager.Manager):
 
   def __init__(self, name, event_hub, backend):
-    Manager.__init__(self, name, event_hub)
+    manager.Manager.__init__(self, name, event_hub)
     self._backend = backend
 
   @manager.EventHandler(kegnet_pb2.DrinkCreatedEvent)

@@ -69,4 +69,9 @@ kegboard_name = second_tap
 kegboard_device = /dev/ttyUSB2
 
 [fb_publisher]
+# Facebook publisher.
+_enabled = False
+
+[kegbot_twitter]
+# Twitter publisher.
 _enabled = False

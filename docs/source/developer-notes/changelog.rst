@@ -24,6 +24,11 @@ Kegweb
 * Fixed/update CSRF detection on forms for Django 1.2.
 * Bugfixes for the Kegweb REST ('krest') API.
 
+Twitter
+^^^^^^^
+* Moved Twitter add-on out of the core and into a new daemon,
+  ``kegbot_twitter``, similar to Facebook app ``fb_publisher``.
+
 
 Version 0.7.1 (2010-06-04)
 --------------------------

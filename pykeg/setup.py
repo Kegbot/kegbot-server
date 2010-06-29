@@ -53,7 +53,9 @@ setup(
       #'pysqlite>=2.0.3',
       'python-gflags >= 1.3',
       'South >= 0.7',
+      'Sphinx',
       'django_nose',
+      'python-openid >= 2.2.5',  # removeme once PIL package works
     ],
     dependency_links = [
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',

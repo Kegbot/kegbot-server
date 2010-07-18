@@ -105,7 +105,7 @@ class Migration:
             'ticks': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
             'volume': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'volume_ml': ('django.db.models.fields.FloatField', [], {})
+            'volume_ml': ('django.db.models.fields.FloatField', [], {'default':'0'})
         },
         'core.drinkingsessiongroup': {
             'endtime': ('django.db.models.fields.DateTimeField', [], {}),
@@ -126,7 +126,7 @@ class Migration:
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'volume': ('django.db.models.fields.IntegerField', [], {}),
-            'volume_ml': ('django.db.models.fields.FloatField', [], {})
+            'volume_ml': ('django.db.models.fields.FloatField', [], {'default': '0'})
         },
         'core.kegtap': {
             'current_keg': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.Keg']", 'null': 'True', 'blank': 'True'}),

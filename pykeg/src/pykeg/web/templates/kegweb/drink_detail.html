@@ -6,28 +6,29 @@
 {% block col-1 %}
 
 <div class="kb-contentbox-head">
-   drink {{ drink.id }} by {{ drink.user.username }}
+   drink {{ drink.id }}{% if drink.user %} by {{ drink.user.username }}{% endif %}
 </div>
 <div class="kb-contentbox">
    <table class="kb-statstable">
       <tr>
-         <th>Drink Size</th>
+         <th>Size</th>
          <td>{{ drink.Volume.ConvertTo.Ounce|floatformat:2 }} ounces</td>
       </tr>
       <tr>
-         <th>Pour Start</th>
-         <td>{{ drink.starttime }}</td>
+         <th valign="top">When</th>
+         <td>
+          {% timeago drink.endtime %}<br>
+          (took {{drink.PourDuration.seconds}} second{{drink.PourDuration.seconds|pluralize}} to pour)
+         </td>
       </tr>
-      <tr>
-         <th>Pour End</th>
-         <td>{{ drink.endtime }}</td>
-      </tr>
+      {% if drink.keg %}
       <tr>
          <th>Keg</th>
          <td>
           <a href="{% url keg drink.keg.id %}">{{drink.keg.type.name}}</a>
         </td>
       </tr>
+      {% endif %}
 
    </table>
 </div>

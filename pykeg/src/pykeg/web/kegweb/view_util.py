@@ -34,10 +34,7 @@ def current_keg():
     return q[0]
 
 def user_is_hidden(user):
-  try:
-    profile = user.get_profile()
-  except models.UserProfile.DoesNotExist:
-    return False
+  return False  ### TODO(mikey): add UserProfile attribute for this
 
   return profile.HasLabel('__hidden__')
 
@@ -52,6 +49,8 @@ def keg_drinkers_by_volume(keg):
 def drinkers_by_volume(drinks):
   ret = {}
   for d in drinks:
+    if not d.user:
+      continue
     ret[d.user] = ret.get(d.user, units.Quantity(0, units.RECORD_UNIT)) + d.Volume()
   outlist = []
   for user, totalvol in ret.iteritems():
@@ -64,6 +63,8 @@ def drinkers_by_volume(drinks):
 def drinkers_by_cost(drinks):
   cost_map = {}
   for d in drinks:
+    if not d.user:
+      continue
     keg_volume = d.keg.size.Volume()
     keg_cost = d.keg.origcost
     drink_pct_keg = d.Volume() / keg_volume

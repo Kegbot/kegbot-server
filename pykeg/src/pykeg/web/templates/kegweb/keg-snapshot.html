@@ -31,15 +31,15 @@
         {% endif %}
         <table border="0">
         <tr>
-          <td valign="top" align="right">
-            <b>Total Poured</b>
-          </td>
           <td rowspan="2">
-            <img src="{% chart keg_volume keg 200 28 %}">
+            {% chart keg_volume keg 200 28 %}
+          </td>
+          <td valign="top" align="left">
+            <b>Total Poured</b>
           </td>
         </tr>
         <tr>
-          <td valign="top" align="right">
+          <td valign="top" align="left">
             {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
             {% if keg.is_empty %}
               (empty!)
@@ -56,12 +56,12 @@
             <b>Temperature</b>
           </td>
           <td rowspan="2">
-            <img src="{% chart sensor keg.tap.temperature_sensor.nice_name 200 28 %}">
+            {% chart sensor keg.tap.temperature_sensor.nice_name 200 28 %}
           </td>
         </tr>
         <tr>
           <td align="right">
-            {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C / 
+            {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C /
             {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
           </td>
         </tr>

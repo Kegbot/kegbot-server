@@ -57,6 +57,7 @@ setup(
       'Sphinx',
       'django_nose',
       'python-openid >= 2.2.5',  # removeme once PIL package works
+      ### need pygooglechart
     ],
     dependency_links = [
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',

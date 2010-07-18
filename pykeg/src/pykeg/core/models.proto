@@ -198,18 +198,15 @@ message User {
   // not have a profile picture.
   optional string mugshot_url = 3;
 
-  // True if the user is an unknown drinker.
-  required bool is_unknown = 4 [default = false];
-
   // True if the user is a member of the system's staff.
-  required bool is_staff = 5 [default = false];
+  required bool is_staff = 4 [default = false];
 
   // True if the user is an administrator.
-  required bool is_superuser = 6 [default = false];
+  required bool is_superuser = 5 [default = false];
 
   // Local time for the user's registration, in seconds since epoch (unix
   // timestamp).
-  required fixed32 date_joined = 7;
+  required fixed32 date_joined = 6;
 
 }
 

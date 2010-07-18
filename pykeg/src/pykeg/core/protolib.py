@@ -133,9 +133,10 @@ def DrinkToProto(drink, full=True):
     ret.keg_id = drink.keg.id
     if full:
       ret.keg.CopyFrom(ToProto(drink.keg))
-  ret.user_id = drink.user.username
-  if full:
-    ret.user.CopyFrom(ToProto(drink.user))
+  if drink.user:
+    ret.user_id = drink.user.username
+    if full:
+      ret.user.CopyFrom(ToProto(drink.user))
   return ret
 
 @converts(models.User)
@@ -144,7 +145,6 @@ def UserToProto(user, full=True):
   ret.username = user.username
   ret.mugshot_url = user.get_profile().MugshotUrl()
   ret.is_active = user.is_active
-  ret.is_unknown = user.get_profile().HasLabel('__default_user__')
   ret.is_staff = user.is_staff
   ret.is_superuser = user.is_superuser
   ret.date_joined = time_to_int(user.date_joined)

@@ -104,21 +104,6 @@ class KegbotBackend(Backend):
     except DatabaseError, e:
       raise BackendError, e
 
-  def _GetDefaultUser(self):
-    DEFAULT_USER_LABELNAME = '__default_user__'
-
-    label_q = models.UserLabel.objects.filter(labelname=DEFAULT_USER_LABELNAME)
-    if not len(label_q):
-      raise kb_common.ConfigurationError, ('Default user label "%s" not found.' % DEFAULT_USER_LABELNAME)
-
-    user_q = label_q[0].userprofile_set.all()
-    if not len(user_q):
-      raise kb_common.ConfigurationError, ('No users found with label "%s"; need at least one.' % DEFAULT_USER_LABELNAME)
-
-    default_user = user_q[0].user
-    self._logger.info('Default user for unknown flows: %s' % str(default_user))
-    return default_user
-
   def _GetKegForTap(self, tap_name):
     try:
       tap = models.KegTap.objects.get(meter_name=tap_name)
@@ -168,8 +153,6 @@ class KegbotBackend(Backend):
     user = None
     if username:
       user = self.GetUserFromUsername(username)
-    if not user:
-      user = self._GetDefaultUser()
 
     # Look up the tap name, assigning the current keg on the tap if valid.
     keg = None

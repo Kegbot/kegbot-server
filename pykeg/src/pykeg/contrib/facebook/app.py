@@ -35,6 +35,8 @@ class FBKegnetClient(kegnet.SimpleKegnetClient):
     self._AnotherBeerOnTheWall(drink)
 
   def _AnotherBeerOnTheWall(self, drink):
+    if not drink.user:
+      return
     user = drink.user
     profile = fbutil.profile_for_user(user)
     if not profile:

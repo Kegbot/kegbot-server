@@ -437,8 +437,11 @@ class DrinkManager(Manager):
     if d.keg:
       keg_id = d.keg.id
 
+    username = '<None>'
+    if d.user:
+      username = d.user.username
     self._logger.info('Logged drink %i user=%s keg=%s ounces=%s ticks=%i' % (
-      d.id, d.user.username, keg_id, d.Volume().ConvertTo.Ounce,
+      d.id, username, keg_id, d.Volume().ConvertTo.Ounce,
       d.ticks))
 
     self._last_drink = d
@@ -450,7 +453,8 @@ class DrinkManager(Manager):
     created.tap_name = tap_name
     created.start_time = int(time.mktime(d.starttime.timetuple()))
     created.end_time = int(time.mktime(d.endtime.timetuple()))
-    created.username = d.user.username
+    if d.user:
+      created.username = d.user.username
     self._PublishEvent(created)
 
 

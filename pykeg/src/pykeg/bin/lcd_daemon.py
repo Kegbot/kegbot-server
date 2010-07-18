@@ -273,7 +273,10 @@ class KrestUpdaterThread(util.KegbotThread):
         tap_status = self._client.TapStatus()
         self._lcdui.UpdateFromTapStatus(tap_status)
         last_drink = tuple(self._client.LastDrinks())[0]
-        self._lcdui.UpdateLastDrink(str(last_drink.user.username),
+        username = 'unknown'
+        if last_drink.user:
+          username = str(last_drink.user.username)
+        self._lcdui.UpdateLastDrink(username,
             last_drink.volume_ml,
             datetime.datetime.fromtimestamp(last_drink.endtime))
       except IOError, e:

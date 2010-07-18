@@ -128,7 +128,7 @@ a:hover {
   font: 80%/100% "Lucida Grande", Arial, sans-serif;
   margin-left: 12px;
   float: left;
-  width: 300px;
+  width: 360px;
 }
 
 .kb-tapbox-footer {
@@ -233,6 +233,14 @@ a:hover {
   margin-top: 4px;
   font-style: italic;
   text-align: right;
+}
+
+.kb-chart-missing {
+  font-size: 0.6em;
+  color: #aaf;
+  border: 1px dotted #aaf;
+  margin: 0px;
+  text-align: center;
 }
 
 .clear {

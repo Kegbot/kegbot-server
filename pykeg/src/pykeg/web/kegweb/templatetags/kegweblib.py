@@ -1,6 +1,6 @@
 import datetime
-import pygooglechart
 
+from django.core import urlresolvers
 from django.template import Library
 from django.template import Node
 from django.template import TemplateSyntaxError
@@ -13,12 +13,18 @@ from pykeg.web.kegweb import stats
 register = Library()
 
 def mugshot_box(user, boxsize=100):
-  img_url = user.get_profile().MugshotUrl()
+  if user:
+    img_url = user.get_profile().MugshotUrl()
+    user_url = urlresolvers.reverse('drinker', args=(user.username,))
+  else:
+    img_url = urlresolvers.reverse('site-media',
+        args=('images/unknown-drinker.png',))
+    user_url = ''
 
   return {
       'user' : user,
       'boxsize' : boxsize,
-      'user_url' : '/drinkers/%s' % user.username,
+      'user_url' : user_url,
       'img_url': img_url,
   }
 register.inclusion_tag('kegweb/mugshot_box.html')(mugshot_box)
@@ -96,7 +102,17 @@ class ChartNode(Node):
       raise TemplateSyntaxError('unknown chart type: %s' % self._charttype)
 
   def render(self, context):
-    return self._chart_fn(context)
+    try:
+      import pygooglechart
+      res = self._chart_fn(context)
+    except ImportError:
+      res = ''
+
+    if not res:
+      res = ('<div class="kb-chart-missing" '
+          'style="width:%ipx; height:%ipx;">chart unavailable'
+          '</div>' % (self._width, self._height))
+      return res
 
   def chart_sensor(self, context):
     """ Shows a simple line plot of a specific temperature sensor.

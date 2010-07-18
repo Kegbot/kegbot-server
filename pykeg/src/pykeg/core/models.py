@@ -69,15 +69,6 @@ class UserProfile(models.Model):
   def __str__(self):
     return "profile for %s" % (self.user,)
 
-  def HasLabel(self, lbl):
-    for l in self.labels.all():
-      if l.labelname == lbl:
-        return True
-    return False
-
-  def IsUnknownUser(self):
-    return self.HasLabel('__default_user__')
-
   def FacebookProfile(self):
     if 'socialregistration' not in settings.INSTALLED_APPS:
       return None
@@ -211,6 +202,9 @@ class Drink(models.Model):
   def GetSession(self):
     return DrinkingSession.SessionForDrink(self)
 
+  def PourDuration(self):
+    return self.endtime - self.starttime
+
   def ShortUrl(self):
     domain = Site.objects.get_current().domain
     return 'http://%s/d/%i' % (domain, self.id)
@@ -247,7 +241,7 @@ class Drink(models.Model):
   # used.  TODO(mikey): make sure this is actually the case
   starttime = models.DateTimeField()
   endtime = models.DateTimeField()
-  user = models.ForeignKey(User)
+  user = models.ForeignKey(User, null=True, blank=True)
   keg = models.ForeignKey(Keg, null=True, blank=True)
   status = models.CharField(max_length=128, choices = (
      ('valid', 'valid'),
@@ -269,9 +263,8 @@ def _DrinkPostSave(sender, instance, **kwargs):
     if user.date_joined > instance.starttime:
       user.date_joined = instance.starttime
       user.save()
-
-  user_stats, created = UserStats.objects.get_or_create(user=user)
-  user_stats.UpdateStats(instance)
+    user_stats, created = UserStats.objects.get_or_create(user=user)
+    user_stats.UpdateStats(instance)
 
   if instance.keg:
     keg_stats, created = KegStats.objects.get_or_create(keg=keg)
@@ -337,12 +330,13 @@ class BAC(models.Model):
       # Already has a recorded BAC.
       return bac_qs[0]
 
+    if not d.user:
+      return
+
     try:
       profile = d.user.get_profile()
     except UserProfile.DoesNotExist:
       # can't compute bac if there is no profile
-      return
-    if profile.HasLabel('__no_bac__'):
       return
     if not d.keg:
       return
@@ -422,7 +416,8 @@ class DrinkingSession(models.Model):
       self.endtime = drink.endtime
       dirty = True
     self.drinks.add(drink)
-    self.users.add(drink.user)
+    if drink.user:
+      self.users.add(drink.user)
     if drink.keg:
       self.kegs.add(drink.keg)
     if dirty:
@@ -431,6 +426,8 @@ class DrinkingSession(models.Model):
     self._UpdateUserPart(drink)
 
   def _UpdateUserPart(self, drink):
+    if not drink.user:
+      return
     defaults = {'starttime': drink.starttime, 'endtime': drink.endtime}
     user_part, created = DrinkingSessionUserPart.objects.get_or_create(user=drink.user,
         session=self, defaults=defaults)

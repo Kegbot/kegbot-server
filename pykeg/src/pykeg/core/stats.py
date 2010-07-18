@@ -167,7 +167,7 @@ class KegStatsBuilder(BaseStatsBuilder):
   def Drinkers(self, drink, prev):
     if not prev:
       prev = []
-    if drink.user.id not in prev:
+    if drink.user and drink.user.id not in prev:
       prev.append(drink.user.id)
     return prev
 

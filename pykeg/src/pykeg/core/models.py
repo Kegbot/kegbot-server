@@ -164,6 +164,16 @@ class Keg(models.Model):
       return q[0]
     return None
 
+  def GetStats(self):
+    if hasattr(self, '_stats'):
+      return self._stats
+    qs = self.stats.all()
+    if qs:
+      self._stats = qs[0].stats
+    else:
+      self._stats = {}
+    return self._stats
+
   def __str__(self):
     return "Keg #%s - %s" % (self.id, self.type)
 

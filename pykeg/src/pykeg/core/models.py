@@ -53,13 +53,6 @@ class UserPicture(models.Model):
   active = models.BooleanField(default=True)
 
 
-class UserLabel(models.Model):
-  labelname = models.CharField(max_length=128)
-
-  def __str__(self):
-    return str(self.labelname)
-
-
 class UserProfile(models.Model):
   """Extra per-User information."""
   GENDER_CHOICES = (
@@ -87,7 +80,6 @@ class UserProfile(models.Model):
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
-  labels = models.ManyToManyField(UserLabel)
   mugshot = models.ForeignKey(UserPicture, blank=True, null=True)
 
 def user_post_save(sender, instance, **kwargs):

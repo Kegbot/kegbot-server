@@ -32,15 +32,6 @@ def db_is_installed():
   except models.Config.DoesNotExist:
     return False
 
-def add_label(user, labelname):
-  res = models.UserLabel.objects.filter(labelname__exact=labelname)
-  if len(res):
-    l = res[0]
-  else:
-    l = models.UserLabel(labelname=labelname)
-    l.save()
-  user.get_profile().labels.add(l)
-
 def set_defaults():
   """ default values (contents may change with schema) """
   if db_is_installed():
@@ -67,6 +58,8 @@ def set_defaults():
   # user defaults
   b = backend.KegbotBackend()
   guest_user = b.CreateNewUser('guest')
+  guest_user.is_guest = True
+  guest_user.save()
 
   # brewer defaults
   unk_brewer = bdb.Brewer(name='Unknown Brewer')
@@ -79,10 +72,6 @@ def set_defaults():
   # beertype defaults
   unk_type = bdb.BeerType(name="Unknown Beer", brewer=unk_brewer, style=unk_style)
   unk_type.save()
-
-  # userlabel defaults
-  add_label(guest_user, '__default_user__')
-  add_label(guest_user, '__no_bac__')
 
   # KegSize defaults - from http://en.wikipedia.org/wiki/Keg#Size
   default_sizes = (

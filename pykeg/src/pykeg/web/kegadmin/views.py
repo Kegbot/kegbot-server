@@ -44,3 +44,8 @@ def edit_taps(request):
   tap_forms = [forms.TapForm(x) for x in models.KegTap.objects.all()]
   context['forms'] = tap_forms
   return render_to_response('kegadmin/edit-taps.html', context)
+
+@staff_member_required
+def view_stats(request):
+  context = RequestContext(request)
+  keg_stats = models.KegStats.objects.all()

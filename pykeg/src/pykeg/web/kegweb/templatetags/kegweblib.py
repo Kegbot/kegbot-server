@@ -1,5 +1,11 @@
 import datetime
 
+try:
+  import pygooglechart
+  HAVE_GOOGLE_CHART = True
+except ImportError:
+  HAVE_GOOGLE_CHART = False
+
 from django.core import urlresolvers
 from django.template import Library
 from django.template import Node
@@ -8,7 +14,14 @@ from django.template import Variable
 from django.utils.safestring import mark_safe
 
 from pykeg.core import models
+from pykeg.core import units
 from pykeg.web.kegweb import stats
+
+class KegweblibError(Exception):
+  """Base kegweblib execption."""
+
+class ChartUnavailableError(KegweblibError):
+  """Thrown when a chart cannot be rendered."""
 
 register = Library()
 
@@ -103,16 +116,16 @@ class ChartNode(Node):
 
   def render(self, context):
     try:
-      import pygooglechart
-      res = self._chart_fn(context)
-    except ImportError:
-      res = ''
-
-    if not res:
+      if not HAVE_GOOGLE_CHART:
+        raise ChartUnavailableError, "chart library unavailable"
+      url = self._chart_fn(context)
+      res = '<div class="kb-chart"><img src="%s"/></div>' % url
+    except ChartUnavailableError, e:
+      reason = str(e)
       res = ('<div class="kb-chart-missing" '
-          'style="width:%ipx; height:%ipx;">chart unavailable'
-          '</div>' % (self._width, self._height))
-      return res
+          'style="width:%ipx; height:%ipx;">%s'
+          '</div>' % (self._width, self._height, reason))
+    return res
 
   def chart_sensor(self, context):
     """ Shows a simple line plot of a specific temperature sensor.
@@ -128,7 +141,7 @@ class ChartNode(Node):
     try:
       sensor = models.ThermoSensor.objects.get(nice_name=sensor_name)
     except models.ThermoSensor.DoesNotExist:
-      return '' # TODO(mikey): unknown image
+      raise ChartUnavailableError, "Sensor '%s' not found" % sensor_name
 
     hours = 12
     now = datetime.datetime.now()
@@ -150,13 +163,25 @@ class ChartNode(Node):
           have_temps = True
 
     if not have_temps:
-      return ''
+      raise ChartUnavailableError, "Not enough data"
 
     chart = pygooglechart.SparkLineChart(self._width, self._height)
     chart.add_data(temps)
     chart.fill_solid(pygooglechart.Chart.BACKGROUND, '00000000')
     chart.set_colours(['4D89F9'])
     return chart.get_url()
+
+  def _get_keg_stats(self, context):
+    keg_var = Variable(self._args[0])
+    keg = keg_var.resolve(context)
+
+    if not keg or not isinstance(keg, models.Keg):
+      raise ChartUnavailableError, "Argument is not a Keg instance"
+
+    stats = keg.GetStats()
+    if not stats:
+      raise ChartUnavailableError, "Stats unavailable"
+    return keg, stats
 
   def chart_keg_volume(self, context):
     """ Shows a horizontal bar chart of keg served/remaining volume.
@@ -166,18 +191,12 @@ class ChartNode(Node):
     Args:
       keg - the keg instance to chart
     """
-    keg_var = Variable(self._args[0])
-    keg = keg_var.resolve(context)
+    keg, stats = self._get_keg_stats(context)
 
-    if not keg or not isinstance(keg, models.Keg):
-      return ''
-
-    served = keg.served_volume()
-    full = keg.full_volume()
-
+    served = units.Quantity(stats.get('total-volume', 0.0))
     served_pints = served.ConvertTo.Pint
-    full_pints = full.ConvertTo.Pint
-    remain_pints = (full - served).ConvertTo.Pint
+    full_pints = keg.full_volume().ConvertTo.Pint
+    remain_pints = full_pints - served_pints
 
     chart = pygooglechart.StackedHorizontalBarChart(self._width, self._height,
         x_range=(0, full_pints))
@@ -187,11 +206,47 @@ class ChartNode(Node):
     chart.add_data([full_pints])
     return chart.get_url()
 
+  def chart_keg_volume_by_day(self, context):
+    """ Shows a horizontal bar chart of keg served/remaining volume.
+
+    Syntax:
+      {% chart keg_volume_by_day <keg> width height %}
+    Args:
+      keg - the keg instance to chart
+    """
+    keg, stats = self._get_keg_stats(context)
+
+    volmap = stats.get('volume-by-day-of-week')
+    if not volmap:
+      raise ChartUnavailableError, "Daily volumes unavailable"
+
+    vals = []
+    for k in sorted(volmap.keys()):
+      vals.append(float(volmap[k]))
+    if len(vals) != 7:
+      raise ChartUnavailableError, "Volume data is corrupt"
+    chart = self._day_of_week_chart(vals)
+    return chart.get_url()
+
+
+  def _day_of_week_chart(self, vals):
+    chart = pygooglechart.StackedVerticalBarChart(self._width, self._height)
+    chart.set_bar_width(20)
+    chart.set_colours(['4D89F9','C6D9FD'])
+
+    # convert from 0=Monday to 0=Sunday
+    vals.insert(0, vals.pop(-1))
+
+    chart.add_data(vals)
+    labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    chart.set_axis_labels('x', labels)
+    return chart
+
   def chart_sessions_weekday(self, context):
     """ Vertical bar chart showing session volume by day of week.
 
     Syntax:
-      {% chart sessions_weedkay <sessions> width height %}
+      {% chart sessions_weekday <sessions> width height %}
     Args:
       sessions - an iterable of DrinkingSession or UserDrinkingSessionPart
                  instances
@@ -199,20 +254,14 @@ class ChartNode(Node):
     sessions_var = Variable(self._args[0])
     sessions = sessions_var.resolve(context)
     if not sessions:
-      return ''
+      raise ChartUnavailableError, "Must give sessions as argument"
 
     weekdays = [0] * 7
 
     for sess in sessions:
       date = int(sess.starttime.strftime('%w'))
       weekdays[date] += int(sess.Volume())
-
-    chart = pygooglechart.StackedVerticalBarChart(self._width, self._height)
-    chart.set_bar_width(20)
-    chart.set_colours(['4D89F9','C6D9FD'])
-    chart.add_data(weekdays)
-    labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    chart.set_axis_labels('x', labels)
+    chart = self._day_of_week_chart(weekdays)
     return chart.get_url()
 
   def chart_sessions_volume(self, context):
@@ -227,7 +276,7 @@ class ChartNode(Node):
     sessions_var = Variable(self._args[0])
     sessions = sessions_var.resolve(context)
     if not sessions:
-      return ''
+      raise ChartUnavailableError, "Must give sessions as argument"
 
     data = []
     avgs = []
@@ -246,6 +295,13 @@ class ChartNode(Node):
     chart.add_data(avgs)
     return chart.get_url()
 
+  def chart_users_by_volume(self, context):
+    """Pie chart showing users by volume.
+
+    Syntax:
+      {% chart users_by_volume width height %}
+    """
+    raise ChartUnavailableError, "not implemented"
 
 class QueryNode(Node):
   def __init__(self, var_name, queryset, limit):

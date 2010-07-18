@@ -123,7 +123,7 @@
         <b>Volume by Day</b>
       </td>
       <td>
-        {% chart sessions_weekday stats.Sessions 200 64 %}
+        {% chart keg_volume_by_day keg 200 64 %}
       </td>
     </tr>
 
@@ -165,8 +165,7 @@
   drinker breakdown
 </div>
 <div class="kb-contentbox">
-  {% keg_stats keg as stats %}
-  <img src="{{ stats.ChartUsersByVolume }}">
+  {% chart users_by_volume 300 125 %}
 </div>
 {% endblock col-2 %}
 

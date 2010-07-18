@@ -23,7 +23,6 @@ from pykeg.core import models
 from pykeg.core import util
 
 admin.site.register(models.UserPicture)
-admin.site.register(models.UserLabel)
 admin.site.register(models.UserProfile)
 
 admin.site.register(models.KegSize)

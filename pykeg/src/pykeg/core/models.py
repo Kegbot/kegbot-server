@@ -249,6 +249,7 @@ class Drink(models.Model):
      ('valid', 'valid'),
      ('invalid', 'invalid'),
      ), default = 'valid')
+  session = models.ForeignKey('DrinkingSession', null=True, blank=True, editable=False)
 
 def _DrinkPostSave(sender, instance, **kwargs):
   BAC.ProcessDrink(instance)

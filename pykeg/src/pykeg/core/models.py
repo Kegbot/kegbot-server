@@ -25,6 +25,7 @@ from django.conf import settings
 from django.core import urlresolvers
 from django.db import models
 from django.db.models.signals import post_save
+from django.db.models.signals import pre_save
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 
@@ -251,9 +252,13 @@ class Drink(models.Model):
      ), default = 'valid')
   session = models.ForeignKey('DrinkingSession', null=True, blank=True, editable=False)
 
+def _DrinkPreSave(sender, instance, **kwargs):
+  if not instance.session:
+    DrinkingSession.SessionForDrink(instance)
+pre_save.connect(_DrinkPreSave, sender=Drink)
+
 def _DrinkPostSave(sender, instance, **kwargs):
   BAC.ProcessDrink(instance)
-  DrinkingSession.SessionForDrink(instance)
 
   keg = instance.keg
   if keg:
@@ -272,7 +277,6 @@ def _DrinkPostSave(sender, instance, **kwargs):
   if instance.keg:
     keg_stats, created = KegStats.objects.get_or_create(keg=keg)
     keg_stats.UpdateStats(instance)
-
 post_save.connect(_DrinkPostSave, sender=Drink)
 
 

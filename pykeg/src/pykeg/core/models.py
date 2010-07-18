@@ -202,7 +202,7 @@ class Drink(models.Model):
     return units.Quantity(self.volume_ml, units.RECORD_UNIT)
 
   def GetSession(self):
-    return DrinkingSession.SessionForDrink(self)
+    return self.session
 
   def PourDuration(self):
     return self.endtime - self.starttime
@@ -397,35 +397,22 @@ class DrinkingSession(models.Model):
   """A collection of contiguous drinks. """
   starttime = models.DateTimeField()
   endtime = models.DateTimeField()
-  drinks = models.ManyToManyField(Drink)
-  users = models.ManyToManyField(User)
-  kegs = models.ManyToManyField(Keg)
+  volume = models.FloatField(default=0)
 
   def Volume(self):
-    ret = units.Quantity(0, units.RECORD_UNIT)
-    for d in self.drinks.all():
-      ret += d.Volume()
-    return ret
+    return units.Quantity(self.volume, units.RECORD_UNIT)
 
   def Duration(self):
     return self.endtime - self.startime
 
   def AddDrink(self, drink):
-    dirty = False
     if self.starttime > drink.starttime:
       self.starttime = drink.starttime
-      dirty = True
     if self.endtime < drink.endtime:
       self.endtime = drink.endtime
-      dirty = True
-    self.drinks.add(drink)
-    if drink.user:
-      self.users.add(drink.user)
-    if drink.keg:
-      self.kegs.add(drink.keg)
-    if dirty:
-      self.save()
-
+    drink.session = self
+    self.volume += drink.volume_ml
+    self.save()
     self._UpdateUserPart(drink)
 
   def _UpdateUserPart(self, drink):
@@ -444,10 +431,8 @@ class DrinkingSession(models.Model):
   @classmethod
   def SessionForDrink(cls, drink):
     # Return existing session if already assigned.
-    q = cls.objects.filter(drinks=drink)
-    if q:
-      session = q[0]
-      return session
+    if drink.session:
+      return drink.session
 
     # Return last session if one already exists
     q = cls.objects.all()
@@ -472,9 +457,6 @@ class DrinkingSessionUserPart(models.Model):
   starttime = models.DateTimeField()
   endtime = models.DateTimeField()
   volume_ml = models.FloatField(default=0)
-
-  def drinks(self):
-    return session.drinks.filter(users=user)
 
   def Volume(self):
     return units.Quantity(self.volume_ml, units.RECORD_UNIT)

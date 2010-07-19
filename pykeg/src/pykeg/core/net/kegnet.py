@@ -211,17 +211,14 @@ class KegnetClient(KegnetProtocolHandler):
     KegnetProtocolHandler.__init__(self)
 
   def Reconnect(self, force=False):
-    now = time.time()
-    last_attempt = now - self._last_reconnect
     backoff_secs = self._ReconnectTimeout()
     if backoff_secs:
       time.sleep(backoff_secs)
+    self._last_reconnect = time.time()
 
     if self.connected:
       return True
 
-    now = time.time()
-    self._last_reconnect = now
     self._logger.info('Connecting to %s:%s' % self._addr)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -238,8 +235,14 @@ class KegnetClient(KegnetProtocolHandler):
       return False
 
   def _ReconnectTimeout(self):
+    if not self._last_reconnect:
+      return 0
+    prev_wait = time.time() - self._last_reconnect
     pos = min(self._num_retries, len(self.RECONNECT_BACKOFF) - 1)
-    return self.RECONNECT_BACKOFF[pos]
+    amt = self.RECONNECT_BACKOFF[pos]
+    if prev_wait < amt:
+      return amt - prev_wait
+    return 0
 
   ### convenience functions
   def SendPing(self):

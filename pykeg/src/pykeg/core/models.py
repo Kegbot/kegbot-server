@@ -180,6 +180,8 @@ class Keg(models.Model):
      ('coming soon', 'coming soon')))
   description = models.CharField(max_length=256, blank=True, null=True)
   origcost = models.FloatField(default=0, blank=True, null=True)
+  notes = models.TextField(blank=True, null=True,
+      help_text='Private notes about this keg, viewable only by admins.')
 
 def _KegPostSave(sender, instance, **kwargs):
   keg = instance

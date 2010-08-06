@@ -75,10 +75,6 @@ class Backend:
     """Returns an AuthenticationToken instance."""
     raise NotImplementedError
 
-  def CreateAuthToken(self, auth_device, token_value):
-    """Creates a new AuthenticationToken instance."""
-    raise NotImplementedError
-
   def GetBillAcceptors(self):
     """Returns all active BillAcceptor instances."""
     raise NotImplementedError
@@ -177,12 +173,6 @@ class KegbotBackend(Backend):
         token_value=token_value)
     except models.AuthenticationToken.DoesNotExist:
       return None
-
-  def CreateAuthToken(self, auth_device, token_value):
-    res = models.AuthenticationToken.objects.create(auth_device=auth_device,
-        token_value=token_value)
-    res.save()
-    return res
 
   def GetBillAcceptors(self):
     return billing_models.BillAcceptor.objects.all()

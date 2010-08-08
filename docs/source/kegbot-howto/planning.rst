@@ -11,7 +11,7 @@ you will need to make over the course of building your Kegbot.
 
 Note that most of decisions you make on the topics below can be fluid. For
 example, if you change your mind about access control or the number of taps you
-want, it is easy enough to alter the Kegbot configuration after it has bee
+want, it is easy enough to alter the Kegbot configuration after it has been
 built.
 
 

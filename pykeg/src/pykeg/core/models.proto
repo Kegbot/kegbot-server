@@ -210,13 +210,46 @@ message User {
 
 }
 
-message ThermoLog {
-  // The name of the sensor.
+message ThermoSensor {
+  // The raw/unique name of the sensor.
   required string sensor_name = 1;
 
+  // The firendly name for the sensor.
+  required string nice_name = 2;
+}
+
+message ThermoLog {
+  // The name of the sensor.
+  optional string sensor_name = 1;
+  optional ThermoSensor sensor = 2;
+
   // The temperature, in degrees C.
-  required float temperature_c = 2;
+  required float temperature_c = 3;
 
   // The recording date.
-  required fixed32 date = 3;
+  required fixed32 date = 4;
+}
+
+message AuthenticationToken {
+  // The name of the auth device.
+  required string auth_device = 1;
+  
+  // The value of the token.
+  required string token_value = 2;
+
+  // An optional pin.
+  optional string pin = 3;
+
+  // The user owning the token.
+  optional string user_id = 4;
+  optional User user = 5;
+
+  // THe date the token was created.
+  required fixed32 created = 6;
+
+  // Whether the token is enabled.
+  required bool enabled = 7;
+
+  // The date the token expires, if any.
+  optional fixed32 expires = 8;
 }

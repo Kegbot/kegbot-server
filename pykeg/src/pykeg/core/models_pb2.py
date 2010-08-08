@@ -10,7 +10,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='core/models.proto',
   package='',
-  serialized_pb='\n\x11\x63ore/models.proto\"%\n\tBeerStyle\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\"\xf6\x01\n\x08\x42\x65\x65rType\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tbrewer_id\x18\x03 \x02(\t\x12\x17\n\x06\x62rewer\x18\x04 \x01(\x0b\x32\x07.Brewer\x12\x10\n\x08style_id\x18\x05 \x02(\t\x12\x19\n\x05style\x18\x06 \x01(\x0b\x32\n.BeerStyle\x12\x0f\n\x07\x65\x64ition\x18\x0c \x01(\t\x12\x13\n\x0b\x63\x61lories_oz\x18\x07 \x01(\x02\x12\x10\n\x08\x63\x61rbs_oz\x18\x08 \x01(\x02\x12\x0b\n\x03\x61\x62v\x18\t \x01(\x02\x12\x18\n\x10original_gravity\x18\n \x01(\x02\x12\x18\n\x10specific_gravity\x18\x0b \x01(\x02\"\x96\x01\n\x06\x42rewer\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\x07\x63ountry\x18\x03 \x02(\t:\x00\x12\x14\n\x0corigin_state\x18\x04 \x01(\t\x12\x13\n\x0borigin_city\x18\x05 \x01(\t\x12\x12\n\nproduction\x18\x06 \x01(\t\x12\x0b\n\x03url\x18\x07 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x08 \x01(\t\"\xba\x01\n\x05\x44rink\x12\n\n\x02id\x18\x01 \x02(\r\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\x12\x11\n\tstarttime\x18\x04 \x02(\x07\x12\x0f\n\x07\x65ndtime\x18\x05 \x02(\x07\x12\x16\n\x08is_valid\x18\x06 \x02(\x08:\x04true\x12\x0e\n\x06keg_id\x18\x07 \x01(\r\x12\x11\n\x03keg\x18\x08 \x01(\x0b\x32\x04.Keg\x12\x0f\n\x07user_id\x18\t \x02(\t\x12\x13\n\x04user\x18\n \x01(\x0b\x32\x05.User\"\xdb\x01\n\x03Keg\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0f\n\x07type_id\x18\x02 \x02(\t\x12\x17\n\x04type\x18\x03 \x01(\x0b\x32\t.BeerType\x12\x0f\n\x07size_id\x18\x04 \x02(\r\x12\x16\n\x04size\x18\x05 \x01(\x0b\x32\x08.KegSize\x12\x11\n\tstartdate\x18\x06 \x02(\x07\x12\x0f\n\x07\x65nddate\x18\x07 \x02(\x07\x12\x13\n\x0b\x64\x65scription\x18\x08 \x01(\t\x12\x10\n\x08origcost\x18\t \x01(\x02\x12\x10\n\x08pct_full\x18\n \x01(\x02\x12\x18\n\x10volume_ml_remain\x18\x0b \x01(\x02\"6\n\x07KegSize\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\"\x90\x01\n\x06KegTap\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x16\n\x0e\x63urrent_keg_id\x18\x05 \x01(\r\x12\x19\n\x0b\x63urrent_keg\x18\x06 \x01(\x0b\x32\x04.Keg\x12$\n\x10last_temperature\x18\x07 \x01(\x0b\x32\n.ThermoLog\"\x91\x01\n\x04User\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x17\n\tis_active\x18\x02 \x02(\x08:\x04true\x12\x13\n\x0bmugshot_url\x18\x03 \x01(\t\x12\x17\n\x08is_staff\x18\x04 \x02(\x08:\x05\x66\x61lse\x12\x1b\n\x0cis_superuser\x18\x05 \x02(\x08:\x05\x66\x61lse\x12\x13\n\x0b\x64\x61te_joined\x18\x06 \x02(\x07\"E\n\tThermoLog\x12\x13\n\x0bsensor_name\x18\x01 \x02(\t\x12\x15\n\rtemperature_c\x18\x02 \x02(\x02\x12\x0c\n\x04\x64\x61te\x18\x03 \x02(\x07')
+  serialized_pb='\n\x11\x63ore/models.proto\"%\n\tBeerStyle\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\"\xf6\x01\n\x08\x42\x65\x65rType\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tbrewer_id\x18\x03 \x02(\t\x12\x17\n\x06\x62rewer\x18\x04 \x01(\x0b\x32\x07.Brewer\x12\x10\n\x08style_id\x18\x05 \x02(\t\x12\x19\n\x05style\x18\x06 \x01(\x0b\x32\n.BeerStyle\x12\x0f\n\x07\x65\x64ition\x18\x0c \x01(\t\x12\x13\n\x0b\x63\x61lories_oz\x18\x07 \x01(\x02\x12\x10\n\x08\x63\x61rbs_oz\x18\x08 \x01(\x02\x12\x0b\n\x03\x61\x62v\x18\t \x01(\x02\x12\x18\n\x10original_gravity\x18\n \x01(\x02\x12\x18\n\x10specific_gravity\x18\x0b \x01(\x02\"\x96\x01\n\x06\x42rewer\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\x07\x63ountry\x18\x03 \x02(\t:\x00\x12\x14\n\x0corigin_state\x18\x04 \x01(\t\x12\x13\n\x0borigin_city\x18\x05 \x01(\t\x12\x12\n\nproduction\x18\x06 \x01(\t\x12\x0b\n\x03url\x18\x07 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x08 \x01(\t\"\xba\x01\n\x05\x44rink\x12\n\n\x02id\x18\x01 \x02(\r\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\x12\x11\n\tstarttime\x18\x04 \x02(\x07\x12\x0f\n\x07\x65ndtime\x18\x05 \x02(\x07\x12\x16\n\x08is_valid\x18\x06 \x02(\x08:\x04true\x12\x0e\n\x06keg_id\x18\x07 \x01(\r\x12\x11\n\x03keg\x18\x08 \x01(\x0b\x32\x04.Keg\x12\x0f\n\x07user_id\x18\t \x02(\t\x12\x13\n\x04user\x18\n \x01(\x0b\x32\x05.User\"\xdb\x01\n\x03Keg\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0f\n\x07type_id\x18\x02 \x02(\t\x12\x17\n\x04type\x18\x03 \x01(\x0b\x32\t.BeerType\x12\x0f\n\x07size_id\x18\x04 \x02(\r\x12\x16\n\x04size\x18\x05 \x01(\x0b\x32\x08.KegSize\x12\x11\n\tstartdate\x18\x06 \x02(\x07\x12\x0f\n\x07\x65nddate\x18\x07 \x02(\x07\x12\x13\n\x0b\x64\x65scription\x18\x08 \x01(\t\x12\x10\n\x08origcost\x18\t \x01(\x02\x12\x10\n\x08pct_full\x18\n \x01(\x02\x12\x18\n\x10volume_ml_remain\x18\x0b \x01(\x02\"6\n\x07KegSize\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\"\x90\x01\n\x06KegTap\x12\n\n\x02id\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x16\n\x0e\x63urrent_keg_id\x18\x05 \x01(\r\x12\x19\n\x0b\x63urrent_keg\x18\x06 \x01(\x0b\x32\x04.Keg\x12$\n\x10last_temperature\x18\x07 \x01(\x0b\x32\n.ThermoLog\"\x91\x01\n\x04User\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x17\n\tis_active\x18\x02 \x02(\x08:\x04true\x12\x13\n\x0bmugshot_url\x18\x03 \x01(\t\x12\x17\n\x08is_staff\x18\x04 \x02(\x08:\x05\x66\x61lse\x12\x1b\n\x0cis_superuser\x18\x05 \x02(\x08:\x05\x66\x61lse\x12\x13\n\x0b\x64\x61te_joined\x18\x06 \x02(\x07\"6\n\x0cThermoSensor\x12\x13\n\x0bsensor_name\x18\x01 \x02(\t\x12\x11\n\tnice_name\x18\x02 \x02(\t\"d\n\tThermoLog\x12\x13\n\x0bsensor_name\x18\x01 \x01(\t\x12\x1d\n\x06sensor\x18\x02 \x01(\x0b\x32\r.ThermoSensor\x12\x15\n\rtemperature_c\x18\x03 \x02(\x02\x12\x0c\n\x04\x64\x61te\x18\x04 \x02(\x07\"\xa5\x01\n\x13\x41uthenticationToken\x12\x13\n\x0b\x61uth_device\x18\x01 \x02(\t\x12\x13\n\x0btoken_value\x18\x02 \x02(\t\x12\x0b\n\x03pin\x18\x03 \x01(\t\x12\x0f\n\x07user_id\x18\x04 \x01(\t\x12\x13\n\x04user\x18\x05 \x01(\x0b\x32\x05.User\x12\x0f\n\x07\x63reated\x18\x06 \x02(\x07\x12\x0f\n\x07\x65nabled\x18\x07 \x02(\x08\x12\x0f\n\x07\x65xpires\x18\x08 \x01(\x07')
 
 
 
@@ -589,31 +589,24 @@ _USER = descriptor.Descriptor(
 )
 
 
-_THERMOLOG = descriptor.Descriptor(
-  name='ThermoLog',
-  full_name='ThermoLog',
+_THERMOSENSOR = descriptor.Descriptor(
+  name='ThermoSensor',
+  full_name='ThermoSensor',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='sensor_name', full_name='ThermoLog.sensor_name', index=0,
+      name='sensor_name', full_name='ThermoSensor.sensor_name', index=0,
       number=1, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='temperature_c', full_name='ThermoLog.temperature_c', index=1,
-      number=2, type=2, cpp_type=6, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='date', full_name='ThermoLog.date', index=2,
-      number=3, type=7, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
+      name='nice_name', full_name='ThermoSensor.nice_name', index=1,
+      number=2, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -627,7 +620,133 @@ _THERMOLOG = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=1224,
-  serialized_end=1293,
+  serialized_end=1278,
+)
+
+
+_THERMOLOG = descriptor.Descriptor(
+  name='ThermoLog',
+  full_name='ThermoLog',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='sensor_name', full_name='ThermoLog.sensor_name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='sensor', full_name='ThermoLog.sensor', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='temperature_c', full_name='ThermoLog.temperature_c', index=2,
+      number=3, type=2, cpp_type=6, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='date', full_name='ThermoLog.date', index=3,
+      number=4, type=7, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1280,
+  serialized_end=1380,
+)
+
+
+_AUTHENTICATIONTOKEN = descriptor.Descriptor(
+  name='AuthenticationToken',
+  full_name='AuthenticationToken',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='auth_device', full_name='AuthenticationToken.auth_device', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='token_value', full_name='AuthenticationToken.token_value', index=1,
+      number=2, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='pin', full_name='AuthenticationToken.pin', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='user_id', full_name='AuthenticationToken.user_id', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='user', full_name='AuthenticationToken.user', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='created', full_name='AuthenticationToken.created', index=5,
+      number=6, type=7, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='enabled', full_name='AuthenticationToken.enabled', index=6,
+      number=7, type=8, cpp_type=7, label=2,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='expires', full_name='AuthenticationToken.expires', index=7,
+      number=8, type=7, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1383,
+  serialized_end=1548,
 )
 
 
@@ -639,6 +758,8 @@ _KEG.fields_by_name['type'].message_type = _BEERTYPE
 _KEG.fields_by_name['size'].message_type = _KEGSIZE
 _KEGTAP.fields_by_name['current_keg'].message_type = _KEG
 _KEGTAP.fields_by_name['last_temperature'].message_type = _THERMOLOG
+_THERMOLOG.fields_by_name['sensor'].message_type = _THERMOSENSOR
+_AUTHENTICATIONTOKEN.fields_by_name['user'].message_type = _USER
 
 class BeerStyle(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
@@ -688,10 +809,22 @@ class User(message.Message):
   
   # @@protoc_insertion_point(class_scope:User)
 
+class ThermoSensor(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _THERMOSENSOR
+  
+  # @@protoc_insertion_point(class_scope:ThermoSensor)
+
 class ThermoLog(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _THERMOLOG
   
   # @@protoc_insertion_point(class_scope:ThermoLog)
+
+class AuthenticationToken(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _AUTHENTICATIONTOKEN
+  
+  # @@protoc_insertion_point(class_scope:AuthenticationToken)
 
 # @@protoc_insertion_point(module_scope)

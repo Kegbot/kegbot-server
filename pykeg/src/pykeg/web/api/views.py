@@ -31,6 +31,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.template import Context
+from django.shortcuts import get_object_or_404
+
 
 from pykeg.core import models
 from pykeg.core import protolib
@@ -104,6 +106,25 @@ def all_drinks(request):
 @jsonhandler
 def all_taps(request):
   return models.KegTap.objects.all().order_by('name')
+
+@jsonhandler
+def get_user(request, username):
+  return get_object_or_404(models.User, username=username)
+
+@jsonhandler
+def get_auth_token(request, auth_device, token_value):
+  return get_object_or_404(models.AuthenticationToken, auth_device=auth_device,
+      token_value=token_value)
+
+@jsonhandler
+def get_thermo_sensor(request, raw_name):
+  return get_object_or_404(models.ThermoSensor, raw_name=raw_name)
+
+@jsonhandler
+def get_thermo_sensor_logs(request, raw_name):
+  sensor = get_object_or_404(models.ThermoSensor, raw_name=raw_name)
+  logs = sensor.thermolog_set.all()
+  return logs
 
 @py_to_json
 def last_drinks_html(request):

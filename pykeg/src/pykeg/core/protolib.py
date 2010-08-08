@@ -175,10 +175,37 @@ def KegSizeToProto(size, full=True):
   ret.volume_ml = size.volume_ml
   return ret
 
+@converts(models.ThermoSensor)
+def ThermoSensorToProto(record, full=True):
+  ret = models_pb2.ThermoSensor()
+  ret.sensor_name = record.raw_name
+  ret.nice_name = record.nice_name
+  return ret
+
 @converts(models.Thermolog)
 def ThermoLogToProto(record, full=True):
   ret = models_pb2.ThermoLog()
-  ret.sensor_name = record.sensor.nice_name
+  if full:
+    ret.sensor_name = record.sensor.raw_name
+    ret.sensor.CopyFrom(ToProto(record.sensor))
   ret.temperature_c = record.temp
   ret.date = time_to_int(record.time)
   return ret
+
+@converts(models.AuthenticationToken)
+def AuthTokenToProto(record, full=True):
+  ret = models_pb2.AuthenticationToken()
+  ret.auth_device = record.auth_device
+  ret.token_value = record.token_value
+  if record.pin:
+    ret.pin = record.pin
+  if record.user:
+    ret.user_id = record.user.username
+    if full:
+      ret.user.CopyFrom(ToProto(record.user))
+  ret.created = time_to_int(record.created)
+  ret.enabled = record.enabled
+  if record.expires:
+    ret.expires = time_to_int(record.expires)
+  return ret
+

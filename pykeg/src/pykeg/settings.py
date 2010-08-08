@@ -8,6 +8,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.humanize',
     'django.contrib.markup',
+    'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django_extensions',
@@ -68,12 +69,14 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.i18n',
     'django.core.context_processors.media',
     'django.core.context_processors.request',
+    'django.contrib.messages.context_processors.messages',
     'pykeg.web.context_processors.enabled_features',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'facebook.djangofb.FacebookMiddleware',
@@ -85,6 +88,9 @@ AUTHENTICATION_BACKENDS = (
     'socialregistration.auth.FacebookAuth',
     'socialregistration.auth.TwitterAuth',
 )
+
+### django.contrib.messages
+MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 
 ### django-registration
 ACCOUNT_ACTIVATION_DAYS = 3

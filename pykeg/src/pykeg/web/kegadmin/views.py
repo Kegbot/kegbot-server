@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.template import RequestContext
@@ -34,6 +35,7 @@ def change_kegs(request):
       new_keg.save()
       tap.current_keg = new_keg
       tap.save()
+      messages.success(request, 'The new keg was activated.')
       form = forms.ChangeKegForm()
   context['change_keg_form'] = form
   return render_to_response('kegadmin/change-kegs.html', context)

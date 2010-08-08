@@ -69,6 +69,19 @@
       </div>
     </div>
 
+    {% if messages %}
+    <div id="kb-message-container">
+      {% for message in messages %}
+        <div class="kb-message-box">
+          <div class="kb-message-{{message.tags}}">
+            {{message}}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+
     <div id="kb-main-container">
 
       {% if page_node %}

@@ -40,6 +40,7 @@ import Queue
 
 import gflags
 import serial
+import time
 
 from pykeg.core import importhacks
 from pykeg.core import kb_app

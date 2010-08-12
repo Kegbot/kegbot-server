@@ -45,7 +45,7 @@ setup(
       'django >= 1.2',
       'django-imagekit >= 0.3.3',
       'django-registration',
-      'django-socialregistration',
+      'django-socialregistration == 0.3.4',
       'django_extensions',
       'MySQL-python',
       'pil',

@@ -47,10 +47,15 @@ def ToProto(obj, full=True):
 
   `obj` may be of any object with a protobuf equivalent.
   """
+  if obj is None:
+    return None
   kind = obj.__class__
-  if kind in _CONVERSION_MAP:
+  if hasattr(obj, '__iter__'):
+    return (ToProto(item, full) for item in obj)
+  elif kind in _CONVERSION_MAP:
     return _CONVERSION_MAP[kind](obj, full)
-  raise ValueError, "Unknown object type: %s" % kind
+  else:
+    raise ValueError, "Unknown object type: %s" % kind
 
 ### Model conversions
 
@@ -155,6 +160,8 @@ def KegTapToProto(tap, full=True):
   ret = models_pb2.KegTap()
   ret.id = tap.id
   ret.name = tap.name
+  ret.meter_name = tap.meter_name
+  ret.ml_per_tick = tap.ml_per_tick
   if tap.description:
     ret.description = tap.description
   if tap.current_keg:

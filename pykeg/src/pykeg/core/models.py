@@ -252,7 +252,8 @@ class Drink(models.Model):
      ('valid', 'valid'),
      ('invalid', 'invalid'),
      ), default = 'valid')
-  session = models.ForeignKey('DrinkingSession', null=True, blank=True, editable=False)
+  session = models.ForeignKey('DrinkingSession',
+      related_name='drinks', null=True, blank=True, editable=False)
 
 def _DrinkPreSave(sender, instance, **kwargs):
   if not instance.session:

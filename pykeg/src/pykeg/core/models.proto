@@ -1,3 +1,21 @@
+// Describes an authentication token
+message AuthenticationToken {
+  // The token name, a combination of the auth device and unique key.
+  required string id = 1;
+
+  // The user owning the token.
+  optional string username = 2;
+
+  // The date the token was created.
+  required fixed32 created_time = 3;
+
+  // The date after which the token is invalid, if any.
+  optional fixed32 expire_time = 4;
+
+  // Whether the token is enabled.
+  required bool enabled = 5 [default=true];
+}
+
 // Describes a named beer variety, such as "India Pale Ale".
 message BeerStyle {
 
@@ -21,12 +39,10 @@ message BeerType {
   // Brewer information for the beer.  May refer to an 'unknown' or generic
   // brewer record.
   required string brewer_id = 3;
-  optional Brewer brewer = 4;
 
   // Style information for the beer.  May refer to an 'unknown' or generic beer
   // style.
   required string style_id = 5;
-  optional BeerStyle style = 6;
 
   // For seasonal or special edition beers, the year or other edition name.
   optional string edition = 12;
@@ -58,7 +74,7 @@ message Brewer {
   required string name = 2;
 
   // The country of the brewer's headquarters.
-  required string country = 3 [default = ''];
+  optional string country = 3 [default = ''];
 
   // The state of the brewer's headquarters.
   optional string origin_state = 4;
@@ -89,11 +105,11 @@ message Drink {
   // The volume of the drink, in milliliters.
   required float volume_ml = 3;
 
-  // Local time when the drink started, in seconds since epoch (unix timestamp).
-  required fixed32 starttime = 4;
+  // The session this drink belongs to.
+  required string session_id = 4;
 
-  // Local time when the drink ended, in seconds since epoch (unix timestamp).
-  required fixed32 endtime = 5;
+  // Local time when the drink was poured, in seconds since epoch (unix timestamp).
+  required fixed32 pour_time = 5;
 
   // True if the drink is considered 'valid'.
   required bool is_valid = 6 [default = true];
@@ -103,8 +119,8 @@ message Drink {
   optional uint32 keg_id = 7;
   optional Keg keg = 8;
 
-  // The User that poured the drink.  May refer to the anonymous 'unknown' user.
-  required string user_id = 9;
+  // The User that poured the drink.  May be unset if the drinker was unknown.
+  optional string user_id = 9;
   optional User user = 10;
 
 }
@@ -115,37 +131,34 @@ message Keg {
   // The unique identifier for this keg.
   required uint32 id = 1;
 
+  // The keg's current status.  Typically either "online" or "offline".
+  required string status = 2;
+
   // The kind of beer within the keg.
-  required string type_id = 2;
-  optional BeerType type = 3;
+  required string type_id = 3;
 
   // The size of the keg.
   required uint32 size_id = 4;
-  optional KegSize size = 5;
 
   // Local time when the keg was 'started', in seconds since epoch (unix
   // timestamp). This should be no later than the time of the first Drink.
-  required fixed32 startdate = 6;
+  required fixed32 started_time = 5;
 
   // Local time when the keg was 'completed', in seconds since epoch (unix
   // timestamp). This should be no sooner than the time of the most recent
   // drink.  If the keg's `status` is not 'offline', then this value is
   // meaningless.
-  required fixed32 enddate = 7;
+  required fixed32 finished_time = 6;
 
   // The adminstrator's description of this keg.
-  optional string description = 8;
-
-  // The original cost of this keg.
-  // TODO(mikey): deprecate this field.
-  optional float origcost = 9;
+  optional string description = 7;
 
   // The percentage of the original volume that is remaining.
-  optional float pct_full = 10;
+  required float percent_full = 8;
 
   // The volume, in milliliters, remaning.  This is simply a convenience value
   // that matches pct_full * size.volume_ml.
-  optional float volume_ml_remain = 11;
+  required float volume_ml_remain = 9;
 
 }
 
@@ -166,22 +179,54 @@ message KegSize {
 message KegTap {
 
   // The unique identifier for this tap.
-  required uint32 id = 1;
+  required string id = 1;
 
   // The name of the tap, a free-form string ("Main tap", "Wet bar", ...)
   required string name = 2;
 
+  // The meter the tap is assigned to.
+  required string meter_name = 3;
+
+  // Size of measurement.
+  required float ml_per_tick = 4;
+
   // A longer description of the tap.
-  optional string description = 3;
+  optional string description = 5;
 
   // The Keg currently assigned to the tap.  May be unset if there is no keg
   // configured.
-  optional uint32 current_keg_id = 5;
-  optional Keg current_keg = 6;
+  optional uint32 current_keg_id = 6;
 
-  // The last recorded temperature, if known.
-  optional ThermoLog last_temperature = 7;
+  // The temperature sensor for the tap, if any.
+  optional string thermo_sensor_id = 7;
 
+}
+
+message Session {
+  required string id = 1;
+  required fixed32 start_time = 2;
+  required fixed32 end_time = 3;
+  required float volume_ml = 4;
+}
+
+message ThermoLog {
+  required string id = 1;
+
+  required string sensor_id = 2;
+
+  // The temperature, in degrees C.
+  required float temperature_c = 3;
+
+  // The recording date.
+  required fixed32 record_time = 4;
+}
+
+message ThermoSensor {
+  // The raw/unique name of the sensor.
+  required string sensor_name = 1;
+
+  // The friendly name for the sensor.
+  required string nice_name = 2;
 }
 
 // A drinker registered in the kegbot system.
@@ -206,50 +251,18 @@ message User {
 
   // Local time for the user's registration, in seconds since epoch (unix
   // timestamp).
-  required fixed32 date_joined = 6;
+  required fixed32 joined_time = 6;
 
 }
 
-message ThermoSensor {
-  // The raw/unique name of the sensor.
-  required string sensor_name = 1;
-
-  // The firendly name for the sensor.
-  required string nice_name = 2;
+message UserSession {
+  required string id = 1;
+  required string session_id = 2;
+  required string username = 3;
+  required string start_time = 4;
+  required string end_time = 5;
+  required float volume_ml = 6;
 }
 
-message ThermoLog {
-  // The name of the sensor.
-  optional string sensor_name = 1;
-  optional ThermoSensor sensor = 2;
-
-  // The temperature, in degrees C.
-  required float temperature_c = 3;
-
-  // The recording date.
-  required fixed32 date = 4;
-}
-
-message AuthenticationToken {
-  // The name of the auth device.
-  required string auth_device = 1;
-  
-  // The value of the token.
-  required string token_value = 2;
-
-  // An optional pin.
-  optional string pin = 3;
-
-  // The user owning the token.
-  optional string user_id = 4;
-  optional User user = 5;
-
-  // THe date the token was created.
-  required fixed32 created = 6;
-
-  // Whether the token is enabled.
-  required bool enabled = 7;
-
-  // The date the token expires, if any.
-  optional fixed32 expires = 8;
+message UserStats {
 }

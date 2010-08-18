@@ -59,25 +59,18 @@ def ToProto(obj, full=True):
 
 ### Model conversions
 
-@converts(models.Keg)
-def KegToProto(keg, full=True):
-  ret = models_pb2.Keg()
-  ret.id = keg.id
-  ret.type_id = keg.type.id
-  if full:
-    ret.type.CopyFrom(ToProto(keg.type))
-  ret.size_id = keg.size.id
-  if full:
-    ret.size.CopyFrom(ToProto(keg.size))
-    rem = float(keg.remaining_volume())
-    ret.volume_ml_remain = rem
-    ret.pct_full = rem / float(keg.full_volume())
-  ret.startdate = time_to_int(keg.startdate)
-  ret.enddate = time_to_int(keg.enddate)
-  if keg.description:
-    ret.description = keg.description
-  if keg.origcost is not None:
-    ret.origcost = keg.origcost
+@converts(models.AuthenticationToken)
+def AuthTokenToProto(record, full=True):
+  ret = models_pb2.AuthenticationToken()
+  ret.id = '%s|%s' % (record.auth_device, record.token_value)
+  if record.user:
+    ret.username = record.user.username
+  ret.created_time = time_to_int(record.created)
+  if record.expires:
+    ret.expire_time = time_to_int(record.expires)
+  ret.enabled = record.enabled
+  if record.pin:
+    ret.pin = record.pin
   return ret
 
 @converts(bdb_models.BeerType)
@@ -86,11 +79,7 @@ def BeerTypeToProto(beertype, full=True):
   ret.id = beertype.id
   ret.name = beertype.name
   ret.brewer_id = beertype.brewer.id
-  if full:
-    ret.brewer.CopyFrom(ToProto(beertype.brewer))
   ret.style_id = beertype.style.id
-  if full:
-    ret.style.CopyFrom(ToProto(beertype.style))
   if beertype.edition is not None:
     ret.edition = beertype.edition
   if beertype.abv is not None:
@@ -106,7 +95,8 @@ def BrewerToProto(brewer, full=True):
   ret = models_pb2.Brewer()
   ret.id = brewer.id
   ret.name = brewer.name
-  ret.country = brewer.country
+  if brewer.country is not None:
+    ret.country = brewer.country
   if brewer.origin_state is not None:
     ret.origin_state = brewer.origin_state
   if brewer.origin_city is not None:
@@ -131,47 +121,32 @@ def DrinkToProto(drink, full=True):
   ret.id = drink.id
   ret.ticks = drink.ticks
   ret.volume_ml = drink.volume_ml
-  ret.starttime = time_to_int(drink.starttime)
-  ret.endtime = time_to_int(drink.endtime)
+  ret.session_id = str(drink.session.id)
+  ret.pour_time = time_to_int(drink.endtime)
   ret.is_valid = (drink.status == 'valid')
   if drink.keg:
     ret.keg_id = drink.keg.id
     if full:
-      ret.keg.CopyFrom(ToProto(drink.keg))
+      ret.keg.MergeFrom(ToProto(drink.keg))
   if drink.user:
     ret.user_id = drink.user.username
     if full:
-      ret.user.CopyFrom(ToProto(drink.user))
+      ret.drink.MergeFrom(ToProto(drink.user))
   return ret
 
-@converts(models.User)
-def UserToProto(user, full=True):
-  ret = models_pb2.User()
-  ret.username = user.username
-  ret.mugshot_url = user.get_profile().MugshotUrl()
-  ret.is_active = user.is_active
-  ret.is_staff = user.is_staff
-  ret.is_superuser = user.is_superuser
-  ret.date_joined = time_to_int(user.date_joined)
-  return ret
-
-@converts(models.KegTap)
-def KegTapToProto(tap, full=True):
-  ret = models_pb2.KegTap()
-  ret.id = tap.id
-  ret.name = tap.name
-  ret.meter_name = tap.meter_name
-  ret.ml_per_tick = tap.ml_per_tick
-  if tap.description:
-    ret.description = tap.description
-  if tap.current_keg:
-    ret.current_keg_id = tap.current_keg.id
-    if full:
-      ret.current_keg.CopyFrom(ToProto(tap.current_keg))
-  if tap.temperature_sensor:
-    recs = tap.temperature_sensor.thermolog_set.all().order_by('-time')
-    if recs:
-      ret.last_temperature.CopyFrom(ToProto(recs[0]))
+@converts(models.Keg)
+def KegToProto(keg, full=True):
+  ret = models_pb2.Keg()
+  ret.id = keg.id
+  ret.type_id = keg.type.id
+  ret.size_id = keg.size.id
+  rem = float(keg.remaining_volume())
+  ret.volume_ml_remain = rem
+  ret.percent_full = rem / float(keg.full_volume())
+  ret.started_time = time_to_int(keg.startdate)
+  ret.finished_time = time_to_int(keg.enddate)
+  if keg.description:
+    ret.description = keg.description
   return ret
 
 @converts(models.KegSize)
@@ -182,6 +157,39 @@ def KegSizeToProto(size, full=True):
   ret.volume_ml = size.volume_ml
   return ret
 
+@converts(models.KegTap)
+def KegTapToProto(tap, full=True):
+  ret = models_pb2.KegTap()
+  ret.id = str(tap.id)
+  ret.name = tap.name
+  ret.meter_name = tap.meter_name
+  ret.ml_per_tick = tap.ml_per_tick
+  if tap.description:
+    ret.description = tap.description
+  if tap.current_keg:
+    ret.current_keg_id = tap.current_keg.id
+  if tap.temperature_sensor:
+    ret.thermo_sensor_id = str(tap.temperature_sensor.id)
+  return ret
+
+@converts(models.DrinkingSession)
+def SessionToProto(record, full=True):
+  ret = models_pb2.Session()
+  ret.id = str(record.id)
+  ret.start_time = time_to_int(record.starttime)
+  ret.end_time = time_to_int(record.endtime)
+  ret.volume_ml = record.volume
+  return ret
+
+@converts(models.Thermolog)
+def ThermoLogToProto(record, full=True):
+  ret = models_pb2.ThermoLog()
+  ret.id = str(record.id)
+  ret.sensor_id = str(record.sensor.id)
+  ret.temperature_c = record.temp
+  ret.record_time = time_to_int(record.time)
+  return ret
+
 @converts(models.ThermoSensor)
 def ThermoSensorToProto(record, full=True):
   ret = models_pb2.ThermoSensor()
@@ -189,30 +197,25 @@ def ThermoSensorToProto(record, full=True):
   ret.nice_name = record.nice_name
   return ret
 
-@converts(models.Thermolog)
-def ThermoLogToProto(record, full=True):
-  ret = models_pb2.ThermoLog()
-  if full:
-    ret.sensor_name = record.sensor.raw_name
-    ret.sensor.CopyFrom(ToProto(record.sensor))
-  ret.temperature_c = record.temp
-  ret.date = time_to_int(record.time)
+@converts(models.User)
+def UserToProto(user, full=True):
+  ret = models_pb2.User()
+  ret.username = user.username
+  ret.mugshot_url = user.get_profile().MugshotUrl()
+  ret.is_active = user.is_active
+  ret.is_staff = user.is_staff
+  ret.is_superuser = user.is_superuser
+  ret.joined_time = time_to_int(user.date_joined)
   return ret
 
-@converts(models.AuthenticationToken)
-def AuthTokenToProto(record, full=True):
-  ret = models_pb2.AuthenticationToken()
-  ret.auth_device = record.auth_device
-  ret.token_value = record.token_value
-  if record.pin:
-    ret.pin = record.pin
-  if record.user:
-    ret.user_id = record.user.username
-    if full:
-      ret.user.CopyFrom(ToProto(record.user))
-  ret.created = time_to_int(record.created)
-  ret.enabled = record.enabled
-  if record.expires:
-    ret.expires = time_to_int(record.expires)
+@converts(models.DrinkingSessionUserPart)
+def UserSessionToProto(record, full=True):
+  ret = models_pb2.UserSession()
+  ret.id = str(record.id)
+  ret.session_id = str(record.session.id)
+  ret.username = ret.user.username
+  ret.start_time = time_to_int(record.starttime)
+  ret.end_time = time_to_int(record.endtime)
+  ret.volume_ml = record.volume_ml
   return ret
 

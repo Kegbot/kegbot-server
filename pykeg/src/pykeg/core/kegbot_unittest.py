@@ -50,16 +50,15 @@ class KegbotTestCase(TestCase):
 
     self.kegbot = kegbot.KegbotCoreApp()
     self.env = self.kegbot._env
+    self.backend = self.env.GetBackend()
 
-    self.test_user = models.User.objects.create(username='tester')
-    self.test_token = models.AuthenticationToken.objects.create(
-        auth_device='core.onewire', token_value='feedfacedeadbeef',
-        user=self.test_user)
+    self.test_user = self.backend.CreateNewUser('tester')
+    self.test_token = self.backend.CreateAuthToken('core.onewire',
+        '0000111122223333', 'tester')
 
-    self.test_user_2 = models.User.objects.create(username='tester_2')
-    self.test_token_2 = models.AuthenticationToken.objects.create(
-        auth_device='core.onewire', token_value='baadcafebeeff00d',
-        user=self.test_user_2)
+    self.test_user_2 = self.backend.CreateNewUser('tester_2')
+    self.test_token_2 = self.backend.CreateAuthToken('core.onewire',
+        'baadcafebeeff00d', 'tester_2')
     kb_common.AUTH_TOKEN_MAX_IDLE['core.onewire'] = 2
 
     # Kill the kegbot flow processing thread so we can single step it.
@@ -154,8 +153,8 @@ class KegbotTestCase(TestCase):
 
     drinks = self.test_keg.drink_set.all().order_by('id')
     self.assertEquals(len(drinks), 2)
-    self.assertEquals(drinks[0].user, self.test_user)
-    self.assertEquals(drinks[1].user, self.test_user_2)
+    self.assertEquals(protolib.ToProto(drinks[0].user), self.test_user)
+    self.assertEquals(protolib.ToProto(drinks[1].user), self.test_user_2)
 
   def testIdleFlow(self):
     meter_name = self.test_tap.meter_name

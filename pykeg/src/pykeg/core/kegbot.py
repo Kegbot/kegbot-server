@@ -69,8 +69,6 @@ class KegbotEnv(object):
         self._event_hub, self._backend)
     self._token_manager = manager.TokenManager('token-manager', self._event_hub,
         self._backend)
-    self._billing_manager = manager.BillingManager('billing', self._event_hub,
-        self._authentication_manager, self._backend)
     self._subscription_manager = manager.SubscriptionManager('pubsub',
         self._event_hub, self._kegnet_server)
 
@@ -83,7 +81,6 @@ class KegbotEnv(object):
     self._service_thread.AddEventHandler(self._thermo_manager)
     self._service_thread.AddEventHandler(self._authentication_manager)
     self._service_thread.AddEventHandler(self._token_manager)
-    self._service_thread.AddEventHandler(self._billing_manager)
     self._service_thread.AddEventHandler(self._subscription_manager)
 
     self.AddThread(self._service_thread)
@@ -97,11 +94,9 @@ class KegbotEnv(object):
     self.AddThread(self._watchdog_thread)
 
     for tap in self._backend.GetAllTaps():
+      # TODO: get rid of max_tick_delta parameter entirely
       self._tap_manager.RegisterTap(tap.meter_name, tap.ml_per_tick,
-          tap.max_tick_delta)
-
-    for acceptor in self._backend.GetBillAcceptors():
-      self._billing_manager.RegisterBillAcceptor(acceptor)
+          (1/tap.ml_per_tick*500))
 
   def AddThread(self, thr):
     self._threads.add(thr)

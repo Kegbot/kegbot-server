@@ -440,9 +440,8 @@ class DrinkManager(Manager):
     username = '<None>'
     if d.user:
       username = d.user.username
-    self._logger.info('Logged drink %i user=%s keg=%s ounces=%s ticks=%i' % (
-      d.id, username, keg_id, d.Volume().ConvertTo.Ounce,
-      d.ticks))
+    self._logger.info('Logged drink %i user=%s keg=%s liters=%.2f ticks=%i' % (
+      d.id, username, keg_id, d.volume_ml/1000.0, d.ticks))
 
     self._last_drink = d
 
@@ -451,8 +450,8 @@ class DrinkManager(Manager):
     created.flow_id = flow_id
     created.drink_id = d.id
     created.tap_name = tap_name
-    created.start_time = int(time.mktime(d.starttime.timetuple()))
-    created.end_time = int(time.mktime(d.endtime.timetuple()))
+    created.start_time = d.pour_time
+    created.end_time = d.pour_time
     if d.user:
       created.username = d.user.username
     self._PublishEvent(created)
@@ -734,79 +733,6 @@ class AuthenticationManager(Manager):
         return [self._tap_manager.GetTap(tap_name)]
       else:
         return []
-
-
-class BillingManager(Manager):
-  MAX_DELTA = datetime.timedelta(seconds=1)
-  def __init__(self, name, event_hub, auth_manager, backend):
-    Manager.__init__(self, name, event_hub)
-    self._auth_manager = auth_manager
-    self._backend = backend
-    self._acceptor = {}
-    self._counter = {}
-    self._active_credits = {}
-
-  def RegisterBillAcceptor(self, acceptor):
-    if acceptor.name not in self._acceptor:
-      self._acceptor[acceptor.name] = acceptor
-      self._counter[acceptor.name] = 0
-
-  @EventHandler(kegnet_pb2.MeterUpdate)
-  def HandleMeterUpdateEvent(self, event):
-    name = event.tap_name
-    if name not in self._acceptor:
-      return
-
-    increment = self._acceptor[name].increment
-    curr_reading = event.reading
-    last_reading = self._counter[name]
-    if curr_reading < last_reading:
-      if curr_reading == 0:
-        delta = 0
-      else:
-        delta = increment
-    else:
-      delta = increment * (curr_reading - last_reading)
-    self._counter[name] = curr_reading
-
-    activity, credit = self._active_credits.get(name, (None, 0))
-    if activity is None:
-      self._logger.info('New credit started')
-    credit += delta
-    self._active_credits[name] = (datetime.datetime.now(), credit)
-    self._logger.info('Acceptor "%s" credit: %.2f' % (name, credit))
-
-  @EventHandler(kegnet_pb2.HeartbeatSecondEvent)
-  def HandleHeartbeat(self, event):
-    if not self._active_credits:
-      return
-
-    now = datetime.datetime.now()
-    for acceptor_name in self._active_credits.keys():
-      last_activity, credit = self._active_credits[acceptor_name]
-      delta = now - last_activity
-      if delta >= self.MAX_DELTA:
-        self._ProcessCredit(acceptor_name, credit)
-        del self._active_credits[acceptor_name]
-
-  def _ProcessCredit(self, acceptor_name, credit_amount):
-    acceptor = self._acceptor[acceptor_name]
-
-    user = None
-    users = list(self._auth_manager.GetActiveUsers())
-    if users:
-      # XXX hack
-      credit.user = users[0]
-
-    credit = self._backend.RecordBillAcceptorCredit(credit_amount, acceptor, user)
-    self._logger.info('Logged credit for %s: %.2f' % (credit.user,
-        credit_amount))
-
-    event = kegnet_pb2.CreditAddedEvent()
-    event.amount = credit_amount
-    if credit.user:
-      event.username = credit.user.username
-    self._PublishEvent(event)
 
 
 class SubscriptionManager(Manager):

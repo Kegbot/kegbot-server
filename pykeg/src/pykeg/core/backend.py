@@ -22,10 +22,10 @@ import logging
 
 from django.db.utils import DatabaseError
 
-from pykeg.billing import models as billing_models
 from pykeg.core import kb_common
 from pykeg.core import config
 from pykeg.core import models
+from pykeg.core import protolib
 
 class BackendError(Exception):
   """Base backend error exception."""
@@ -75,14 +75,6 @@ class Backend:
     """Returns an AuthenticationToken instance."""
     raise NotImplementedError
 
-  def GetBillAcceptors(self):
-    """Returns all active BillAcceptor instances."""
-    raise NotImplementedError
-
-  def RecordBillAcceptorCredit(self, amount, acceptor, user=None):
-    """Records a credit on the given acceptor for amount."""
-    raise NotImplementedError
-
 
 class KegbotBackend(Backend):
   """Django models backed Backend."""
@@ -120,14 +112,17 @@ class KegbotBackend(Backend):
       else:
         return None
 
+  def _GetUserObjFromUsername(self, username):
+    try:
+      return models.User.objects.get(username=username)
+    except models.User.DoesNotExist:
+      return None
+
   def GetConfig(self):
     return self._config
 
   def GetUserFromUsername(self, username):
-    matches = models.User.objects.filter(username=username)
-    if not matches.count() == 1:
-      return None
-    return matches[0]
+    return protolib.ToProto(self._GetUserObjFromUsername(username))
 
   def CreateNewUser(self, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
       weight=kb_common.DEFAULT_NEW_USER_WEIGHT):
@@ -137,18 +132,25 @@ class KegbotBackend(Backend):
     p.gender = gender
     p.weight = weight
     p.save()
-    return u
+    return protolib.ToProto(u)
+
+  def CreateAuthToken(self, auth_device, token_value, username=None):
+    token = models.AuthenticationToken.objects.create(
+        auth_device=auth_device, token_value=token_value)
+    if username:
+      user = self._GetUserObjFromUsername(username)
+      token.user = user
+    token.save()
+    return protolib.ToProto(token)
 
   def GetAllTaps(self):
-    return models.KegTap.objects.all()
+    return protolib.ToProto(list(models.KegTap.objects.all()))
 
   def RecordDrink(self, ticks, volume_ml, starttime, endtime, username=None,
       tap_name=None, status='valid'):
 
     # Look up the username, selecting the default user if unknown/invalid.
-    user = None
-    if username:
-      user = self.GetUserFromUsername(username)
+    user = self._GetUserObjFromUsername(username)
 
     # Look up the tap name, assigning the current keg on the tap if valid.
     keg = None
@@ -158,27 +160,18 @@ class KegbotBackend(Backend):
     d = models.Drink(ticks=int(ticks), volume_ml=volume_ml, starttime=starttime,
         endtime=endtime, user=user, keg=keg, status=status)
     d.save()
-    return d
+    return protolib.ToProto(d)
 
   def LogSensorReading(self, sensor_name, temperature, when):
     sensor = self._GetSensorFromName(sensor_name)
     res = models.Thermolog.objects.create(sensor=sensor, temp=temperature,
         time=when)
     res.save()
-    return res
+    return protolib.ToProto(res)
 
   def GetAuthToken(self, auth_device, token_value):
     try:
-      return models.AuthenticationToken.objects.get(auth_device=auth_device,
-        token_value=token_value)
+      return protolib.ToProto(models.AuthenticationToken.objects.get(
+          auth_device=auth_device, token_value=token_value))
     except models.AuthenticationToken.DoesNotExist:
       return None
-
-  def GetBillAcceptors(self):
-    return billing_models.BillAcceptor.objects.all()
-
-  def RecordBillAcceptorCredit(self, amount, acceptor, user=None):
-    res = billing_models.Credit.objects.create(amount=amount,
-        acceptor=acceptor, user=user)
-    res.save()
-    return res

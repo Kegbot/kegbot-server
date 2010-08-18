@@ -55,11 +55,7 @@ def set_defaults():
   secondary_tap = models.KegTap(name='Second Tap', meter_name='kegboard.flow1')
   secondary_tap.save()
 
-  # user defaults
   b = backend.KegbotBackend()
-  guest_user = b.CreateNewUser('guest')
-  guest_user.is_guest = True
-  guest_user.save()
 
   # brewer defaults
   unk_brewer = bdb.Brewer(name='Unknown Brewer')

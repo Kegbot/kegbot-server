@@ -13,3 +13,8 @@ def enabled_features(request):
   ret['USE_FACEBOOK'] = features.use_facebook()
   ret['USE_TWITTER'] = features.use_twitter()
   return ret
+
+def kbsite(request):
+  ret = {}
+  ret['kbsite'] = request.kbsite
+  return ret

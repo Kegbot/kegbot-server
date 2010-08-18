@@ -23,11 +23,6 @@
 from pykeg.core import models
 from pykeg.core import units
 
-def all_valid_drinks():
-  drinks = models.Drink.objects.filter(status='valid')
-  drinks = drinks.filter(volume_ml__gt=0)
-  return drinks
-
 def current_keg():
   q = models.Keg.objects.filter(status='online').order_by('-id')
   if len(q):
@@ -41,7 +36,7 @@ def user_is_hidden(user):
 def keg_drinks(keg):
   if not keg:
     return []
-  return models.Drink.objects.filter(status='valid', keg=keg, volume_ml__gt=0)
+  return keg.drink_set.get_valid()
 
 def keg_drinkers_by_volume(keg):
   return drinkers_by_volume(keg_drinks(keg))

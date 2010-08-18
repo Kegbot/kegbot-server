@@ -39,12 +39,10 @@ class UserStats:
     self._total_volume = volume
 
   def AllDrinks(self):
-    drinks = view_util.all_valid_drinks().filter(user=self.user).order_by('-starttime')
-    return drinks
+    return self.user.drink_set.get_valid()
 
   def AllDrinksAsc(self):
-    drinks = view_util.all_valid_drinks().filter(user=self.user).order_by('starttime')
-    return drinks
+    return self.AllDrinks().order_by('endtime')
 
   def AllSessions(self):
     sessions = self.user.drinkingsession_set.all()

@@ -71,6 +71,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
     'pykeg.web.context_processors.enabled_features',
+    'pykeg.web.context_processors.kbsite',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -78,6 +79,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'pykeg.web.middleware.KegbotSiteMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'facebook.djangofb.FacebookMiddleware',
     'socialregistration.middleware.FacebookMiddleware',

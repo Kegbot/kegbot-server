@@ -29,15 +29,15 @@ else:
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.template.loader import get_template
+from django.template import RequestContext
 from django.template import Context
+from django.template.loader import get_template
 from django.shortcuts import get_object_or_404
 
 
 from pykeg.core import models
 from pykeg.core import protolib
 from pykeg.core import protoutil
-from pykeg.web.kegweb import view_util
 
 INDENT = 0
 if settings.DEBUG:
@@ -88,12 +88,12 @@ class jsonhandler:
       res = protoutil.ProtoMessageToDict(protolib.ToProto(res, with_full))
     return res
 
-def _get_last_drinks():
-  return view_util.all_valid_drinks().order_by('-endtime')[:5]
+def _get_last_drinks(request):
+  return request.kbsite.drink_set.get_valid().order_by('-endtime')[:5]
 
 @jsonhandler
 def last_drinks(request):
-  return _get_last_drinks()
+  return _get_last_drinks(request)
 
 @jsonhandler
 def all_kegs(request):
@@ -128,7 +128,7 @@ def get_thermo_sensor_logs(request, raw_name):
 
 @py_to_json
 def last_drinks_html(request):
-  last_drinks = _get_last_drinks()
+  last_drinks = _get_last_drinks(request)
 
   # render each drink
   template = get_template('kegweb/drink-box.html')
@@ -142,7 +142,7 @@ def last_drinks_html(request):
 
 @py_to_json
 def last_drink_id(request):
-  last = view_util.all_valid_drinks().order_by('-endtime')
+  last = request.kbsite.drink_set.get_valid().order_by('-endtime')
   if len(last) == 0:
     return {'id': 0}
   else:

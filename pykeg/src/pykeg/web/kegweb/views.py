@@ -49,15 +49,14 @@ def index(request):
   except kegweb_models.Page.DoesNotExist:
     page = None
   context['page_node'] = page
-  context['last_drinks'] = view_util.all_valid_drinks().order_by('-id')[:5]
-  context['template'] = 'index.html'
-  context['taps'] = models.KegTap.objects.all()
+  context['taps'] = request.kbsite.kegtap_set.all()
+  context['latest_drinks'] = request.kbsite.drink_set.order_by('-endtime')[:5]
   return render_to_response('index.html', context)
 
 @cache_page(30)
 def system_stats(request):
   context = RequestContext(request)
-  all_drinks = view_util.all_valid_drinks()
+  all_drinks = request.kbsite.drink_set.get_valid()
   context['top_volume_drinkers_alltime'] = view_util.drinkers_by_volume(all_drinks)[:10]
   return render_to_response('kegweb/system-stats.html', context)
 
@@ -87,7 +86,7 @@ def user_detail_by_id(request, user_id):
   return redirect_to(request, url='/drinker/'+user.username)
 
 def keg_list(request):
-  all_kegs = models.Keg.objects.all().order_by('-id')
+  all_kegs = request.kbsite.keg_set.all().order_by('-id')
   return object_list(request,
       queryset=all_kegs,
       template_object_name='keg',
@@ -95,22 +94,21 @@ def keg_list(request):
 
 @cache_page(30)
 def keg_detail(request, keg_id):
-  all_kegs = models.Keg.objects.all()
-  return object_detail(request,
-      queryset=all_kegs,
-      object_id=keg_id,
-      template_object_name='keg',
-      template_name='kegweb/keg_detail.html')
+  all_kegs = request.kbsite.keg_set.all()
+  return object_detail(request, queryset=all_kegs, object_id=keg_id,
+      template_object_name='keg', template_name='kegweb/keg_detail.html')
 
 def drink_list(request):
+  all_drinks = request.kbsite.drink_set.get_valid()
   return object_list(request,
-      queryset=view_util.all_valid_drinks(),
+      queryset=all_drinks,
       template_name='kegweb/drink_list.html',
       template_object_name='drink')
 
 def drink_detail(request, drink_id):
+  all_drinks = request.kbsite.drink_set.get_valid()
   return object_detail(request,
-      queryset=view_util.all_valid_drinks(),
+      queryset=all_drinks,
       object_id=drink_id,
       template_name='kegweb/drink_detail.html',
       template_object_name='drink')

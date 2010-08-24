@@ -259,8 +259,8 @@ message UserSession {
   required string id = 1;
   required string session_id = 2;
   required string username = 3;
-  required string start_time = 4;
-  required string end_time = 5;
+  required fixed32 start_time = 4;
+  required fixed32 end_time = 5;
   required float volume_ml = 6;
 }
 

@@ -131,7 +131,7 @@ def DrinkToProto(drink, full=True):
   if drink.user:
     ret.user_id = drink.user.username
     if full:
-      ret.drink.MergeFrom(ToProto(drink.user))
+      ret.user.MergeFrom(ToProto(drink.user))
   return ret
 
 @converts(models.Keg)
@@ -145,6 +145,7 @@ def KegToProto(keg, full=True):
   ret.percent_full = rem / float(keg.full_volume())
   ret.started_time = time_to_int(keg.startdate)
   ret.finished_time = time_to_int(keg.enddate)
+  ret.status = keg.status
   if keg.description:
     ret.description = keg.description
   return ret
@@ -213,7 +214,7 @@ def UserSessionToProto(record, full=True):
   ret = models_pb2.UserSession()
   ret.id = str(record.id)
   ret.session_id = str(record.session.id)
-  ret.username = ret.user.username
+  ret.username = record.user.username
   ret.start_time = time_to_int(record.starttime)
   ret.end_time = time_to_int(record.endtime)
   ret.volume_ml = record.volume_ml

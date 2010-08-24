@@ -1,5 +1,6 @@
 # encoding: utf-8
 import datetime
+import sys
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -17,6 +18,16 @@ class Migration(SchemaMigration):
         for profile in orm.UserProfile.objects.all():
           if '__default_user__' in (l.labelname for l in profile.labels.all()):
             guest_ids.add(profile.user_id)
+
+        print 'Guest users found:'
+        for guest_id in guest_ids:
+          user = orm.User.objects.get(id=guest_id)
+          print '  %s' % (user.username,)
+
+        if len(guest_ids) > 1:
+          print "Error: too many users with __default_user__ label"
+          print "Please remove the label from all but the single 'guest' user."
+          sys.exit(1)
 
         for d in orm.Drink.objects.all():
           if d.user_id in guest_ids:

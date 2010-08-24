@@ -58,27 +58,28 @@ class TwitterKegnetClient(kegnet.SimpleKegnetClient):
     # for now..
     drink = core_models.Drink.objects.get(id=event.drink_id)
 
-    try:
-      profile = drink.user.get_profile()
-    except core_models.UserProfile.DoesNotExist:
-      self._logger.warning('Profile for user %s does not exist' % (drink.user,))
-      return
-
-    if profile.IsUnknownUser():
+    tweet_to = TWITTER_NAME_UNKNOWN
+    if drink.user:
+      try:
+        profile = drink.user.get_profile()
+      except core_models.UserProfile.DoesNotExist:
+        self._logger.warning('Profile for user %s does not exist' % (drink.user,))
+        return
+      try:
+        twitter_link = models.UserTwitterLink.objects.get(user_profile=profile)
+        tweet_to = '@' + twitter_link.twitter_name
+        # TODO(mikey): determine if the user is following us; refuse to tweet if
+        # not (so as to avoid tweeting @SomeRandomUser)
+        # TODO(mikey): follow users who have established a link
+      except models.UserTwitterLink.DoesNotExist:
+        # Twitter name unknown: use kegbot username (with no '@')
+        self._logger.warning('User %s has not enabled twitter link.' % (drink.user,))
+        tweet_to = drink.user.username
+    else:
       config = self._backend.GetConfig()
       if not config.getboolean('contrib.twitter.tweet_unknown'):
         self._logger.info('Tweeting for unknown users is disabled.')
         return
-
-    try:
-      twitter_link = models.UserTwitterLink.objects.get(user_profile=profile)
-      tweet_to = twitter_link.twitter_name
-      # TODO(mikey): determine if the user is following us; refuse to tweet if
-      # not (so as to avoid tweeting @SomeRandomUser)
-      # TODO(mikey): follow users who have established a link
-    except models.UserTwitterLink.DoesNotExist:
-      self._logger.warning('User %s has not enabled twitter link.' % (drink.user,))
-      tweet_to = None
 
     tweet = self._GenerateTweet(drink, tweet_to)
     if not tweet:
@@ -127,15 +128,6 @@ class TwitterKegnetClient(kegnet.SimpleKegnetClient):
     if ounces < min_ounces:
       self._logger.info('Drink too small to care about; no tweet for you!')
       return
-
-    if tweet_to:
-      tweet_to = '@'+tweet_to
-    else:
-      default_user = self._backend._GetDefaultUser()
-      if drink.user == default_user:
-        tweet_to = TWITTER_NAME_UNKNOWN
-      else:
-        tweet_to = drink.user.username
 
     smug_remark = models.DrinkRemark.GetRemarkForDrink(drink)
     if smug_remark:

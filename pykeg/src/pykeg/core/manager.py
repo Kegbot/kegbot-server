@@ -478,8 +478,8 @@ class ThermoManager(Manager):
   @EventHandler(kegnet_pb2.ThermoEvent)
   def _HandleThermoUpdateEvent(self, event):
     now = time.time()
-    now = now - (now % (kb_common.THERMO_RECORD_DELTA_SECONDS))
-    now = datetime.datetime.fromtimestamp(now)
+    now = int(now - (now % (kb_common.THERMO_RECORD_DELTA_SECONDS)))
+    now_dt = datetime.datetime.fromtimestamp(now)
     sensor_name = event.sensor_name
     sensor_value = event.sensor_value
 
@@ -489,7 +489,8 @@ class ThermoManager(Manager):
 
     self._logger.info('Recording temperature sensor=%s value=%s' %
                       (sensor_name, sensor_value))
-    new_record = self._backend.LogSensorReading(sensor_name, sensor_value, now)
+    new_record = self._backend.LogSensorReading(sensor_name, sensor_value,
+        now_dt)
     self._name_to_last_record[sensor_name] = new_record
 
 class TokenRecord:

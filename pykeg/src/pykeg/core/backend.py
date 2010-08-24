@@ -79,9 +79,10 @@ class Backend:
 class KegbotBackend(Backend):
   """Django models backed Backend."""
 
-  def __init__(self):
+  def __init__(self, sitename='default'):
     self._logger = logging.getLogger('backend')
     self._config = config.KegbotConfig(self._GetConfigDict())
+    self._site = models.KegbotSite.objects.get(name=sitename)
 
   def _GetConfigDict(self):
     try:
@@ -94,7 +95,7 @@ class KegbotBackend(Backend):
 
   def _GetKegForTap(self, tap_name):
     try:
-      tap = models.KegTap.objects.get(meter_name=tap_name)
+      tap = models.KegTap.objects.get(site=self._site, meter_name=tap_name)
       if tap.current_keg and tap.current_keg.status == 'online':
         return tap.current_keg
     except models.KegTap.DoesNotExist:
@@ -103,10 +104,10 @@ class KegbotBackend(Backend):
 
   def _GetSensorFromName(self, name, autocreate=True):
     try:
-      return models.ThermoSensor.objects.get(raw_name=name)
+      return models.ThermoSensor.objects.get(site=self._site, raw_name=name)
     except models.ThermoSensor.DoesNotExist:
       if autocreate:
-        sensor = models.ThermoSensor(raw_name=name, nice_name=name)
+        sensor = models.ThermoSensor(site=self._site, raw_name=name, nice_name=name)
         sensor.save()
         return sensor
       else:
@@ -136,7 +137,7 @@ class KegbotBackend(Backend):
 
   def CreateAuthToken(self, auth_device, token_value, username=None):
     token = models.AuthenticationToken.objects.create(
-        auth_device=auth_device, token_value=token_value)
+        site=self._site, auth_device=auth_device, token_value=token_value)
     if username:
       user = self._GetUserObjFromUsername(username)
       token.user = user
@@ -157,21 +158,21 @@ class KegbotBackend(Backend):
     if tap_name:
       keg = self._GetKegForTap(tap_name)
 
-    d = models.Drink(ticks=int(ticks), volume_ml=volume_ml, starttime=starttime,
-        endtime=endtime, user=user, keg=keg, status=status)
+    d = models.Drink(site=self._site, ticks=int(ticks), volume_ml=volume_ml,
+        starttime=starttime, endtime=endtime, user=user, keg=keg, status=status)
     d.save()
     return protolib.ToProto(d)
 
   def LogSensorReading(self, sensor_name, temperature, when):
     sensor = self._GetSensorFromName(sensor_name)
-    res = models.Thermolog.objects.create(sensor=sensor, temp=temperature,
-        time=when)
+    res = models.Thermolog.objects.create(site=self._site, sensor=sensor,
+        temp=temperature, time=when)
     res.save()
     return protolib.ToProto(res)
 
   def GetAuthToken(self, auth_device, token_value):
     try:
       return protolib.ToProto(models.AuthenticationToken.objects.get(
-          auth_device=auth_device, token_value=token_value))
+          site=self._site, auth_device=auth_device, token_value=token_value))
     except models.AuthenticationToken.DoesNotExist:
       return None

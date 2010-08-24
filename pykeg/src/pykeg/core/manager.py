@@ -594,10 +594,9 @@ class TokenManager(Manager):
 
   def _PublishAuthEvent(self, record, added):
     user = None
-    if added:
-      token = self._backend.GetAuthToken(record.auth_device, record.token_value)
-      if token:
-        user = token.user
+    token = self._backend.GetAuthToken(record.auth_device, record.token_value)
+    if token:
+      user = token.user
 
     if not user:
       self._logger.info('Token not assigned: %s' % record)

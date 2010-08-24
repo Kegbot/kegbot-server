@@ -5,15 +5,16 @@ message AuthenticationToken {
 
   // The user owning the token.
   optional string username = 2;
+  optional User user = 3;
 
   // The date the token was created.
-  required fixed32 created_time = 3;
+  required fixed32 created_time = 4;
 
   // The date after which the token is invalid, if any.
-  optional fixed32 expire_time = 4;
+  optional fixed32 expire_time = 5;
 
   // Whether the token is enabled.
-  required bool enabled = 5 [default=true];
+  required bool enabled = 6 [default=true];
 }
 
 // Describes a named beer variety, such as "India Pale Ale".

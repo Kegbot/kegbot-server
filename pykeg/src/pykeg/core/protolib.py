@@ -65,6 +65,8 @@ def AuthTokenToProto(record, full=True):
   ret.id = '%s|%s' % (record.auth_device, record.token_value)
   if record.user:
     ret.username = record.user.username
+    if full:
+      ret.user.MergeFrom(ToProto(record.user))
   ret.created_time = time_to_int(record.created)
   if record.expires:
     ret.expire_time = time_to_int(record.expires)

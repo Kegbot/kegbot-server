@@ -61,8 +61,9 @@ class TwitterKegnetClient(kegnet.SimpleKegnetClient):
     tweet_to = TWITTER_NAME_UNKNOWN
     if drink.user:
       try:
-        profile = drink.user.get_profile()
-      except core_models.UserProfile.DoesNotExist:
+        db_user = core_models.User.objects.get(username=drink.user.username)
+        profile = db_user.get_profile()
+      except (core_models.User.DoesNotExist, core_models.UserProfile.DoesNotExist):
         self._logger.warning('Profile for user %s does not exist' % (drink.user,))
         return
       try:

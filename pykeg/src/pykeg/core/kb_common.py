@@ -41,7 +41,7 @@ AUTH_MODULE_CONTRIB_PHIDGET_RFID = 'contrib.phidget.rfid'
 # the token disappears.
 # TODO(mikey): expose configuration in db.
 AUTH_TOKEN_MAX_IDLE = {
-  AUTH_MODULE_CORE_ONEWIRE: 0,
+  AUTH_MODULE_CORE_ONEWIRE: 1,
   AUTH_MODULE_CONTRIB_PHIDGET_RFID: 240,
 }
 

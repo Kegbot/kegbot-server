@@ -125,6 +125,8 @@ def DrinkToProto(drink, full=True):
   ret.volume_ml = drink.volume_ml
   ret.session_id = str(drink.session.id)
   ret.pour_time = time_to_int(drink.endtime)
+  if drink.duration is not None:
+    ret.duration = drink.duration
   ret.is_valid = (drink.status == 'valid')
   if drink.keg:
     ret.keg_id = drink.keg.id
@@ -134,6 +136,8 @@ def DrinkToProto(drink, full=True):
     ret.user_id = drink.user.username
     if full:
       ret.user.MergeFrom(ToProto(drink.user))
+  if drink.auth_token:
+    ret.auth_token = drink.auth_token
   return ret
 
 @converts(models.Keg)

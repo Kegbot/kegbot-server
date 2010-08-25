@@ -111,18 +111,24 @@ message Drink {
 
   // Local time when the drink was poured, in seconds since epoch (unix timestamp).
   required fixed32 pour_time = 5;
+  
+  // Duration, in seconds, of the pour.
+  optional uint32 duration = 6;
 
   // True if the drink is considered 'valid'.
-  required bool is_valid = 6 [default = true];
+  required bool is_valid = 7 [default = true];
 
   // The Keg from which the drink was poured.  May be unset if the drink could
   // not be associated with a keg.
-  optional uint32 keg_id = 7;
-  optional Keg keg = 8;
+  optional uint32 keg_id = 8;
+  optional Keg keg = 9;
 
   // The User that poured the drink.  May be unset if the drinker was unknown.
-  optional string user_id = 9;
-  optional User user = 10;
+  optional string user_id = 10;
+  optional User user = 11;
+
+  // Auth token value used to pour the drink, if known.
+  optional string auth_token = 12;
 
 }
 

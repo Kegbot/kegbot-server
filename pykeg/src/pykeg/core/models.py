@@ -254,6 +254,7 @@ class Drink(models.Model):
      ), default = 'valid')
   session = models.ForeignKey('DrinkingSession',
       related_name='drinks', null=True, blank=True, editable=False)
+  auth_token = models.CharField(max_length=256, blank=True, null=True)
 
 def _DrinkPreSave(sender, instance, **kwargs):
   if not instance.session:

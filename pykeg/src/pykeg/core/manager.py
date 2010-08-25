@@ -415,23 +415,20 @@ class DrinkManager(Manager):
 
     ticks = event.ticks
     username = event.username
-    volume_ml = event.volume_ml
     tap_name = event.tap_name
     starttime = datetime.datetime.fromtimestamp(event.start_time)
-    endtime = datetime.datetime.fromtimestamp(event.last_activity_time)
+    pour_time = datetime.datetime.fromtimestamp(event.last_activity_time)
+    duration = (pour_time - starttime).seconds
     flow_id = event.flow_id
 
-    if volume_ml <= kb_common.MIN_VOLUME_TO_RECORD:
-      self._logger.info('Not recording flow: volume (%i mL) <= '
-        'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
-      return
+    # TODO: add to flow event
+    auth_token = None
 
     # Log the drink.  If the username is empty or invalid, the backend will
-    # assign it to the default (anonymous) user.  Similarly, if the tap name is
-    # unknown, or the tap does not have an active keg, the drink will be
-    # recorded with None as the keg.
-    d = self._backend.RecordDrink(ticks, volume_ml, starttime, endtime, username,
-        tap_name)
+    # assign it to the default (anonymous) user.  The backend will assign the
+    # drink to a keg.
+    d = self._backend.RecordDrink(tap_name, ticks=ticks, username=username,
+        pour_time=pour_time, duration=duration, auth_token=auth_token)
 
     keg_id = None
     if d.keg:

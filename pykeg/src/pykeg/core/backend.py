@@ -18,6 +18,7 @@
 
 """Wrapper module for database implementation."""
 
+import datetime
 import logging
 
 from django.db.utils import DatabaseError
@@ -62,8 +63,8 @@ class Backend:
     """Returns all currently enabled taps."""
     raise NotImplementedError
 
-  def RecordDrink(self, ticks, volume_ml, starttime, endtime, user, keg=None,
-      status='valid'):
+  def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
+      pour_time=None, duration=None, auth_token=None):
     """Records a new drink with the given parameters."""
     raise NotImplementedError
 
@@ -92,13 +93,16 @@ class KegbotBackend(Backend):
     except DatabaseError, e:
       raise BackendError, e
 
-  def _GetKegForTap(self, tap_name):
+  def _GetTapFromName(self, tap_name):
     try:
-      tap = models.KegTap.objects.get(meter_name=tap_name)
-      if tap.current_keg and tap.current_keg.status == 'online':
-        return tap.current_keg
+      return models.KegTap.objects.get(meter_name=tap_name)
     except models.KegTap.DoesNotExist:
-      pass
+      return None
+
+  def _GetKegForTapName(self, tap_name):
+    tap = self._GetTapFromName(tap_name)
+    if tap and tap.current_keg and tap.current_keg.status == 'online':
+      return tap.current_keg
     return None
 
   def _GetSensorFromName(self, name, autocreate=True):
@@ -146,19 +150,38 @@ class KegbotBackend(Backend):
   def GetAllTaps(self):
     return protolib.ToProto(list(models.KegTap.objects.all()))
 
-  def RecordDrink(self, ticks, volume_ml, starttime, endtime, username=None,
-      tap_name=None, status='valid'):
+  def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
+      pour_time=None, duration=None, auth_token=None):
 
-    # Look up the username, selecting the default user if unknown/invalid.
-    user = self._GetUserObjFromUsername(username)
+    tap = self._GetTapFromName(tap_name)
 
-    # Look up the tap name, assigning the current keg on the tap if valid.
-    keg = None
-    if tap_name:
-      keg = self._GetKegForTap(tap_name)
+    d = models.Drink(ticks=ticks)
 
-    d = models.Drink(ticks=int(ticks), volume_ml=volume_ml, starttime=starttime,
-        endtime=endtime, user=user, keg=keg, status=status)
+    if volume_ml is not None:
+      d.volume_ml = volume_ml
+    else:
+      d.volume_ml = float(ticks) * tap.ml_per_tick
+
+    if username:
+      d.user = self._GetUserObjFromUsername(username)
+
+    if not pour_time:
+      pour_time = datetime.datetime.now()
+    d.endtime = pour_time
+
+    if duration:
+      d.starttime = pour_time - datetime.timedelta(seconds=duration)
+      d.duration = duration
+    else:
+      d.starttime = pour_time
+      d.duration = 0
+
+    # Look up the current keg.
+    if tap.current_keg and tap.current_keg.status == 'online':
+      d.keg = tap.current_keg
+
+    d.auth_token = auth_token
+
     d.save()
     return protolib.ToProto(d)
 

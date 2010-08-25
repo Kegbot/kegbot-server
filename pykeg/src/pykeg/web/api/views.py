@@ -29,14 +29,17 @@ else:
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.http import Http404
 from django.template.loader import get_template
 from django.template import Context
 from django.shortcuts import get_object_or_404
 
 
+from pykeg.core import backend
 from pykeg.core import models
 from pykeg.core import protolib
 from pykeg.core import protoutil
+from pykeg.web.api import forms
 from pykeg.web.kegweb import view_util
 
 INDENT = 0
@@ -45,13 +48,25 @@ if settings.DEBUG:
 
 def ToJsonError(e):
   # TODO(mikey): add api-specific exceptions with more helpful error messages.
-  return {'error_code': 500, 'error_message': str(e)}
+  res = {
+    'error' : {
+      'code' : 'Error',
+      'message' : str(e),
+    }
+  }
+  return res
+
+def obj_to_dict(o, with_full=False):
+  if hasattr(o, '__iter__'):
+    return [protoutil.ProtoMessageToDict(protolib.ToProto(x, with_full)) for x in o]
+  else:
+    return protoutil.ProtoMessageToDict(protolib.ToProto(o, with_full))
 
 def py_to_json(f):
   def new_function(*args, **kwargs):
     try:
-      result = f(*args, **kwargs)
-    except ValueError, e:
+      result = {'result' : f(*args, **kwargs)}
+    except (ValueError,), e:
       result = ToJsonError(e)
     return HttpResponse(json.dumps(result, indent=INDENT),
         mimetype='application/json')
@@ -81,12 +96,7 @@ class jsonhandler:
     with_full = self.full
     if request.GET.get('full') == '1':
       with_full = True
-    if hasattr(res, '__iter__'):
-      res = [protoutil.ProtoMessageToDict(protolib.ToProto(x, with_full)) for x in res]
-      res = {'result': res}
-    else:
-      res = protoutil.ProtoMessageToDict(protolib.ToProto(res, with_full))
-    return res
+    return obj_to_dict(res, with_full)
 
 def _get_last_drinks():
   return view_util.all_valid_drinks().order_by('-endtime')[:5]
@@ -148,3 +158,34 @@ def last_drink_id(request):
   else:
     return {'id': last[0].id}
 
+@py_to_json
+def tap_detail(request, tap_id):
+  try:
+    tap = models.KegTap.objects.get(meter_name=tap_id)
+  except models.KegTap.DoesNotExist:
+    raise Http404
+
+  if request.method == 'POST':
+    form = forms.DrinkPostForm(request.POST)
+    if form.is_valid():
+      cd = form.cleaned_data
+      if cd.get('pour_time') and cd.get('now'):
+        pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))
+        now = datetime.datetime.fromtimestamp(cd.get('now'))
+        skew = datetime.datetime.now() - now
+        pour_time += skew
+      else:
+        pour_time = None
+      b = backend.KegbotBackend()
+      res = b.RecordDrink(tap_name=tap.meter_name,
+        ticks=cd['ticks'],
+        volume_ml=cd.get('volume_ml'),
+        username=cd.get('username'),
+        pour_time=pour_time,
+        duration=cd.get('duration'),
+        auth_token=cd.get('auth_token'))
+      return protoutil.ProtoMessageToDict(res)
+    else:
+      raise ValueError('Form not valid')
+  else:
+    return obj_to_dict(tap)

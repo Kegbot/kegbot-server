@@ -183,14 +183,14 @@ class KegbotBackend(Backend):
     d.auth_token = auth_token
 
     d.save()
-    return protolib.ToProto(d)
+    return protolib.ToProto(d, full=False)
 
   def LogSensorReading(self, sensor_name, temperature, when):
     sensor = self._GetSensorFromName(sensor_name)
     res = models.Thermolog.objects.create(sensor=sensor, temp=temperature,
         time=when)
     res.save()
-    return protolib.ToProto(res)
+    return protolib.ToProto(res, full=False)
 
   def GetAuthToken(self, auth_device, token_value):
     try:

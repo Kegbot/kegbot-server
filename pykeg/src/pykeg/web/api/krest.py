@@ -20,8 +20,9 @@
 
 import datetime
 import sys
+import types
 
-#from pykeg import settings
+from pykeg import settings
 from pykeg.core import models_pb2
 from pykeg.core.protoutil import DictToProtoMessage
 
@@ -45,9 +46,9 @@ except ImportError:
 import gflags
 FLAGS = gflags.FLAGS
 
-_DEFAULT_URL = 'http://localhost:8002/api/'
-#if hasattr(settings, 'KEGWEB_BASE_URL'):
-#  _DEFAULT_URL = '%s/api' % getattr(settings, 'KEGWEB_BASE_URL')
+_DEFAULT_URL = 'http://localhost:8000/api/'
+if hasattr(settings, 'KEGWEB_BASE_URL'):
+  _DEFAULT_URL = '%s/api' % getattr(settings, 'KEGWEB_BASE_URL')
 
 gflags.DEFINE_string('krest_url', _DEFAULT_URL,
     'Base URL for the Kegweb HTTP api.')
@@ -94,7 +95,7 @@ class KrestClient:
     endpoint = endpoint.strip('/')
     return '%s/%s/%s' % (base, endpoint, param_str)
 
-  def DoGET(self, endpoint, **kwargs):
+  def DoGET(self, endpoint, params=None):
     """Issues a GET request to the endpoint, and retuns the result.
 
     Keyword arguments are passed to the endpoint as GET arguments.
@@ -106,13 +107,7 @@ class KrestClient:
     If there was an error contacting the server, or in parsing its response, a
     ServerError is raised.
     """
-    if 'full' in kwargs:
-      if kwargs['full'] != 0:
-        kwargs['full'] = 1
-    else:
-      kwargs['full'] = 1
-
-    return self._FetchResponse(endpoint, params=kwargs)
+    return self._FetchResponse(endpoint, params=params)
 
   def DoPOST(self, endpoint, post_data, params=None):
     """Issues a POST request to the endpoint, and returns the result.
@@ -128,12 +123,17 @@ class KrestClient:
 
   def _FetchResponse(self, endpoint, params=None, post_data=None):
     """Issues a POST or GET request, depending on the arguments."""
+    if params and 'full' in params:
+      if params['full'] != 0:
+        params['full'] = 1
+    else:
+      params['full'] = 1
+
     url = self._GetURL(endpoint, params=params)
     encoded_post_data = self._EncodePostData(post_data)
 
     try:
       # Issue a GET or POST (urlopen will decide based on encoded_post_data).
-      print '>>> %s [%s]' % (url, encoded_post_data)
       response_data = urlopen(url, encoded_post_data).read()
     except URLError, e:
       raise ServerError('Caused by: %s' % e)
@@ -161,7 +161,7 @@ class KrestClient:
       code = d.get('code', 'Error')
       message = d.get('message')
       raise ApiError(code, message)
-    elif result in d:
+    elif 'result' in d:
       # Response was OK, return the result.
       return d.get('result')
     else:

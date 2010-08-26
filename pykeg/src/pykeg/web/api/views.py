@@ -263,8 +263,6 @@ def last_drink_id(request):
 def get_access_token(request):
   return {'token': AUTH_KEY}
 
-@py_to_json
-@auth_required
 def tap_detail(request, tap_id):
   try:
     tap = models.KegTap.objects.get(meter_name=tap_id)
@@ -272,28 +270,37 @@ def tap_detail(request, tap_id):
     raise Http404
 
   if request.method == 'POST':
-    form = forms.DrinkPostForm(request.POST)
-    if not form.is_valid():
-      raise BadRequestError
-    cd = form.cleaned_data
-    if cd.get('pour_time') and cd.get('now'):
-      pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))
-      now = datetime.datetime.fromtimestamp(cd.get('now'))
-      skew = datetime.datetime.now() - now
-      pour_time += skew
-    else:
-      pour_time = None
-    b = backend.KegbotBackend()
-    res = b.RecordDrink(tap_name=tap.meter_name,
-      ticks=cd['ticks'],
-      volume_ml=cd.get('volume_ml'),
-      username=cd.get('username'),
-      pour_time=pour_time,
-      duration=cd.get('duration'),
-      auth_token=cd.get('auth_token'))
-    return protoutil.ProtoMessageToDict(res)
+    return tap_detail_post(request, tap)
   else:
-    return obj_to_dict(tap)
+    return tap_detail_get(request, tap)
+
+@jsonhandler
+def tap_detail_get(request, tap):
+  return tap
+
+@py_to_json
+@auth_required
+def tap_detail_post(request, tap):
+  form = forms.DrinkPostForm(request.POST)
+  if not form.is_valid():
+    raise BadRequestError
+  cd = form.cleaned_data
+  if cd.get('pour_time') and cd.get('now'):
+    pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))
+    now = datetime.datetime.fromtimestamp(cd.get('now'))
+    skew = datetime.datetime.now() - now
+    pour_time += skew
+  else:
+    pour_time = None
+  b = backend.KegbotBackend()
+  res = b.RecordDrink(tap_name=tap.meter_name,
+    ticks=cd['ticks'],
+    volume_ml=cd.get('volume_ml'),
+    username=cd.get('username'),
+    pour_time=pour_time,
+    duration=cd.get('duration'),
+    auth_token=cd.get('auth_token'))
+  return protoutil.ProtoMessageToDict(res)
 
 @py_to_json
 def default_handler(request):

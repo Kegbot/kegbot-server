@@ -156,7 +156,7 @@ class KegUi:
       pct_full = 0
       curr_temp = None
       if tap.current_keg:
-        pct_full = tap.current_keg.pct_full
+        pct_full = tap.current_keg.percent_full
         if tap.current_keg.type:
           beer_name = tap.current_keg.type.name
           brewer_name = tap.current_keg.type.brewer.name
@@ -278,7 +278,7 @@ class KrestUpdaterThread(util.KegbotThread):
           username = str(last_drink.user.username)
         self._lcdui.UpdateLastDrink(username,
             last_drink.volume_ml,
-            datetime.datetime.fromtimestamp(last_drink.endtime))
+            datetime.datetime.fromtimestamp(last_drink.pour_time))
       except IOError, e:
         self._logger.warning('Could not connect to kegweb: %s' % e)
       time.sleep(FLAGS.krest_update_interval)

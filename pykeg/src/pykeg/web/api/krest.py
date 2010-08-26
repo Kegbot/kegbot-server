@@ -189,7 +189,7 @@ class KrestClient:
   def TapStatus(self, full=True):
     """Gets the status of all taps."""
     params = {'full' : full}
-    response = self.DoGET('all-taps', params)
+    response = self.DoGET('tap', params)
     return self._DictListToProtoList(response, models_pb2.KegTap())
 
   def LastDrinks(self, full=True):
@@ -201,7 +201,7 @@ class KrestClient:
   def AllDrinks(self, full=True):
     """Gets a list of all drinks."""
     params = {'full' : full}
-    response = self.DoGET('all-drinks', params)
+    response = self.DoGET('drink', params)
     return self._DictListToProtoList(response, models_pb2.Drink())
 
 

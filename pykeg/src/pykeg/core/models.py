@@ -196,10 +196,15 @@ def _KegPostSave(sender, instance, **kwargs):
 post_save.connect(_KegPostSave, sender=Keg)
 
 
+class DrinkManager(models.Manager):
+  def valid(self):
+    return self.filter(status='valid')
+
 class Drink(models.Model):
   """ Table of drinks records """
   class Meta:
-    get_latest_by = "starttime"
+    get_latest_by = 'endtime'
+    ordering = ('-endtime',)
 
   def Volume(self):
     return units.Quantity(self.volume_ml, units.RECORD_UNIT)
@@ -228,6 +233,8 @@ class Drink(models.Model):
 
   def __str__(self):
     return "Drink %s by %s" % (self.id, self.user)
+
+  objects = DrinkManager()
 
   # Ticks and volume may seem redundant; volume is stored in "volunits" which
   # happen to be the exact volume of one tick. The idea here is to always

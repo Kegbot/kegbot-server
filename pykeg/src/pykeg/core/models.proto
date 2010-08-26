@@ -40,6 +40,7 @@ message BeerType {
   // Brewer information for the beer.  May refer to an 'unknown' or generic
   // brewer record.
   required string brewer_id = 3;
+  optional Brewer brewer = 4;
 
   // Style information for the beer.  May refer to an 'unknown' or generic beer
   // style.
@@ -143,29 +144,30 @@ message Keg {
 
   // The kind of beer within the keg.
   required string type_id = 3;
+  optional BeerType type = 4;
 
   // The size of the keg.
-  required uint32 size_id = 4;
+  required uint32 size_id = 5;
 
   // Local time when the keg was 'started', in seconds since epoch (unix
   // timestamp). This should be no later than the time of the first Drink.
-  required fixed32 started_time = 5;
+  required fixed32 started_time = 6;
 
   // Local time when the keg was 'completed', in seconds since epoch (unix
   // timestamp). This should be no sooner than the time of the most recent
   // drink.  If the keg's `status` is not 'offline', then this value is
   // meaningless.
-  required fixed32 finished_time = 6;
+  required fixed32 finished_time = 7;
 
   // The adminstrator's description of this keg.
-  optional string description = 7;
+  optional string description = 8;
 
   // The percentage of the original volume that is remaining.
-  required float percent_full = 8;
+  required float percent_full = 9;
 
   // The volume, in milliliters, remaning.  This is simply a convenience value
   // that matches pct_full * size.volume_ml.
-  required float volume_ml_remain = 9;
+  required float volume_ml_remain = 10;
 
 }
 
@@ -203,9 +205,13 @@ message KegTap {
   // The Keg currently assigned to the tap.  May be unset if there is no keg
   // configured.
   optional uint32 current_keg_id = 6;
+  optional Keg current_keg = 7;
 
   // The temperature sensor for the tap, if any.
-  optional string thermo_sensor_id = 7;
+  optional string thermo_sensor_id = 8;
+
+  // The last temperature log, if any.
+  optional ThermoLog last_temperature = 9;
 
 }
 

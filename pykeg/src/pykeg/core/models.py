@@ -484,12 +484,22 @@ class ThermoSensor(models.Model):
   def __str__(self):
     return self.nice_name
 
+  def LastLog(self):
+    try:
+      return self.thermolog_set.latest()
+    except Thermolog.DoesNotExist:
+      return None
+
 
 class Thermolog(models.Model):
   """ A log from an ITemperatureSensor device of periodic measurements. """
   sensor = models.ForeignKey(ThermoSensor)
   temp = models.FloatField()
   time = models.DateTimeField()
+
+  class Meta:
+    get_latest_by = 'time'
+    ordering = ('-time',)
 
   def __str__(self):
     return '%s %.2f C / %.2f F [%s]' % (self.sensor, self.TempC(),

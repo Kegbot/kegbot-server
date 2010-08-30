@@ -462,7 +462,7 @@ class DrinkingSession(AbstractChunk):
   objects = SessionManager()
 
   def __str__(self):
-    return "DrinkingSession %s: %s to %s" % (self.id, self.starttime, self.endtime)
+    return "Session #%s: %s" % (self.id, self.starttime)
 
   def Volume(self):
     return units.Quantity(self.volume_ml, units.RECORD_UNIT)

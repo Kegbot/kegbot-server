@@ -4,7 +4,6 @@
 {% block title %}drinker details for {{ drinker.username }}{% endblock %}
 
 {% block kb-extrajs %}
-    {% user_stats drinker as stats %}
     <script type="text/javascript">
       // Load the Visualization API and the tablepackage.
       google.load('visualization', '1', {'packages':['table']});
@@ -14,18 +13,20 @@
 
       function buildTable() {
         var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Session');
         data.addColumn('date', 'When');
         data.addColumn('number', 'Pints');
         data.addColumn('number', 'Drinkers');
-        data.addRows({{user.user_session_chunks.count}});
+        data.addRows({{drinker.user_session_chunks.count}});
 
-        {% for chunk in user.user_session_chunks.all %}
+        {% for chunk in drinker.user_session_chunks.all %}
         {% with chunk.session as session %}
-        data.setCell({{forloop.counter0}}, 0,
+        data.setCell({{forloop.counter0}}, 0, '{{session}}');
+        data.setCell({{forloop.counter0}}, 1,
             {{session.starttime|datetime_js}});
-        data.setCell({{forloop.counter0}}, 1, {{session.Volume.ConvertTo.Pint}},
-          '{{session.Volume.ConvertTo.Pint|floatformat:1}}');
-        data.setCell({{forloop.counter0}}, 2, {{session.session.users.count}});
+        data.setCell({{forloop.counter0}}, 2, {{chunk.Volume.ConvertTo.Pint}},
+          '{{chunk.Volume.ConvertTo.Pint|floatformat:1}}');
+        data.setCell({{forloop.counter0}}, 3, {{session.user_chunks.all.count}});
         {% endwith %}
         {% endfor %}
         var table = new google.visualization.Table(document.getElementById('kb-user-sessions-table'));
@@ -43,7 +44,6 @@
 
 
 {% block col-1 %}
-{% user_stats drinker as stats %}
 <div class="kb-contentbox-head">
    {{ drinker.username }}: overview
 </div>
@@ -57,29 +57,21 @@
          <b>Total Sessions</b>
        </td>
        <td>
-         {{ user.user_session_chunks.count }}
+         {{ drinker.user_session_chunks.all.count }}
        </td>
      </tr>
 
      <tr>
         <td align="right" valign="top"><b>Total Drinks</b></td>
-        <td align="left">{{ stats.AllDrinks.count }}</td>
+        <td align="left">{{ drinker.drinks.valid.count }}</td>
      </tr>
 
-     {% if stats.HasHadADrink %}
-     <tr>
-        <td align="right" valign="top"><b>First Drink</b></td>
-        <td align="left">
-          {{ stats.EarliestDrink.starttime|date:"l, F j, Y"}}<br>
-          <i>({% timeago stats.EarliestDrink.starttime %})</i>
-        </td>
-     </tr>
-
+     {% if drinker.drinks.valid.count %}
      <tr>
         <td align="right" valign="top"><b>Last Drink</b></td>
         <td align="left">
-          {{ stats.LatestDrink.starttime|date:"l, F j, Y" }}<br>
-          <i>({% timeago stats.LatestDrink.starttime %})</i>
+          {{ drinker.drinks.valid.0.endtime|date:"l, F j, Y" }}<br>
+          <i>({% timeago drinker.drinks.valid.0.endtime %})</i>
         </td>
      </tr>
      {% endif %}
@@ -96,17 +88,9 @@
   </table>
 </div>
 
-<div class="kb-contentbox-head">
-   all sessions
-</div>
-<div class="kb-contentbox">
-  <table border="0" class="kb-statstable" id="kb-user-sessions-table"></table>
-</div>
-
 {% endblock %}
 
 {% block col-2 %}
-{% user_stats drinker as stats %}
 <div class="kb-contentbox-head">
   stats
 </div>
@@ -115,16 +99,27 @@
     <tr>
       <th>Activity by Day</th>
       <td>
-        {% chart sessions_weekday user 200 64 %}
+        {% chart sessions_weekday drinker 200 64 %}
       </td>
     </tr>
 
     <tr>
       <th>Volume per Session</th>
       <td>
-        {% chart sessions_volume user.user_session_chunks.all 200 64 %}
+        {% chart sessions_volume drinker.user_session_chunks.all 200 64 %}
       </td>
     </tr>
   </table>
+</div>
+{% endblock %}
+
+{% block extra-content %}
+<div class="kb-main-content">
+  <div class="kb-contentbox-head">
+     all sessions
+  </div>
+  <div class="kb-contentbox">
+    <table border="0" class="kb-statstable" id="kb-user-sessions-table"></table>
+  </div>
 </div>
 {% endblock %}

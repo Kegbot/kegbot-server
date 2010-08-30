@@ -26,6 +26,9 @@ GROUP_SESSION_TIME_MINUTES = 90
 # valid.
 MAX_METER_READING_DELTA = 2200*2
 
+# Minimum and maximum thermo sensor readings (degrees C).
+THERMO_SENSOR_RANGE = (-20.0, 80.0)
+
 # Address the kegnet server should bind to.
 KB_CORE_DEFAULT_ADDR = 'localhost:9805'
 

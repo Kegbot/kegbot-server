@@ -480,6 +480,13 @@ class ThermoManager(Manager):
     sensor_name = event.sensor_name
     sensor_value = event.sensor_value
 
+    min_val = kb_common.THERMO_SENSOR_RANGE[0]
+    max_val = kb_common.THERMO_SENSOR_RANGE[1]
+    if sensor_value < min_val:
+      return
+    elif sensor_value > max_val:
+      return
+
     last_record = self._name_to_last_record.get(sensor_name)
     if last_record and last_record.record_time == now:
       return

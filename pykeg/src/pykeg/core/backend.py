@@ -181,7 +181,7 @@ class KegbotBackend(Backend):
       d.keg = tap.current_keg
 
     d.auth_token = auth_token
-    DrinkingSession.AssignSessionForDrink(d)
+    models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
 
     d.PostProcess()

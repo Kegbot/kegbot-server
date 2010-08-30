@@ -181,8 +181,11 @@ class KegbotBackend(Backend):
       d.keg = tap.current_keg
 
     d.auth_token = auth_token
-
+    DrinkingSession.AssignSessionForDrink(d)
     d.save()
+
+    d.PostProcess()
+
     return protolib.ToProto(d, full=False)
 
   def LogSensorReading(self, sensor_name, temperature, when):

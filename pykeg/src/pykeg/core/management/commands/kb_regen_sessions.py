@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.db import connection
 from django.core.management.base import CommandError
 from django.core.management.base import NoArgsCommand
 
@@ -38,14 +39,16 @@ class Command(NoArgsCommand):
       d.save()
     print ''
 
-    sessions = models.DrinkingSession.objects.all()
-    pos = 0
-    count = sessions.count()
-    for sess in sessions:
-      pos += 1
-      progbar('delete old sessions', pos, count)
-      sess.delete()
-    print ''
+    print 'deleting old sessions..',
+    try:
+      cursor = connection.cursor()
+      for table in ('core_drinkingsession', 'core_kegsessionchunk',
+        'core_usersessionchunk', 'core_sessionchunk'):
+        cursor.execute('TRUNCATE TABLE `%s`' % table)
+      print 'truncate successful'
+    except Exception, e:
+      models.DrinkingSession.objects.all().delete()
+      print 'orm delete successful'
 
     pos = 0
     count = drinks.count()

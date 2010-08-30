@@ -176,6 +176,24 @@ class Keg(models.Model):
     res.sort()
     return res
 
+  def TopDrinkers(self):
+    stats = self.GetStats()
+    if not stats:
+      return []
+    ret = []
+    volmap = stats.get('volume_by_drinker', {})
+    for username, vol in volmap.iteritems():
+      username = str(username)
+      vol = float(vol)
+      try:
+        user = User.objects.get(username=username)
+      except User.DoesNotExist:
+        continue  # should not happen
+      volume = units.Quantity(vol)
+      ret.append((volume, user))
+    ret.sort(reverse=True)
+    return ret
+
   def __str__(self):
     return "Keg #%s - %s" % (self.id, self.type)
 

@@ -194,7 +194,7 @@
        top drinkers
     </div>
     <div class="kb-contentbox">
-      {% for volume,user in stats.TopUsersByVolume %}
+      {% for volume,user in keg.TopDrinkers %}
         {% include "kegweb/volume-user.html" %}
       {% endfor %}
     </div>

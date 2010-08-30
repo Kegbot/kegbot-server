@@ -343,39 +343,6 @@ class QueryNode(Node):
     context[self._var_name] = list(self._queryset[:self._limit_items])
     return ''
 
-def user_stats(parser, token):
-  """ {% user_stats <user> as <context_var> %} """
-  tokens = token.contents.split()
-  if len(tokens) != 4:
-    raise TemplateSyntaxError('%s requires 3 arguments' % (tokens[0],))
-
-  return StatsNode(tokens[1], tokens[3], stats.UserStats)
-
-class StatsNode(Node):
-  def __init__(self, obj_name, var_name, stats_cls):
-    self._obj_var = Variable(obj_name)
-    self._var_name = var_name
-    self._stats_cls = stats_cls
-
-  def render(self, context):
-    obj = self._obj_var.resolve(context)
-    context[self._var_name] = self._stats_cls(obj)
-    return ''
-
-register.tag('user_stats', user_stats)
-
-def keg_stats(parser, token):
-  """ {% keg_stats <keg> as <context_var> %} """
-  tokens = token.contents.split()
-  if len(tokens) != 4:
-    raise TemplateSyntaxError('%s requires 3 arguments' % (tokens[0],))
-
-  return StatsNode(tokens[1], tokens[3], stats.KegStats)
-
-register.tag('keg_stats', keg_stats)
-
-### filters
-
 @register.filter
 def bac_format(text):
   try:

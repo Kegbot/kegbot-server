@@ -22,7 +22,6 @@ from django.core.management.base import NoArgsCommand
 from pykeg.core import models
 from pykeg.core.management.commands.common import progbar
 
-
 class Command(NoArgsCommand):
   help = u'Regenerate all cached stats.'
   args = '<none>'
@@ -30,28 +29,30 @@ class Command(NoArgsCommand):
   def handle(self, **options):
     drinks = models.Drink.objects.all()
 
-    models.KegStats.objects.all().delete()
-    kegs = models.Keg.objects.all()
-    count = kegs.count()
     pos = 0
-    for k in kegs:
+    count = drinks.count()
+    for d in drinks:
       pos += 1
-      progbar('recalc keg stats', pos, count)
-      last_drink = k.drinks.valid().order_by('-endtime')[0]
-      last_drink._UpdateKegStats()
+      progbar('clear drink sessions', pos, count)
+      d.session = None
+      d.save()
     print ''
 
-    models.UserStats.objects.all().delete()
-    users = models.User.objects.all()
-    count = users.count()
+    sessions = models.DrinkingSession.objects.all()
     pos = 0
-    for user in users:
+    count = sessions.count()
+    for sess in sessions:
       pos += 1
-      progbar('recalc user stats', pos, count)
-      user_drinks = user.drinks.valid().order_by('-endtime')
-      if user_drinks:
-        last = user_drinks[0]
-        last._UpdateUserStats()
+      progbar('delete old sessions', pos, count)
+      sess.delete()
+    print ''
+
+    pos = 0
+    count = drinks.count()
+    for d in drinks.order_by('endtime'):
+      pos += 1
+      progbar('calc new sessions', pos, count)
+      sess = models.DrinkingSession.AssignSessionForDrink(d)
     print ''
 
     print 'done!'

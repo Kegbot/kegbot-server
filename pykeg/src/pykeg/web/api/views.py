@@ -202,7 +202,7 @@ def get_keg(request, keg_id):
 @jsonhandler
 def get_keg_drinks(request, keg_id):
   keg = get_object_or_404(models.Keg, pk=keg_id)
-  return list(keg.drink_set.all())
+  return list(keg.drinks.valid())
 
 @jsonhandler
 def all_taps(request):
@@ -215,7 +215,7 @@ def get_user(request, username):
 @jsonhandler
 def get_user_drinks(request, username):
   user = get_object_or_404(models.User, username=username)
-  return list(user.drink_set.all())
+  return list(user.drinks.valid())
 
 @jsonhandler
 def get_auth_token(request, auth_device, token_value):

@@ -41,21 +41,15 @@ class StatsBuilder(object):
         yield (method.statname, method.statdefault, method)
 
   def Build(self, obj, prev_stats=None, prev_objs=None):
-    new_stats = {}
-    if prev_stats is None:
-      if prev_objs is None:
-        prev_objs = self._PrevObjs(obj).order_by('starttime')
-      if prev_objs:
-        for i in xrange(len(prev_objs)):
-          prev_stats = self.Build(prev_objs[i], prev_stats, prev_objs[:i])
-      else:
-        prev_stats = {}
-    for statname, statdefault, fn in self.AllStats():
-      prev_val = prev_stats.get(statname, statdefault)
-      res = fn(obj, prev_val)
-      if res is not None:
-        new_stats[statname] = res
-    return new_stats
+    if prev_objs is None:
+      prev_objs = self._PrevObjs(obj).order_by('endtime')
+
+    stats = self._prev_stats
+    for drink in prev_objs:
+      for statname, statdefault, fn in self.AllStats():
+        previous_value = stats.get(statname, statdefault)
+        stats[statname] = fn(drink, previous_value)
+    return stats
 
 
 class BaseStatsBuilder(StatsBuilder):
@@ -64,72 +58,75 @@ class BaseStatsBuilder(StatsBuilder):
   def _PrevObjs(self, obj):
     raise NotImplementedError
 
-  @stat('total-volume', default=0)
-  def TotalVolume(self, obj, prev):
+  @stat('total_volume', default=0)
+  def TotalVolume(self, drink, prev):
     """Updates the total volume."""
-    return prev + float(obj.Volume())
+    return float(drink.volume_ml) + prev
 
-  @stat('total-count', default=0)
-  def TotalPours(self, obj, prev):
+  @stat('total_count', default=0)
+  def TotalPours(self, drink, prev):
     return prev + 1
 
-  @stat('volume-avg')
-  def AverageVolume(self, obj, prev):
-    if prev:
-      prev_count, prev_avg = prev['count'], prev['average']
-    else:
-      prev_count, prev_avg = 0, 0
-    curr_vol = float(obj.Volume())
-    curr_count = prev_count + 1.0
-    curr_avg = ((prev_avg * prev_count) + curr_vol) / curr_count
-    return {'count': curr_count, 'average': curr_avg}
+  @stat('volume_avg')
+  def AverageVolume(self, drink, prev):
+    if prev is None:
+      prev = {'count': 0, 'average': 0}
+    res = prev.copy()
+    vol = float(drink.Volume())
+    res['average'] = (res['average']*res['count'] + vol) / (res['count'] + 1)
+    res['count'] = res['count'] + 1
+    return res
 
-  @stat('volume-max')
-  def LargestVolume(self, obj, prev):
-    vol = float(obj.Volume())
-    if prev:
-      if prev['volume'] >= vol:
-        return prev
-    return {'volume': vol, 'id': obj.id}
+  @stat('volume_max')
+  def LargestVolume(self, drink, prev):
+    prev = {}
+    if not prev:
+      prev = {'volume': 0, 'id': 0}
+    vol = float(drink.Volume())
+    if prev.get('volume', 0) >= vol:
+      return prev
+    return {'volume': vol, 'id': drink.id}
 
-  @stat('volume-min')
-  def SmallestPour(self, obj, prev):
-    vol = float(obj.Volume())
-    if prev:
-      if prev['volume'] <= vol:
-        return prev
-    return {'volume': vol, 'id': obj.id}
+  @stat('volume_min')
+  def SmallestPour(self, drink, prev):
+    prev = {}
+    if not prev:
+      prev = {'volume': 0, 'id': 0}
+    vol = float(drink.Volume())
+    if prev.get('volume', 0) < vol:
+      return prev
+    return {'volume': vol, 'id': drink.id}
 
-  @stat('date-first')
-  def FirstDate(self, obj, prev):
-    if prev:
-      if prev['date'] <= obj.starttime:
-        return prev
-    return {'date': obj.starttime, 'id': obj.id}
-
-  @stat('date-last')
-  def LastDate(self, obj, prev):
-    if prev:
-      if prev['date'] >= obj.starttime:
-        return prev
-    return {'date': obj.starttime, 'id': obj.id}
-
-  @stat('volume-by-day-of-week')
-  def VolumeByDayOfweek(self, obj, prev):
+  @stat('volume_by_day_of_week')
+  def VolumeByDayOfweek(self, drink, prev):
     volmap = prev
     if not volmap:
       volmap = dict((i, 0) for i in xrange(7))
-    weekday = obj.starttime.weekday()
-    volmap[weekday] += float(obj.Volume())
+    # Note: uses the session's starttime, rather than the drink's. This causes
+    # late-night sessions to be reported for the day on which they were started.
+    weekday = drink.session.starttime.weekday()
+    volmap[weekday] += float(drink.Volume())
+    return volmap
+
+  @stat('volume_by_drinker')
+  def VolumeByDrinker(self, drink, prev):
+    volmap = prev
+    if not volmap:
+      volmap = {}
+    if drink.user:
+      username = drink.user.username
+    else:
+      username = None
+    volmap[username] = volmap.get(username, 0) + float(drink.Volume())
     return volmap
 
   @stat('ids')
-  def Ids(self, obj, prev):
+  def Ids(self, drink, prev):
     if prev is None:
       prev = []
-    obj_id = obj.id
-    if obj_id not in prev:
-      prev.append(obj_id)
+    drink_id = drink.id
+    if drink_id not in prev:
+      prev.append(drink_id)
     return prev
 
 
@@ -138,9 +135,8 @@ class DrinkerStatsBuilder(BaseStatsBuilder):
   REVISION = 3
 
   def _PrevObjs(self, drink):
-    qs = drink.user.drink_set.filter(status='valid',
-        volume_ml__gt=0, starttime__lt=drink.starttime)
-    qs = qs.order_by('starttime')
+    qs = drink.user.drinks.valid().filter(endtime__lt=drink.endtime)
+    qs = qs.order_by('endtime')
     return qs
 
   #@stat('volume-per-user-session')
@@ -158,9 +154,8 @@ class KegStatsBuilder(BaseStatsBuilder):
   REVISION = 3
 
   def _PrevObjs(self, drink):
-    qs = drink.keg.drink_set.filter(status='valid',
-        volume_ml__gt=0, starttime__lt=drink.starttime)
-    qs = qs.order_by('starttime')
+    qs = drink.keg.drinks.valid().filter(endtime__lt=drink.endtime)
+    qs = qs.order_by('endtime')
     return qs
 
   @stat('drinkers')
@@ -176,7 +171,7 @@ def main():
   from pykeg.core import models
 
   for user in models.User.objects.all():
-    last_drink = user.drink_set.all().order_by('-starttime')
+    last_drink = user.drinks.all().order_by('-endtime')
     if not last_drink:
       continue
     last_drink = last_drink[0]

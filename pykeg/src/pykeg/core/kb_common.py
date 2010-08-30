@@ -8,6 +8,9 @@ MIN_VOLUME_TO_RECORD = 10
 # Don't show small drinks
 MIN_VOLUME_TO_DISPLAY = 10
 
+# Minimum session size, in milliliters, to display
+MIN_SESSION_VOLUME_DISPLAY_ML = 177  # 6 ounces
+
 # Idle seconds allowed before a user gets booted for inactivity
 FLOW_IDLE_TIMEOUT = 30
 

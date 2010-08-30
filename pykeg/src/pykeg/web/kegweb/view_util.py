@@ -23,28 +23,8 @@
 from pykeg.core import models
 from pykeg.core import units
 
-def all_valid_drinks():
-  drinks = models.Drink.objects.filter(status='valid')
-  drinks = drinks.filter(volume_ml__gt=0)
-  return drinks
-
-def current_keg():
-  q = models.Keg.objects.filter(status='online').order_by('-id')
-  if len(q):
-    return q[0]
-
-def user_is_hidden(user):
-  return False  ### TODO(mikey): add UserProfile attribute for this
-
-  return profile.HasLabel('__hidden__')
-
-def keg_drinks(keg):
-  if not keg:
-    return []
-  return models.Drink.objects.filter(status='valid', keg=keg, volume_ml__gt=0)
-
 def keg_drinkers_by_volume(keg):
-  return drinkers_by_volume(keg_drinks(keg))
+  return drinkers_by_volume(keg.drinks.valid())
 
 def drinkers_by_volume(drinks):
   ret = {}
@@ -54,7 +34,7 @@ def drinkers_by_volume(drinks):
     ret[d.user] = ret.get(d.user, units.Quantity(0, units.RECORD_UNIT)) + d.Volume()
   outlist = []
   for user, totalvol in ret.iteritems():
-    if user_is_hidden(user):
+    if not user.is_active:
       continue
     outlist.append((totalvol, user))
   outlist.sort(reverse=True)

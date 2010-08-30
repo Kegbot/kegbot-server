@@ -17,14 +17,16 @@
         data.addColumn('date', 'When');
         data.addColumn('number', 'Pints');
         data.addColumn('number', 'Drinkers');
-        data.addRows({{stats.UserSessions.count}});
+        data.addRows({{user.user_session_chunks.count}});
 
-        {% for session in stats.UserSessions %}
+        {% for chunk in user.user_session_chunks.all %}
+        {% with chunk.session as session %}
         data.setCell({{forloop.counter0}}, 0,
             {{session.starttime|datetime_js}});
         data.setCell({{forloop.counter0}}, 1, {{session.Volume.ConvertTo.Pint}},
           '{{session.Volume.ConvertTo.Pint|floatformat:1}}');
         data.setCell({{forloop.counter0}}, 2, {{session.session.users.count}});
+        {% endwith %}
         {% endfor %}
         var table = new google.visualization.Table(document.getElementById('kb-user-sessions-table'));
         var formatter = new google.visualization.BarFormat({width: 50});
@@ -55,7 +57,7 @@
          <b>Total Sessions</b>
        </td>
        <td>
-         {{ stats.UserSessions.count }}
+         {{ user.user_session_chunks.count }}
        </td>
      </tr>
 
@@ -113,14 +115,14 @@
     <tr>
       <th>Activity by Day</th>
       <td>
-        {% chart sessions_weekday stats.UserSessions 200 64 %}
+        {% chart sessions_weekday user 200 64 %}
       </td>
     </tr>
 
     <tr>
       <th>Volume per Session</th>
       <td>
-        {% chart sessions_volume stats.UserSessions 200 64 %}
+        {% chart sessions_volume user.user_session_chunks.all 200 64 %}
       </td>
     </tr>
   </table>

@@ -268,10 +268,10 @@ message User {
 
 }
 
-message UserSession {
-  required string id = 1;
-  required string session_id = 2;
-  required string username = 3;
+message SessionChunk {
+  required string session_id = 1;
+  required string username = 2;
+  required uint32 keg_id = 3;
   required fixed32 start_time = 4;
   required fixed32 end_time = 5;
   required float volume_ml = 6;

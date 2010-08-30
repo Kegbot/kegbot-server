@@ -4,7 +4,6 @@
 {% block title %}keg index{% endblock %}
 
 {% block kb-extrajs %}
-    {% keg_stats keg as stats %}
     <script type="text/javascript">
       // Load the Visualization API and the tablepackage.
       google.load('visualization', '1', {'packages':['table']});
@@ -20,9 +19,9 @@
         data.addColumn('string', 'User');
         data.addColumn('string', 'When');
         data.addColumn('number', 'PBAC');
-        data.addRows({{stats.AllDrinks.count}});
+        data.addRows({{keg.drinks.valid.count}});
 
-        {% for drink in stats.AllDrinks %}
+        {% for drink in keg.drinks.valid %}
         data.setCell({{forloop.counter0}}, 0, {{drink.id}},
             '<a href="{% url drink drink.id %}">{{drink.id}}</a>');
         data.setCell({{forloop.counter0}}, 1, {{drink.Volume.ConvertTo.Ounce}},
@@ -57,7 +56,6 @@
 
 
 {% block col-1 %}
-{% keg_stats keg as stats %}
 
 <div class="kb-contentbox-head">
    keg {{keg.id}} snapshot
@@ -67,7 +65,8 @@
   <table border="0" class="kb-statstable">
     <tr>
       <td colspan="2">
-        {{keg.type}}
+        {{keg.type}}<br>
+        <div style="color:#888;">{{keg.size.name}}</div>
       </td>
     </tr>
 
@@ -118,7 +117,7 @@
         {% if keg.is_empty %}
           <i>empty</i>
         {% else %}
-          {{ stats.PercentFull|floatformat:2 }}% full
+          {{ keg.percent_full|floatformat:2 }}% full
         {% endif %}
       </td>
     </tr>
@@ -135,7 +134,7 @@
     <tr>
       <td align="right"><b>Drink Count</b></td>
       <td>
-        {{ stats.AllDrinks.count }} pours by {{ stats.AllDrinkersCount }}
+        {{ keg.drinks.valid.count }} pours by {{ stats.AllDrinkersCount }}
         unique drinkers.
       </td>
     </tr>
@@ -143,7 +142,7 @@
     <tr>
       <td align="right"><b>Sessions</b></td>
       <td>
-        {{ stats.NumSessions }} drinking sessions
+        {{ keg.keg_session_chunks.all.count }} drinking sessions
       </td>
     </tr>
 
@@ -170,12 +169,11 @@
   drinker breakdown
 </div>
 <div class="kb-contentbox">
-  {% chart users_by_volume 300 125 %}
+  {% chart users_by_volume keg 300 125 %}
 </div>
 {% endblock col-2 %}
 
 {% block extra-content %}
-{% keg_stats keg as stats %}
 <div class="kb-main-content">
 
   <div class="kb-twocol-left">
@@ -183,8 +181,10 @@
        sessions
     </div>
     <div class="kb-contentbox">
-      {% for session in stats.Sessions %}
-        {% include "kegweb/keg-session.html" %}
+      {% for chunk in keg.keg_session_chunks.all %}
+        {% with chunk.session as session %}
+          {% include "kegweb/keg-session.html" %}
+        {% endwith %}
       {% endfor %}
     </div>
   </div>

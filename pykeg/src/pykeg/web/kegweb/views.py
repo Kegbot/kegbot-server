@@ -24,6 +24,7 @@ import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import cache_page
@@ -49,7 +50,7 @@ def index(request):
   except kegweb_models.Page.DoesNotExist:
     page = None
   context['page_node'] = page
-  context['last_drinks'] = view_util.all_valid_drinks().order_by('-id')[:5]
+  context['last_drinks'] = models.Drink.objects.valid()[:5]
   context['template'] = 'index.html'
   context['taps'] = models.KegTap.objects.all()
   return render_to_response('index.html', context)
@@ -57,7 +58,7 @@ def index(request):
 @cache_page(30)
 def system_stats(request):
   context = RequestContext(request)
-  all_drinks = view_util.all_valid_drinks()
+  all_drinks = models.Drink.objects.valid()
   context['top_volume_drinkers_alltime'] = view_util.drinkers_by_volume(all_drinks)[:10]
   return render_to_response('kegweb/system-stats.html', context)
 
@@ -93,24 +94,22 @@ def keg_list(request):
       template_object_name='keg',
       template_name='kegweb/keg_list.html')
 
-@cache_page(30)
+#@cache_page(30)
 def keg_detail(request, keg_id):
-  all_kegs = models.Keg.objects.all()
-  return object_detail(request,
-      queryset=all_kegs,
-      object_id=keg_id,
-      template_object_name='keg',
-      template_name='kegweb/keg_detail.html')
+  keg = get_object_or_404(models.Keg, pk=keg_id)
+  context = RequestContext(request)
+  context['keg'] = keg
+  return render_to_response('kegweb/keg_detail.html', context)
 
 def drink_list(request):
   return object_list(request,
-      queryset=view_util.all_valid_drinks(),
+      queryset=models.Drink.objects.valid(),
       template_name='kegweb/drink_list.html',
       template_object_name='drink')
 
 def drink_detail(request, drink_id):
   return object_detail(request,
-      queryset=view_util.all_valid_drinks(),
+      queryset=models.Drink.objects.valid(),
       object_id=drink_id,
       template_name='kegweb/drink_detail.html',
       template_object_name='drink')

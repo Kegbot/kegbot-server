@@ -18,9 +18,11 @@
     {{ session.starttime|date:"l, F j" }} at
     {{ session.starttime|date:"P" }}
   </div>
-  {% for drinker in session.users.all %}
+  {% for chunk in session.UserChunksByVolume %}
   <div class="kb-drink-box-mugshot">
-    {% mugshot_box drinker 48 %}
+    {% with chunk.user as drinker %}
+      {% mugshot_box drinker 48 %}
+    {% endwith %}
   </div>
   {%endfor%}
   <div class="clear"></div>

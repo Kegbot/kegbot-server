@@ -15,7 +15,6 @@ from django.utils.safestring import mark_safe
 
 from pykeg.core import models
 from pykeg.core import units
-from pykeg.web.kegweb import stats
 
 class KegweblibError(Exception):
   """Base kegweblib execption."""
@@ -193,7 +192,7 @@ class ChartNode(Node):
     """
     keg, stats = self._get_keg_stats(context)
 
-    served = units.Quantity(stats.get('total-volume', 0.0))
+    served = units.Quantity(stats.get('total_volume', 0.0))
     served_pints = served.ConvertTo.Pint
     full_pints = keg.full_volume().ConvertTo.Pint
     remain_pints = full_pints - served_pints
@@ -201,9 +200,8 @@ class ChartNode(Node):
     chart = pygooglechart.StackedHorizontalBarChart(self._width, self._height,
         x_range=(0, full_pints))
     chart.set_bar_width(20)
-    chart.set_colours(['4D89F9','C6D9FD'])
-    chart.add_data([min(served_pints, full_pints)])
-    chart.add_data([full_pints])
+    chart.set_colours(['4D89F9'])
+    chart.add_data([served_pints])
     return chart.get_url()
 
   def chart_keg_volume_by_day(self, context):
@@ -216,7 +214,7 @@ class ChartNode(Node):
     """
     keg, stats = self._get_keg_stats(context)
 
-    volmap = stats.get('volume-by-day-of-week')
+    volmap = stats.get('volume_by_day_of_week')
     if not volmap:
       raise ChartUnavailableError, "Daily volumes unavailable"
 
@@ -246,21 +244,22 @@ class ChartNode(Node):
     """ Vertical bar chart showing session volume by day of week.
 
     Syntax:
-      {% chart sessions_weekday <sessions> width height %}
+      {% chart sessions_weekday <user> width height %}
     Args:
       sessions - an iterable of DrinkingSession or UserDrinkingSessionPart
                  instances
     """
-    sessions_var = Variable(self._args[0])
-    sessions = sessions_var.resolve(context)
-    if not sessions:
-      raise ChartUnavailableError, "Must give sessions as argument"
+    user_var = Variable(self._args[0])
+    user = user_var.resolve(context)
+    if not user:
+      raise ChartUnavailableError, "Must give a user as argument"
+    chunks = user.user_session_chunks.all()
 
     weekdays = [0] * 7
 
-    for sess in sessions:
-      date = int(sess.starttime.strftime('%w'))
-      weekdays[date] += int(sess.Volume())
+    for chunk in chunks:
+      date = int(chunk.starttime.strftime('%w'))
+      weekdays[date] += int(chunk.Volume())
     chart = self._day_of_week_chart(weekdays)
     return chart.get_url()
 
@@ -299,9 +298,40 @@ class ChartNode(Node):
     """Pie chart showing users by volume.
 
     Syntax:
-      {% chart users_by_volume width height %}
+      {% chart users_by_volume keg width height %}
     """
-    raise ChartUnavailableError, "not implemented"
+    chart = pygooglechart.PieChart2D(300, 100)
+    keg, stats = self._get_keg_stats(context)
+    volmap = stats.get('volume_by_drinker', {})
+    if not volmap:
+      raise ChartUnavailableError, "no data"
+
+    data = []
+    for username, volume_ml in volmap.iteritems():
+      data.append((volume_ml, username))
+
+    other_vol = 0
+    for volume_ml, username in data[10:]:
+      other_vol += volume_ml
+    data = data[:10]
+
+    if other_vol:
+      data.append((other_vol, 'all others'))
+
+    data.sort(reverse=True)
+
+    labels = []
+    data_vals = []
+    for volume_ml, username in data:
+      ounces = units.Quantity(volume_ml, units=units.UNITS.Milliliter)
+      ounces = ounces.ConvertTo.Ounce
+      data_vals.append(ounces)
+      label = '%s (%ioz)' % (username, ounces)
+      labels.append(label)
+    chart.add_data(data_vals)
+    chart.set_pie_labels(labels)
+    return chart.get_url()
+
 
 class QueryNode(Node):
   def __init__(self, var_name, queryset, limit):

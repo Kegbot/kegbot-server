@@ -225,12 +225,13 @@ def UserToProto(user, full=True):
   ret.joined_time = time_to_int(user.date_joined)
   return ret
 
-@converts(models.DrinkingSessionUserPart)
-def UserSessionToProto(record, full=True):
-  ret = models_pb2.UserSession()
+@converts(models.SessionChunk)
+def SessionChunkToProto(record, full=True):
+  ret = models_pb2.SessionChunk()
   ret.id = str(record.id)
   ret.session_id = str(record.session.id)
   ret.username = record.user.username
+  ret.keg_id = record.keg.id
   ret.start_time = time_to_int(record.starttime)
   ret.end_time = time_to_int(record.endtime)
   ret.volume_ml = record.volume_ml

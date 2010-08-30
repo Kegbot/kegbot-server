@@ -97,8 +97,8 @@ ACCOUNT_ACTIVATION_DAYS = 3
 
 # Bogus default values (to prevent djangofb from choking if unavailable);
 # replace with site-specific values in common_settings.py, if desired.
-FACEBOOK_API_KEY = None
-FACEBOOK_SECRET_KEY = None
+FACEBOOK_API_KEY = ''
+FACEBOOK_SECRET_KEY = ''
 
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET_KEY =''

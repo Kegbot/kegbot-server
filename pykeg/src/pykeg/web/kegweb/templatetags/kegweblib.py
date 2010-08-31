@@ -65,27 +65,6 @@ class TimeagoNode(Node):
     alt = ts.strftime("%A, %B %d, %Y %I:%M%p")
     return '<abbr class="timeago" title="%s">%s</abbr>' % (iso, alt)
 
-
-def latest_drinks(parser, token):
-  """ {% latest_drinks [number] as <context_var> %} """
-  tokens = token.contents.split()
-  if len(tokens) not in (3, 4):
-    raise TemplateSyntaxError('%s requires 0, 1, or 3 arguments' % (tokens[0],))
-
-  if len(tokens) > 3:
-    num_items = tokens[1]
-  else:
-    num_items = 5
-
-  if tokens[2] != 'as':
-    raise TemplateSyntaxError('%s Argument 2 must be "as"' % (tokens[0],))
-
-  var_name = tokens[3]
-  queryset = models.Drink.objects.all().order_by('-starttime')
-
-  return QueryNode(var_name, queryset, num_items)
-register.tag('latest_drinks', latest_drinks)
-
 def chart(parser, tokens):
   """{% chart <charttype> [args] width height %}"""
   tokens = tokens.contents.split()

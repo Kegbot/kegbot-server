@@ -45,6 +45,15 @@ def mugshot_file_name(instance, filename):
   return os.path.join('mugshots', instance.user.username, new_filename)
 
 
+class KegbotSite(models.Model):
+  name = models.CharField(max_length=64, unique=True,
+      help_text='A short name for this site, eg "default" or "sfo"')
+  description = models.TextField(blank=True, null=True,
+      help_text='Description of this site')
+
+  def __str__(self):
+    return '%s %s' % (self.name, self.description)
+
 class UserPicture(models.Model):
   def __str__(self):
     return "%s UserPicture" % (self.user,)
@@ -107,6 +116,7 @@ class KegSize(models.Model):
 
 class KegTap(models.Model):
   """A physical tap of beer."""
+  site = models.ForeignKey(KegbotSite)
   name = models.CharField(max_length=128)
   meter_name = models.CharField(max_length=128)
   ml_per_tick = models.FloatField(default=(1000.0/2200.0))
@@ -197,6 +207,7 @@ class Keg(models.Model):
   def __str__(self):
     return "Keg #%s - %s" % (self.id, self.type)
 
+  site = models.ForeignKey(KegbotSite)
   type = models.ForeignKey(bdb.BeerType)
   size = models.ForeignKey(KegSize)
   startdate = models.DateTimeField('start date', default=datetime.datetime.now)
@@ -274,6 +285,8 @@ class Drink(models.Model):
 
   objects = DrinkManager()
 
+  site = models.ForeignKey(KegbotSite)
+
   # Ticks records the actual meter reading, which is never changed once
   # recorded.
   ticks = models.PositiveIntegerField()
@@ -282,6 +295,13 @@ class Drink(models.Model):
   # of `ticks`, but it may be adjusted, eg due to calibration or mis-recording.
   volume_ml = models.FloatField()
 
+  # Similarly, recording both the start and end times of a drink may seem odd.
+  # The idea was to someday add metrics to the web page showing pour speeds.
+  # This was never terribly exciting so it didn't happen, but space is cheap
+  # so I'm inclined to keep the data rather than chuck it.
+  #
+  # For sorting and other operations requiring a single date, the endtime is
+  # used.  TODO(mikey): make sure this is actually the case
   starttime = models.DateTimeField()
   endtime = models.DateTimeField()
   user = models.ForeignKey(User, null=True, blank=True, related_name='drinks')
@@ -320,6 +340,7 @@ class AuthenticationToken(models.Model):
       ret = "%s (%s)" % (ret, self.user.username)
     return ret
 
+  site = models.ForeignKey(KegbotSite)
   auth_device = models.CharField(max_length=64)
   token_value = models.CharField(max_length=128)
   pin = models.CharField(max_length=256, blank=True, null=True)
@@ -440,17 +461,19 @@ class AbstractChunk(models.Model):
   endtime = models.DateTimeField()
   volume_ml = models.FloatField(default=0)
 
+  def Volume(self):
+    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
+
+  def Duration(self):
+    return self.endtime - self.startime
+
   def AddDrink(self, drink):
-    defaults = {'starttime': drink.starttime, 'endtime': drink.endtime}
     if self.starttime > drink.starttime:
       self.starttime = drink.starttime
     if self.endtime < drink.endtime:
       self.endtime = drink.endtime
     self.volume_ml += drink.volume_ml
     self.save()
-
-  def Volume(self):
-    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
 
 
 class DrinkingSession(AbstractChunk):
@@ -557,6 +580,7 @@ class KegSessionChunk(AbstractChunk):
 
 
 class ThermoSensor(models.Model):
+  site = models.ForeignKey(KegbotSite)
   raw_name = models.CharField(max_length=256)
   nice_name = models.CharField(max_length=128)
 
@@ -572,13 +596,10 @@ class ThermoSensor(models.Model):
 
 class Thermolog(models.Model):
   """ A log from an ITemperatureSensor device of periodic measurements. """
+  site = models.ForeignKey(KegbotSite)
   sensor = models.ForeignKey(ThermoSensor)
   temp = models.FloatField()
   time = models.DateTimeField()
-
-  class Meta:
-    get_latest_by = 'time'
-    ordering = ('-time',)
 
   def __str__(self):
     return '%s %.2f C / %.2f F [%s]' % (self.sensor, self.TempC(),
@@ -695,6 +716,7 @@ class ThermoSummaryLog(models.Model):
   PERIOD_CHOICES = (
     ('daily', 'daily'),
   )
+  site = models.ForeignKey(KegbotSite)
   sensor = models.ForeignKey(ThermoSensor)
   date = models.DateTimeField()
   period = models.CharField(max_length=64, choices=PERIOD_CHOICES,
@@ -707,6 +729,7 @@ class ThermoSummaryLog(models.Model):
 
 class RelayLog(models.Model):
   """ A log from an IRelay device of relay events/ """
+  site = models.ForeignKey(KegbotSite)
   name = models.CharField(max_length=128)
   status = models.CharField(max_length=32)
   time = models.DateTimeField()
@@ -716,6 +739,7 @@ class Config(models.Model):
   def __str__(self):
     return '%s=%s' % (self.key, self.value)
 
+  site = models.ForeignKey(KegbotSite)
   key = models.CharField(max_length=255, unique=True)
   value = models.TextField()
 
@@ -731,6 +755,7 @@ class _StatsModel(models.Model):
   STATS_BUILDER = None
   class Meta:
     abstract = True
+  site = models.ForeignKey(KegbotSite)
   date = models.DateTimeField(default=datetime.datetime.now)
   stats = fields.JSONField()
   revision = models.PositiveIntegerField(default=0)

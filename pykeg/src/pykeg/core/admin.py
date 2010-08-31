@@ -26,6 +26,7 @@ admin.site.register(models.UserPicture)
 admin.site.register(models.UserProfile)
 
 admin.site.register(models.KegSize)
+admin.site.register(models.KegbotSite)
 
 class KegTapAdmin(admin.ModelAdmin):
   list_display = ('name', 'meter_name', 'current_keg')

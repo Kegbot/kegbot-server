@@ -173,18 +173,18 @@ class jsonhandler:
 
 ### Helpers
 
-def _get_last_drinks(limit=5):
+def _get_last_drinks(request, limit=5):
   return request.kbsite.drink_set.valid()[:limit]
 
 ### Endpoints
 
 @jsonhandler
 def last_drinks(request, limit=5):
-  return _get_last_drinks(limit)
+  return _get_last_drinks(request, limit)
 
 @jsonhandler
 def all_kegs(request):
-  return models.Keg.objects.all().order_by('-startdate')
+  return request.kbsite.keg_set.all().order_by('-startdate')
 
 @jsonhandler
 @auth_required   # for now, due to expense; TODO paginate me
@@ -238,7 +238,7 @@ def get_thermo_sensor_logs(request, nice_name):
 
 @py_to_json
 def last_drinks_html(request, limit=5):
-  last_drinks = _get_last_drinks(limit)
+  last_drinks = _get_last_drinks(request, limit)
 
   # render each drink
   template = get_template('kegweb/drink-box.html')
@@ -252,7 +252,7 @@ def last_drinks_html(request, limit=5):
 
 @py_to_json
 def last_drink_id(request):
-  last = _get_last_drinks(limit=1)
+  last = _get_last_drinks(request, limit=1)
   if not last.count():
     return {'id': 0}
   else:

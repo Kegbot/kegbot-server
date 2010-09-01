@@ -47,15 +47,15 @@ setup(
       'django-registration',
       'django-socialregistration == 0.3.4',
       'django_extensions',
-      'MySQL-python',
-      'pil',
+      #'MySQL-python',
+      #'pil',
       'protobuf >= 2.3.0-1',
       'pylcdui >= 0.5.5',
       #'pysqlite>=2.0.3',
       'python-gflags >= 1.3',
       'South >= 0.7',
       'Sphinx',
-      'django_nose',
+      #'django_nose',
       'python-openid >= 2.2.5',  # removeme once PIL package works
       ### need pygooglechart
     ],

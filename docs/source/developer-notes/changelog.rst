@@ -5,6 +5,38 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Version 0.7.3 (2010-09-01)
+--------------------------
+
+*Note:* Existing users upgrading from a previous kegbot version will need to
+issue the migrate command to update their database schema.  Also, statistics and
+sessions need to be regenerated::
+  $ kegbot_admin.py migrate
+  $ kegbot_admin.py kb_regen_sessions
+  $ kegbot_admin.py kb_regen_stats
+
+Core / General
+^^^^^^^^^^^^^^
+* Fixed issue authentication tokens for consecutive pours not being reported
+  correctly.
+* Improved stats reporting; fixed drinker breakdown graph on keg detail page.
+* Added a notes field for Keg records.
+* Internal cleanups to the backend APIs.
+* Schema change: Started record auth token details used for each pour.
+* Schema change: Guest pours are now represented by a ``null`` user (rather than
+  a specific guest account) in the database.
+
+Kegweb
+^^^^^^
+* Fixed issue causing kegweb to break when used without proper Facebook
+  credentials.
+* Improvements to the currently undocumented kegweb API.
+
+Kegboard
+^^^^^^^^
+* Update KegShield schematics to include Arduino and Arduino Mega shield
+  designs.
+
 Version 0.7.2 (2010-06-29)
 --------------------------
 

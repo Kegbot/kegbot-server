@@ -15,7 +15,6 @@ INSTALLED_APPS = (
     'imagekit',
     'pykeg.beerdb',
     'pykeg.billing',
-    'pykeg.contrib.facebook',
     'pykeg.contrib.soundserver',
     'pykeg.contrib.twitter',
     'pykeg.core',
@@ -26,7 +25,7 @@ INSTALLED_APPS = (
     'registration',
     'socialregistration',
     'south',
-    'django_nose', # must be after south
+    #'django_nose', # must be after south
 )
 
 AUTH_PROFILE_MODULE = "core.UserProfile"
@@ -79,14 +78,10 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'facebook.djangofb.FacebookMiddleware',
-    'socialregistration.middleware.FacebookMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'socialregistration.auth.FacebookAuth',
-    'socialregistration.auth.TwitterAuth',
 )
 
 ### django.contrib.messages
@@ -106,7 +101,7 @@ TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
 TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
 TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 try:
   import common_settings
@@ -117,3 +112,19 @@ except ImportError:
   print 'Consult setup documentation.  Exiting...'
   import sys
   sys.exit(1)
+
+### Optional stuff
+if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:
+  INSTALLED_APPS += ('pykeg.contrib.facebook',)
+  MIDDLEWARE_CLASSES += (
+    'facebook.djangofb.FacebookMiddleware',
+    'socialregistration.middleware.FacebookMiddleware',
+  )
+  AUTHENTICATION_BACKENDS += (
+    'socialregistration.auth.FacebookAuth',
+  )
+
+if TWITTER_CONSUMER_KEY and TWITTER_CONSUMER_SECRET_KEY:
+  AUTHENTICATION_BACKENDS += (
+    'socialregistration.auth.TwitterAuth',
+  )

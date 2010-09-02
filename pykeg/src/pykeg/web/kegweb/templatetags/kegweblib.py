@@ -258,8 +258,8 @@ class ChartNode(Node):
     weekdays = [0] * 7
 
     for chunk in chunks:
-      date = int(chunk.starttime.strftime('%w'))
-      weekdays[date] += int(chunk.Volume())
+      weekday = chunk.starttime.weekday()
+      weekdays[weekday] += float(chunk.Volume())
     chart = self._day_of_week_chart(weekdays)
     return chart.get_url()
 

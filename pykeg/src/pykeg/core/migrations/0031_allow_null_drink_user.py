@@ -14,23 +14,37 @@ class Migration(SchemaMigration):
         # Changing field 'Drink.user'
         db.alter_column('core_drink', 'user_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True, blank=True))
 
-        guest_ids = set()
+        # Unfortunately, some systems had multiple users with the
+        # '__default_user__' label.  Ask the user to give the correct id.
+        guest_ids = {}
         for profile in orm.UserProfile.objects.all():
           if '__default_user__' in (l.labelname for l in profile.labels.all()):
-            guest_ids.add(profile.user_id)
-
-        print 'Guest users found:'
-        for guest_id in guest_ids:
-          user = orm.User.objects.get(id=guest_id)
-          print '  %s' % (user.username,)
+            user = orm['auth.User'].objects.get(id=profile.user_id)
+            guest_ids[profile.user_id] = user.username
 
         if len(guest_ids) > 1:
           print "Error: too many users with __default_user__ label"
           print "Please remove the label from all but the single 'guest' user."
-          sys.exit(1)
+          print ''
+          for gid, username in guest_ids.iteritems():
+            print '[%s]  %s' % (gid, username)
+          print ''
+          gid = None
+          while gid is None:
+            gid_str = raw_input('REAL guest user id (number): ')
+            try:
+              gid = int(gid_str.strip())
+              break
+            except ValueError:
+              print '\nError, invalid id.'
+        elif len(guest_ids) == 1:
+          gid = guest_ids.keys()[0]
+        else:
+          # No guest user, nothing to do.
+          return
 
         for d in orm.Drink.objects.all():
-          if d.user_id in guest_ids:
+          if d.user_id == gid:
             print '  guest drink:', d
             d.user_id = None
             d.save()

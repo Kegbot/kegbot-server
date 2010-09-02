@@ -22,8 +22,8 @@
         data.addRows({{keg.drinks.valid.count}});
 
         {% for drink in keg.drinks.valid %}
-        data.setCell({{forloop.counter0}}, 0, {{drink.id}},
-            '<a href="{% url drink drink.id %}">{{drink.id}}</a>');
+        data.setCell({{forloop.counter0}}, 0, {{drink.seqn}},
+            '<a href="{% url drink drink.seqn %}">{{drink.seqn}}</a>');
         data.setCell({{forloop.counter0}}, 1, {{drink.Volume.ConvertTo.Ounce}},
           '{{drink.Volume.ConvertTo.Ounce|floatformat}}');
         {% if drink.calories %}
@@ -58,7 +58,7 @@
 {% block col-1 %}
 
 <div class="kb-contentbox-head">
-   keg {{keg.id}} snapshot
+   keg {{keg.seqn}} snapshot
 </div>
 
 <div class="kb-contentbox">
@@ -209,7 +209,7 @@
   </div>
   <div class="kb-contentbox">
     <p>
-       full drink history for keg {{ keg.id }} is shown below.
+       full drink history for keg {{ keg.seqn }} is shown below.
     </p>
     <table id="kb-keg-drinks-table" cellspacing=0 border=0></table>
   </div>

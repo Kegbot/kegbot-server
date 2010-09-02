@@ -32,7 +32,7 @@
 
 <script>
   {% if drinks %}
-  var LAST_DRINK_ID = {{ drinks.0.id }};
+  var LAST_DRINK_ID = {{ drinks.0.seqn }};
   {% else %}
   var LAST_DRINK_ID = 0;
   {% endif %}

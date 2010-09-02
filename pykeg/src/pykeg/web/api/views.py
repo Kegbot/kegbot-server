@@ -173,18 +173,18 @@ class jsonhandler:
 
 ### Helpers
 
-def _get_last_drinks(limit=5):
-  return models.Drink.objects.valid()[:limit]
+def _get_last_drinks(request, limit=5):
+  return request.kbsite.drink_set.valid()[:limit]
 
 ### Endpoints
 
 @jsonhandler
 def last_drinks(request, limit=5):
-  return _get_last_drinks(limit)
+  return _get_last_drinks(request, limit)
 
 @jsonhandler
 def all_kegs(request):
-  return models.Keg.objects.all().order_by('-startdate')
+  return request.kbsite.keg_set.all().order_by('-startdate')
 
 @jsonhandler
 @auth_required   # for now, due to expense; TODO paginate me
@@ -193,20 +193,20 @@ def all_drinks(request):
 
 @jsonhandler
 def get_drink(request, drink_id):
-  return get_object_or_404(models.Drink, pk=drink_id)
+  return get_object_or_404(models.Drink, pk=drink_id, site=request.kbsite)
 
 @jsonhandler
 def get_keg(request, keg_id):
-  return get_object_or_404(models.Keg, pk=keg_id)
+  return get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
 
 @jsonhandler
 def get_keg_drinks(request, keg_id):
-  keg = get_object_or_404(models.Keg, pk=keg_id)
+  keg = get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
   return list(keg.drinks.valid())
 
 @jsonhandler
 def all_taps(request):
-  return models.KegTap.objects.all().order_by('name')
+  return request.kbsite.kegtap_set.all().order_by('name')
 
 @jsonhandler
 def get_user(request, username):
@@ -224,21 +224,21 @@ def get_auth_token(request, auth_device, token_value):
 
 @jsonhandler
 def all_thermo_sensors(request):
-  return list(models.ThermoSensor.objects.all())
+  return list(request.kbsite.thermosensor_set.all())
 
 @jsonhandler
 def get_thermo_sensor(request, nice_name):
-  return get_object_or_404(models.ThermoSensor, nice_name=nice_name)
+  return get_object_or_404(models.ThermoSensor, nice_name=nice_name, site=request.kbsite)
 
 @jsonhandler
 def get_thermo_sensor_logs(request, nice_name):
-  sensor = get_object_or_404(models.ThermoSensor, nice_name=nice_name)
+  sensor = get_object_or_404(models.ThermoSensor, nice_name=nice_name, site=request.kbsite)
   logs = sensor.thermolog_set.all()[:60*2]
   return logs
 
 @py_to_json
 def last_drinks_html(request, limit=5):
-  last_drinks = _get_last_drinks(limit)
+  last_drinks = _get_last_drinks(request, limit)
 
   # render each drink
   template = get_template('kegweb/drink-box.html')
@@ -252,7 +252,7 @@ def last_drinks_html(request, limit=5):
 
 @py_to_json
 def last_drink_id(request):
-  last = _get_last_drinks(limit=1)
+  last = _get_last_drinks(request, limit=1)
   if not last.count():
     return {'id': 0}
   else:
@@ -265,7 +265,7 @@ def get_access_token(request):
 
 def tap_detail(request, tap_id):
   try:
-    tap = models.KegTap.objects.get(meter_name=tap_id)
+    tap = request.kbsite.kegtap_set.get(meter_name=tap_id)
   except models.KegTap.DoesNotExist:
     raise Http404
 
@@ -292,7 +292,7 @@ def tap_detail_post(request, tap):
     pour_time += skew
   else:
     pour_time = None
-  b = backend.KegbotBackend()
+  b = backend.KegbotBackend(site=request.kbsite)
   res = b.RecordDrink(tap_name=tap.meter_name,
     ticks=cd['ticks'],
     volume_ml=cd.get('volume_ml'),

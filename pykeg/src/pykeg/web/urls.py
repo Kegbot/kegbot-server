@@ -60,3 +60,9 @@ if features.use_facebook():
       (r'^fb/', include('pykeg.web.contrib.facebook.urls')),
   )
 
+if features.use_twitter():
+  urlpatterns += patterns('',
+      ### twitter kegweb stuff
+      (r'^twitter/', include('pykeg.web.contrib.twitter.urls')),
+  )
+

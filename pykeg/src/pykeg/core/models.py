@@ -70,6 +70,13 @@ class UserProfile(models.Model):
     if qs:
       return qs[0]
 
+  def TwitterProfile(self):
+    if 'socialregistration' not in settings.INSTALLED_APPS:
+      return None
+    qs = self.user.twitterprofile_set.all()
+    if qs:
+      return qs[0]
+
   def MugshotUrl(self):
     if self.mugshot:
       img_url = self.mugshot.image.url

@@ -1,0 +1,26 @@
+{% extends "account/base.html" %}
+{% load kegweblib %}
+
+{% block title %}twitter settings{% endblock %}
+
+{% block kb-account-main %}
+  <div class="kb-contentbox-head">
+    twitter settings
+  </div>
+  <div class="kb-contentbox">
+    <p>
+    {% with user.get_profile.TwitterProfile as profile %}
+    {% if profile %}
+    your account is linked.
+    {% else %}
+      {% if USE_TWITTER %}
+        to link your twitter account, click below.<br>
+        {% load twitter_tags %}
+        {% twitter_button %}
+      {% endif %}
+    {% endif %}
+    {% endwith %}
+    </p>
+  </div>
+{% endblock %}
+

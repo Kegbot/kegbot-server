@@ -21,9 +21,11 @@
     </div>
     {% endif %}
 
-    <div class="kb-admin-nav-tab" url="">
-      <a href="">twitter options</a>
+    {% if USE_TWITTER %}
+    <div class="kb-admin-nav-tab" url="{% url twitter-account-settings %}">
+      <a href="{% url twitter-account-settings %}">twitter options</a>
     </div>
+    {% endif %}
 
     <script>
     $("div.kb-admin-nav-tab").click(

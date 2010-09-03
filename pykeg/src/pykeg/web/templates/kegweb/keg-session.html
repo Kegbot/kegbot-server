@@ -1,29 +1,41 @@
 {% load kegweblib %}
 <div class="kb-keg-session">
-  <div class="kb-award-box">
-    <table border="0" width="100%" height="100%">
-      <tr>
-        <td align="center" valign="center">
-          <div style="font-size: 200%;">
-            {{ session.Volume.ConvertTo.Pint|floatformat:0 }}
-          </div>
-          <div style="font-size: 8px;">
-            pints
-          </div>
-        </td>
-      </tr>
-    </table>
+  <div class="kb-session-box-headline">
+    {{ session.GetTitle }}
   </div>
-  <div class="kb-drink-box-details-headline">
-    {{ session.starttime|date:"l, F j" }} at
-    {{ session.starttime|date:"P" }}
+  <div class="kb-session-box-detail">
+    <div style="margin-top: 4px; margin-bottom: 4px;">
+      <span class="kb-session-box-summary">
+        {{session.summarize_drinkers}}
+      </span>
+    </div>
+    <div class="kb-award-box">
+      <table border="0" width="100%" height="100%">
+        <tr>
+          <td align="center" valign="center">
+            <div style="font-size: 1.4em;">
+              {{ session.count_pints }}
+            </div>
+            <div style="font-size: 8px;">
+              pint{{ session.count_pints|pluralize }}
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    {% for chunk in session.UserChunksByVolume %}
+      {% if chunk.user %}
+      <div class="kb-drink-box-mugshot">
+        {% with chunk.user as drinker %}
+          {% mugshot_box drinker 48 %}
+        {% endwith %}
+      </div>
+      {% endif %}
+    {% endfor %}
+    <div class="clear"></div>
+    <div class="kb-session-box-dateline">
+      {{ session.starttime|date:"l, F j" }} at
+      {{ session.starttime|date:"P" }}
+    </div>
   </div>
-  {% for chunk in session.UserChunksByVolume %}
-  <div class="kb-drink-box-mugshot">
-    {% with chunk.user as drinker %}
-      {% mugshot_box drinker 48 %}
-    {% endwith %}
-  </div>
-  {%endfor%}
-  <div class="clear"></div>
 </div>

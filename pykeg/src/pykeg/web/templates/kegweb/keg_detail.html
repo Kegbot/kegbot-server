@@ -181,6 +181,7 @@
        sessions
     </div>
     <div class="kb-contentbox">
+      <p/>
       {% for chunk in keg.keg_session_chunks.all %}
         {% with chunk.session as session %}
           {% include "kegweb/keg-session.html" %}

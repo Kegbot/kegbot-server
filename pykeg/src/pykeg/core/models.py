@@ -511,6 +511,44 @@ class DrinkingSession(AbstractChunk):
   def __str__(self):
     return "Session #%s: %s" % (self.id, self.starttime)
 
+  def count_drinkers(self):
+    return self.user_chunks.filter(user__isnull=False).count()
+
+  def count_pints(self):
+    return int(round(int(self.Volume().ConvertTo.Pint)))
+
+  def summarize_drinkers(self):
+    def fmt(user):
+      return user.username
+    chunks = self.user_chunks.all().order_by('-volume_ml')
+    users = tuple(c.user for c in chunks)
+    names = tuple(fmt(u) for u in users if u)
+
+    if None in users:
+      guest_trailer = ' (and possibly others)'
+    else:
+      guest_trailer = ''
+
+    num = len(names)
+    if num == 0:
+      return 'no known drinkers'
+    elif num == 1:
+      ret = names[0]
+    elif num == 2:
+      ret = '%s and %s' % names
+    elif num == 3:
+      ret = '%s, %s and %s' % names
+    else:
+      if guest_trailer:
+        return '%s, %s and at least %i others' % (names[0], names[1], num-2)
+      else:
+        return '%s, %s and %i others' % (names[0], names[1], num-2)
+
+    return '%s%s' % (ret, guest_trailer)
+
+  def GetTitle(self):
+    return 'Session %i' % (self.seqn,)
+
   def Volume(self):
     return units.Quantity(self.volume_ml, units.RECORD_UNIT)
 

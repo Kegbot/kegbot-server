@@ -183,6 +183,18 @@ class Keg(models.Model):
       return q[0]
     return None
 
+  def previous(self):
+    q = Keg.objects.filter(startdate__lt=self.startdate).order_by('-startdate')
+    if q.count():
+      return q[0]
+    return None
+
+  def next(self):
+    q = Keg.objects.filter(startdate__gt=self.startdate).order_by('startdate')
+    if q.count():
+      return q[0]
+    return None
+
   def GetStats(self):
     if hasattr(self, '_stats'):
       return self._stats

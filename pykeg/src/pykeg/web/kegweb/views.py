@@ -95,7 +95,7 @@ def keg_list(request):
 
 #@cache_page(30)
 def keg_detail(request, keg_id):
-  keg = get_object_or_404(Kodels.Keg, site=request.kbsite, seqn=keg_id)
+  keg = get_object_or_404(models.Keg, site=request.kbsite, seqn=keg_id)
   context = RequestContext(request, {'keg': keg})
   return render_to_response('kegweb/keg_detail.html', context)
 

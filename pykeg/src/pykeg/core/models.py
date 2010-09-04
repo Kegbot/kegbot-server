@@ -44,6 +44,25 @@ def mugshot_file_name(instance, filename):
   new_filename = '%04x-%s' % (rand_salt, filename)
   return os.path.join('mugshots', instance.user.username, new_filename)
 
+def _set_seqn_pre_save(sender, instance, **kwargs):
+  if instance.seqn:
+    return
+  prev = sender.objects.all().order_by('-seqn')[:1]
+  if not prev.count():
+    seqn = 1
+  else:
+    seqn = prev[0].seqn + 1
+  instance.seqn = seqn
+
+
+class KegbotSite(models.Model):
+  name = models.CharField(max_length=64, unique=True,
+      help_text='A short name for this site, eg "default" or "sfo"')
+  description = models.TextField(blank=True, null=True,
+      help_text='Description of this site')
+
+  def __str__(self):
+    return '%s %s' % (self.name, self.description)
 
 class UserPicture(models.Model):
   def __str__(self):
@@ -114,6 +133,7 @@ class KegSize(models.Model):
 
 class KegTap(models.Model):
   """A physical tap of beer."""
+  site = models.ForeignKey(KegbotSite)
   name = models.CharField(max_length=128)
   meter_name = models.CharField(max_length=128)
   ml_per_tick = models.FloatField(default=(1000.0/2200.0))
@@ -135,6 +155,9 @@ class KegTap(models.Model):
 
 class Keg(models.Model):
   """ Record for each installed Keg. """
+  class Meta:
+    unique_together = ('site', 'seqn')
+
   def full_volume(self):
     return self.size.Volume()
 
@@ -164,6 +187,18 @@ class Keg(models.Model):
   def tap(self):
     q = self.kegtap_set.all()
     if q:
+      return q[0]
+    return None
+
+  def previous(self):
+    q = Keg.objects.filter(startdate__lt=self.startdate).order_by('-startdate')
+    if q.count():
+      return q[0]
+    return None
+
+  def next(self):
+    q = Keg.objects.filter(startdate__gt=self.startdate).order_by('startdate')
+    if q.count():
       return q[0]
     return None
 
@@ -204,6 +239,8 @@ class Keg(models.Model):
   def __str__(self):
     return "Keg #%s - %s" % (self.id, self.type)
 
+  site = models.ForeignKey(KegbotSite, related_name='kegs')
+  seqn = models.PositiveIntegerField()
   type = models.ForeignKey(bdb.BeerType)
   size = models.ForeignKey(KegSize)
   startdate = models.DateTimeField('start date', default=datetime.datetime.now)
@@ -238,6 +275,7 @@ def _KegPreSave(sender, instance, **kwargs):
     if drink.endtime > instance.enddate:
       instance.enddate = drink.endtime
 
+pre_save.connect(_set_seqn_pre_save, sender=Keg)
 pre_save.connect(_KegPreSave, sender=Keg)
 
 
@@ -248,6 +286,7 @@ class DrinkManager(models.Manager):
 class Drink(models.Model):
   """ Table of drinks records """
   class Meta:
+    unique_together = ('site', 'seqn')
     get_latest_by = 'endtime'
     ordering = ('-endtime',)
 
@@ -281,6 +320,9 @@ class Drink(models.Model):
 
   objects = DrinkManager()
 
+  site = models.ForeignKey(KegbotSite, related_name='drinks')
+  seqn = models.PositiveIntegerField()
+
   # Ticks records the actual meter reading, which is never changed once
   # recorded.
   ticks = models.PositiveIntegerField()
@@ -289,6 +331,13 @@ class Drink(models.Model):
   # of `ticks`, but it may be adjusted, eg due to calibration or mis-recording.
   volume_ml = models.FloatField()
 
+  # Similarly, recording both the start and end times of a drink may seem odd.
+  # The idea was to someday add metrics to the web page showing pour speeds.
+  # This was never terribly exciting so it didn't happen, but space is cheap
+  # so I'm inclined to keep the data rather than chuck it.
+  #
+  # For sorting and other operations requiring a single date, the endtime is
+  # used.  TODO(mikey): make sure this is actually the case
   starttime = models.DateTimeField()
   endtime = models.DateTimeField()
   user = models.ForeignKey(User, null=True, blank=True, related_name='drinks')
@@ -316,10 +365,12 @@ class Drink(models.Model):
     self._UpdateUserStats()
     self._UpdateKegStats()
 
+pre_save.connect(_set_seqn_pre_save, sender=Drink)
+
 class AuthenticationToken(models.Model):
   """A secret token to authenticate a user, optionally pin-protected."""
   class Meta:
-    unique_together = ("auth_device", "token_value")
+    unique_together = ('site', 'seqn', 'auth_device', 'token_value')
 
   def __str__(self):
     ret = "%s: %s" % (self.auth_device, self.token_value)
@@ -327,6 +378,8 @@ class AuthenticationToken(models.Model):
       ret = "%s (%s)" % (ret, self.user.username)
     return ret
 
+  site = models.ForeignKey(KegbotSite, related_name='tokens')
+  seqn = models.PositiveIntegerField()
   auth_device = models.CharField(max_length=64)
   token_value = models.CharField(max_length=128)
   pin = models.CharField(max_length=256, blank=True, null=True)
@@ -345,6 +398,7 @@ class AuthenticationToken(models.Model):
       return True
     return datetime.datetime.now() < self.expires
 
+pre_save.connect(_set_seqn_pre_save, sender=AuthenticationToken)
 
 class BAC(models.Model):
   """ Calculated table of instantaneous blood alcohol estimations.
@@ -447,8 +501,13 @@ class AbstractChunk(models.Model):
   endtime = models.DateTimeField()
   volume_ml = models.FloatField(default=0)
 
+  def Volume(self):
+    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
+
+  def Duration(self):
+    return self.endtime - self.startime
+
   def AddDrink(self, drink):
-    defaults = {'starttime': drink.starttime, 'endtime': drink.endtime}
     if self.starttime > drink.starttime:
       self.starttime = drink.starttime
     if self.endtime < drink.endtime:
@@ -456,20 +515,59 @@ class AbstractChunk(models.Model):
     self.volume_ml += drink.volume_ml
     self.save()
 
-  def Volume(self):
-    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
-
 
 class DrinkingSession(AbstractChunk):
   """A collection of contiguous drinks. """
   class Meta:
+    unique_together = ('site', 'seqn')
     get_latest_by = 'starttime'
     ordering = ('-starttime',)
 
   objects = SessionManager()
+  site = models.ForeignKey(KegbotSite, related_name='sessions')
+  seqn = models.PositiveIntegerField()
 
   def __str__(self):
     return "Session #%s: %s" % (self.id, self.starttime)
+
+  def count_drinkers(self):
+    return self.user_chunks.filter(user__isnull=False).count()
+
+  def count_pints(self):
+    return int(round(int(self.Volume().ConvertTo.Pint)))
+
+  def summarize_drinkers(self):
+    def fmt(user):
+      url = ''
+      return '<a href="%s">%s</a>' % (url, user.username)
+    chunks = self.user_chunks.all().order_by('-volume_ml')
+    users = tuple(c.user for c in chunks)
+    names = tuple(fmt(u) for u in users if u)
+
+    if None in users:
+      guest_trailer = ' (and possibly others)'
+    else:
+      guest_trailer = ''
+
+    num = len(names)
+    if num == 0:
+      return 'no known drinkers'
+    elif num == 1:
+      ret = names[0]
+    elif num == 2:
+      ret = '%s and %s' % names
+    elif num == 3:
+      ret = '%s, %s and %s' % names
+    else:
+      if guest_trailer:
+        return '%s, %s and at least %i others' % (names[0], names[1], num-2)
+      else:
+        return '%s, %s and %i others' % (names[0], names[1], num-2)
+
+    return '%s%s' % (ret, guest_trailer)
+
+  def GetTitle(self):
+    return 'Session %i' % (self.seqn,)
 
   def Volume(self):
     return units.Quantity(self.volume_ml, units.RECORD_UNIT)
@@ -524,6 +622,8 @@ class DrinkingSession(AbstractChunk):
     drink.save()
     return session
 
+pre_save.connect(_set_seqn_pre_save, sender=DrinkingSession)
+
 
 class SessionChunk(AbstractChunk):
   """A specific user and keg contribution to a session."""
@@ -564,6 +664,11 @@ class KegSessionChunk(AbstractChunk):
 
 
 class ThermoSensor(models.Model):
+  class Meta:
+    unique_together = ('site', 'seqn')
+
+  site = models.ForeignKey(KegbotSite, related_name='thermosensors')
+  seqn = models.PositiveIntegerField()
   raw_name = models.CharField(max_length=256)
   nice_name = models.CharField(max_length=128)
 
@@ -576,16 +681,19 @@ class ThermoSensor(models.Model):
     except Thermolog.DoesNotExist:
       return None
 
+pre_save.connect(_set_seqn_pre_save, sender=ThermoSensor)
+
 
 class Thermolog(models.Model):
   """ A log from an ITemperatureSensor device of periodic measurements. """
+  class Meta:
+    unique_together = ('site', 'seqn')
+
+  site = models.ForeignKey(KegbotSite, related_name='thermologs')
+  seqn = models.PositiveIntegerField()
   sensor = models.ForeignKey(ThermoSensor)
   temp = models.FloatField()
   time = models.DateTimeField()
-
-  class Meta:
-    get_latest_by = 'time'
-    ordering = ('-time',)
 
   def __str__(self):
     return '%s %.2f C / %.2f F [%s]' % (self.sensor, self.TempC(),
@@ -694,14 +802,20 @@ def thermolog_post_save(sender, instance, **kwargs):
 
   daily_log.save()
 
+pre_save.connect(_set_seqn_pre_save, sender=Thermolog)
 post_save.connect(thermolog_post_save, sender=Thermolog)
 
 
 class ThermoSummaryLog(models.Model):
   """A summarized temperature sensor log."""
+  class Meta:
+    unique_together = ('site', 'seqn')
+
   PERIOD_CHOICES = (
     ('daily', 'daily'),
   )
+  site = models.ForeignKey(KegbotSite, related_name='thermosummarylogs')
+  seqn = models.PositiveIntegerField()
   sensor = models.ForeignKey(ThermoSensor)
   date = models.DateTimeField()
   period = models.CharField(max_length=64, choices=PERIOD_CHOICES,
@@ -711,18 +825,28 @@ class ThermoSummaryLog(models.Model):
   max_temp = models.FloatField()
   mean_temp = models.FloatField()
 
+pre_save.connect(_set_seqn_pre_save, sender=ThermoSummaryLog)
+
 
 class RelayLog(models.Model):
   """ A log from an IRelay device of relay events/ """
+  class Meta:
+    unique_together = ('site', 'seqn')
+
+  site = models.ForeignKey(KegbotSite, related_name='relaylogs')
+  seqn = models.PositiveIntegerField()
   name = models.CharField(max_length=128)
   status = models.CharField(max_length=32)
   time = models.DateTimeField()
+
+pre_save.connect(_set_seqn_pre_save, sender=RelayLog)
 
 
 class Config(models.Model):
   def __str__(self):
     return '%s=%s' % (self.key, self.value)
 
+  site = models.ForeignKey(KegbotSite, related_name='configs')
   key = models.CharField(max_length=255, unique=True)
   value = models.TextField()
 
@@ -738,6 +862,7 @@ class _StatsModel(models.Model):
   STATS_BUILDER = None
   class Meta:
     abstract = True
+  site = models.ForeignKey(KegbotSite)
   date = models.DateTimeField(default=datetime.datetime.now)
   stats = fields.JSONField()
   revision = models.PositiveIntegerField(default=0)

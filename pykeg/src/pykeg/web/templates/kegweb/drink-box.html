@@ -14,9 +14,9 @@
       <b>{{ drink.Volume.ConvertTo.Ounce|floatformat:2 }} ounces</b>
     </div>
     <div class="kb-drink-box-details-keginfo">
-      <a href="{% url drink drink.id %}">drink {{drink.id}}</a>{% if drink.keg %}
+      <a href="{% url drink drink.seqn %}">drink {{drink.seqn}}</a>{% if drink.keg %}
         from
-        <a href="{% url keg drink.keg.id %}">{{drink.keg.type.name}}</a>
+        <a href="{% url keg drink.keg.seqn %}">{{drink.keg.type.name}}</a>
       {% endif %}
     </div>
   </div>

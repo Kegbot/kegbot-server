@@ -9,7 +9,7 @@
     Total 12oz pours: {{statement.Total12OuncePours|floatformat:2}}
        Avg cost/12oz: ${{statement.AverageCostPerBeer|floatformat:2}}
 ------------------------------------------------------{% for dc in statement.drink_charges.all %}{% if dc.TotalFunds %}
-{{dc.drink.starttime}} |  {{dc.drink.id|stringformat:"4i"}}  {{dc.drink.ounces|stringformat:"3i"}} oz  {{dc.TotalFundsStr}}{% endif %}{% endfor %}
+{{dc.drink.starttime}} |  {{dc.drink.seqn|stringformat:"4i"}}  {{dc.drink.ounces|stringformat:"3i"}} oz  {{dc.TotalFundsStr}}{% endif %}{% endfor %}
 </pre>
     {% if statement.IsCredit %}
     <div class="statementtotal_positive">

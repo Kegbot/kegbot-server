@@ -294,12 +294,44 @@ div.plainbox {
   width: 460px;
   margin-bottom: 8px;
   padding: 8px;
-  border: 1px dotted #007BFE;
+  background: #b2def2;
+  border: 1px solid #277394;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.kb-session-box-headline {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.kb-session-box-detail {
+  padding-left: 16px;
+  padding-right: 16px;
+  font: normal normal normal 80%/100% 'Lucida Grande', Arial, sans-serif;
+}
+
+.kb-session-box-summary {
+  margin-bottom: 4px;
+  background-color: #113341;
+  color: #fff;
+  font-size: 0.7em;
+  padding: 3px;
+}
+.kb-session-box-summary a:link,
+.kb-session-box-summary a:visited {
+  color: #fff;
+}
+
+.kb-session-box-summary a:hover,
+.kb-session-box-summary a:active {
+  color: #ccf;
 }
 
 .kb-award-box {
-  width: 96px;
-  height: 96px;
+  width: 48px;
+  height: 48px;
   background: #4e4e4e;
   color: #eee;
   float: left;

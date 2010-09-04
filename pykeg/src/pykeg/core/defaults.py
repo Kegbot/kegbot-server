@@ -37,6 +37,8 @@ def set_defaults():
   if db_is_installed():
     raise RuntimeError, "Database is already installed."
 
+  site = models.KegbotSite.objects.create(name='default')
+
   # config table defaults
   default_config = (
      ('logging.logfile', 'keg.log'),
@@ -46,13 +48,13 @@ def set_defaults():
      ('db.installed', 'true'),
   )
   for key, val in default_config:
-    rec = models.Config(key=key, value=val)
+    rec = models.Config(site=site, key=key, value=val)
     rec.save()
 
   # KegTap defaults
-  main_tap = models.KegTap(name='Main Tap', meter_name='kegboard.flow0')
+  main_tap = models.KegTap(site=site, name='Main Tap', meter_name='kegboard.flow0')
   main_tap.save()
-  secondary_tap = models.KegTap(name='Second Tap', meter_name='kegboard.flow1')
+  secondary_tap = models.KegTap(site=site, name='Second Tap', meter_name='kegboard.flow1')
   secondary_tap.save()
 
   b = backend.KegbotBackend()

@@ -122,16 +122,16 @@ def BeerStyleToProto(style, full=True):
 @converts(models.Drink)
 def DrinkToProto(drink, full=True):
   ret = models_pb2.Drink()
-  ret.id = drink.id
+  ret.id = drink.seqn
   ret.ticks = drink.ticks
   ret.volume_ml = drink.volume_ml
-  ret.session_id = str(drink.session.id)
+  ret.session_id = str(drink.session.seqn)
   ret.pour_time = time_to_int(drink.endtime)
   if drink.duration is not None:
     ret.duration = drink.duration
   ret.is_valid = (drink.status == 'valid')
   if drink.keg:
-    ret.keg_id = drink.keg.id
+    ret.keg_id = drink.keg.seqn
     if full:
       ret.keg.MergeFrom(ToProto(drink.keg))
   if drink.user:
@@ -145,7 +145,7 @@ def DrinkToProto(drink, full=True):
 @converts(models.Keg)
 def KegToProto(keg, full=True):
   ret = models_pb2.Keg()
-  ret.id = keg.id
+  ret.id = keg.seqn
   ret.type_id = keg.type.id
   if full:
     ret.type.MergeFrom(ToProto(keg.type))
@@ -171,18 +171,18 @@ def KegSizeToProto(size, full=True):
 @converts(models.KegTap)
 def KegTapToProto(tap, full=True):
   ret = models_pb2.KegTap()
-  ret.id = str(tap.id)
+  ret.id = str(tap.seqn)
   ret.name = tap.name
   ret.meter_name = tap.meter_name
   ret.ml_per_tick = tap.ml_per_tick
   if tap.description:
     ret.description = tap.description
   if tap.current_keg:
-    ret.current_keg_id = tap.current_keg.id
+    ret.current_keg_id = tap.current_keg.seqn
     if full:
       ret.current_keg.MergeFrom(ToProto(tap.current_keg))
   if tap.temperature_sensor:
-    ret.thermo_sensor_id = str(tap.temperature_sensor.id)
+    ret.thermo_sensor_id = str(tap.temperature_sensor.seqn)
     if full:
       log = tap.temperature_sensor.LastLog()
       if log:
@@ -192,7 +192,7 @@ def KegTapToProto(tap, full=True):
 @converts(models.DrinkingSession)
 def SessionToProto(record, full=True):
   ret = models_pb2.Session()
-  ret.id = str(record.id)
+  ret.id = str(record.seqn)
   ret.start_time = time_to_int(record.starttime)
   ret.end_time = time_to_int(record.endtime)
   ret.volume_ml = record.volume
@@ -201,8 +201,8 @@ def SessionToProto(record, full=True):
 @converts(models.Thermolog)
 def ThermoLogToProto(record, full=True):
   ret = models_pb2.ThermoLog()
-  ret.id = str(record.id)
-  ret.sensor_id = str(record.sensor.id)
+  ret.id = str(record.seqn)
+  ret.sensor_id = str(record.sensor.seqn)
   ret.temperature_c = record.temp
   ret.record_time = time_to_int(record.time)
   return ret
@@ -228,10 +228,10 @@ def UserToProto(user, full=True):
 @converts(models.SessionChunk)
 def SessionChunkToProto(record, full=True):
   ret = models_pb2.SessionChunk()
-  ret.id = str(record.id)
-  ret.session_id = str(record.session.id)
+  ret.id = str(record.seqn)
+  ret.session_id = str(record.session.seqn)
   ret.username = record.user.username
-  ret.keg_id = record.keg.id
+  ret.keg_id = record.keg.seqn
   ret.start_time = time_to_int(record.starttime)
   ret.end_time = time_to_int(record.endtime)
   ret.volume_ml = record.volume_ml

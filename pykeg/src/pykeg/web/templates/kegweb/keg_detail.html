@@ -22,8 +22,8 @@
         data.addRows({{keg.drinks.valid.count}});
 
         {% for drink in keg.drinks.valid %}
-        data.setCell({{forloop.counter0}}, 0, {{drink.id}},
-            '<a href="{% url drink drink.id %}">{{drink.id}}</a>');
+        data.setCell({{forloop.counter0}}, 0, {{drink.seqn}},
+            '<a href="{% url drink drink.seqn %}">{{drink.seqn}}</a>');
         data.setCell({{forloop.counter0}}, 1, {{drink.Volume.ConvertTo.Ounce}},
           '{{drink.Volume.ConvertTo.Ounce|floatformat}}');
         {% if drink.calories %}
@@ -58,7 +58,7 @@
 {% block col-1 %}
 
 <div class="kb-contentbox-head">
-   keg {{keg.id}} snapshot
+   keg {{keg.seqn}} snapshot
 </div>
 
 <div class="kb-contentbox">
@@ -174,13 +174,28 @@
 {% endblock col-2 %}
 
 {% block extra-content %}
+
+{% with keg.next as next %} {% with keg.previous as previous %}
+{% if next or previous %}
+<div style="font-size: 0.8em; text-align:center; margin-bottom:16px;">
+  {% if previous %}
+    <a href="{% url keg previous.seqn %}">&laquo; previous keg</a>
+  {% endif %}
+  {% if next and previous %}
+  &mdash;
+  {% endif %}
+  {% if next %}
+    <a href="{% url keg next.seqn %}">next keg &raquo;</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endwith %} {% endwith %}
+
 <div class="kb-main-content">
 
   <div class="kb-twocol-left">
-    <div class="kb-contentbox-head">
-       sessions
-    </div>
     <div class="kb-contentbox">
+      <p/>
       {% for chunk in keg.keg_session_chunks.all %}
         {% with chunk.session as session %}
           {% include "kegweb/keg-session.html" %}
@@ -209,7 +224,7 @@
   </div>
   <div class="kb-contentbox">
     <p>
-       full drink history for keg {{ keg.id }} is shown below.
+       full drink history for keg {{ keg.seqn }} is shown below.
     </p>
     <table id="kb-keg-drinks-table" cellspacing=0 border=0></table>
   </div>

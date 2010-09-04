@@ -24,8 +24,7 @@
 </div>
 <div class="kb-contentbox">
   <div id="kb-recent-pours">
-  {% latest_drinks 5 as drinks %}
-  {% for drink in drinks %}
+  {% for drink in latest_drinks %}
     {% include "kegweb/drink-box.html" %}
   {% endfor %}
   </div>
@@ -33,7 +32,7 @@
 
 <script>
   {% if drinks %}
-  var LAST_DRINK_ID = {{ drinks.0.id }};
+  var LAST_DRINK_ID = {{ drinks.0.seqn }};
   {% else %}
   var LAST_DRINK_ID = 0;
   {% endif %}

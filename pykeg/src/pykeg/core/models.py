@@ -531,7 +531,8 @@ class DrinkingSession(AbstractChunk):
 
   def summarize_drinkers(self):
     def fmt(user):
-      return user.username
+      url = ''
+      return '<a href="%s">%s</a>' % (url, user.username)
     chunks = self.user_chunks.all().order_by('-volume_ml')
     users = tuple(c.user for c in chunks)
     names = tuple(fmt(u) for u in users if u)

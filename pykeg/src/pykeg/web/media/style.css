@@ -319,8 +319,14 @@ div.plainbox {
   font-size: 0.7em;
   padding: 3px;
 }
+.kb-session-box-summary a:link,
+.kb-session-box-summary a:visited {
+  color: #fff;
+}
 
-.kb-session-box-dateline {
+.kb-session-box-summary a:hover,
+.kb-session-box-summary a:active {
+  color: #ccf;
 }
 
 .kb-award-box {

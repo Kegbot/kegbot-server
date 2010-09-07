@@ -47,7 +47,7 @@ def mugshot_file_name(instance, filename):
 def _set_seqn_pre_save(sender, instance, **kwargs):
   if instance.seqn:
     return
-  prev = sender.objects.all().order_by('-seqn')[:1]
+  prev = sender.objects.filter(site=instance.site).order_by('-seqn')
   if not prev.count():
     seqn = 1
   else:
@@ -134,6 +134,7 @@ class KegSize(models.Model):
 class KegTap(models.Model):
   """A physical tap of beer."""
   site = models.ForeignKey(KegbotSite)
+  seqn = models.PositiveIntegerField()
   name = models.CharField(max_length=128)
   meter_name = models.CharField(max_length=128)
   ml_per_tick = models.FloatField(default=(1000.0/2200.0))
@@ -152,6 +153,7 @@ class KegTap(models.Model):
         return last_rec[0]
     return None
 
+pre_save.connect(_set_seqn_pre_save, sender=KegTap)
 
 class Keg(models.Model):
   """ Record for each installed Keg. """
@@ -353,17 +355,24 @@ class Drink(models.Model):
 
   def _UpdateUserStats(self):
     if self.user:
-      stats, created = self.user.stats.get_or_create()
+      defaults = {
+        'site': self.site,
+      }
+      stats, created = self.user.stats.get_or_create(defaults=defaults)
       stats.Update(self)
 
   def _UpdateKegStats(self):
     if self.keg:
-      stats, created = self.keg.stats.get_or_create()
+      defaults = {
+        'site': self.site,
+      }
+      stats, created = self.keg.stats.get_or_create(defaults=defaults)
       stats.Update(self)
 
   def PostProcess(self):
     self._UpdateUserStats()
     self._UpdateKegStats()
+    SystemEvent.ProcessDrink(self)
 
 pre_save.connect(_set_seqn_pre_save, sender=Drink)
 
@@ -456,32 +465,31 @@ class BAC(models.Model):
     return b
 
 
-def find_object_in_window(qset, start, end, window):
-  # Match objects containing the start-end range
+def find_object_in_window(qset, when, window):
   matching = qset.filter(
-      starttime__lte=start + window,
-      endtime__gte=end - window
+      starttime__lte=when + window,
+      endtime__gte=when - window
   )
 
-  if len(matching):
+  if matching:
     return matching[0]
 
   # Match objects ending just before the start
   earlier = qset.filter(
-      endtime__gte=(start - window),
-      starttime__lt=start,
+      endtime__gte=(when - window),
+      starttime__lt=when,
   )
 
-  if len(earlier):
+  if earlier:
     return earlier[0]
 
   # Match objects occuring just after the end
   newer = qset.filter(
-      starttime__lte=(end - window),
-      endtime__gt=end,
+      starttime__lte=(when - window),
+      endtime__gt=when,
   )
 
-  if len(newer):
+  if newer:
     return newer[0]
 
   return None
@@ -605,9 +613,9 @@ class DrinkingSession(AbstractChunk):
       return drink.session
 
     # Return last session if one already exists
-    q = cls.objects.all()
+    q = drink.site.sessions.all()
     window = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
-    session = find_object_in_window(q, drink.starttime, drink.endtime, window)
+    session = find_object_in_window(q, drink.endtime, window)
     if session:
       session.AddDrink(drink)
       drink.session = session
@@ -615,7 +623,8 @@ class DrinkingSession(AbstractChunk):
       return session
 
     # Create a new session
-    session = cls(starttime=drink.starttime, endtime=drink.endtime)
+    session = cls(starttime=drink.starttime, endtime=drink.endtime,
+        site=drink.site)
     session.save()
     session.AddDrink(drink)
     drink.session = session
@@ -658,6 +667,7 @@ class KegSessionChunk(AbstractChunk):
     get_latest_by = 'starttime'
     ordering = ('-starttime',)
 
+  objects = SessionManager()
   session = models.ForeignKey(DrinkingSession, related_name='keg_chunks')
   keg = models.ForeignKey(Keg, related_name='keg_session_chunks', blank=True,
       null=True)
@@ -688,6 +698,7 @@ class Thermolog(models.Model):
   """ A log from an ITemperatureSensor device of periodic measurements. """
   class Meta:
     unique_together = ('site', 'seqn')
+    get_latest_by = 'time'
 
   site = models.ForeignKey(KegbotSite, related_name='thermologs')
   seqn = models.PositiveIntegerField()
@@ -777,6 +788,7 @@ def thermolog_post_save(sender, instance, **kwargs):
       month=instance.time.month,
       day=instance.time.day)
   defaults = {
+      'site': instance.site,
       'num_readings': 1,
       'min_temp': instance.temp,
       'max_temp': instance.temp,
@@ -891,10 +903,69 @@ class KegStats(_StatsModel):
     return 'KegStats for %s' % self.keg
 
 
-#class ActivityLog(models.Model):
-#  name = models.CharField(max_length=255)
-#  date = models.DateTimeField(default=datetime.datetime.now)
-#  content_type = models.ForeignKey(ContentType, blank=True, null=True)
-#  object_id = models.PositiveIntegerField(blank=True, null=True)
-#  content_object = generic.GenericForeignKey('content_type', 'object_id',
-#      blank=True, null=True)
+class SystemEvent(models.Model):
+  class Meta:
+    ordering = ('-when', '-id')
+    get_latest_by = 'when'
+
+  KINDS = (
+      ('drink_poured', 'Drink poured'),
+      ('session_started', 'Session started'),
+      ('session_joined', 'User joined session'),
+      ('keg_tapped', 'Keg tapped'),
+      ('keg_ended', 'Keg ended'),
+  )
+
+  site = models.ForeignKey(KegbotSite)
+  seqn = models.PositiveIntegerField()
+  kind = models.CharField(max_length=255, choices=KINDS,
+      help_text='Type of event.')
+  when = models.DateTimeField(help_text='Time of the event.')
+  user = models.ForeignKey(User, blank=True, null=True,
+      related_name='events',
+      help_text='User responsible for the event, if any.')
+  drink = models.ForeignKey(Drink, blank=True, null=True,
+      related_name='events',
+      help_text='Drink involved in the event, if any.')
+  keg = models.ForeignKey(Keg, blank=True, null=True,
+      related_name='events',
+      help_text='Keg involved in the event, if any.')
+  session = models.ForeignKey(DrinkingSession, blank=True, null=True,
+      related_name='events',
+      help_text='Session involved in the event, if any.')
+
+  @classmethod
+  def ProcessDrink(cls, drink):
+    keg = drink.keg
+    site = drink.site
+    if keg:
+      q = keg.events.filter(kind='keg_started')
+      if q.count() == 0:
+        e = keg.events.create(site=site, kind='keg_started', when=drink.endtime,
+            keg=keg)
+        e.save()
+
+    session = drink.session
+    if session:
+      q = session.events.filter(kind='session_started')
+      if q.count() == 0:
+        e = session.events.create(site=site, kind='session_started',
+            when=session.starttime, user=drink.user)
+        e.save()
+
+    user = drink.user
+    if user:
+      q = user.events.filter(kind='session_joined')
+      if q.count() == 0:
+        e = user.events.create(site=site, kind='session_joined',
+            when=drink.endtime, user=user)
+        e.save()
+
+    q = drink.events.filter(kind='drink_poured')
+    if q.count() == 0:
+      e = drink.events.create(site=site, kind='drink_poured',
+          when=drink.endtime, drink=drink, user=drink.user, keg=drink.keg,
+          session=drink.session)
+      e.save()
+
+pre_save.connect(_set_seqn_pre_save, sender=SystemEvent)

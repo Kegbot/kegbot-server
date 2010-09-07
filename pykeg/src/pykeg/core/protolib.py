@@ -63,6 +63,8 @@ def ToProto(obj, full=True):
 def AuthTokenToProto(record, full=True):
   ret = models_pb2.AuthenticationToken()
   ret.id = '%s|%s' % (record.auth_device, record.token_value)
+  ret.auth_device = record.auth_device
+  ret.token_value = record.token_value
   if record.user:
     ret.username = record.user.username
     if full:

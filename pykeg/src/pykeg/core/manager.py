@@ -147,10 +147,10 @@ class TapManager(Manager):
 
 
 class Flow:
-  def __init__(self, tap, flow_id, user=None):
+  def __init__(self, tap, flow_id, username=None):
     self._tap = tap
     self._flow_id = flow_id
-    self._bound_user = user
+    self._bound_username = username
     self._state = kegnet_pb2.FlowUpdate.INITIAL
     self._start_time = datetime.datetime.now()
     self._end_time = None
@@ -158,8 +158,8 @@ class Flow:
     self._total_ticks = 0L
 
   def __str__(self):
-    return '<Flow %s ticks=%s user=%s>' % (self._tap, self._total_ticks,
-        self._bound_user)
+    return '<Flow %s ticks=%s username=%s>' % (self._tap, self._total_ticks,
+        self._bound_username)
 
   def GetUpdateEvent(self):
     event = kegnet_pb2.FlowUpdate()
@@ -167,10 +167,9 @@ class Flow:
     event.tap_name = self._tap.GetName()
     event.state = self._state
 
-    # TODO(mikey): always have a bound/anonymous user for consistency?
     # TODO(mikey): username or user_name in the proto, not both
-    if self._bound_user:
-      event.username = self._bound_user.username
+    if self._bound_username:
+      event.username = self._bound_username
 
     event.start_time = int(time.mktime(self._start_time.timetuple()))
     end = self._start_time
@@ -205,11 +204,11 @@ class Flow:
   def GetVolumeMl(self):
     return self._tap.TicksToMilliliters(self._total_ticks)
 
-  def GetUser(self):
-    return self._bound_user
+  def GetUsername(self):
+    return self._bound_username
 
-  def SetUser(self, user):
-    self._bound_user = user
+  def SetUsername(self, username):
+    self._bound_username = username
 
   def GetStartTime(self):
     return self._start_time
@@ -267,7 +266,7 @@ class FlowManager(Manager):
       ret.append('Active flows: %i' % len(active_flows))
       for flow in active_flows:
         ret.append('  Flow on tap %s' % flow.GetTap())
-        ret.append('             user: %s' % flow.GetUser())
+        ret.append('         username: %s' % flow.GetUsername())
         ret.append('            ticks: %i' % flow.GetTicks())
         ret.append('      volume (mL): %i' % flow.GetVolumeMl())
         ret.append('       start time: %s' % flow.GetStartTime())
@@ -282,7 +281,7 @@ class FlowManager(Manager):
   def GetFlow(self, tap_name):
     return self._flow_map.get(tap_name)
 
-  def StartFlow(self, tap_name, user=None):
+  def StartFlow(self, tap_name, username=''):
     try:
       if not self.GetFlow(tap_name):
         tap = self._tap_manager.GetTap(tap_name)
@@ -290,7 +289,7 @@ class FlowManager(Manager):
         #  users = self._auth_manager.GetActiveUsers()
         #  if users:
         #    user = list(users)[0]
-        new_flow = Flow(tap, self._GetNextFlowId(), user)
+        new_flow = Flow(tap, self._GetNextFlowId(), username)
         self._flow_map[tap_name] = new_flow
         self._logger.info('StartFlow: Flow created: %s' % new_flow)
         self._PublishUpdate(new_flow)
@@ -300,8 +299,8 @@ class FlowManager(Manager):
     except UnknownTapError:
       return None
 
-  def SetUser(self, flow, user):
-    flow.SetUser(user)
+  def SetUsername(self, flow, username):
+    flow.SetUsername(username)
     self._PublishUpdate(flow)
 
   def EndFlow(self, tap_name):
@@ -435,9 +434,9 @@ class DrinkManager(Manager):
       keg_id = d.keg.id
 
     username = '<None>'
-    if d.user:
-      username = d.user.username
-    self._logger.info('Logged drink %i user=%s keg=%s liters=%.2f ticks=%i' % (
+    if d.user_id:
+      username = d.user_id
+    self._logger.info('Logged drink %i username=%s keg=%s liters=%.2f ticks=%i' % (
       d.id, username, keg_id, d.volume_ml/1000.0, d.ticks))
 
     self._last_drink = d
@@ -449,8 +448,8 @@ class DrinkManager(Manager):
     created.tap_name = tap_name
     created.start_time = d.pour_time
     created.end_time = d.pour_time
-    if d.user:
-      created.username = d.user.username
+    if d.user_id:
+      created.username = d.user_id
     self._PublishEvent(created)
 
 
@@ -474,28 +473,33 @@ class ThermoManager(Manager):
 
   @EventHandler(kegnet_pb2.ThermoEvent)
   def _HandleThermoUpdateEvent(self, event):
-    now = time.time()
-    now = int(now - (now % (kb_common.THERMO_RECORD_DELTA_SECONDS)))
-    now_dt = datetime.datetime.fromtimestamp(now)
     sensor_name = event.sensor_name
     sensor_value = event.sensor_value
+    now = datetime.datetime.now()
 
+    # If we've already posted a recording for this minute, avoid doing so again.
+    last_record = self._name_to_last_record.get(sensor_name)
+    if last_record:
+      last_time = datetime.datetime.fromtimestamp(last_record.record_time)
+      if last_time.timetuple()[:5] == now.timetuple()[:5]:
+        self._logger.debug('Dropping excessive temp event')
+        return
+
+    # If the temperature is out of bounds, reject it.
     min_val = kb_common.THERMO_SENSOR_RANGE[0]
     max_val = kb_common.THERMO_SENSOR_RANGE[1]
-    if sensor_value < min_val:
-      return
-    elif sensor_value > max_val:
-      return
-
-    last_record = self._name_to_last_record.get(sensor_name)
-    if last_record and last_record.record_time == now:
+    if sensor_value < min_val or sensor_value > max_val:
       return
 
     self._logger.info('Recording temperature sensor=%s value=%s' %
                       (sensor_name, sensor_value))
-    new_record = self._backend.LogSensorReading(sensor_name, sensor_value,
-        now_dt)
-    self._name_to_last_record[sensor_name] = new_record
+
+    try:
+      new_record = self._backend.LogSensorReading(sensor_name, sensor_value, now)
+      self._name_to_last_record[sensor_name] = new_record
+    except ValueError:
+      # Value was out of acceptable range; ignore.
+      pass
 
 class TokenRecord:
   STATUS_ACTIVE = 1
@@ -566,8 +570,7 @@ class TokenManager(Manager):
   def __init__(self, name, event_hub, backend):
     Manager.__init__(self, name, event_hub)
     self._backend = backend
-    self._tokens = {}  # mpas tap name to currently active token
-    self._authorized_users = {}
+    self._tokens = {}  # maps tap name to currently active token
     self._lock = threading.Lock()
 
   @EventHandler(kegnet_pb2.TokenAuthEvent)
@@ -600,14 +603,12 @@ class TokenManager(Manager):
   def _PublishAuthEvent(self, record, added):
     user = None
     token = self._backend.GetAuthToken(record.auth_device, record.token_value)
-    if token:
-      user = token.user
 
-    if not user:
+    if not token or not token.user:
       self._logger.info('Token not assigned: %s' % record)
       return
 
-    user_name = user.username
+    user_name = token.user.username
 
     message = kegnet_pb2.UserAuthEvent()
     message.tap_name = record.tap_name
@@ -670,37 +671,37 @@ class AuthenticationManager(Manager):
     self._backend = backend
     self._users_by_tap = {}
 
-  def _AddUser(self, user, tap):
+  def _AddUser(self, username, tap):
     tap_name = tap.GetName()
     old_user = self._users_by_tap.get(tap_name)
     if old_user:
-      if old_user == user:
-        self._logger.info('User %s@%s already authenticated' % (user, tap_name))
+      if old_user == username:
+        self._logger.info('User %s@%s already authenticated' % (username, tap_name))
         return
       else:
         self._logger.info('New user "%s" authenticated on tap %s, kicking old user "%s"' %
-            (user.username, tap_name, old_user.username))
+            (username, tap_name, old_user))
         self._RemoveUser(tap)
-    self._users_by_tap[tap_name] = user
-    self._logger.info('Authenticated user %s@%s' % (user, tap_name))
+    self._users_by_tap[tap_name] = username
+    self._logger.info('Authenticated user %s@%s' % (username, tap_name))
 
     # Ask the flow manager to start a flow for this user & tap.
     # TODO(mikey): FlowManager should do this as the result of an authentication
     # event.
     flow = self._flow_manager.GetFlow(tap.GetName())
     if flow is None:
-      self._flow_manager.StartFlow(tap.GetName(), user)
+      self._flow_manager.StartFlow(tap.GetName(), username)
     else:
-      self._flow_manager.SetUser(flow, user)
+      self._flow_manager.SetUser(flow, username)
 
   def _RemoveUser(self, tap):
     tap_name = tap.GetName()
-    user = self._users_by_tap.get(tap_name)
-    if not user:
+    username = self._users_by_tap.get(tap_name)
+    if not username:
       self._logger.warning('No user authenticated on tap %s' % tap_name)
       return
     del self._users_by_tap[tap_name]
-    self._logger.info('Deauthenticated user %s@%s' % (user, tap_name))
+    self._logger.info('Deauthenticated user %s@%s' % (username, tap_name))
 
     # Ask the flow manager to stop a flow on this tap.
     # TODO(mikey): FlowManager should do this as the result of an authentication
@@ -709,10 +710,9 @@ class AuthenticationManager(Manager):
 
   @EventHandler(kegnet_pb2.UserAuthEvent)
   def HandleUserAuthEvent(self, event):
-    user = self._backend.GetUserFromUsername(event.user_name)
-    if user is None:
-      self._logger.warning('Ignoring auth event for unknown username %s' %
-          event.user_name)
+    username = event.user_name
+    if not username:
+      self._logger.warning('Ignoring auth event for unknown username.')
       return
 
     taps = self._GetTapsForTapName(event.tap_name)
@@ -723,7 +723,7 @@ class AuthenticationManager(Manager):
 
     for tap in taps:
       if event.state == event.ADDED:
-        self._AddUser(user, tap)
+        self._AddUser(username, tap)
       else:
         self._RemoveUser(tap)
 

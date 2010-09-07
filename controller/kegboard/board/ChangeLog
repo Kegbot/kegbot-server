@@ -1,0 +1,11 @@
+2010-07-07  mike wakerly <opensource@hoho.com>
+
+  * ChangeLog: Started changelog for board files.
+  * kegboard-mini: incorporated changes from Geoff Culp: added xbee reset logic,
+    drill holes.
+  * kegboard-mini: Reworked RJ45 connector pinout, adding additional GPIOs in
+    place of redundant GNDs.
+  * kegboard-mini: Added jumpers to tie FLOW_A and FLOW_B to TEST_PULSE.
+  * kegboard-mini: Added jumpers for GPIO_C and GPIO_D, allowing D6/D10 to be
+    pulled down conveniently. Decide a use for these later :)
+  * kegboard-coaster: added first project files, also from Geoff.

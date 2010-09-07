@@ -1,4 +1,8 @@
-2010-07-07  mike wakerly <opensource@hoho.com>
+2010-09-08  mike wakerly <opensource@hoho.com>
+
+  * kegboard-coaster: update to break out all pins; add PWR and GND headers.
+
+2010-09-07  mike wakerly <opensource@hoho.com>
 
   * ChangeLog: Started changelog for board files.
   * kegboard-mini: incorporated changes from Geoff Culp: added xbee reset logic,

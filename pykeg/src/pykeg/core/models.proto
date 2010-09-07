@@ -3,18 +3,24 @@ message AuthenticationToken {
   // The token name, a combination of the auth device and unique key.
   required string id = 1;
 
+  // The name of the auth device.
+  required string auth_device = 2;
+
+  // The unique key.
+  required string token_value = 3;
+
   // The user owning the token.
-  optional string username = 2;
-  optional User user = 3;
+  optional string username = 4;
+  optional User user = 5;
 
   // The date the token was created.
-  required fixed32 created_time = 4;
+  required fixed32 created_time = 6;
 
   // The date after which the token is invalid, if any.
-  optional fixed32 expire_time = 5;
+  optional fixed32 expire_time = 7;
 
   // Whether the token is enabled.
-  required bool enabled = 6 [default=true];
+  required bool enabled = 8 [default=true];
 }
 
 // Describes a named beer variety, such as "India Pale Ale".

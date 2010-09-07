@@ -45,7 +45,10 @@ from pykeg.core import backend
 from pykeg.core import models
 from pykeg.core import protolib
 from pykeg.core import protoutil
+from pykeg.web.api import common
 from pykeg.web.api import forms
+
+from google.protobuf.message import Message
 
 INDENT = 2
 
@@ -64,53 +67,30 @@ if AUTH_KEY_BASE:
   _m.update(AUTH_KEY_BASE)
   AUTH_KEY = _m.hexdigest()
 
-### Exceptions
-
-class Error(Exception):
-  """An error occurred."""
-  def Message(self):
-    if self.message:
-      return self.message
-    m = self.__class__.__doc__
-    m = m.split('\n', 1)[0]
-    return m
-
-class NotFoundError(Error):
-  """The requested object could not be found."""
-
-class ServerError(Error):
-  """The server had a problem fulfilling your request."""
-
-class BadRequestError(Error):
-  """The request was incompleted or malformed."""
-
-class NoAuthTokenError(Error):
-  """An api_auth_token is required."""
-
-class BadAuthTokenError(Error):
-  """The api_auth_token given is invalid."""
-
-class PermissionDeniedError(Error):
-  """The api_auth_token given does not have permission for this resource."""
-
 ### Decorators
 
 def auth_required(viewfunc):
   def _check_token(request, *args, **kwargs):
-    tok = request.GET.get('api_auth_token')
+    # Check for api_auth_token; allow in either POST or GET arguments.
+    tok = request.REQUEST.get('api_auth_token')
     if not tok:
-      raise NoAuthTokenError
+      raise common.NoAuthTokenError
     if tok.lower() == AUTH_KEY.lower():
       return viewfunc(request, *args, **kwargs)
     else:
-      raise BadAuthTokenError
+      print repr(tok.lower())
+      print repr(AUTH_KEY.lower())
+      raise common.BadAuthTokenError
   return wraps(viewfunc)(_check_token)
 
 def ToJsonError(e):
   """Converts an exception to an API error response."""
-  if isinstance(e, Error):
+  if isinstance(e, common.Error):
     code = e.__class__.__name__
     message = e.Message()
+  elif isinstance(e, ValueError):
+    code = 'BadRequestError'
+    message = str(e)
   else:
     code = 'ServerError'
     message = 'An internal error occurred: %s' % str(e)
@@ -129,6 +109,15 @@ def obj_to_dict(o, with_full=False):
     return protoutil.ProtoMessageToDict(protolib.ToProto(o, with_full))
 
 def py_to_json(f):
+  """Decorator that wraps an API method.
+
+  The decorator transforms the method in a few ways:
+    - The raw return value from the method is converted to a serialized JSON
+      result.
+    - The result is wrapped in an outer dict, and set as the value 'result'
+    - If an exception is thrown during the method, it is converted to a protocol
+      error message.
+  """
   def new_function(*args, **kwargs):
     try:
       try:
@@ -136,7 +125,7 @@ def py_to_json(f):
       except Http404, e:
         # We might change the HTTP status code here one day.  This also allows
         # the views to use Http404 (rather than NotFound).
-        raise NotFoundError(e.message)
+        raise common.NotFoundError(e.message)
       data = json.dumps(result, indent=INDENT)
     except Exception, e:
       result = ToJsonError(e)
@@ -144,11 +133,11 @@ def py_to_json(f):
     return HttpResponse(data, mimetype='application/json')
   return new_function
 
-class jsonhandler:
-  """Decorator which translates function response to JSON.
+def model_to_py(f):
+  """Decorator which converts method results to native types.
 
-  The wrapped function should return either a single Django model instance, or
-  an iterable of the same.
+  The wrapped function should return either a single Django model instance, an
+  iterable of the same, or a protocol buffer Message.
 
   This is a bit roundabount and inefficient:  Django model instances are first
   converted to protocol buffers, then to base python types, and finally to a
@@ -157,82 +146,117 @@ class jsonhandler:
   TODO(mikey): revisit this layering as the API matures, or once a kegbot site
   needs to handle >0.1 qps :)
   """
-  def __init__(self, func, full=False, allow_full=True):
-    self.func = func
-    self.full = full
-    self.allow_full = allow_full
-
-  @py_to_json
-  def __call__(self, *args, **kwargs):
-    res = self.func(*args, **kwargs)
+  def new_function(*args, **kwargs):
+    res = f(*args, **kwargs)
     request = args[0]
-    with_full = self.allow_full and self.full
-    if self.allow_full and request.GET.get('full') == '1':
+    with_full = False
+    if request.GET.get('full') == '1':
       with_full = True
     return obj_to_dict(res, with_full)
+  return new_function
+
+def model_to_json(f):
+  """Decorator that combines py_to_json and model_to_py."""
+  @py_to_json
+  @model_to_py
+  def new_function(*args, **kwargs):
+    return f(*args, **kwargs)
+  return new_function
 
 ### Helpers
 
 def _get_last_drinks(request, limit=5):
-  return request.kbsite.drink_set.valid()[:limit]
+  return request.kbsite.drinks.valid()[:limit]
 
 ### Endpoints
 
-@jsonhandler
+@model_to_json
 def last_drinks(request, limit=5):
   return _get_last_drinks(request, limit)
 
-@jsonhandler
+@model_to_json
 def all_kegs(request):
   return request.kbsite.keg_set.all().order_by('-startdate')
 
-@jsonhandler
+@model_to_json
 @auth_required   # for now, due to expense; TODO paginate me
 def all_drinks(request):
   return models.Drink.objects.all().order_by('id')
 
-@jsonhandler
+@model_to_json
 def get_drink(request, drink_id):
   return get_object_or_404(models.Drink, pk=drink_id, site=request.kbsite)
 
-@jsonhandler
+@model_to_json
 def get_keg(request, keg_id):
   return get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
 
-@jsonhandler
+@model_to_json
 def get_keg_drinks(request, keg_id):
   keg = get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
   return list(keg.drinks.valid())
 
-@jsonhandler
+@model_to_json
 def all_taps(request):
   return request.kbsite.kegtap_set.all().order_by('name')
 
-@jsonhandler
+@model_to_json
 def get_user(request, username):
   return get_object_or_404(models.User, username=username)
 
-@jsonhandler
+@model_to_json
 def get_user_drinks(request, username):
   user = get_object_or_404(models.User, username=username)
   return list(user.drinks.valid())
 
-@jsonhandler
+@model_to_json
 def get_auth_token(request, auth_device, token_value):
   return get_object_or_404(models.AuthenticationToken, auth_device=auth_device,
       token_value=token_value)
 
-@jsonhandler
+@model_to_json
 def all_thermo_sensors(request):
-  return list(request.kbsite.thermosensor_set.all())
+  return list(request.kbsite.thermosensors.all())
 
-@jsonhandler
-def get_thermo_sensor(request, nice_name):
-  return get_object_or_404(models.ThermoSensor, nice_name=nice_name, site=request.kbsite)
+def _get_sensor_or_404(request, sensor_name):
+  try:
+    sensor = models.ThermoSensor.objects.get(site=request.kbsite,
+        raw_name=sensor_name)
+  except models.ThermoSensor.DoesNotExist:
+    try:
+      sensor = models.ThermoSensor.objects.get(site=request.kbsite,
+          nice_name=sensor_name)
+    except models.ThermoSensor.DoesNotExist:
+      raise Http404
+  return sensor
 
-@jsonhandler
-def get_thermo_sensor_logs(request, nice_name):
-  sensor = get_object_or_404(models.ThermoSensor, nice_name=nice_name, site=request.kbsite)
+def get_thermo_sensor(request, sensor_name):
+  if request.method == 'POST':
+    return thermo_sensor_post(request, sensor_name)
+  else:
+    return thermo_sensor_get(request, sensor_name)
+
+@model_to_json
+def thermo_sensor_get(request, sensor_name):
+  sensor = _get_sensor_or_404(request, sensor_name)
+  return sensor
+
+@py_to_json
+@auth_required
+def thermo_sensor_post(request, sensor_name):
+  sensor = _get_sensor_or_404(request, sensor_name)
+  form = forms.ThermoPostForm(request.POST)
+  if not form.is_valid():
+    raise common.BadRequestError
+  cd = form.cleaned_data
+  b = backend.KegbotBackend(site=request.kbsite)
+  # TODO(mikey): use form fields to compute `when`
+  res = b.LogSensorReading(sensor.raw_name, cd['temp_c'])
+  return protoutil.ProtoMessageToDict(res)
+
+@model_to_json
+def get_thermo_sensor_logs(request, sensor_name):
+  sensor = _get_sensor_or_404(request, sensor_name)
   logs = sensor.thermolog_set.all()[:60*2]
   return logs
 
@@ -243,7 +267,7 @@ def last_drinks_html(request, limit=5):
   # render each drink
   template = get_template('kegweb/drink-box.html')
   results = []
-  for d in last_drinks[:10]:
+  for d in last_drinks:
     row = {}
     row['id'] = d.id
     row['box_html'] = template.render(Context({'drink': d}))
@@ -258,32 +282,27 @@ def last_drink_id(request):
   else:
     return {'id': last[0].id}
 
-@staff_member_required
 @py_to_json
+@staff_member_required
 def get_access_token(request):
   return {'token': AUTH_KEY}
 
 def tap_detail(request, tap_id):
-  try:
-    tap = request.kbsite.kegtap_set.get(meter_name=tap_id)
-  except models.KegTap.DoesNotExist:
-    raise Http404
-
   if request.method == 'POST':
-    return tap_detail_post(request, tap)
+    return tap_detail_post(request, tap_id)
   else:
-    return tap_detail_get(request, tap)
+    return tap_detail_get(request, tap_id)
 
-@jsonhandler
-def tap_detail_get(request, tap):
-  return tap
+@model_to_json
+def tap_detail_get(request, tap_id):
+  return get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
 
 @py_to_json
 @auth_required
 def tap_detail_post(request, tap):
   form = forms.DrinkPostForm(request.POST)
   if not form.is_valid():
-    raise BadRequestError
+    raise common.BadRequestError
   cd = form.cleaned_data
   if cd.get('pour_time') and cd.get('now'):
     pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))

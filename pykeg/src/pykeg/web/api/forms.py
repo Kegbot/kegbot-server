@@ -28,3 +28,8 @@ class DrinkPostForm(forms.Form):
   duration = forms.IntegerField(required=False)
   auth_token = forms.CharField(required=False)
 
+class ThermoPostForm(forms.Form):
+  """Handles posting new temperature sensor readings."""
+  temp_c = forms.FloatField()
+  when = forms.IntegerField(required=False)
+  now = forms.IntegerField(required=False)

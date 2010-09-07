@@ -25,6 +25,7 @@ import types
 from pykeg import settings
 from pykeg.core import models_pb2
 from pykeg.core.protoutil import DictToProtoMessage
+from pykeg.web.api import common
 
 try:
   from urllib.parse import urlencode
@@ -68,10 +69,11 @@ class RemoteError(ApiError):
 
 class KrestClient:
   """Kegweb RESTful API client."""
-  def __init__(self, base_url=None):
+  def __init__(self, base_url=None, api_auth_token=None):
     if not base_url:
       base_url = FLAGS.krest_url
     self._base_url = base_url
+    self._api_auth_token = api_auth_token
 
   def _Encode(self, s):
     return unicode(s).encode('utf-8')
@@ -94,6 +96,9 @@ class KrestClient:
     # slash is required for POSTs to Django.)
     endpoint = endpoint.strip('/')
     return '%s/%s/%s' % (base, endpoint, param_str)
+
+  def SetAuthToken(self, api_auth_token):
+    self._api_auth_token = api_auth_token
 
   def DoGET(self, endpoint, params=None):
     """Issues a GET request to the endpoint, and retuns the result.
@@ -123,11 +128,25 @@ class KrestClient:
 
   def _FetchResponse(self, endpoint, params=None, post_data=None):
     """Issues a POST or GET request, depending on the arguments."""
+    if params is None:
+      params = {}
+    else:
+      params = params.copy()
+
+    # Request a full response, unless caller specified otherwise.
     if params and 'full' in params:
       if params['full'] != 0:
         params['full'] = 1
     else:
       params['full'] = 1
+
+    # If we have an api token, attach it.  Prefer to attach it to POST data, but
+    # use GET if there is no POST data.
+    if self._api_auth_token:
+      if post_data:
+        post_data['api_auth_token'] = self._api_auth_token
+      else:
+        params['api_auth_token'] = self._api_auth_token
 
     url = self._GetURL(endpoint, params=params)
     encoded_post_data = self._EncodePostData(post_data)
@@ -158,9 +177,10 @@ class KrestClient:
       err = d.get('error')
       if type(err) != types.DictType:
         raise ValueError('Invalid error response from server')
-      code = d.get('code', 'Error')
-      message = d.get('message')
-      raise ApiError(code, message)
+      code = err.get('code', 'Error')
+      message = err.get('message', None)
+      e = common.ErrorCodeToException(code, message)
+      raise e
     elif 'result' in d:
       # Response was OK, return the result.
       return d.get('result')
@@ -169,7 +189,7 @@ class KrestClient:
       raise ValueError('Invalid response from server: missing result or error')
 
   def _DictListToProtoList(self, d_list, proto_obj):
-    return (DictToProtoMessage(m, proto_obj) for m in d_list)
+    return [DictToProtoMessage(m, proto_obj) for m in d_list]
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=None, auth_token=None):
@@ -186,11 +206,27 @@ class KrestClient:
       post_data['now'] = datetime.datetime.now()
     return self.DoPOST(endpoint, post_data=post_data)
 
+  def LogSensorReading(self, sensor_name, temperature, when=None):
+    endpoint = '/thermo-sensor/%s' % (sensor_name,)
+    post_data = {
+      'temp_c': float(temperature),
+    }
+    # TODO(mikey): include post data
+    res = self.DoPOST(endpoint, post_data=post_data)
+    ret = DictToProtoMessage(res, models_pb2.ThermoLog)
+    return ret
+
   def TapStatus(self, full=True):
     """Gets the status of all taps."""
     params = {'full' : full}
     response = self.DoGET('tap', params)
     return self._DictListToProtoList(response, models_pb2.KegTap())
+
+  def GetToken(self, auth_device, token_value, full=True):
+    url = 'auth-token/%s.%s' % (auth_device, token_value)
+    params = {'full' : full}
+    response = self.DoGET(url, params)
+    return DictToProtoMessage(response, models_pb2.AuthenticationToken())
 
   def LastDrinks(self, full=True):
     """Gets a list of the most recent drinks."""

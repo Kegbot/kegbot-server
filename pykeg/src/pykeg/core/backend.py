@@ -28,6 +28,9 @@ from pykeg.core import config
 from pykeg.core import models
 from pykeg.core import protolib
 
+from pykeg.web.api import common as krest_common
+from pykeg.web.api import krest
+
 class BackendError(Exception):
   """Base backend error exception."""
 
@@ -40,10 +43,6 @@ class Backend:
 
   def GetConfig(self):
     """Returns a KegbotConfig instance based on the current database values."""
-    raise NotImplementedError
-
-  def GetUserFromUsername(self, username):
-    """Returns the User matching the given username, or None."""
     raise NotImplementedError
 
   def CreateNewUser(self, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
@@ -68,7 +67,7 @@ class Backend:
     """Records a new drink with the given parameters."""
     raise NotImplementedError
 
-  def LogSensorReading(self, sensor_name, temperature, when):
+  def LogSensorReading(self, sensor_name, temperature, when=None):
     """Records a new sensor reading."""
     raise NotImplementedError
 
@@ -80,10 +79,13 @@ class Backend:
 class KegbotBackend(Backend):
   """Django models backed Backend."""
 
-  def __init__(self, sitename='default'):
+  def __init__(self, sitename='default', site=None):
     self._logger = logging.getLogger('backend')
     self._config = config.KegbotConfig(self._GetConfigDict())
-    self._site = models.KegbotSite.objects.get(name=sitename)
+    if site:
+      self._site = site
+    else:
+      self._site = models.KegbotSite.objects.get(name=sitename)
 
   def _GetConfigDict(self):
     try:
@@ -96,12 +98,9 @@ class KegbotBackend(Backend):
 
   def _GetTapFromName(self, tap_name):
     try:
-      tap = models.KegTap.objects.get(site=self._site, meter_name=tap_name)
-      if tap.current_keg and tap.current_keg.status == 'online':
-        return tap.current_keg
+      return models.KegTap.objects.get(site=self._site, meter_name=tap_name)
     except models.KegTap.DoesNotExist:
-      pass
-    return None
+      return None
 
   def _GetKegForTapName(self, tap_name):
     tap = self._GetTapFromName(tap_name)
@@ -129,9 +128,6 @@ class KegbotBackend(Backend):
   def GetConfig(self):
     return self._config
 
-  def GetUserFromUsername(self, username):
-    return protolib.ToProto(self._GetUserObjFromUsername(username))
-
   def CreateNewUser(self, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
       weight=kb_common.DEFAULT_NEW_USER_WEIGHT):
     u = models.User(username=username)
@@ -158,6 +154,10 @@ class KegbotBackend(Backend):
       pour_time=None, duration=None, auth_token=None):
 
     tap = self._GetTapFromName(tap_name)
+    if not tap:
+      self._logger.warning('No tap found on site %s with name %s' % (self._site,
+          tap_name))
+      return None
 
     d = models.Drink(ticks=ticks, site=self._site)
 
@@ -192,12 +192,30 @@ class KegbotBackend(Backend):
 
     return protolib.ToProto(d, full=False)
 
-  def LogSensorReading(self, sensor_name, temperature, when):
+  def LogSensorReading(self, sensor_name, temperature, when=None):
+    if not when:
+      when = datetime.datetime.now()
+
+    # The maximum resolution of ThermoSensor records is 1 minute.  Round the
+    # time down to the nearest minute; if a record already exists for this time,
+    # replace it.
+    when = when.replace(second=0, microsecond=0)
+
+    # If the temperature is out of bounds, reject it.
+    min_val = kb_common.THERMO_SENSOR_RANGE[0]
+    max_val = kb_common.THERMO_SENSOR_RANGE[1]
+    if temperature < min_val or temperature > max_val:
+      raise ValueError, 'Temperature out of bounds'
+
     sensor = self._GetSensorFromName(sensor_name)
-    res = models.Thermolog.objects.create(site=self._site, sensor=sensor,
-        temp=temperature, time=when)
-    res.save()
-    return protolib.ToProto(res)
+    defaults = {
+        'temp': temperature,
+    }
+    record, created = models.Thermolog.objects.get_or_create(site=self._site,
+        sensor=sensor, time=when, defaults=defaults)
+    record.temp = temperature
+    record.save()
+    return protolib.ToProto(record)
 
   def GetAuthToken(self, auth_device, token_value):
     try:
@@ -205,3 +223,45 @@ class KegbotBackend(Backend):
           site=self._site, auth_device=auth_device, token_value=token_value))
     except models.AuthenticationToken.DoesNotExist:
       return None
+
+
+class WebBackend(Backend):
+  def __init__(self, base_url, api_auth_token):
+    self._logger = logging.getLogger('api-backend')
+    self._base_url = base_url
+    self._client = krest.KrestClient(base_url=base_url,
+        api_auth_token=api_auth_token)
+
+  def GetConfig(self):
+    raise NotImplementedError
+
+  def CreateNewUser(self, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
+      weight=kb_common.DEFAULT_NEW_USER_WEIGHT):
+    raise NotImplementedError
+
+  def CreateAuthToken(self, auth_device, token_value, username=None):
+    raise NotImplementedError
+
+  def GetAllTaps(self):
+    return self._client.TapStatus()
+
+  def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
+      pour_time=None, duration=None, auth_token=None):
+    return self._client.RecordDrink(tap_name, ticks, volume_ml, username,
+        pour_time, duration, auth_token)
+
+  def LogSensorReading(self, sensor_name, temperature, when=None):
+    # If the temperature is out of bounds, reject it.
+    min_val = kb_common.THERMO_SENSOR_RANGE[0]
+    max_val = kb_common.THERMO_SENSOR_RANGE[1]
+    if temperature < min_val or temperature > max_val:
+      raise ValueError, 'Temperature out of bounds'
+
+    try:
+      return self._client.LogSensorReading(sensor_name, temperature, when)
+    except krest_common.NotFoundError:
+      self._logger.warning('No sensor on backend named "%s"' % (sensor_name,))
+      return None
+
+  def GetAuthToken(self, auth_device, token_value):
+    return self._client.GetToken(auth_device, token_value)

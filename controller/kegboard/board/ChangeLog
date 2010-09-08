@@ -1,3 +1,8 @@
+2010-09-08  mike wakerly <opensource@hoho.com>
+
+  * kegboard-mini: initial (auto) routing of the board. TODO: fix up routing
+    around relays, spacing of load traces.
+
 2010-09-07  mike wakerly <opensource@hoho.com>
 
   * kegboard-coaster: update to break out all pins; add PWR and GND headers.

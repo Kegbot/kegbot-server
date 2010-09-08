@@ -104,7 +104,7 @@ Payload Section
 
 The payload of a message varies depending on the message type, described in
 :ref:`message-types-section`.  The payload section may be empty, and has a
-maximum length of 240 bytes.
+maximum length of 112 bytes.
 
 All payloads are serialized in `type-length-value
 <http://en.wikipedia.org/wiki/Type-length-value>`_ style. This format makes it
@@ -127,6 +127,10 @@ The `crc` field is a `CRC-16-CCITT
 <http://en.wikipedia.org/wiki/Cyclic_redundancy_check>`_ of the header and
 payload fields; in other words, the entire message up to the CRC. This CRC is
 used by the host to verify the integrity of messages from the board.
+
+The integrity of a message can be verified by performing the CRC calculation on
+all data, up to and including the CRC (but not the trailer).  If correct, the
+value will be zero.
 
 The string ``\r\n`` is always written in the `trailer` field. This field is not
 included in the CRC.

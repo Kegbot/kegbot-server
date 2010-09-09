@@ -5,6 +5,22 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Version 0.7.4 (2010-09-08)
+--------------------------
+
+Core / General
+^^^^^^^^^^^^^^
+* Backend: extensive under-the-hood changes to support multiple sites in a
+  single backend instance.  This isn't yet used by anything.
+* Fixed issue with pykeg.core migration 0031.
+* Improvements to session recordkeeping.
+* Added new SystemEvent table.
+
+Kegweb
+^^^^^^
+* Improved keg detail page, with better-looking sessions.
+
+
 Version 0.7.3 (2010-09-01)
 --------------------------
 

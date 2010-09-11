@@ -143,3 +143,10 @@ def claim_token(request):
   context['form'] = form
   return render_to_response('kegweb/claim_token.html', context)
 
+def session_detail(request, year, month, day, seqn, slug):
+  session = get_object_or_404(models.DrinkingSession, site=request.kbsite, seqn=seqn)
+  context = RequestContext(request)
+  context['session'] = session
+  return render_to_response('kegweb/session_detail.html', context)
+
+

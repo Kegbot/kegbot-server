@@ -1,0 +1,68 @@
+{% extends "page-twocol.html" %}
+{% load kegweblib %}
+
+{% block title %}{{ session.GetTitle}}{% endblock %}
+
+{% block col-1 %}
+
+<div class="kb-contentbox-head">
+   {{ session.GetTitle }}
+</div>
+
+<div class="kb-contentbox">
+  <table border="0" class="kb-statstable">
+    <tr>
+      <td align="right"><b>When</b></td>
+      <td>
+        {{session.starttime}}
+      </td>
+    </tr>
+
+    {% with session.keg_chunks.all as keg_chunks %}
+    <tr>
+      <td align="right"><b>Keg{{keg_chunks.count|pluralize}}</b></td>
+      <td>
+        {% for chunk in keg_chunks %}
+          {% if chunk.keg %}
+            <a href="{% url keg chunk.keg.seqn %}">{{ chunk.keg }}</a><br>
+          {% endif %}
+        {% endfor %}
+      </td>
+    </tr>
+    {% endwith %}
+
+    <tr>
+      <td align="right"><b>Drink Count</b></td>
+      <td>
+        {{ session.drinks.valid.count }} pours,
+        {{session.Volume.ConvertTo.Pint|floatformat:0}} pints
+      </td>
+    </tr>
+
+  </table>
+  <p/>
+    <div>
+      {% for chunk in session.UserChunksByVolume %}
+        {% if chunk.user %}
+        <div class="kb-drink-box-mugshot">
+          {% with chunk.user as drinker %}
+            {% mugshot_box drinker 96 %}
+          {% endwith %}
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+</div>
+
+{% endblock col-1 %}
+
+{% block col-2 %}
+<div class="kb-contentbox-head">
+  drinker breakdown
+</div>
+<div class="kb-contentbox">
+  {% chart users_by_volume session 300 125 %}
+</div>
+{% endblock col-2 %}
+

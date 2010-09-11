@@ -29,6 +29,8 @@ from django.db.models.signals import pre_save
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 
+from autoslug import AutoSlugField
+
 from pykeg.core import kb_common
 from pykeg.core import fields
 from pykeg.core import stats
@@ -369,6 +371,14 @@ class Drink(models.Model):
       stats, created = self.keg.stats.get_or_create(defaults=defaults)
       stats.Update(self)
 
+  def _UpdateSessionStats(self):
+    if self.session:
+      defaults = {
+        'site': self.site,
+      }
+      stats, created = self.session.stats.get_or_create(defaults=defaults)
+      stats.Update(self)
+
   def PostProcess(self):
     self._UpdateUserStats()
     self._UpdateKegStats()
@@ -534,9 +544,35 @@ class DrinkingSession(AbstractChunk):
   objects = SessionManager()
   site = models.ForeignKey(KegbotSite, related_name='sessions')
   seqn = models.PositiveIntegerField()
+  name = models.CharField(max_length=256, blank=True, null=True)
+  slug = AutoSlugField(populate_from='name', unique_with='site', blank=True,
+      null=True)
 
   def __str__(self):
     return "Session #%s: %s" % (self.id, self.starttime)
+
+  @models.permalink
+  def get_absolute_url(self):
+    if self.slug:
+      slug = self.slug
+    else:
+      slug = 'session-%i' % self.seqn
+    return ('session_detail',  (), {
+      'year' : self.starttime.year,
+      'month' : self.starttime.month,
+      'day' : self.starttime.day,
+      'seqn' : self.seqn,
+      'slug' : slug})
+
+  def GetStats(self):
+    if hasattr(self, '_stats'):
+      return self._stats
+    qs = self.stats.all()
+    if qs:
+      self._stats = qs[0].stats
+    else:
+      self._stats = {}
+    return self._stats
 
   def count_drinkers(self):
     return self.user_chunks.filter(user__isnull=False).count()
@@ -575,7 +611,10 @@ class DrinkingSession(AbstractChunk):
     return '%s%s' % (ret, guest_trailer)
 
   def GetTitle(self):
-    return 'Session %i' % (self.seqn,)
+    if self.name:
+      return self.name
+    else:
+      return 'Session %i' % (self.seqn,)
 
   def Volume(self):
     return units.Quantity(self.volume_ml, units.RECORD_UNIT)
@@ -901,6 +940,14 @@ class KegStats(_StatsModel):
 
   def __str__(self):
     return 'KegStats for %s' % self.keg
+
+
+class SessionStats(_StatsModel):
+  STATS_BUILDER = stats.SessionStatsBuilder
+  session = models.ForeignKey(DrinkingSession, unique=True, related_name='stats')
+
+  def __str__(self):
+    return 'SessionStats for %s' % self.session
 
 
 class SystemEvent(models.Model):

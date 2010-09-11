@@ -55,4 +55,17 @@ class Command(NoArgsCommand):
         last._UpdateUserStats()
     print ''
 
+    models.SessionStats.objects.all().delete()
+    sessions = models.DrinkingSession.objects.all()
+    count = sessions.count()
+    pos = 0
+    for session in sessions:
+      pos += 1
+      progbar('recalc session stats', pos, count)
+      session_drinks = session.drinks.valid().order_by('-endtime')
+      if session_drinks:
+        last = session_drinks[0]
+        last._UpdateSessionStats()
+    print ''
+
     print 'done!'

@@ -39,6 +39,10 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
       (r'^drink/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
       (r'^d/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
 
+      ### sessions
+      url(r'^session/(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})/(?P<seqn>\d+)/(?P<slug>[-\w]+)',
+          'session_detail', name='session_detail')
+
 )
 
 ### accounts and registration

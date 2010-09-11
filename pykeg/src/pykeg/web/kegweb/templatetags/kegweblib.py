@@ -149,17 +149,17 @@ class ChartNode(Node):
     chart.set_colours(['4D89F9'])
     return chart.get_url()
 
-  def _get_keg_stats(self, context):
-    keg_var = Variable(self._args[0])
-    keg = keg_var.resolve(context)
+  def _get_obj_stats(self, context):
+    obj_var = Variable(self._args[0])
+    obj = obj_var.resolve(context)
 
-    if not keg or not isinstance(keg, models.Keg):
-      raise ChartUnavailableError, "Argument is not a Keg instance"
+    if not hasattr(obj, 'GetStats'):
+      raise ChartUnavailableError, "Argument does not support stats"
 
-    stats = keg.GetStats()
+    stats = obj.GetStats()
     if not stats:
       raise ChartUnavailableError, "Stats unavailable"
-    return keg, stats
+    return obj, stats
 
   def chart_keg_volume(self, context):
     """ Shows a horizontal bar chart of keg served/remaining volume.
@@ -169,7 +169,7 @@ class ChartNode(Node):
     Args:
       keg - the keg instance to chart
     """
-    keg, stats = self._get_keg_stats(context)
+    keg, stats = self._get_obj_stats(context)
 
     served = units.Quantity(stats.get('total_volume', 0.0))
     served_pints = served.ConvertTo.Pint
@@ -183,15 +183,15 @@ class ChartNode(Node):
     chart.add_data([served_pints])
     return chart.get_url()
 
-  def chart_keg_volume_by_day(self, context):
+  def chart_volume_by_day(self, context):
     """ Shows a horizontal bar chart of keg served/remaining volume.
 
     Syntax:
-      {% chart keg_volume_by_day <keg> width height %}
+      {% chart volume_by_day <keg> width height %}
     Args:
-      keg - the keg instance to chart
+      obj - the keg or drinking session instance to chart
     """
-    keg, stats = self._get_keg_stats(context)
+    obj, stats = self._get_obj_stats(context)
 
     volmap = stats.get('volume_by_day_of_week')
     if not volmap:
@@ -277,10 +277,12 @@ class ChartNode(Node):
     """Pie chart showing users by volume.
 
     Syntax:
-      {% chart users_by_volume keg width height %}
+      {% chart users_by_volume obj width height %}
+    Args:
+      obj - the keg or drinking session instance to chart
     """
     chart = pygooglechart.PieChart2D(300, 100)
-    keg, stats = self._get_keg_stats(context)
+    obj, stats = self._get_obj_stats(context)
     volmap = stats.get('volume_by_drinker', {})
     if not volmap:
       raise ChartUnavailableError, "no data"

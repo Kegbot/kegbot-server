@@ -1,7 +1,7 @@
 {% load kegweblib %}
 <div class="kb-keg-session">
   <div class="kb-session-box-headline">
-    {{ session.GetTitle }}
+    <a href="{{ session.get_absolute_url}}">{{ session.GetTitle }}</a>
   </div>
   <div class="kb-session-box-detail">
     <div style="margin-top: 4px; margin-bottom: 4px;">

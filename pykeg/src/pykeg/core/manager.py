@@ -414,6 +414,7 @@ class DrinkManager(Manager):
 
     ticks = event.ticks
     username = event.username
+    volume_ml = event.volume_ml
     tap_name = event.tap_name
     starttime = datetime.datetime.fromtimestamp(event.start_time)
     pour_time = datetime.datetime.fromtimestamp(event.last_activity_time)
@@ -422,6 +423,11 @@ class DrinkManager(Manager):
 
     # TODO: add to flow event
     auth_token = None
+
+    if volume_ml <= kb_common.MIN_VOLUME_TO_RECORD:
+        self._logger.info('Not recording flow: volume (%i mL) <= '
+            'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
+        return
 
     # Log the drink.  If the username is empty or invalid, the backend will
     # assign it to the default (anonymous) user.  The backend will assign the

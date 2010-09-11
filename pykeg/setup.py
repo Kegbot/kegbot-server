@@ -43,6 +43,7 @@ setup(
     ],
     install_requires = [
       'django >= 1.2',
+      'django-autoslug',
       'django-imagekit >= 0.3.3',
       'django-registration',
       'django_extensions',

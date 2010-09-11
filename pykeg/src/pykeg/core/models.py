@@ -382,6 +382,7 @@ class Drink(models.Model):
   def PostProcess(self):
     self._UpdateUserStats()
     self._UpdateKegStats()
+    self._UpdateSessionStats()
     SystemEvent.ProcessDrink(self)
 
 pre_save.connect(_set_seqn_pre_save, sender=Drink)

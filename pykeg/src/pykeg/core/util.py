@@ -103,11 +103,8 @@ class KegbotThread(threading.Thread):
   def GetStatus(self):
     return []
 
-  def start(self):
-    self._started = True
-    threading.Thread.start(self)
-
   def run(self):
+    self._started = True
     try:
       self.ThreadMain()
     except:

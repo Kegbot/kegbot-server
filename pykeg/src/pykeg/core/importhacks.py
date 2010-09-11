@@ -62,11 +62,6 @@ def _ExtendSysPath():
       else:
         _Debug('%s does NOT exist' % test_settings)
 
-  # Add pykeg/external to the path.
-  import pykeg.external
-  _external_dir = os.path.dirname(pykeg.external.__file__)
-  paths.append(_external_dir)
-
   _AddToSysPath(paths)
 
 def _SetDjangoSettingsEnv(settings='pykeg.settings'):
@@ -87,12 +82,6 @@ def _FixAll():
   _ExtendSysPath()
   _SetDjangoSettingsEnv()
 
-  try:
-    import pykeg.external
-    external_dir = os.path.dirname(pykeg.external.__file__)
-    _Debug('Pykeg external loaded from dir: %s' % external_dir)
-  except ImportError:
-    _Warning('Warning: pykeg.external could not be imported')
   try:
     import common_settings
     common_dir = os.path.dirname(common_settings.__file__)

@@ -45,8 +45,13 @@ setup(
       'django >= 1.2',
       'django-imagekit >= 0.3.3',
       'django-registration',
-      'django-socialregistration == 0.3.4',
       'django_extensions',
+
+      # NOTE(mikey): socialregistration does not yet declare the
+      # facebook-python-sdk prerequisite for itself.
+      'facebook-python-sdk',
+      'django-socialregistration >= 0.4.2',
+
       #'MySQL-python',
       #'pil',
       'protobuf >= 2.3.0-1',
@@ -56,13 +61,17 @@ setup(
       'South >= 0.7',
       'Sphinx',
       #'django_nose',
-      'python-openid >= 2.2.5',  # removeme once PIL package works
-      ### need pygooglechart
+      #'python-openid >= 2.2.5',  # removeme once PIL package works
+      'pygooglechart',
     ],
     dependency_links = [
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',
         'http://kegbot.org/kmedia/protobuf-2.3.0-1.tgz',
         'http://kegbot.org/kmedia/python-openid-2.2.5.tgz',
+
+        # Self-maintained package due to upstream issue:
+        # http://github.com/facebook/python-sdk/issues/#issue/21
+        'http://github.com/downloads/mik3y/python-sdk/facebook-python-sdk-0.1.tar.gz',
     ],
     include_package_data = True,
 

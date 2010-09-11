@@ -22,6 +22,7 @@
 
 import datetime
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -49,9 +50,15 @@ def index(request):
                                           status__exact='published')
   except kegweb_models.Page.DoesNotExist:
     page = None
+
   context['page_node'] = page
   context['taps'] = request.kbsite.kegtap_set.all()
-  context['latest_drinks'] = request.kbsite.drinks.valid().order_by('-endtime')[:5]
+
+  num_drinks = getattr(settings, 'KEGWEB_LAST_DRINKS_COUNT', 10)
+  drinks = request.kbsite.drinks.valid().order_by('-endtime')
+  drinks = drinks[:num_drinks]
+  context['latest_drinks'] = drinks
+
   return render_to_response('index.html', context)
 
 @cache_page(30)

@@ -39,6 +39,11 @@ MEDIA_ROOT = 'media/'
 # name given in MEDIA_ROOT does not affect this.
 MEDIA_URL = '/media/'
 
+### Kegbot settings
+
+# Number of last drinks to show on the main page.
+KEGWEB_LAST_DRINKS_COUNT = 10
+
 ### Other stuff
 
 # Want to use Facebook Connect for registration/login? You will need to set

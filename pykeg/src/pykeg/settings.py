@@ -97,6 +97,13 @@ ACCOUNT_ACTIVATION_DAYS = 3
 FACEBOOK_API_KEY = ''
 FACEBOOK_SECRET_KEY = ''
 
+### Kegbot
+
+# Number of last drinks to show on the main page.
+KEGWEB_LAST_DRINKS_COUNT = 10
+
+### Twitter
+
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET_KEY =''
 TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'

@@ -119,7 +119,6 @@ except ImportError:
 if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:
   INSTALLED_APPS += ('pykeg.contrib.facebook',)
   MIDDLEWARE_CLASSES += (
-    'facebook.djangofb.FacebookMiddleware',
     'socialregistration.middleware.FacebookMiddleware',
   )
   AUTHENTICATION_BACKENDS += (

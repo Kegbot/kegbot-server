@@ -167,6 +167,16 @@ class KegStatsBuilder(BaseStatsBuilder):
     return prev
 
 
+class SessionStatsBuilder(BaseStatsBuilder):
+  """Builder of user-specific stats by drink."""
+  REVISION = 3
+
+  def _PrevObjs(self, drink):
+    qs = drink.session.drinks.valid().filter(endtime__lt=drink.endtime)
+    qs = qs.order_by('endtime')
+    return qs
+
+
 def main():
   from pykeg.core import models
 

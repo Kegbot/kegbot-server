@@ -5,6 +5,34 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Version 0.7.5 (2010-09-11)
+--------------------------
+
+*Note:* Due to changes to the third-party ``socialregistration`` dependency,
+existing users will need to issue the following command after updating::
+  $ kegbot_admin.py migrate --fake socialregistration 0001
+  $ kegbot_admin.py migrate
+
+*Note:* If you have installed using ``./setup.py develop``, you will need to
+issue that command again; new versions of some dependencies are required.
+
+Core / General
+^^^^^^^^^^^^^^
+* Fixed a race condition which could cause the kegbot core to crash due to an
+  erroneous watchdog error.
+* Fixed a crash in ``kegbot_admin.py kb_regen_stats`` that would occur when
+  computing stats for a keg with no recorded drinks.  (The workaround was to go
+  have a beer..)
+* Fixed issue #50 (do not record drinks below minimum volume threshold.)
+
+Kegweb
+^^^^^^
+* Updated to use ``django-socialregistration`` version 0.4.2, and the official
+  ``facebook-python-sdk`` package.  Removed mirror of pyfacebook.
+* The number of recent pours shown on the main page is now configurable.  See
+  ``KEGWEB_LAST_DRINK_COUNT`` in ``common_settings.py.example``
+
+
 Version 0.7.4 (2010-09-08)
 --------------------------
 
@@ -13,7 +41,7 @@ Core / General
 * Backend: extensive under-the-hood changes to support multiple sites in a
   single backend instance.  This isn't yet used by anything.
 * Fixed issue with pykeg.core migration 0031.
-* Improvements to session recordkeeping.
+* Improvements to session record keeping.
 * Added new SystemEvent table.
 
 Kegweb
@@ -63,7 +91,7 @@ Core / General
   works once again to run unittests
 * Improved LCD UI; now shows tap status, last pour information.
 * Fixed SoundServer, which had stopped working some time ago.
-* Miscellanous packaging fixes, which should make installation with ``pip`` work
+* Miscellaneous packaging fixes, which should make installation with ``pip`` work
   a bit better.
 
 Kegweb

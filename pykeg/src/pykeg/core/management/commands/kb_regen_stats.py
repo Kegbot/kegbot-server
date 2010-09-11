@@ -37,8 +37,9 @@ class Command(NoArgsCommand):
     for k in kegs:
       pos += 1
       progbar('recalc keg stats', pos, count)
-      last_drink = k.drinks.valid().order_by('-endtime')[0]
-      last_drink._UpdateKegStats()
+      last_drinks = k.drinks.valid().order_by('-endtime')
+      if last_drinks:
+        last_drinks[0]._UpdateKegStats()
     print ''
 
     models.UserStats.objects.all().delete()

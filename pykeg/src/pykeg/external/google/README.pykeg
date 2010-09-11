@@ -1,8 +1,0 @@
-This directory contains a copy of Protocol Buffers (python library only).
-
-Version: 2.3.0
-Homepage: http://code.google.com/p/protobuf/
-Source: http://protobuf.googlecode.com/files/protobuf-2.3.0.tar.bz2
-License: see COPYING.txt
-
-Local changes: Only including python portion of release.

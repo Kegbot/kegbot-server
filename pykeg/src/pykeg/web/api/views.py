@@ -18,6 +18,7 @@
 
 """Kegweb RESTful API views."""
 
+import datetime
 from functools import wraps
 import hashlib
 import sys
@@ -173,6 +174,16 @@ def model_to_json(f):
 def _get_last_drinks(request, limit=5):
   return request.kbsite.drinks.valid()[:limit]
 
+def _form_errors(form):
+  ret = {}
+  for field in form:
+    if field.errors:
+      name = field.html_name
+      ret[name] = []
+      for error in field.errors:
+        ret[name].append(error)
+  return ret
+
 ### Endpoints
 
 @model_to_json
@@ -252,7 +263,7 @@ def thermo_sensor_post(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
   form = forms.ThermoPostForm(request.POST)
   if not form.is_valid():
-    raise common.BadRequestError
+    raise common.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
   b = backend.KegbotBackend(site=request.kbsite)
   # TODO(mikey): use form fields to compute `when`
@@ -307,7 +318,7 @@ def tap_detail_get(request, tap_id):
 def tap_detail_post(request, tap):
   form = forms.DrinkPostForm(request.POST)
   if not form.is_valid():
-    raise common.BadRequestError
+    raise common.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
   if cd.get('pour_time') and cd.get('now'):
     pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))

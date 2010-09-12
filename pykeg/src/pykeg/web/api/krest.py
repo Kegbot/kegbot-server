@@ -202,9 +202,11 @@ class KrestClient:
       'auth_token' : auth_token,
     }
     if pour_time:
-      post_data['pour_time'] = pour_time
-      post_data['now'] = datetime.datetime.now()
-    return self.DoPOST(endpoint, post_data=post_data)
+      post_data['pour_time'] = int(pour_time.strftime('%s'))
+      post_data['now'] = int(datetime.datetime.now().strftime('%s'))
+    res = self.DoPOST(endpoint, post_data=post_data)
+    ret = DictToProtoMessage(res, models_pb2.Drink)
+    return ret
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     endpoint = '/thermo-sensor/%s' % (sensor_name,)

@@ -23,6 +23,9 @@
 Module for common logic for a command line or daemon application.
 """
 
+import warnings
+warnings.simplefilter("ignore", DeprecationWarning)
+
 import logging
 import os
 import signal

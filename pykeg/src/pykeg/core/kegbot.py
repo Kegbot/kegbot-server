@@ -27,7 +27,10 @@ system.
 For more information, please see the kegbot documentation.
 """
 
+import logging
 import time
+import warnings
+warnings.simplefilter("ignore", DeprecationWarning)
 
 import gflags
 
@@ -42,6 +45,13 @@ from pykeg.core.net import kegnet_pb2
 
 FLAGS = gflags.FLAGS
 
+gflags.DEFINE_string('backend_url', '',
+    'URL of web backend.  If given, the Kegbot core will use the '
+    'web backend implementation, rather than a database connection.')
+
+gflags.DEFINE_string('backend_auth_key', '',
+    'Auth key to use for --backend_url')
+
 class KegbotEnv(object):
   """ A class that wraps the context of the kegbot core.
 
@@ -50,11 +60,20 @@ class KegbotEnv(object):
   """
   def __init__(self):
     self._event_hub = event.EventHub()
+    self._logger = logging.getLogger('env')
 
     self._kegnet_server = kegnet.KegnetServer(name='kegnet', kb_env=self,
         addr=FLAGS.kb_core_bind_addr)
 
-    self._backend = backend.KegbotBackend()
+    if FLAGS.backend_url:
+      # Web backend.
+      self._logger.info('Using web backend: %s' % FLAGS.backend_url)
+      self._backend = backend.WebBackend(FLAGS.backend_url,
+          FLAGS.backend_auth_key)
+    else:
+      # Database backend.
+      self._logger.info('Using database backend.')
+      self._backend = backend.KegbotBackend()
 
     # Build managers
     self._alarm_manager = alarm.AlarmManager()

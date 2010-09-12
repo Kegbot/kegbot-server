@@ -155,9 +155,7 @@ class KegbotBackend(Backend):
 
     tap = self._GetTapFromName(tap_name)
     if not tap:
-      self._logger.warning('No tap found on site %s with name %s' % (self._site,
-          tap_name))
-      return None
+      raise BackendError, "Tap unknown"
 
     d = models.Drink(ticks=ticks, site=self._site)
 

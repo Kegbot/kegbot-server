@@ -317,13 +317,16 @@ def tap_detail_post(request, tap):
   else:
     pour_time = None
   b = backend.KegbotBackend(site=request.kbsite)
-  res = b.RecordDrink(tap_name=tap.meter_name,
-    ticks=cd['ticks'],
-    volume_ml=cd.get('volume_ml'),
-    username=cd.get('username'),
-    pour_time=pour_time,
-    duration=cd.get('duration'),
-    auth_token=cd.get('auth_token'))
+  try:
+    res = b.RecordDrink(tap_name=tap,
+      ticks=cd['ticks'],
+      volume_ml=cd.get('volume_ml'),
+      username=cd.get('username'),
+      pour_time=pour_time,
+      duration=cd.get('duration'),
+      auth_token=cd.get('auth_token'))
+  except backend.BackendError, e:
+    raise common.ServerError(str(e))
   return protoutil.ProtoMessageToDict(res)
 
 @py_to_json

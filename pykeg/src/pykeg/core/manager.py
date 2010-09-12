@@ -436,8 +436,8 @@ class DrinkManager(Manager):
         pour_time=pour_time, duration=duration, auth_token=auth_token)
 
     keg_id = None
-    if d.keg:
-      keg_id = d.keg.id
+    if d.keg_id:
+      keg_id = d.keg_id
 
     username = '<None>'
     if d.user_id:
@@ -608,7 +608,10 @@ class TokenManager(Manager):
 
   def _PublishAuthEvent(self, record, added):
     user = None
-    token = self._backend.GetAuthToken(record.auth_device, record.token_value)
+    try:
+      token = self._backend.GetAuthToken(record.auth_device, record.token_value)
+    except backend.NoTokenError:
+      token = None
 
     if not token or not token.user:
       self._logger.info('Token not assigned: %s' % record)
@@ -698,7 +701,7 @@ class AuthenticationManager(Manager):
     if flow is None:
       self._flow_manager.StartFlow(tap.GetName(), username)
     else:
-      self._flow_manager.SetUser(flow, username)
+      self._flow_manager.SetUsername(flow, username)
 
   def _RemoveUser(self, tap):
     tap_name = tap.GetName()

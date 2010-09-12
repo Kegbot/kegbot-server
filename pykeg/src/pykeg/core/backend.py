@@ -34,6 +34,9 @@ from pykeg.web.api import krest
 class BackendError(Exception):
   """Base backend error exception."""
 
+class NoTokenError(BackendError):
+  """Token given is unknown."""
+
 class Backend:
   """Abstract base Kegbot backend class.
 
@@ -220,7 +223,7 @@ class KegbotBackend(Backend):
       return protolib.ToProto(models.AuthenticationToken.objects.get(
           site=self._site, auth_device=auth_device, token_value=token_value))
     except models.AuthenticationToken.DoesNotExist:
-      return None
+      raise NoTokenError
 
 
 class WebBackend(Backend):
@@ -262,4 +265,7 @@ class WebBackend(Backend):
       return None
 
   def GetAuthToken(self, auth_device, token_value):
-    return self._client.GetToken(auth_device, token_value)
+    try:
+      return self._client.GetToken(auth_device, token_value)
+    except common.NotFoundError:
+      raise NoTokenError

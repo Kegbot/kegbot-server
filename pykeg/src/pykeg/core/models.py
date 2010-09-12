@@ -560,8 +560,8 @@ class DrinkingSession(AbstractChunk):
       slug = 'session-%i' % self.seqn
     return ('session_detail',  (), {
       'year' : self.starttime.year,
-      'month' : self.starttime.month,
-      'day' : self.starttime.day,
+      'month' : '%02i' % self.starttime.month,
+      'day' : '%02i' % self.starttime.day,
       'seqn' : self.seqn,
       'slug' : slug})
 

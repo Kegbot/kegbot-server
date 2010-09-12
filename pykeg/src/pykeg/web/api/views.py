@@ -34,7 +34,6 @@ except ImportError:
       raise ImportError, "Unable to load a json library"
 
 from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -78,9 +77,15 @@ def auth_required(viewfunc):
     if tok.lower() == AUTH_KEY.lower():
       return viewfunc(request, *args, **kwargs)
     else:
-      print repr(tok.lower())
-      print repr(AUTH_KEY.lower())
       raise common.BadAuthTokenError
+  return wraps(viewfunc)(_check_token)
+
+def staff_required(viewfunc):
+  def _check_token(request, *args, **kwargs):
+    if not request.user or not request.user.is_staff or not \
+        request.user.is_superuser:
+      raise common.PermissionDeniedError, "Logged-in staff user required"
+    return viewfunc(request, *args, **kwargs)
   return wraps(viewfunc)(_check_token)
 
 def ToJsonError(e):
@@ -283,7 +288,7 @@ def last_drink_id(request):
     return {'id': last[0].id}
 
 @py_to_json
-@staff_member_required
+@staff_required
 def get_access_token(request):
   return {'token': AUTH_KEY}
 

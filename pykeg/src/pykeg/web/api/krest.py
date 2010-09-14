@@ -188,8 +188,8 @@ class KrestClient:
       # WTF?
       raise ValueError('Invalid response from server: missing result or error')
 
-  def _DictListToProtoList(self, d_list, proto_obj):
-    return [DictToProtoMessage(m, proto_obj) for m in d_list]
+  def _DictListToProtoList(self, d_list, proto_cls):
+    return [DictToProtoMessage(m, proto_cls()) for m in d_list]
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=None, auth_token=None):
@@ -222,7 +222,7 @@ class KrestClient:
     """Gets the status of all taps."""
     params = {'full' : full}
     response = self.DoGET('tap', params)
-    return self._DictListToProtoList(response, models_pb2.KegTap())
+    return self._DictListToProtoList(response, models_pb2.KegTap)
 
   def GetToken(self, auth_device, token_value, full=True):
     url = 'auth-token/%s.%s' % (auth_device, token_value)
@@ -234,13 +234,13 @@ class KrestClient:
     """Gets a list of the most recent drinks."""
     params = {'full' : full}
     response = self.DoGET('last-drinks', params)
-    return self._DictListToProtoList(response, models_pb2.Drink())
+    return self._DictListToProtoList(response, models_pb2.Drink)
 
   def AllDrinks(self, full=True):
     """Gets a list of all drinks."""
     params = {'full' : full}
     response = self.DoGET('drink', params)
-    return self._DictListToProtoList(response, models_pb2.Drink())
+    return self._DictListToProtoList(response, models_pb2.Drink)
 
 
 def main():

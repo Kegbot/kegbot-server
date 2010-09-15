@@ -267,5 +267,5 @@ class WebBackend(Backend):
   def GetAuthToken(self, auth_device, token_value):
     try:
       return self._client.GetToken(auth_device, token_value)
-    except common.NotFoundError:
+    except krest_common.NotFoundError:
       raise NoTokenError

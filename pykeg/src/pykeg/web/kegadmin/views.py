@@ -27,6 +27,7 @@ def change_kegs(request):
         current.save
 
       new_keg = models.Keg()
+      new_keg.site = request.kbsite
       new_keg.type = form.cleaned_data['beer_type']
       new_keg.size = form.cleaned_data['keg_size']
       new_keg.status = 'online'

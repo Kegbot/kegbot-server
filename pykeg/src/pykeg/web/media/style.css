@@ -208,6 +208,12 @@ a:hover {
   margin-right: 8px;
 }
 
+.kb-session-box-icon {
+  float: left;
+  margin-right: 2px;
+  margin-bottom: 2px;
+}
+
 .kb-drink-box-details {
   margin-left: 8px;
 }
@@ -335,7 +341,8 @@ div.plainbox {
   background: #4e4e4e;
   color: #eee;
   float: left;
-  margin-right: 8px;
+  margin-right: 2px;
+  margin-bottom: 2px;
 }
 
 .kb-comment-box {

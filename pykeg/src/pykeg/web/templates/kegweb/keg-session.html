@@ -25,7 +25,7 @@
     </div>
     {% for chunk in session.UserChunksByVolume %}
       {% if chunk.user %}
-      <div class="kb-drink-box-mugshot">
+      <div class="kb-session-box-icon">
         {% with chunk.user as drinker %}
           {% mugshot_box drinker 48 %}
         {% endwith %}

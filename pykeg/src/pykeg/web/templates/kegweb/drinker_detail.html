@@ -21,7 +21,7 @@
 
         {% for chunk in drinker.user_session_chunks.all %}
         {% with chunk.session as session %}
-        data.setCell({{forloop.counter0}}, 0, '{{session}}');
+        data.setCell({{forloop.counter0}}, 0, '{{session.GetTitle}}');
         data.setCell({{forloop.counter0}}, 1,
             {{session.starttime|datetime_js}});
         data.setCell({{forloop.counter0}}, 2, {{chunk.Volume.ConvertTo.Pint}},

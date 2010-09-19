@@ -18,7 +18,7 @@
 #define KB_ENABLE_BUZZER    1
 
 // Enable serial LCD?
-#define KB_ENABLE_SERIAL_LCD 1
+#define KB_ENABLE_SERIAL_LCD 0
 
 //
 // Pin configuration

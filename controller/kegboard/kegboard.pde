@@ -190,8 +190,8 @@ void writeHelloPacket()
 {
   int foo = FIRMWARE_VERSION;
   KegboardPacket packet;
-  packet.SetType(KB_MESSAGE_TYPE_HELLO_ID);
-  packet.AddTag(KB_MESSAGE_TYPE_HELLO_TAG_FIRMWARE_VERSION, sizeof(foo), (char*)&foo);
+  packet.SetType(KBM_HELLO_ID);
+  packet.AddTag(KBM_HELLO_TAG_FIRMWARE_VERSION, sizeof(foo), (char*)&foo);
   packet.Print();
 }
 
@@ -221,9 +221,9 @@ void writeThermoPacket(DS1820Sensor *sensor)
     pos += 2;
   }
   KegboardPacket packet;
-  packet.SetType(KB_MESSAGE_TYPE_THERMO_READING);
-  packet.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_NAME, 23, name);
-  packet.AddTag(KB_MESSAGE_TYPE_THERMO_READING_TAG_SENSOR_READING, sizeof(temp), (char*)(&temp));
+  packet.SetType(KBM_THERMO_READING);
+  packet.AddTag(KBM_THERMO_READING_TAG_SENSOR_NAME, 23, name);
+  packet.AddTag(KBM_THERMO_READING_TAG_SENSOR_READING, sizeof(temp), (char*)(&temp));
   packet.Print();
 }
 #endif
@@ -234,9 +234,9 @@ void writeRelayPacket(int channel)
   int status = (int)(gRelayStatus[channel]);
   name[6] = 0x30 + channel;
   KegboardPacket packet;
-  packet.SetType(KB_MESSAGE_TYPE_OUTPUT_STATUS);
-  packet.AddTag(KB_MESSAGE_TYPE_OUTPUT_STATUS_TAG_OUTPUT_NAME, 7, name);
-  packet.AddTag(KB_MESSAGE_TYPE_OUTPUT_STATUS_TAG_OUTPUT_READING, sizeof(status), (char*)(&status));
+  packet.SetType(KBM_OUTPUT_STATUS);
+  packet.AddTag(KBM_OUTPUT_STATUS_TAG_OUTPUT_NAME, 7, name);
+  packet.AddTag(KBM_OUTPUT_STATUS_TAG_OUTPUT_READING, sizeof(status), (char*)(&status));
   packet.Print();
 }
 
@@ -251,9 +251,9 @@ void writeMeterPacket(int channel)
   }
   name[4] = 0x30 + channel;
   KegboardPacket packet;
-  packet.SetType(KB_MESSAGE_TYPE_METER_STATUS);
-  packet.AddTag(KB_MESSAGE_TYPE_METER_STATUS_TAG_METER_NAME, 5, name);
-  packet.AddTag(KB_MESSAGE_TYPE_METER_STATUS_TAG_METER_READING, sizeof(status), (char*)(&status));
+  packet.SetType(KBM_METER_STATUS);
+  packet.AddTag(KBM_METER_STATUS_TAG_METER_NAME, 5, name);
+  packet.AddTag(KBM_METER_STATUS_TAG_METER_READING, sizeof(status), (char*)(&status));
   packet.Print();
 }
 
@@ -262,9 +262,9 @@ void writeOnewirePresencePacket(uint64_t* id, bool present) {
   char status = present ? 1 : 0;
 
   KegboardPacket packet;
-  packet.SetType(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE);
-  packet.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_DEVICE_ID, 8, (char*)id);
-  packet.AddTag(KB_MESSAGE_TYPE_ONEWIRE_PRESENCE_TAG_STATUS, 1, &status);
+  packet.SetType(KBM_ONEWIRE_PRESENCE);
+  packet.AddTag(KBM_ONEWIRE_PRESENCE_TAG_DEVICE_ID, 8, (char*)id);
+  packet.AddTag(KBM_ONEWIRE_PRESENCE_TAG_STATUS, 1, &status);
   packet.Print();
 }
 #endif
@@ -589,14 +589,14 @@ void handleInputPacket() {
 
   // Process the input packet.
   switch (gInputPacket.GetType()) {
-    case KB_MESSAGE_TYPE_PING:
+    case KBM_PING:
       writeHelloPacket();
       break;
 
-    case KB_MESSAGE_TYPE_SET_OUTPUT: {
+    case KBM_SET_OUTPUT: {
       uint8_t id, mode;
-      if (!gInputPacket.ReadTag(KB_MESSAGE_TYPE_SET_OUTPUT_TAG_OUTPUT_ID, &id)
-        || !gInputPacket.ReadTag(KB_MESSAGE_TYPE_SET_OUTPUT_TAG_OUTPUT_MODE, &mode))
+      if (!gInputPacket.ReadTag(KBM_SET_OUTPUT_TAG_OUTPUT_ID, &id)
+        || !gInputPacket.ReadTag(KBM_SET_OUTPUT_TAG_OUTPUT_MODE, &mode))
         {
           break;
       }

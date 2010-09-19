@@ -1,6 +1,6 @@
 /**
  * kegboard.pde - Kegboard v3 Arduino project
- * Copyright 2003-2009 Mike Wakerly <opensource@hoho.com>
+ * Copyright 2003-2010 Mike Wakerly <opensource@hoho.com>
  *
  * This file is part of the Kegbot package of the Kegbot project.
  * For more information on Kegbot, see http://kegbot.org/
@@ -624,22 +624,24 @@ void writeMeterPackets() {
   // sent.
   if ((now - gUptimeStat.last_meter_event) > KB_METER_UPDATE_INTERVAL_MS) {
     gUptimeStat.last_meter_event = now;
+  } else {
+    return;
+  }
 
-    writeMeterPacket(0);
-    writeMeterPacket(1);
+  writeMeterPacket(0);
+  writeMeterPacket(1);
 #ifdef KB_PIN_METER_C
-    writeMeterPacket(2);
+  writeMeterPacket(2);
 #endif
 #ifdef KB_PIN_METER_D
-    writeMeterPacket(3);
+  writeMeterPacket(3);
 #endif
 #ifdef KB_PIN_METER_E
-    writeMeterPacket(4);
+  writeMeterPacket(4);
 #endif
 #ifdef KB_PIN_METER_F
-    writeMeterPacket(5);
+  writeMeterPacket(5);
 #endif
-  }
 }
 
 void loop()

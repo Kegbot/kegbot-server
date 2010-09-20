@@ -162,6 +162,8 @@ serialized in **little-endian** format.
 +--------------+--------+------------------------------------------------------+
 | ``string``   | Varies | Null-terminated C string                             |
 +--------------+--------+------------------------------------------------------+
+| ``bytes``    | Varies | Raw collection of byte values.                       |
++--------------+--------+------------------------------------------------------+
 | ``output_t`` | 1      | Boolean (0=disabled, 1=enabled); like ``uint8``      |
 +--------------+--------+------------------------------------------------------+
 | ``temp_t``   | 4      | (Degrees C / 1000); signed; like ``int32``           |
@@ -203,8 +205,6 @@ implementing the protocol.
 This message may be sent by the board to indicate that it is alive. The host may
 request this message with the :ref:`ping-command`.
 
-Payload:
-
 +---------+-----------------+----------+---------------------------------------+
 | Tag ID  | Name            | Type     | Description                           |
 +=========+=================+==========+=======================================+
@@ -220,8 +220,6 @@ Payload:
 A configuration message dumps the board's configuration data.  These values can
 be programmed by sending a :ref:`set-configuration-command` with the same message
 as payload.
-
-Payload:
 
 +---------+--------------------+----------+---------------------------------------+
 | Tag ID  | Name               | Type     | Description                           |
@@ -246,8 +244,6 @@ Payload:
 This message describes the instantaneous reading of a single flow meter channel.
 For a kegboard with multiple flow meter inputs, multiple messages will be sent.
 
-Payload:
-
 +---------+-----------------+----------+---------------------------------------+
 | Tag ID  | Name            | Type     | Description                           |
 +=========+=================+==========+=======================================+
@@ -268,8 +264,6 @@ the temperature is presumed to be valid at the time the message is sent.
 The value of ``sensor_name`` will include the full 128-bit 1-wire device id, for
 example, ``thermo-f800080012345610``.
 
-Payload:
-
 +---------+-----------------+----------+---------------------------------------+
 | Tag ID  | Name            | Type     | Description                           |
 +=========+=================+==========+=======================================+
@@ -287,8 +281,6 @@ This message describes the status of a single general-purpose output on the
 board.  An output could be connected a relay, or some other device to control
 valves.
 
-Payload:
-
 +---------+-----------------+----------+---------------------------------------+
 | Tag ID  | Name            | Type     | Description                           |
 +=========+=================+==========+=======================================+
@@ -302,19 +294,44 @@ Payload:
 ``onewire_presence`` message (0x13)
 -----------------------------------
 
+.. note::
+  This message has been *deprecated*. It is no longer issued by kegboard, and
+  has been replaced by :ref:`auth-token-message`.
+
 When a 1-wire device is detected on the presence bus, this message is generated
-and sent.  Messages will be sent continuously while the device is present, and
-there is no explicit 'removed' message; thus, clients should aggregate these
-messages to detect transitions.
-
-.. todo:: Document update frequency and describe how to change it (it is the main loop update interval.)
-
-Payload:
+and sent.
 
 +---------+-----------------+----------+---------------------------------------+
 | Tag ID  | Name            | Type     | Description                           |
 +=========+=================+==========+=======================================+
 | 0x01    | device_id       | uint64   | ID of 1-wire device now present.      |
++---------+-----------------+----------+---------------------------------------+
+| 0x02    | status          | uint8    | 1 if present, 0 if removed.           |
++---------+-----------------+----------+---------------------------------------+
+
+
+.. _auth-token-message:
+
+``auth_token`` message (0x14)
+-----------------------------------
+
+When an authentication token is attached or removed from the kegboard, this
+messages is sent.  The ``device_name`` field gives the name of the kegboard
+peripheral producing the message; this will be `onewire` for iButtons.  The
+``token`` field gives the raw, big-endian byte value of the token.
+
+.. todo::
+  Document update frequency and describe how to change it (it is the main loop
+  update interval.)
+
++---------+-----------------+----------+---------------------------------------+
+| Tag ID  | Name            | Type     | Description                           |
++=========+=================+==========+=======================================+
+| 0x01    | device_name     | string   | Name of authentication device.        |
++---------+-----------------+----------+---------------------------------------+
+| 0x02    | token           | bytes    | Raw token ID being reported.          |
++---------+-----------------+----------+---------------------------------------+
+| 0x03    | status          | uint8    | 1 if present, 0 if removed.           |
 +---------+-----------------+----------+---------------------------------------+
 
 
@@ -390,8 +407,6 @@ the values to take effect.
 ------------------------------------
 
 This command is sent to the board to enable or disable a device output.
-
-Payload:
 
 +---------+-----------------+----------+---------------------------------------+
 | Tag ID  | Name            | Type     | Description                           |

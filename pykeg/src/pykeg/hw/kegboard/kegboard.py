@@ -111,6 +111,17 @@ class StringField(Field):
     return str(value) + '\x00'
 
 
+class BytesField(Field):
+  def ToString(self, value):
+    return '0x%s' % ''.join('%02x' % ord(c) for c in value)
+
+  def ParseValue(self, bytes):
+    return bytes
+
+  def ToBytes(self, value):
+    return value
+
+
 class OutputField(Uint16Field):
   def ParseValue(self, bytes):
     if bytes.strip('\x00'):
@@ -229,9 +240,17 @@ class OutputStatusMessage(Message):
 
 
 class OnewirePresenceMessage(Message):
+  """Deprecated."""
   MESSAGE_ID = 0x13
   device_id = OnewireIdField(0x01)
   status = Uint8Field(0x02)
+
+
+class AuthTokenMessage(Message):
+  MESSAGE_ID = 0x14
+  device = StringField(0x01)
+  token = BytesField(0x02)
+  status = Uint8Field(0x03)
 
 
 class PingCommand(Message):

@@ -257,17 +257,15 @@ void writeMeterPacket(int channel)
   packet.Print();
 }
 
-#if KB_ENABLE_ONEWIRE_PRESENCE
-void writeOnewirePresencePacket(uint64_t* id, bool present) {
-  char status = present ? 1 : 0;
-
+void writeAuthPacket(char* device_name, uint8_t* token, int token_len,
+    char status) {
   KegboardPacket packet;
-  packet.SetType(KBM_ONEWIRE_PRESENCE);
-  packet.AddTag(KBM_ONEWIRE_PRESENCE_TAG_DEVICE_ID, 8, (char*)id);
-  packet.AddTag(KBM_ONEWIRE_PRESENCE_TAG_STATUS, 1, &status);
+  packet.SetType(KBM_AUTH_TOKEN);
+  packet.AddTag(KBM_AUTH_TOKEN_TAG_DEVICE, strlen(device_name), device_name);
+  packet.AddTag(KBM_AUTH_TOKEN_TAG_TOKEN, token_len, (char*)token);
+  packet.AddTag(KBM_AUTH_TOKEN_TAG_STATUS, 1, &status);
   packet.Print();
 }
-#endif
 
 #if KB_ENABLE_SELFTEST
 void doTestPulse()
@@ -425,7 +423,7 @@ void stepOnewireIdBus() {
       entry->present_count -= 1;
       if (entry->present_count == 0) {
         entry->valid = false;
-        writeOnewirePresencePacket(&entry->id, false);
+        writeAuthPacket("onewire", (uint8_t*)&(entry->id), 8, 0);
       }
     }
     return;
@@ -462,7 +460,7 @@ void stepOnewireIdBus() {
       entry->valid = true;
       entry->present_count = ONEWIRE_CACHE_MAX_MISSING_SEARCHES;
       entry->id = addr;
-      writeOnewirePresencePacket(&entry->id, true);
+      writeAuthPacket("onewire", (uint8_t*)&(entry->id), 8, 1);
       return;
     }
   }

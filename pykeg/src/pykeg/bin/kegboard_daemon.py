@@ -140,6 +140,25 @@ class KegboardManagerThread(util.KegbotThread):
         self._client.SendAuthTokenRemove(FLAGS.tap_name,
             kb_common.AUTH_MODULE_CORE_ONEWIRE, strval)
 
+    elif isinstance(msg, kegboard.AuthTokenMessage):
+      # For legacy reasons, a kegboard-reported device name of 'onewire' is
+      # translated to 'core.onewire'. Any other device names are reported
+      # verbatim.
+      device = msg.device
+      if device == 'onewire':
+        device = kb_common.AUTH_MODULE_CORE_ONEWIRE
+
+      # Convert the token byte field to little endian string representation.
+      bytes_be = msg.token
+      bytes_le = ''
+      for b in bytes_be:
+        bytes_le = '%02x%s' % (ord(b), bytes_le)
+
+      if msg.status == 1:
+        self._client.SendAuthTokenAdd(FLAGS.tap_name, device, bytes_le)
+      else:
+        self._client.SendAuthTokenRemove(FLAGS.tap_name, device, bytes_le)
+
 
 class KegboardDeviceIoThread(util.KegbotThread):
   """Manages all device I/O.

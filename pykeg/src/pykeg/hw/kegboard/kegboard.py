@@ -287,6 +287,19 @@ class KegboardReader(object):
     self._logger = logging.getLogger('kegboard-reader')
     self._fd = fd
 
+  def _read(self, count):
+    """Wrapper for fd read which handles EAGAIN."""
+    attempts = 0
+    while attempts < 100:
+      try:
+        return self._fd.read(count)
+      except OSError, e:
+        if e.errno == errno.EAGAIN:
+          attempts += 1
+          continue
+        raise e
+    raise RuntimeError('Read caused EAGAIN too many times.')
+
   def WriteMessage(self, message):
     if not isinstance(message, Message):
       raise ValueError, "WriteMessage must be called with a Message instance"
@@ -299,7 +312,7 @@ class KegboardReader(object):
       # Find the prefix, re-aligning the messages as needed.
       logged_frame_error = False
       while header_pos < header_len:
-        byte = self._fd.read(1)
+        byte = self._read(1)
         if byte == KBSP_PREFIX[header_pos]:
           header_pos += 1
           if logged_frame_error:
@@ -316,7 +329,7 @@ class KegboardReader(object):
             header_pos = 0
 
       # Read message type and message length.
-      header_bytes = self._fd.read(4)
+      header_bytes = self._read(4)
       message_id, message_len = struct.unpack('<HH', header_bytes)
       if message_len > KBSP_PAYLOAD_MAXLEN:
         self._logger.warning('Bogus message length (%i), skipping message' %
@@ -324,9 +337,9 @@ class KegboardReader(object):
         continue
 
       # Read payload and trailer.
-      payload = self._fd.read(message_len)
-      crc = self._fd.read(2)
-      trailer = self._fd.read(2)
+      payload = self._read(message_len)
+      crc = self._read(2)
+      trailer = self._read(2)
 
       if trailer != KBSP_TRAILER:
         self._logger.warning('Bad trailer (%s), skipping message' %

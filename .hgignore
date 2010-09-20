@@ -17,3 +17,5 @@ pykeg/src/kegbot.egg-info
 
 ### controller
 controller/kegboard/build-cli
+controller/kegboard/board/*.b\#*
+controller/kegboard/board/*.s\#*

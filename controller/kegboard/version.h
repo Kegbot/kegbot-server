@@ -8,7 +8,9 @@
 //     Initial version number.
 //   v5 (2010-01-10)
 //     Fix issue that caused flow events to be reported too frequently.
-#define FIRMWARE_VERSION 5
+//   v6 (2010-09-22)
+//     Added auth_token message.
+#define FIRMWARE_VERSION 6
 
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__

@@ -19,6 +19,7 @@
 """Python interfaces to a Kegboard device."""
 
 import cStringIO
+import errno
 import logging
 import struct
 import string
@@ -53,6 +54,11 @@ class UnknownMessageError(MessageError):
 class FramingError(KegboardError):
   """Problem synchronizing with serial stream"""
 
+### Helpers
+
+def bytes_to_hexstr(bytestr):
+  """Like repr(s), but pritns all characters as hex."""
+  return ''.join('\\x%02x' % ord(c) for c in bytestr)
 
 ### Fields
 
@@ -88,6 +94,10 @@ class Uint8Field(StructField):
 
 class Uint16Field(StructField):
   _STRUCT_FORMAT = '<H'
+
+
+class Int32Field(StructField):
+  _STRUCT_FORMAT = '<i'
 
 
 class Uint32Field(StructField):
@@ -136,9 +146,9 @@ class OutputField(Uint16Field):
       return 'off'
 
 
-class TempField(Uint32Field):
+class TempField(Int32Field):
   def ParseValue(self, value):
-    value = Uint32Field.ParseValue(self, value)
+    value = Int32Field.ParseValue(self, value)
     value /= 1000000.0
     return value
 
@@ -320,8 +330,9 @@ class KegboardReader(object):
             logged_frame_error = False
         else:
           if not logged_frame_error:
-            self._logger.info('Packet framing broken (found "%s", expected "%s"'
-                              '); reframing.' % (byte, KBSP_PREFIX[header_pos]))
+            expected = KBSP_PREFIX[header_pos]
+            self._logger.info('Packet framing broken (found %s, expected %s); '
+                              'reframing.' % (repr(byte), repr(expected)))
             logged_frame_error = True
           if byte == KBSP_PREFIX[0]:
             header_pos = 0
@@ -346,5 +357,12 @@ class KegboardReader(object):
                              repr(trailer))
         # Bogus trailer; start over.
         continue
+
+      if FLAGS.verbose:
+        rawstr = ''.join((header_bytes, payload, crc, trailer))
+        rawstr = bytes_to_hexstr(rawstr)
+        dumpstr = 'ID=%i PAYLOAD=%s' % (message_id, bytes_to_hexstr(payload))
+        self._logger.debug('RX: %s' % rawstr)
+        self._logger.debug(dumpstr)
 
       return GetMessageById(message_id, payload)

@@ -1,3 +1,23 @@
+/**
+ * Copyright 2003-2010 Mike Wakerly <opensource@hoho.com>
+ *
+ * This file is part of the Kegbot package of the Kegbot project.
+ * For more information on Kegbot, see http://kegbot.org/
+ *
+ * Kegbot is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Kegbot is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Kegbot.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <inttypes.h>
 #include <avr/io.h>
 
@@ -130,11 +150,12 @@ long DS1820Sensor::GetTemp(void)
   //
   // This method returns the temperature in 1/10^6 deg C, so the value is scaled
   // up by (10^6/16) = 62500 or (10^6/2) = 500000.
+  long res = (long)m_temp;
   switch (m_addr[0]) {
     case ONEWIRE_FAMILY_DS18B20:
-      return m_temp * 62500;
+      return res * 62500L;
     case ONEWIRE_FAMILY_DS18S20:
-      return m_temp * 500000;
+      return res * 500000L;
     default:
       return INVALID_TEMPERATURE_VALUE;
   }

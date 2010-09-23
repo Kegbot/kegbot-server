@@ -30,6 +30,6 @@ class DS1820Sensor {
    bool m_initialized;
    bool m_converting;
    unsigned long m_conversion_start_clock;
-   unsigned long m_temp;
+   int m_temp;
    bool m_temp_is_valid;
 };

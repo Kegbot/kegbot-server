@@ -49,11 +49,8 @@ class KegboardMonitorApp(kb_app.App):
     ping_message = kegboard.PingCommand()
     self._serial_fd.write(ping_message.ToBytes())
     while not self._do_quit:
-      try:
-        msg = self._reader.GetNextMessage()
-        print msg
-      except:
-        break
+      msg = self._reader.GetNextMessage()
+      print msg
     self._serial_fd.close()
     self._logger.info('Reader loop ended.')
 

@@ -5,6 +5,31 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Current Version (in development)
+--------------------------------
+
+*Note:* An update to the kegboard firmware is included in this version.
+Reflashing your kegboard is recommended.
+
+Core/General
+^^^^^^^^^^^^
+* Added SessionStats table.  Statistics are now continuously computed for
+  drinking sessions, to go along with per-user and per-keg stats.
+
+Kegweb
+^^^^^^
+* Various improvements to session display; added session detail page.
+* New feature: assign a title to a drinking session.
+* Various bugfixes to the web API.
+
+Kegboard
+^^^^^^^^
+* Added the :ref:`auth-token-message` type to the serial protocol.
+* Fixed reporting for negative temperatures.
+* Fixed kegboard reader/daemon to not crash when ``EAGAIN`` is received from the
+  OS.
+* Update Makefiles.
+
 Version 0.7.5 (2010-09-11)
 --------------------------
 

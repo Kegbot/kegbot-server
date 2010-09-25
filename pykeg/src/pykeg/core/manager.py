@@ -484,15 +484,20 @@ class ThermoManager(Manager):
     sensor_value = event.sensor_value
     now = datetime.datetime.now()
 
+    # Round down to nearest minute.
+    now = now.replace(second=0, microsecond=0)
+
     # If we've already posted a recording for this minute, avoid doing so again.
+    # Note: the backend may also be performing this check.
     last_record = self._name_to_last_record.get(sensor_name)
     if last_record:
       last_time = datetime.datetime.fromtimestamp(last_record.record_time)
-      if last_time.timetuple()[:5] == now.timetuple()[:5]:
+      if last_time == now:
         self._logger.debug('Dropping excessive temp event')
         return
 
     # If the temperature is out of bounds, reject it.
+    # Note: the backend may also be performing this check.
     min_val = kb_common.THERMO_SENSOR_RANGE[0]
     max_val = kb_common.THERMO_SENSOR_RANGE[1]
     if sensor_value < min_val or sensor_value > max_val:
@@ -505,7 +510,7 @@ class ThermoManager(Manager):
       new_record = self._backend.LogSensorReading(sensor_name, sensor_value, now)
       self._name_to_last_record[sensor_name] = new_record
     except ValueError:
-      # Value was out of acceptable range; ignore.
+      # Value was rejected by the backend; ignore.
       pass
 
 class TokenRecord:

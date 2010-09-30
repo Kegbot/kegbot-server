@@ -136,7 +136,7 @@ class KegSize(models.Model):
 class KegTap(models.Model):
   """A physical tap of beer."""
   site = models.ForeignKey(KegbotSite)
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
   name = models.CharField(max_length=128)
   meter_name = models.CharField(max_length=128)
   ml_per_tick = models.FloatField(default=(1000.0/2200.0))
@@ -244,7 +244,7 @@ class Keg(models.Model):
     return "Keg #%s - %s" % (self.id, self.type)
 
   site = models.ForeignKey(KegbotSite, related_name='kegs')
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
   type = models.ForeignKey(bdb.BeerType)
   size = models.ForeignKey(KegSize)
   startdate = models.DateTimeField('start date', default=datetime.datetime.now)
@@ -325,7 +325,7 @@ class Drink(models.Model):
   objects = DrinkManager()
 
   site = models.ForeignKey(KegbotSite, related_name='drinks')
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
 
   # Ticks records the actual meter reading, which is never changed once
   # recorded.
@@ -399,7 +399,7 @@ class AuthenticationToken(models.Model):
     return ret
 
   site = models.ForeignKey(KegbotSite, related_name='tokens')
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
   auth_device = models.CharField(max_length=64)
   token_value = models.CharField(max_length=128)
   pin = models.CharField(max_length=256, blank=True, null=True)
@@ -544,7 +544,7 @@ class DrinkingSession(AbstractChunk):
 
   objects = SessionManager()
   site = models.ForeignKey(KegbotSite, related_name='sessions')
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
   name = models.CharField(max_length=256, blank=True, null=True)
   slug = AutoSlugField(populate_from='name', unique_with='site', blank=True,
       null=True)
@@ -718,7 +718,7 @@ class ThermoSensor(models.Model):
     unique_together = ('site', 'seqn')
 
   site = models.ForeignKey(KegbotSite, related_name='thermosensors')
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
   raw_name = models.CharField(max_length=256)
   nice_name = models.CharField(max_length=128)
 
@@ -741,7 +741,7 @@ class Thermolog(models.Model):
     get_latest_by = 'time'
 
   site = models.ForeignKey(KegbotSite, related_name='thermologs')
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
   sensor = models.ForeignKey(ThermoSensor)
   temp = models.FloatField()
   time = models.DateTimeField()
@@ -867,7 +867,7 @@ class ThermoSummaryLog(models.Model):
     ('daily', 'daily'),
   )
   site = models.ForeignKey(KegbotSite, related_name='thermosummarylogs')
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
   sensor = models.ForeignKey(ThermoSensor)
   date = models.DateTimeField()
   period = models.CharField(max_length=64, choices=PERIOD_CHOICES,
@@ -886,7 +886,7 @@ class RelayLog(models.Model):
     unique_together = ('site', 'seqn')
 
   site = models.ForeignKey(KegbotSite, related_name='relaylogs')
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
   name = models.CharField(max_length=128)
   status = models.CharField(max_length=32)
   time = models.DateTimeField()
@@ -965,7 +965,7 @@ class SystemEvent(models.Model):
   )
 
   site = models.ForeignKey(KegbotSite)
-  seqn = models.PositiveIntegerField()
+  seqn = models.PositiveIntegerField(editable=False)
   kind = models.CharField(max_length=255, choices=KINDS,
       help_text='Type of event.')
   when = models.DateTimeField(help_text='Time of the event.')

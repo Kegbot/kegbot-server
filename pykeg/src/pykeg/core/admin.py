@@ -33,13 +33,13 @@ class KegTapAdmin(admin.ModelAdmin):
 admin.site.register(models.KegTap, KegTapAdmin)
 
 class KegAdmin(admin.ModelAdmin):
-  list_display = ('id', 'type')
+  list_display = ('seqn', 'type')
 admin.site.register(models.Keg, KegAdmin)
 
 class DrinkAdmin(admin.ModelAdmin):
-  list_display = ('id', 'user', 'keg', 'endtime')
+  list_display = ('seqn', 'user', 'keg', 'endtime')
   list_filter = ('keg', 'status', 'endtime')
-  search_fields = ('id', 'user__username')
+  search_fields = ('seqn', 'user__username')
 admin.site.register(models.Drink, DrinkAdmin)
 
 class AuthenticationTokenAdmin(admin.ModelAdmin):

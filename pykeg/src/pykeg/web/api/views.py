@@ -226,6 +226,7 @@ def get_user_drinks(request, username):
   return list(user.drinks.valid())
 
 @model_to_json
+@auth_required
 def get_auth_token(request, auth_device, token_value):
   return get_object_or_404(models.AuthenticationToken, auth_device=auth_device,
       token_value=token_value)

@@ -33,7 +33,7 @@ setup(
       'src/pykeg/bin/fb_publisher.py',
       'src/pykeg/bin/kegboard_daemon.py',
       'src/pykeg/bin/kegboard_monitor.py',
-      'src/pykeg/bin/kegbot_admin.py',
+      'src/pykeg/bin/kegbot-admin.py',
       'src/pykeg/bin/kegbot_core.py',
       'src/pykeg/bin/kegbot_master.py',
       'src/pykeg/bin/kegbot_twitter.py',
@@ -64,6 +64,7 @@ setup(
       #'django_nose',
       #'python-openid >= 2.2.5',  # removeme once PIL package works
       'pygooglechart',
+      'tweepy',
     ],
     dependency_links = [
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',
@@ -72,7 +73,7 @@ setup(
 
         # Self-maintained package due to upstream issue:
         # http://github.com/facebook/python-sdk/issues/#issue/21
-        'http://github.com/downloads/mik3y/python-sdk/facebook-python-sdk-0.1.tar.gz',
+        'http://github.com/downloads/mik3y/python-sdk/facebook-python-sdk-0.1-1.tar.gz',
     ],
     include_package_data = True,
 

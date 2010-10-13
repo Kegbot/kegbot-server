@@ -42,11 +42,9 @@ else:
 
 import gflags
 
+from pykeg.core import kbevent
 from pykeg.core import kb_common
-from pykeg.core import protoutil
 from pykeg.core import util
-from pykeg.core.net import kegnet_pb2
-from google.protobuf import message as protobuf_message
 
 FLAGS = gflags.FLAGS
 
@@ -63,28 +61,6 @@ gflags.DEFINE_string('tap_name', 'kegboard.flow0',
 
 MESSAGE_TERMINATOR = '\n\n'
 
-def ProtoMessageToJson(message):
-  wrapper = {
-    'method': message.DESCRIPTOR.name,
-    'id': None,
-    'params': protoutil.ProtoMessageToDict(message),
-  }
-  return json.dumps(wrapper)
-
-NAME_TO_MESSAGE_CLASS = {}
-for cls in protobuf_message.Message.__subclasses__():
-  NAME_TO_MESSAGE_CLASS[cls.DESCRIPTOR.name] = cls
-
-def MessageDictToProtoMessage(message_dict):
-  message_name = message_dict['method']
-  message_class = NAME_TO_MESSAGE_CLASS[message_name]
-  return protoutil.DictToProtoMessage(message_dict['params'], message_class())
-
-def ProtoMessageToShortStr(message):
-  name = message.DESCRIPTOR.name
-  values = str(message).replace('\n', ' ')
-  # TODO(mikey): show submessages properly
-  return '<%s: %s>' % (name, values)
 
 class KegnetProtocolHandler(asynchat.async_chat):
   """A general purpose request handler for the Kegnet protocol.
@@ -135,20 +111,7 @@ class KegnetProtocolHandler(asynchat.async_chat):
     # (http://groups.google.com/group/json-rpc/web/json-rpc-1-2-proposal):
 
     self._logger.debug('Received message: %s' % message_dict)
-
-    if 'method' in message_dict and 'params' in message_dict:
-      # Requests and Notifications both have 'method' and 'param' fields;
-      # notifications have the 'id' field set to null (None).
-      if 'id' in message_dict and message_dict['id'] is not None:
-        # Message is a request.
-        self.HandleRequest(message_dict)
-      else:
-        # Message is a notification.
-        self.HandleNotification(message_dict)
-    elif 'result' in message_dict:
-      self.HandleResponse(message_dict)
-    else:
-      self._logger.warning('Received unknown message type, dropping.')
+    self.HandleNotification(message_dict)
 
   def handle_close(self):
     asynchat.async_chat.handle_close(self)
@@ -157,21 +120,18 @@ class KegnetProtocolHandler(asynchat.async_chat):
   ### KegnetProtocolHandler methods
   def HandleNotification(self, message_dict):
     self._logger.debug('Received notification: %s' % message_dict)
-    message = MessageDictToProtoMessage(message_dict)
+    message = kbevent.DecodeEvent(message_dict)
     self._in_notifications.put(message)
-
-  def HandleRequest(self, message_dict):
-    pass
-
-  def HandleResponse(self, message_dict):
-    pass
 
   def PopNotification(self, timeout=None):
     return self._in_notifications.get(timeout=timeout)
 
+  def push(self, data):
+    print "pushing: %s" % repr(data)
+    return asynchat.async_chat.push(self, data)
+
   def SendMessage(self, msg):
-    str_message = ProtoMessageToJson(msg)
-    self._logger.debug('Sending JSON message: %s' % str_message)
+    str_message = msg.ToJson(indent=None)
     self.push(str_message + MESSAGE_TERMINATOR)
 
 
@@ -246,47 +206,47 @@ class KegnetClient(KegnetProtocolHandler):
 
   ### convenience functions
   def SendPing(self):
-    message = kegnet_pb2.Ping()
+    message = kbevent.Ping()
     return self.SendMessage(message)
 
   def SendMeterUpdate(self, tap_name, meter_reading):
-    message = kegnet_pb2.MeterUpdate()
+    message = kbevent.MeterUpdate()
     message.tap_name = tap_name
     message.reading = meter_reading
     return self.SendMessage(message)
 
   def SendFlowStart(self, tap_name):
-    message = kegnet_pb2.FlowRequest()
+    message = kbevent.FlowRequest()
     message.tap_name = tap_name
-    message.request = message.START_FLOW
+    message.request = message.Action.START_FLOW
     return self.SendMessage(message)
 
   def SendFlowStop(self, tap_name):
-    message = kegnet_pb2.FlowRequest()
+    message = kbevent.FlowRequest()
     message.tap_name = tap_name
-    message.request = message.STOP_FLOW
+    message.request = message.Action.STOP_FLOW
     return self.SendMessage(message)
 
   def SendThermoUpdate(self, sensor_name, sensor_value):
-    message = kegnet_pb2.ThermoEvent()
+    message = kbevent.ThermoEvent()
     message.sensor_name = sensor_name
     message.sensor_value = sensor_value
     return self.SendMessage(message)
 
   def SendAuthTokenAdd(self, tap_name, auth_device_name, token_value):
-    message = kegnet_pb2.TokenAuthEvent()
+    message = kbevent.TokenAuthEvent()
     message.tap_name = tap_name
     message.auth_device_name = auth_device_name
     message.token_value = token_value
-    message.status = message.ADDED
+    message.status = message.TokenState.ADDED
     return self.SendMessage(message)
 
   def SendAuthTokenRemove(self, tap_name, auth_device_name, token_value):
-    message = kegnet_pb2.TokenAuthEvent()
+    message = kbevent.TokenAuthEvent()
     message.tap_name = tap_name
     message.auth_device_name = auth_device_name
     message.token_value = token_value
-    message.status = message.REMOVED
+    message.status = message.TokenState.REMOVED
     return self.SendMessage(message)
 
   def onConnected(self):
@@ -309,12 +269,12 @@ class SimpleKegnetClient(KegnetClient):
 
   def HandleNotification(self, message_dict):
     self._logger.debug('Received notification: %s' % message_dict)
-    event = MessageDictToProtoMessage(message_dict)
-    if isinstance(event, kegnet_pb2.FlowUpdate):
+    event = kbevent.DecodeEvent(message_dict)
+    if isinstance(event, kbevent.FlowUpdate):
       self.onFlowUpdate(event)
-    elif isinstance(event, kegnet_pb2.DrinkCreatedEvent):
+    elif isinstance(event, kbevent.DrinkCreatedEvent):
       self.onDrinkCreated(event)
-    elif isinstance(event, kegnet_pb2.CreditAddedEvent):
+    elif isinstance(event, kbevent.CreditAddedEvent):
       self.onCreditAdded(event)
 
   def onFlowUpdate(self, event):
@@ -375,9 +335,9 @@ class KegnetServer(asyncore.dispatcher):
     # internal events.
     if not self._clients:
       return
-    self._logger.info('Sending event to %i client(s): %s' %
-      (len(self._clients), ProtoMessageToShortStr(event)))
-    str_message = ProtoMessageToJson(event)
+    #self._logger.info('Sending event to %i client(s): %s' %
+    #  (len(self._clients), ProtoMessageToShortStr(event)))
+    str_message = event.ToJson()
     for client in self._clients:
       try:
         client.push(str_message + MESSAGE_TERMINATOR)

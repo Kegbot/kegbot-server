@@ -19,13 +19,9 @@
 """Kegweb API client."""
 
 import datetime
+import functools
 import sys
 import types
-
-from pykeg import settings
-from pykeg.core import models_pb2
-from pykeg.core.protoutil import DictToProtoMessage
-from pykeg.web.api import common
 
 try:
   from urllib.parse import urlencode
@@ -48,24 +44,53 @@ import gflags
 FLAGS = gflags.FLAGS
 
 _DEFAULT_URL = 'http://localhost:8000/api/'
-if hasattr(settings, 'KEGWEB_BASE_URL'):
-  _DEFAULT_URL = '%s/api' % getattr(settings, 'KEGWEB_BASE_URL')
+try:
+  from pykeg import settings
+  if hasattr(settings, 'KEGWEB_BASE_URL'):
+    _DEFAULT_URL = '%s/api' % getattr(settings, 'KEGWEB_BASE_URL')
+except ImportError:
+  # Non-fatal if we can't load settings.
+  pass
 
 gflags.DEFINE_string('krest_url', _DEFAULT_URL,
     'Base URL for the Kegweb HTTP api.')
 
-class ApiError(Exception):
-  """Raised when the remote side returns an error."""
+### begin common
 
-class ServerError(ApiError):
-  """Raised when a malformed response is received from the server."""
+class Error(Exception):
+  """An error occurred."""
+  def Message(self):
+    if self.message:
+      return self.message
+    m = self.__class__.__doc__
+    m = m.split('\n', 1)[0]
+    return m
 
-class RemoteError(ApiError):
-  """Raised when the remote API raises an error."""
-  def __init__(self, code, message=None):
-    self.code = code
-    self.message = message
+class NotFoundError(Error):
+  """The requested object could not be found."""
 
+class ServerError(Error):
+  """The server had a problem fulfilling your request."""
+
+class BadRequestError(Error):
+  """The request was incompleted or malformed."""
+
+class NoAuthTokenError(Error):
+  """An api_auth_token is required."""
+
+class BadAuthTokenError(Error):
+  """The api_auth_token given is invalid."""
+
+class PermissionDeniedError(Error):
+  """The api_auth_token given does not have permission for this resource."""
+
+MAP_NAME_TO_EXCEPTION = dict((c.__name__, c) for c in Error.__subclasses__())
+
+def ErrorCodeToException(code, message=None):
+  cls = MAP_NAME_TO_EXCEPTION.get(code, Error)
+  return cls(message)
+
+### end common
 
 class KrestClient:
   """Kegweb RESTful API client."""
@@ -179,7 +204,7 @@ class KrestClient:
         raise ValueError('Invalid error response from server')
       code = err.get('code', 'Error')
       message = err.get('message', None)
-      e = common.ErrorCodeToException(code, message)
+      e = ErrorCodeToException(code, message)
       raise e
     elif 'result' in d:
       # Response was OK, return the result.
@@ -187,9 +212,6 @@ class KrestClient:
     else:
       # WTF?
       raise ValueError('Invalid response from server: missing result or error')
-
-  def _DictListToProtoList(self, d_list, proto_cls):
-    return [DictToProtoMessage(m, proto_cls()) for m in d_list]
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=None, auth_token=None):
@@ -204,9 +226,7 @@ class KrestClient:
     if pour_time:
       post_data['pour_time'] = int(pour_time.strftime('%s'))
       post_data['now'] = int(datetime.datetime.now().strftime('%s'))
-    res = self.DoPOST(endpoint, post_data=post_data)
-    ret = DictToProtoMessage(res, models_pb2.Drink)
-    return ret
+    return self.DoPOST(endpoint, post_data=post_data)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     endpoint = '/thermo-sensor/%s' % (sensor_name,)
@@ -214,33 +234,27 @@ class KrestClient:
       'temp_c': float(temperature),
     }
     # TODO(mikey): include post data
-    res = self.DoPOST(endpoint, post_data=post_data)
-    ret = DictToProtoMessage(res, models_pb2.ThermoLog)
-    return ret
+    return self.DoPOST(endpoint, post_data=post_data)
 
   def TapStatus(self, full=True):
     """Gets the status of all taps."""
     params = {'full' : full}
-    response = self.DoGET('tap', params)
-    return self._DictListToProtoList(response, models_pb2.KegTap)
+    return self.DoGET('tap', params)
 
   def GetToken(self, auth_device, token_value, full=True):
     url = 'auth-token/%s.%s' % (auth_device, token_value)
     params = {'full' : full}
-    response = self.DoGET(url, params)
-    return DictToProtoMessage(response, models_pb2.AuthenticationToken())
+    return self.DoGET(url, params)
 
   def LastDrinks(self, full=True):
     """Gets a list of the most recent drinks."""
     params = {'full' : full}
-    response = self.DoGET('last-drinks', params)
-    return self._DictListToProtoList(response, models_pb2.Drink)
+    return self.DoGET('last-drinks', params)
 
   def AllDrinks(self, full=True):
     """Gets a list of all drinks."""
     params = {'full' : full}
-    response = self.DoGET('drink', params)
-    return self._DictListToProtoList(response, models_pb2.Drink)
+    return self.DoGET('drink', params)
 
 
 def main():

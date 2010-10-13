@@ -27,8 +27,10 @@ import logging
 from pykeg.core import backend
 from pykeg.core import flow_meter
 from pykeg.core import kb_common
+from pykeg.core import kbevent
 from pykeg.core import util
-from pykeg.core.net import kegnet_pb2
+
+
 
 class TapManagerError(Exception):
   """ Generic TapManager error """
@@ -152,7 +154,7 @@ class Flow:
     self._tap = tap
     self._flow_id = flow_id
     self._bound_username = username
-    self._state = kegnet_pb2.FlowUpdate.INITIAL
+    self._state = kbevent.FlowUpdate.FlowState.INITIAL
     self._start_time = datetime.datetime.now()
     self._end_time = None
     self._last_log_time = None
@@ -163,7 +165,7 @@ class Flow:
         self._bound_username)
 
   def GetUpdateEvent(self):
-    event = kegnet_pb2.FlowUpdate()
+    event = kbevent.FlowUpdate()
     event.flow_id = self._flow_id
     event.tap_name = self._tap.GetName()
     event.state = self._state
@@ -312,7 +314,7 @@ class FlowManager(Manager):
         tap = flow.GetTap()
         del self._flow_map[tap_name]
         self._logger.info('EndFlow: Flow ended: %s' % flow)
-        self._StateChange(flow, kegnet_pb2.FlowUpdate.COMPLETED)
+        self._StateChange(flow, kbevent.FlowUpdate.FlowState.COMPLETED)
       else:
         self._logger.info('EndFlow: No existing flow on tap %s' % (tap_name,))
       return flow
@@ -342,8 +344,8 @@ class FlowManager(Manager):
       is_new = True
     flow.AddTicks(delta, datetime.datetime.now())
 
-    if flow.GetState() != kegnet_pb2.FlowUpdate.ACTIVE:
-      self._StateChange(flow, kegnet_pb2.FlowUpdate.ACTIVE)
+    if flow.GetState() != kbevent.FlowUpdate.FlowState.ACTIVE:
+      self._StateChange(flow, kbevent.FlowUpdate.FlowState.ACTIVE)
     else:
       self._PublishUpdate(flow)
 
@@ -357,7 +359,7 @@ class FlowManager(Manager):
     event = flow.GetUpdateEvent()
     self._PublishEvent(event)
 
-  @EventHandler(kegnet_pb2.MeterUpdate)
+  @EventHandler(kbevent.MeterUpdate)
   def HandleFlowActivityEvent(self, event):
     """Handles the FLOW_DEV_ACTIVITY event.
 
@@ -374,7 +376,7 @@ class FlowManager(Manager):
     except UnknownTapError:
       return None
 
-  @EventHandler(kegnet_pb2.HeartbeatSecondEvent)
+  @EventHandler(kbevent.HeartbeatSecondEvent)
   def _HandleHeartbeatEvent(self, event):
     # TODO(mikey): Allowable idle time must be configurable.
     max_idle = datetime.timedelta(seconds=10)
@@ -382,14 +384,14 @@ class FlowManager(Manager):
       idle_time = flow.GetIdleTime()
       if idle_time > max_idle:
         self._logger.info('Flow has become too idle, ending: %s' % flow)
-        self._StateChange(flow, kegnet_pb2.FlowUpdate.IDLE)
+        self._StateChange(flow, kbevent.FlowUpdate.FlowState.IDLE)
         self.EndFlow(flow.GetTap().GetName())
 
-  @EventHandler(kegnet_pb2.FlowRequest)
+  @EventHandler(kbevent.FlowRequest)
   def _HandleFlowRequestEvent(self, event):
-    if event.request == event.START_FLOW:
+    if event.request == event.Action.START_FLOW:
       self.StartFlow(event.tap_name)
-    elif event.request == event.STOP_FLOW:
+    elif event.request == event.Action.STOP_FLOW:
       self.EndFlow(event.tap_name)
 
 
@@ -404,10 +406,10 @@ class DrinkManager(Manager):
     ret.append('Last drink: %s' % self._last_drink)
     return ret
 
-  @EventHandler(kegnet_pb2.FlowUpdate)
+  @EventHandler(kbevent.FlowUpdate)
   def HandleFlowUpdateEvent(self, event):
     """Attempt to save a drink record and derived data for |flow|"""
-    if event.state == event.COMPLETED:
+    if event.state == event.FlowState.COMPLETED:
       self._HandleFlowEnded(event)
 
   def _HandleFlowEnded(self, event):
@@ -449,7 +451,7 @@ class DrinkManager(Manager):
     self._last_drink = d
 
     # notify listeners
-    created = kegnet_pb2.DrinkCreatedEvent()
+    created = kbevent.DrinkCreatedEvent()
     created.flow_id = flow_id
     created.drink_id = d.id
     created.tap_name = tap_name
@@ -478,7 +480,7 @@ class ThermoManager(Manager):
       ret.append('  %s: %.2f' % (sensor, value))
     return ret
 
-  @EventHandler(kegnet_pb2.ThermoEvent)
+  @EventHandler(kbevent.ThermoEvent)
   def _HandleThermoUpdateEvent(self, event):
     sensor_name = event.sensor_name
     sensor_value = event.sensor_value
@@ -585,14 +587,14 @@ class TokenManager(Manager):
     self._tokens = {}  # maps tap name to currently active token
     self._lock = threading.Lock()
 
-  @EventHandler(kegnet_pb2.TokenAuthEvent)
+  @EventHandler(kbevent.TokenAuthEvent)
   def HandleAuthTokenEvent(self, event):
-    if event.status == event.ADDED:
+    if event.status == event.TokenState.ADDED:
       self._TokenAdded(event)
     else:
       self._TokenRemoved(event)
 
-  @EventHandler(kegnet_pb2.HeartbeatSecondEvent)
+  @EventHandler(kbevent.HeartbeatSecondEvent)
   def HandleHeartbeatEvent(self, event):
     for tap_name, record in self._tokens.items():
       if record.IsIdle():
@@ -625,13 +627,13 @@ class TokenManager(Manager):
 
     user_name = token.user.username
 
-    message = kegnet_pb2.UserAuthEvent()
+    message = kbevent.UserAuthEvent()
     message.tap_name = record.tap_name
     message.user_name = user_name
     if added:
-      message.state = message.ADDED
+      message.state = message.UserState.ADDED
     else:
-      message.state = message.REMOVED
+      message.state = message.UserState.REMOVED
     self._PublishEvent(message)
 
   def _TokenRemoved(self, event):
@@ -723,7 +725,7 @@ class AuthenticationManager(Manager):
     # event.
     self._flow_manager.EndFlow(tap.GetName())
 
-  @EventHandler(kegnet_pb2.UserAuthEvent)
+  @EventHandler(kbevent.UserAuthEvent)
   def HandleUserAuthEvent(self, event):
     username = event.user_name
     if not username:
@@ -737,7 +739,7 @@ class AuthenticationManager(Manager):
       return
 
     for tap in taps:
-      if event.state == event.ADDED:
+      if event.state == event.UserState.ADDED:
         self._AddUser(username, tap)
       else:
         self._RemoveUser(tap)
@@ -759,8 +761,8 @@ class SubscriptionManager(Manager):
   def __init__(self, name, event_hub, server):
     Manager.__init__(self, name, event_hub)
     self._server = server
-  @EventHandler(kegnet_pb2.CreditAddedEvent)
-  @EventHandler(kegnet_pb2.DrinkCreatedEvent)
-  @EventHandler(kegnet_pb2.FlowUpdate)
+  @EventHandler(kbevent.CreditAddedEvent)
+  @EventHandler(kbevent.DrinkCreatedEvent)
+  @EventHandler(kbevent.FlowUpdate)
   def RepostEvent(self, event):
     self._server.SendEventToClients(event)

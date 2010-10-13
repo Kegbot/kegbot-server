@@ -44,8 +44,7 @@ from django.template.loader import get_template
 from pykeg.core import backend
 from pykeg.core import models
 from pykeg.core import protolib
-from pykeg.core import protoutil
-from pykeg.web.api import common
+from pykeg.web.api import krest
 from pykeg.web.api import forms
 
 from google.protobuf.message import Message
@@ -74,24 +73,24 @@ def auth_required(viewfunc):
     # Check for api_auth_token; allow in either POST or GET arguments.
     tok = request.REQUEST.get('api_auth_token')
     if not tok:
-      raise common.NoAuthTokenError
+      raise krest.NoAuthTokenError
     if tok.lower() == AUTH_KEY.lower():
       return viewfunc(request, *args, **kwargs)
     else:
-      raise common.BadAuthTokenError
+      raise krest.BadAuthTokenError
   return wraps(viewfunc)(_check_token)
 
 def staff_required(viewfunc):
   def _check_token(request, *args, **kwargs):
     if not request.user or not request.user.is_staff or not \
         request.user.is_superuser:
-      raise common.PermissionDeniedError, "Logged-in staff user required"
+      raise krest.PermissionDeniedError, "Logged-in staff user required"
     return viewfunc(request, *args, **kwargs)
   return wraps(viewfunc)(_check_token)
 
 def ToJsonError(e):
   """Converts an exception to an API error response."""
-  if isinstance(e, common.Error):
+  if isinstance(e, krest.Error):
     code = e.__class__.__name__
     message = e.Message()
   elif isinstance(e, ValueError):
@@ -110,9 +109,9 @@ def ToJsonError(e):
 
 def obj_to_dict(o, with_full=False):
   if hasattr(o, '__iter__'):
-    return [protoutil.ProtoMessageToDict(protolib.ToProto(x, with_full)) for x in o]
+    return [protolib.ToProto(x, with_full) for x in o]
   else:
-    return protoutil.ProtoMessageToDict(protolib.ToProto(o, with_full))
+    return protolib.ToProto(o, with_full)
 
 def py_to_json(f):
   """Decorator that wraps an API method.
@@ -131,7 +130,7 @@ def py_to_json(f):
       except Http404, e:
         # We might change the HTTP status code here one day.  This also allows
         # the views to use Http404 (rather than NotFound).
-        raise common.NotFoundError(e.message)
+        raise krest.NotFoundError(e.message)
       data = json.dumps(result, indent=INDENT)
     except Exception, e:
       result = ToJsonError(e)
@@ -213,6 +212,11 @@ def get_keg_drinks(request, keg_id):
   return list(keg.drinks.valid())
 
 @model_to_json
+def get_keg_sessions(request, keg_id):
+  keg = get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
+  return list(c.session for c in keg.keg_session_chunks.all())
+
+@model_to_json
 def all_taps(request):
   return request.kbsite.kegtap_set.all().order_by('name')
 
@@ -264,12 +268,11 @@ def thermo_sensor_post(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
   form = forms.ThermoPostForm(request.POST)
   if not form.is_valid():
-    raise common.BadRequestError, _form_errors(form)
+    raise krest.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
   b = backend.KegbotBackend(site=request.kbsite)
   # TODO(mikey): use form fields to compute `when`
-  res = b.LogSensorReading(sensor.raw_name, cd['temp_c'])
-  return protoutil.ProtoMessageToDict(res)
+  return b.LogSensorReading(sensor.raw_name, cd['temp_c'])
 
 @model_to_json
 def get_thermo_sensor_logs(request, sensor_name):
@@ -319,7 +322,7 @@ def tap_detail_get(request, tap_id):
 def tap_detail_post(request, tap):
   form = forms.DrinkPostForm(request.POST)
   if not form.is_valid():
-    raise common.BadRequestError, _form_errors(form)
+    raise krest.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
   if cd.get('pour_time') and cd.get('now'):
     pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))
@@ -337,9 +340,9 @@ def tap_detail_post(request, tap):
       pour_time=pour_time,
       duration=cd.get('duration'),
       auth_token=cd.get('auth_token'))
+    return res
   except backend.BackendError, e:
-    raise common.ServerError(str(e))
-  return protoutil.ProtoMessageToDict(res)
+    raise krest.ServerError(str(e))
 
 @py_to_json
 def default_handler(request):

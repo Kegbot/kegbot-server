@@ -6,9 +6,9 @@ import time
 import gflags
 
 from pykeg.core import kb_common
+from pykeg.core import kbevent
 from pykeg.core import util
 from pykeg.core.net import kegnet
-from pykeg.core.net import kegnet_pb2
 
 FLAGS = gflags.FLAGS
 
@@ -22,7 +22,7 @@ class CoreThread(util.KegbotThread):
 
   ### Event listener methods
   def PostEvent(self, event):
-    if isinstance(event, kegnet_pb2.QuitEvent):
+    if isinstance(event, kbevent.QuitEvent):
       self._logger.info('got quit event, quitting')
       self.Quit()
 
@@ -39,7 +39,7 @@ class WatchdogThread(CoreThread):
             continue
           if not self._quit and not thr.isAlive():
             self._logger.error('Thread %s died unexpectedly' % thr.getName())
-            event = kegnet_pb2.QuitEvent()
+            event = kbevent.QuitEvent()
             self._kb_env.GetEventHub().PublishEvent(event)
             fault_detected = True
             break
@@ -64,13 +64,13 @@ class HeartbeatThread(CoreThread):
     while not self._quit:
       time.sleep(1.0)
       seconds += 1
-      event = kegnet_pb2.HeartbeatSecondEvent()
+      event = kbevent.HeartbeatSecondEvent()
       hub.PublishEvent(event)
       if (seconds % 60) == 0:
-        event = kegnet_pb2.HeartbeatMinuteEvent()
+        event = kbevent.HeartbeatMinuteEvent()
         hub.PublishEvent(event)
       if (seconds % 3600) == 0:
-        event = kegnet_pb2.HeartbeatHourEvent()
+        event = kbevent.HeartbeatHourEvent()
         hub.PublishEvent(event)
         seconds = 0
 
@@ -145,8 +145,8 @@ class EventHandlerThread(CoreThread):
 
   def _ProcessEvent(self, event):
     """ Execute the event callback associated with the event, if present. """
-    self._logger.debug('Processing event: %s' % event.DESCRIPTOR.name)
-    if isinstance(event, kegnet_pb2.QuitEvent):
+    self._logger.debug('Processing event: %s' % event)
+    if isinstance(event, kbevent.QuitEvent):
       self._logger.info('got quit event, quitting')
       self.Quit()
       return

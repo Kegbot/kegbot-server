@@ -36,12 +36,11 @@ import gflags
 
 from pykeg.core import alarm
 from pykeg.core import backend
-from pykeg.core import event
+from pykeg.core import kbevent
 from pykeg.core import kb_app
 from pykeg.core import kb_threads
 from pykeg.core import manager
 from pykeg.core.net import kegnet
-from pykeg.core.net import kegnet_pb2
 
 FLAGS = gflags.FLAGS
 
@@ -59,7 +58,7 @@ class KegbotEnv(object):
   core. It is commonly passed around to objects that the core creates.
   """
   def __init__(self):
-    self._event_hub = event.EventHub()
+    self._event_hub = kbevent.EventHub()
     self._logger = logging.getLogger('env')
 
     self._kegnet_server = kegnet.KegnetServer(name='kegnet', kb_env=self,
@@ -159,7 +158,7 @@ class KegbotCoreApp(kb_app.App):
     self._env = KegbotEnv()
 
   def _MainLoop(self):
-    event = kegnet_pb2.StartCompleteEvent()
+    event = kbevent.StartCompleteEvent()
     self._env.GetEventHub().PublishEvent(event)
     watchdog = self._env.GetWatchdogThread()
     while not self._do_quit:
@@ -181,7 +180,7 @@ class KegbotCoreApp(kb_app.App):
 
   def Quit(self):
     self._do_quit = True
-    event = kegnet_pb2.QuitEvent()
+    event = kbevent.QuitEvent()
     self._env.GetEventHub().PublishEvent(event)
     time.sleep(1.0)
 

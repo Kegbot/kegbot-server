@@ -28,7 +28,6 @@ from pykeg.core import config
 from pykeg.core import models
 from pykeg.core import protolib
 
-from pykeg.web.api import common as krest_common
 from pykeg.web.api import krest
 
 class BackendError(Exception):
@@ -219,11 +218,11 @@ class KegbotBackend(Backend):
     return protolib.ToProto(record)
 
   def GetAuthToken(self, auth_device, token_value):
-    try:
-      return protolib.ToProto(models.AuthenticationToken.objects.get(
-          site=self._site, auth_device=auth_device, token_value=token_value))
-    except models.AuthenticationToken.DoesNotExist:
+    tok, created = models.AuthenticationToken.objects.get_or_create( site=self._site,
+        auth_device=auth_device, token_value=token_value)
+    if not tok.user:
       raise NoTokenError
+    return protolib.ToProto(tok)
 
 
 class WebBackend(Backend):
@@ -260,12 +259,12 @@ class WebBackend(Backend):
 
     try:
       return self._client.LogSensorReading(sensor_name, temperature, when)
-    except krest_common.NotFoundError:
+    except krest.NotFoundError:
       self._logger.warning('No sensor on backend named "%s"' % (sensor_name,))
       return None
 
   def GetAuthToken(self, auth_device, token_value):
     try:
       return self._client.GetToken(auth_device, token_value)
-    except krest_common.NotFoundError:
+    except krest.NotFoundError:
       raise NoTokenError

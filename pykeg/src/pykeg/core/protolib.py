@@ -23,7 +23,6 @@ import time
 
 from pykeg.beerdb import models as bdb_models
 from pykeg.core import models
-from pykeg.core import models_pb2
 
 if sys.version_info[:2] < (2, 6):
   import simplejson as json
@@ -31,6 +30,16 @@ else:
   import json
 
 _CONVERSION_MAP = {}
+
+class AttrDict(dict):
+  def __setattr__(self, name, value):
+    self.__setitem__(name, value)
+
+  def __getattr__(self, name):
+    try:
+      return self.__getitem__(name)
+    except KeyError, e:
+      raise AttributeError, 'No attribute named %s' % name
 
 def converts(kind):
   def decorate(f):
@@ -43,10 +52,7 @@ def time_to_int(timeval):
   return int(time.mktime(timeval.timetuple()))
 
 def ToProto(obj, full=True):
-  """Converts the object to protocol buffer format.
-
-  `obj` may be of any object with a protobuf equivalent.
-  """
+  """Converts the object to protocol format."""
   if obj is None:
     return None
   kind = obj.__class__
@@ -61,14 +67,14 @@ def ToProto(obj, full=True):
 
 @converts(models.AuthenticationToken)
 def AuthTokenToProto(record, full=True):
-  ret = models_pb2.AuthenticationToken()
+  ret = AttrDict()
   ret.id = '%s|%s' % (record.auth_device, record.token_value)
   ret.auth_device = record.auth_device
   ret.token_value = record.token_value
   if record.user:
     ret.username = record.user.username
     if full:
-      ret.user.MergeFrom(ToProto(record.user))
+      ret.user = ToProto(record.user)
   ret.created_time = time_to_int(record.created)
   if record.expires:
     ret.expire_time = time_to_int(record.expires)
@@ -79,12 +85,12 @@ def AuthTokenToProto(record, full=True):
 
 @converts(bdb_models.BeerType)
 def BeerTypeToProto(beertype, full=True):
-  ret = models_pb2.BeerType()
+  ret = AttrDict()
   ret.id = beertype.id
   ret.name = beertype.name
   ret.brewer_id = beertype.brewer.id
   if full:
-    ret.brewer.MergeFrom(ToProto(beertype.brewer))
+    ret.brewer = ToProto(beertype.brewer)
   ret.style_id = beertype.style.id
   if beertype.edition is not None:
     ret.edition = beertype.edition
@@ -98,7 +104,7 @@ def BeerTypeToProto(beertype, full=True):
 
 @converts(bdb_models.Brewer)
 def BrewerToProto(brewer, full=True):
-  ret = models_pb2.Brewer()
+  ret = AttrDict()
   ret.id = brewer.id
   ret.name = brewer.name
   if brewer.country is not None:
@@ -116,14 +122,14 @@ def BrewerToProto(brewer, full=True):
 
 @converts(bdb_models.BeerStyle)
 def BeerStyleToProto(style, full=True):
-  ret = models_pb2.BeerStyle()
+  ret = AttrDict()
   ret.id = style.id
   ret.name = style.name
   return ret
 
 @converts(models.Drink)
 def DrinkToProto(drink, full=True):
-  ret = models_pb2.Drink()
+  ret = AttrDict()
   ret.id = drink.seqn
   ret.ticks = drink.ticks
   ret.volume_ml = drink.volume_ml
@@ -135,22 +141,22 @@ def DrinkToProto(drink, full=True):
   if drink.keg:
     ret.keg_id = drink.keg.seqn
     if full:
-      ret.keg.MergeFrom(ToProto(drink.keg))
+      ret.keg = ToProto(drink.keg)
   if drink.user:
     ret.user_id = drink.user.username
     if full:
-      ret.user.MergeFrom(ToProto(drink.user))
+      ret.user = ToProto(drink.user)
   if drink.auth_token:
     ret.auth_token = drink.auth_token
   return ret
 
 @converts(models.Keg)
 def KegToProto(keg, full=True):
-  ret = models_pb2.Keg()
+  ret = AttrDict()
   ret.id = keg.seqn
   ret.type_id = keg.type.id
   if full:
-    ret.type.MergeFrom(ToProto(keg.type))
+    ret.type = ToProto(keg.type)
   ret.size_id = keg.size.id
   rem = float(keg.remaining_volume())
   ret.volume_ml_remain = rem
@@ -164,7 +170,7 @@ def KegToProto(keg, full=True):
 
 @converts(models.KegSize)
 def KegSizeToProto(size, full=True):
-  ret = models_pb2.KegSize()
+  ret = AttrDict()
   ret.id = size.id
   ret.name = size.name
   ret.volume_ml = size.volume_ml
@@ -172,7 +178,7 @@ def KegSizeToProto(size, full=True):
 
 @converts(models.KegTap)
 def KegTapToProto(tap, full=True):
-  ret = models_pb2.KegTap()
+  ret = AttrDict()
   ret.id = str(tap.seqn)
   ret.name = tap.name
   ret.meter_name = tap.meter_name
@@ -182,27 +188,31 @@ def KegTapToProto(tap, full=True):
   if tap.current_keg:
     ret.current_keg_id = tap.current_keg.seqn
     if full:
-      ret.current_keg.MergeFrom(ToProto(tap.current_keg))
+      ret.current_keg = ToProto(tap.current_keg)
   if tap.temperature_sensor:
     ret.thermo_sensor_id = str(tap.temperature_sensor.seqn)
     if full:
       log = tap.temperature_sensor.LastLog()
       if log:
-        ret.last_temperature.MergeFrom(ToProto(log))
+        ret.last_temperature = ToProto(log)
   return ret
 
 @converts(models.DrinkingSession)
 def SessionToProto(record, full=True):
-  ret = models_pb2.Session()
+  ret = AttrDict()
   ret.id = str(record.seqn)
   ret.start_time = time_to_int(record.starttime)
   ret.end_time = time_to_int(record.endtime)
-  ret.volume_ml = record.volume
+  ret.volume_ml = record.volume_ml
+  if full:
+    ret.drinks = []
+    for d in drinks:
+      out_d.append(ToProto(d, full))
   return ret
 
 @converts(models.Thermolog)
 def ThermoLogToProto(record, full=True):
-  ret = models_pb2.ThermoLog()
+  ret = AttrDict()
   ret.id = str(record.seqn)
   ret.sensor_id = str(record.sensor.seqn)
   ret.temperature_c = record.temp
@@ -211,14 +221,14 @@ def ThermoLogToProto(record, full=True):
 
 @converts(models.ThermoSensor)
 def ThermoSensorToProto(record, full=True):
-  ret = models_pb2.ThermoSensor()
+  ret = AttrDict()
   ret.sensor_name = record.raw_name
   ret.nice_name = record.nice_name
   return ret
 
 @converts(models.User)
 def UserToProto(user, full=True):
-  ret = models_pb2.User()
+  ret = AttrDict()
   ret.username = user.username
   ret.mugshot_url = user.get_profile().MugshotUrl()
   ret.is_active = user.is_active
@@ -229,7 +239,7 @@ def UserToProto(user, full=True):
 
 @converts(models.SessionChunk)
 def SessionChunkToProto(record, full=True):
-  ret = models_pb2.SessionChunk()
+  ret = AttrDict()
   ret.id = str(record.seqn)
   ret.session_id = str(record.session.seqn)
   ret.username = record.user.username

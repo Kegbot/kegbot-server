@@ -55,20 +55,18 @@ setup(
 
       #'MySQL-python',
       #'pil',
-      'protobuf >= 2.3.0-1',
       'pylcdui >= 0.5.5',
       #'pysqlite>=2.0.3',
       'python-gflags >= 1.3',
       'South >= 0.7',
       'Sphinx',
-      #'django_nose',
+      'django_nose',
       #'python-openid >= 2.2.5',  # removeme once PIL package works
       'pygooglechart',
       'tweepy',
     ],
     dependency_links = [
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',
-        'http://kegbot.org/kmedia/protobuf-2.3.0-1.tgz',
         'http://kegbot.org/kmedia/python-openid-2.2.5.tgz',
 
         # Self-maintained package due to upstream issue:

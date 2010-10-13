@@ -127,7 +127,6 @@ class KegnetProtocolHandler(asynchat.async_chat):
     return self._in_notifications.get(timeout=timeout)
 
   def push(self, data):
-    print "pushing: %s" % repr(data)
     return asynchat.async_chat.push(self, data)
 
   def SendMessage(self, msg):

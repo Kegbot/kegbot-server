@@ -146,6 +146,9 @@ def DrinkToProto(drink, full=True):
     ret.user_id = drink.user.username
     if full:
       ret.user = ToProto(drink.user)
+  else:
+    ret.user_id = None
+    ret.user = None
   if drink.auth_token:
     ret.auth_token = drink.auth_token
   return ret

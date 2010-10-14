@@ -1,7 +1,7 @@
 PYTHON_TOP = $(shell dirname $(shell pwd))
 PYTHON_ENV = PYTHONPATH=$(PYTHON_TOP)
 
-ADMIN_COMMAND = kegbot_admin.py
+ADMIN_COMMAND = kegbot-admin.py
 
 SETUP_LOGFILE = $(PYTHON_TOP)/pykeg/setup.log
 

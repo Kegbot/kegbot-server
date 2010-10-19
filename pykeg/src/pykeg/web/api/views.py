@@ -142,7 +142,6 @@ def py_to_json(f):
         # We might change the HTTP status code here one day.  This also allows
         # the views to use Http404 (rather than NotFound).
         raise krest.NotFoundError(e.message)
-      print result
       data = json.dumps(result, indent=INDENT, cls=JSONEncoder)
     except Exception, e:
       result, http_code = ToJsonError(e)

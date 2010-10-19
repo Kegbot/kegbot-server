@@ -42,6 +42,10 @@ gflags.DEFINE_integer('phidget_wait_seconds', 0,
     'been found.',
     lower_bound=0)
 
+gflags.DEFINE_boolean('toggle_output', False,
+    'If true, activates the external output terminals while an RFID is '
+    'attached (ie, whenever the LED is illuminated.)')
+
 FLAGS = gflags.FLAGS
 
 
@@ -78,6 +82,8 @@ class RfidEventHandler:
   def onRfidTagAdded(self, event):
     self._logger.info('RFID added: %s' % event.tag)
     self._rfid.setLEDOn(1)
+    if FLAGS.toggle_output:
+      self._rfid.setOutputState(1, 1)
     strval = str(event.tag).lower()
     self._kegnet_client.SendAuthTokenAdd(FLAGS.tap_name,
         kb_common.AUTH_MODULE_CONTRIB_PHIDGET_RFID, strval)
@@ -85,6 +91,8 @@ class RfidEventHandler:
   def onRfidTagRemoved(self, event):
     self._logger.info('RFID removed: %s' % event.tag)
     self._rfid.setLEDOn(0)
+    if FLAGS.toggle_output:
+      self._rfid.setOutputState(1, 0)
     strval = str(event.tag).lower()
     self._kegnet_client.SendAuthTokenRemove(FLAGS.tap_name,
         kb_common.AUTH_MODULE_CONTRIB_PHIDGET_RFID, strval)

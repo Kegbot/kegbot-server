@@ -190,7 +190,7 @@ class KegbotBackend(Backend):
 
     d.PostProcess()
 
-    return protolib.ToProto(d, full=False)
+    return protolib.ToProto(d)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     if not when:
@@ -243,7 +243,8 @@ class WebBackend(Backend):
     raise NotImplementedError
 
   def GetAllTaps(self):
-    return self._client.TapStatus()
+    ts = self._client.TapStatus()
+    return (d['tap'] for d in self._client.TapStatus()['taps'])
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=None, auth_token=None):
@@ -265,6 +266,8 @@ class WebBackend(Backend):
 
   def GetAuthToken(self, auth_device, token_value):
     try:
-      return self._client.GetToken(auth_device, token_value)
+      response = self._client.GetToken(auth_device, token_value)
+      token = response['token']
+      return token
     except krest.NotFoundError:
       raise NoTokenError

@@ -126,6 +126,17 @@ class AsyncoreThread(KegbotThread):
     self._logger.info('Quitting')
 
 
+class AttrDict(dict):
+  def __setattr__(self, name, value):
+    self.__setitem__(name, value)
+
+  def __getattr__(self, name):
+    try:
+      return self.__getitem__(name)
+    except KeyError, e:
+      raise AttributeError, 'No attribute named %s' % name
+
+
 class SimpleGraph:
   """Inspired by http://www.python.org/doc/essays/graphs.html"""
   def __init__(self, vertices):

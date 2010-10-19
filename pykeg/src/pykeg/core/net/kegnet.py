@@ -34,11 +34,16 @@ import sys
 import threading
 import time
 
-# Use simplejson if python version is < 2.6
-if sys.version_info[:2] < (2, 6):
-  import simplejson as json
-else:
+try:
   import json
+except ImportError:
+  try:
+    import simplejson as json
+  except ImportError:
+    try:
+      from django.utils import simplejson as json
+    except ImportError:
+      raise ImportError, "Unable to load a json library"
 
 import gflags
 

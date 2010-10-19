@@ -35,6 +35,7 @@ urlpatterns = patterns('pykeg.web.api.views',
     url(r'^thermo-sensor/(?P<sensor_name>[^/]+)/logs/?$', 'get_thermo_sensor_logs'),
     url(r'^user/(?P<username>\w+)/?$', 'get_user'),
     url(r'^user/(?P<username>\w+)/drinks/?$', 'get_user_drinks'),
+    url(r'^user/(?P<username>\w+)/stats/?$', 'get_user_stats'),
 
     url(r'^last-drink-id/?$', 'last_drink_id'),
     url(r'^last-drinks/?$', 'last_drinks'),

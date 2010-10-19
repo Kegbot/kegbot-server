@@ -615,21 +615,20 @@ class TokenManager(Manager):
     return new_rec
 
   def _PublishAuthEvent(self, record, added):
-    user = None
+    username = None
     try:
       token = self._backend.GetAuthToken(record.auth_device, record.token_value)
+      username = token.username
     except backend.NoTokenError:
-      token = None
+      pass
 
-    if not token or not token.user:
+    if not username:
       self._logger.info('Token not assigned: %s' % record)
       return
 
-    user_name = token.user.username
-
     message = kbevent.UserAuthEvent()
     message.tap_name = record.tap_name
-    message.user_name = user_name
+    message.user_name = username
     if added:
       message.state = message.UserState.ADDED
     else:

@@ -106,6 +106,16 @@ class UserProfile(models.Model):
       img_url = urlresolvers.reverse('site-media', args=args)
     return img_url
 
+  def GetStats(self):
+    if hasattr(self, '_stats'):
+      return self._stats
+    qs = self.user.stats.all()
+    if qs:
+      self._stats = qs[0].stats
+    else:
+      self._stats = {}
+    return self._stats
+
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()

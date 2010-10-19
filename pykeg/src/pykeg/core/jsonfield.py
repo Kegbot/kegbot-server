@@ -39,79 +39,78 @@ more information.
 
 import datetime
 from decimal import Decimal
-from django.db import models
-from django.conf import settings
-from django.utils import simplejson
-from django.utils.encoding import smart_unicode
-
-class JSONEncoder(simplejson.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Decimal):
-            return str(obj)
-        elif isinstance(obj, datetime.datetime):
-            #assert settings.TIME_ZONE == 'UTC'
-            return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
-        return simplejson.JSONEncoder.default(self, obj)
-
-def dumps(value):
-    assert isinstance(value, dict)
-    return JSONEncoder().encode(value)
-
-def loads(txt):
-    value = simplejson.loads(
-        txt,
-        parse_float = Decimal,
-        encoding    = settings.DEFAULT_CHARSET)
-    assert isinstance(value, dict)
-    return value
-
-class JSONDict(dict):
-    """
-    Hack so repr() called by dumpdata will output JSON instead of
-    Python formatted data.  This way fixtures will work!
-    """
-    def __repr__(self):
-        return dumps(self)
-
-class JSONField(models.TextField):
-    """JSONField is a generic textfield that neatly serializes/unserializes
-    JSON objects seamlessly.  Main thingy must be a dict object."""
-
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
-
-    def __init__(self, *args, **kwargs):
-        if 'default' not in kwargs:
-            kwargs['default'] = '{}'
-        models.TextField.__init__(self, *args, **kwargs)
-
-    def to_python(self, value):
-        """Convert our string value to JSON after we load it from the DB"""
-        if not value:
-            return {}
-        elif isinstance(value, basestring):
-            res = loads(value)
-            assert isinstance(res, dict)
-            return JSONDict(**res)
-        else:
-            return value
-
-    def get_db_prep_save(self, value):
-        """Convert our JSON object to a string before we save"""
-        if not value:
-            return super(JSONField, self).get_db_prep_save("")
-        else:
-            return super(JSONField, self).get_db_prep_save(dumps(value))
 
 try:
-    from south.modelsinspector import add_introspection_rules
+  import json
 except ImportError:
-    pass
+  try:
+    import simplejson as json
+  except ImportError:
+    try:
+      from django.utils import simplejson as json
+    except ImportError:
+      raise ImportError, "Unable to load a json library"
+
+from django.db import models
+
+class JSONEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, Decimal):
+      return str(obj)
+    elif isinstance(obj, datetime.datetime):
+      return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+    return json.JSONEncoder.default(self, obj)
+
+def dumps(value):
+  assert isinstance(value, dict)
+  return json.dumps(value, cls=JSONEncoder)
+
+def loads(txt):
+  return json.loads(txt)
+
+class JSONDict(dict):
+  """
+  Hack so repr() called by dumpdata will output JSON instead of
+  Python formatted data.  This way fixtures will work!
+  """
+  def __repr__(self):
+    return dumps(self)
+
+class JSONField(models.TextField):
+  """JSONField is a generic textfield that neatly serializes/unserializes
+  JSON objects seamlessly.  Main thingy must be a dict object."""
+
+  # Used so to_python() is called
+  __metaclass__ = models.SubfieldBase
+
+  def __init__(self, *args, **kwargs):
+    if 'default' not in kwargs:
+      kwargs['default'] = '{}'
+    models.TextField.__init__(self, *args, **kwargs)
+
+  def to_python(self, value):
+    """Convert our string value to JSON after we load it from the DB"""
+    if not value:
+      return {}
+    elif isinstance(value, basestring):
+      res = loads(value)
+      assert isinstance(res, dict)
+      return JSONDict(**res)
+    else:
+      return value
+
+  def get_db_prep_save(self, value):
+    """Convert our JSON object to a string before we save"""
+    if not value:
+      return super(JSONField, self).get_db_prep_save("")
+    else:
+      return super(JSONField, self).get_db_prep_save(dumps(value))
+
+try:
+  from south.modelsinspector import add_introspection_rules
+except ImportError:
+  pass
 else:
-    add_introspection_rules([
-        (
-            [JSONField],
-            [],
-            {},
-        ),
+  add_introspection_rules([
+    ([JSONField], [], {}),
     ], ["^pykeg\.core\.jsonfield\.JSONField"])

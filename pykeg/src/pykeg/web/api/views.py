@@ -22,6 +22,7 @@ import datetime
 from functools import wraps
 import hashlib
 import sys
+from decimal import Decimal
 
 try:
   import json
@@ -47,9 +48,16 @@ from pykeg.core import protolib
 from pykeg.web.api import krest
 from pykeg.web.api import forms
 
-from google.protobuf.message import Message
-
 INDENT = 2
+
+class JSONEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, Decimal):
+      return str(obj)
+    elif isinstance(obj, datetime.datetime):
+      #assert settings.TIME_ZONE == 'UTC'
+      return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+    return json.JSONEncoder.default(self, obj)
 
 ### Authentication
 
@@ -90,9 +98,11 @@ def staff_required(viewfunc):
 
 def ToJsonError(e):
   """Converts an exception to an API error response."""
+  http_code = 500
   if isinstance(e, krest.Error):
     code = e.__class__.__name__
     message = e.Message()
+    http_code = e.HTTP_CODE
   elif isinstance(e, ValueError):
     code = 'BadRequestError'
     message = str(e)
@@ -105,13 +115,13 @@ def ToJsonError(e):
       'message' : message
     }
   }
-  return result
+  return result, http_code
 
-def obj_to_dict(o, with_full=False):
+def obj_to_dict(o):
   if hasattr(o, '__iter__'):
-    return [protolib.ToProto(x, with_full) for x in o]
+    return [protolib.ToProto(x) for x in o]
   else:
-    return protolib.ToProto(o, with_full)
+    return protolib.ToProto(o)
 
 def py_to_json(f):
   """Decorator that wraps an API method.
@@ -124,6 +134,7 @@ def py_to_json(f):
       error message.
   """
   def new_function(*args, **kwargs):
+    http_code = 200
     try:
       try:
         result = {'result' : f(*args, **kwargs)}
@@ -131,41 +142,12 @@ def py_to_json(f):
         # We might change the HTTP status code here one day.  This also allows
         # the views to use Http404 (rather than NotFound).
         raise krest.NotFoundError(e.message)
-      data = json.dumps(result, indent=INDENT)
+      print result
+      data = json.dumps(result, indent=INDENT, cls=JSONEncoder)
     except Exception, e:
-      result = ToJsonError(e)
-      data = json.dumps(result, indent=INDENT)
-    return HttpResponse(data, mimetype='application/json')
-  return new_function
-
-def model_to_py(f):
-  """Decorator which converts method results to native types.
-
-  The wrapped function should return either a single Django model instance, an
-  iterable of the same, or a protocol buffer Message.
-
-  This is a bit roundabount and inefficient:  Django model instances are first
-  converted to protocol buffers, then to base python types, and finally to a
-  JSON-formatted string.
-
-  TODO(mikey): revisit this layering as the API matures, or once a kegbot site
-  needs to handle >0.1 qps :)
-  """
-  def new_function(*args, **kwargs):
-    res = f(*args, **kwargs)
-    request = args[0]
-    with_full = False
-    if request.GET.get('full') == '1':
-      with_full = True
-    return obj_to_dict(res, with_full)
-  return new_function
-
-def model_to_json(f):
-  """Decorator that combines py_to_json and model_to_py."""
-  @py_to_json
-  @model_to_py
-  def new_function(*args, **kwargs):
-    return f(*args, **kwargs)
+      result, http_code = ToJsonError(e)
+      data = json.dumps(result, indent=INDENT, cls=JSONEncoder)
+    return HttpResponse(data, mimetype='application/json', status=http_code)
   return new_function
 
 ### Helpers
@@ -185,59 +167,143 @@ def _form_errors(form):
 
 ### Endpoints
 
-@model_to_json
+@py_to_json
 def last_drinks(request, limit=5):
-  return _get_last_drinks(request, limit)
+  drinks = _get_last_drinks(request, limit)
+  res = {
+    'drinks': obj_to_dict(drinks),
+  }
+  return res
 
-@model_to_json
+@py_to_json
 def all_kegs(request):
-  return request.kbsite.keg_set.all().order_by('-startdate')
+  kegs = request.kbsite.kegs.all().order_by('-startdate')
+  res = {
+    'kegs': obj_to_dict(kegs),
+  }
+  return res
 
-@model_to_json
-@auth_required   # for now, due to expense; TODO paginate me
-def all_drinks(request):
-  return models.Drink.objects.all().order_by('id')
+@py_to_json
+def all_drinks(request, limit=100):
+  qs = request.kbsite.drinks.all()
+  total = len(qs)
+  if 'start' in request.GET:
+    try:
+      start = int(request.GET['start'])
+      qs = qs.filter(seqn__lte=start)
+    except ValueError:
+      pass
+  qs = qs.order_by('-seqn')
+  qs = qs[:limit]
+  start = qs[0].seqn
+  count = len(qs)
+  res = {
+    'drinks' : obj_to_dict(qs),
+  }
+  if count < total:
+    res['paging'] = {
+      'pos': start,
+      'total': total,
+      'limit': limit,
+    }
+  return res
 
-@model_to_json
+@py_to_json
 def get_drink(request, drink_id):
-  return get_object_or_404(models.Drink, pk=drink_id, site=request.kbsite)
+  drink = get_object_or_404(models.Drink, pk=drink_id, site=request.kbsite)
+  res = {
+    'drink': obj_to_dict(drink),
+    'user': obj_to_dict(drink.user),
+    'keg': obj_to_dict(drink.keg),
+    'session': obj_to_dict(drink.session),
+  }
+  return res
 
-@model_to_json
+@py_to_json
 def get_keg(request, keg_id):
-  return get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
+  res = {
+    'keg': obj_to_dict(keg),
+    'type': obj_to_dict(keg.type),
+    'size': obj_to_dict(keg.size),
+    'drinks': obj_to_dict(keg.drinks.valid()),
+    # TODO(mikey): add sessions
+  }
+  return res
 
-@model_to_json
+@py_to_json
 def get_keg_drinks(request, keg_id):
   keg = get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
-  return list(keg.drinks.valid())
+  res = {
+    'drinks': obj_to_dict(keg.drinks.valid()),
+  }
+  return res
 
-@model_to_json
+@py_to_json
 def get_keg_sessions(request, keg_id):
   keg = get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
-  return list(c.session for c in keg.keg_session_chunks.all())
+  sessions = [c.session for c in keg.keg_session_chunks.all()]
+  res = {
+    'sessions': obj_to_dict(sessions),
+  }
+  return res
 
-@model_to_json
+@py_to_json
 def all_taps(request):
-  return request.kbsite.kegtap_set.all().order_by('name')
+  taps = request.kbsite.kegtap_set.all().order_by('name')
+  tap_list = []
+  for tap in taps:
+    tap_entry = {
+      'tap': obj_to_dict(tap),
+      'keg': obj_to_dict(tap.current_keg),
+    }
+    tap_list.append(tap_entry)
+  res = {'taps': tap_list}
+  return res
 
-@model_to_json
+@py_to_json
 def get_user(request, username):
-  return get_object_or_404(models.User, username=username)
+  user = get_object_or_404(models.User, username=username)
+  res = {
+    'user': obj_to_dict(user),
+  }
+  return res
 
-@model_to_json
+@py_to_json
 def get_user_drinks(request, username):
   user = get_object_or_404(models.User, username=username)
-  return list(user.drinks.valid())
+  drinks = user.drinks.valid()
+  res = {
+    'drinks': obj_to_dict(drinks),
+  }
+  return res
 
-@model_to_json
+@py_to_json
+def get_user_stats(request, username):
+  user = get_object_or_404(models.User, username=username)
+  stats = user.get_profile().GetStats()
+  res = {
+    'stats': stats,
+  }
+  return res
+
+@py_to_json
 @auth_required
 def get_auth_token(request, auth_device, token_value):
-  return get_object_or_404(models.AuthenticationToken, auth_device=auth_device,
+  token = get_object_or_404(models.AuthenticationToken, auth_device=auth_device,
       token_value=token_value)
+  res = {
+    'token': obj_to_dict(token),
+  }
+  return res
 
-@model_to_json
+@py_to_json
 def all_thermo_sensors(request):
-  return list(request.kbsite.thermosensors.all())
+  sensors = list(request.kbsite.thermosensors.all())
+  res = {
+    'sensors': obj_to_dict(sensors),
+  }
+  return res
 
 def _get_sensor_or_404(request, sensor_name):
   try:
@@ -257,10 +323,22 @@ def get_thermo_sensor(request, sensor_name):
   else:
     return thermo_sensor_get(request, sensor_name)
 
-@model_to_json
+@py_to_json
 def thermo_sensor_get(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
-  return sensor
+  logs = sensor.thermolog_set.all()
+  if not logs:
+    last_temp = None
+    last_time = None
+  else:
+    last_temp = logs[0].temp
+    last_time = logs[0].time
+  res = {
+    'sensor': obj_to_dict(sensor),
+    'last_temp': last_temp,
+    'last_time': last_time,
+  }
+  return res
 
 @py_to_json
 @auth_required
@@ -274,11 +352,14 @@ def thermo_sensor_post(request, sensor_name):
   # TODO(mikey): use form fields to compute `when`
   return b.LogSensorReading(sensor.raw_name, cd['temp_c'])
 
-@model_to_json
+@py_to_json
 def get_thermo_sensor_logs(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
   logs = sensor.thermolog_set.all()[:60*2]
-  return logs
+  res = {
+    'logs': obj_to_dict(logs),
+  }
+  return res
 
 @py_to_json
 def last_drinks_html(request, limit=5):
@@ -313,9 +394,14 @@ def tap_detail(request, tap_id):
   else:
     return tap_detail_get(request, tap_id)
 
-@model_to_json
+@py_to_json
 def tap_detail_get(request, tap_id):
-  return get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  tap_entry = {
+    'tap': obj_to_dict(tap),
+    'keg': obj_to_dict(tap.current_keg),
+  }
+  return tap_entry
 
 @py_to_json
 @auth_required

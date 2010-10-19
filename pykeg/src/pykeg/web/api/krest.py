@@ -23,6 +23,8 @@ import functools
 import sys
 import types
 
+from pykeg.core.util import AttrDict
+
 try:
   from urllib.parse import urlencode
   from urllib.request import urlopen
@@ -38,7 +40,10 @@ except ImportError:
   try:
     import simplejson as json
   except ImportError:
-    import django.utils.simplejson as json
+    try:
+      from django.utils import simplejson as json
+    except ImportError:
+      raise ImportError, "Unable to load a json library"
 
 import gflags
 FLAGS = gflags.FLAGS
@@ -59,6 +64,7 @@ gflags.DEFINE_string('krest_url', _DEFAULT_URL,
 
 class Error(Exception):
   """An error occurred."""
+  HTTP_CODE = 400
   def Message(self):
     if self.message:
       return self.message
@@ -68,21 +74,26 @@ class Error(Exception):
 
 class NotFoundError(Error):
   """The requested object could not be found."""
+  HTTP_CODE = 404
 
 class ServerError(Error):
   """The server had a problem fulfilling your request."""
+  HTTP_CODE = 500
 
 class BadRequestError(Error):
   """The request was incompleted or malformed."""
 
 class NoAuthTokenError(Error):
   """An api_auth_token is required."""
+  HTTP_CODE = 401
 
 class BadAuthTokenError(Error):
   """The api_auth_token given is invalid."""
+  HTTP_CODE = 401
 
 class PermissionDeniedError(Error):
   """The api_auth_token given does not have permission for this resource."""
+  HTTP_CODE = 401
 
 MAP_NAME_TO_EXCEPTION = dict((c.__name__, c) for c in Error.__subclasses__())
 
@@ -158,13 +169,6 @@ class KrestClient:
     else:
       params = params.copy()
 
-    # Request a full response, unless caller specified otherwise.
-    if params and 'full' in params:
-      if params['full'] != 0:
-        params['full'] = 1
-    else:
-      params['full'] = 1
-
     # If we have an api token, attach it.  Prefer to attach it to POST data, but
     # use GET if there is no POST data.
     if self._api_auth_token:
@@ -191,9 +195,15 @@ class KrestClient:
     field of the response.  If the response is an error, a RemoteError exception
     is raised.
     """
+    def _TranslateDicts(obj):
+      """JSONEncoder object_hook that translates dicts to AttrDicts."""
+      if type(obj) == types.DictType:
+        return AttrDict(obj)
+      return obj
+
     # Decode JSON.
     try:
-      d = json.loads(response_data)
+      d = json.loads(response_data, object_hook=_TranslateDicts)
     except ValueError, e:
       raise ServerError('Malformed response: %s' % e)
 
@@ -236,25 +246,21 @@ class KrestClient:
     # TODO(mikey): include post data
     return self.DoPOST(endpoint, post_data=post_data)
 
-  def TapStatus(self, full=True):
+  def TapStatus(self):
     """Gets the status of all taps."""
-    params = {'full' : full}
-    return self.DoGET('tap', params)
+    return self.DoGET('tap')
 
-  def GetToken(self, auth_device, token_value, full=True):
+  def GetToken(self, auth_device, token_value):
     url = 'auth-token/%s.%s' % (auth_device, token_value)
-    params = {'full' : full}
-    return self.DoGET(url, params)
+    return self.DoGET(url)
 
-  def LastDrinks(self, full=True):
+  def LastDrinks(self):
     """Gets a list of the most recent drinks."""
-    params = {'full' : full}
-    return self.DoGET('last-drinks', params)
+    return self.DoGET('last-drinks')
 
-  def AllDrinks(self, full=True):
+  def AllDrinks(self):
     """Gets a list of all drinks."""
-    params = {'full' : full}
-    return self.DoGET('drink', params)
+    return self.DoGET('drink')
 
 
 def main():

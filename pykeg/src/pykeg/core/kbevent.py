@@ -24,14 +24,19 @@ This module implements a very simple inter-process event passing system
 
 import logging
 import Queue
-import sys
 
 from pykeg.core import util
 
-if sys.version_info[:2] < (2, 6):
-  import simplejson as json
-else:
+try:
   import json
+except ImportError:
+  try:
+    import simplejson as json
+  except ImportError:
+    try:
+      from django.utils import simplejson as json
+    except ImportError:
+      raise ImportError, "Unable to load a json library"
 
 class Event(util.BaseMessage):
   def __init__(self, initial=None, encoded=None, **kwargs):

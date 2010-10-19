@@ -17,6 +17,7 @@ Contents:
 
   user-guide/index
   kegboard-guide/index
+  api/index
   developer-notes/index
 
 

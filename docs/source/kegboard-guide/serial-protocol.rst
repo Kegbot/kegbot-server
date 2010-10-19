@@ -166,28 +166,8 @@ serialized in **little-endian** format.
 +--------------+--------+------------------------------------------------------+
 | ``output_t`` | 1      | Boolean (0=disabled, 1=enabled); like ``uint8``      |
 +--------------+--------+------------------------------------------------------+
-| ``temp_t``   | 4      | (Degrees C / 1000); signed; like ``int32``           |
+| ``temp_t``   | 4      | 1/10^6 Degrees C; signed; like ``int32``             |
 +--------------+--------+------------------------------------------------------+
-
-``temp_t`` Example
-------------------
-
-The following table gives example values for the ``temp_t`` type.
-
-+---------------+-----------------+
-| Hex value     |  Temperature    |
-+===============+=================+
-| 0x00000000    |  +0.000 deg C   |
-+---------------+-----------------+
-| 0x00000001    |  +0.001 deg C   |
-+---------------+-----------------+
-| 0x00000c03    |  +3.075 deg C   |
-+---------------+-----------------+
-| 0xffffc103    |  -16.125 deg C  |
-+---------------+-----------------+
-
-In some cases, the Kegboard will use the value of "-999.0" to indicate an
-invalid reading.  Clients should ignore any reading with this value.
 
 .. _message-types-section:
 

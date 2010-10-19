@@ -15,12 +15,16 @@ Core/General
 ^^^^^^^^^^^^
 * Added SessionStats table.  Statistics are now continuously computed for
   drinking sessions, to go along with per-user and per-keg stats.
+* Removed protobuf dependency.
+* rfid_daemon: added ``--toggle_output`` option, to enable the external output
+  whenever an ID is present.
 
 Kegweb
 ^^^^^^
 * Various improvements to session display; added session detail page.
 * New feature: assign a title to a drinking session.
 * Various bugfixes to the web API.
+* Added an example WSGI configuration file.
 
 Kegboard
 ^^^^^^^^

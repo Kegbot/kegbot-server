@@ -22,7 +22,6 @@
 
 from pykeg.core import importhacks
 
-import datetime
 import gflags
 import Queue
 import sys
@@ -32,7 +31,6 @@ from pykeg.core import kb_app
 from pykeg.core import units
 from pykeg.core import util
 from pykeg.core.net import kegnet
-from pykeg.core.net import kegnet_pb2
 
 from pykeg.web.api.krest import KrestClient
 
@@ -143,23 +141,26 @@ class KegUi:
         prefix='size: ', row=3, col=0)
     return f
 
-  def _UpdateRotation(self, tap_status_list):
+  def _UpdateRotation(self, tap_status):
     """Builds a ui.MultiFrame instance from tap status."""
     self._multiframe.frames().clear()
     self._multiframe.AddFrame(self._splash_frame, 5.0)
     self._multiframe.AddFrame(self._last_drink_frame, FLAGS.rotation_time)
 
-    for tap in tap_status_list:
+    for tap_status in tap_status.taps:
+      tap = tap_status.tap
+      keg = tap_status.get('keg')
+      beverage = tap_status.beverage
       tap_name = tap.name
       beer_name = 'Unknown Beer'
       brewer_name = 'Unknown Brewer'
       pct_full = 0
       curr_temp = None
-      if tap.current_keg:
-        pct_full = tap.current_keg.percent_full
-        if tap.current_keg.type:
-          beer_name = tap.current_keg.type.name
-          brewer_name = tap.current_keg.type.brewer.name
+      if keg:
+        pct_full = keg.percent_full
+        if beverage:
+          beer_name = beverage.name
+          brewer_name = beverage.brewer.name
       if tap.last_temperature:
         curr_temp = tap.last_temperature.temperature_c
 
@@ -189,8 +190,8 @@ class KegUi:
     ounces_widget = f.GetWidget('ounces')
     ounces_widget.set_contents('%.2f' % ounces)
 
-  def UpdateFromTapStatus(self, tap_status_list):
-    self._UpdateRotation(tap_status_list)
+  def UpdateFromTapStatus(self, tap_status):
+    self._UpdateRotation(tap_status)
 
   def UpdateLastDrink(self, username, volume_ml, date):
     vol = units.Quantity(volume_ml, units.UNITS.Milliliter)
@@ -211,7 +212,7 @@ class KegUi:
 
     if event.state == event.COMPLETED:
       self.UpdateLastDrink(str(event.username), event.volume_ml,
-          datetime.datetime.fromtimestamp(event.last_activity_time))
+          event.last_activity_time)
       self._SetState(self.STATE_MAIN)
     else:
       self._SetState(self.STATE_POUR)
@@ -272,13 +273,15 @@ class KrestUpdaterThread(util.KegbotThread):
       try:
         tap_status = self._client.TapStatus()
         self._lcdui.UpdateFromTapStatus(tap_status)
-        last_drink = tuple(self._client.LastDrinks())[0]
+        last_drink = None
+        last_drinks = self._client.LastDrinks().drinks
+        if last_drinks:
+          last_drink = last_drinks[0]
         username = 'unknown'
-        if last_drink.user:
-          username = str(last_drink.user.username)
+        if last_drink.user_id:
+          username = str(last_drink.user_id)
         self._lcdui.UpdateLastDrink(username,
-            last_drink.volume_ml,
-            datetime.datetime.fromtimestamp(last_drink.pour_time))
+            last_drink.volume_ml, last_drink.pour_time)
       except IOError, e:
         self._logger.warning('Could not connect to kegweb: %s' % e)
       time.sleep(FLAGS.krest_update_interval)

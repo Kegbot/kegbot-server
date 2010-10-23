@@ -287,6 +287,8 @@ Property              Type            Description
 tap                   ``dict``        The :ref:`model-tap` objects itself
 keg                   ``dict``        A :ref:`model-keg` object for the current
                                       keg, or *null*.
+beverage              ``dict``        A :ref:`model-beertype` object for the
+                                      current keg, or *null*.
 ====================  ==============  ==========================================
 
 Example

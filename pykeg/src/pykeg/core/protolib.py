@@ -73,6 +73,7 @@ def BeerTypeToProto(beertype):
   ret.name = beertype.name
   ret.brewer_id = beertype.brewer.id
   ret.style_id = beertype.style.id
+  ret.style = beertype.style.name
   if beertype.edition is not None:
     ret.edition = beertype.edition
   if beertype.abv is not None:
@@ -81,6 +82,7 @@ def BeerTypeToProto(beertype):
     ret.calories_oz = beertype.calories_oz
   if beertype.carbs_oz is not None:
     ret.carbs_oz = beertype.carbs_oz
+  ret.brewer = ToProto(beertype.brewer)
   return ret
 
 @converts(bdb_models.Brewer)

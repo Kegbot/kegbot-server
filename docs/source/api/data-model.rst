@@ -107,7 +107,9 @@ id                    ``string``      An opaque, unique identifier for this beer
 name                  ``string``      The brand name of the beer.
 brewer_id             ``string``      The identifier for the :ref:`model-brewer`
                                       which produces this beer.
+brewer                ``dict``        The :ref:`model-brewer` for this beer.
 *style_id*            ``string``      The identifier for the style of this beer.
+*style*               ``string``      The name of the beer style.
 *edition*             ``string``      For seasonal or special edition version of
                                       a beers, the year or other indicative
                                       name.
@@ -126,14 +128,24 @@ Example
 .. code-block:: javascript
   
   {
-    "id" : "1a2b",
-    "name" : "The Abyss",
-    "brewer_id" : "3415",
-    "style_id" : "321",
-    "edition" : "Batch 2009",
-    "calories_oz" : 20,
-    "carbs_oz" : 50,
-    "abv" : 0.11
+    "id": "20bd3f32-75eb-11df-80f2-00304833977c",
+    "name": "Trumer Pils", 
+    "style_id": "ff5cbb4c-75ea-11df-adf0-00304833977c", 
+    "style": "Pilsner", 
+    "brewer_id": "fc2884ec-75ea-11df-adf0-00304833977c", 
+    "brewer": {
+      "id": "fc2884ec-75ea-11df-adf0-00304833977c", 
+      "name": "Privatbruerei Josef Sigl", 
+      "origin_city": "CA", 
+      "url": "", 
+      "country": "USA", 
+      "production": "commercial", 
+      "origin_state": "Berkeley", 
+      "description": ""
+    }, 
+    "edition": "", 
+    "calories_oz": 12.5, 
+    "abv": 4.9000000000000004
   }
 
 

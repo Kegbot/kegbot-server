@@ -234,10 +234,15 @@ def all_taps(request):
   taps = request.kbsite.kegtap_set.all().order_by('name')
   tap_list = []
   for tap in taps:
+    beer_type = None
     tap_entry = {
       'tap': obj_to_dict(tap),
       'keg': obj_to_dict(tap.current_keg),
     }
+    if tap.current_keg and tap.current_keg.type:
+      tap_entry['beverage'] = obj_to_dict(tap.current_keg.type)
+    else:
+      tap_entry['beverage'] = None
     tap_list.append(tap_entry)
   res = {'taps': tap_list}
   return res

@@ -210,7 +210,7 @@ class KegUi:
 
     self._lcdui.Activity()
 
-    if event.state == event.COMPLETED:
+    if event.state == event.FlowState.COMPLETED:
       self.UpdateLastDrink(str(event.username), event.volume_ml,
           event.last_activity_time)
       self._SetState(self.STATE_MAIN)

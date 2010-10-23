@@ -3,6 +3,7 @@
 import datetime
 import unittest
 
+from pykeg.core import backend
 from pykeg.core import models
 from pykeg.core import units
 
@@ -10,6 +11,8 @@ from pykeg.beerdb import models as bdb_models
 
 class CoreModelsTestCase(unittest.TestCase):
   def setUp(self):
+    self.site, created = models.KegbotSite.objects.get_or_create(name='default')
+    self.backend = backend.KegbotBackend(site=self.site)
     self.brewer = bdb_models.Brewer.objects.create(
         name='Moonshine Beers',
         country='USA',
@@ -40,7 +43,14 @@ class CoreModelsTestCase(unittest.TestCase):
         volume_ml=self.keg_vol,
     )
 
+    self.tap = models.KegTap.objects.create(
+        site=self.site,
+        name='Test Tap',
+        meter_name='test',
+    )
+
     self.keg = models.Keg.objects.create(
+        site=self.site,
         type=self.beer_type,
         size=self.keg_size,
         startdate=datetime.datetime(2000, 4, 1),
@@ -78,17 +88,12 @@ class CoreModelsTestCase(unittest.TestCase):
   def testDrinkAccounting(self):
     vol = units.Quantity(1200)
 
-    d = models.Drink.objects.create(
-        ticks=vol.ConvertTo.KbMeterTick,
-        volume_ml=vol.ConvertTo.KbMeterTick,
-        starttime=datetime.datetime.now(),
-        endtime=datetime.datetime.now(),
-        user=self.user,
-        keg=self.keg,
-        status='valid',
+    d = self.backend.RecordDrink(tap_name=self.tap.meter_name,
+        ticks=1200,
+        username=self.user.username,
     )
 
-    self.assertEqual(self.keg.served_volume(), d.volume_ml)
+    self.assertEqual(float(self.keg.served_volume()), d.volume_ml)
 
   def testDrinkSessions(self):
     """ Checks for the DrinkingSession records. """
@@ -109,42 +114,54 @@ class CoreModelsTestCase(unittest.TestCase):
 
     drinks[u1] = (
         # t=0
-        models.Drink.objects.create(
-          ticks=ticks, volume_ml=volume, user=u1, keg=self.keg,
-          starttime=base_time, endtime=base_time),
+        self.backend.RecordDrink(tap_name=self.tap.meter_name,
+            ticks=1200,
+            username=u1.username,
+            pour_time=base_time,
+        ),
         # t=10
-        models.Drink.objects.create(
-          ticks=ticks, volume_ml=volume, user=u1, keg=self.keg,
-          starttime=base_time+td_10m, endtime=base_time+td_10m),
+        self.backend.RecordDrink(tap_name=self.tap.meter_name,
+            ticks=1200,
+            username=u1.username,
+            pour_time=base_time+td_10m,
+        ),
         # t=200
-        models.Drink.objects.create(
-          ticks=ticks, volume_ml=volume, user=u1, keg=self.keg,
-          starttime=base_time+td_200m, endtime=base_time+td_200m),
+        self.backend.RecordDrink(tap_name=self.tap.meter_name,
+            ticks=1200,
+            username=u1.username,
+            pour_time=base_time+td_200m,
+        ),
     )
 
     drinks[u2] = (
         # t=0
-        models.Drink.objects.create(
-          ticks=ticks, volume_ml=volume, user=u2, keg=self.keg,
-          starttime=base_time, endtime=base_time),
+        self.backend.RecordDrink(tap_name=self.tap.meter_name,
+            ticks=1200,
+            username=u2.username,
+            pour_time=base_time,
+        ),
         # t=200
-        models.Drink.objects.create(
-          ticks=ticks, volume_ml=volume, user=u2, keg=self.keg,
-          starttime=base_time+td_200m, endtime=base_time+td_200m),
+        self.backend.RecordDrink(tap_name=self.tap.meter_name,
+            ticks=1200,
+            username=u2.username,
+            pour_time=base_time+td_200m,
+        ),
         # t=190
-        models.Drink.objects.create(
-          ticks=ticks, volume_ml=volume, user=u2, keg=self.keg,
-          starttime=base_time+td_190m, endtime=base_time+td_190m),
+        self.backend.RecordDrink(tap_name=self.tap.meter_name,
+            ticks=1200,
+            username=u2.username,
+            pour_time=base_time+td_190m,
+        ),
     )
 
-    u1_session_parts = u1.session_parts.all()
-    self.assertEqual(len(u1_session_parts), 2)
+    u1_chunks = u1.session_chunks.all()
+    self.assertEqual(len(u1_chunks), 2)
 
-    u2_session_parts = u2.session_parts.all()
-    self.assertEqual(len(u2_session_parts), 2)
+    u2_chunks = u2.session_chunks.all()
+    self.assertEqual(len(u2_chunks), 2)
 
     # user1 session 1: should be 10 minutes long as created above
-    u1_s1 = u1_session_parts[0].session
+    u1_s1 = u1_chunks[0].session
     self.assertEqual(u1_s1.starttime, base_time)
     self.assertEqual(u1_s1.starttime, drinks[u1][0].starttime)
     self.assertEqual(u1_s1.endtime, drinks[u1][1].endtime)
@@ -152,14 +169,14 @@ class CoreModelsTestCase(unittest.TestCase):
     self.assertEqual(len(list(u1_s1.drinks.all())), 2)
 
     # user1 session 2: at time 200, 1 drink
-    u1_s2 = u1_session_parts[1].session
+    u1_s2 = u1_chunks[1].session
     self.assertEqual(u1_s2.starttime, base_time+td_200m)
     self.assertEqual(u1_s2.endtime, base_time+td_200m)
     self.assertEqual(len(list(u1_s2.drinks.all())), 1)
 
     # user2 session2: drinks are added out of order to create this, ensure times
     # match
-    u2_s2 = u2_session_parts[1].session
+    u2_s2 = u2_chunks[1].session
     self.assertEqual(u2_s2.starttime, base_time+td_190m)
     self.assertEqual(u2_s2.endtime, base_time+td_200m)
     self.assertEqual(len(list(u2_s2.drinks.all())), 2)

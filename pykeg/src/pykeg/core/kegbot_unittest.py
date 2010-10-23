@@ -13,12 +13,11 @@ import kegbot
 from django.test import TestCase
 
 from pykeg.core import defaults
-from pykeg.core import event
+from pykeg.core import kbevent
 from pykeg.core import models
 from pykeg.core import kb_common
 from pykeg.core import units
 from pykeg.core.net import kegnet
-from pykeg.core.net import kegnet_pb2
 
 from pykeg.beerdb import models as bdb_models
 
@@ -32,6 +31,8 @@ class KegbotTestCase(TestCase):
 
     models.Drink.objects.all().delete()
 
+    self.site, _ = models.KegbotSite.objects.get_or_create(name='default')
+
     self.keg_size = models.KegSize.objects.create(name='10Liter Keg',
         volume_ml=units.Quantity(10000))
 
@@ -41,12 +42,13 @@ class KegbotTestCase(TestCase):
         brewer=self.brewer, style=self.beer_style, calories_oz=10.0,
         carbs_oz=2.0, abv=5.0)
 
-    self.test_keg = models.Keg.objects.create(type=self.beer_type,
-        size=self.keg_size, status='online', description='None')
+    self.test_keg = models.Keg.objects.create(site=self.site,
+        type=self.beer_type, size=self.keg_size, status='online',
+        description='None')
 
-    self.test_tap = models.KegTap.objects.create(name='Test Tap',
-        meter_name='test_meter_name', ml_per_tick=(1000.0/2200.0),
-        current_keg=self.test_keg)
+    self.test_tap = models.KegTap.objects.create(site=self.site,
+        name='Test Tap', meter_name='test_meter_name',
+        ml_per_tick=(1000.0/2200.0), current_keg=self.test_keg)
 
     self.kegbot = kegbot.KegbotCoreApp()
     self.env = self.kegbot._env
@@ -121,7 +123,7 @@ class KegbotTestCase(TestCase):
     flows = flow_mgr.GetActiveFlows()
     self.assertEquals(len(flows), 1)
     flow = flows[0]
-    self.assertEquals(flow.GetUser(), None)
+    self.assertEquals(flow.GetUsername(), '')
 
     # Now authenticate the user.
     # TODO(mikey): should use tap name rather than meter name.
@@ -130,7 +132,7 @@ class KegbotTestCase(TestCase):
         token_value=self.test_token.token_value)
     time.sleep(1.0) # TODO(mikey): need a synchronous wait
     self.service_thread._FlushEvents()
-    self.assertEquals(flow.GetUser(), self.test_user)
+    self.assertEquals(flow.GetUsername(), self.test_user.username)
 
     # If another user comes along, he takes over the flow.
     self.client.SendAuthTokenAdd(self.test_tap.meter_name,
@@ -142,7 +144,7 @@ class KegbotTestCase(TestCase):
     flows = flow_mgr.GetActiveFlows()
     self.assertEquals(len(flows), 1)
     flow = flows[0]
-    self.assertEquals(flow.GetUser(), self.test_user_2)
+    self.assertEquals(flow.GetUsername(), self.test_user_2.username)
 
     self.client.SendMeterUpdate(meter_name, 300)
     time.sleep(1.0) # TODO(mikey): need a synchronous wait
@@ -196,7 +198,7 @@ class KegbotTestCase(TestCase):
     flows = self.env.GetFlowManager().GetActiveFlows()
     self.assertEquals(len(flows), 1)
     flow = flows[0]
-    self.assertEquals(flow.GetUser(), self.test_user)
+    self.assertEquals(flow.GetUsername(), self.test_user.username)
     original_flow_id = flow.GetId()
 
     LOGGER.info('Removing token...')
@@ -211,7 +213,7 @@ class KegbotTestCase(TestCase):
     self.assertEquals(len(flows), 1)
     flow = flows[0]
     self.assertEquals(flow.GetId(), original_flow_id)
-    self.assertEquals(flow.GetState(), kegnet_pb2.FlowUpdate.ACTIVE)
+    self.assertEquals(flow.GetState(), kbevent.FlowUpdate.FlowState.ACTIVE)
 
     # Re-add the token; should be unchanged.
     self.client.SendAuthTokenAdd(self.test_tap.meter_name,
@@ -225,7 +227,7 @@ class KegbotTestCase(TestCase):
     self.assertEquals(len(flows), 1)
     flow = flows[0]
     self.assertEquals(flow.GetId(), original_flow_id)
-    self.assertEquals(flow.GetState(), kegnet_pb2.FlowUpdate.ACTIVE)
+    self.assertEquals(flow.GetState(), kbevent.FlowUpdate.FlowState.ACTIVE)
 
     # Idle out. TODO(mikey): shift clock instead of sleeping.
     time.sleep(2.5)

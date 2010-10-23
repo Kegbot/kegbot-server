@@ -19,10 +19,11 @@
 """Module for common handling of JSON within Kegbot.
 
 This module's 'loads' and 'dumps' implementations add support for encoding
-datetime instances to ISO8601 strings.
+datetime instances to ISO8601 strings, and decoding them back.
 """
 
 import datetime
+import re
 import types
 
 from pykeg.core.util import AttrDict
@@ -38,7 +39,6 @@ except ImportError:
     except ImportError:
       raise ImportError, "Unable to load a json library"
 
-
 class JSONEncoder(json.JSONEncoder):
   """JSONEncoder which translate datetime instances to ISO8601 strings."""
   def default(self, obj):
@@ -48,8 +48,25 @@ class JSONEncoder(json.JSONEncoder):
 
 
 def _ToAttrDict(obj):
-  """JSONDecoder object_hook that translates dicts to AttrDicts."""
+  """JSONDecoder object_hook that translates dicts and ISO times.
+
+  Dictionaries are converted to AttrDicts, which allow element access by
+  attribute (getattr).
+
+  Also, an attempt will be made to convert any field ending in 'date' or 'time'
+  to a datetime.datetime object.  The format is expected to match the ISO8601
+  format used in JSONEncoder.  If it does not parse, the value will be left as a
+  string.
+  """
   if type(obj) == types.DictType:
+    # Try to convert any "time" or "date" fields into datetime objects.  If the
+    # format doesn't match, just leave it alone.
+    for k, v in obj.iteritems():
+      if k.endswith('date') or k.endswith('time'):
+        try:
+          obj[k] = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%SZ')
+        except ValueError:
+          pass
     return AttrDict(obj)
   return obj
 

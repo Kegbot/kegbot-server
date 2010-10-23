@@ -24,6 +24,7 @@
 # Local differences from upstream version:
 #   - disabled assert in JSONEncoder
 #   - added south introspection rules
+#   - use kbjson common json encode/decode methods
 
 """
 JSONField automatically serializes most Python terms to JSON data.
@@ -37,36 +38,8 @@ more information.
      extra = json.JSONField()
 """
 
-import datetime
-from decimal import Decimal
-
-try:
-  import json
-except ImportError:
-  try:
-    import simplejson as json
-  except ImportError:
-    try:
-      from django.utils import simplejson as json
-    except ImportError:
-      raise ImportError, "Unable to load a json library"
-
 from django.db import models
-
-class JSONEncoder(json.JSONEncoder):
-  def default(self, obj):
-    if isinstance(obj, Decimal):
-      return str(obj)
-    elif isinstance(obj, datetime.datetime):
-      return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
-    return json.JSONEncoder.default(self, obj)
-
-def dumps(value):
-  assert isinstance(value, dict)
-  return json.dumps(value, cls=JSONEncoder)
-
-def loads(txt):
-  return json.loads(txt)
+from pykeg.core import kbjson
 
 class JSONDict(dict):
   """
@@ -74,7 +47,7 @@ class JSONDict(dict):
   Python formatted data.  This way fixtures will work!
   """
   def __repr__(self):
-    return dumps(self)
+    return kbjson.dumps(self)
 
 class JSONField(models.TextField):
   """JSONField is a generic textfield that neatly serializes/unserializes
@@ -93,7 +66,7 @@ class JSONField(models.TextField):
     if not value:
       return {}
     elif isinstance(value, basestring):
-      res = loads(value)
+      res = kbjson.loads(value)
       assert isinstance(res, dict)
       return JSONDict(**res)
     else:
@@ -104,7 +77,7 @@ class JSONField(models.TextField):
     if not value:
       return super(JSONField, self).get_db_prep_save("")
     else:
-      return super(JSONField, self).get_db_prep_save(dumps(value))
+      return super(JSONField, self).get_db_prep_save(kbjson.dumps(value))
 
 try:
   from south.modelsinspector import add_introspection_rules

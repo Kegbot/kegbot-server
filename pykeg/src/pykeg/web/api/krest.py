@@ -23,7 +23,7 @@ import functools
 import sys
 import types
 
-from pykeg.core.util import AttrDict
+from pykeg.core import kbjson
 
 try:
   from urllib.parse import urlencode
@@ -33,17 +33,6 @@ except ImportError:
   from urllib import urlencode
   from urllib2 import urlopen
   from urllib2 import URLError
-
-try:
-  import json
-except ImportError:
-  try:
-    import simplejson as json
-  except ImportError:
-    try:
-      from django.utils import simplejson as json
-    except ImportError:
-      raise ImportError, "Unable to load a json library"
 
 import gflags
 FLAGS = gflags.FLAGS
@@ -195,15 +184,9 @@ class KrestClient:
     field of the response.  If the response is an error, a RemoteError exception
     is raised.
     """
-    def _TranslateDicts(obj):
-      """JSONEncoder object_hook that translates dicts to AttrDicts."""
-      if type(obj) == types.DictType:
-        return AttrDict(obj)
-      return obj
-
     # Decode JSON.
     try:
-      d = json.loads(response_data, object_hook=_TranslateDicts)
+      d = kbjson.loads(response_data)
     except ValueError, e:
       raise ServerError('Malformed response: %s' % e)
 

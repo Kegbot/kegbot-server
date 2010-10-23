@@ -25,17 +25,6 @@ from pykeg.beerdb import models as bdb_models
 from pykeg.core import models
 from pykeg.core.util import AttrDict
 
-try:
-  import json
-except ImportError:
-  try:
-    import simplejson as json
-  except ImportError:
-    try:
-      from django.utils import simplejson as json
-    except ImportError:
-      raise ImportError, "Unable to load a json library"
-
 _CONVERSION_MAP = {}
 
 def converts(kind):

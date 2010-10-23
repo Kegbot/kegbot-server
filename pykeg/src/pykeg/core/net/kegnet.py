@@ -34,20 +34,10 @@ import sys
 import threading
 import time
 
-try:
-  import json
-except ImportError:
-  try:
-    import simplejson as json
-  except ImportError:
-    try:
-      from django.utils import simplejson as json
-    except ImportError:
-      raise ImportError, "Unable to load a json library"
-
 import gflags
 
 from pykeg.core import kbevent
+from pykeg.core import kbjson
 from pykeg.core import kb_common
 from pykeg.core import util
 
@@ -106,7 +96,7 @@ class KegnetProtocolHandler(asynchat.async_chat):
       return
 
     try:
-      message_dict = json.loads(strbuf)
+      message_dict = kbjson.loads(strbuf)
     except ValueError:
       self._logger.warning('Received malformed message, dropping.')
       return
@@ -341,7 +331,7 @@ class KegnetServer(asyncore.dispatcher):
       return
     #self._logger.info('Sending event to %i client(s): %s' %
     #  (len(self._clients), ProtoMessageToShortStr(event)))
-    str_message = event.ToJson()
+    str_message = event.ToJson(indent=None)
     for client in self._clients:
       try:
         client.push(str_message + MESSAGE_TERMINATOR)

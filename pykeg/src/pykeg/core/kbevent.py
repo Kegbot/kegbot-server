@@ -25,18 +25,8 @@ This module implements a very simple inter-process event passing system
 import logging
 import Queue
 
+from pykeg.core import kbjson
 from pykeg.core import util
-
-try:
-  import json
-except ImportError:
-  try:
-    import simplejson as json
-  except ImportError:
-    try:
-      from django.utils import simplejson as json
-    except ImportError:
-      raise ImportError, "Unable to load a json library"
 
 class Event(util.BaseMessage):
   def __init__(self, initial=None, encoded=None, **kwargs):
@@ -53,7 +43,7 @@ class Event(util.BaseMessage):
       'event': self.__class__.__name__,
       'data': data,
     }
-    return json.dumps(ret, indent=indent)
+    return kbjson.dumps(ret, indent=indent)
 
 EventField = util.BaseField
 
@@ -143,7 +133,7 @@ for cls in Event.__subclasses__():
 
 def DecodeEvent(msg):
   if isinstance(msg, basestring):
-    msg = json.loads(msg)
+    msg = kbjson.loads(msg)
   event_name = msg.get('event')
   if event_name not in EVENT_NAME_TO_CLASS:
     raise ValueError, "Unknown event: %s" % event_name

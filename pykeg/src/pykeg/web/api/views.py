@@ -24,17 +24,6 @@ import hashlib
 import sys
 from decimal import Decimal
 
-try:
-  import json
-except ImportError:
-  try:
-    import simplejson as json
-  except ImportError:
-    try:
-      from django.utils import simplejson as json
-    except ImportError:
-      raise ImportError, "Unable to load a json library"
-
 from django.conf import settings
 from django.http import Http404
 from django.http import HttpResponse
@@ -43,21 +32,11 @@ from django.template import Context
 from django.template.loader import get_template
 
 from pykeg.core import backend
+from pykeg.core import kbjson
 from pykeg.core import models
 from pykeg.core import protolib
 from pykeg.web.api import krest
 from pykeg.web.api import forms
-
-INDENT = 2
-
-class JSONEncoder(json.JSONEncoder):
-  def default(self, obj):
-    if isinstance(obj, Decimal):
-      return str(obj)
-    elif isinstance(obj, datetime.datetime):
-      #assert settings.TIME_ZONE == 'UTC'
-      return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
-    return json.JSONEncoder.default(self, obj)
 
 ### Authentication
 
@@ -142,10 +121,13 @@ def py_to_json(f):
         # We might change the HTTP status code here one day.  This also allows
         # the views to use Http404 (rather than NotFound).
         raise krest.NotFoundError(e.message)
-      data = json.dumps(result, indent=INDENT, cls=JSONEncoder)
+      data = kbjson.dumps(result)
     except Exception, e:
+      request = args[0]
+      if 'deb' in request.GET:
+        raise
       result, http_code = ToJsonError(e)
-      data = json.dumps(result, indent=INDENT, cls=JSONEncoder)
+      data = kbjson.dumps(result)
     return HttpResponse(data, mimetype='application/json', status=http_code)
   return new_function
 

@@ -174,11 +174,11 @@ class Flow:
     if self._bound_username:
       event.username = self._bound_username
 
-    event.start_time = int(time.mktime(self._start_time.timetuple()))
+    event.start_time = self._start_time
     end = self._start_time
     if self._end_time:
       end = self._end_time
-    event.last_activity_time = int(time.mktime(end.timetuple()))
+    event.last_activity_time = end
     event.ticks = self.GetTicks()
     event.volume_ml = self.GetVolumeMl()
 
@@ -419,8 +419,8 @@ class DrinkManager(Manager):
     username = event.username
     volume_ml = event.volume_ml
     tap_name = event.tap_name
-    starttime = datetime.datetime.fromtimestamp(event.start_time)
-    pour_time = datetime.datetime.fromtimestamp(event.last_activity_time)
+    starttime = event.start_time
+    pour_time = event.last_activity_time
     duration = (pour_time - starttime).seconds
     flow_id = event.flow_id
 
@@ -493,7 +493,7 @@ class ThermoManager(Manager):
     # Note: the backend may also be performing this check.
     last_record = self._name_to_last_record.get(sensor_name)
     if last_record:
-      last_time = datetime.datetime.fromtimestamp(last_record.record_time)
+      last_time = last_record.record_time
       if last_time == now:
         self._logger.debug('Dropping excessive temp event')
         return

@@ -122,6 +122,9 @@ class HeartbeatSecondEvent(Event):
 class HeartbeatMinuteEvent(Event):
   pass
 
+class HeartbeatHourEvent(Event):
+  pass
+
 class CreditAddedEvent(Event):
   amount = EventField()
   username = EventField()

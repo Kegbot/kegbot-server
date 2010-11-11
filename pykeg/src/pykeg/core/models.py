@@ -681,7 +681,17 @@ class DrinkingSession(AbstractChunk):
     drink.save()
     return session
 
+def _DrinkingSessionPreSave(sender, instance, **kwargs):
+  session = instance
+  if not session.name:
+    session.name = 'Session %i' % session.seqn
+
+  # NOTE(mikey): Clear the slug so that updates cause it to be recomputed by
+  # AutoSlugField.  This could be spurious; is there a better way?
+  session.slug = ''
+
 pre_save.connect(_set_seqn_pre_save, sender=DrinkingSession)
+pre_save.connect(_DrinkingSessionPreSave, sender=DrinkingSession)
 
 
 class SessionChunk(AbstractChunk):
@@ -709,6 +719,9 @@ class UserSessionChunk(AbstractChunk):
   user = models.ForeignKey(User, related_name='user_session_chunks', blank=True,
       null=True)
 
+  def GetTitle(self):
+    return self.session.GetTitle()
+
 
 class KegSessionChunk(AbstractChunk):
   """A specific keg's contribution to a session (spans all users)."""
@@ -721,6 +734,9 @@ class KegSessionChunk(AbstractChunk):
   session = models.ForeignKey(DrinkingSession, related_name='keg_chunks')
   keg = models.ForeignKey(Keg, related_name='keg_session_chunks', blank=True,
       null=True)
+
+  def GetTitle(self):
+    return self.session.GetTitle()
 
 
 class ThermoSensor(models.Model):
@@ -992,38 +1008,60 @@ class SystemEvent(models.Model):
       related_name='events',
       help_text='Session involved in the event, if any.')
 
+  def __str__(self):
+    if self.kind == 'drink_poured':
+      ret = 'Drink %i poured' % self.drink.seqn
+    elif self.kind == 'session_started':
+      ret = 'Session %i started by drink %i' % (self.session.seqn,
+          self.drink.seqn)
+    elif self.kind == 'session_joined':
+      ret = 'Session %i joined by %s (drink %i)' % (self.session.seqn,
+          self.user.username, self.drink.seqn)
+    elif self.kind == 'keg_tapped':
+      ret = 'Keg %i tapped' % self.keg.seqn
+    elif self.kind == 'keg_ended':
+      ret = 'Keg %i ended' % self.keg.seqn
+    else:
+      ret = 'Unknown event type (%s)' % self.kind
+    return 'Event %i: %s' % (self.seqn, ret)
+
   @classmethod
   def ProcessDrink(cls, drink):
     keg = drink.keg
+    session = drink.session
     site = drink.site
+    user = drink.user
+
     if keg:
-      q = keg.events.filter(kind='keg_started')
+      q = keg.events.filter(kind='keg_tapped')
       if q.count() == 0:
-        e = keg.events.create(site=site, kind='keg_started', when=drink.endtime,
-            keg=keg)
+        e = keg.events.create(site=site, kind='keg_tapped', when=drink.endtime,
+            keg=keg, user=user, drink=drink, session=session)
         e.save()
 
-    session = drink.session
+    session_just_started = False
     if session:
       q = session.events.filter(kind='session_started')
       if q.count() == 0:
         e = session.events.create(site=site, kind='session_started',
-            when=session.starttime, user=drink.user)
+            when=session.starttime, drink=drink, user=user)
         e.save()
+        session_just_started = True
 
-    user = drink.user
-    if user:
-      q = user.events.filter(kind='session_joined')
+    if user and not session_just_started:
+      # NOTE(mikey): This event is suppressed if the session_started event was
+      # emitted for this drink.
+      q = user.events.filter(kind='session_joined', session=session)
       if q.count() == 0:
         e = user.events.create(site=site, kind='session_joined',
-            when=drink.endtime, user=user)
+            when=drink.endtime, session=session, drink=drink, user=user)
         e.save()
 
     q = drink.events.filter(kind='drink_poured')
     if q.count() == 0:
       e = drink.events.create(site=site, kind='drink_poured',
-          when=drink.endtime, drink=drink, user=drink.user, keg=drink.keg,
-          session=drink.session)
+          when=drink.endtime, drink=drink, user=user, keg=keg,
+          session=session)
       e.save()
 
 pre_save.connect(_set_seqn_pre_save, sender=SystemEvent)

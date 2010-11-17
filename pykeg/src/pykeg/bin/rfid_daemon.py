@@ -48,6 +48,8 @@ gflags.DEFINE_boolean('toggle_output', False,
 
 FLAGS = gflags.FLAGS
 
+FLAGS.SetDefault('tap_name', kb_common.ALIAS_ALL_TAPS)
+
 
 class RfidEventHandler:
   """Collection of Phidget RFID event handlers to report status to kegnet."""

@@ -96,14 +96,6 @@ class TokenAuthEvent(Event):
   token_value = EventField()
   status = EventField()
 
-class UserAuthEvent(Event):
-  class UserState:
-    ADDED = "added"
-    REMOVED = "removed"
-  tap_name = EventField()
-  user_name = EventField()
-  state = EventField()
-
 class ThermoEvent(Event):
   sensor_name = EventField()
   sensor_value = EventField()

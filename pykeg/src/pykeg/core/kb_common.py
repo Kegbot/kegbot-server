@@ -11,9 +11,6 @@ MIN_VOLUME_TO_DISPLAY = 10
 # Minimum session size, in milliliters, to display
 MIN_SESSION_VOLUME_DISPLAY_ML = 177  # 6 ounces
 
-# Idle seconds allowed before a user gets booted for inactivity
-FLOW_IDLE_TIMEOUT = 30
-
 # Maximum time between consecutive drinks to be considered in the same 'session'
 # (see UserDrinkingSession table)
 DRINK_SESSION_TIME_MINUTES = 90
@@ -42,13 +39,30 @@ ALIAS_ALL_TAPS = '__all_taps__'
 AUTH_MODULE_CORE_ONEWIRE = 'core.onewire'
 AUTH_MODULE_CONTRIB_PHIDGET_RFID = 'contrib.phidget.rfid'
 
-# Maximum time in seconds an authentication token may be missing before the flow
-# will be ended.  A value of 0 will cause the fow to be ended immediately when
-# the token disappears.
-# TODO(mikey): expose configuration in db.
-AUTH_TOKEN_MAX_IDLE = {
-  AUTH_MODULE_CORE_ONEWIRE: 1,
-  AUTH_MODULE_CONTRIB_PHIDGET_RFID: 240,
+# Flag which determines whether an auth device is captive or non-captive.  A
+# captive device is one which captures the authentication token, and provides a
+# very reliable signal when the token is detached.
+#
+# For a device marked as captive, the AuthenticationManager will immediately end
+# any active flows when a token is removed.  For non-captive (or contactless)
+# devices, such as an RFID reader, the authentication manager does nothing when
+# the token is removed (see flow timeout, next).
+AUTH_DEVICE_CAPTIVE = {
+  AUTH_MODULE_CORE_ONEWIRE: True,
+  AUTH_MODULE_CONTRIB_PHIDGET_RFID: False,
+  'default': True
+}
+
+# Maximum idle time for new flows, based on initiating auth device.  "Idle" is
+# defined as seconds elapsed without any flow meter activity.
+#
+# This varies on a per-auth-device basis due to the distinction between captive
+# and non-captive devices: we want flows initiated with a contactless auth
+# device, like an RFID, to timeout sooner.
+AUTH_DEVICE_MAX_IDLE_SECS = {
+  AUTH_MODULE_CORE_ONEWIRE: 120,
+  AUTH_MODULE_CONTRIB_PHIDGET_RFID: 20,
+  'default': 10
 }
 
 # How often to record a thermo reading?

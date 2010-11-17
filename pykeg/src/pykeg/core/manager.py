@@ -31,7 +31,6 @@ from pykeg.core import kbevent
 from pykeg.core import util
 
 
-
 class TapManagerError(Exception):
   """ Generic TapManager error """
 
@@ -150,10 +149,11 @@ class TapManager(Manager):
 
 
 class Flow:
-  def __init__(self, tap, flow_id, username=None):
+  def __init__(self, tap, flow_id, username=None, max_idle_secs=10):
     self._tap = tap
     self._flow_id = flow_id
     self._bound_username = username
+    self._max_idle = datetime.timedelta(seconds=max_idle_secs)
     self._state = kbevent.FlowUpdate.FlowState.INITIAL
     self._start_time = datetime.datetime.now()
     self._end_time = None
@@ -161,8 +161,9 @@ class Flow:
     self._total_ticks = 0L
 
   def __str__(self):
-    return '<Flow %s ticks=%s username=%s>' % (self._tap, self._total_ticks,
-        self._bound_username)
+    return '<Flow 0x%08x: tap=%s ticks=%s username=%s max_idle=%s>' % (self._flow_id,
+        self._tap, self._total_ticks, repr(self._bound_username),
+        self._max_idle)
 
   def GetUpdateEvent(self):
     event = kbevent.FlowUpdate()
@@ -188,8 +189,6 @@ class Flow:
     self._total_ticks += amount
     if when is None:
       when = datetime.datetime.now()
-    if self._start_time is None:
-      self._start_time = when
     self._end_time = when
 
   def GetId(self):
@@ -200,6 +199,9 @@ class Flow:
 
   def SetState(self, state):
     self._state = state
+
+  def SetMaxIdle(self, max_idle_secs):
+    self._max_idle = datetime.timedelta(seconds=max_idle_secs)
 
   def GetTicks(self):
     return self._total_ticks
@@ -223,12 +225,16 @@ class Flow:
     end_time = self._end_time
     if end_time is None:
       end_time = self._start_time
-    if end_time is None:
-      return datetime.timedelta(0)
     return datetime.datetime.now() - end_time
+
+  def GetMaxIdleTime(self):
+    return self._max_idle
 
   def GetTap(self):
     return self._tap
+
+  def IsIdle(self):
+    return self.GetIdleTime() > self.GetMaxIdleTime()
 
 
 class FlowManager(Manager):
@@ -284,42 +290,57 @@ class FlowManager(Manager):
   def GetFlow(self, tap_name):
     return self._flow_map.get(tap_name)
 
-  def StartFlow(self, tap_name, username=''):
+  def StartFlow(self, tap_name, username='', max_idle_secs=10):
     try:
-      if not self.GetFlow(tap_name):
-        tap = self._tap_manager.GetTap(tap_name)
-        #if user is None:
-        #  users = self._auth_manager.GetActiveUsers()
-        #  if users:
-        #    user = list(users)[0]
-        new_flow = Flow(tap, self._GetNextFlowId(), username)
-        self._flow_map[tap_name] = new_flow
-        self._logger.info('StartFlow: Flow created: %s' % new_flow)
-        self._PublishUpdate(new_flow)
-      else:
-        self._logger.info('StartFlow: Flow already exists on %s' % tap_name)
-      return self.GetFlow(tap_name)
+      tap = self._tap_manager.GetTap(tap_name)
     except UnknownTapError:
       return None
+
+    current = self.GetFlow(tap_name)
+    if current and current.GetUsername() != username:
+      # There's an existing flow: take it over if anonymous; end it if owned by
+      # another user.
+      if current.GetUsername() == '':
+        self._logger.info('User "%s" is taking over the existing flow' %
+            username)
+        self.SetUsername(current, username)
+      else:
+        self._logger.info('User "%s" is replacing the existing flow' %
+            username)
+        self.StopFlow(tap_name)
+        current = None
+
+    if current and current.GetUsername() == username:
+      # Existing flow owned by this username.  Just poke it.
+      current.SetMaxIdle(max_idle_secs)
+      self._PublishUpdate(current)
+      return current
+    else:
+      # No existing flow; start a new one.
+      new_flow = Flow(tap, flow_id=self._GetNextFlowId(), username=username,
+          max_idle_secs=max_idle_secs)
+      self._flow_map[tap_name] = new_flow
+      self._logger.info('Starting flow: %s' % new_flow)
+      self._PublishUpdate(new_flow)
+      return new_flow
 
   def SetUsername(self, flow, username):
     flow.SetUsername(username)
     self._PublishUpdate(flow)
 
-  def EndFlow(self, tap_name):
-    self._logger.info('Ending flow on tap %s' % tap_name)
+  def StopFlow(self, tap_name):
     try:
       flow = self.GetFlow(tap_name)
-      if flow:
-        tap = flow.GetTap()
-        del self._flow_map[tap_name]
-        self._logger.info('EndFlow: Flow ended: %s' % flow)
-        self._StateChange(flow, kbevent.FlowUpdate.FlowState.COMPLETED)
-      else:
-        self._logger.info('EndFlow: No existing flow on tap %s' % (tap_name,))
-      return flow
     except UnknownTapError:
       return None
+    if not flow:
+      return None
+
+    self._logger.info('Stopping flow: %s' % flow)
+    tap = flow.GetTap()
+    del self._flow_map[tap_name]
+    self._StateChange(flow, kbevent.FlowUpdate.FlowState.COMPLETED)
+    return flow
 
   def UpdateFlow(self, tap_name, meter_reading):
     try:
@@ -378,21 +399,18 @@ class FlowManager(Manager):
 
   @EventHandler(kbevent.HeartbeatSecondEvent)
   def _HandleHeartbeatEvent(self, event):
-    # TODO(mikey): Allowable idle time must be configurable.
-    max_idle = datetime.timedelta(seconds=10)
     for flow in self.GetActiveFlows():
-      idle_time = flow.GetIdleTime()
-      if idle_time > max_idle:
+      if flow.IsIdle():
         self._logger.info('Flow has become too idle, ending: %s' % flow)
         self._StateChange(flow, kbevent.FlowUpdate.FlowState.IDLE)
-        self.EndFlow(flow.GetTap().GetName())
+        self.StopFlow(flow.GetTap().GetName())
 
   @EventHandler(kbevent.FlowRequest)
   def _HandleFlowRequestEvent(self, event):
     if event.request == event.Action.START_FLOW:
       self.StartFlow(event.tap_name)
     elif event.request == event.Action.STOP_FLOW:
-      self.EndFlow(event.tap_name)
+      self.StopFlow(event.tap_name)
 
 
 class DrinkManager(Manager):
@@ -413,7 +431,7 @@ class DrinkManager(Manager):
       self._HandleFlowEnded(event)
 
   def _HandleFlowEnded(self, event):
-    self._logger.info('Flow completed for flow_id=%i' % event.flow_id)
+    self._logger.info('Flow completed: flow_id=0x%08x' % event.flow_id)
 
     ticks = event.ticks
     username = event.username
@@ -516,8 +534,8 @@ class ThermoManager(Manager):
       pass
 
 class TokenRecord:
-  STATUS_ACTIVE = 1
-  STATUS_REMOVED = 2
+  STATUS_ACTIVE = 'active'
+  STATUS_REMOVED = 'removed'
 
   def __init__(self, auth_device, token_value, tap_name):
     self.auth_device = auth_device
@@ -527,7 +545,7 @@ class TokenRecord:
     self.status = self.STATUS_ACTIVE
 
   def __str__(self):
-    return str(self.AsTuple())
+    return '%s=%s@%s' % self.AsTuple()
 
   def AsTuple(self):
     return (self.auth_device, self.token_value, self.tap_name)
@@ -542,15 +560,11 @@ class TokenRecord:
   def IdleTime(self):
     return datetime.datetime.now() - self.last_seen
 
-  def MaxIdleTime(self):
-    amt = kb_common.AUTH_TOKEN_MAX_IDLE.get(self.auth_device, 0)
-    return datetime.timedelta(seconds=amt)
+  def IsPresent(self):
+    return self.status == self.STATUS_ACTIVE
 
-  def IsIdle(self):
-    if self.status == self.STATUS_REMOVED:
-      return self.IdleTime() >= self.MaxIdleTime()
-    else:
-      return False
+  def IsRemoved(self):
+    return self.status == self.STATUS_REMOVED
 
   def __hash__(self):
     return hash((self.AsTuple(), other.AsTuple()))
@@ -561,61 +575,38 @@ class TokenRecord:
     return cmp(self.AsTuple(), other.AsTuple())
 
 
-class TokenManager(Manager):
-  """Keeps track of tokens arriving and departing from taps.
-
-  Token events have four components:
-    * the name of the tap on which the event is being reported;
-    * the name of the authentication device generating the event;
-    * the value of the token being reported, an opaque key;
-    * the sense of the event, whether the token was added or removed.
-
-  The TokenManager is responsible for generating UserAuthEvents as a result of
-  token events.  It is the primary (but not necessarily only) source of
-  authorization events.
-
-  If the token was added, the TokenManager should attempt to associate it with a
-  user, and generate a UserAuthEvent if valid.  If the token was detached, the
-  TokenManager will wait for a timeout (possibly zero) before considering the
-  token 'removed'.  If the token re-appears during this time, it is as if the
-  token was never removed.  Otherwise, the TokenManager issues a UserAuthEvent
-  de-authorizing the user.
-  """
-  def __init__(self, name, event_hub, backend):
+class AuthenticationManager(Manager):
+  def __init__(self, name, event_hub, flow_manager, tap_manager, backend):
     Manager.__init__(self, name, event_hub)
+    self._flow_manager = flow_manager
+    self._tap_manager = tap_manager
     self._backend = backend
     self._tokens = {}  # maps tap name to currently active token
-    self._lock = threading.Lock()
+    self._lock = threading.RLock()
 
   @EventHandler(kbevent.TokenAuthEvent)
   def HandleAuthTokenEvent(self, event):
-    if event.status == event.TokenState.ADDED:
-      self._TokenAdded(event)
-    else:
-      self._TokenRemoved(event)
+    for tap in self._GetTapsForTapName(event.tap_name):
+      record = self._GetRecord(event.auth_device_name, event.token_value,
+          tap.GetName())
+      if event.status == event.TokenState.ADDED:
+        self._TokenAdded(record)
+      else:
+        self._TokenRemoved(record)
 
-  @EventHandler(kbevent.HeartbeatSecondEvent)
-  def HandleHeartbeatEvent(self, event):
-    for tap_name, record in self._tokens.items():
-      if record.IsIdle():
-        self._logger.info('Token has been removed: %s' % record)
-        self._RemoveRecord(record)
-
-  def _GetRecordFromEvent(self, event):
-    auth_device = event.auth_device_name
-    token_value = event.token_value
-    tap_name = event.tap_name
-
+  def _GetRecord(self, auth_device, token_value, tap_name):
     new_rec = TokenRecord(auth_device, token_value, tap_name)
-    existing = self._tokens.get(event.tap_name)
-
+    existing = self._tokens.get(tap_name)
     if new_rec == existing:
       return existing
-
     return new_rec
 
-  def _PublishAuthEvent(self, record, added):
+  def _MaybeStartFlow(self, record):
+    """Called when the given token has been added.
+
+    This will either start or renew a flow on the FlowManager."""
     username = None
+    tap_name = record.tap_name
     try:
       token = self._backend.GetAuthToken(record.auth_device, record.token_value)
       username = token.username
@@ -626,45 +617,31 @@ class TokenManager(Manager):
       self._logger.info('Token not assigned: %s' % record)
       return
 
-    message = kbevent.UserAuthEvent()
-    message.tap_name = record.tap_name
-    message.user_name = username
-    if added:
-      message.state = message.UserState.ADDED
+    max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS.get(record.auth_device)
+    if max_idle is None:
+      max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS['default']
+    self._flow_manager.StartFlow(tap_name, username=username,
+        max_idle_secs=max_idle)
+
+  def _MaybeEndFlow(self, record):
+    """Called when the given token has been removed.
+
+    If the auth device is a captive auth device, then this will forcibly end the
+    flow.  Otherwise, this is a no-op."""
+    is_captive = kb_common.AUTH_DEVICE_CAPTIVE.get(record.auth_device)
+    if is_captive is None:
+      is_captive = kb_common.AUTH_DEVICE_CAPTIVE['default']
+    if is_captive:
+      self._logger.debug('Captive auth device, ending flow immediately.')
+      self._flow_manager.StopFlow(record.tap_name)
     else:
-      message.state = message.UserState.REMOVED
-    self._PublishEvent(message)
-
-  def _TokenRemoved(self, event):
-    record = self._GetRecordFromEvent(event)
-    self._logger.info('Token removed: %s' % record)
-
-    if self._tokens.get(record.tap_name) != record:
-      return
-
-    # Depending on the authentication device token timeout, either remove the
-    # token immediately, or just wait for it to be idled out.
-    record.SetStatus(record.STATUS_REMOVED)
-    timeout = record.MaxIdleTime()
-    if not timeout:
-      self._logger.info('Immediately removing token %s' % record)
-      self._RemoveRecord(record)
+      self._logger.debug('Non-captive auth device, not ending flow.')
 
   @util.synchronized
-  def _RemoveRecord(self, record):
-    record.SetStatus(record.STATUS_REMOVED)
-    del self._tokens[record.tap_name]
-    self._logger.info('Removing record %s' % record)
-    self._PublishAuthEvent(record, False)
-
-  def _ActiveRecordForTap(self, tap_name):
-    return self._tokens.get(tap_name)
-
-  def _TokenAdded(self, event):
-    """Processes a TokenAuthEvent when a token is added."""
-    existing = self._ActiveRecordForTap(event.tap_name)
-    record = self._GetRecordFromEvent(event)
+  def _TokenAdded(self, record):
+    """Processes a record when a token is added."""
     self._logger.info('Token attached: %s' % record)
+    existing = self._tokens.get(record.tap_name)
 
     if existing == record:
       # Token is already known; nothing to do except update it.
@@ -672,79 +649,22 @@ class TokenManager(Manager):
       return
 
     if existing:
-      self._logger.info('Detaching previous token: %s' % existing)
-      self._RemoveRecord(existing)
+      self._logger.info('Removing previous token')
+      self._TokenRemoved(existing)
 
     self._tokens[record.tap_name] = record
-    self._PublishAuthEvent(record, True)
+    self._MaybeStartFlow(record)
 
-
-class AuthenticationManager(Manager):
-  def __init__(self, name, event_hub, flow_manager, tap_manager, backend):
-    Manager.__init__(self, name, event_hub)
-    self._flow_manager = flow_manager
-    self._tap_manager = tap_manager
-    self._backend = backend
-    self._users_by_tap = {}
-
-  def _AddUser(self, username, tap):
-    tap_name = tap.GetName()
-    old_user = self._users_by_tap.get(tap_name)
-    if old_user:
-      if old_user == username:
-        self._logger.info('User %s@%s already authenticated' % (username, tap_name))
-        return
-      else:
-        self._logger.info('New user "%s" authenticated on tap %s, kicking old user "%s"' %
-            (username, tap_name, old_user))
-        self._RemoveUser(tap)
-    self._users_by_tap[tap_name] = username
-    self._logger.info('Authenticated user %s@%s' % (username, tap_name))
-
-    # Ask the flow manager to start a flow for this user & tap.
-    # TODO(mikey): FlowManager should do this as the result of an authentication
-    # event.
-    flow = self._flow_manager.GetFlow(tap.GetName())
-    if flow is None:
-      self._flow_manager.StartFlow(tap.GetName(), username)
-    else:
-      self._flow_manager.SetUsername(flow, username)
-
-  def _RemoveUser(self, tap):
-    tap_name = tap.GetName()
-    username = self._users_by_tap.get(tap_name)
-    if not username:
-      self._logger.warning('No user authenticated on tap %s' % tap_name)
-      return
-    del self._users_by_tap[tap_name]
-    self._logger.info('Deauthenticated user %s@%s' % (username, tap_name))
-
-    # Ask the flow manager to stop a flow on this tap.
-    # TODO(mikey): FlowManager should do this as the result of an authentication
-    # event.
-    self._flow_manager.EndFlow(tap.GetName())
-
-  @EventHandler(kbevent.UserAuthEvent)
-  def HandleUserAuthEvent(self, event):
-    username = event.user_name
-    if not username:
-      self._logger.warning('Ignoring auth event for unknown username.')
+  @util.synchronized
+  def _TokenRemoved(self, record):
+    self._logger.info('Token detached: %s' % record)
+    if record != self._tokens.get(record.tap_name):
+      self._logger.warning('Token has already been removed')
       return
 
-    taps = self._GetTapsForTapName(event.tap_name)
-    if not taps:
-      self._logger.warning('Ignoring auth event for unknown tap %s' %
-          event.tap_name)
-      return
-
-    for tap in taps:
-      if event.state == event.UserState.ADDED:
-        self._AddUser(username, tap)
-      else:
-        self._RemoveUser(tap)
-
-  def GetActiveUsers(self):
-    return set(self._users_by_tap.values())
+    record.SetStatus(record.STATUS_REMOVED)
+    del self._tokens[record.tap_name]
+    self._MaybeEndFlow(record)
 
   def _GetTapsForTapName(self, tap_name):
     if tap_name == kb_common.ALIAS_ALL_TAPS:

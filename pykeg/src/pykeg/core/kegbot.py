@@ -85,8 +85,6 @@ class KegbotEnv(object):
         self._backend)
     self._thermo_manager = manager.ThermoManager('thermo-manager',
         self._event_hub, self._backend)
-    self._token_manager = manager.TokenManager('token-manager', self._event_hub,
-        self._backend)
     self._subscription_manager = manager.SubscriptionManager('pubsub',
         self._event_hub, self._kegnet_server)
 
@@ -98,7 +96,6 @@ class KegbotEnv(object):
     self._service_thread.AddEventHandler(self._drink_manager)
     self._service_thread.AddEventHandler(self._thermo_manager)
     self._service_thread.AddEventHandler(self._authentication_manager)
-    self._service_thread.AddEventHandler(self._token_manager)
     self._service_thread.AddEventHandler(self._subscription_manager)
 
     self.AddThread(self._service_thread)
@@ -144,9 +141,6 @@ class KegbotEnv(object):
 
   def GetAuthenticationManager(self):
     return self._authentication_manager
-
-  def GetTokenManager(self):
-    return self._token_manager
 
   def GetThreads(self):
     return self._threads

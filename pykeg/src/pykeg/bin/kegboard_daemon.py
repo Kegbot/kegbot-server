@@ -199,7 +199,11 @@ class KegboardDeviceIoThread(util.KegbotThread):
 
     initialized = False
     while not self._quit:
-      msg = self._reader.GetNextMessage()
+      try:
+        msg = self._reader.GetNextMessage()
+      except kegboard.UnknownMessageError:
+        self._logger.warning('Read unknown message, skipping')
+        continue
 
       # Check the reported firmware version. If it is not acceptable, then
       # drop all messages until it is updated.

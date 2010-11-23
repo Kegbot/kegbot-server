@@ -324,18 +324,20 @@ class KegboardReader(object):
       while header_pos < header_len:
         byte = self._read(1)
         if byte == KBSP_PREFIX[header_pos]:
+          # Got the expected byte.
           header_pos += 1
           if logged_frame_error:
             self._logger.info('Packet framing fixed.')
             logged_frame_error = False
         else:
+          # Wrong byte, log the error and start over.
           if not logged_frame_error:
             expected = KBSP_PREFIX[header_pos]
             self._logger.info('Packet framing broken (found %s, expected %s); '
                               'reframing.' % (repr(byte), repr(expected)))
             logged_frame_error = True
           if byte == KBSP_PREFIX[0]:
-            header_pos = 0
+            header_pos = 1
           else:
             header_pos = 0
 
@@ -345,6 +347,7 @@ class KegboardReader(object):
       if message_len > KBSP_PAYLOAD_MAXLEN:
         self._logger.warning('Bogus message length (%i), skipping message' %
                              message_len)
+        header_pos = 0
         continue
 
       # Read payload and trailer.
@@ -356,6 +359,7 @@ class KegboardReader(object):
         self._logger.warning('Bad trailer (%s), skipping message' %
                              repr(trailer))
         # Bogus trailer; start over.
+        header_pos = 0
         continue
 
       if FLAGS.verbose:

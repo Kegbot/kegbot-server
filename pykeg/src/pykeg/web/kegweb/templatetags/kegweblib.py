@@ -425,6 +425,9 @@ class ChartNode(Node):
       'series': [
         {'data': vals},
       ],
+      'tooltip': {
+        'enabled': False,
+      },
       'chart': {
         'defaultSeriesType': 'column',
       }

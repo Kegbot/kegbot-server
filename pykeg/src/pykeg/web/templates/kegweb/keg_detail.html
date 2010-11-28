@@ -23,64 +23,25 @@
     </tr>
 
     <tr>
-      <td valign="top" align="right">
-        <b>Total Poured</b>
-      </td>
-      <td rowspan="2">
-        {% chart keg_volume keg 200 50 %}
-      </td>
-    </tr>
-
-    <tr>
-      <td valign="top" align="right">
-        {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
-        {% if not keg.is_empty %}
-          ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
-        {% endif %}
-      </td>
-    </tr>
-
-    {% if keg.tap %}
-    {% if keg.tap.temperature_sensor %}
-    <tr>
-      <td valign="top" align="right">
-        <b>Temperature</b>
-      </td>
-      <td rowspan="2">
-        {% chart sensor keg.tap.temperature_sensor 200 50 %}
-      </td>
-    </tr>
-    <tr>
-      <td align="right">
-        {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C / 
-        {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
-      </td>
-    </tr>
-    {% endif %}
-    {% endif %}
-
-    <tr>
-      <td align="right"><b>Percent Full</b></td>
+      <td align="right"><b>Status</b></td>
       <td>
+        {% ifequal keg.status "online" %}
+        this keg is <b>online</b>, and is {{ keg.keg_age.days }}
+        day{{keg.keg_age.days|pluralize}} old.  it is
         {% if keg.is_empty %}
-          <i>empty</i>
+          <i>empty</i>.
         {% else %}
-          {{ keg.percent_full|floatformat:2 }}% full
+          <i>{{ keg.percent_full|floatformat:2 }}% full</i>.
         {% endif %}
+        {% else %}
+        this keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
+        day{{keg.keg_age.days|pluralize}}.
+        {% endifequal %}
       </td>
     </tr>
 
     <tr>
-      <td valign="top" align="right">
-        <b>Pints by Day</b>
-      </td>
-      <td>
-        {% chart volume_by_day keg 200 64 %}
-      </td>
-    </tr>
-
-    <tr>
-      <td align="right"><b>Drink Count</b></td>
+      <td align="right"><b>Pour Count</b></td>
       <td>
         {{ keg.drinks.valid.count }} pours by {{ stats.AllDrinkersCount }}
         unique drinkers.
@@ -95,17 +56,42 @@
     </tr>
 
     <tr>
-      <td align="right"><b>Keg Age</b></td>
-      <td>
-        {% ifequal keg.status "online" %}
-        this keg is <b>online</b>, and is {{ keg.keg_age.days }}
-        day{{keg.keg_age.days|pluralize}} old.
-        {% else %}
-        this keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
-        day{{keg.keg_age.days|pluralize}}.
-        {% endifequal %}
+      <td valign="center" align="right">
+        <b>Pints Poured</b><br>
+        {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
+        {% if not keg.is_empty %}
+          ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
+        {% endif %}
+      </td>
+      <td valign="center" align="left">
+        {% chart keg_volume keg 300 60 %}
       </td>
     </tr>
+
+    {% if keg.tap %}
+    {% if keg.tap.temperature_sensor %}
+    <tr>
+      <td valign="center" align="right">
+        <b>Temperature</b><br>
+        {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C / 
+        {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
+      </td>
+      <td valign="center" align="left">
+        {% chart sensor keg.tap.temperature_sensor 300 60 %}
+      </td>
+    </tr>
+    {% endif %}
+    {% endif %}
+
+    <tr>
+      <td valign="center" align="right">
+        <b>Pints by Weekday</b>
+      </td>
+      <td valign="center" align="left">
+        {% chart volume_by_day keg 300 60 %}
+      </td>
+    </tr>
+
   </table>
 
 </div>

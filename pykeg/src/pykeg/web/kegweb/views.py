@@ -79,12 +79,13 @@ def user_list(request):
       template_name='kegweb/drinker_list.html')
 
 def user_detail(request, username):
-  return object_detail(request,
-      queryset=models.User.objects.filter(is_active=True),
-      slug=username,
-      slug_field='username',
-      template_name='kegweb/drinker_detail.html',
-      template_object_name='drinker')
+  user = get_object_or_404(models.User, username=username)
+  stats = user.get_profile().GetStats()
+
+  context = RequestContext(request, {
+      'stats': stats,
+      'drinker': user})
+  return render_to_response('kegweb/drinker_detail.html', context)
 
 def user_detail_by_id(request, user_id):
   try:
@@ -103,7 +104,7 @@ def keg_list(request):
 #@cache_page(30)
 def keg_detail(request, keg_id):
   keg = get_object_or_404(models.Keg, site=request.kbsite, seqn=keg_id)
-  context = RequestContext(request, {'keg': keg})
+  context = RequestContext(request, {'keg': keg, 'stats': keg.GetStats()})
   return render_to_response('kegweb/keg_detail.html', context)
 
 def drink_list(request):

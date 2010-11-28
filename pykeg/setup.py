@@ -62,7 +62,6 @@ setup(
       'Sphinx',
       'django_nose',
       #'python-openid >= 2.2.5',  # removeme once PIL package works
-      'pygooglechart',
       'tweepy',
     ],
     dependency_links = [

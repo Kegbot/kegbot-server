@@ -1,11 +1,5 @@
 import datetime
 
-try:
-  import pygooglechart
-  HAVE_GOOGLE_CHART = True
-except ImportError:
-  HAVE_GOOGLE_CHART = False
-
 from django.core import urlresolvers
 from django.template import Library
 from django.template import Node
@@ -13,6 +7,7 @@ from django.template import TemplateSyntaxError
 from django.template import Variable
 from django.utils.safestring import mark_safe
 
+from pykeg.core import kbjson
 from pykeg.core import models
 from pykeg.core import units
 
@@ -23,6 +18,9 @@ class ChartUnavailableError(KegweblibError):
   """Thrown when a chart cannot be rendered."""
 
 register = Library()
+
+def to_pints(volume):
+  return float(units.Quantity(volume).ConvertTo.Pint)
 
 def mugshot_box(user, boxsize=100):
   if user:
@@ -45,6 +43,9 @@ def render_page(page):
   return {'page' : page}
 register.inclusion_tag('kegweb/page_block.html')(render_page)
 
+
+### timeago
+
 def timeago(parser, token):
   """{% timeago <timestamp> %}"""
   tokens = token.contents.split()
@@ -65,6 +66,9 @@ class TimeagoNode(Node):
     alt = ts.strftime("%A, %B %d, %Y %I:%M%p")
     return '<abbr class="timeago" title="%s">%s</abbr>' % (iso, alt)
 
+
+### chart
+
 def chart(parser, tokens):
   """{% chart <charttype> [args] width height %}"""
   tokens = tokens.contents.split()
@@ -82,28 +86,74 @@ def chart(parser, tokens):
 register.tag('chart', chart)
 
 class ChartNode(Node):
+  next_chart_id = 0
   def __init__(self, charttype, width, height, args):
     self._charttype = charttype
     self._width = width
     self._height = height
     self._args = args
 
-    self._chart_fn = getattr(self, 'chart_%s' % (self._charttype,))
-    if not self._chart_fn:
+    try:
+      self._chart_fn = getattr(self, 'chart_%s' % (self._charttype,))
+    except AttributeError:
       raise TemplateSyntaxError('unknown chart type: %s' % self._charttype)
 
   def render(self, context):
-    try:
-      if not HAVE_GOOGLE_CHART:
-        raise ChartUnavailableError, "chart library unavailable"
-      url = self._chart_fn(context)
-      res = '<div class="kb-chart"><img src="%s"/></div>' % url
-    except ChartUnavailableError, e:
-      reason = str(e)
-      res = ('<div class="kb-chart-missing" '
-          'style="width:%ipx; height:%ipx;">%s'
-          '</div>' % (self._width, self._height, reason))
-    return res
+    chart_id = str(ChartNode.next_chart_id)
+    ChartNode.next_chart_id += 1
+
+    width = self._width
+    height = self._height
+
+    TMPL = '''
+    <!-- begin chart %(chart_id)s -->
+    <div id="chart-%(chart_id)s-container"
+      style="height: %(height)spx; width: %(width)spx; margin-top:5px;"></div>
+    <script type="text/javascript">
+      var chart_%(chart_id)s;
+      $(document).ready(function() {
+        var chart_data = %(chart_data)s;
+        chart_%(chart_id)s = new Highcharts.Chart(chart_data);
+      });
+    </script>
+    <!-- end chart %(chart_id)s -->
+
+    '''
+
+    chart_base = {
+      'chart': {
+        'renderTo': 'chart-%s-container' % chart_id,
+      },
+      'credits': {
+        'enabled': False,
+      },
+      'legend': {
+        'enabled': False,
+      },
+      'margin': [0, 0, 0, 0],
+      'title': {
+        'text': None,
+      },
+      'yAxis': {
+        'labels': {
+          'align': 'left'
+        },
+        'title': {
+          'text': None,
+        }
+      },
+    }
+
+    chart_data = self._chart_fn(context)
+    for k, v in chart_base.iteritems():
+      if k not in chart_data:
+        chart_data[k] = v
+      elif type(v) == type({}):
+        chart_data[k].update(v)
+      else:
+        chart_data[k] = v
+    chart_data = kbjson.dumps(chart_data)
+    return TMPL % vars()
 
   def chart_sensor(self, context):
     """ Shows a simple line plot of a specific temperature sensor.
@@ -121,7 +171,7 @@ class ChartNode(Node):
     except models.ThermoSensor.DoesNotExist:
       raise ChartUnavailableError, "Sensor '%s' not found" % sensor_name
 
-    hours = 12
+    hours = 6
     now = datetime.datetime.now()
     start = now - (datetime.timedelta(hours=hours))
     start = start - (datetime.timedelta(seconds=start.second))
@@ -143,23 +193,33 @@ class ChartNode(Node):
     if not have_temps:
       raise ChartUnavailableError, "Not enough data"
 
-    chart = pygooglechart.SparkLineChart(self._width, self._height)
-    chart.add_data(temps)
-    chart.fill_solid(pygooglechart.Chart.BACKGROUND, '00000000')
-    chart.set_colours(['4D89F9'])
-    return chart.get_url()
-
-  def _get_obj_stats(self, context):
-    obj_var = Variable(self._args[0])
-    obj = obj_var.resolve(context)
-
-    if not hasattr(obj, 'GetStats'):
-      raise ChartUnavailableError, "Argument does not support stats"
-
-    stats = obj.GetStats()
-    if not stats:
-      raise ChartUnavailableError, "Stats unavailable"
-    return obj, stats
+    res = {
+      'series': [
+        {
+          'data': temps,
+          'marker': {
+            'enabled': False,
+          },
+        },
+      ],
+      'tooltip': {
+        'enabled': False,
+      },
+      'xAxis': {
+        'categories': ['Temperature'],
+        'labels': {
+          'enabled': False,
+        },
+        'tickInterval': 0,
+      },
+      'yAxis': {
+        'labels': {
+          'enabled': False,
+        },
+        'tickInterval': 1,
+      },
+    }
+    return res
 
   def chart_keg_volume(self, context):
     """ Shows a horizontal bar chart of keg served/remaining volume.
@@ -172,16 +232,38 @@ class ChartNode(Node):
     keg, stats = self._get_obj_stats(context)
 
     served = units.Quantity(stats.get('total_volume', 0.0))
-    served_pints = served.ConvertTo.Pint
-    full_pints = keg.full_volume().ConvertTo.Pint
+    served_pints = to_pints(served)
+    full_pints = to_pints(keg.full_volume())
     remain_pints = full_pints - served_pints
 
-    chart = pygooglechart.StackedHorizontalBarChart(self._width, self._height,
-        x_range=(0, full_pints))
-    chart.set_bar_width(20)
-    chart.set_colours(['4D89F9'])
-    chart.add_data([served_pints])
-    return chart.get_url()
+    res = {
+      'chart': {
+        'defaultSeriesType': 'bar',
+      },
+      'series': [
+        {'data': [served_pints]},
+      ],
+      'tooltip': {
+        'enabled': False,
+      },
+      'xAxis': {
+        'categories': ['Served'],
+        'labels': {
+          'enabled': False,
+        },
+        'gridLineWidth': 0,
+      },
+      'yAxis': {
+        'endOnTick': False,
+        'min': 0,
+        'max': full_pints,
+        'lineWidth': 0,
+        'labels': {
+          'enabled': False,
+        },
+      },
+    }
+    return res
 
   def chart_volume_by_day(self, context):
     """ Shows a horizontal bar chart of keg served/remaining volume.
@@ -199,25 +281,10 @@ class ChartNode(Node):
 
     vals = []
     for k in sorted(volmap.keys()):
-      vals.append(float(volmap[k]))
+      vals.append(to_pints(volmap[k]))
     if len(vals) != 7:
       raise ChartUnavailableError, "Volume data is corrupt"
-    chart = self._day_of_week_chart(vals)
-    return chart.get_url()
-
-
-  def _day_of_week_chart(self, vals):
-    chart = pygooglechart.StackedVerticalBarChart(self._width, self._height)
-    chart.set_bar_width(20)
-    chart.set_colours(['4D89F9','C6D9FD'])
-
-    # convert from 0=Monday to 0=Sunday
-    vals.insert(0, vals.pop(-1))
-
-    chart.add_data(vals)
-    labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    chart.set_axis_labels('x', labels)
-    return chart
+    return self._day_of_week_chart(vals)
 
   def chart_sessions_weekday(self, context):
     """ Vertical bar chart showing session volume by day of week.
@@ -238,9 +305,8 @@ class ChartNode(Node):
 
     for chunk in chunks:
       weekday = chunk.starttime.weekday()
-      weekdays[weekday] += float(chunk.Volume())
-    chart = self._day_of_week_chart(weekdays)
-    return chart.get_url()
+      weekdays[weekday] += to_pints(chunk.Volume())
+    return self._day_of_week_chart(weekdays)
 
   def chart_sessions_volume(self, context):
     """ Line chart showing session volumes.
@@ -251,27 +317,46 @@ class ChartNode(Node):
       sessions - an iterable of DrinkingSession or UserDrinkingSessionPart
                  instances
     """
+
     sessions_var = Variable(self._args[0])
     sessions = sessions_var.resolve(context)
     if not sessions:
       raise ChartUnavailableError, "Must give sessions as argument"
 
-    data = []
-    avgs = []
-    avg_points = []
-    total = 0.0
+    buckets = [0]*6  # 1 or less, 2, 3, 4, 5, 6+
+    labels = [
+      '0-1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6+'
+    ]
     for sess in sessions:
-      vol = int(sess.Volume())
-      data.append(vol)
-      avg_points.append(vol)
-      avg_points = avg_points[-5:]
-      avgs.append(sum(avg_points) / len(avg_points))
+      pints = to_pints(sess.Volume())
+      intval = int(pints)
+      if intval <= 1:
+        buckets[0] += 1
+      elif intval >= 6:
+        buckets[-1] += 1
+      else:
+        buckets[intval - 1] += 1
 
-    chart = pygooglechart.SimpleLineChart(self._width, self._height)
-    chart.set_colours(['4D89F9','C6D9FD'])
-    chart.add_data(data)
-    chart.add_data(avgs)
-    return chart.get_url()
+    res = {
+      'xAxis': {
+        'categories': labels,
+      },
+      'series': [
+        {'data': buckets},
+      ],
+      'yAxis': {
+        'min': 0,
+      },
+      'chart': {
+        'defaultSeriesType': 'column',
+      }
+    }
+    return res
 
   def chart_users_by_volume(self, context):
     """Pie chart showing users by volume.
@@ -281,7 +366,6 @@ class ChartNode(Node):
     Args:
       obj - the keg or drinking session instance to chart
     """
-    chart = pygooglechart.PieChart2D(300, 100)
     obj, stats = self._get_obj_stats(context)
     volmap = stats.get('volume_by_drinker', {})
     if not volmap:
@@ -289,7 +373,9 @@ class ChartNode(Node):
 
     data = []
     for username, volume_ml in volmap.iteritems():
-      data.append((volume_ml, username))
+      pints = to_pints(volume_ml)
+      label = '<b>%s</b> (%.1f)' % (username, pints)
+      data.append((label, pints))
 
     other_vol = 0
     for volume_ml, username in data[10:]:
@@ -297,32 +383,84 @@ class ChartNode(Node):
     data = data[:10]
 
     if other_vol:
-      data.append((other_vol, 'all others'))
+      data.append('all others', to_pints(other_vol))
 
-    data.sort(reverse=True)
+    def my_sort(a, b):
+      return cmp(a[1], b[1])
+    data.sort(my_sort)
 
-    labels = []
-    data_vals = []
-    for volume_ml, username in data:
-      ounces = units.Quantity(volume_ml, units=units.UNITS.Milliliter)
-      ounces = ounces.ConvertTo.Ounce
-      data_vals.append(ounces)
-      label = '%s (%ioz)' % (username, ounces)
-      labels.append(label)
-    chart.add_data(data_vals)
-    chart.set_pie_labels(labels)
-    return chart.get_url()
+    res = {
+      'series': [
+        {
+          'type': 'pie',
+          'name': 'Drinkers by Volume',
+          'data': data,
+        }
+      ],
+      'yAxis': {
+        'min': 0,
+      },
+      'chart': {
+        'defaultSeriesType': 'column',
+      },
+      'tooltip': {
+        'enabled': False,
+      },
+    }
+    return res
 
+  def _day_of_week_chart(self, vals):
+    labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-class QueryNode(Node):
-  def __init__(self, var_name, queryset, limit):
-    self._queryset = queryset
-    self._var_name = var_name
-    self._limit_items = limit
+    # convert from 0=Monday to 0=Sunday
+    vals.insert(0, vals.pop(-1))
 
-  def render(self, context):
-    context[self._var_name] = list(self._queryset[:self._limit_items])
-    return ''
+    res = {
+      'xAxis': {
+        'categories': labels,
+      },
+      'yAxis': {
+        'min': 0,
+      },
+      'series': [
+        {'data': vals},
+      ],
+      'chart': {
+        'defaultSeriesType': 'column',
+      }
+    }
+    return res
+
+  def _get_obj_stats(self, context):
+    obj_var = Variable(self._args[0])
+    obj = obj_var.resolve(context)
+
+    if not hasattr(obj, 'GetStats'):
+      raise ChartUnavailableError, "Argument does not support stats"
+
+    stats = obj.GetStats()
+    if not stats:
+      raise ChartUnavailableError, "Stats unavailable"
+    return obj, stats
+
+@register.filter
+def volume(text, fmt='pints'):
+  vol = units.Quantity(float(text))
+  if fmt == 'pints':
+    res = vol.ConvertTo.Pint
+  elif fmt == 'liters':
+    res = vol.ConvertTo.Liter
+  elif fmt == 'ounces':
+    res = vol.ConvertTo.Ounce
+  elif fmt == 'gallons':
+    res = vol.ConvertTo.USGallon
+  elif fmt == 'twelveounces':
+    res = vol.ConvertTo.TwelveOunceBeer
+  elif fmt == 'halfbarrels':
+    res = vol.ConvertTo.HalfBarrelKeg
+  else:
+    raise TemplateSyntaxError, 'Unknown volume format: %s' % fmt
+  return float(res)
 
 @register.filter
 def bac_format(text):

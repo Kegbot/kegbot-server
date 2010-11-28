@@ -42,7 +42,6 @@
     </script>
 {% endblock kb-extrajs %}
 
-
 {% block col-1 %}
 <div class="kb-contentbox-head">
    {{ drinker.username }}: overview
@@ -79,10 +78,11 @@
      <tr>
         <td align="right" valign="top"><b>Total Volume</b></td>
         <td align="left">
-         {{ stats.TotalVolume.ConvertTo.Ounce|floatformat:2}} oz<br>
-         = {{ stats.TotalVolume.ConvertTo.Pint|floatformat:0}} pints<br>
-         = {{ stats.TotalVolume.ConvertTo.USGallon|floatformat:0}} gallons<br>
-         = {{ stats.TotalVolume.ConvertTo.HalfBarrelKeg|floatformat:2}} kegs<br>
+         {{ stats.total_volume|volume:"ounces"|floatformat:1}} ounces<br>
+         = {{ stats.total_volume|volume:"twelveounces"|floatformat:0}} 12-oz bottles<br>
+         = {{ stats.total_volume|volume:"pints"|floatformat:0}} pints<br>
+         = {{ stats.total_volume|volume:"gallons"|floatformat:1}} gallons<br>
+         = {{ stats.total_volume|volume:"halfbarrels"|floatformat:1}} kegs<br>
         </td>
      </tr>
   </table>
@@ -95,21 +95,15 @@
   stats
 </div>
 <div class="kb-contentbox">
-  <table border="0" class="kb-statstable">
-    <tr>
-      <th>Activity by Day</th>
-      <td>
-        {% chart sessions_weekday drinker 200 64 %}
-      </td>
-    </tr>
+  <p>
+    <b>total pints, by day of week</b><br>
+    {% chart sessions_weekday drinker 350 100 %}
+  </p>
 
-    <tr>
-      <th>Volume per Session</th>
-      <td>
-        {% chart sessions_volume drinker.user_session_chunks.all 200 64 %}
-      </td>
-    </tr>
-  </table>
+  <p>
+    <b>all sessions, by pints per session</b><br>
+    {% chart sessions_volume drinker.user_session_chunks.all 350 100 %}
+  </p>
 </div>
 {% endblock %}
 

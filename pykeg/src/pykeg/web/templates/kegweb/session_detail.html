@@ -73,7 +73,6 @@
   </div>
   <div class="kb-contentbox">
     {% for chunk in session.UserChunksByVolume %}
-    {% if chunk.user %}
       <table border="0">
       <tr>
       <td align="center" valign="center">
@@ -81,7 +80,7 @@
           {% with chunk.user as drinker %}
             {% mugshot_box drinker 96 %}
           {% endwith %}
-          {{ chunk.user }}
+          {% if chunk.user %}{{ chunk.user }}{% else %}anonymous{% endif %}
         </div>
       </td>
       <td align="center" valign="center">
@@ -91,7 +90,6 @@
       </td>
       </tr>
       </table>
-    {% endif %}
     {% endfor %}
   </div>
   <div class="clear">&nbsp;</div>

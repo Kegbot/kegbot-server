@@ -12,7 +12,7 @@ Version 0.7.6 (2010-11-28)
 Reflashing your kegboard is recommended.
 
 *Note:* It is recommended that you rebuild all session and statistical data
-after updating to this version.
+after updating to this version::
   $ kegbot-admin.py kb_regen_sessions
   $ kegbot-admin.py kb_regen_stats
   $ kegbot-admin.py kb_regen_events

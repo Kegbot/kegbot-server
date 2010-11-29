@@ -5,6 +5,16 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Version 0.7.7 (2010-11-28)
+--------------------------
+*Note:* This is a quick patch release to v0.7.6.  See changelog for v0.7.6 for
+major changes.
+
+Core/General
+^^^^^^^^^^^^
+* Fixes a bug discovered with stats generation in v0.7.6.
+
+
 Version 0.7.6 (2010-11-28)
 --------------------------
 

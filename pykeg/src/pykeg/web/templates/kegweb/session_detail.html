@@ -66,3 +66,34 @@
 </div>
 {% endblock col-2 %}
 
+{% block extra-content %}
+<div class="kb-main-content">
+  <div class="kb-contentbox-head">
+    drinkers by volume
+  </div>
+  <div class="kb-contentbox">
+    {% for chunk in session.UserChunksByVolume %}
+    {% if chunk.user %}
+      <table border="0">
+      <tr>
+      <td align="center" valign="center">
+        <div class="kb-drink-box-mugshot">
+          {% with chunk.user as drinker %}
+            {% mugshot_box drinker 96 %}
+          {% endwith %}
+          {{ chunk.user }}
+        </div>
+      </td>
+      <td align="center" valign="center">
+        <p>
+        {% chart user_session_chunks chunk 400 100 %}
+        </p>
+      </td>
+      </tr>
+      </table>
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div class="clear">&nbsp;</div>
+</div>
+{% endblock extra-content %}

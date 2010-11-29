@@ -1,3 +1,4 @@
+import copy
 import datetime
 
 from django.core import urlresolvers
@@ -154,8 +155,9 @@ class ChartNode(Node):
       },
     }
 
-    chart_data = self._chart_fn(context)
-    for k, v in chart_base.iteritems():
+    chart_result = self._chart_fn(context)
+    chart_data = chart_base
+    for k, v in chart_result.iteritems():
       if k not in chart_data:
         chart_data[k] = v
       elif type(v) == type({}):
@@ -416,6 +418,54 @@ class ChartNode(Node):
       },
       'tooltip': {
         'enabled': False,
+      },
+    }
+    return res
+
+  def chart_user_session_chunks(self, context):
+    user_chunk_var = Variable(self._args[0])
+    user_chunk = user_chunk_var.resolve(context)
+    if not user_chunk:
+      raise ChartUnavailableError, "Must give user chunk as argument"
+
+    max_pints = user_chunk.session.UserChunksByVolume()
+    if not max_pints:
+      raise ChartUnavailableError, "Error: session corrupt"
+    max_pints = float(max_pints[0].Volume().ConvertTo.Pint)
+    drinks = user_chunk.GetDrinks()
+    totals = {}
+    for drink in drinks:
+      label = 'keg %i' % drink.keg.seqn
+      totals[label] = totals.get(label, 0) + float(drink.Volume().ConvertTo.Pint)
+
+    series = []
+    for name, tot in totals.iteritems():
+      series.append({
+        'name': name,
+        'data': [tot],
+      })
+
+    res = {
+      'xAxis': {
+        'categories': ['Pints'],
+      },
+      'yAxis': {
+        'max': max_pints,
+      },
+      'series': series,
+      'tooltip': {
+        'enabled': False,
+      },
+      'chart': {
+        'defaultSeriesType': 'bar',
+      },
+      'legend': {
+        'enabled': True,
+      },
+      'plotOptions': {
+        'series': {
+          'stacking': 'normal',
+        },
       },
     }
     return res

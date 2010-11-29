@@ -16,6 +16,14 @@
         {{keg.type}}<br>
         <div style="color:#888;">{{keg.size.name}}</div>
       </td>
+      <td rowspan=5>
+        {% if keg.type.GetImage %}
+          <img src="{{ keg.type.GetImage.thumbnail.url }}">
+        {% else %}
+          <div style="font-size: 200%; color: #ccc;">?</div>
+          <div style="font-size: 8px; color: #ccc;">no image</div>
+        {% endif %}
+      </td>
     </tr>
 
     <tr>
@@ -27,7 +35,9 @@
       <td>
         {% ifequal keg.status "online" %}
         this keg is <b>online</b>, and is {{ keg.keg_age.days }}
-        day{{keg.keg_age.days|pluralize}} old.  it is
+        day{{keg.keg_age.days|pluralize}} old.
+        <br/>
+        it is
         {% if keg.is_empty %}
           <i>empty</i>.
         {% else %}
@@ -63,8 +73,8 @@
           ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
         {% endif %}
       </td>
-      <td valign="center" align="left">
-        {% chart keg_volume keg 300 60 %}
+      <td valign="center" align="left" colspan="2">
+        {% chart keg_volume keg 340 60 %}
       </td>
     </tr>
 
@@ -76,8 +86,8 @@
         {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C / 
         {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
       </td>
-      <td valign="center" align="left">
-        {% chart sensor keg.tap.temperature_sensor 300 60 %}
+      <td valign="center" align="left" colspan="2">
+        {% chart sensor keg.tap.temperature_sensor 340 60 %}
       </td>
     </tr>
     {% endif %}
@@ -87,8 +97,8 @@
       <td valign="center" align="right">
         <b>Pints by Weekday</b>
       </td>
-      <td valign="center" align="left">
-        {% chart volume_by_day keg 300 60 %}
+      <td valign="center" align="left" colspan="2">
+        {% chart volume_by_day keg 340 100 %}
       </td>
     </tr>
 

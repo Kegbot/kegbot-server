@@ -1,7 +1,6 @@
 {% load kegweblib %}
 <div class="kb-tapbox">
   <div class="kb-tapbox-content">
-
     <table border="0">
       <tr>
         <td align="center" valign="center">
@@ -10,43 +9,43 @@
             <img src="{{ keg.type.GetImage.thumbnail.url }}">
             {% else %}
             <div style="font-size: 200%; color: #ccc;">?</div>
-              <div style="font-size: 8px; color: #ccc;">no image</div>
+            <div style="font-size: 8px; color: #ccc;">no image</div>
+            {% endif %}
+          </div>
+        </td>
+        <td valign="top">
+          <div class="kb-tapbox-detail">
+            <div class="kb-tapbox-header">
+              {{keg.type.name}}
+            </div>
+            <div class="kb-tapbox-subheader">
+              {{keg.size.name}}
+              {% if keg.tap %} - {{ keg.tap.name }}{% endif %}
+            </div>
+
+            <div class="kb-tapbox-stats">
+              <p>
+              <b>Total Poured</b>:
+              {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
+              {% if keg.is_empty %}
+                (empty!)
+              {% else %}
+                ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
+              {% endif %}
+              {% chart keg_volume keg 320 50 %}
+              </p>
+
+              {% if keg.tap %}
+              {% if keg.tap.temperature_sensor %}
+              <p>
+                <b>Temperature</b>:
+                {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C /
+                {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
+              {% chart sensor keg.tap.temperature_sensor 320 50 %}
+              </p>
+              {% endif %}
               {% endif %}
             </div>
-          </td>
-          <td valign="top">
-            <div class="kb-tapbox-detail">
-              <div class="kb-tapbox-header">
-                {{keg.type.name}}
-              </div>
-              <div class="kb-tapbox-subheader">
-                {{keg.size.name}}
-                {% if keg.tap %} - {{ keg.tap.name }}{% endif %}
-              </div>
-
-              <div class="kb-tapbox-stats">
-                <p>
-                <b>Total Poured</b>:
-                {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
-                {% if keg.is_empty %}
-                  (empty!)
-                {% else %}
-                  ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
-                {% endif %}
-                {% chart keg_volume keg 320 50 %}
-                </p>
-
-                {% if keg.tap %}
-                {% if keg.tap.temperature_sensor %}
-                <p>
-                  <b>Temperature</b>:
-                  {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C /
-                  {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
-                {% chart sensor keg.tap.temperature_sensor 320 50 %}
-                </p>
-                {% endif %}
-                {% endif %}
-              </div>
           </div>
         </td>
       </tr>
@@ -59,7 +58,6 @@
         </td>
       </tr>
       {% endif %}
-
     </table>
 
     <div class="kb-tapbox-footer">

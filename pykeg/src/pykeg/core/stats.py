@@ -45,7 +45,7 @@ class StatsBuilder(object):
       prev_objs = self._PrevObjs(obj).order_by('endtime')
 
     stats = self._prev_stats
-    for drink in prev_objs:
+    for drink in itertools.chain(prev_objs, [obj]):
       for statname, statdefault, fn in self.AllStats():
         previous_value = stats.get(statname, statdefault)
         stats[statname] = fn(drink, previous_value)

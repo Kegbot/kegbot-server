@@ -722,6 +722,9 @@ class UserSessionChunk(AbstractChunk):
   def GetTitle(self):
     return self.session.GetTitle()
 
+  def GetDrinks(self):
+    return self.session.drinks.filter(user=self.user).order_by('starttime')
+
 
 class KegSessionChunk(AbstractChunk):
   """A specific keg's contribution to a session (spans all users)."""

@@ -378,12 +378,13 @@ class ChartNode(Node):
       data.append((label, pints))
 
     other_vol = 0
-    for volume_ml, username in data[10:]:
-      other_vol += volume_ml
+    for username, pints in data[10:]:
+      other_vol += pints
     data = data[:10]
 
     if other_vol:
-      data.append('all others', to_pints(other_vol))
+      label = '<b>%s</b> (%.1f)' % ('all others', other_vol)
+      data.append((label, other_vol))
 
     def my_sort(a, b):
       return cmp(a[1], b[1])

@@ -102,33 +102,42 @@ a:hover {
 
 .kb-tapbox {
   width: 480px;
-  border: 1px solid #C3C0C0;
+  border: 0px solid #C3C0C0;
   margin-top: 8px;
   margin-bottom: 8px;
 }
 
 .kb-tapbox-header {
-  background: #eee;
-  padding: 4px;
+  font-size: 1.2em;
+  font-weight: bold;
 }
+.kb-tapbox-subheader {
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.kb-tapbox-description {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  background: #b2def2;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
 
 .kb-tapbox-content {
   padding: 4px;
+  font: 80%/100% "Lucida Grande", Arial, sans-serif;
 }
 
 .kb-tapbox-image {
   min-width: 96px;
   min-height: 96px;
-  border: 1px dotted #C3C0C0;
-  margin-top: auto;
-  float: left;
 }
 
 .kb-tapbox-detail {
-  font: 80%/100% "Lucida Grande", Arial, sans-serif;
   margin-left: 12px;
-  float: left;
-  width: 360px;
+  width: 320px;
 }
 
 .kb-tapbox-footer {
@@ -138,6 +147,16 @@ a:hover {
 	width: 100%;
 	margin-top: 4px;
 	padding: 1px;
+}
+
+.kb-tapbox-stats {
+}
+
+.kb-tapbox-stats p {
+  margin: 0px;
+}
+
+.kb-tapbox-stats .kb-chartbox {
 }
 
 .kb-main-content h1 {

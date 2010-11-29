@@ -108,7 +108,8 @@ class ChartNode(Node):
     TMPL = '''
     <!-- begin chart %(chart_id)s -->
     <div id="chart-%(chart_id)s-container"
-      style="height: %(height)spx; width: %(width)spx; margin-top:5px;"></div>
+      style="height: %(height)spx; width: %(width)spx;"
+      class="kb-chartbox"></div>
     <script type="text/javascript">
       var chart_%(chart_id)s;
       $(document).ready(function() {
@@ -123,6 +124,15 @@ class ChartNode(Node):
     chart_base = {
       'chart': {
         'renderTo': 'chart-%s-container' % chart_id,
+        'backgroundColor': {
+            'linearGradient': [0, 0, 500, 500],
+            'stops': [
+                [0, 'rgb(255, 255, 255)'],
+                [1, 'rgb(178, 222, 242)']
+            ]
+        },
+        'borderColor': '#eeeeff',
+        'borderWidth': 0,
       },
       'credits': {
         'enabled': False,

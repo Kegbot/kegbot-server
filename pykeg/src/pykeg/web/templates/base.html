@@ -7,21 +7,21 @@
 <head>
   <link rel="stylesheet" href="/site_media/style.css" />
   <title>kegbot :: {% block title %}Default Page{% endblock %}</title>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript">
-      google.load("jquery", "1.4");
-      google.load("jqueryui", "1.8");
-      google.load('visualization', '1', {'packages':['table', 'corechart',
-          'annotatedtimeline', 'imagesparkline']});
-    </script>
-    <script src="/site_media/highcharts/js/highcharts.js" type="text/javascript"></script>
-    <script type="text/javascript" src="/site_media/js/jquery.timeago.js"></script>
-    <script type="text/javascript">
-      $(document).ready(function() {
-          $("abbr.timeago").timeago();
-      });
-    </script>
-    {% block kb-extrajs %}{%endblock%}
+
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+    google.load("jquery", "1.4");
+    google.load("jqueryui", "1.8");
+    google.load('visualization', '1', {'packages':['table']});
+  </script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+        $("abbr.timeago").timeago();
+    });
+  </script>
+  <script type="text/javascript" src="/site_media/highcharts/js/highcharts.js"></script>
+  <script type="text/javascript" src="/site_media/js/jquery.timeago.js"></script>
+  {% block kb-extrajs %}{%endblock%}
 </head>
 
 <body>
@@ -103,7 +103,8 @@
 
     <div id="kb-footer">
       this is <a href="http://kegbot.org/">kegbot</a>:
-      &copy; 2004-{% now "Y" %} mike wakerly
+      &copy; 2004-{% now "Y" %} mike wakerly<br>
+      charts by <a href="http://highcharts.com/">highcharts</a>
     </div>
 
   </div> <!-- kb-main-page -->

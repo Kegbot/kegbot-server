@@ -539,7 +539,10 @@ class ChartNode(Node):
 
 @register.filter
 def volume(text, fmt='pints'):
-  vol = units.Quantity(float(text))
+  try:
+    vol = units.Quantity(float(text))
+  except ValueError:
+    return text
   if fmt == 'pints':
     res = vol.ConvertTo.Pint
   elif fmt == 'liters':

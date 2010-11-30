@@ -954,7 +954,6 @@ class _StatsModel(models.Model):
   site = models.ForeignKey(KegbotSite)
   date = models.DateTimeField(default=datetime.datetime.now)
   stats = fields.JSONField()
-  revision = models.PositiveIntegerField(default=0)
 
   def Update(self, drink, force=False):
     previous = self.stats

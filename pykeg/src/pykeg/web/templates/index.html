@@ -31,8 +31,8 @@
 </div>
 
 <script>
-  {% if drinks %}
-  var LAST_DRINK_ID = {{ drinks.0.seqn }};
+  {% if latest_drinks %}
+  var LAST_DRINK_ID = {{ latest_drinks.0.seqn }};
   {% else %}
   var LAST_DRINK_ID = 0;
   {% endif %}
@@ -66,16 +66,18 @@
 
   function queryLastDrink() {
     $.getJSON('/api/last-drink-id/', function(data) {
-      if (data['id'] > LAST_DRINK_ID) {
-        loadNewDrinks();
+      if (data['result']) {
+        if (data['result']['id'] > LAST_DRINK_ID) {
+          loadNewDrinks();
+        }
       }
     });
   }
 
   function loadNewDrinks() {
     $.getJSON('/api/last-drinks-html/', function(data) {
-      for (var idx in data) {
-        addDrinkHtml(data[idx], true, false);
+      for (var idx in data['result']) {
+        addDrinkHtml(data['result'][idx], true, false);
       }
     });
   }

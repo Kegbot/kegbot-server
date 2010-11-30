@@ -5,6 +5,30 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Current Version (in development)
+--------------------------------
+*Note:* Due to changes in the Kegbot core, you must run the following commands
+after updating::
+  $ kegbot-admin.py migrate
+  $ kegbot-admin.py kb_regen_stats
+
+Core/General
+^^^^^^^^^^^^
+* Added SystemStats table.
+
+Kegweb
+^^^^^^
+* Added slightly more info to the "all-time stats" page.
+* Used cached stats on the "all-time stats" page, making it more responsive.
+* Fixed the AJAX auto-update of the drink list on the homepage.
+* Fixed a crash in the LCD daemon, encountered when an active tap did not have a
+  temperature sensor assigned to it.
+* Fixed a crash on the keg admin page.
+* Fixed a regression introduced in v0.7.6 that caused kegweb to crash when a
+  chart could not be displayed; the chart is once again replaced with a
+  descriptive error message.
+* Fixed "known drinkers" statistic on the keg detail page.
+
 Version 0.7.7 (2010-11-28)
 --------------------------
 *Note:* This is a quick patch release to v0.7.6.  See changelog for v0.7.6 for

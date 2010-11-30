@@ -120,6 +120,14 @@ class BaseStatsBuilder(StatsBuilder):
     volmap[username] = volmap.get(username, 0) + float(drink.Volume())
     return volmap
 
+  @stat('registered_drinkers')
+  def RegisteredDrinkers(self, drink, prev):
+    if not prev:
+      prev = []
+    if drink.user and drink.user.username not in prev:
+      prev.append(drink.user.username)
+    return prev
+
   @stat('ids')
   def Ids(self, drink, prev):
     if prev is None:
@@ -132,7 +140,7 @@ class BaseStatsBuilder(StatsBuilder):
 
 class DrinkerStatsBuilder(BaseStatsBuilder):
   """Builder of user-specific stats by drink."""
-  REVISION = 3
+  REVISION = 4
 
   def _PrevObjs(self, drink):
     qs = drink.user.drinks.valid().filter(endtime__lt=drink.endtime)
@@ -151,7 +159,7 @@ class DrinkerStatsBuilder(BaseStatsBuilder):
 
 class KegStatsBuilder(BaseStatsBuilder):
   """Builder of keg-specific stats."""
-  REVISION = 3
+  REVISION = 4
 
   def _PrevObjs(self, drink):
     qs = drink.keg.drinks.valid().filter(endtime__lt=drink.endtime)
@@ -169,7 +177,7 @@ class KegStatsBuilder(BaseStatsBuilder):
 
 class SessionStatsBuilder(BaseStatsBuilder):
   """Builder of user-specific stats by drink."""
-  REVISION = 3
+  REVISION = 4
 
   def _PrevObjs(self, drink):
     qs = drink.session.drinks.valid().filter(endtime__lt=drink.endtime)

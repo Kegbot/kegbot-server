@@ -53,8 +53,10 @@
     <tr>
       <td align="right"><b>Pour Count</b></td>
       <td>
-        {{ keg.drinks.valid.count }} pours by {{ stats.AllDrinkersCount }}
-        unique drinkers.
+        {{ keg.drinks.valid.count }} pours by
+        {% with keg.GetStats.registered_drinkers as drinkers %}
+          {{ drinkers|length }} known drinker{{ drinkers|length|pluralize }}.
+        {% endwith %}
       </td>
     </tr>
 

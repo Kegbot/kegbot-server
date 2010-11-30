@@ -956,11 +956,12 @@ class _StatsModel(models.Model):
   stats = fields.JSONField()
   revision = models.PositiveIntegerField(default=0)
 
-  def Update(self, obj):
-    builder = self.STATS_BUILDER()
-    # TODO(mikey): use prev
-    self.stats = builder.Build(obj)
-    self.revision = builder.REVISION
+  def Update(self, drink, force=False):
+    previous = self.stats
+    if force:
+      previous = None
+    builder = self.STATS_BUILDER(drink, previous)
+    self.stats = builder.Build()
     self.save()
 
 

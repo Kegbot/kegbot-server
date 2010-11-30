@@ -30,6 +30,14 @@ class Command(NoArgsCommand):
   def handle(self, **options):
     drinks = models.Drink.objects.all()
 
+    models.SystemStats.objects.all().delete()
+    last_drinks = models.Drink.objects.valid().order_by('-endtime')
+    if last_drinks:
+      progbar('recalc system stats', 0, 1)
+      last_drinks[0]._UpdateSystemStats()
+    progbar('recalc system stats', 1, 1)
+    print ''
+
     models.KegStats.objects.all().delete()
     kegs = models.Keg.objects.all()
     count = kegs.count()

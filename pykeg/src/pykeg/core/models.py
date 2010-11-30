@@ -365,6 +365,13 @@ class Drink(models.Model):
   auth_token = models.CharField(max_length=256, blank=True, null=True)
   duration = models.PositiveIntegerField(blank=True, null=True)
 
+  def _UpdateSystemStats(self):
+    defaults = {
+      'site': self.site,
+    }
+    stats, created = SystemStats.objects.get_or_create(defaults=defaults)
+    stats.Update(self)
+
   def _UpdateUserStats(self):
     if self.user:
       defaults = {
@@ -390,6 +397,7 @@ class Drink(models.Model):
       stats.Update(self)
 
   def PostProcess(self):
+    self._UpdateSystemStats()
     self._UpdateUserStats()
     self._UpdateKegStats()
     self._UpdateSessionStats()
@@ -954,6 +962,13 @@ class _StatsModel(models.Model):
     self.stats = builder.Build(obj)
     self.revision = builder.REVISION
     self.save()
+
+
+class SystemStats(_StatsModel):
+  STATS_BUILDER = stats.SystemStatsBuilder
+
+  def __str__(self):
+    return 'SystemStats for %s' % self.site
 
 
 class UserStats(_StatsModel):

@@ -138,6 +138,16 @@ class BaseStatsBuilder(StatsBuilder):
     return prev
 
 
+class SystemStatsBuilder(BaseStatsBuilder):
+  """Builder of systemwide stats by drink."""
+  REVISION = 4
+
+  def _PrevObjs(self, drink):
+    qs = drink.site.drinks.valid().filter(seqn__lt=drink.seqn)
+    qs = qs.order_by('seqn')
+    return qs
+
+
 class DrinkerStatsBuilder(BaseStatsBuilder):
   """Builder of user-specific stats by drink."""
   REVISION = 4

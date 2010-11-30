@@ -1,3 +1,21 @@
+# Copyright 2010 Mike Wakerly <opensource@hoho.com>
+#
+# This file is part of the Pykeg package of the Kegbot project.
+# For more information on Pykeg or Kegbot, see http://kegbot.org/
+#
+# Pykeg is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# Pykeg is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+
 import copy
 import datetime
 
@@ -87,7 +105,31 @@ def chart(parser, tokens):
 register.tag('chart', chart)
 
 class ChartNode(Node):
-  next_chart_id = 0
+  NEXT_CHART_ID = 0
+  CHART_TMPL = '''
+  <!-- begin chart %(chart_id)s -->
+  <div id="chart-%(chart_id)s-container"
+      style="height: %(height)spx; width: %(width)spx;"
+      class="kb-chartbox"></div>
+  <script type="text/javascript">
+    var chart_%(chart_id)s;
+    $(document).ready(function() {
+      var chart_data = %(chart_data)s;
+      chart_%(chart_id)s = new Highcharts.Chart(chart_data);
+    });
+  </script>
+  <!-- end chart %(chart_id)s -->
+
+  '''
+  ERROR_TMPL = '''
+  <!-- begin chart %(chart_id)s -->
+  <div id="chart-%(chart_id)s-container"
+      style="height: %(height)spx; width: %(width)spx;"
+      class="kb-chartbox-error">
+    %(error_str)s
+  </div>
+  <!-- end chart %(chart_id)s -->
+  '''
   def __init__(self, charttype, width, height, args):
     self._charttype = charttype
     self._width = width
@@ -100,31 +142,19 @@ class ChartNode(Node):
       raise TemplateSyntaxError('unknown chart type: %s' % self._charttype)
 
   def render(self, context):
-    chart_id = str(ChartNode.next_chart_id)
-    ChartNode.next_chart_id += 1
+    chart_id = str(ChartNode.NEXT_CHART_ID)
+    ChartNode.NEXT_CHART_ID += 1
 
     width = self._width
     height = self._height
 
-    TMPL = '''
-    <!-- begin chart %(chart_id)s -->
-    <div id="chart-%(chart_id)s-container"
-      style="height: %(height)spx; width: %(width)spx;"
-      class="kb-chartbox"></div>
-    <script type="text/javascript">
-      var chart_%(chart_id)s;
-      $(document).ready(function() {
-        var chart_data = %(chart_data)s;
-        chart_%(chart_id)s = new Highcharts.Chart(chart_data);
-      });
-    </script>
-    <!-- end chart %(chart_id)s -->
-
-    '''
-
+    try:
+      chart_result = self._chart_fn(context)
+    except ChartUnavailableError, e:
+      error_str = 'chart error: %s' % (e,)
+      return ChartNode.ERROR_TMPL % vars()
     chart_base = {
       'chart': {
-        'renderTo': 'chart-%s-container' % chart_id,
         'backgroundColor': {
             'linearGradient': [0, 0, 500, 500],
             'stops': [
@@ -134,6 +164,7 @@ class ChartNode(Node):
         },
         'borderColor': '#eeeeff',
         'borderWidth': 0,
+        'renderTo': 'chart-%s-container' % chart_id,
       },
       'credits': {
         'enabled': False,
@@ -155,7 +186,6 @@ class ChartNode(Node):
       },
     }
 
-    chart_result = self._chart_fn(context)
     chart_data = chart_base
     for k, v in chart_result.iteritems():
       if k not in chart_data:
@@ -165,7 +195,7 @@ class ChartNode(Node):
       else:
         chart_data[k] = v
     chart_data = kbjson.dumps(chart_data)
-    return TMPL % vars()
+    return ChartNode.CHART_TMPL % vars()
 
   def chart_sensor(self, context):
     """ Shows a simple line plot of a specific temperature sensor.

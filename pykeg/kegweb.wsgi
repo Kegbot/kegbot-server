@@ -20,7 +20,7 @@ import os, site, sys
 #     <VirtualHost>
 #       # ...
 #
-#       WSGIDaemoneProcess mykegbot
+#       WSGIDaemonProcess mykegbot
 #       WSGIProcessGroup mykegbot
 #       WSGIScriptAlias / /path/to/kegweb.wsgi
 #

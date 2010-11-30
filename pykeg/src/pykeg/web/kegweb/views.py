@@ -121,7 +121,7 @@ def keg_list(request):
       template_object_name='keg',
       template_name='kegweb/keg_list.html')
 
-#@cache_page(30)
+@cache_page(30)
 def keg_detail(request, keg_id):
   keg = get_object_or_404(models.Keg, site=request.kbsite, seqn=keg_id)
   context = RequestContext(request, {'keg': keg, 'stats': keg.GetStats()})

@@ -23,13 +23,6 @@ import inspect
 import itertools
 import logging
 
-def stat(name, default=None):
-  def decorate(f):
-    setattr(f, 'statname', name)
-    setattr(f, 'statdefault', default)
-    return f
-  return decorate
-
 class StatsBuilder:
   def __init__(self, drink, previous=None):
     self._drink = drink
@@ -61,13 +54,13 @@ class StatsBuilder:
 
   def _AllStats(self):
     for name, cls in inspect.getmembers(self, inspect.isclass):
-      if hasattr(cls, 'statname'):
-        yield (cls.statname, cls.statdefault, cls)
+      if hasattr(cls, 'STAT_NAME'):
+        yield (cls.STAT_NAME, cls)
 
   def Build(self):
     drinks = self._AllDrinks()
     result = copy.deepcopy(self._previous)
-    for statname, statdefault, cls in self._AllStats():
+    for statname, cls in self._AllStats():
       o = cls()
       if statname not in result:
         self._logger.debug('+++ %s (FULL)' % statname)
@@ -93,22 +86,22 @@ class Stat:
 class BaseStatsBuilder(StatsBuilder):
   """Builder which generates a variety of stats from object information."""
 
-  @stat('total_volume', default=0)
   class TotalVolume(Stat):
+    STAT_NAME = 'total_volume'
     def Full(self, drinks):
       return sum(drink.volume_ml for drink in drinks)
     def Incremental(self, drink, previous):
       return previous + drink.volume_ml
 
-  @stat('total_count', default=0)
   class TotalPours(Stat):
+    STAT_NAME = 'total_count'
     def Full(self, drinks):
       return drinks.count()
     def Incremental(self, drink, previous):
       return previous + 1
 
-  @stat('volume_avg')
   class AverageVolume(Stat):
+    STAT_NAME = 'volume_avg'
     def Full(self, drinks):
       count = drinks.count()
       if count:
@@ -126,8 +119,8 @@ class BaseStatsBuilder(StatsBuilder):
       res['count'] = count + 1
       return res
 
-  @stat('volume_max')
   class LargestVolume(Stat):
+    STAT_NAME = 'volume_max'
     def Full(self, drinks):
       res = {'volume': 0, 'id': 0}
       drinks = drinks.order_by('-volume_ml')
@@ -142,8 +135,8 @@ class BaseStatsBuilder(StatsBuilder):
       previous['id'] = drink.seqn
       return previous
 
-  @stat('volume_min')
   class SmallestVolume(Stat):
+    STAT_NAME = 'volume_min'
     def Full(self, drinks):
       res = {'volume': 0, 'id': 0}
       drinks = drinks.order_by('volume_ml')
@@ -158,8 +151,8 @@ class BaseStatsBuilder(StatsBuilder):
       previous['id'] = drink.seqn
       return previous
 
-  @stat('volume_by_day_of_week')
   class VolumeByDayOfweek(Stat):
+    STAT_NAME = 'volume_by_day_of_week'
     def Full(self, drinks):
       # Note: uses the session's starttime, rather than the drink's. This causes
       # late-night sessions to be reported for the day on which they were
@@ -174,8 +167,8 @@ class BaseStatsBuilder(StatsBuilder):
       previous[weekday] += drink.volume_ml
       return previous
 
-  @stat('volume_by_drinker')
   class VolumeByDrinker(Stat):
+    STAT_NAME = 'volume_by_drinker'
     def Full(self, drinks):
       volmap = {}
       for drink in drinks:
@@ -193,8 +186,8 @@ class BaseStatsBuilder(StatsBuilder):
       previous[u] = previous.get(u, 0) + drink.volume_ml
       return previous
 
-  @stat('drinkers')
   class Drinkers(Stat):
+    STAT_NAME = 'drinkers'
     def Full(self, drinks):
       drinkers = set()
       for drink in drinks:
@@ -212,8 +205,8 @@ class BaseStatsBuilder(StatsBuilder):
         previous.append(u)
       return previous
 
-  @stat('registered_drinkers')
   class RegisteredDrinkers(Stat):
+    STAT_NAME = 'registered_drinkers'
     def Full(self, drinks):
       drinkers = set()
       for drink in drinks:

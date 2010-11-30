@@ -64,8 +64,28 @@ def index(request):
 @cache_page(30)
 def system_stats(request):
   context = RequestContext(request)
-  all_drinks = request.kbsite.drinks.valid()
-  context['top_volume_drinkers_alltime'] = view_util.drinkers_by_volume(all_drinks)[:10]
+
+  stats_qs = request.kbsite.systemstats_set.all()
+  if stats_qs:
+    stats = stats_qs[0].stats
+  else:
+    stats = {}
+  context['stats'] = stats
+
+  top_drinkers = []
+  for username, vol in stats.get('volume_by_drinker', {}).iteritems():
+    username = str(username)
+    vol = float(vol)
+    try:
+      user = models.User.objects.get(username=username)
+    except models.User.DoesNotExist:
+      continue  # should not happen
+    volume = units.Quantity(vol)
+    top_drinkers.append((volume, user))
+  top_drinkers.sort(reverse=True)
+
+  context['top_drinkers'] = top_drinkers[:10]
+
   return render_to_response('kegweb/system-stats.html', context)
 
 

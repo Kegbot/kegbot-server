@@ -18,7 +18,9 @@
 
 import copy
 import datetime
+import pytz
 
+from django.conf import settings
 from django.core import urlresolvers
 from django.template import Library
 from django.template import Node
@@ -80,6 +82,14 @@ class TimeagoNode(Node):
   def render(self, context):
     tv = Variable(self._timestamp_varname)
     ts = tv.resolve(context)
+
+    # Try to set time zone information.
+    if settings.TIME_ZONE:
+      try:
+        tz = pytz.timezone(settings.TIME_ZONE)
+        ts = tz.localize(ts)
+      except pytz.UnknownTimeZoneError:
+        pass
 
     iso = ts.isoformat()
     alt = ts.strftime("%A, %B %d, %Y %I:%M%p")

@@ -63,6 +63,7 @@ setup(
       'django_nose',
       #'python-openid >= 2.2.5',  # removeme once PIL package works
       'tweepy',
+      'pytz',
     ],
     dependency_links = [
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',

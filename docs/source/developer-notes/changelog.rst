@@ -12,9 +12,13 @@ after updating::
   $ kegbot-admin.py migrate
   $ kegbot-admin.py kb_regen_stats
 
+*Note:* If you have installed using ``./setup.py develop``, you will need to
+issue that command again; new versions of some dependencies are required.
+
 Core/General
 ^^^^^^^^^^^^
 * Added SystemStats table.
+* Now requires the ``pytz`` module; use ``pip install pytz`` to install.
 
 Kegweb
 ^^^^^^
@@ -28,6 +32,9 @@ Kegweb
   chart could not be displayed; the chart is once again replaced with a
   descriptive error message.
 * Fixed "known drinkers" statistic on the keg detail page.
+* Set time zone UTC offset in ISO8601-formatted timestamps.  This fixes an issue
+  where drinks appear to be poured in the future when the local timezone is
+  behind the server timezone.
 
 Version 0.7.7 (2010-11-28)
 --------------------------

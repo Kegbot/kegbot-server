@@ -155,13 +155,13 @@ class KegUi:
       beer_name = 'Unknown Beer'
       brewer_name = 'Unknown Brewer'
       pct_full = 0
-      curr_temp = None
+      curr_temp =  tap.get('last_temperature')
       if keg:
         pct_full = keg.percent_full
         if beverage:
           beer_name = beverage.name
           brewer_name = beverage.brewer.name
-      if tap.last_temperature:
+      if curr_temp:
         curr_temp = tap.last_temperature.temperature_c
 
       f = self._BuildTapFrame(tap_name, beer_name, brewer_name, pct_full, curr_temp)

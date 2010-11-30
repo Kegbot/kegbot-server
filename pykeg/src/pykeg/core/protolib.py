@@ -172,6 +172,8 @@ def KegTapToProto(tap):
     log = tap.temperature_sensor.LastLog()
     if log:
       ret.last_temperature = ToProto(log)
+    else:
+      ret.last_temperature = None
   return ret
 
 @converts(models.DrinkingSession)

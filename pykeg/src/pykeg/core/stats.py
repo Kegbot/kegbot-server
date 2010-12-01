@@ -38,10 +38,6 @@ class StatsBuilder:
       # Skip if asked to regenerate same stats.
       self._logger.debug('skipping: same seqn')
       return
-    elif prev_seqn != (drink.seqn - 1):
-      # Invalidate previous stats if not recomputing against the next seqn.
-      self._logger.debug('invalidating: not sequential')
-      previous = {}
     elif prev_revision != self.REVISION:
       # Invalidate previous stats if builder revisions have changed.
       self._logger.debug('invalidating: older revision')

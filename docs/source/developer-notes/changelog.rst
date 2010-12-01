@@ -5,8 +5,8 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
-Current Version (in development)
---------------------------------
+Version 0.7.8 (2010-12-01)
+--------------------------
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
   $ kegbot-admin.py migrate
@@ -19,6 +19,8 @@ Core/General
 ^^^^^^^^^^^^
 * Added SystemStats table.
 * Now requires the ``pytz`` module; use ``pip install pytz`` to install.
+* System, keg, session, and drinker statistics are now recalculated quickly
+  after every pour.
 
 Kegweb
 ^^^^^^

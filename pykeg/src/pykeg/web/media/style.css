@@ -225,8 +225,11 @@ a:hover {
   width: 300px;
   margin-bottom: 8px;
   padding: 8px;
-  border-bottom: 1px dotted #007BFE;
   height: 50px;
+
+  border: 1px solid #eee;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
 }
 
 .kb-drink-box-mugshot {
@@ -264,7 +267,6 @@ a:hover {
   color: #ccc;
   margin-top: 4px;
   font-style: italic;
-  text-align: right;
 }
 
 .kb-chart-missing {

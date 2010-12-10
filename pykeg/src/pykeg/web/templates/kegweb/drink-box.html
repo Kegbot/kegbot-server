@@ -11,7 +11,7 @@
       guest
       {% endif %}
       poured
-      <b>{{ drink.Volume.ConvertTo.Ounce|floatformat:2 }} ounces</b>
+      <b>{{ drink.Volume.ConvertTo.Ounce|floatformat:2 }} oz</b>
     </div>
     <div class="kb-drink-box-details-keginfo">
       <a href="{% url drink drink.seqn %}">drink {{drink.seqn}}</a>{% if drink.keg %}

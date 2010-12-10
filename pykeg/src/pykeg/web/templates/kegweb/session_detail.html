@@ -68,29 +68,41 @@
 
 {% block extra-content %}
 <div class="kb-main-content">
-  <div class="kb-contentbox-head">
-    drinkers by volume
+  <div class="kb-twocol-left">
+    <div class="kb-contentbox-head">
+      drinkers by volume
+    </div>
+    <div class="kb-contentbox">
+      {% for chunk in session.UserChunksByVolume %}
+        <table border="0">
+        <tr>
+        <td align="center" valign="center">
+          <div class="kb-drink-box-mugshot">
+            {% with chunk.user as drinker %}
+              {% mugshot_box drinker 96 %}
+            {% endwith %}
+            {% if chunk.user %}{{ chunk.user }}{% else %}anonymous{% endif %}
+          </div>
+        </td>
+        <td align="center" valign="center">
+          <p>
+          {% chart user_session_chunks chunk 370 100 %}
+          </p>
+        </td>
+        </tr>
+        </table>
+      {% endfor %}
+    </div>
   </div>
-  <div class="kb-contentbox">
-    {% for chunk in session.UserChunksByVolume %}
-      <table border="0">
-      <tr>
-      <td align="center" valign="center">
-        <div class="kb-drink-box-mugshot">
-          {% with chunk.user as drinker %}
-            {% mugshot_box drinker 96 %}
-          {% endwith %}
-          {% if chunk.user %}{{ chunk.user }}{% else %}anonymous{% endif %}
-        </div>
-      </td>
-      <td align="center" valign="center">
-        <p>
-        {% chart user_session_chunks chunk 400 100 %}
-        </p>
-      </td>
-      </tr>
-      </table>
-    {% endfor %}
+  <div class="kb-twocol-right">
+    <div class="kb-contentbox-head">
+      pours
+    </div>
+    <div class="kb-contentbox">
+      {% for drink in session.drinks.all %}
+        {% include "kegweb/drink-box.html" %}
+      {% endfor %}
+    </div>
   </div>
   <div class="clear">&nbsp;</div>
 </div>

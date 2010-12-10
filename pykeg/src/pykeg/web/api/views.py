@@ -367,7 +367,7 @@ def last_drink_id(request):
   if not last.count():
     return {'id': 0}
   else:
-    return {'id': last[0].id}
+    return {'id': last[0].seqn}
 
 @py_to_json
 @staff_required

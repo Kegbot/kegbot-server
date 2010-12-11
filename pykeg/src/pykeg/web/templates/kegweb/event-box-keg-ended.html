@@ -1,7 +1,7 @@
 {% load kegweblib %}
-<div class="kb-event-box" style="background-color: #ddffdd;">
+<div class="kb-event-box" style="background-color: #ffdddd;">
   <div>
-  keg {{ event.keg.seqn }} has been tapped!<br>
+  keg {{ event.keg.seqn }} is done.<br>
   </div>
   <div class="kb-event-box-info">
     <a href="{% url keg event.keg.seqn %}">{{event.keg.type.name}}</a> by

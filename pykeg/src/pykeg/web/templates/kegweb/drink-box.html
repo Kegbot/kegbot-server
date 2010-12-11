@@ -13,14 +13,14 @@
       poured
       <b>{{ drink.Volume.ConvertTo.Ounce|floatformat:2 }} oz</b>
     </div>
-    <div class="kb-drink-box-details-keginfo">
+    <div class="kb-event-box-info">
       <a href="{% url drink drink.seqn %}">drink {{drink.seqn}}</a>{% if drink.keg %}
         from
         <a href="{% url keg drink.keg.seqn %}">{{drink.keg.type.name}}</a>
       {% endif %}
     </div>
   </div>
-  <div class="kb-drink-box-details-dateline">
+  <div class="kb-event-box-dateline">
     {% timeago drink.starttime %}
   </div>
   <div class="clear"></div>

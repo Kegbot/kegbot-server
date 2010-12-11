@@ -221,11 +221,21 @@ a:hover {
   margin-right: 4px;
 }
 
+.kb-event-box {
+  width: 300px;
+  margin-bottom: 8px;
+  padding: 8px;
+
+  border: 1px solid #eee;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+}
+
 .kb-drink-box {
   width: 300px;
   margin-bottom: 8px;
   padding: 8px;
-  height: 50px;
+  min-height: 50px;
 
   border: 1px solid #eee;
   -webkit-border-radius: 5px;
@@ -250,19 +260,19 @@ a:hover {
 .kb-drink-box-details-headline {
 }
 
-.kb-drink-box-details-keginfo {
+.kb-event-box-info {
   font-size: 0.7em;
   color: #999;
 }
 
-.kb-drink-box-details-keginfo a:link,
-.kb-drink-box-details-keginfo a:visited {
+.kb-event-box-info a:link,
+.kb-event-box-info a:visited {
   color: #999;
   text-decoration: underline;
   font-weight: normal;
 }
 
-.kb-drink-box-details-dateline {
+.kb-event-box-dateline {
   font-size: 0.7em;
   color: #ccc;
   margin-top: 4px;

@@ -7,6 +7,7 @@
   {% include "kegweb/event-box-keg-tapped.html" %}
 {% endif %}
 {% if event.kind == "keg_ended" %}
+  {% include "kegweb/event-box-keg-ended.html" %}
 {% endif %}
 {% if event.kind == "session_started" %}
 {% endif %}

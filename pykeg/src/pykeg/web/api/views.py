@@ -255,7 +255,7 @@ def recent_events_html(request):
   try:
     since = int(request.GET.get('since'))
     events = request.kbsite.events.filter(seqn__gt=since).order_by('-seqn')
-  except ValueError:
+  except (ValueError, TypeError):
     events = request.kbsite.events.all().order_by('-seqn')
 
   events = events[:20]

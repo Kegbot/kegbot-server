@@ -437,9 +437,8 @@ class DrinkManager(Manager):
     username = event.username
     volume_ml = event.volume_ml
     tap_name = event.tap_name
-    starttime = event.start_time
     pour_time = event.last_activity_time
-    duration = (pour_time - starttime).seconds
+    duration = (event.last_activity_time - event.start_time).seconds
     flow_id = event.flow_id
 
     # TODO: add to flow event
@@ -456,13 +455,9 @@ class DrinkManager(Manager):
     d = self._backend.RecordDrink(tap_name, ticks=ticks, username=username,
         pour_time=pour_time, duration=duration, auth_token=auth_token)
 
-    keg_id = None
-    if d.keg_id:
-      keg_id = d.keg_id
+    keg_id = d.get('keg_id', None)
+    username = d.get('user_id', '<None>')
 
-    username = '<None>'
-    if d.user_id:
-      username = d.user_id
     self._logger.info('Logged drink %i username=%s keg=%s liters=%.2f ticks=%i' % (
       d.id, username, keg_id, d.volume_ml/1000.0, d.ticks))
 

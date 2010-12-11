@@ -37,8 +37,8 @@ class KegAdmin(admin.ModelAdmin):
 admin.site.register(models.Keg, KegAdmin)
 
 class DrinkAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'user', 'keg', 'endtime')
-  list_filter = ('keg', 'status', 'endtime')
+  list_display = ('seqn', 'user', 'keg', 'starttime')
+  list_filter = ('keg', 'status', 'starttime')
   search_fields = ('seqn', 'user__username')
 admin.site.register(models.Drink, DrinkAdmin)
 

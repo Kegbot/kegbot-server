@@ -117,7 +117,7 @@ def DrinkToProto(drink):
   ret.ticks = drink.ticks
   ret.volume_ml = drink.volume_ml
   ret.session_id = str(drink.session.seqn)
-  ret.pour_time = drink.endtime
+  ret.pour_time = drink.starttime
   if drink.duration is not None:
     ret.duration = drink.duration
   ret.is_valid = (drink.status == 'valid')

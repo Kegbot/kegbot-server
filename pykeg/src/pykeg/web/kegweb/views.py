@@ -55,7 +55,7 @@ def index(request):
   context['taps'] = request.kbsite.kegtap_set.all()
 
   num_drinks = getattr(settings, 'KEGWEB_LAST_DRINKS_COUNT', 10)
-  drinks = request.kbsite.drinks.valid().order_by('-endtime')
+  drinks = request.kbsite.drinks.valid().order_by('-starttime')
   drinks = drinks[:num_drinks]
   context['latest_drinks'] = drinks
 

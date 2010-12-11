@@ -69,8 +69,8 @@
      <tr>
         <td align="right" valign="top"><b>Last Drink</b></td>
         <td align="left">
-          {{ drinker.drinks.valid.0.endtime|date:"l, F j, Y" }}<br>
-          <i>({% timeago drinker.drinks.valid.0.endtime %})</i>
+          {{ drinker.drinks.valid.0.starttime|date:"l, F j, Y" }}<br>
+          <i>({% timeago drinker.drinks.valid.0.starttime%})</i>
         </td>
      </tr>
      {% endif %}

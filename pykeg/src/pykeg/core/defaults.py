@@ -161,8 +161,7 @@ def gentestdata():
         vol = drink_vols[drink_num%len(drink_vols)]
         drink = models.Drink(ticks=vol.ConvertTo.KbMeterTick,
                              volume_ml=vol.Amount(units.RECORD_UNIT),
-                             starttime=start, endtime=end, user=u, keg=k,
-                             status='valid')
+                             starttime=start, user=u, keg=k, status='valid')
         drink.save()
         drink_num += 1
 

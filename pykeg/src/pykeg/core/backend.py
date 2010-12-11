@@ -171,14 +171,11 @@ class KegbotBackend(Backend):
 
     if not pour_time:
       pour_time = datetime.datetime.now()
-    d.endtime = pour_time
 
+    d.starttime = pour_time
+    d.duration = 0
     if duration:
-      d.starttime = pour_time - datetime.timedelta(seconds=duration)
       d.duration = duration
-    else:
-      d.starttime = pour_time
-      d.duration = 0
 
     # Look up the current keg.
     if tap.current_keg and tap.current_keg.status == 'online':

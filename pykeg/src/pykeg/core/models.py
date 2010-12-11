@@ -276,18 +276,18 @@ def _KegPreSave(sender, instance, **kwargs):
     return
 
   # Determine first drink date & set keg start date to it if earlier.
-  drinks = instance.drinks.all().order_by('endtime')
+  drinks = instance.drinks.all().order_by('starttime')
   if drinks:
     drink = drinks[0]
-    if drink.endtime < instance.startdate:
-      instance.startdate = drink.endtime
+    if drink.starttime < instance.startdate:
+      instance.startdate = drink.starttime
 
   # Determine last drink date & set keg end date to it if later.
-  drinks = instance.drinks.all().order_by('-endtime')
+  drinks = instance.drinks.all().order_by('-starttime')
   if drinks:
     drink = drinks[0]
-    if drink.endtime > instance.enddate:
-      instance.enddate = drink.endtime
+    if drink.starttime > instance.enddate:
+      instance.enddate = drink.starttime
 
 pre_save.connect(_set_seqn_pre_save, sender=Keg)
 pre_save.connect(_KegPreSave, sender=Keg)
@@ -301,8 +301,8 @@ class Drink(models.Model):
   """ Table of drinks records """
   class Meta:
     unique_together = ('site', 'seqn')
-    get_latest_by = 'endtime'
-    ordering = ('-endtime',)
+    get_latest_by = 'starttime'
+    ordering = ('-starttime',)
 
   def Volume(self):
     return units.Quantity(self.volume_ml, units.RECORD_UNIT)
@@ -311,7 +311,7 @@ class Drink(models.Model):
     return self.session
 
   def PourDuration(self):
-    return self.endtime - self.starttime
+    return self.duration
 
   def ShortUrl(self):
     domain = Site.objects.get_current().domain
@@ -345,15 +345,8 @@ class Drink(models.Model):
   # of `ticks`, but it may be adjusted, eg due to calibration or mis-recording.
   volume_ml = models.FloatField()
 
-  # Similarly, recording both the start and end times of a drink may seem odd.
-  # The idea was to someday add metrics to the web page showing pour speeds.
-  # This was never terribly exciting so it didn't happen, but space is cheap
-  # so I'm inclined to keep the data rather than chuck it.
-  #
-  # For sorting and other operations requiring a single date, the endtime is
-  # used.  TODO(mikey): make sure this is actually the case
   starttime = models.DateTimeField()
-  endtime = models.DateTimeField()
+  duration = models.PositiveIntegerField(blank=True, default=0)
   user = models.ForeignKey(User, null=True, blank=True, related_name='drinks')
   keg = models.ForeignKey(Keg, null=True, blank=True, related_name='drinks')
   status = models.CharField(max_length=128, choices = (
@@ -363,7 +356,6 @@ class Drink(models.Model):
   session = models.ForeignKey('DrinkingSession',
       related_name='drinks', null=True, blank=True, editable=False)
   auth_token = models.CharField(max_length=256, blank=True, null=True)
-  duration = models.PositiveIntegerField(blank=True, null=True)
 
   def _UpdateSystemStats(self):
     defaults = {
@@ -485,16 +477,16 @@ class BAC(models.Model):
     prev_bac = 0
     if len(matches):
       last_bac = matches[0]
-      prev_bac = util.decomposeBAC(last_bac.bac, (d.endtime - last_bac.rectime).seconds)
+      prev_bac = util.decomposeBAC(last_bac.bac, (d.starttime - last_bac.rectime).seconds)
 
     now = util.instantBAC(profile.gender, profile.weight, d.keg.type.abv,
                           d.Volume().ConvertTo.Ounce)
-    b = BAC(user=d.user, drink=d, rectime=d.endtime, bac=now+prev_bac)
+    b = BAC(user=d.user, drink=d, rectime=d.starttime, bac=now+prev_bac)
     b.save()
     return b
 
 
-def find_object_in_window(qset, when, window):
+def find_session_in_window(qset, when, window):
   matching = qset.filter(
       starttime__lte=when + window,
       endtime__gte=when - window
@@ -547,8 +539,8 @@ class AbstractChunk(models.Model):
   def AddDrink(self, drink):
     if self.starttime > drink.starttime:
       self.starttime = drink.starttime
-    if self.endtime < drink.endtime:
-      self.endtime = drink.endtime
+    if self.endtime < drink.starttime:
+      self.endtime = drink.starttime
     self.volume_ml += drink.volume_ml
     self.save()
 
@@ -643,7 +635,7 @@ class DrinkingSession(AbstractChunk):
 
   def AddDrink(self, drink):
     super(DrinkingSession, self).AddDrink(drink)
-    defaults = {'starttime': drink.starttime, 'endtime': drink.endtime}
+    defaults = {'starttime': drink.starttime, 'endtime': drink.starttime}
 
     # Update or create a SessionChunk.
     chunk, created = SessionChunk.objects.get_or_create(session=self,
@@ -673,7 +665,7 @@ class DrinkingSession(AbstractChunk):
     # Return last session if one already exists
     q = drink.site.sessions.all()
     window = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
-    session = find_object_in_window(q, drink.endtime, window)
+    session = find_session_in_window(q, drink.starttime, window)
     if session:
       session.AddDrink(drink)
       drink.session = session
@@ -681,7 +673,7 @@ class DrinkingSession(AbstractChunk):
       return session
 
     # Create a new session
-    session = cls(starttime=drink.starttime, endtime=drink.endtime,
+    session = cls(starttime=drink.starttime, endtime=drink.starttime,
         site=drink.site)
     session.save()
     session.AddDrink(drink)
@@ -1053,7 +1045,7 @@ class SystemEvent(models.Model):
     if keg:
       q = keg.events.filter(kind='keg_tapped')
       if q.count() == 0:
-        e = keg.events.create(site=site, kind='keg_tapped', when=drink.endtime,
+        e = keg.events.create(site=site, kind='keg_tapped', when=drink.starttime,
             keg=keg, user=user, drink=drink, session=session)
         e.save()
 
@@ -1072,13 +1064,13 @@ class SystemEvent(models.Model):
       q = user.events.filter(kind='session_joined', session=session)
       if q.count() == 0:
         e = user.events.create(site=site, kind='session_joined',
-            when=drink.endtime, session=session, drink=drink, user=user)
+            when=drink.starttime, session=session, drink=drink, user=user)
         e.save()
 
     q = drink.events.filter(kind='drink_poured')
     if q.count() == 0:
       e = drink.events.create(site=site, kind='drink_poured',
-          when=drink.endtime, drink=drink, user=user, keg=keg,
+          when=drink.starttime, drink=drink, user=user, keg=keg,
           session=session)
       e.save()
 

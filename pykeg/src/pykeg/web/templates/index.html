@@ -6,30 +6,19 @@
 {% block kb-extrajs %}
   <script>
     var LAST_EVENT_ID = 0;
-    var ALL_EVENTS = Array();
     function addEventHtml(row, animate) {
       var eid = row['id'];
-      var append = false;
-
-      if (ALL_EVENTS.indexOf(eid) >= 0) {
-        return;
-      }
-      ALL_EVENTS.push(eid);
-
       if (eid > LAST_EVENT_ID) {
         LAST_EVENT_ID = eid;
       }
 
       var newDivName = 'kb-event-' + row['id'];
-      var newdiv = '<div id="' + newDivName + '">';
-      newdiv += row['html'];
-      newdiv += '</div>';
+      var newDiv = '<div id="' + newDivName + '">';
+      newDiv += row['html'];
+      newDiv += '</div>';
 
-      if (append) {
-        $('#kb-recent-events').append(newdiv);
-      } else {
-        $('#kb-recent-events').prepend(newdiv);
-      }
+      $('#kb-recent-events').prepend(newDiv);
+
       if (animate) {
         $('#' + newDivName).hide().css("background-color", "#ffc800")
             .fadeIn('fast').animate({ backgroundColor: "#ffffff" }, 1500);
@@ -53,6 +42,7 @@
       getEvents();
       setInterval(getEvents, 3000);
     });
+
   </script>
 {% endblock %}
 
@@ -76,13 +66,7 @@
   recent events
 </div>
 <div class="kb-contentbox">
-  <div id="kb-recent-events">
-  {% comment %}
-  {% for drink in latest_drinks %}
-    {% include "kegweb/drink-box.html" %}
-  {% endfor %}
-  {% endcomment %}
-  </div>
+  <div id="kb-recent-events"> </div>
 </div>
 
 {% endblock col-2 %}

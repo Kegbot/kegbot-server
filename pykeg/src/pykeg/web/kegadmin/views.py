@@ -24,7 +24,7 @@ def change_kegs(request):
       current = tap.current_keg
       if current and current.status != 'offline':
         current.status = 'offline'
-        current.save
+        current.save()
 
       new_keg = models.Keg()
       new_keg.site = request.kbsite

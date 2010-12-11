@@ -475,7 +475,10 @@ class ChartNode(Node):
     drinks = user_chunk.GetDrinks()
     totals = {}
     for drink in drinks:
-      label = 'keg %i' % drink.keg.seqn
+      if drink.keg:
+        label = 'keg %i' % drink.keg.seqn
+      else:
+        label = 'unknown keg'
       totals[label] = totals.get(label, 0) + float(drink.Volume().ConvertTo.Pint)
 
     series = []

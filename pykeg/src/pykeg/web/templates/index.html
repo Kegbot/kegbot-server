@@ -6,6 +6,7 @@
 {% block kb-extrajs %}
   <script>
     var LAST_EVENT_ID = 0;
+    var INITIAL = true;
     function addEventHtml(row, animate) {
       var eid = row['id'];
       if (eid > LAST_EVENT_ID) {
@@ -20,18 +21,26 @@
       $('#kb-recent-events').prepend(newDiv);
 
       if (animate) {
-        $('#' + newDivName).hide().css("background-color", "#ffc800")
-            .fadeIn('fast').animate({ backgroundColor: "#ffffff" }, 1500);
+        $('#' + newDivName).css("display", "none");
+        $('#' + newDivName).css("background-color", "#ffc800");
+        $('#' + newDivName).show("slide",
+          { direction: 'up' },
+          1000,
+          function() {
+            $('#' + newDivName).animate({ backgroundColor: "#ffffff" }, 1500);
+          });
       }
+
       $("#kb-recent-events").find("abbr.timeago").timeago();
     }
 
     function getEvents() {
+      var animate = !INITIAL;
       $.getJSON('/api/event/html/?since=' + LAST_EVENT_ID, function(data) {
         if (data['result'] && data['result']['events']) {
           var events = data['result']['events'];
           for (var ev in events) {
-            addEventHtml(events[ev], false);
+            addEventHtml(events[ev], animate);
           }
         }
       });
@@ -40,6 +49,7 @@
     $(document).ready(function() {
       // TODO(mikey): more intelligent timeout/backoff; idle sensitivity.
       getEvents();
+      INITIAL = false;
       setInterval(getEvents, 3000);
     });
 

@@ -270,27 +270,32 @@ class Keg(models.Model):
 
 def _KegPreSave(sender, instance, **kwargs):
   keg = instance
-
   # We don't need to do anything if the keg is still online.
   if keg.status != 'offline':
     return
 
   # Determine first drink date & set keg start date to it if earlier.
-  drinks = instance.drinks.all().order_by('starttime')
+  drinks = keg.drinks.all().order_by('starttime')
   if drinks:
     drink = drinks[0]
-    if drink.starttime < instance.startdate:
-      instance.startdate = drink.starttime
+    if drink.starttime < keg.startdate:
+      keg.startdate = drink.starttime
 
   # Determine last drink date & set keg end date to it if later.
-  drinks = instance.drinks.all().order_by('-starttime')
+  drinks = keg.drinks.all().order_by('-starttime')
   if drinks:
     drink = drinks[0]
-    if drink.starttime > instance.enddate:
-      instance.enddate = drink.starttime
+    if drink.starttime > keg.enddate:
+      keg.enddate = drink.starttime
 
 pre_save.connect(_set_seqn_pre_save, sender=Keg)
 pre_save.connect(_KegPreSave, sender=Keg)
+
+def _KegPostSave(sender, instance, **kwargs):
+  keg = instance
+  SystemEvent.ProcessKeg(keg)
+
+post_save.connect(_KegPostSave, sender=Keg)
 
 
 class DrinkManager(models.Manager):
@@ -1034,6 +1039,23 @@ class SystemEvent(models.Model):
     else:
       ret = 'Unknown event type (%s)' % self.kind
     return 'Event %i: %s' % (self.seqn, ret)
+
+  @classmethod
+  def ProcessKeg(cls, keg):
+    site = keg.site
+    if keg.status == 'online':
+      q = keg.events.filter(kind='keg_tapped')
+      if q.count() == 0:
+        e = keg.events.create(site=site, kind='keg_tapped', when=keg.startdate,
+            keg=keg)
+        e.save()
+
+    if keg.status == 'offline':
+      q = keg.events.filter(kind='keg_ended')
+      if q.count() == 0:
+        e = keg.events.create(site=site, kind='keg_ended', when=keg.enddate,
+            keg=keg)
+        e.save()
 
   @classmethod
   def ProcessDrink(cls, drink):

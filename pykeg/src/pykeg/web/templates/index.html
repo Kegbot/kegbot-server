@@ -3,6 +3,59 @@
 
 {% block title %}main page{% endblock %}
 
+{% block kb-extrajs %}
+  <script>
+    var LAST_EVENT_ID = 0;
+    var ALL_EVENTS = Array();
+    function addEventHtml(row, animate) {
+      var eid = row['id'];
+      var append = false;
+
+      if (ALL_EVENTS.indexOf(eid) >= 0) {
+        return;
+      }
+      ALL_EVENTS.push(eid);
+
+      if (eid > LAST_EVENT_ID) {
+        LAST_EVENT_ID = eid;
+      }
+
+      var newDivName = 'kb-event-' + row['id'];
+      var newdiv = '<div id="' + newDivName + '">';
+      newdiv += row['html'];
+      newdiv += '</div>';
+
+      if (append) {
+        $('#kb-recent-events').append(newdiv);
+      } else {
+        $('#kb-recent-events').prepend(newdiv);
+      }
+      if (animate) {
+        $('#' + newDivName).hide().css("background-color", "#ffc800")
+            .fadeIn('fast').animate({ backgroundColor: "#ffffff" }, 1500);
+      }
+      $("#kb-recent-events").find("abbr.timeago").timeago();
+    }
+
+    function getEvents() {
+      $.getJSON('/api/event/html/?since=' + LAST_EVENT_ID, function(data) {
+        if (data['result'] && data['result']['events']) {
+          var events = data['result']['events'];
+          for (var ev in events) {
+            addEventHtml(events[ev], false);
+          }
+        }
+      });
+    }
+
+    $(document).ready(function() {
+      // TODO(mikey): more intelligent timeout/backoff; idle sensitivity.
+      getEvents();
+      setInterval(getEvents, 3000);
+    });
+  </script>
+{% endblock %}
+
 {% block col-1 %}
 <div class="kb-contentbox-head">
   on tap
@@ -20,72 +73,16 @@
 
 {% block col-2 %}
 <div class="kb-contentbox-head">
-  recent pours
+  recent events
 </div>
 <div class="kb-contentbox">
-  <div id="kb-recent-pours">
+  <div id="kb-recent-events">
+  {% comment %}
   {% for drink in latest_drinks %}
     {% include "kegweb/drink-box.html" %}
   {% endfor %}
+  {% endcomment %}
   </div>
 </div>
-
-<script>
-  {% if latest_drinks %}
-  var LAST_DRINK_ID = {{ latest_drinks.0.seqn }};
-  {% else %}
-  var LAST_DRINK_ID = 0;
-  {% endif %}
-  var ALL_DRINKS = Array();
-  function addDrinkHtml(row, animate, append) {
-    if (row['id'] <= LAST_DRINK_ID) {
-      return;
-    }
-    LAST_DRINK_ID = row['id'];
-
-    if (ALL_DRINKS.indexOf(row['id']) >= 0) {
-      return;
-    }
-    ALL_DRINKS.push(row['id']);
-
-    var newDivName = 'kb-drink-' + row['id'];
-    var newdiv = '<div id="' + newDivName + '">';
-    newdiv += row['box_html'];
-    newdiv += '</div>';
-    if (append) {
-      $('#kb-recent-pours').append(newdiv);
-    } else {
-      $('#kb-recent-pours').prepend(newdiv);
-    }
-    if (animate) {
-      $('#' + newDivName).hide().css("background-color", "#ffc800")
-          .fadeIn('fast').animate({ backgroundColor: "#ffffff" }, 1500);
-    }
-    $("#kb-recent-pours").find("abbr.timeago").timeago();
-  }
-
-  function queryLastDrink() {
-    $.getJSON('/api/last-drink-id/', function(data) {
-      if (data['result']) {
-        if (data['result']['id'] > LAST_DRINK_ID) {
-          loadNewDrinks();
-        }
-      }
-    });
-  }
-
-  function loadNewDrinks() {
-    $.getJSON('/api/last-drinks-html/', function(data) {
-      for (var idx in data['result']) {
-        addDrinkHtml(data['result'][idx], true, false);
-      }
-    });
-  }
-
-  $(document).ready(function() {
-    // TODO(mikey): more intelligent timeout/backoff; idle sensitivity.
-    setInterval(queryLastDrink, 10000);
-  });
-</script>
 
 {% endblock col-2 %}

@@ -1,0 +1,15 @@
+{% if event.kind == "drink_poured" %}
+  {% with event.drink as drink %}
+    {% include "kegweb/drink-box.html" %}
+  {% endwith %}
+{% endif %}
+{% if event.kind == "keg_tapped" %}
+  {% include "kegweb/event-box-keg-tapped.html" %}
+{% endif %}
+{% if event.kind == "keg_ended" %}
+{% endif %}
+{% if event.kind == "session_started" %}
+{% endif %}
+{% if event.kind == "session_joined" %}
+  {% include "kegweb/event-box-session-joined.html" %}
+{% endif %}

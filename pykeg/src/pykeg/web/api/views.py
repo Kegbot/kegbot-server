@@ -243,6 +243,39 @@ def all_sessions(request):
   return res
 
 @py_to_json
+def all_events(request):
+  events = request.kbsite.events.all()[:10]
+  res = {
+    'events': obj_to_dict(events),
+  }
+  return res
+
+@py_to_json
+def recent_events_html(request):
+  try:
+    since = int(request.GET.get('since'))
+    events = request.kbsite.events.filter(seqn__gt=since).order_by('-seqn')
+  except ValueError:
+    events = request.kbsite.events.all().order_by('-seqn')
+
+  events = events[:20]
+
+  template = get_template('kegweb/event-box.html')
+  results = []
+  for event in events:
+    row = {}
+    row['id'] = event.seqn
+    row['html'] = template.render(Context({'event': event}))
+    results.append(row)
+
+  results.reverse()
+
+  res = {
+    'events': results,
+  }
+  return res
+
+@py_to_json
 def get_keg_sessions(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   sessions = [c.session for c in keg.keg_session_chunks.all()]

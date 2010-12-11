@@ -1000,7 +1000,7 @@ class SystemEvent(models.Model):
       ('keg_ended', 'Keg ended'),
   )
 
-  site = models.ForeignKey(KegbotSite)
+  site = models.ForeignKey(KegbotSite, related_name='events')
   seqn = models.PositiveIntegerField(editable=False)
   kind = models.CharField(max_length=255, choices=KINDS,
       help_text='Type of event.')

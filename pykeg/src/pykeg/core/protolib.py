@@ -222,3 +222,16 @@ def SessionChunkToProto(record):
   ret.volume_ml = record.volume_ml
   return ret
 
+@converts(models.SystemEvent)
+def SystemEventToProto(record):
+  ret = AttrDict()
+  ret.id = record.seqn
+  ret.kind = record.kind
+  ret.time = record.when
+  if record.drink:
+    ret.drink = record.drink.seqn
+  if record.keg:
+    ret.keg = record.keg.seqn
+  if record.session:
+    ret.session = record.session.seqn
+  return ret

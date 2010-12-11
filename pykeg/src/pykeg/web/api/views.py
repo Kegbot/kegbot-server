@@ -191,7 +191,7 @@ def all_drinks(request, limit=100):
 
 @py_to_json
 def get_drink(request, drink_id):
-  drink = get_object_or_404(models.Drink, pk=drink_id, site=request.kbsite)
+  drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
   res = {
     'drink': obj_to_dict(drink),
     'user': obj_to_dict(drink.user),
@@ -201,28 +201,50 @@ def get_drink(request, drink_id):
   return res
 
 @py_to_json
+def get_session(request, session_id):
+  session = get_object_or_404(models.DrinkingSession, seqn=session_id,
+      site=request.kbsite)
+  res = {
+    'session': obj_to_dict(session),
+    'stats': session.GetStats(),
+    'kegs': obj_to_dict(c.keg for c in session.keg_chunks.all() if c.keg),
+  }
+  return res
+
+@py_to_json
 def get_keg(request, keg_id):
-  keg = get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
+  sessions = (c.session for c in keg.keg_session_chunks.all())
+
   res = {
     'keg': obj_to_dict(keg),
     'type': obj_to_dict(keg.type),
     'size': obj_to_dict(keg.size),
     'drinks': obj_to_dict(keg.drinks.valid()),
+    'sessions': obj_to_dict(sessions),
     # TODO(mikey): add sessions
   }
   return res
 
 @py_to_json
 def get_keg_drinks(request, keg_id):
-  keg = get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   res = {
     'drinks': obj_to_dict(keg.drinks.valid()),
   }
   return res
 
 @py_to_json
+def all_sessions(request):
+  sessions = request.kbsite.sessions.all()
+  res = {
+    'sessions': obj_to_dict(sessions),
+  }
+  return res
+
+@py_to_json
 def get_keg_sessions(request, keg_id):
-  keg = get_object_or_404(models.Keg, pk=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   sessions = [c.session for c in keg.keg_session_chunks.all()]
   res = {
     'sessions': obj_to_dict(sessions),

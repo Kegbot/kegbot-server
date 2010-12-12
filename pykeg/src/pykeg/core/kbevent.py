@@ -25,8 +25,15 @@ This module implements a very simple inter-process event passing system
 import logging
 import Queue
 
+import gflags
+
 from pykeg.core import kbjson
 from pykeg.core import util
+
+FLAGS = gflags.FLAGS
+
+gflags.DEFINE_boolean('debug_events', False,
+    'If true, logs debugging information about internal events.')
 
 class Event(util.BaseMessage):
   def __init__(self, initial=None, encoded=None, **kwargs):
@@ -181,7 +188,8 @@ class EventHub(object):
     """Wait for an event, and dispatch it to all listeners."""
     ev = self._WaitForEvent(timeout)
     if ev:
-      self._logger.debug('Publishing event: %s ' % ev)
+      if FLAGS.debug_events:
+        self._logger.debug('Publishing event: %s ' % ev)
       for listener in self._IterEventListeners():
         listener.PostEvent(ev)
 

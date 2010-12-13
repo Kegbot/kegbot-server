@@ -480,6 +480,7 @@ class ThermoManager(Manager):
     Manager.__init__(self, name, event_hub)
     self._backend = backend
     self._name_to_last_record = {}
+    self._sensor_log = {}
     seconds = kb_common.THERMO_RECORD_DELTA_SECONDS
     self._record_interval = datetime.timedelta(seconds=seconds)
 
@@ -492,6 +493,16 @@ class ThermoManager(Manager):
     for sensor, value in self._name_to_last_record.iteritems():
       ret.append('  %s: %.2f' % (sensor, value))
     return ret
+
+  @EventHandler(kbevent.HeartbeatMinuteEvent)
+  def _HandleHeartbeat(self, event):
+    MAX_AGE = datetime.timedelta(minutes=1)
+    now = datetime.datetime.now()
+    for sensor_name, last_update in self._sensor_log.iteritems():
+      if (now - last_update) > MAX_AGE:
+        self._logger.warning('Stopped receiving updates for thermo sensor %s' %
+            sensor_name)
+        del self._sensor_log[sensor_name]
 
   @EventHandler(kbevent.ThermoEvent)
   def _HandleThermoUpdateEvent(self, event):
@@ -518,8 +529,15 @@ class ThermoManager(Manager):
     if sensor_value < min_val or sensor_value > max_val:
       return
 
-    self._logger.info('Recording temperature sensor=%s value=%s' %
-                      (sensor_name, sensor_value))
+    log_message = 'Recording temperature sensor=%s value=%s' % (sensor_name,
+        sensor_value)
+
+    if sensor_name not in self._sensor_log:
+      self._logger.info(log_message)
+      self._logger.info('Additional readings will only be shown with --verbose')
+    else:
+      self._logger.debug(log_message)
+    self._sensor_log[sensor_name] = now
 
     try:
       new_record = self._backend.LogSensorReading(sensor_name, sensor_value, now)

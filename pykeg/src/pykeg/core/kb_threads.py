@@ -145,7 +145,8 @@ class EventHandlerThread(CoreThread):
 
   def _ProcessEvent(self, event):
     """ Execute the event callback associated with the event, if present. """
-    self._logger.debug('Processing event: %s' % event)
+    if FLAGS.debug_events:
+      self._logger.debug('Processing event: %s' % event)
     if isinstance(event, kbevent.QuitEvent):
       self._logger.info('got quit event, quitting')
       self.Quit()

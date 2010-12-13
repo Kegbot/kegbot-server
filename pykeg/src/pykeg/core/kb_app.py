@@ -27,6 +27,7 @@ import warnings
 warnings.simplefilter("ignore", DeprecationWarning)
 
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import os
 import signal
 import sys
@@ -241,8 +242,8 @@ class App(object):
     self._logging_file_handler = None
     if FLAGS.log_to_file:
       if FLAGS.rotate_logs:
-        self._logging_file_handler = logging.handlers.TimedRotatingFileHandler(
-            filename=FLAGS.logfile, when = 'midnight', interval=1,
+        self._logging_file_handler = TimedRotatingFileHandler(
+            filename=FLAGS.logfile, when='midnight', interval=1,
             backupCount=FLAGS.maximum_log_files)
       else:
         self._logging_file_handler = logging.FileHandler(FLAGS.logfile)

@@ -57,6 +57,13 @@ gflags.DEFINE_string('logfile',
 gflags.DEFINE_boolean('log_to_file', False,
     'Send log messages to the log file defined by --logfile')
 
+gflags.DEFINE_boolean('rotate_logs', True,
+    'If enabled, logs will be rotated daily at midnight.')
+
+gflags.DEFINE_integer('maximum_log_files', 7,
+    'Sets the maximum number of log files to keep around.',
+    lower_bound=0)
+
 gflags.DEFINE_boolean('log_to_stdout', True,
     'Send log messages to the console')
 
@@ -233,7 +240,12 @@ class App(object):
     # add a file-output handler
     self._logging_file_handler = None
     if FLAGS.log_to_file:
-      self._logging_file_handler = logging.FileHandler(FLAGS.logfile)
+      if FLAGS.rotate_logs:
+        self._logging_file_handler = logging.handlers.TimedRotatingFileHandler(
+            filename=FLAGS.logfile, when = 'midnight', interval=1,
+            backupCount=FLAGS.maximum_log_files)
+      else:
+        self._logging_file_handler = logging.FileHandler(FLAGS.logfile)
       formatter = logging.Formatter(FLAGS.logformat)
       self._logging_file_handler.setFormatter(formatter)
       logging.root.addHandler(self._logging_file_handler)

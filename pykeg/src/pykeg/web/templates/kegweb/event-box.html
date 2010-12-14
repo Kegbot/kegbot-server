@@ -1,3 +1,4 @@
+{% spaceless %}
 {% if event.kind == "drink_poured" %}
   {% with event.drink as drink %}
     {% include "kegweb/drink-box.html" %}
@@ -14,3 +15,4 @@
 {% if event.kind == "session_joined" %}
   {% include "kegweb/event-box-session-joined.html" %}
 {% endif %}
+{% endspaceless %}

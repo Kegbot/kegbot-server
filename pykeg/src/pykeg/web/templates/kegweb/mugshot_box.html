@@ -1,3 +1,5 @@
-<div style="width:{{boxsize}};
-height:{{boxsize}};{{extra}}"><a href="{{user_url}}"><img border="0"
-width="{{boxsize}}" height="{{boxsize}}" src="{{img_url}}"></a></div>
+{% spaceless %}
+<div style="width:{{boxsize}}; height:{{boxsize}};{{extra}}">
+  <a href="{{user_url}}"><img border="0" width="{{boxsize}}" height="{{boxsize}}" src="{{img_url}}"></a>
+</div>
+{% endspaceless %}

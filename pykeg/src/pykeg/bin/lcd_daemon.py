@@ -238,10 +238,6 @@ class LcdDaemonApp(kb_app.App):
     kb_app.App.__init__(self, name)
 
   def _Setup(self):
-    if not FLAGS.krest_url:
-      self._logger.error('Error: --krest_url must point to <kegweb>/api')
-      self._logger.error('Add KEGWEB_BASE_URL to your common_settings.py.')
-      sys.exit(1)
     kb_app.App._Setup(self)
     kb_lcdui = KegUi()
     self._AddAppThread(LcdUiThread('kb-lcdui', kb_lcdui))

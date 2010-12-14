@@ -297,7 +297,7 @@ class FlowManager(Manager):
       return None
 
     current = self.GetFlow(tap_name)
-    if current and current.GetUsername() != username:
+    if current and username and current.GetUsername() != username:
       # There's an existing flow: take it over if anonymous; end it if owned by
       # another user.
       if current.GetUsername() == '':

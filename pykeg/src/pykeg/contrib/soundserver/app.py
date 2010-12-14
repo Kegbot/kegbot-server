@@ -25,6 +25,7 @@ import ossaudiodev
 import random
 import Queue
 import urllib2
+import urlparse
 
 import gflags
 import mad
@@ -145,6 +146,14 @@ class SoundClient(kegnet.SimpleKegnetClient):
     if not os.path.exists(dirname):
       self._logger.info('Creating directory: %s' % dirname)
       os.makedirs(dirname)
+
+    parts = urlparse.urlparse(sound_url)
+    if not parts.scheme.startswith('http'):
+      self._logger.error('URL for event does not start with http ("%s")' %
+          sound_url)
+      self._logger.error('Be sure MEDIA_URL in common_settings.py gives an '
+                         ' absolute url.')
+      return
 
     self._logger.info('Saving file "%s" to %s' % (sound_url, outfile))
     filedata = urllib2.urlopen(sound_url).read()

@@ -20,7 +20,6 @@
 
 import datetime
 from functools import wraps
-import hashlib
 import sys
 from decimal import Decimal
 
@@ -41,18 +40,7 @@ from pykeg.web.api import forms
 
 ### Authentication
 
-AUTH_KEY_BASE = None
-AUTH_KEY = None
-if hasattr(settings, 'KEGBOT_API_AUTH_SECRET') and \
-    settings.KEGBOT_API_AUTH_SECRET:
-  AUTH_KEY_BASE = settings.KEGBOT_API_AUTH_SECRET
-elif hasattr(settings, 'SECRET_KEY') and settings.SECRET_KEY:
-  AUTH_KEY_BASE = settings.SECRET_KEY
-
-if AUTH_KEY_BASE:
-  _m = hashlib.sha256()
-  _m.update(AUTH_KEY_BASE)
-  AUTH_KEY = _m.hexdigest()
+AUTH_KEY = settings.KEGWEB_API_KEY
 
 ### Decorators
 

@@ -44,12 +44,8 @@ from pykeg.core.net import kegnet
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_string('backend_url', '',
-    'URL of web backend.  If given, the Kegbot core will use the '
-    'web backend implementation, rather than a database connection.')
-
-gflags.DEFINE_string('backend_auth_key', '',
-    'Auth key to use for --backend_url')
+gflags.DEFINE_boolean('web_backend', False,
+    'If true, uses the web backend implementation rather than a database connection.')
 
 class KegbotEnv(object):
   """ A class that wraps the context of the kegbot core.
@@ -64,11 +60,10 @@ class KegbotEnv(object):
     self._kegnet_server = kegnet.KegnetServer(name='kegnet', kb_env=self,
         addr=FLAGS.kb_core_bind_addr)
 
-    if FLAGS.backend_url:
+    if FLAGS.web_backend:
       # Web backend.
-      self._logger.info('Using web backend: %s' % FLAGS.backend_url)
-      self._backend = backend.WebBackend(FLAGS.backend_url,
-          FLAGS.backend_auth_key)
+      self._logger.info('Using web backend: %s' % FLAGS.api_url)
+      self._backend = backend.WebBackend()
     else:
       # Database backend.
       self._logger.info('Using database backend.')

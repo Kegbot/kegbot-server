@@ -41,16 +41,22 @@ import gflags
 FLAGS = gflags.FLAGS
 
 _DEFAULT_URL = 'http://localhost:8000/api/'
+_DEFAULT_KEY = ''
 try:
   from pykeg import settings
   if hasattr(settings, 'KEGWEB_BASE_URL'):
     _DEFAULT_URL = '%s/api' % getattr(settings, 'KEGWEB_BASE_URL')
+  if hasattr(settings, 'KEGWEB_API_KEY'):
+    _DEFAULT_KEY = settings.KEGWEB_API_KEY
 except ImportError:
   # Non-fatal if we can't load settings.
   pass
 
-gflags.DEFINE_string('krest_url', _DEFAULT_URL,
+gflags.DEFINE_string('api_url', _DEFAULT_URL,
     'Base URL for the Kegweb HTTP api.')
+
+gflags.DEFINE_string('api_key', _DEFAULT_KEY,
+    'Access key for the Kegweb HTTP api.')
 
 ### begin common
 
@@ -97,11 +103,13 @@ def ErrorCodeToException(code, message=None):
 
 class KrestClient:
   """Kegweb RESTful API client."""
-  def __init__(self, base_url=None, api_auth_token=None):
-    if not base_url:
-      base_url = FLAGS.krest_url
-    self._base_url = base_url
-    self._api_auth_token = api_auth_token
+  def __init__(self, api_url=None, api_key=None):
+    if api_url is None:
+      api_url = FLAGS.api_url
+    if api_key is None:
+      api_key = FLAGS.api_key
+    self._api_url = api_url
+    self._api_auth_token = api_key
 
   def _Encode(self, s):
     return unicode(s).encode('utf-8')
@@ -117,7 +125,7 @@ class KrestClient:
     if params:
       param_str = '?%s' % urlencode(params)
 
-    base = self._base_url.rstrip('/')
+    base = self._api_url.rstrip('/')
 
     # Strip both leading and trailing slash from endpoint: single leading and
     # trailing slashes will be added by the string formatter.  (The trailing

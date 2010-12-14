@@ -223,11 +223,9 @@ class KegbotBackend(Backend):
 
 
 class WebBackend(Backend):
-  def __init__(self, base_url, api_auth_token):
+  def __init__(self, api_url=None, api_key=None):
     self._logger = logging.getLogger('api-backend')
-    self._base_url = base_url
-    self._client = krest.KrestClient(base_url=base_url,
-        api_auth_token=api_auth_token)
+    self._client = krest.KrestClient(api_url=api_url, api_key=api_key)
 
   def GetConfig(self):
     raise NotImplementedError

@@ -258,6 +258,10 @@ class KrestClient:
     """Gets a list of all drinks."""
     return self.DoGET('drink')
 
+  def AllSoundEvents(self):
+    """Gets a list of all drinks."""
+    return self.DoGET('sound-event')
+
 
 def main():
   c = KrestClient()

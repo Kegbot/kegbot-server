@@ -33,8 +33,7 @@ from pykeg.core import kb_app
 from pykeg.core import units
 from pykeg.core import util
 from pykeg.core.net import kegnet
-
-from pykeg.contrib.soundserver import models
+from pykeg.web.api import krest
 
 FLAGS = gflags.FLAGS
 
@@ -62,6 +61,7 @@ class SoundServerApp(kb_app.App):
     self._AddAppThread(sound_thread)
 
     self._client = SoundClient(sound_thread)
+    self._client.LoadEvents()
     self._client_thr = kegnet.KegnetClientThread('kegnet', self._client)
     self._AddAppThread(self._client_thr)
 
@@ -110,10 +110,10 @@ class SoundClient(kegnet.SimpleKegnetClient):
     self._tempdir = FLAGS.cache_dir
     self._flows = {}
 
-  def PlaySoundFile(self, soundfile):
-    local_sound = self._sound_file_map.get(soundfile)
+  def PlaySoundFile(self, sound_url):
+    local_sound = self._sound_file_map.get(sound_url)
     if not local_sound:
-      self._logger.warning('No sound for "%s"' % soundfile)
+      self._logger.warning('No sound for "%s"' % sound_url)
       return
 
     self._sound_thread.Enqueue(local_sound)
@@ -123,25 +123,27 @@ class SoundClient(kegnet.SimpleKegnetClient):
     self.PlaySoundFile(soundfile)
 
   def LoadEvents(self):
-    all_events = models.SoundEvent.objects.all()
-    for event in all_events:
+    self._logger.info('Loading events')
+    api_client = krest.KrestClient()
+    all_events = api_client.AllSoundEvents()
+    for event in all_events['events']:
       self.LoadSoundEvent(event)
 
   def LoadSoundEvent(self, event):
-    self._CacheSound(event.soundfile)
+    self._CacheSound(event.sound_url)
     if event.event_name not in self._event_map:
       self._event_map[event.event_name] = list()
     self._event_map[event.event_name].append(event)
 
-  def _CacheSound(self, soundobj):
-    if soundobj in self._sound_file_map:
+  def _CacheSound(self, sound_url):
+    if sound_url in self._sound_file_map:
       return
 
-    outfile = os.path.join(self._tempdir, os.path.basename(soundobj.sound.url))
-    self._sound_file_map[soundobj] = outfile
+    outfile = os.path.join(self._tempdir, os.path.basename(sound_url))
+    self._sound_file_map[sound_url] = outfile
 
     if os.path.exists(outfile):
-      self._logger.info('Cached file for "%s" exists at %s' % (soundobj.title, outfile))
+      self._logger.info('Cached file for "%s" exists at %s' % (sound_url, outfile))
       return
 
     dirname = os.path.dirname(outfile)
@@ -149,12 +151,8 @@ class SoundClient(kegnet.SimpleKegnetClient):
       self._logger.info('Creating directory: %s' % dirname)
       os.makedirs(dirname)
 
-    self._logger.info('Saving file "%s" to %s' % (soundobj.title, outfile))
-    if FLAGS.base_url:
-      url = FLAGS.base_url + str(soundobj.sound.url)
-      filedata = urllib2.urlopen(url).read()
-    else:
-      filedata = soundobj.sound.read()
+    self._logger.info('Saving file "%s" to %s' % (sound_url, outfile))
+    filedata = urllib2.urlopen(sound_url).read()
     outfd = open(outfile, 'wb')
     outfd.write(filedata)
     outfd.close()
@@ -174,7 +172,7 @@ class SoundClient(kegnet.SimpleKegnetClient):
   def onFlowUpdate(self, event):
     flow_id = event.flow_id
 
-    if event.state == event.COMPLETED:
+    if event.state == event.FlowState.COMPLETED:
       if flow_id in self._flows:
         del self._flows[flow_id]
         return
@@ -215,4 +213,4 @@ class SoundClient(kegnet.SimpleKegnetClient):
     else:
       soundevent = random.choice(events)
 
-    self.PlaySoundFile(soundevent.soundfile)
+    self.PlaySoundFile(soundevent.sound_url)

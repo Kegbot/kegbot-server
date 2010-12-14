@@ -24,7 +24,7 @@
       <td>
         {% for chunk in keg_chunks %}
           {% if chunk.keg %}
-            <a href="{% url keg chunk.keg.seqn %}">Keg #{{ chunk.keg.seqn }} ({{ chunk.keg.type }}</a><br>
+            <a href="{% url keg chunk.keg.seqn %}">Keg #{{ chunk.keg.seqn }} ({{ chunk.keg.type }})</a><br>
           {% endif %}
         {% endfor %}
       </td>

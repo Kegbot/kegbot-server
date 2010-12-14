@@ -375,24 +375,22 @@ class ChartNode(Node):
     if not sessions:
       raise ChartUnavailableError, "Must give sessions as argument"
 
-    buckets = [0]*6  # 1 or less, 2, 3, 4, 5, 6+
+    buckets = [0]*6
     labels = [
-      '0-1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6+'
+      '<1',
+      '1.0-1.9',
+      '2.0-2.9',
+      '3.0-3.9',
+      '4.0-4.9',
+      '5+'
     ]
     for sess in sessions:
-      pints = to_pints(sess.Volume())
+      pints = round(to_pints(sess.Volume()), 1)
       intval = int(pints)
-      if intval <= 1:
-        buckets[0] += 1
-      elif intval >= 6:
+      if intval >= len(buckets):
         buckets[-1] += 1
       else:
-        buckets[intval - 1] += 1
+        buckets[intval] += 1
 
     res = {
       'xAxis': {

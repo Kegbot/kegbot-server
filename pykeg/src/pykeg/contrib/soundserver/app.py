@@ -37,11 +37,6 @@ from pykeg.web.api import krest
 
 FLAGS = gflags.FLAGS
 
-# TODO(mikey): move this into the db.
-gflags.DEFINE_string('base_url', '',
-    'Base URL of the main server. If specified, files will be fetched '
-    'from this URL, rather than read locally. Experimental.')
-
 gflags.DEFINE_string('cache_dir', '/tmp/sound_server_cache',
     'Directory for cached sound files.')
 

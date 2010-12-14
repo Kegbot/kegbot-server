@@ -31,6 +31,7 @@ from django.shortcuts import get_object_or_404
 from django.template import Context
 from django.template.loader import get_template
 
+from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import backend
 from pykeg.core import kbjson
 from pykeg.core import models
@@ -245,6 +246,15 @@ def all_sessions(request):
 @py_to_json
 def all_events(request):
   events = request.kbsite.events.all()[:10]
+  res = {
+    'events': obj_to_dict(events),
+  }
+  return res
+
+@py_to_json
+@auth_required
+def all_sound_events(request):
+  events = soundserver_models.SoundEvent.objects.all()
   res = {
     'events': obj_to_dict(events),
   }

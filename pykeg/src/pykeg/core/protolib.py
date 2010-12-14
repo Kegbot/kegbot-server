@@ -24,6 +24,7 @@ import time
 from pykeg.beerdb import models as bdb_models
 from pykeg.core import models
 from pykeg.core.util import AttrDict
+from pykeg.contrib.soundserver import models as soundserver_models
 
 _CONVERSION_MAP = {}
 
@@ -234,4 +235,13 @@ def SystemEventToProto(record):
     ret.keg = record.keg.seqn
   if record.session:
     ret.session = record.session.seqn
+  return ret
+
+@converts(soundserver_models.SoundEvent)
+def SoundEventToProto(record):
+  ret = AttrDict()
+  ret.event_name = record.event_name
+  ret.event_predicate = record.event_predicate
+  ret.sound_url = record.soundfile.sound.url
+  ret.user = record.user
   return ret

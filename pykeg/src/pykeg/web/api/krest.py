@@ -20,6 +20,7 @@
 
 import datetime
 import functools
+import socket
 import sys
 import types
 
@@ -28,10 +29,12 @@ from pykeg.core import kbjson
 try:
   from urllib.parse import urlencode
   from urllib.request import urlopen
+  from urllib.error import HTTPError
   from urllib.error import URLError
 except ImportError:
   from urllib import urlencode
   from urllib2 import urlopen
+  from urllib2 import HTTPError
   from urllib2 import URLError
 
 import gflags
@@ -172,8 +175,10 @@ class KrestClient:
     try:
       # Issue a GET or POST (urlopen will decide based on encoded_post_data).
       response_data = urlopen(url, encoded_post_data).read()
-    except URLError, e:
+    except HTTPError, e:
       raise ServerError('Caused by: %s' % e)
+    except URLError, e:
+      raise e.reason
 
     return self._DecodeResponse(response_data)
 

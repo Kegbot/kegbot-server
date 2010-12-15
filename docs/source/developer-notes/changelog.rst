@@ -5,6 +5,44 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Current Version (in development)
+--------------------------------
+
+*Note:* Due to changes in the Kegbot core, you must run the following commands
+after updating::
+  $ kegbot-admin.py migrate
+  $ kegbot-admin.py kb_regen_events
+
+Core/General
+^^^^^^^^^^^^
+* Kegbot daemons now perform automatic log rotation, every night at midnight.
+* When executed with ``--verbose``, daemons show a bit less useless spam.
+* The drink "endtime" column has been removed (not user-visible).
+* Flag names have changed; ``--api_url`` and ``--api_key`` now control the base
+  API url and the api access key, respectively, for any program which uses the
+  Kegbot Web API.
+* The "soundserver" application has been improved and once again works. Yay.
+* Each keg record now has a "spilled" volume counter. This can be used to store
+  the total amount of wasted or lost beverage which is not associated with a
+  drink record.
+
+Kegweb
+^^^^^^
+* System events are now shown on the Kegweb main page.
+* Automatic AJAX refresh of drinks (and now events) on the main page has been
+  improved.
+* Session detail pages now show individual pours from that session.
+* Session detail pages now show the total number of authenticated drinkers.
+  (Guest/anonymous pours do not contribute to this count.)
+* Fixed a bug where previous keg was not being marked offline after a keg
+  change.
+* The values in the pints-per-session histogram are now less ambiguous.
+
+API
+^^^
+* System events are now exposed in the web api.
+* Sessions are now exposed in the web api.
+
 Version 0.7.8 (2010-12-01)
 --------------------------
 *Note:* Due to changes in the Kegbot core, you must run the following commands

@@ -182,6 +182,9 @@ class Keg(models.Model):
       tot += d.Volume()
     return tot
 
+  def spilled_volume(self):
+    return units.Quantity(self.spilled_ml, units.RECORD_UNIT)
+
   def remaining_volume(self):
     return self.full_volume() - self.served_volume() - self.spilled_ml
 

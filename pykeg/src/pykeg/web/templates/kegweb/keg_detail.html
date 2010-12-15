@@ -104,6 +104,17 @@
       </td>
     </tr>
 
+    {% if keg.spilled_volume > 0 %}
+    <tr>
+      <td valign="center" align="right">
+        <b>Pints Spilled/Lost</b>
+      </td>
+      <td valign="center" align="left" colspan="2">
+        {{ keg.spilled_volume.ConvertTo.Pint|floatformat:2 }}
+      </td>
+    </tr>
+    {% endif %}
+
   </table>
 
 </div>

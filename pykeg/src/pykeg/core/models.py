@@ -427,12 +427,16 @@ class AuthenticationToken(models.Model):
     ret = "%s: %s" % (self.auth_device, self.token_value)
     if self.user is not None:
       ret = "%s (%s)" % (ret, self.user.username)
+    if self.nice_name:
+      ret = "[%s] %s" % (self.nice_name, ret)
     return ret
 
   site = models.ForeignKey(KegbotSite, related_name='tokens')
   seqn = models.PositiveIntegerField(editable=False)
   auth_device = models.CharField(max_length=64)
   token_value = models.CharField(max_length=128)
+  nice_name = models.CharField(max_length=256, blank=True, null=True,
+      help_text='A human-readable alias for the token (eg "Guest Key").')
   pin = models.CharField(max_length=256, blank=True, null=True)
   user = models.ForeignKey(User, blank=True, null=True)
   created = models.DateTimeField(auto_now_add=True)

@@ -43,9 +43,9 @@ class DrinkAdmin(admin.ModelAdmin):
 admin.site.register(models.Drink, DrinkAdmin)
 
 class AuthenticationTokenAdmin(admin.ModelAdmin):
-  list_display = ('auth_device', 'user', 'token_value', 'enabled', 'IsActive')
+  list_display = ('auth_device', 'user', 'token_value', 'nice_name', 'enabled', 'IsActive')
   list_filter = ('auth_device', 'enabled')
-  search_fields = ('user__username', 'token_value')
+  search_fields = ('user__username', 'token_value', 'nice_name')
 admin.site.register(models.AuthenticationToken, AuthenticationTokenAdmin)
 
 admin.site.register(models.BAC)

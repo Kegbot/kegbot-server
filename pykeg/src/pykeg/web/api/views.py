@@ -471,5 +471,22 @@ def tap_detail_post(request, tap):
     raise krest.ServerError(str(e))
 
 @py_to_json
+@auth_required
+def cancel_drink(request):
+  #if request.method != 'POST':
+  #  raise krest.BadRequestError, 'Method not supported at this endpoint'
+  #form = forms.DrinkCancelForm(request.POST)
+  form = forms.CancelDrinkForm(request.GET)
+  if not form.is_valid():
+    raise krest.BadRequestError, _form_errors(form)
+  cd = form.cleaned_data
+  b = backend.KegbotBackend(site=request.kbsite)
+  try:
+    res = b.CancelDrink(seqn=cd.get('id'), spilled=cd.get('spilled', False))
+    return res
+  except backend.BackendError, e:
+    raise krest.ServerError(str(e))
+
+@py_to_json
 def default_handler(request):
   raise Http404, "Not an API endpoint: %s" % request.path[:100]

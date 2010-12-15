@@ -69,6 +69,15 @@ class Backend:
     """Records a new drink with the given parameters."""
     raise NotImplementedError
 
+  def CancelDrink(self, seqn, spilled=False):
+    """Cancels the given drink.
+
+    If `spilled` is False, the drink will be canceled as if it never occurred.
+    Otherwise, the drink will be canceled, and the volume associated with it
+    will be transfered to its keg's spilled total.
+    """
+    raise NotImplementedError
+
   def LogSensorReading(self, sensor_name, temperature, when=None):
     """Records a new sensor reading."""
     raise NotImplementedError
@@ -189,6 +198,49 @@ class KegbotBackend(Backend):
 
     return protolib.ToProto(d)
 
+  def CancelDrink(self, seqn, spilled=False):
+    try:
+      d = self._site.drinks.get(seqn=seqn)
+    except models.Drink.DoesNotExist:
+      return
+
+    keg = d.keg
+    user = d.user
+    session = d.session
+
+    # Transfer volume to spillage if requested.
+    if spilled and d.volume_ml and d.keg:
+      d.keg.spilled_ml += d.volume_ml
+      d.keg.save()
+
+    d.delete()
+
+    # Invalidate all statistics.
+    models.SystemStats.objects.filter(site=self._site).delete()
+    models.KegStats.objects.filter(site=self._site, keg=d.keg).delete()
+    models.UserStats.objects.filter(site=self._site, user=d.user).delete()
+    models.SessionStats.objects.filter(site=self._site, session=d.session).delete()
+
+    # Delete any SystemEvents for this drink.
+    models.SystemEvent.objects.filter(site=self._site, drink=d).delete()
+
+    # Regenerate new statistics, based on the most recent drink
+    # post-cancellation.
+    last_qs = self._site.drinks.all().order_by('-seqn')
+    if last_qs:
+      last_drink = last_qs[0]
+      last_drink._UpdateSystemStats()
+
+    if keg:
+      keg.RecomputeStats()
+    if user and user.get_profile():
+      user.get_profile().RecomputeStats()
+    if session:
+      session.Rebuild()
+      session.RecomputeStats()
+
+    # TODO(mikey): recompute session.
+
   def LogSensorReading(self, sensor_name, temperature, when=None):
     if not when:
       when = datetime.datetime.now()
@@ -246,6 +298,9 @@ class WebBackend(Backend):
     return self._client.RecordDrink(tap_name=tap_name, ticks=ticks,
         volume_ml=volume_ml, username=username, pour_time=pour_time,
         duration=duration, auth_token=auth_token, spilled=spilled)
+
+  def CancelDrink(self, seqn, spilled=False):
+    return self._client.CancelDrink(seqn, spilled)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     # If the temperature is out of bounds, reject it.

@@ -116,6 +116,12 @@ class UserProfile(models.Model):
       self._stats = {}
     return self._stats
 
+  def RecomputeStats(self):
+    self.user.stats.all().delete()
+    last_d = self.user.drinks.valid().order_by('-starttime')
+    if last_d:
+      last_d[0]._UpdateUserStats()
+
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
@@ -228,6 +234,12 @@ class Keg(models.Model):
     else:
       self._stats = {}
     return self._stats
+
+  def RecomputeStats(self):
+    self.stats.all().delete()
+    last_d = self.drinks.valid().order_by('-starttime')
+    if last_d:
+      last_d[0]._UpdateKegStats()
 
   def Sessions(self):
     chunks = SessionChunk.objects.filter(keg=self)
@@ -545,12 +557,15 @@ class AbstractChunk(models.Model):
   def Duration(self):
     return self.endtime - self.startime
 
-  def AddDrink(self, drink):
+  def _AddDrinkNoSave(self, drink):
     if self.starttime > drink.starttime:
       self.starttime = drink.starttime
     if self.endtime < drink.starttime:
       self.endtime = drink.starttime
     self.volume_ml += drink.volume_ml
+
+  def AddDrink(self, drink):
+    self._AddDrinkNoSave(drink)
     self.save()
 
 
@@ -570,6 +585,12 @@ class DrinkingSession(AbstractChunk):
 
   def __str__(self):
     return "Session #%s: %s" % (self.id, self.starttime)
+
+  def RecomputeStats(self):
+    self.stats.all().delete()
+    last_d = self.drinks.valid().order_by('-starttime')
+    if last_d:
+      last_d[0]._UpdateSessionStats()
 
   @models.permalink
   def get_absolute_url(self):
@@ -593,12 +614,6 @@ class DrinkingSession(AbstractChunk):
     else:
       self._stats = {}
     return self._stats
-
-  def count_drinkers(self):
-    return self.user_chunks.filter(user__isnull=False).count()
-
-  def count_pints(self):
-    return int(round(int(self.Volume().ConvertTo.Pint)))
 
   def summarize_drinkers(self):
     def fmt(user):
@@ -664,6 +679,30 @@ class DrinkingSession(AbstractChunk):
   def UserChunksByVolume(self):
     chunks = self.user_chunks.all().order_by('-volume_ml')
     return chunks
+
+  def Rebuild(self):
+    self.volume_ml = 0
+    self.chunks.all().delete()
+    self.user_chunks.all().delete()
+    self.keg_chunks.all().delete()
+
+    drinks = self.drinks.valid()
+    if not drinks:
+      # TODO(mikey): cancel/delete the session entirely.  As it is, session will
+      # remain a placeholder.
+      return
+
+    min_time = None
+    max_time = None
+    for d in drinks:
+      self.AddDrink(d)
+      if min_time is None or d.starttime < min_time:
+        min_time = d.starttime
+      if max_time is None or d.starttime > max_time:
+        max_time = d.starttime
+    self.starttime = min_time
+    self.endtime = max_time
+    self.save()
 
   @classmethod
   def AssignSessionForDrink(cls, drink):

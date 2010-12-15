@@ -29,6 +29,11 @@ class DrinkPostForm(forms.Form):
   auth_token = forms.CharField(required=False)
   spilled = forms.BooleanField(required=False)
 
+class CancelDrinkForm(forms.Form):
+  """Form to handled posts to /cancel-drink/"""
+  id = forms.IntegerField()
+  spilled = forms.BooleanField(required=False)
+
 class ThermoPostForm(forms.Form):
   """Handles posting new temperature sensor readings."""
   temp_c = forms.FloatField()

@@ -236,6 +236,14 @@ class KrestClient:
       post_data['now'] = int(datetime.datetime.now().strftime('%s'))
     return self.DoPOST(endpoint, post_data=post_data)
 
+  def CancelDrink(self, seqn, spilled=False):
+    endpoint = '/cancel-drink'
+    post_data = {
+      'id': seqn,
+      'spilled': spilled,
+    }
+    return self.DoPOST(endpoint, post_data=post_data)
+
   def LogSensorReading(self, sensor_name, temperature, when=None):
     endpoint = '/thermo-sensor/%s' % (sensor_name,)
     post_data = {

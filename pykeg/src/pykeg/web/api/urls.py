@@ -22,6 +22,7 @@ urlpatterns = patterns('pykeg.web.api.views',
 
     url(r'^auth-token/(?P<auth_device>[\w\.]+)\.(?P<token_value>\w+)/?$',
         'get_auth_token'),
+    url(r'^cancel-drink/?$', 'cancel_drink'),
     url(r'^drink/?$', 'all_drinks'),
     url(r'^drink/(?P<drink_id>\d+)/?$', 'get_drink'),
     url(r'^session/?$', 'all_sessions'),

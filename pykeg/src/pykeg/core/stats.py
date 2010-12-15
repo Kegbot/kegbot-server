@@ -267,7 +267,7 @@ def main():
 
   if False:
     for user in models.User.objects.all():
-      last_drink = user.drinks.all().order_by('-starttime')
+      last_drink = user.drinks.valid().order_by('-starttime')
       if not last_drink:
         continue
       last_drink = last_drink[0]

@@ -213,7 +213,8 @@ class KegbotBackend(Backend):
       d.keg.spilled_ml += d.volume_ml
       d.keg.save()
 
-    d.delete()
+    d.status = 'deleted'
+    d.save()
 
     # Invalidate all statistics.
     models.SystemStats.objects.filter(site=self._site).delete()
@@ -226,7 +227,7 @@ class KegbotBackend(Backend):
 
     # Regenerate new statistics, based on the most recent drink
     # post-cancellation.
-    last_qs = self._site.drinks.all().order_by('-seqn')
+    last_qs = self._site.drinks.valid().order_by('-seqn')
     if last_qs:
       last_drink = last_qs[0]
       last_drink._UpdateSystemStats()

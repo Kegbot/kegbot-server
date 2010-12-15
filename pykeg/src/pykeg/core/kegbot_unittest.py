@@ -98,7 +98,7 @@ class KegbotTestCase(TestCase):
     self.client.SendFlowStop(meter_name)
     self.service_thread._FlushEvents()
 
-    drinks = self.test_keg.drinks.all()
+    drinks = self.test_keg.drinks.valid()
     self.assertEquals(len(drinks), 1)
     last_drink = drinks[0]
 
@@ -153,7 +153,7 @@ class KegbotTestCase(TestCase):
     time.sleep(1.0) # TODO(mikey): need a synchronous wait
     self.service_thread._FlushEvents()
 
-    drinks = self.test_keg.drinks.all().order_by('id')
+    drinks = self.test_keg.drinks.valid().order_by('id')
     self.assertEquals(len(drinks), 2)
     self.assertEquals(protolib.ToProto(drinks[0].user), self.test_user)
     self.assertEquals(protolib.ToProto(drinks[1].user), self.test_user_2)

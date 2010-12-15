@@ -155,7 +155,7 @@ def all_kegs(request):
 
 @py_to_json
 def all_drinks(request, limit=100):
-  qs = request.kbsite.drinks.all()
+  qs = request.kbsite.drinks.valid()
   total = len(qs)
   if 'start' in request.GET:
     try:

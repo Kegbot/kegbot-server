@@ -291,14 +291,14 @@ def _KegPreSave(sender, instance, **kwargs):
     return
 
   # Determine first drink date & set keg start date to it if earlier.
-  drinks = keg.drinks.all().order_by('starttime')
+  drinks = keg.drinks.valid().order_by('starttime')
   if drinks:
     drink = drinks[0]
     if drink.starttime < keg.startdate:
       keg.startdate = drink.starttime
 
   # Determine last drink date & set keg end date to it if later.
-  drinks = keg.drinks.all().order_by('-starttime')
+  drinks = keg.drinks.valid().order_by('-starttime')
   if drinks:
     drink = drinks[0]
     if drink.starttime > keg.enddate:
@@ -373,6 +373,7 @@ class Drink(models.Model):
   status = models.CharField(max_length=128, choices = (
      ('valid', 'valid'),
      ('invalid', 'invalid'),
+     ('deleted', 'deleted'),
      ), default = 'valid')
   session = models.ForeignKey('DrinkingSession',
       related_name='drinks', null=True, blank=True, editable=False)

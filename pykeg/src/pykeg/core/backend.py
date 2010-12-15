@@ -65,7 +65,7 @@ class Backend:
     raise NotImplementedError
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=None, auth_token=None):
+      pour_time=None, duration=0, auth_token=None, spilled=False):
     """Records a new drink with the given parameters."""
     raise NotImplementedError
 
@@ -153,38 +153,38 @@ class KegbotBackend(Backend):
     return protolib.ToProto(list(models.KegTap.objects.all()))
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=None, auth_token=None):
+      pour_time=None, duration=0, auth_token=None, spilled=False):
 
     tap = self._GetTapFromName(tap_name)
     if not tap:
       raise BackendError, "Tap unknown"
 
-    d = models.Drink(ticks=ticks, site=self._site)
+    if volume_ml is None:
+      volume_ml = float(ticks) * tap.ml_per_tick
 
-    if volume_ml is not None:
-      d.volume_ml = volume_ml
-    else:
-      d.volume_ml = float(ticks) * tap.ml_per_tick
-
+    user = None
     if username:
-      d.user = self._GetUserObjFromUsername(username)
+      user = self._GetUserObjFromUsername(username)
 
     if not pour_time:
       pour_time = datetime.datetime.now()
 
-    d.starttime = pour_time
-    d.duration = 0
-    if duration:
-      d.duration = duration
-
-    # Look up the current keg.
+    keg = None
     if tap.current_keg and tap.current_keg.status == 'online':
-      d.keg = tap.current_keg
+      keg = tap.current_keg
 
-    d.auth_token = auth_token
+    if spilled:
+      if not keg:
+        self._logger.warning('Got spilled pour for tap missing keg; ignoring')
+        return
+      keg.spilled_ml += volume_ml
+      keg.save()
+      return
+
+    d = models.Drink(ticks=ticks, site=self._site, keg=keg, volume_ml=volume_ml,
+        starttime=pour_time, duration=duration, auth_token=auth_token)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
-
     d.PostProcess()
 
     return protolib.ToProto(d)
@@ -242,9 +242,10 @@ class WebBackend(Backend):
     return (d['tap'] for d in self._client.TapStatus()['taps'])
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=None, auth_token=None):
-    return self._client.RecordDrink(tap_name, ticks, volume_ml, username,
-        pour_time, duration, auth_token)
+      pour_time=None, duration=0, auth_token=None, spilled=False):
+    return self._client.RecordDrink(tap_name=tap_name, ticks=ticks,
+        volume_ml=volume_ml, username=username, pour_time=pour_time,
+        duration=duration, auth_token=auth_token, spilled=spilled)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     # If the temperature is out of bounds, reject it.

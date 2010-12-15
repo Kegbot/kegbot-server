@@ -27,6 +27,7 @@ class DrinkPostForm(forms.Form):
   now = forms.IntegerField(required=False)
   duration = forms.IntegerField(required=False)
   auth_token = forms.CharField(required=False)
+  spilled = forms.BooleanField(required=False)
 
 class ThermoPostForm(forms.Form):
   """Handles posting new temperature sensor readings."""

@@ -463,8 +463,9 @@ def tap_detail_post(request, tap):
       volume_ml=cd.get('volume_ml'),
       username=cd.get('username'),
       pour_time=pour_time,
-      duration=cd.get('duration'),
-      auth_token=cd.get('auth_token'))
+      duration=cd.get('duration', 0),
+      auth_token=cd.get('auth_token'),
+      spilled=cd.get('spilled'))
     return res
   except backend.BackendError, e:
     raise krest.ServerError(str(e))

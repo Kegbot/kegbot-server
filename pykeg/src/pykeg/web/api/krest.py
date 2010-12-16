@@ -220,18 +220,28 @@ class KrestClient:
       raise ValueError('Invalid response from server: missing result or error')
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=None, auth_token=None):
+      pour_time=None, duration=0, auth_token=None, spilled=False):
     endpoint = '/tap/%s' % tap_name
     post_data = {
-      'tap_name' : tap_name,
-      'ticks' : ticks,
-      'volume_ml' : volume_ml,
-      'username' : username,
-      'auth_token' : auth_token,
+      'tap_name': tap_name,
+      'ticks': ticks,
+      'volume_ml': volume_ml,
+      'username': username,
+      'auth_token': auth_token,
+      'duration': duration,
+      'spilled': spilled,
     }
     if pour_time:
       post_data['pour_time'] = int(pour_time.strftime('%s'))
       post_data['now'] = int(datetime.datetime.now().strftime('%s'))
+    return self.DoPOST(endpoint, post_data=post_data)
+
+  def CancelDrink(self, seqn, spilled=False):
+    endpoint = '/cancel-drink'
+    post_data = {
+      'id': seqn,
+      'spilled': spilled,
+    }
     return self.DoPOST(endpoint, post_data=post_data)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):

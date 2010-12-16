@@ -769,6 +769,13 @@ auth_token            ``string``      *Optional.*  If known, gives the auth
                                       is stored with the drink record.  (It can
                                       be useful for 'claiming' drinks poured
                                       with an unassigned auth token.)
+spilled               ``boolean``     *Optional.*  If true, the pour is recorded
+                                      as "spilled": no drink record will be
+                                      generated, and the username, pour_time,
+                                      auth_token, now, and duration fields are
+                                      all ignored.  The volumed will be added to
+                                      the spilled total for the tap's current
+                                      keg.
 ====================  ==============  ==========================================
 
 If the tap has an active keg assigned to it, the new drink will be recorded and

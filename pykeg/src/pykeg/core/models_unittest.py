@@ -166,20 +166,20 @@ class CoreModelsTestCase(unittest.TestCase):
     self.assertEqual(u1_s1.starttime, drinks[u1][0].starttime)
     self.assertEqual(u1_s1.endtime, drinks[u1][1].endtime)
     self.assertEqual(u1_s1.endtime - u1_s1.starttime, td_10m)
-    self.assertEqual(len(list(u1_s1.drinks.all())), 2)
+    self.assertEqual(len(list(u1_s1.drinks.valid())), 2)
 
     # user1 session 2: at time 200, 1 drink
     u1_s2 = u1_chunks[1].session
     self.assertEqual(u1_s2.starttime, base_time+td_200m)
     self.assertEqual(u1_s2.endtime, base_time+td_200m)
-    self.assertEqual(len(list(u1_s2.drinks.all())), 1)
+    self.assertEqual(len(list(u1_s2.drinks.valid())), 1)
 
     # user2 session2: drinks are added out of order to create this, ensure times
     # match
     u2_s2 = u2_chunks[1].session
     self.assertEqual(u2_s2.starttime, base_time+td_190m)
     self.assertEqual(u2_s2.endtime, base_time+td_200m)
-    self.assertEqual(len(list(u2_s2.drinks.all())), 2)
+    self.assertEqual(len(list(u2_s2.drinks.valid())), 2)
 
     # Now check DrinkingSessions were created correctly; there should be
     # two groups capturing all 4 sessions.

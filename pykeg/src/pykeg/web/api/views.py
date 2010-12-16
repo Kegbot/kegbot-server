@@ -155,7 +155,7 @@ def all_kegs(request):
 
 @py_to_json
 def all_drinks(request, limit=100):
-  qs = request.kbsite.drinks.all()
+  qs = request.kbsite.drinks.valid()
   total = len(qs)
   if 'start' in request.GET:
     try:
@@ -463,8 +463,26 @@ def tap_detail_post(request, tap):
       volume_ml=cd.get('volume_ml'),
       username=cd.get('username'),
       pour_time=pour_time,
-      duration=cd.get('duration'),
-      auth_token=cd.get('auth_token'))
+      duration=cd.get('duration', 0),
+      auth_token=cd.get('auth_token'),
+      spilled=cd.get('spilled'))
+    return res
+  except backend.BackendError, e:
+    raise krest.ServerError(str(e))
+
+@py_to_json
+@auth_required
+def cancel_drink(request):
+  #if request.method != 'POST':
+  #  raise krest.BadRequestError, 'Method not supported at this endpoint'
+  #form = forms.DrinkCancelForm(request.POST)
+  form = forms.CancelDrinkForm(request.GET)
+  if not form.is_valid():
+    raise krest.BadRequestError, _form_errors(form)
+  cd = form.cleaned_data
+  b = backend.KegbotBackend(site=request.kbsite)
+  try:
+    res = b.CancelDrink(seqn=cd.get('id'), spilled=cd.get('spilled', False))
     return res
   except backend.BackendError, e:
     raise krest.ServerError(str(e))

@@ -65,8 +65,17 @@ class Backend:
     raise NotImplementedError
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=None, auth_token=None):
+      pour_time=None, duration=0, auth_token=None, spilled=False):
     """Records a new drink with the given parameters."""
+    raise NotImplementedError
+
+  def CancelDrink(self, seqn, spilled=False):
+    """Cancels the given drink.
+
+    If `spilled` is False, the drink will be canceled as if it never occurred.
+    Otherwise, the drink will be canceled, and the volume associated with it
+    will be transfered to its keg's spilled total.
+    """
     raise NotImplementedError
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
@@ -153,41 +162,85 @@ class KegbotBackend(Backend):
     return protolib.ToProto(list(models.KegTap.objects.all()))
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=None, auth_token=None):
+      pour_time=None, duration=0, auth_token=None, spilled=False):
 
     tap = self._GetTapFromName(tap_name)
     if not tap:
       raise BackendError, "Tap unknown"
 
-    d = models.Drink(ticks=ticks, site=self._site)
+    if volume_ml is None:
+      volume_ml = float(ticks) * tap.ml_per_tick
 
-    if volume_ml is not None:
-      d.volume_ml = volume_ml
-    else:
-      d.volume_ml = float(ticks) * tap.ml_per_tick
-
+    user = None
     if username:
-      d.user = self._GetUserObjFromUsername(username)
+      user = self._GetUserObjFromUsername(username)
 
     if not pour_time:
       pour_time = datetime.datetime.now()
 
-    d.starttime = pour_time
-    d.duration = 0
-    if duration:
-      d.duration = duration
-
-    # Look up the current keg.
+    keg = None
     if tap.current_keg and tap.current_keg.status == 'online':
-      d.keg = tap.current_keg
+      keg = tap.current_keg
 
-    d.auth_token = auth_token
+    if spilled:
+      if not keg:
+        self._logger.warning('Got spilled pour for tap missing keg; ignoring')
+        return
+      keg.spilled_ml += volume_ml
+      keg.save()
+      return
+
+    d = models.Drink(ticks=ticks, site=self._site, keg=keg, volume_ml=volume_ml,
+        starttime=pour_time, duration=duration, auth_token=auth_token)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
-
     d.PostProcess()
 
     return protolib.ToProto(d)
+
+  def CancelDrink(self, seqn, spilled=False):
+    try:
+      d = self._site.drinks.get(seqn=seqn)
+    except models.Drink.DoesNotExist:
+      return
+
+    keg = d.keg
+    user = d.user
+    session = d.session
+
+    # Transfer volume to spillage if requested.
+    if spilled and d.volume_ml and d.keg:
+      d.keg.spilled_ml += d.volume_ml
+      d.keg.save()
+
+    d.status = 'deleted'
+    d.save()
+
+    # Invalidate all statistics.
+    models.SystemStats.objects.filter(site=self._site).delete()
+    models.KegStats.objects.filter(site=self._site, keg=d.keg).delete()
+    models.UserStats.objects.filter(site=self._site, user=d.user).delete()
+    models.SessionStats.objects.filter(site=self._site, session=d.session).delete()
+
+    # Delete any SystemEvents for this drink.
+    models.SystemEvent.objects.filter(site=self._site, drink=d).delete()
+
+    # Regenerate new statistics, based on the most recent drink
+    # post-cancellation.
+    last_qs = self._site.drinks.valid().order_by('-seqn')
+    if last_qs:
+      last_drink = last_qs[0]
+      last_drink._UpdateSystemStats()
+
+    if keg:
+      keg.RecomputeStats()
+    if user and user.get_profile():
+      user.get_profile().RecomputeStats()
+    if session:
+      session.Rebuild()
+      session.RecomputeStats()
+
+    # TODO(mikey): recompute session.
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     if not when:
@@ -242,9 +295,13 @@ class WebBackend(Backend):
     return (d['tap'] for d in self._client.TapStatus()['taps'])
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=None, auth_token=None):
-    return self._client.RecordDrink(tap_name, ticks, volume_ml, username,
-        pour_time, duration, auth_token)
+      pour_time=None, duration=0, auth_token=None, spilled=False):
+    return self._client.RecordDrink(tap_name=tap_name, ticks=ticks,
+        volume_ml=volume_ml, username=username, pour_time=pour_time,
+        duration=duration, auth_token=auth_token, spilled=spilled)
+
+  def CancelDrink(self, seqn, spilled=False):
+    return self._client.CancelDrink(seqn, spilled)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     # If the temperature is out of bounds, reject it.

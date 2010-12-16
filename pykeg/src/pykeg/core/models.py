@@ -116,6 +116,12 @@ class UserProfile(models.Model):
       self._stats = {}
     return self._stats
 
+  def RecomputeStats(self):
+    self.user.stats.all().delete()
+    last_d = self.user.drinks.valid().order_by('-starttime')
+    if last_d:
+      last_d[0]._UpdateUserStats()
+
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
@@ -145,7 +151,7 @@ class KegSize(models.Model):
 
 class KegTap(models.Model):
   """A physical tap of beer."""
-  site = models.ForeignKey(KegbotSite)
+  site = models.ForeignKey(KegbotSite, related_name='taps')
   seqn = models.PositiveIntegerField(editable=False)
   name = models.CharField(max_length=128)
   meter_name = models.CharField(max_length=128)
@@ -182,8 +188,11 @@ class Keg(models.Model):
       tot += d.Volume()
     return tot
 
+  def spilled_volume(self):
+    return units.Quantity(self.spilled_ml, units.RECORD_UNIT)
+
   def remaining_volume(self):
-    return self.full_volume() - self.served_volume()
+    return self.full_volume() - self.served_volume() - self.spilled_ml
 
   def percent_full(self):
     return float(self.remaining_volume()) / float(self.full_volume()) * 100
@@ -226,6 +235,12 @@ class Keg(models.Model):
       self._stats = {}
     return self._stats
 
+  def RecomputeStats(self):
+    self.stats.all().delete()
+    last_d = self.drinks.valid().order_by('-starttime')
+    if last_d:
+      last_d[0]._UpdateKegStats()
+
   def Sessions(self):
     chunks = SessionChunk.objects.filter(keg=self)
     res = list(set(c.session for c in chunks))
@@ -265,6 +280,7 @@ class Keg(models.Model):
      ('coming soon', 'coming soon')))
   description = models.CharField(max_length=256, blank=True, null=True)
   origcost = models.FloatField(default=0, blank=True, null=True)
+  spilled_ml = models.FloatField(default=0, blank=True, null=True)
   notes = models.TextField(blank=True, null=True,
       help_text='Private notes about this keg, viewable only by admins.')
 
@@ -275,14 +291,14 @@ def _KegPreSave(sender, instance, **kwargs):
     return
 
   # Determine first drink date & set keg start date to it if earlier.
-  drinks = keg.drinks.all().order_by('starttime')
+  drinks = keg.drinks.valid().order_by('starttime')
   if drinks:
     drink = drinks[0]
     if drink.starttime < keg.startdate:
       keg.startdate = drink.starttime
 
   # Determine last drink date & set keg end date to it if later.
-  drinks = keg.drinks.all().order_by('-starttime')
+  drinks = keg.drinks.valid().order_by('-starttime')
   if drinks:
     drink = drinks[0]
     if drink.starttime > keg.enddate:
@@ -357,6 +373,7 @@ class Drink(models.Model):
   status = models.CharField(max_length=128, choices = (
      ('valid', 'valid'),
      ('invalid', 'invalid'),
+     ('deleted', 'deleted'),
      ), default = 'valid')
   session = models.ForeignKey('DrinkingSession',
       related_name='drinks', null=True, blank=True, editable=False)
@@ -411,12 +428,16 @@ class AuthenticationToken(models.Model):
     ret = "%s: %s" % (self.auth_device, self.token_value)
     if self.user is not None:
       ret = "%s (%s)" % (ret, self.user.username)
+    if self.nice_name:
+      ret = "[%s] %s" % (self.nice_name, ret)
     return ret
 
   site = models.ForeignKey(KegbotSite, related_name='tokens')
   seqn = models.PositiveIntegerField(editable=False)
   auth_device = models.CharField(max_length=64)
   token_value = models.CharField(max_length=128)
+  nice_name = models.CharField(max_length=256, blank=True, null=True,
+      help_text='A human-readable alias for the token (eg "Guest Key").')
   pin = models.CharField(max_length=256, blank=True, null=True)
   user = models.ForeignKey(User, blank=True, null=True)
   created = models.DateTimeField(auto_now_add=True)
@@ -541,12 +562,15 @@ class AbstractChunk(models.Model):
   def Duration(self):
     return self.endtime - self.startime
 
-  def AddDrink(self, drink):
+  def _AddDrinkNoSave(self, drink):
     if self.starttime > drink.starttime:
       self.starttime = drink.starttime
     if self.endtime < drink.starttime:
       self.endtime = drink.starttime
     self.volume_ml += drink.volume_ml
+
+  def AddDrink(self, drink):
+    self._AddDrinkNoSave(drink)
     self.save()
 
 
@@ -566,6 +590,12 @@ class DrinkingSession(AbstractChunk):
 
   def __str__(self):
     return "Session #%s: %s" % (self.id, self.starttime)
+
+  def RecomputeStats(self):
+    self.stats.all().delete()
+    last_d = self.drinks.valid().order_by('-starttime')
+    if last_d:
+      last_d[0]._UpdateSessionStats()
 
   @models.permalink
   def get_absolute_url(self):
@@ -589,12 +619,6 @@ class DrinkingSession(AbstractChunk):
     else:
       self._stats = {}
     return self._stats
-
-  def count_drinkers(self):
-    return self.user_chunks.filter(user__isnull=False).count()
-
-  def count_pints(self):
-    return int(round(int(self.Volume().ConvertTo.Pint)))
 
   def summarize_drinkers(self):
     def fmt(user):
@@ -660,6 +684,30 @@ class DrinkingSession(AbstractChunk):
   def UserChunksByVolume(self):
     chunks = self.user_chunks.all().order_by('-volume_ml')
     return chunks
+
+  def Rebuild(self):
+    self.volume_ml = 0
+    self.chunks.all().delete()
+    self.user_chunks.all().delete()
+    self.keg_chunks.all().delete()
+
+    drinks = self.drinks.valid()
+    if not drinks:
+      # TODO(mikey): cancel/delete the session entirely.  As it is, session will
+      # remain a placeholder.
+      return
+
+    min_time = None
+    max_time = None
+    for d in drinks:
+      self.AddDrink(d)
+      if min_time is None or d.starttime < min_time:
+        min_time = d.starttime
+      if max_time is None or d.starttime > max_time:
+        max_time = d.starttime
+    self.starttime = min_time
+    self.endtime = max_time
+    self.save()
 
   @classmethod
   def AssignSessionForDrink(cls, drink):

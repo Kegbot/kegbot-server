@@ -449,11 +449,19 @@ class DrinkManager(Manager):
             'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
         return
 
+    # XXX mikey
+    spilled = False
+
     # Log the drink.  If the username is empty or invalid, the backend will
     # assign it to the default (anonymous) user.  The backend will assign the
     # drink to a keg.
     d = self._backend.RecordDrink(tap_name, ticks=ticks, username=username,
-        pour_time=pour_time, duration=duration, auth_token=auth_token)
+        pour_time=pour_time, duration=duration, auth_token=auth_token,
+        spilled=spilled)
+
+    if not d:
+      self._logger.warning('No drink recorded (spillage?).')
+      return
 
     keg_id = d.get('keg_id', None)
     username = d.get('user_id', '<None>')

@@ -28,7 +28,7 @@ class Command(NoArgsCommand):
   args = '<none>'
 
   def handle(self, **options):
-    drinks = models.Drink.objects.all()
+    drinks = models.Drink.objects.valid()
 
     models.SystemStats.objects.all().delete()
     last_drinks = models.Drink.objects.valid().order_by('-starttime')

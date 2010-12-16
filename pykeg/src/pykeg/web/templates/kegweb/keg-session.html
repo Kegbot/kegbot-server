@@ -13,12 +13,14 @@
       <table border="0" width="100%" height="100%">
         <tr>
           <td align="center" valign="center">
+            {% with session.GetStats.total_volume as volume_ml %}
             <div style="font-size: 1.4em;">
-              {{ session.count_pints }}
+              {{ volume_ml|volume|floatformat:1 }}
             </div>
             <div style="font-size: 8px;">
-              pint{{ session.count_pints|pluralize }}
+              pint{{ volume_ml|pluralize }}
             </div>
+            {% endwith %}
           </td>
         </tr>
       </table>

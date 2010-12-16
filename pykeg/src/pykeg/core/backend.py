@@ -190,8 +190,9 @@ class KegbotBackend(Backend):
       keg.save()
       return
 
-    d = models.Drink(ticks=ticks, site=self._site, keg=keg, volume_ml=volume_ml,
-        starttime=pour_time, duration=duration, auth_token=auth_token)
+    d = models.Drink(ticks=ticks, site=self._site, keg=keg, user=user,
+        volume_ml=volume_ml, starttime=pour_time, duration=duration,
+        auth_token=auth_token)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
     d.PostProcess()

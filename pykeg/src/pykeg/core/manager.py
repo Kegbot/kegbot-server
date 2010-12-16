@@ -504,9 +504,10 @@ class ThermoManager(Manager):
 
   @EventHandler(kbevent.HeartbeatMinuteEvent)
   def _HandleHeartbeat(self, event):
-    MAX_AGE = datetime.timedelta(minutes=1)
+    MAX_AGE = datetime.timedelta(minutes=2)
     now = datetime.datetime.now()
-    for sensor_name, last_update in self._sensor_log.iteritems():
+    for sensor_name in self._sensor_log.keys():
+      last_update = self._sensor_log[sensor_name]
       if (now - last_update) > MAX_AGE:
         self._logger.warning('Stopped receiving updates for thermo sensor %s' %
             sensor_name)

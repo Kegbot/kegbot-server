@@ -456,6 +456,9 @@ def tap_detail_post(request, tap):
     pour_time += skew
   else:
     pour_time = None
+  duration = cd.get('duration')
+  if duration is None:
+    duration = 0
   b = backend.KegbotBackend(site=request.kbsite)
   try:
     res = b.RecordDrink(tap_name=tap,
@@ -463,7 +466,7 @@ def tap_detail_post(request, tap):
       volume_ml=cd.get('volume_ml'),
       username=cd.get('username'),
       pour_time=pour_time,
-      duration=cd.get('duration', 0),
+      duration=duration,
       auth_token=cd.get('auth_token'),
       spilled=cd.get('spilled'))
     return res

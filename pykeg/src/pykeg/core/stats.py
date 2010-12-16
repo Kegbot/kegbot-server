@@ -220,7 +220,7 @@ class SystemStatsBuilder(BaseStatsBuilder):
   REVISION = 5
 
   def _AllDrinks(self):
-    qs = self._drink.site.drinks.valid().filter(seqn__lt=self._drink.seqn)
+    qs = self._drink.site.drinks.valid().filter(seqn__lte=self._drink.seqn)
     qs = qs.order_by('seqn')
     return qs
 

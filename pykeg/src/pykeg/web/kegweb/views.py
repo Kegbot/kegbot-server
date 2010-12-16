@@ -51,7 +51,7 @@ def index(request):
   except kegweb_models.Page.DoesNotExist:
     page = None
   context['page_node'] = page
-  context['taps'] = request.kbsite.kegtap_set.all()
+  context['taps'] = request.kbsite.taps.all()
   return render_to_response('index.html', context)
 
 @cache_page(30)

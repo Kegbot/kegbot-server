@@ -284,7 +284,7 @@ def get_keg_sessions(request, keg_id):
 
 @py_to_json
 def all_taps(request):
-  taps = request.kbsite.kegtap_set.all().order_by('name')
+  taps = request.kbsite.taps.all().order_by('name')
   tap_list = []
   for tap in taps:
     beer_type = None

@@ -411,6 +411,20 @@ div.plainbox {
   cursor: pointer;
 }
 
+.kb-admin-subnav {
+  font-size: 0.8em;
+}
+
+.kb-admin-subnav p {
+  margin: 0px;
+  margin-left: 10px;
+}
+
+.kb-admin-subnav-tap {
+  margin-bottom: 10px;
+}
+
+
 #kb-recent-pours {
   width: 340px;
   height: 300px;

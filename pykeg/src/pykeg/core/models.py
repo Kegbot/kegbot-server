@@ -151,7 +151,7 @@ class KegSize(models.Model):
 
 class KegTap(models.Model):
   """A physical tap of beer."""
-  site = models.ForeignKey(KegbotSite)
+  site = models.ForeignKey(KegbotSite, related_name='taps')
   seqn = models.PositiveIntegerField(editable=False)
   name = models.CharField(max_length=128)
   meter_name = models.CharField(max_length=128)

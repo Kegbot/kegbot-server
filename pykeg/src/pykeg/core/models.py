@@ -1119,18 +1119,14 @@ class SystemEvent(models.Model):
             keg=keg, user=user, drink=drink, session=session)
         e.save()
 
-    session_just_started = False
     if session:
       q = session.events.filter(kind='session_started')
       if q.count() == 0:
         e = session.events.create(site=site, kind='session_started',
             when=session.starttime, drink=drink, user=user)
         e.save()
-        session_just_started = True
 
-    if user and not session_just_started:
-      # NOTE(mikey): This event is suppressed if the session_started event was
-      # emitted for this drink.
+    if user:
       q = user.events.filter(kind='session_joined', session=session)
       if q.count() == 0:
         e = user.events.create(site=site, kind='session_joined',

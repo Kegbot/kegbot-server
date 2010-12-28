@@ -115,7 +115,6 @@ def chart(parser, tokens):
 register.tag('chart', chart)
 
 class ChartNode(Node):
-  NEXT_CHART_ID = 0
   CHART_TMPL = '''
   <!-- begin chart %(chart_id)s -->
   <div id="chart-%(chart_id)s-container"
@@ -151,9 +150,15 @@ class ChartNode(Node):
     except AttributeError:
       raise TemplateSyntaxError('unknown chart type: %s' % self._charttype)
 
+  def _get_chart_id(self, context):
+    # TODO(mikey): Is there a better way to store _CHART_ID?
+    if not hasattr(context, '_CHART_ID'):
+      context._CHART_ID = 0
+    context._CHART_ID += 1
+    return context._CHART_ID
+
   def render(self, context):
-    chart_id = str(ChartNode.NEXT_CHART_ID)
-    ChartNode.NEXT_CHART_ID += 1
+    chart_id = self._get_chart_id(context)
 
     width = self._width
     height = self._height
@@ -204,7 +209,7 @@ class ChartNode(Node):
         chart_data[k].update(v)
       else:
         chart_data[k] = v
-    chart_data = kbjson.dumps(chart_data)
+    chart_data = kbjson.dumps(chart_data, indent=None)
     return ChartNode.CHART_TMPL % vars()
 
   def chart_sensor(self, context):

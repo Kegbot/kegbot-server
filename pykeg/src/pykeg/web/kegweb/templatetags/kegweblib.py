@@ -430,15 +430,18 @@ class ChartNode(Node):
     other_vol = 0
     for username, pints in data[10:]:
       other_vol += pints
+
+    def _sort_vol_desc(a, b):
+      return cmp(b[1], a[1])
+
+    data.sort(_sort_vol_desc)
     data = data[:10]
+    data.reverse()
 
     if other_vol:
       label = '<b>%s</b> (%.1f)' % ('all others', other_vol)
       data.append((label, other_vol))
 
-    def my_sort(a, b):
-      return cmp(a[1], b[1])
-    data.sort(my_sort)
 
     res = {
       'series': [

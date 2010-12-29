@@ -47,7 +47,10 @@ gflags.DEFINE_float('delay_seconds', 0.1,
     '0, there will be no delay.',
     lower_bound=0, upper_bound=60)
 
-gflags.DEFINE_boolean('explicit_start_stop', True,
+gflags.DEFINE_string('auth_token', '',
+    'If specified, sends auth_device|token as attached.')
+
+gflags.DEFINE_boolean('explicit_start_stop', False,
     'If true, the Kegnet client should send explicit flow '
     'start and stop requests.  This is not strictly required. '
     'Setting to False will cause the flow to end when the core '
@@ -82,6 +85,16 @@ class FakeKegboardApp(kb_app.App):
       return
     flow = SmoothFlow(FLAGS.ticks, FLAGS.steps)
 
+    try:
+      auth_device, token_value = FLAGS.auth_token.split('|')
+    except ValueError:
+      auth_device, token_value = None, None
+
+    if auth_device and token_value:
+      client.SendAuthTokenAdd(FLAGS.tap_name, auth_device, token_value)
+      client.SendAuthTokenRemove(FLAGS.tap_name, auth_device, token_value)
+      client.SendAuthTokenAdd(FLAGS.tap_name, auth_device, token_value)
+
     if FLAGS.explicit_start_stop:
       client.SendFlowStart(FLAGS.tap_name)
 
@@ -90,6 +103,9 @@ class FakeKegboardApp(kb_app.App):
       client.SendMeterUpdate(FLAGS.tap_name, amt)
       if FLAGS.delay_seconds:
         time.sleep(FLAGS.delay_seconds)
+
+    if auth_device and token_value:
+      client.SendAuthTokenRemove(FLAGS.tap_name, auth_device, token_value)
 
     if FLAGS.explicit_start_stop:
       client.SendFlowStop(FLAGS.tap_name)

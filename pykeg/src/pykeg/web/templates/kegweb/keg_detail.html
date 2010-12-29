@@ -1,19 +1,21 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
 
-{% block title %}keg index{% endblock %}
+{% block title %}
+  keg {{ keg.seqn }} detail
+{% endblock %}
+
+{% block pagetitle %}
+  keg {{ keg.seqn }} detail
+{% endblock %}
 
 {% block col-1 %}
-
-<div class="kb-contentbox-head">
-   keg {{keg.seqn}} snapshot
-</div>
 
 <div class="kb-contentbox">
   <table border="0" class="kb-statstable">
     <tr>
       <td colspan="2">
-        {{keg.type}}<br>
+        <b>{{ keg.type.name }}</b> by {{ keg.type.brewer }}
         <div style="color:#888;">{{keg.size.name}}</div>
       </td>
       <td rowspan=5>
@@ -31,7 +33,7 @@
     </tr>
 
     <tr>
-      <td align="right"><b>Status</b></td>
+      <th>Status</th>
       <td>
         {% ifequal keg.status "online" %}
         this keg is <b>online</b>, and is {{ keg.keg_age.days }}
@@ -51,7 +53,7 @@
     </tr>
 
     <tr>
-      <td align="right"><b>Pour Count</b></td>
+      <th>Pour Count</th>
       <td>
         {{ keg.drinks.valid.count }} pours by
         {% with keg.GetStats.registered_drinkers as drinkers %}
@@ -61,21 +63,19 @@
     </tr>
 
     <tr>
-      <td align="right"><b>Sessions</b></td>
+      <th>Sessions</th>
       <td>
         {{ keg.keg_session_chunks.all.count }} drinking sessions
       </td>
     </tr>
 
     <tr>
-      <td valign="center" align="right">
-        <b>Pints Poured</b><br>
+      <th>Pints Poured</th>
+      <td>
         {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
         {% if not keg.is_empty %}
           ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
-        {% endif %}
-      </td>
-      <td valign="center" align="left" colspan="2">
+        {% endif %}<br/>
         {% chart keg_volume keg 340 60 %}
       </td>
     </tr>
@@ -83,12 +83,10 @@
     {% if keg.tap %}
     {% if keg.tap.temperature_sensor %}
     <tr>
-      <td valign="center" align="right">
-        <b>Temperature</b><br>
+      <th>Temperature</th>
+      <td>
         {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C / 
-        {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
-      </td>
-      <td valign="center" align="left" colspan="2">
+        {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F<br/>
         {% chart sensor keg.tap.temperature_sensor 340 60 %}
       </td>
     </tr>
@@ -96,22 +94,14 @@
     {% endif %}
 
     <tr>
-      <td valign="center" align="right">
-        <b>Pints by Weekday</b>
-      </td>
-      <td valign="center" align="left" colspan="2">
-        {% chart volume_by_day keg 340 100 %}
-      </td>
+      <th>Pints by Weekday</th>
+      <td>{% chart volume_by_day keg 340 100 %}</td>
     </tr>
 
     {% if keg.spilled_volume > 0 %}
     <tr>
-      <td valign="center" align="right">
-        <b>Pints Spilled/Lost</b>
-      </td>
-      <td valign="center" align="left" colspan="2">
-        {{ keg.spilled_volume.ConvertTo.Pint|floatformat:2 }}
-      </td>
+      <th>Pints Spilled/Lost</th>
+      <td>{{ keg.spilled_volume.ConvertTo.Pint|floatformat:2 }}</td>
     </tr>
     {% endif %}
 

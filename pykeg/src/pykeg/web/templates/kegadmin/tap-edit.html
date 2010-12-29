@@ -1,0 +1,33 @@
+{% extends "kegadmin/tap-base.html" %}
+{% load kegweblib %}
+
+{% block title %}tap admin: edit tap {{ tap.seqn }}{% endblock %}
+{% block pagetitle %}tap admin: edit tap {{ tap.seqn }}{% endblock %}
+
+{% block kegadmin-main %}
+
+{% if tap.current_keg %}
+<div class="kb-contentbox">
+  <h2>current keg</h2>
+
+  {% with tap.current_keg as keg %}
+  <p>
+    <b>Keg #{{keg.seqn}}</b>: {{ keg.type }}
+  </p>
+  {% endwith %}
+{% endif %}
+</div>
+
+<div class="kb-contentbox">
+  <h2>add/replace keg</h2>
+
+  <table class="kb-statstable">
+  {{ change_keg_form.as_table }}
+  </table>
+</div>
+
+<div class="kb-contentbox">
+  <h2>configuration</h2>
+  
+</div>
+{% endblock %}

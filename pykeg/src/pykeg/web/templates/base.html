@@ -14,13 +14,13 @@
     google.load("jqueryui", "1");
     google.load('visualization', '1', {'packages':['table']});
   </script>
+  <script type="text/javascript" src="/site_media/js/jquery.timeago.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
         $("abbr.timeago").timeago();
     });
   </script>
   <script type="text/javascript" src="/site_media/highcharts/js/highcharts.js"></script>
-  <script type="text/javascript" src="/site_media/js/jquery.timeago.js"></script>
   {% block kb-extrajs %}{%endblock%}
 </head>
 
@@ -31,9 +31,7 @@
     <div id="kb-main-header">
       <div class="clear"></div>
 
-      <div id="kb-main-header-text">
-        kegbot beer device
-      </div>
+      {% block header-text %}{% endblock %}
 
       <div id="kb-main-header-links">
         <div class="kb-header-link">
@@ -84,6 +82,11 @@
     </div>
     {% endif %}
 
+    {% block header-margin %}
+    <div id="kb-pagetitle">
+      <h1>{% block pagetitle %}kegbot{% endblock %}</h1>
+    </div>
+    {% endblock %}
 
     <div id="kb-main-container">
 

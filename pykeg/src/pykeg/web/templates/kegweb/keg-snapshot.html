@@ -1,5 +1,9 @@
 {% load kegweblib %}
 <div class="kb-tapbox">
+  <div class="kb-tapbox-header">
+    <h2><a href="{% url pykeg.web.kegweb.views.keg_detail keg.seqn %}">{% if keg.tap %}{{ keg.tap.name }}: {% endif %} {{ keg.type.name }}</a></h2>
+    <span class="kb-byline">{{ keg.size.name }}, tapped {% timeago keg.startdate %}</span>
+  </div>
   <div class="kb-tapbox-content">
     <table border="0">
       <tr>
@@ -15,25 +19,17 @@
         </td>
         <td valign="top">
           <div class="kb-tapbox-detail">
-            <div class="kb-tapbox-header">
-              {{keg.type.name}}
-            </div>
-            <div class="kb-tapbox-subheader">
-              {{keg.size.name}}
-              {% if keg.tap %} - {{ keg.tap.name }}{% endif %}
-            </div>
-
             <div class="kb-tapbox-stats">
               <p>
-              <b>Total Poured</b>:
-              {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
-              {% if keg.is_empty %}
-                (empty!)
-              {% else %}
-                ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
-              {% endif %}
-              {% chart keg_volume keg 320 50 %}
-              </p>
+                <b>Total Poured</b>:
+                {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
+                {% if keg.is_empty %}
+                  (empty!)
+                {% else %}
+                  ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
+                {% endif %}
+                {% chart keg_volume keg 320 50 %}
+                </p>
 
               {% if keg.tap %}
               {% if keg.tap.temperature_sensor %}
@@ -49,21 +45,8 @@
           </div>
         </td>
       </tr>
-      {% if keg.description %}
-      <tr>
-        <td colspan="2">
-        <div class="kb-tapbox-description">
-          <i>"{{ keg.description }}"</i>
-        </div>
-        </td>
-      </tr>
-      {% endif %}
     </table>
 
-    <div class="kb-tapbox-footer">
-      tapped {% timeago keg.startdate %} |
-      <a href="{% url pykeg.web.kegweb.views.keg_detail keg.seqn %}">full history &raquo;</a>
-    </div>
   </div>
 </div>
 

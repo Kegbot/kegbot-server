@@ -1,18 +1,15 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
 
-{% block title %}{{ session.GetTitle}}{% endblock %}
+{% block title %}session detail: {{ session.GetTitle}}{% endblock %}
+{% block pagetitle %}{{ session.GetTitle}}{% endblock %}
 
 {% block col-1 %}
-
-<div class="kb-contentbox-head">
-   {{ session.GetTitle }}
-</div>
 
 <div class="kb-contentbox">
   <table border="0" class="kb-statstable">
     <tr>
-      <td align="right"><b>When</b></td>
+      <th>When</th>
       <td>
         {{session.starttime}}
       </td>
@@ -20,7 +17,7 @@
 
     {% with session.keg_chunks.all as keg_chunks %}
     <tr>
-      <td align="right"><b>Keg{{keg_chunks.count|pluralize}}</b></td>
+      <th>Keg{{keg_chunks.count|pluralize}}</th>
       <td>
         {% for chunk in keg_chunks %}
           {% if chunk.keg %}
@@ -32,7 +29,7 @@
     {% endwith %}
 
     <tr>
-      <td align="right"><b>Drink Count</b></td>
+      <th>Drink Count</th>
       <td>
         {{ session.drinks.valid.count }} pours,
         {{session.Volume.ConvertTo.Pint|floatformat:0}} pints
@@ -40,7 +37,7 @@
     </tr>
 
     <tr>
-      <td align="right"><b>Registered Drinkers</b></td>
+      <th>Registered Drinkers</th>
       <td>
         {{ session.GetStats.registered_drinkers|length }} drinkers
       </td>

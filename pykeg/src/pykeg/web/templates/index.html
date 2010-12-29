@@ -56,10 +56,16 @@
   </script>
 {% endblock %}
 
-{% block col-1 %}
-<div class="kb-contentbox-head">
-  on tap
+{% block header-text %}
+<div id="kb-main-header-text">
+  kegbot beer device
 </div>
+{% endblock %}
+
+{% comment %} Inhibit page title on main page. {% endcomment %}
+{% block header-margin %}{% endblock %}
+
+{% block col-1 %}
 <div class="kb-contentbox">
   {% for tap in taps %}
     {% if tap.current_keg %}
@@ -72,10 +78,8 @@
 {% endblock col-1 %}
 
 {% block col-2 %}
-<div class="kb-contentbox-head">
-  recent events
-</div>
 <div class="kb-contentbox">
+  <h1>recent events</h1>
   <div id="kb-recent-events"> </div>
 </div>
 

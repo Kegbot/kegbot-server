@@ -192,7 +192,7 @@ class Keg(models.Model):
     return units.Quantity(self.spilled_ml, units.RECORD_UNIT)
 
   def remaining_volume(self):
-    return self.full_volume() - self.served_volume() - self.spilled_ml
+    return self.full_volume() - self.served_volume() - self.spilled_volume()
 
   def percent_full(self):
     return float(self.remaining_volume()) / float(self.full_volume()) * 100
@@ -280,7 +280,7 @@ class Keg(models.Model):
      ('coming soon', 'coming soon')))
   description = models.CharField(max_length=256, blank=True, null=True)
   origcost = models.FloatField(default=0, blank=True, null=True)
-  spilled_ml = models.FloatField(default=0, blank=True, null=True)
+  spilled_ml = models.FloatField(default=0)
   notes = models.TextField(blank=True, null=True,
       help_text='Private notes about this keg, viewable only by admins.')
 

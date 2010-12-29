@@ -115,7 +115,6 @@ def chart(parser, tokens):
 register.tag('chart', chart)
 
 class ChartNode(Node):
-  NEXT_CHART_ID = 0
   CHART_TMPL = '''
   <!-- begin chart %(chart_id)s -->
   <div id="chart-%(chart_id)s-container"
@@ -151,9 +150,15 @@ class ChartNode(Node):
     except AttributeError:
       raise TemplateSyntaxError('unknown chart type: %s' % self._charttype)
 
+  def _get_chart_id(self, context):
+    # TODO(mikey): Is there a better way to store _CHART_ID?
+    if not hasattr(context, '_CHART_ID'):
+      context._CHART_ID = 0
+    context._CHART_ID += 1
+    return context._CHART_ID
+
   def render(self, context):
-    chart_id = str(ChartNode.NEXT_CHART_ID)
-    ChartNode.NEXT_CHART_ID += 1
+    chart_id = self._get_chart_id(context)
 
     width = self._width
     height = self._height
@@ -204,7 +209,7 @@ class ChartNode(Node):
         chart_data[k].update(v)
       else:
         chart_data[k] = v
-    chart_data = kbjson.dumps(chart_data)
+    chart_data = kbjson.dumps(chart_data, indent=None)
     return ChartNode.CHART_TMPL % vars()
 
   def chart_sensor(self, context):
@@ -430,15 +435,18 @@ class ChartNode(Node):
     other_vol = 0
     for username, pints in data[10:]:
       other_vol += pints
+
+    def _sort_vol_desc(a, b):
+      return cmp(b[1], a[1])
+
+    data.sort(_sort_vol_desc)
     data = data[:10]
+    data.reverse()
 
     if other_vol:
       label = '<b>%s</b> (%.1f)' % ('all others', other_vol)
       data.append((label, other_vol))
 
-    def my_sort(a, b):
-      return cmp(a[1], b[1])
-    data.sort(my_sort)
 
     res = {
       'series': [

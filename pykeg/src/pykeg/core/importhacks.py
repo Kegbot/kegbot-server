@@ -42,11 +42,11 @@ def _Warning(message):
   sys.stderr.write('importhacks: %s\n' % (message,))
 
 def _AddToSysPath(paths):
-  for path in reversed(paths):
+  for path in paths:
     path = os.path.abspath(path)
     if path not in sys.path:
       _Debug('Adding to sys.path: %s' % path)
-      sys.path.insert(0, path)
+      sys.path.append(path)
     else:
       _Debug('Already in sys.path: %s' % path)
 

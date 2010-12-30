@@ -351,7 +351,7 @@ class Drink(models.Model):
     return 0
 
   def __str__(self):
-    return "Drink %s by %s" % (self.id, self.user)
+    return "Drink %s:%i by %s" % (self.site.name, self.seqn, self.user)
 
   objects = DrinkManager()
 

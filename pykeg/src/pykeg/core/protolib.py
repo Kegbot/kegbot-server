@@ -35,40 +35,42 @@ def converts(kind):
     return f
   return decorate
 
-def ToProto(obj):
+def ToProto(obj, full=False):
   """Converts the object to protocol format."""
   if obj is None:
     return None
   kind = obj.__class__
   if hasattr(obj, '__iter__'):
-    return (ToProto(item) for item in obj)
+    return (ToProto(item, full) for item in obj)
   elif kind in _CONVERSION_MAP:
-    return _CONVERSION_MAP[kind](obj)
+    return _CONVERSION_MAP[kind](obj, full)
   else:
     raise ValueError, "Unknown object type: %s" % kind
 
 ### Model conversions
 
 @converts(models.AuthenticationToken)
-def AuthTokenToProto(record):
+def AuthTokenToProto(record, full=False):
   ret = AttrDict()
-  ret.id = '%s|%s' % (record.auth_device, record.token_value)
+  ret.id = record.seqn
   ret.auth_device = record.auth_device
   ret.token_value = record.token_value
   if record.user:
     ret.username = str(record.user.username)
   else:
     ret.username = None
-  ret.created_time = record.created
-  if record.expires:
-    ret.expire_time = record.expires
-  ret.enabled = record.enabled
-  if record.pin:
-    ret.pin = record.pin
+  ret.nice_name = record.nice_name
+  if full:
+    ret.enabled = record.enabled
+    ret.created_time = record.created
+    if record.expires:
+      ret.expire_time = record.expires
+    if record.pin:
+      ret.pin = record.pin
   return ret
 
 @converts(bdb_models.BeerType)
-def BeerTypeToProto(beertype):
+def BeerTypeToProto(beertype, full=False):
   ret = AttrDict()
   ret.id = beertype.id
   ret.name = beertype.name
@@ -87,7 +89,7 @@ def BeerTypeToProto(beertype):
   return ret
 
 @converts(bdb_models.Brewer)
-def BrewerToProto(brewer):
+def BrewerToProto(brewer, full=False):
   ret = AttrDict()
   ret.id = brewer.id
   ret.name = brewer.name
@@ -105,14 +107,14 @@ def BrewerToProto(brewer):
   return ret
 
 @converts(bdb_models.BeerStyle)
-def BeerStyleToProto(style):
+def BeerStyleToProto(style, full=False):
   ret = AttrDict()
   ret.id = style.id
   ret.name = style.name
   return ret
 
 @converts(models.Drink)
-def DrinkToProto(drink):
+def DrinkToProto(drink, full=False):
   ret = AttrDict()
   ret.id = drink.seqn
   ret.ticks = drink.ticks
@@ -121,6 +123,7 @@ def DrinkToProto(drink):
   ret.pour_time = drink.starttime
   if drink.duration is not None:
     ret.duration = drink.duration
+  ret.status = drink.status
   ret.is_valid = (drink.status == 'valid')
   if drink.keg:
     ret.keg_id = drink.keg.seqn
@@ -128,17 +131,18 @@ def DrinkToProto(drink):
     ret.user_id = drink.user.username
   else:
     ret.user_id = None
-    ret.user = None
   if drink.auth_token:
     ret.auth_token = drink.auth_token
   return ret
 
 @converts(models.Keg)
-def KegToProto(keg):
+def KegToProto(keg, full=False):
   ret = AttrDict()
   ret.id = keg.seqn
   ret.type_id = keg.type.id
   ret.size_id = keg.size.id
+  ret.size_name = keg.size.name
+  ret.size_volume_ml = keg.size.volume_ml
   rem = float(keg.remaining_volume())
   ret.volume_ml_remain = rem
   ret.percent_full = rem / float(keg.full_volume())
@@ -147,10 +151,11 @@ def KegToProto(keg):
   ret.status = keg.status
   if keg.description:
     ret.description = keg.description
+  ret.spilled_ml = keg.spilled_ml
   return ret
 
 @converts(models.KegSize)
-def KegSizeToProto(size):
+def KegSizeToProto(size, full=False):
   ret = AttrDict()
   ret.id = size.id
   ret.name = size.name
@@ -158,7 +163,7 @@ def KegSizeToProto(size):
   return ret
 
 @converts(models.KegTap)
-def KegTapToProto(tap):
+def KegTapToProto(tap, full=False):
   ret = AttrDict()
   ret.id = str(tap.seqn)
   ret.name = tap.name
@@ -176,16 +181,20 @@ def KegTapToProto(tap):
   return ret
 
 @converts(models.DrinkingSession)
-def SessionToProto(record):
+def SessionToProto(record, full=False):
   ret = AttrDict()
   ret.id = str(record.seqn)
   ret.start_time = record.starttime
   ret.end_time = record.endtime
   ret.volume_ml = record.volume_ml
+  if record.name:
+    ret.name = record.name
+  if record.slug:
+    ret.slug = record.slug
   return ret
 
 @converts(models.Thermolog)
-def ThermoLogToProto(record):
+def ThermoLogToProto(record, full=False):
   ret = AttrDict()
   ret.id = str(record.seqn)
   ret.sensor_id = str(record.sensor.seqn)
@@ -193,26 +202,55 @@ def ThermoLogToProto(record):
   ret.record_time = record.time
   return ret
 
-@converts(models.ThermoSensor)
-def ThermoSensorToProto(record):
+@converts(models.ThermoSummaryLog)
+def ThermoSummaryLogToProto(record, full=False):
   ret = AttrDict()
+  ret.id = str(record.seqn)
+  ret.sensor_id = str(record.sensor.seqn)
+  ret.date = record.date
+  ret.period = record.period
+  ret.num_readings = record.num_readings
+  ret.min_temp = record.min_temp
+  ret.max_temp = record.max_temp
+  ret.mean_temp = record.mean_temp
+  return ret
+
+@converts(models.ThermoSensor)
+def ThermoSensorToProto(record, full=False):
+  ret = AttrDict()
+  ret.id = record.seqn
   ret.sensor_name = record.raw_name
   ret.nice_name = record.nice_name
   return ret
 
 @converts(models.User)
-def UserToProto(user):
+def UserToProto(user, full=False):
   ret = AttrDict()
   ret.username = user.username
   ret.mugshot_url = user.get_profile().MugshotUrl()
   ret.is_active = user.is_active
-  ret.is_staff = user.is_staff
-  ret.is_superuser = user.is_superuser
-  ret.joined_time = user.date_joined
+  if full:
+    ret.first_name = user.first_name
+    ret.last_name = user.last_name
+    ret.email = user.email
+    ret.password = user.password
+    ret.is_staff = user.is_staff
+    ret.is_active = user.is_active
+    ret.is_superuser = user.is_superuser
+    ret.last_login = user.last_login
+    ret.date_joined = user.date_joined
+  return ret
+
+@converts(models.UserProfile)
+def UserProfileToProto(record, full=False):
+  ret = AttrDict()
+  ret.username = record.user.username
+  ret.gender = record.gender
+  ret.weight = record.weight
   return ret
 
 @converts(models.SessionChunk)
-def SessionChunkToProto(record):
+def SessionChunkToProto(record, full=False):
   ret = AttrDict()
   ret.id = str(record.seqn)
   ret.session_id = str(record.session.seqn)
@@ -224,7 +262,7 @@ def SessionChunkToProto(record):
   return ret
 
 @converts(models.SystemEvent)
-def SystemEventToProto(record):
+def SystemEventToProto(record, full=False):
   ret = AttrDict()
   ret.id = record.seqn
   ret.kind = record.kind
@@ -238,7 +276,7 @@ def SystemEventToProto(record):
   return ret
 
 @converts(soundserver_models.SoundEvent)
-def SoundEventToProto(record):
+def SoundEventToProto(record, full=False):
   ret = AttrDict()
   ret.event_name = record.event_name
   ret.event_predicate = record.event_predicate

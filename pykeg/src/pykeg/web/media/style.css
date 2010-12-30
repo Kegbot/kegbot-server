@@ -1,7 +1,7 @@
 /* @group Basics */
 
 body {
-  background-color: #fff;
+  background: #fff;
   font-family: "Lucida Grande", Lucida, Verdana, sans-serif;
   color: black;
   margin: 0px;
@@ -129,10 +129,10 @@ a:hover {
 }
 
 .kb-main-content {
-  background-color: white;
   padding-top: 16px;
   border: 1px solid #ACB6C0;
   margin-bottom: 16px;
+  background-color: rgba(255,255,255,0.5);
 }
 
 #kb-footer {
@@ -259,6 +259,7 @@ a:hover {
 
 .kb-contentbox {
   padding-left: 16px;
+  background-color: rgba(255,255,255,0.5);
 
 
 /* match kb-main-header */

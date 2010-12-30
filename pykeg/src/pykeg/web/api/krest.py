@@ -258,7 +258,10 @@ class KrestClient:
 
   def GetToken(self, auth_device, token_value):
     url = 'auth-token/%s.%s' % (auth_device, token_value)
-    return self.DoGET(url)
+    try:
+      return self.DoGET(url)
+    except ServerError, e:
+      raise NotFoundError(e)
 
   def LastDrinks(self):
     """Gets a list of the most recent drinks."""

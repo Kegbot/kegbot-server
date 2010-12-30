@@ -316,6 +316,9 @@ class WebBackend(Backend):
     except krest.NotFoundError:
       self._logger.warning('No sensor on backend named "%s"' % (sensor_name,))
       return None
+    except krest.ServerError:
+      self._logger.warning('Server error recording temperature; dropping reading.')
+      return None
 
   def GetAuthToken(self, auth_device, token_value):
     try:

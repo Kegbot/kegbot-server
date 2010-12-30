@@ -12,13 +12,10 @@
 {% block col-1 %}
 
 <div class="kb-contentbox">
-  <table border="0" class="kb-statstable">
+  <table border="0" class="kb-statstable" width="100%">
     <tr>
-      <td colspan="2">
-        <b>{{ keg.type.name }}</b> by {{ keg.type.brewer }}
-        <div style="color:#888;">{{keg.size.name}}</div>
-      </td>
-      <td rowspan=5>
+      <td><b>{{keg.type.name}}</b></td>
+      <td valign="top" rowspan="5">
         {% if keg.type.GetImage %}
           <img src="{{ keg.type.GetImage.thumbnail.url }}">
         {% else %}
@@ -27,11 +24,24 @@
         {% endif %}
       </td>
     </tr>
-
     <tr>
-      <td colspan="2">&nbsp;</td>
+      <td>{{keg.type.brewer}}</td>
     </tr>
-
+    <tr>
+      <td>
+        <div style="color:#888;">{{keg.size.name}}</div>
+      </td>
+    </tr>
+    {% if keg.description %}
+    <tr><td>&nbsp;</td></tr>
+    <tr>
+      <td>
+        <i>{{keg.description}}</i>
+      </td>
+    </tr>
+    {% endif %}
+  </table>
+  <table border="0" class="kb-statstable">
     <tr>
       <th>Status</th>
       <td>

@@ -23,9 +23,11 @@ datetime instances to ISO8601 strings, and decoding them back.
 """
 
 import datetime
+import pytz
 import re
 import types
 
+from django.conf import settings
 from pykeg.core.util import AttrDict
 
 try:
@@ -43,7 +45,13 @@ class JSONEncoder(json.JSONEncoder):
   """JSONEncoder which translate datetime instances to ISO8601 strings."""
   def default(self, obj):
     if isinstance(obj, datetime.datetime):
-      return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+      if settings.TIME_ZONE:
+        try:
+          tz = pytz.timezone(settings.TIME_ZONE)
+          obj = tz.localize(obj)
+        except pytz.UnknownTimeZoneError:
+          pass
+      return obj.isoformat()
     return json.JSONEncoder.default(self, obj)
 
 
@@ -62,7 +70,7 @@ def _ToAttrDict(obj):
     # Try to convert any "time" or "date" fields into datetime objects.  If the
     # format doesn't match, just leave it alone.
     for k, v in obj.iteritems():
-      if k.endswith('date') or k.endswith('time'):
+      if k.endswith('date') or k.endswith('time') or k.startswith('date') or k.startswith('last_login'):
         try:
           obj[k] = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%SZ')
         except ValueError:

@@ -41,17 +41,43 @@ except ImportError:
     except ImportError:
       raise ImportError, "Unable to load a json library"
 
+def _tzswap(dt, tz_from, tz_to):
+  """Reinterprets a datetime object produced with one timezone with another.
+
+  The input and output are both naieve datetimes, that is, those without any
+  tzinfo.
+  """
+  assert dt.tzinfo == None
+  # First, reinterpret the source datetime obj as being in the 'from' timezone.
+  res = dt.replace(tzinfo=tz_from)
+  # Next, update with the intended timezone.
+  res = res.astimezone(tz_to)
+  # Finally, strip away the new timezone to leave us with a naieve datetime once
+  # again.
+  res = res.replace(tzinfo=None)
+  return res
+
+def utc_to_local(dt):
+  local_tz = pytz.timezone(settings.TIME_ZONE)
+  utc_tz = pytz.timezone('UTC')
+  return _tzswap(dt, utc_tz, local_tz)
+
+def local_to_utc(dt):
+  local_tz = pytz.timezone(settings.TIME_ZONE)
+  utc_tz = pytz.timezone('UTC')
+  return _tzswap(dt, local_tz, utc_tz)
+
 class JSONEncoder(json.JSONEncoder):
   """JSONEncoder which translate datetime instances to ISO8601 strings."""
   def default(self, obj):
     if isinstance(obj, datetime.datetime):
-      if settings.TIME_ZONE:
-        try:
-          tz = pytz.timezone(settings.TIME_ZONE)
-          obj = tz.localize(obj)
-        except pytz.UnknownTimeZoneError:
-          pass
-      return obj.isoformat()
+      try:
+        # Convert from local to UTC.
+        # TODO(mikey): handle incoming datetimes with tzinfo.
+        obj = local_to_utc(obj)
+      except pytz.UnknownTimeZoneError:
+        pass
+      return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
     return json.JSONEncoder.default(self, obj)
 
 
@@ -72,7 +98,13 @@ def _ToAttrDict(obj):
     for k, v in obj.iteritems():
       if k.endswith('date') or k.endswith('time') or k.startswith('date') or k.startswith('last_login'):
         try:
-          obj[k] = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%SZ')
+          timeval = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%SZ')
+          # Convert from UTC to local.
+          try:
+            timeval = utc_to_local(timeval)
+          except pytz.UnknownTimeZoneError:
+            pass
+          obj[k] = timeval
         except ValueError:
           pass
     return AttrDict(obj)

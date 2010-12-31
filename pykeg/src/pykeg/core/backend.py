@@ -20,6 +20,7 @@
 
 import datetime
 import logging
+import socket
 
 from django.db.utils import DatabaseError
 
@@ -319,6 +320,9 @@ class WebBackend(Backend):
     except krest.ServerError:
       self._logger.warning('Server error recording temperature; dropping reading.')
       return None
+    except socket.error:
+      self._logger.warning('Socket error recording temperature; dropping reading.')
+      raise NoTokenError
 
   def GetAuthToken(self, auth_device, token_value):
     try:
@@ -326,4 +330,7 @@ class WebBackend(Backend):
       token = response['token']
       return token
     except krest.NotFoundError:
+      raise NoTokenError
+    except socket.error:
+      self._logger.warning('Socket error fetching token; ignoring.')
       raise NoTokenError

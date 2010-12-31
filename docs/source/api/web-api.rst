@@ -47,6 +47,8 @@ circumstances, the response dictionary will consist of a single top-level entry
 named ``result``, containing the endpoint's specific response data.  The actual
 contents of the ``result`` field vary, and are determined by the endpoint.
 
+Dates and times are always expressed in the UTC time zone.
+
 Error Handling
 --------------
 

@@ -322,7 +322,7 @@ class WebBackend(Backend):
       return None
     except socket.error:
       self._logger.warning('Socket error recording temperature; dropping reading.')
-      raise NoTokenError
+      return None
 
   def GetAuthToken(self, auth_device, token_value):
     try:

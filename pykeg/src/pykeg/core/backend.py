@@ -270,6 +270,17 @@ class KegbotBackend(Backend):
     return protolib.ToProto(record)
 
   def GetAuthToken(self, auth_device, token_value):
+
+    # Special case for "core.user" psuedo auth device.
+    if auth_device == 'core.user':
+      try:
+        user = models.User.objects.get(username=token_value, is_active=True)
+      except models.User.DoesNotExist:
+        raise NoTokenError(auth_device)
+      fake_token = models.AuthenticationToken(auth_device='core.user',
+          token_value=token_value, seqn=0, user=user, enabled=True)
+      return protolib.ToProto(fake_token)
+
     tok, created = models.AuthenticationToken.objects.get_or_create( site=self._site,
         auth_device=auth_device, token_value=token_value)
     if not tok.user:

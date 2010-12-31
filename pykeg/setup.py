@@ -37,6 +37,7 @@ setup(
       'src/pykeg/bin/kegbot_core.py',
       'src/pykeg/bin/kegbot_master.py',
       'src/pykeg/bin/kegbot_twitter.py',
+      'src/pykeg/bin/kegnetproxy.py',
       'src/pykeg/bin/lcd_daemon.py',
       'src/pykeg/bin/rfid_daemon.py',
       'src/pykeg/bin/sound_server.py',

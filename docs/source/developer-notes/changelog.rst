@@ -25,9 +25,14 @@ Core/General
 * Each keg record now has a "spilled" volume counter. This can be used to store
   the total amount of wasted or lost beverage which is not associated with a
   drink record.
+* When running ``kegbot-admin``, ``PYTHONPATH`` now has higher precendence than
+  ``/etc/kegbot`` and ``~/.kegbot``. This makes it possible to provide an
+  alternate location for ``common_settings.py``. (If the preceeding was nonsense
+  to you, you are normal..)
 
 Kegweb
 ^^^^^^
+* Various CSS changes and aesthetic tweaks.
 * System events are now shown on the Kegweb main page.
 * Automatic AJAX refresh of drinks (and now events) on the main page has been
   improved.
@@ -37,11 +42,15 @@ Kegweb
 * Fixed a bug where previous keg was not being marked offline after a keg
   change.
 * The values in the pints-per-session histogram are now less ambiguous.
+* The background image is now included in version control, and could be replaced
+  locally.
 
 API
 ^^^
 * System events are now exposed in the web api.
 * Sessions are now exposed in the web api.
+* Date/time fields reported in the web api are now always expressed in UTC,
+  regardless of the system/Django time zone.
 
 Version 0.7.8 (2010-12-01)
 --------------------------

@@ -41,7 +41,7 @@ class Event(util.BaseMessage):
     if encoded is not None:
       self.DecodeFromString(encoded)
 
-  def ToJson(self, indent=2):
+  def ToDict(self):
     data = {}
     for field_name, value in self._values.iteritems():
       data[field_name] = value
@@ -50,7 +50,10 @@ class Event(util.BaseMessage):
       'event': self.__class__.__name__,
       'data': data,
     }
-    return kbjson.dumps(ret, indent=indent)
+    return ret
+
+  def ToJson(self, indent=2):
+    return kbjson.dumps(self.ToDict(), indent=indent)
 
 EventField = util.BaseField
 

@@ -6,5 +6,6 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
       url(r'^change-kegs/$', 'change_kegs', name='kegadmin-change-kegs'),
       url(r'^taps/$', 'tap_list', name='kegadmin-tap-list'),
       url(r'^taps/(?P<tap_id>\d+)/$', 'edit_tap', name='kegadmin-edit-tap'),
+      url(r'^get-backup/$', 'generate_backup', name='kegadmin-get-backup'),
 )
 

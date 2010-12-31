@@ -18,13 +18,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+import cStringIO
+import datetime
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpResponse
 from django.template import RequestContext
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
 
+from pykeg.core import backup
 from pykeg.core import models
 
 from pykeg.web.kegadmin import forms
@@ -81,3 +86,28 @@ def edit_tap(request, tap_id):
 def view_stats(request):
   context = RequestContext(request)
   keg_stats = models.KegStats.objects.all()
+
+@staff_member_required
+def generate_backup(request):
+  context = RequestContext(request)
+
+  indent = None
+  indent_param = request.GET.get('indent', None)
+  if indent_param:
+    try:
+      indent = int(indent_param)
+    except ValueError:
+      pass
+
+  kbsite = request.kbsite
+  datestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+  filename = 'kegbot-%s.%s.json.txt' % (kbsite.name, datestr)
+
+  output_fp = cStringIO.StringIO()
+  backup.dump(output_fp, kbsite, indent=indent)
+
+  response = HttpResponse(output_fp.getvalue(),
+      mimetype="application/octet-stream")
+  response['Content-Disposition'] = 'attachment; filename=%s' % filename
+  output_fp.close()
+  return response

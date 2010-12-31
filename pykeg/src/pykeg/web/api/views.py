@@ -329,10 +329,10 @@ def get_user_stats(request, username):
 @py_to_json
 @auth_required
 def get_auth_token(request, auth_device, token_value):
-  token = get_object_or_404(models.AuthenticationToken, auth_device=auth_device,
-      token_value=token_value)
+  b = backend.KegbotBackend(site=request.kbsite)
+  tok = b.GetAuthToken(auth_device, token_value)
   res = {
-    'token': obj_to_dict(token),
+    'token': tok,
   }
   return res
 

@@ -32,6 +32,11 @@ from optparse import make_option
 
 class Command(BaseCommand):
   option_list = BaseCommand.option_list + (
+      make_option('-s', '--site',
+        type='string',
+        action='store',
+        dest='site',
+        help='Site to load to.'),
       make_option('-d', '--dump',
         type='string',
         action='store',
@@ -53,20 +58,27 @@ class Command(BaseCommand):
   args = '<none>'
 
   def handle(self, **options):
+    if not options['site']:
+      raise CommandError('Must give --site')
+
     if not (bool(options['dump']) ^ bool(options['restore'])):
       raise CommandError('Must give exactly one of: --dump=<filename>, --restore=<filename>')
 
+    try:
+      kbsite = models.KegbotSite.objects.get(name=options['site'])
+    except models.KegbotSite.DoesNotExist:
+      raise CommandError('Site does not exist')
+
     if options['restore']:
-      self.restore(options)
+      self.restore(options, kbsite)
     else:
-      self.backup(options)
+      self.backup(options, kbsite)
 
   def debug(self, msg):
     print msg
 
-  def restore(self, options, delete_first=True):
+  def restore(self, options, kbsite, delete_first=True):
     self._last_log_cls = None
-    kbsite = models.KegbotSite.objects.get(name='default')
     fp = open(options['restore'], 'r')
     data = kbjson.loads(fp.read())
     fp.close()
@@ -310,8 +322,7 @@ class Command(BaseCommand):
     sys.stdout.write('   %s\n' % obj)
     sys.stdout.flush()
 
-  def backup(self, options):
-    kbsite = models.KegbotSite.objects.get(name='default')
+  def backup(self, options, kbsite):
     res = {}
 
     # Things that are not backed up and are instead recomputed:
@@ -334,7 +345,7 @@ class Command(BaseCommand):
         ('thermosummarylogs', kbsite.thermosummarylogs.all().order_by('id')),
         ('users', models.User.objects.all().order_by('id')),
         ('profiles', models.UserProfile.objects.all().order_by('id')),
-        ('drinks', kbsite.drinks.all().order_by('id')),
+        ('drinks', kbsite.drinks.valid().order_by('id')),
         ('tokens', kbsite.tokens.all().order_by('id')),
         #('configs', kbsite.configs.all()),
     )

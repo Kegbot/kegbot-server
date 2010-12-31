@@ -83,9 +83,12 @@ class Command(BaseCommand):
     data = kbjson.loads(fp.read())
     fp.close()
 
+    brewer_map = {}
     for rec in data.get('bdb_brewers', []):
-      brewer, created = bdb_models.Brewer.objects.get_or_create(id=rec.id)
-      brewer.id = rec.id
+      try:
+        brewer = bdb_models.Brewer.objects.get(id=rec.id)
+      except bdb_models.Brewer.DoesNotExist:
+        brewer = bdb_models.Brewer(id=rec.id)
       brewer.name = rec.name
       brewer.country = rec.get('country')
       brewer.origin_state = rec.get('origin_state')
@@ -95,41 +98,48 @@ class Command(BaseCommand):
       brewer.description = rec.get('description')
       brewer.save()
       self.log(brewer)
+      brewer_map[rec.id] = brewer
 
+    style_map = {}
     for rec in data.get('bdb_styles', []):
-      style, created = bdb_models.BeerStyle.objects.get_or_create(id=rec.id)
+      try:
+        style = bdb_models.BeerStyle.objects.get(id=rec.id)
+      except bdb_models.BeerStyle.DoesNotExist:
+        style = bdb_models.BeerStyle(id=rec.id)
       style.name = rec.name
       style.save()
       self.log(style)
+      style_map[rec.id] = style
 
+    type_map = {}
     for rec in data.get('bdb_beertypes', []):
-      btype = bdb_models.BeerType()
-      btype, created = bdb_models.BeerType.objects.get_or_create(id=rec.id)
-      btype.id = rec.id
+      try:
+        btype = bdb_models.BeerType.objects.get(id=rec.id)
+      except bdb_models.BeerType.DoesNotExist:
+        btype = bdb_models.BeerType(id=rec.id)
       btype.name = rec.name
-      btype.brewer = bdb_models.Brewer.objects.get(pk=rec.brewer_id)
-      btype.style = bdb_models.BeerStyle.objects.get(pk=rec.style_id)
+      btype.brewer = brewer_map[rec.brewer_id]
+      btype.style = style_map[rec.style_id]
       btype.edition = rec.get('edition')
       btype.abv = rec.get('abv')
       btype.calories_oz = rec.get('calories_oz')
       btype.carbs_oz = rec.get('carbs_oz')
       btype.save()
       self.log(btype)
+      type_map[rec.id] = btype
 
-    if delete_first:
-      kbsite.thermosensors.all().delete()
+    kbsite.thermosensors.all().delete()
     for rec in data.get('thermosensors', []):
-      sensor, created = models.ThermoSensor.objects.get_or_create(site=kbsite, seqn=int(rec.id))
+      sensor = models.ThermoSensor(site=kbsite, seqn=int(rec.id))
       sensor.raw_name = rec.sensor_name
       sensor.nice_name = rec.nice_name
       sensor.save()
       self.log(sensor)
 
-    if delete_first:
-      kbsite.kegs.all().delete()
+    kbsite.kegs.all().delete()
     for rec in data['kegs']:
-      keg, created = models.Keg.objects.get_or_create(site=kbsite, seqn=int(rec.id))
-      keg.type = bdb_models.BeerType.objects.get(id=rec.type_id)
+      keg = models.Keg(site=kbsite, seqn=int(rec.id))
+      keg.type = type_map[rec.type_id]
       keg.startdate = rec.started_time
       keg.enddate = rec.finished_time
       keg.status = rec.status
@@ -144,10 +154,9 @@ class Command(BaseCommand):
       keg.save()
       self.log(keg)
 
-    if delete_first:
-      kbsite.taps.all().delete()
+    kbsite.taps.all().delete()
     for rec in data['taps']:
-      tap, created = models.KegTap.objects.get_or_create(site=kbsite, seqn=int(rec.id))
+      tap = models.KegTap(site=kbsite, seqn=int(rec.id))
       tap.name = rec.name
       tap.meter_name = rec.meter_name
       tap.ml_per_tick = rec.ml_per_tick
@@ -161,8 +170,7 @@ class Command(BaseCommand):
       tap.save()
       self.log(tap)
 
-    if delete_first:
-      kbsite.sessions.all().delete()
+    kbsite.sessions.all().delete()
     for rec in data.get('sessions', []):
       session = models.DrinkingSession(site=kbsite, seqn=int(rec.id))
       session.starttime = rec.start_time
@@ -173,21 +181,17 @@ class Command(BaseCommand):
       session.save()
       self.log(session)
 
-    if delete_first:
-      kbsite.thermologs.all().delete()
     for rec in data.get('thermologs', []):
-      log, created = models.Thermolog.objects.get_or_create(site=kbsite, seqn=int(rec.id))
+      log = models.Thermolog(site=kbsite, seqn=int(rec.id))
       log.sensor = models.ThermoSensor.objects.get(site=kbsite, seqn=int(rec.sensor_id))
       log.temp = rec.temperature_c
       log.time = rec.record_time
       log.save()
       self.log(log)
 
-    if delete_first:
-      kbsite.thermosummarylogs.all().delete()
+    kbsite.thermosummarylogs.all().delete()
     for rec in data.get('thermosummarylogs', []):
-      log, created = models.ThermoSummaryLog.objects.get_or_create(site=kbsite,
-          seqn=int(rec.sensor_id))
+      log = models.ThermoSummaryLog(site=kbsite, seqn=int(rec.sensor_id))
       log.site = kbsite
       log.seqn = rec.id
       log.sensor = models.ThermoSensor.objects.get(site=kbsite, seqn=int(rec.sensor_id))
@@ -205,12 +209,13 @@ class Command(BaseCommand):
       user = None
 
       # If there's already a user registered with this e-mail address, use it.
-      user_qs = models.User.objects.filter(email=rec.email)
-      if user_qs.count():
-        user = user_qs[0]
-        user_map[rec.username] = user
-        self.log(user)
-        continue
+      if rec.email:
+        user_qs = models.User.objects.filter(email=rec.email)
+        if user_qs.count():
+          user = user_qs[0]
+          user_map[rec.username] = user
+          self.log(user)
+          continue
 
       # Create a new user, creating a new unique username if necessary.
       iter = 0
@@ -250,10 +255,9 @@ class Command(BaseCommand):
       profile.save()
       self.log(profile)
 
-    if delete_first:
-      kbsite.tokens.all().delete()
+    kbsite.tokens.all().delete()
     for rec in data.get('tokens', []):
-      token, created = models.AuthenticationToken.objects.get_or_create(site=kbsite, seqn=int(rec.id))
+      token = models.AuthenticationToken(site=kbsite, seqn=int(rec.id))
       token.auth_device = rec.auth_device
       token.token_value = rec.token_value
       username = rec.get('username')
@@ -265,10 +269,9 @@ class Command(BaseCommand):
       token.save()
       self.log(token)
 
-    if delete_first:
-      kbsite.drinks.all().delete()
+    kbsite.drinks.all().delete()
     for rec in data.get('drinks', []):
-      drink, created = models.Drink.objects.get_or_create(site=kbsite, seqn=int(rec.id))
+      drink = models.Drink(site=kbsite, seqn=int(rec.id))
       drink.ticks = rec.ticks
       drink.volume_ml = rec.volume_ml
       drink.session = models.DrinkingSession.objects.get(site=kbsite, seqn=int(rec.session_id))

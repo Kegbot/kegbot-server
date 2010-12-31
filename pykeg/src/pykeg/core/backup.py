@@ -55,7 +55,7 @@ def dump(output_fp, kbsite, indent=None, log_cb=_no_log):
       ('kegs', kbsite.kegs.all().order_by('id')),
       ('taps', kbsite.taps.all().order_by('id')),
       ('sessions', kbsite.sessions.all().order_by('id')),
-      ('thermologs', kbsite.thermologs.all().order_by('id')),
+      ('thermologs', kbsite.thermologs.all().order_by('-id')[:60*24]),
       ('thermosummarylogs', kbsite.thermosummarylogs.all().order_by('id')),
       ('users', models.User.objects.all().order_by('id')),
       ('profiles', models.UserProfile.objects.all().order_by('id')),

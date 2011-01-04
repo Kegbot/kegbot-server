@@ -5,8 +5,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <link rel="stylesheet" href="/site_media/style.css" />
   <title>kegbot :: {% block title %}Default Page{% endblock %}</title>
+  <link rel="stylesheet" href="/site_media/style.css" />
+  {% if kbsite %}
+  {% if kbsite.background_image %}
+  <style>
+    body {
+      background-image: url({{kbsite.background_image.url}});
+    }
+  </style>
+  {% endif %}
+  {% endif %}
 
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
   <script type="text/javascript">

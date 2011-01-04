@@ -46,6 +46,11 @@ def mugshot_file_name(instance, filename):
   new_filename = '%04x-%s' % (rand_salt, filename)
   return os.path.join('mugshots', instance.user.username, new_filename)
 
+def misc_file_name(instance, filename):
+  rand_salt = random.randrange(0xffff)
+  new_filename = '%04x-%s' % (rand_salt, filename)
+  return os.path.join('misc', new_filename)
+
 def _set_seqn_pre_save(sender, instance, **kwargs):
   if instance.seqn:
     return
@@ -59,9 +64,14 @@ def _set_seqn_pre_save(sender, instance, **kwargs):
 
 class KegbotSite(models.Model):
   name = models.CharField(max_length=64, unique=True,
-      help_text='A short name for this site, eg "default" or "sfo"')
+      help_text='A short single-word name for this site, eg "default" or "sfo"')
+  title = models.CharField(max_length=64, blank=True, null=True,
+      help_text='The title of this site, eg "San Francisco"')
   description = models.TextField(blank=True, null=True,
       help_text='Description of this site')
+  background_image = models.ImageField(blank=True, null=True,
+      upload_to=misc_file_name,
+      help_text='Background for this site.')
 
   def __str__(self):
     return '%s %s' % (self.name, self.description)

@@ -11,10 +11,6 @@ class GeneralSettingsForm(forms.Form):
   name = forms.CharField(help_text='Name of this Kegbot system')
 
 class ChangeKegForm(forms.Form):
-  tap = forms.ModelChoiceField(queryset=ALL_TAPS,
-      empty_label=None,
-      help_text='Select tap to add/replace keg')
-
   keg_size = forms.ModelChoiceField(queryset=ALL_SIZES,
       empty_label=None,
       help_text='Size of the new keg')

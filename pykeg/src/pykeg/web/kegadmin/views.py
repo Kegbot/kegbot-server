@@ -40,18 +40,24 @@ def kegadmin_main(request):
   return render_to_response('kegadmin/index.html', context)
 
 @staff_member_required
-def change_kegs(request):
+def tap_list(request):
   context = RequestContext(request)
+  context['taps'] = request.kbsite.taps.all()
+  return render_to_response('kegadmin/tap-list.html', context)
+
+@staff_member_required
+def edit_tap(request, tap_id):
+  context = RequestContext(request)
+  tap = get_object_or_404(models.KegTap, site=request.kbsite, seqn=tap_id)
+
   form = forms.ChangeKegForm()
   if request.method == 'POST':
     form = forms.ChangeKegForm(request.POST)
     if form.is_valid():
-      tap = form.cleaned_data['tap']
       current = tap.current_keg
       if current and current.status != 'offline':
         current.status = 'offline'
         current.save()
-
       new_keg = models.Keg()
       new_keg.site = request.kbsite
       new_keg.type = form.cleaned_data['beer_type']
@@ -64,22 +70,10 @@ def change_kegs(request):
       tap.save()
       messages.success(request, 'The new keg was activated.')
       form = forms.ChangeKegForm()
-  context['change_keg_form'] = form
-  return render_to_response('kegadmin/change-kegs.html', context)
 
-@staff_member_required
-def tap_list(request):
-  context = RequestContext(request)
   context['taps'] = request.kbsite.taps.all()
-  return render_to_response('kegadmin/tap-list.html', context)
-
-@staff_member_required
-def edit_tap(request, tap_id):
-  context = RequestContext(request)
-  context['taps'] = request.kbsite.taps.all()
-  tap = get_object_or_404(models.KegTap, site=request.kbsite, seqn=tap_id)
   context['tap'] = tap
-  context['change_keg_form'] = forms.ChangeKegForm()
+  context['change_keg_form'] = form
   return render_to_response('kegadmin/tap-edit.html', context)
 
 @staff_member_required

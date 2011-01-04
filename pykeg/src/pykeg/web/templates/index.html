@@ -58,7 +58,7 @@
 
 {% block header-text %}
 <div id="kb-main-header-text">
-  kegbot beer device
+  {% if kbsite.title %}{{kbsite.title}}{% else %}kegbot beer device{% endif %}
 </div>
 {% endblock %}
 

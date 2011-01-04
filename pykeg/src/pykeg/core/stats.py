@@ -30,20 +30,19 @@ class StatsBuilder:
 
     if previous is None:
       previous = {}
+    self._previous = previous
 
-    prev_seqn = previous.get('_seqn', -1)
-    prev_revision = previous.get('_revision', -1)
+    prev_seqn = self._previous.get('_seqn', -1)
+    prev_revision = self._previous.get('_revision', -1)
 
-    if (prev_seqn == drink.seqn) and not Force:
+    if prev_seqn == drink.seqn:
       # Skip if asked to regenerate same stats.
       self._logger.debug('skipping: same seqn')
       return
     elif prev_revision != self.REVISION:
       # Invalidate previous stats if builder revisions have changed.
       self._logger.debug('invalidating: older revision')
-      previous = {}
-
-    self._previous = previous
+      self._previous = {}
 
   def _AllDrinks(self):
     raise NotImplementedError

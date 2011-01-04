@@ -390,10 +390,7 @@ class Drink(models.Model):
   auth_token = models.CharField(max_length=256, blank=True, null=True)
 
   def _UpdateSystemStats(self):
-    defaults = {
-      'site': self.site,
-    }
-    stats, created = SystemStats.objects.get_or_create(defaults=defaults)
+    stats, created = SystemStats.objects.get_or_create(site=self.site)
     stats.Update(self)
 
   def _UpdateUserStats(self):

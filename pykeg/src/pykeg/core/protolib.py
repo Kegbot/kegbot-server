@@ -273,6 +273,8 @@ def SystemEventToProto(record, full=False):
     ret.keg = record.keg.seqn
   if record.session:
     ret.session = record.session.seqn
+  if record.user:
+    ret.user = record.user.username
   return ret
 
 @converts(soundserver_models.SoundEvent)

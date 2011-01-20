@@ -7,12 +7,12 @@ Desktop="Desktop"
 
 [Globals]
 AutoSaveProject=1
-UsedLibrary="/home/mike/eagle-5.6.0/lbr/SparkFun.lbr"
 UsedLibrary="/home/mike/eagle-5.6.0/lbr/led.lbr"
+UsedLibrary="/home/mike/eagle-5.6.0/lbr/SparkFun.lbr"
 
 [Win_1]
 Type="Control Panel"
-Loc="327 130 1398 743"
+Loc="293 280 1364 893"
 State=2
 Number=0
 

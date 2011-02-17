@@ -80,6 +80,7 @@ class ServerError(Error):
 
 class BadRequestError(Error):
   """The request was incompleted or malformed."""
+  HTTP_CODE = 401
 
 class NoAuthTokenError(Error):
   """An api_auth_token is required."""

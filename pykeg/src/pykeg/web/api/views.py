@@ -66,16 +66,20 @@ def staff_required(viewfunc):
 
 def ToJsonError(e):
   """Converts an exception to an API error response."""
-  http_code = 500
+  # Wrap some common exception types into Krest types
+  if isinstance(e, Http404):
+    e = krest.NotFoundError(e.message)
+  elif isinstance(e, ValueError):
+    e = krest.BadRequestError(str(e))
+
+  # Now determine the response based on the exception type.
   if isinstance(e, krest.Error):
     code = e.__class__.__name__
-    message = e.Message()
     http_code = e.HTTP_CODE
-  elif isinstance(e, ValueError):
-    code = 'BadRequestError'
-    message = str(e)
+    message = e.Message()
   else:
     code = 'ServerError'
+    http_code = e.HTTP_CODE
     message = 'An internal error occurred: %s' % str(e)
   result = {
     'error' : {
@@ -102,22 +106,27 @@ def py_to_json(f):
       error message.
   """
   def new_function(*args, **kwargs):
+    request = args[0]
     http_code = 200
+    indent = 2
+    if 'indent' in request.GET:
+      if request.GET['indent'] == '':
+        indent = None
+      else:
+        try:
+          indent_val = int(request.GET['indent'])
+          if indent_val >= 0 and indent_val <= 8:
+            indent = indent_val
+        except ValueError:
+          pass
     try:
-      try:
-        result = {'result' : f(*args, **kwargs)}
-      except Http404, e:
-        # We might change the HTTP status code here one day.  This also allows
-        # the views to use Http404 (rather than NotFound).
-        raise krest.NotFoundError(e.message)
-      data = kbjson.dumps(result)
+      result_data = {'result' : f(*args, **kwargs)}
     except Exception, e:
-      request = args[0]
-      if 'deb' in request.GET:
+      if settings.DEBUG and 'deb' in request.GET:
         raise
-      result, http_code = ToJsonError(e)
-      data = kbjson.dumps(result)
-    return HttpResponse(data, mimetype='application/json', status=http_code)
+      result_data, http_code = ToJsonError(e)
+    return HttpResponse(kbjson.dumps(result_data, indent=indent),
+        mimetype='application/json', status=http_code)
   return new_function
 
 ### Helpers

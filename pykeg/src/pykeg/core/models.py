@@ -205,7 +205,9 @@ class Keg(models.Model):
     return self.full_volume() - self.served_volume() - self.spilled_volume()
 
   def percent_full(self):
-    return float(self.remaining_volume()) / float(self.full_volume()) * 100
+    result = float(self.remaining_volume()) / float(self.full_volume()) * 100
+    result = max(min(result, 100), 0)
+    return result
 
   def keg_age(self):
     if self.status == 'online':

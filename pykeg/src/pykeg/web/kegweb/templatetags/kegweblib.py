@@ -31,18 +31,11 @@ from django.utils.safestring import mark_safe
 from pykeg.core import kbjson
 from pykeg.core import models
 from pykeg.core import units
-
-class KegweblibError(Exception):
-  """Base kegweblib execption."""
-
-class ChartUnavailableError(KegweblibError):
-  """Thrown when a chart cannot be rendered."""
+from pykeg.web.kegweb import charts
 
 register = Library()
 
-def to_pints(volume):
-  return float(units.Quantity(volume).ConvertTo.Pint)
-
+@register.inclusion_tag('kegweb/mugshot_box.html')
 def mugshot_box(user, boxsize=100):
   if user:
     img_url = user.get_profile().MugshotUrl()
@@ -58,22 +51,21 @@ def mugshot_box(user, boxsize=100):
       'user_url' : user_url,
       'img_url': img_url,
   }
-register.inclusion_tag('kegweb/mugshot_box.html')(mugshot_box)
 
+@register.inclusion_tag('kegweb/page_block.html')
 def render_page(page):
   return {'page' : page}
-register.inclusion_tag('kegweb/page_block.html')(render_page)
 
 
 ### timeago
 
+@register.tag('timeago')
 def timeago(parser, token):
   """{% timeago <timestamp> %}"""
   tokens = token.contents.split()
   if len(tokens) != 2:
     raise TemplateSyntaxError, '%s requires 2 tokens' % tokens[0]
   return TimeagoNode(tokens[1])
-register.tag('timeago', timeago)
 
 class TimeagoNode(Node):
   def __init__(self, timestamp_varname):
@@ -98,8 +90,9 @@ class TimeagoNode(Node):
 
 ### chart
 
+@register.tag('chart')
 def chart(parser, tokens):
-  """{% chart <charttype> [args] width height %}"""
+  """{% chart <charttype> <obj> width height %}"""
   tokens = tokens.contents.split()
   if len(tokens) < 4:
     raise TemplateSyntaxError('chart requires at least 4 arguments')
@@ -111,8 +104,6 @@ def chart(parser, tokens):
     raise TemplateSyntaxError('invalid width or height')
   args = tokens[2:-2]
   return ChartNode(charttype, width, height, args)
-
-register.tag('chart', chart)
 
 class ChartNode(Node):
   CHART_TMPL = '''
@@ -163,9 +154,10 @@ class ChartNode(Node):
     width = self._width
     height = self._height
 
+    obj = Variable(self._args[0]).resolve(context)
     try:
-      chart_result = self._chart_fn(context)
-    except ChartUnavailableError, e:
+      chart_result = self._chart_fn(obj)
+    except charts.ChartError, e:
       error_str = 'chart error: %s' % (e,)
       return ChartNode.ERROR_TMPL % vars()
     chart_base = {
@@ -212,349 +204,63 @@ class ChartNode(Node):
     chart_data = kbjson.dumps(chart_data, indent=None)
     return ChartNode.CHART_TMPL % vars()
 
-  def chart_sensor(self, context):
-    """ Shows a simple line plot of a specific temperature sensor.
+  def chart_sensor(self, obj):
+    """Shows a simple line plot of a specific temperature sensor.
 
-    Syntax:
-      {% chart sensor <sensorname> width height %}
     Args:
-      sensorname - the nice_name of a ThermoSensor
+      obj - the models.ThermoSensor to plot
     """
-    sensor_name_var = Variable(self._args[0])
-    sensor_name = sensor_name_var.resolve(context)
+    return charts.TemperatureSensorChart(obj)
 
-    try:
-      sensor = models.ThermoSensor.objects.get(nice_name=sensor_name)
-    except models.ThermoSensor.DoesNotExist:
-      raise ChartUnavailableError, "Sensor '%s' not found" % sensor_name
+  def chart_keg_volume(self, obj):
+    """Shows a horizontal bar chart of keg served/remaining volume.
 
-    hours = 6
-    now = datetime.datetime.now()
-    start = now - (datetime.timedelta(hours=hours))
-    start = start - (datetime.timedelta(seconds=start.second))
-
-    points = sensor.thermolog_set.filter(time__gte=start).order_by('time')
-
-    curr = start
-    temps = []
-    have_temps = False
-    for point in points:
-      while curr <= point.time:
-        curr += datetime.timedelta(minutes=1)
-        if curr < point.time:
-          temps.append(None)
-        else:
-          temps.append(point.temp)
-          have_temps = True
-
-    if not have_temps:
-      raise ChartUnavailableError, "Not enough data"
-
-    res = {
-      'series': [
-        {
-          'data': temps,
-          'marker': {
-            'enabled': False,
-          },
-        },
-      ],
-      'tooltip': {
-        'enabled': False,
-      },
-      'xAxis': {
-        'categories': ['Temperature'],
-        'labels': {
-          'enabled': False,
-        },
-        'tickInterval': 0,
-      },
-      'yAxis': {
-        'labels': {
-          'enabled': False,
-        },
-        'tickInterval': 1,
-      },
-    }
-    return res
-
-  def chart_keg_volume(self, context):
-    """ Shows a horizontal bar chart of keg served/remaining volume.
-
-    Syntax:
-      {% chart keg_volume <keg> width height %}
     Args:
-      keg - the keg instance to chart
+      obj - the models.Keg instance to chart
     """
-    keg, stats = self._get_obj_stats(context)
+    return charts.KegVolumeChart(obj)
 
-    served = units.Quantity(stats.get('total_volume', 0.0))
-    served_pints = to_pints(served)
-    full_pints = to_pints(keg.full_volume())
-    remain_pints = full_pints - served_pints
+  def chart_volume_by_day(self, obj):
+    """Shows keg or session usage by day of the week.
 
-    res = {
-      'chart': {
-        'defaultSeriesType': 'bar',
-      },
-      'series': [
-        {'data': [served_pints]},
-      ],
-      'tooltip': {
-        'enabled': False,
-      },
-      'xAxis': {
-        'categories': ['Served'],
-        'labels': {
-          'enabled': False,
-        },
-        'gridLineWidth': 0,
-      },
-      'yAxis': {
-        'endOnTick': False,
-        'min': 0,
-        'max': full_pints,
-        'lineWidth': 0,
-        'labels': {
-          'enabled': False,
-        },
-      },
-    }
-    return res
-
-  def chart_volume_by_day(self, context):
-    """ Shows a horizontal bar chart of keg served/remaining volume.
-
-    Syntax:
-      {% chart volume_by_day <keg> width height %}
     Args:
-      obj - the keg or drinking session instance to chart
+      obj - the models.Keg or models.DrinkingSession instance to chart
     """
-    obj, stats = self._get_obj_stats(context)
+    return charts.KegUsageByWeekday(obj)
 
-    volmap = stats.get('volume_by_day_of_week')
-    if not volmap:
-      raise ChartUnavailableError, "Daily volumes unavailable"
+  def chart_sessions_weekday(self, obj):
+    """Vertical bar chart showing session volume by day of week.
 
-    vals = []
-    for k in sorted(volmap.keys()):
-      vals.append(to_pints(volmap[k]))
-    if len(vals) != 7:
-      raise ChartUnavailableError, "Volume data is corrupt"
-    return self._day_of_week_chart(vals)
-
-  def chart_sessions_weekday(self, context):
-    """ Vertical bar chart showing session volume by day of week.
-
-    Syntax:
-      {% chart sessions_weekday <user> width height %}
     Args:
-      sessions - an iterable of DrinkingSession or UserDrinkingSessionPart
-                 instances
+      obj - an iterable of models.DrinkingSession or
+            models.UserDrinkingSessionPart instances
     """
-    user_var = Variable(self._args[0])
-    user = user_var.resolve(context)
-    if not user:
-      raise ChartUnavailableError, "Must give a user as argument"
-    chunks = user.user_session_chunks.all()
+    return charts.UserSessionsByWeekday(obj)
 
-    weekdays = [0] * 7
+  def chart_sessions_volume(self, obj):
+    """Line chart showing session volumes.
 
-    for chunk in chunks:
-      weekday = chunk.starttime.weekday()
-      weekdays[weekday] += to_pints(chunk.Volume())
-    return self._day_of_week_chart(weekdays)
-
-  def chart_sessions_volume(self, context):
-    """ Line chart showing session volumes.
-
-    Syntax:
-      {% chart sessions_volume <sessions> width height %}
     Args:
-      sessions - an iterable of DrinkingSession or UserDrinkingSessionPart
-                 instances
+      obj - an iterable of models.DrinkingSession or
+            models.UserDrinkingSessionPart instances
     """
+    return charts.SessionVolumes(obj)
 
-    sessions_var = Variable(self._args[0])
-    sessions = sessions_var.resolve(context)
-    if not sessions:
-      raise ChartUnavailableError, "Must give sessions as argument"
-
-    buckets = [0]*6
-    labels = [
-      '<1',
-      '1.0-1.9',
-      '2.0-2.9',
-      '3.0-3.9',
-      '4.0-4.9',
-      '5+'
-    ]
-    for sess in sessions:
-      pints = round(to_pints(sess.Volume()), 1)
-      intval = int(pints)
-      if intval >= len(buckets):
-        buckets[-1] += 1
-      else:
-        buckets[intval] += 1
-
-    res = {
-      'xAxis': {
-        'categories': labels,
-      },
-      'series': [
-        {'data': buckets},
-      ],
-      'yAxis': {
-        'min': 0,
-      },
-      'chart': {
-        'defaultSeriesType': 'column',
-      }
-    }
-    return res
-
-  def chart_users_by_volume(self, context):
+  def chart_users_by_volume(self, obj):
     """Pie chart showing users by volume.
 
-    Syntax:
-      {% chart users_by_volume obj width height %}
     Args:
-      obj - the keg or drinking session instance to chart
+      obj - the models.Keg or models.DrinkingSession instance to chart
     """
-    obj, stats = self._get_obj_stats(context)
-    volmap = stats.get('volume_by_drinker', {})
-    if not volmap:
-      raise ChartUnavailableError, "no data"
+    return charts.UsersByVolume(obj)
 
-    data = []
-    for username, volume_ml in volmap.iteritems():
-      pints = to_pints(volume_ml)
-      label = '<b>%s</b> (%.1f)' % (username, pints)
-      data.append((label, pints))
+  def chart_user_session_chunks(self, obj):
+    """Show's a single user's activity within a session.
 
-    other_vol = 0
-    for username, pints in data[10:]:
-      other_vol += pints
-
-    def _sort_vol_desc(a, b):
-      return cmp(b[1], a[1])
-
-    data.sort(_sort_vol_desc)
-    data = data[:10]
-    data.reverse()
-
-    if other_vol:
-      label = '<b>%s</b> (%.1f)' % ('all others', other_vol)
-      data.append((label, other_vol))
-
-
-    res = {
-      'series': [
-        {
-          'type': 'pie',
-          'name': 'Drinkers by Volume',
-          'data': data,
-        }
-      ],
-      'yAxis': {
-        'min': 0,
-      },
-      'chart': {
-        'defaultSeriesType': 'column',
-      },
-      'tooltip': {
-        'enabled': False,
-      },
-    }
-    return res
-
-  def chart_user_session_chunks(self, context):
-    user_chunk_var = Variable(self._args[0])
-    user_chunk = user_chunk_var.resolve(context)
-    if not user_chunk:
-      raise ChartUnavailableError, "Must give user chunk as argument"
-
-    max_pints = user_chunk.session.UserChunksByVolume()
-    if not max_pints:
-      raise ChartUnavailableError, "Error: session corrupt"
-    max_pints = float(max_pints[0].Volume().ConvertTo.Pint)
-    drinks = user_chunk.GetDrinks()
-    totals = {}
-    for drink in drinks:
-      if drink.keg:
-        label = 'keg %i' % drink.keg.seqn
-      else:
-        label = 'unknown keg'
-      totals[label] = totals.get(label, 0) + float(drink.Volume().ConvertTo.Pint)
-
-    series = []
-    for name, tot in totals.iteritems():
-      series.append({
-        'name': name,
-        'data': [tot],
-      })
-
-    res = {
-      'xAxis': {
-        'categories': ['Pints'],
-      },
-      'yAxis': {
-        'max': max_pints,
-      },
-      'series': series,
-      'tooltip': {
-        'enabled': False,
-      },
-      'chart': {
-        'defaultSeriesType': 'bar',
-      },
-      'legend': {
-        'enabled': True,
-      },
-      'plotOptions': {
-        'series': {
-          'stacking': 'normal',
-        },
-      },
-    }
-    return res
-
-  def _day_of_week_chart(self, vals):
-    labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
-    # convert from 0=Monday to 0=Sunday
-    vals.insert(0, vals.pop(-1))
-
-    res = {
-      'xAxis': {
-        'categories': labels,
-      },
-      'yAxis': {
-        'min': 0,
-      },
-      'series': [
-        {'data': vals},
-      ],
-      'tooltip': {
-        'enabled': False,
-      },
-      'chart': {
-        'defaultSeriesType': 'column',
-      }
-    }
-    return res
-
-  def _get_obj_stats(self, context):
-    obj_var = Variable(self._args[0])
-    obj = obj_var.resolve(context)
-
-    if not hasattr(obj, 'GetStats'):
-      raise ChartUnavailableError, "Argument does not support stats"
-
-    stats = obj.GetStats()
-    if not stats:
-      raise ChartUnavailableError, "Stats unavailable"
-    return obj, stats
+    Args:
+      obj - the models.UserSessionChunk for the user/session to chart
+    """
+    return charts.UserSessionChunks(obj)
 
 @register.filter
 def volume(text, fmt='pints'):

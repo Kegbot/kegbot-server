@@ -173,7 +173,7 @@ class KegUi:
     f.SetTitle(str(tap_name))  # note: squash unicode
     f.AddLine(beer_name)
     f.AddLine(brewer_name)
-    status = '%.1f%% full' % (100 * pct_full)
+    status = '%.1f%% full' % pct_full
     if curr_temp is not None:
       status = '%s  %.1fc' % (status, curr_temp)
     f.AddLine(status)

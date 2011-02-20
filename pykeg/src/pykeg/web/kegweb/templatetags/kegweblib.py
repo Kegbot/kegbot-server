@@ -31,7 +31,7 @@ from django.utils.safestring import mark_safe
 from pykeg.core import kbjson
 from pykeg.core import models
 from pykeg.core import units
-from pykeg.web.kegweb import charts
+from pykeg.web.charts import charts
 
 register = Library()
 

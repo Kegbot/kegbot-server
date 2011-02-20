@@ -23,9 +23,13 @@
     google.load("jqueryui", "1");
     google.load('visualization', '1', {'packages':['table']});
   </script>
+  <script type="text/javascript" src="/site_media/js/kegweb.js"></script>
+  <script type="text/javascript" src="/site_media/js/jquery.js"></script>
+  <script type="text/javascript" src="/site_media/js/jquery-ui.min.js"></script>
   <script type="text/javascript" src="/site_media/js/jquery.timeago.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
+        kegweb.onReady();
         $("abbr.timeago").timeago();
     });
   </script>

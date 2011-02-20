@@ -3,59 +3,6 @@
 
 {% block title %}main page{% endblock %}
 
-{% block kb-extrajs %}
-  <script>
-    var LAST_EVENT_ID = 0;
-    var INITIAL = true;
-    function addEventHtml(row, animate) {
-      var eid = row['id'];
-      if (eid > LAST_EVENT_ID) {
-        LAST_EVENT_ID = eid;
-      }
-
-      var newDivName = 'kb-event-' + row['id'];
-      var newDiv = '<div id="' + newDivName + '">';
-      newDiv += row['html'];
-      newDiv += '</div>';
-
-      $('#kb-recent-events').prepend(newDiv);
-
-      if (animate) {
-        $('#' + newDivName).css("display", "none");
-        $('#' + newDivName).css("background-color", "#ffc800");
-        $('#' + newDivName).show("slide",
-          { direction: 'up' },
-          1000,
-          function() {
-            $('#' + newDivName).animate({ backgroundColor: "#ffffff" }, 1500);
-          });
-      }
-
-      $("#kb-recent-events").find("abbr.timeago").timeago();
-    }
-
-    function getEvents() {
-      var animate = !INITIAL;
-      $.getJSON('/api/event/html/?since=' + LAST_EVENT_ID, function(data) {
-        if (data['result'] && data['result']['events']) {
-          var events = data['result']['events'];
-          for (var ev in events) {
-            addEventHtml(events[ev], animate);
-          }
-        }
-      });
-    }
-
-    $(document).ready(function() {
-      // TODO(mikey): more intelligent timeout/backoff; idle sensitivity.
-      getEvents();
-      INITIAL = false;
-      setInterval(getEvents, 10000);
-    });
-
-  </script>
-{% endblock %}
-
 {% block header-text %}
 <div id="kb-main-header-text">
   {% if kbsite.title %}{{kbsite.title}}{% else %}kegbot beer device{% endif %}

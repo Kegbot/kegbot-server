@@ -79,7 +79,7 @@ def ToJsonError(e):
     message = e.Message()
   else:
     code = 'ServerError'
-    http_code = e.HTTP_CODE
+    http_code = 500
     message = 'An internal error occurred: %s' % str(e)
   result = {
     'error' : {

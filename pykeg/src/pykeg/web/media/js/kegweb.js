@@ -94,20 +94,17 @@ kegweb.updateEventsTable = function(events) {
     newDiv += row['html'];
     newDiv += '</div>';
     $('#kb-recent-events').prepend(newDiv);
+    $('#' + newDivName).find("abbr.timeago").timeago();
 
     if (animate) {
       $('#' + newDivName).css("display", "none");
       $('#' + newDivName).css("background-color", "#ffc800");
-      $('#' + newDivName).show("slide",
-        { direction: 'up' },
-        1000,
-        function() {
+      $('#' + newDivName).show("slide", { direction: 'up' }, 1000, function() {
           $('#' + newDivName).animate({ backgroundColor: "#ffffff" }, 1500);
-        });
+      });
     }
-    if (!kegweb.eventsLoaded) {
-      kegweb.eventsLoaded = true;
-    }
-    $("#kb-recent-events").find("abbr.timeago").timeago();
+  }
+  if (!kegweb.eventsLoaded) {
+    kegweb.eventsLoaded = true;
   }
 }

@@ -21,6 +21,7 @@ INSTALLED_APPS = (
     'pykeg.web',
     'pykeg.web.api',
     'pykeg.web.account',
+    'pykeg.web.charts',
     'pykeg.web.kegweb',
     'registration',
     'socialregistration',

@@ -150,21 +150,12 @@ def KegUsageByWeekday(keg):
     raise ChartError('Volume data is corrupt')
   return _DayOfWeekChart(vals)
 
-def UserSessionsByWeekday(sessions):
-  """ Vertical bar chart showing session volume by day of week.
-
-  Syntax:
-    {% chart sessions_weekday <user> width height %}
-  Args:
-    sessions - an iterable of DrinkingSession or UserDrinkingSessionPart
-               instances
-  """
+def UserSessionsByWeekday(user):
+  """Shows a user's total session by volume by day of week."""
   if not isinstance(user, models.User):
     raise ChartError('Bad value for user')
   chunks = user.user_session_chunks.all()
-
   weekdays = [0] * 7
-
   for chunk in chunks:
     weekday = chunk.starttime.weekday()
     weekdays[weekday] += to_pints(chunk.Volume())

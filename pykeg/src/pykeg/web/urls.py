@@ -44,6 +44,9 @@ urlpatterns = patterns('',
     (r'^accounts/password/reset/complete/$', password_reset_complete, {'template_name':
      'registration/password_reset_complete.html'}),
 
+    ### charts
+    (r'^charts/', include('pykeg.web.charts.urls')),
+
     ### kegadmin
     (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 

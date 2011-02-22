@@ -1,0 +1,15 @@
+<div class="keg-summary">
+  <div class="kb-tapbox-image" style="width: 100px; height: 100px; float: left;">
+    {% if keg.type.GetImage %}
+      <img src="{{ keg.type.GetImage.thumbnail.url }}">
+    {% else %}
+      <div style="font-size: 200%; color: #ccc;">?</div>
+      <div style="font-size: 8px; color: #ccc;">no image</div>
+    {% endif %}
+  </div>
+    <h2><a href="{% url keg keg.id %}">Keg {{ keg.seqn }}: {{keg.type.name}}</a></h2>
+    {% if keg.status == "online" %}
+    {% else %}
+    {% endif %}
+  <br clear="all"/>
+</div>

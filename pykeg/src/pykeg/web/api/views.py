@@ -233,6 +233,14 @@ def get_keg_drinks(request, keg_id):
   return res
 
 @py_to_json
+def get_keg_events(request, keg_id):
+  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
+  res = {
+    'events': obj_to_dict(keg.events.all()),
+  }
+  return res
+
+@py_to_json
 def all_sessions(request):
   sessions = request.kbsite.sessions.all()
   res = {
@@ -323,6 +331,14 @@ def get_user_drinks(request, username):
   drinks = user.drinks.valid()
   res = {
     'drinks': obj_to_dict(drinks),
+  }
+  return res
+
+@py_to_json
+def get_user_events(request, username):
+  user = get_object_or_404(models.User, username=username)
+  res = {
+    'events': obj_to_dict(user.events.all()),
   }
   return res
 

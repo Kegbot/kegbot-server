@@ -305,7 +305,7 @@ class WebBackend(Backend):
 
   def GetAllTaps(self):
     ts = self._client.TapStatus()
-    return (d['tap'] for d in self._client.TapStatus()['taps'])
+    return [d['tap'] for d in self._client.TapStatus()['taps']]
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False):

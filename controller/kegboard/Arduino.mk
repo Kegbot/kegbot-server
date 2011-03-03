@@ -207,10 +207,18 @@ SYS_LIBS      = $(patsubst %,$(ARDUINO_LIB_PATH)/%,$(ARDUINO_LIBS))
 SYS_INCLUDES  = $(patsubst %,-I%,$(SYS_LIBS))
 SYS_OBJS      = $(wildcard $(patsubst %,%/*.o,$(SYS_LIBS)))
 
-CPPFLAGS      = -mmcu=$(MCU) -DF_CPU=$(F_CPU) \
-			-I. -I$(ARDUINO_CORE_PATH) \
-			$(SYS_INCLUDES) -g -Os -w -Wall \
-			-ffunction-sections -fdata-sections
+CPPFLAGS = \
+  -mmcu=$(MCU) \
+  -DF_CPU=$(F_CPU) \
+  -I. \
+  -I$(ARDUINO_CORE_PATH) \
+  $(SYS_INCLUDES) \
+  -g \
+  -Os \
+  -w \
+  -Wall \
+  -ffunction-sections \
+  -fdata-sections
 CFLAGS        = -std=gnu99
 CXXFLAGS      = -fno-exceptions
 ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp

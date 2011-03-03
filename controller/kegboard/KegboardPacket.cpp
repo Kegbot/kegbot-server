@@ -1,6 +1,9 @@
+#include "WProgram.h"
 #include "kegboard.h"
 #include "KegboardPacket.h"
+
 #include <avr/io.h>
+#include <HardwareSerial.h>
 #include <string.h>
 #include <util/crc16.h>
 

@@ -1,6 +1,6 @@
 /**
  * kegboard.pde - Kegboard v3 Arduino project
- * Copyright 2003-2010 Mike Wakerly <opensource@hoho.com>
+ * Copyright 2003-2011 Mike Wakerly <opensource@hoho.com>
  *
  * This file is part of the Kegbot package of the Kegbot project.
  * For more information on Kegbot, see http://kegbot.org/

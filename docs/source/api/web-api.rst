@@ -104,7 +104,7 @@ to be processed.  The access token is unique to your kegbot site, and can be
 determined by loading the following URL in your browser from a superuser
 account: ``/api/get-access-token/``.
 
-When required, the token should be given as either an HTT ``GET`` or ``POST``
+When required, the token should be given as either an HTTP ``GET`` or ``POST``
 parameter.
 
 Publishing

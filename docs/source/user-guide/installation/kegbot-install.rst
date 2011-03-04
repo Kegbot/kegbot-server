@@ -46,8 +46,8 @@ package installer.
    command line tools which use them. Confirm everything was installed by
    attempting to use one of the tools::
 
-	% kegbot_admin.py
-	Type 'kegbot_admin.py help' for usage.
+	% kegbot-admin.py
+	Type 'kegbot-admin.py help' for usage.
 
 Easy, right? We hope so! You're now ready to skip to :ref:`configure-kegbot`.
 
@@ -73,8 +73,8 @@ You can also install Kegbot directly from a source release.
    command line tools which use them. Confirm everything was installed by
    attempting to use one of the tools::
 
-	% kegbot_admin.py
-	Type 'kegbot_admin.py help' for usage.
+	% kegbot-admin.py
+	Type 'kegbot-admin.py help' for usage.
 
 .. note::
   The instructions used `setup.py` to install the source system-wide, but you
@@ -154,11 +154,11 @@ kegbot locally, as if it was installed on your system.
 
 #. Confirm that the tools are now installed::
 
-	% which kegbot_admin.py
-	/home/kegbot/kb/bin/kegbot_admin.py
+	% which kegbot-admin.py
+	/home/kegbot/kb/bin/kegbot-admin.py
 	
-	% kegbot_admin.py
-	Type 'kegbot_admin.py help' for usage.
+	% kegbot-admin.py
+	Type 'kegbot-admin.py help' for usage.
 
 When using virtualenv, remember to step into the environment (by running
 ``source ~/kb/bin/activate``) before attempting to use any kegbot programs.

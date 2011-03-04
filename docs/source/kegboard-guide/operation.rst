@@ -31,7 +31,7 @@ pulses 2200 times per liter.)
 
 Flow pulse lines are connected to digital inputs 2 and 3 on the Ardunio board.
 These pins have hardware interrupt-on-pulse capability.  When the flowmeter
-pulses the input pin, an interrupt is generated in the Arduino.  The firmare's
+pulses the input pin, an interrupt is generated in the Arduino.  The firmware's
 interrupt service routine increments a counter for each interrupt, keeping a
 running total of each meter's volume, similar to an odometer.
 
@@ -39,19 +39,19 @@ running total of each meter's volume, similar to an odometer.
 OneWire Presence and Temperature Sensing
 ========================================
 
-The Kegboard firmware is configured to support two separate 1-wire busses: the
-"thermo" bus, and the "presence" bus.  Use of these features is optional.
+The Kegboard firmware is configured to support two separate OneWire (1-wire)
+busses: the "thermo" bus, and the "presence" bus.  Use of these features is
+optional.
 
-The Kegboard firmware includes support for reading the Maxim DS18B20 1-wire
-temperature sensors.  These sensors should be attached to the "thermo" OneWire
-bus, which is reserved exclusively for temperature sensors.  Any number of
-sensors may be attached.  *OneWire devices not matching the DS18B20 or DS18S20
-family codes will be ignored on this bus.*
+The "thermo" bus supports reading Dallas/Maxim DS18B20 OneWire temperature
+sensors.  This bus is reserved exclusively for temperature sensors; OneWire
+devices not matching the DS18B20 or DS18S20 family codes will be ignored on this
+bus.  Any number of sensors may be attached.
 
 The firmware also supports a second OneWire bus, which is continuously polled
-for 1-wire devices.  The 1-wire device ids seen on this bus are reported in a
-:ref:`kegboard-serial-protocol` message. This allows the Kegboard to double as
-an iButton reader/auth device.
+for OneWire devices.  The OneWire device IDs seen on this bus are reported in a
+:ref:`kegboard-serial-protocol` message. This allows the Kegboard to act as
+an iButton reader authentication device.
 
 
 Host Watchdog

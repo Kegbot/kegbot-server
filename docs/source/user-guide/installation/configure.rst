@@ -15,11 +15,11 @@ moment, Pykeg uses a `Django Settings file
 configuration.  Mostly, you just need to tell Pykeg what kind of database to
 use.
 
-The kegbot core applications (`kegbot_admin.py`, `kegbot_core.py`, and so on)
+The kegbot core applications (`kegbot-admin.py`, `kegbot_core.py`, and so on)
 will search for a settings file in two locations:
 
-* `~/.kegbot/common_settings.py`
-* `/etc/kegbot/common_settings.py`
+* ``~/.kegbot/common_settings.py``
+* ``/etc/kegbot/common_settings.py``
 
 You can use either location, but in these instructions we'll use `~/.kegbot/`.
 Follow these steps to create and edit that file.
@@ -80,9 +80,9 @@ Populate Databases
 Now that the database is ready, you must install the various kegbot tables and
 defaults::
 
-  % kegbot_admin.py kb_setup
+  % kegbot-admin.py kb_setup
 
 And for the most important part, create your admin account!::
 
-  % kegbot_admin.py createsuperuser
+  % kegbot-admin.py createsuperuser
 

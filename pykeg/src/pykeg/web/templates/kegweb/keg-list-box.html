@@ -7,7 +7,7 @@
       <div style="font-size: 8px; color: #ccc;">no image</div>
     {% endif %}
   </div>
-    <h2><a href="{% url keg keg.id %}">Keg {{ keg.seqn }}: {{keg.type.name}}</a></h2>
+    <h2><a href="{% url keg keg.seqn %}">Keg {{ keg.seqn }}: {{keg.type.name}}</a></h2>
     {% if keg.status == "online" %}
     {% else %}
     {% endif %}

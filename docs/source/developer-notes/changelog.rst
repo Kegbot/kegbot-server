@@ -10,6 +10,7 @@ Current Version (in development)
 
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
+  
   $ kegbot-admin.py migrate
   $ kegbot-admin.py kb_regen_events
 
@@ -56,6 +57,7 @@ Version 0.7.8 (2010-12-01)
 --------------------------
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
+  
   $ kegbot-admin.py migrate
   $ kegbot-admin.py kb_regen_stats
 
@@ -103,6 +105,7 @@ Reflashing your kegboard is recommended.
 
 *Note:* It is recommended that you rebuild all session and statistical data
 after updating to this version::
+  
   $ kegbot-admin.py kb_regen_sessions
   $ kegbot-admin.py kb_regen_stats
   $ kegbot-admin.py kb_regen_events
@@ -143,6 +146,7 @@ Version 0.7.5 (2010-09-11)
 
 *Note:* Due to changes to the third-party ``socialregistration`` dependency,
 existing users will need to issue the following command after updating::
+  
   $ kegbot-admin.py migrate --fake socialregistration 0001
   $ kegbot-admin.py migrate
 
@@ -188,6 +192,7 @@ Version 0.7.3 (2010-09-01)
 *Note:* Existing users upgrading from a previous kegbot version will need to
 issue the migrate command to update their database schema.  Also, statistics and
 sessions need to be regenerated::
+  
   $ kegbot_admin.py migrate
   $ kegbot_admin.py kb_regen_sessions
   $ kegbot_admin.py kb_regen_stats

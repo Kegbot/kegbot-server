@@ -127,6 +127,14 @@ accessible with HTTP GET operations.
 Drink list
 ----------
 
+.. http:method:: GET /api/foo/bar/:id/:slug
+
+   :param id: An id
+   :param slug: A slug
+
+   Retrieve list of foobars matching given id.
+
+
 * **Endpoint:** ``/drink/``
 * **Default Access:** Public
 
@@ -286,7 +294,7 @@ more of the following structure.
 ====================  ==============  ==========================================
 Property              Type            Description
 ====================  ==============  ==========================================
-tap                   ``dict``        The :ref:`model-tap` objects itself
+tap                   ``dict``        The :ref:`model-kegtap` objects itself
 keg                   ``dict``        A :ref:`model-keg` object for the current
                                       keg, or *null*.
 beverage              ``dict``        A :ref:`model-beertype` object for the
@@ -344,7 +352,7 @@ Response
 ====================  ==============  ==========================================
 Property              Type            Description
 ====================  ==============  ==========================================
-tap                   ``dict``        The :ref:`model-tap` objects itself
+tap                   ``dict``        The :ref:`model-kegtap` objects itself
 keg                   ``dict``        A :ref:`model-keg` object for the current
                                       keg, or *null*.
 ====================  ==============  ==========================================

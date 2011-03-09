@@ -10,6 +10,10 @@ Kegbot Web API
   The Kegbot Web API is a work in progress. It will not be considered stable
   until Kegbot v1.0 is released.
 
+.. warning::
+  Example responses need to be updated. Consult a live Kegbot instance if in
+  doubt.
+
 Overview
 ========
 
@@ -28,16 +32,16 @@ URL Scheme
 ----------
 
 This document describes several endpoints, which are HTTP URLs serviced by the API.
-Each endpoint corresponds some function or query against the kegbot system.
+Each endpoint corresponds some function or query against the Kegbot system.
 
 Endpoints follow a predictable URL scheme whenever possible. The general
 convention is ``/<noun>/<id>/``, or ``/<noun>/<id>/<subresource>/``. The
-``noun`` portion is typically a core Kegbot data type: "keg", "drink", and so
-on.  The ``id`` potion is a unique identifier for that type of noun (typically
-a string or opaque numeric id).
+``noun`` portion is typically a pluralized core Kegbot data type: "kegs",
+"drinks", and so on.  The ``id`` portion is a unique identifier for that type of
+noun (typically a string or opaque id).
 
-For example, ``/user/mikey`` returns basic information about that user, and
-``/user/mikey/drinks`` returns his detailed drink list.
+For example, ``/users/mikey`` returns basic information about that user, and
+``/users/mikey/drinks`` returns his detailed drink list.
 
 Data Format
 -----------

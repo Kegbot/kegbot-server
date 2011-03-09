@@ -124,23 +124,14 @@ accessible with HTTP GET operations.
 
 .. _api-drink-list:
 
-Drink list
-----------
-
-.. http:method:: GET /api/foo/bar/:id/:slug
-
-   :param id: An id
-   :param slug: A slug
-
-   Retrieve list of foobars matching given id.
-
-
-* **Endpoint:** ``/drink/``
-* **Default Access:** Public
+``/drinks``
+-----------
 
 Listing of a drinks poured on the current Kegbot system.  The results *may* be
 paginated; see :ref:`api-pagination` for details.  Results are sorted by drink
 id, in decreasing order.
+
+**Default Access:** Public
 
 Arguments
 ^^^^^^^^^
@@ -166,7 +157,7 @@ Example
 
 .. code-block:: javascript
   
-  // curl http://sfo.kegbot.net/api/drink?start=2000
+  // curl http://sfo.kegbot.net/api/drinks/?start=2000
   {
     "result": {
       "paging": {
@@ -205,13 +196,12 @@ Example
 
 .. _api-drink-detail:
 
-Drink detail
-------------
-
-* **Endpoint:** ``/drink/<id>/``
-* **Default Access:** Public
+``/drinks/<id>/``
+-----------------
 
 Detailed information about a single specific drink.
+
+**Default Access:** Public
 
 Response
 ^^^^^^^^
@@ -234,7 +224,7 @@ Example
 
 .. code-block:: javascript
   
-  // curl http://sfo.kegbot.net/api/drink/2000/
+  // curl http://sfo.kegbot.net/api/drinks/2000/
   {
     "result": {
       "keg": {
@@ -277,13 +267,12 @@ Example
   } 
 
 
-Tap list
---------
-
-* **Endpoint:** ``/tap/``
-* **Default Access:** Public
+``/taps/``
+----------
 
 Listing of all taps in the system.
+
+**Default Access:** Public
 
 Response
 ^^^^^^^^
@@ -306,7 +295,7 @@ Example
 
 .. code-block:: javascript
   
-  // curl http://sfo.kegbot.net/api/tap/
+  // curl http://sfo.kegbot.net/api/taps/
   {
     "result": {
       "taps": [
@@ -338,13 +327,12 @@ Example
 
 .. _api-tap-detail:
 
-Tap detail
-----------
-
-* **Endpoint:** ``/tap/<id>/``
-* **Default Access:** Public
+``/taps/<id>/``
+---------------
 
 Shows detailed information about a single tap.
+
+**Default Access:** Public
 
 Response
 ^^^^^^^^
@@ -362,7 +350,7 @@ Example
 
 .. code-block:: javascript
   
-  // curl http://sfo.kegbot.net/api/tap/kegboard.flow0
+  // curl http://sfo.kegbot.net/api/taps/kegboard.flow0/
   {
     "result": {
       "keg": {
@@ -387,14 +375,13 @@ Example
     }
 
 
-Keg list
---------
-
-* **Endpoint:** ``/keg/``
-* **Default Access:** Public
+``/kegs/``
+----------
 
 Lists all kegs known by the system. The response to this query *may* be
 paginated.
+
+**Default Access:** Public
 
 Response
 ^^^^^^^^
@@ -411,7 +398,7 @@ Example
 
 .. code-block:: javascript
   
-  // curl http://sfo.kegbot.net/api/keg/
+  // curl http://sfo.kegbot.net/api/kegs/
   {
     "result": {
       "kegs": [
@@ -444,13 +431,12 @@ Example
 
 .. _api-keg-detail:
 
-Keg detail
-----------
-
-* **Endpoint:** ``/keg/<id>/``
-* **Default Access:** Public
+``/kegs/<id>/``
+---------------
 
 Detailed information about a specific keg.
+
+**Default Access:** Public
 
 Response
 ^^^^^^^^
@@ -472,7 +458,7 @@ Example
 
 .. code-block:: javascript
   
-  // curl http://sfo.kegbot.neg/api/keg/13/
+  // curl http://sfo.kegbot.neg/api/kegs/13/
   {
     "result": {
       "keg": {
@@ -528,14 +514,13 @@ Example
     }
   }
 
-Drinks by keg
--------------
-
-* **Endpoint:** ``/keg/<id>/drinks/``
-* **Default Access:** Public
+``/kegs/<id>/drinks/``
+----------------------
 
 Lists all drinks assigned to a specific keg.  This is the same content as the
 *drinks* portion of the :ref:`api-keg-detail` endpoint.
+
+* **Default Access:** Public
 
 Response
 ^^^^^^^^
@@ -552,7 +537,7 @@ Example
 
 .. code-block:: javascript
   
-  // curl http://sfo.kegbot.net/api/keg/13/drinks/
+  // curl http://sfo.kegbot.net/api/kegs/13/drinks/
   {
     "result": {
       "drinks": [
@@ -583,13 +568,30 @@ Example
     }
   }
 
-User detail
------------
+``/kegs/<id>/sessions/``
+------------------------
 
-* **Endpoint:** ``/user/<id>/``
-* **Default Access:** Public
+Lists all sessions involving specific keg.
+
+**Default Access:** Public
+
+Response
+^^^^^^^^
+
+====================  ==============  ==========================================
+Property              Type            Description
+====================  ==============  ==========================================
+sessions              ``multiple``    A listing of individual
+                                      :ref:`model-session` objects involving
+                                      this keg.
+====================  ==============  ==========================================
+
+``/users/<id>/``
+----------------
 
 Lists detail about a single user.
+
+**Default Access:** Public
 
 Response
 ^^^^^^^^
@@ -606,7 +608,7 @@ Example
 
 .. code-block:: javascript
 
-  // curl http://sfo.kegbot.net/api/user/mikey
+  // curl http://sfo.kegbot.net/api/users/mikey/
   {
     "result": {
       "user": {
@@ -614,19 +616,16 @@ Example
         "joined_time": "2004-05-22T20:22:39Z", 
         "mugshot_url": "mugshots/mikey/a12b-mikey-kegbot.jpg", 
         "is_active": true, 
-        "is_superuser": true, 
-        "is_staff": true
       }
     }
   }
 
-Drinks by user
---------------
-
-* **Endpoint:** ``/user/<id>/drinks/``
-* **Default Access:** Public
+``/users/<id>/drinks/``
+-----------------------
 
 Lists all drinks by a specific user.
+
+**Default Access:** Public
 
 Response
 ^^^^^^^^
@@ -643,7 +642,7 @@ Example
 
 .. code-block:: javascript
   
-  // curl http://sfo.kegbot.net/api/user/mikey/drinks
+  // curl http://sfo.kegbot.net/api/users/mikey/drinks/
   {
     "result": {
       "drinks": [
@@ -682,13 +681,12 @@ Example
   Gives general statistics about the system, similar to a global leader board.
 
 
-Auth token detail
------------------
-
-* **Endpoint:** ``/auth-token/<id>/``
-* **Default Access:** Protected
+``/auth-tokens/<id>/``
+----------------------
 
 Gives detail about an auth token.
+
+* **Default Access:** Protected
 
 Response
 ^^^^^^^^
@@ -705,7 +703,7 @@ Example
 
 .. code-block:: javascript
 
-  // curl -F api_auth_token=1a2b...cdef http://sfo.kegbot.net/api/auth-token/test.testval
+  // curl -F api_auth_token=1a2b...cdef http://sfo.kegbot.net/api/auth-tokens/test.testval/
   {
     "result": {
       "token": {
@@ -720,13 +718,12 @@ Example
 
 .. _api-thermo-detail:
 
-Thermo sensor detail: ``/thermo-sensor/<id>/``
-----------------------------------------------
-
-* **Endpoint:** ``/thermo-sensor/<id>/``
-* **Default Access:** Public
+``/thermo-sensors/<id>/``
+-------------------------
 
 Gives detail about a thermo sensor in the system.
+
+* **Default Access:** Public
 
 
 POST Endpoints

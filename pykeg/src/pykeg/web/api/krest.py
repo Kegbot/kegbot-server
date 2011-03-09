@@ -222,7 +222,7 @@ class KrestClient:
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False):
-    endpoint = '/tap/%s' % tap_name
+    endpoint = '/taps/%s' % tap_name
     post_data = {
       'tap_name': tap_name,
       'ticks': ticks,
@@ -246,7 +246,7 @@ class KrestClient:
     return self.DoPOST(endpoint, post_data=post_data)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
-    endpoint = '/thermo-sensor/%s' % (sensor_name,)
+    endpoint = '/thermo-sensors/%s' % (sensor_name,)
     post_data = {
       'temp_c': float(temperature),
     }
@@ -255,10 +255,10 @@ class KrestClient:
 
   def TapStatus(self):
     """Gets the status of all taps."""
-    return self.DoGET('tap')
+    return self.DoGET('taps')
 
   def GetToken(self, auth_device, token_value):
-    url = 'auth-token/%s.%s' % (auth_device, token_value)
+    url = 'auth-tokens/%s.%s' % (auth_device, token_value)
     try:
       return self.DoGET(url)
     except ServerError, e:
@@ -270,11 +270,11 @@ class KrestClient:
 
   def AllDrinks(self):
     """Gets a list of all drinks."""
-    return self.DoGET('drink')
+    return self.DoGET('drinks')
 
   def AllSoundEvents(self):
     """Gets a list of all drinks."""
-    return self.DoGET('sound-event')
+    return self.DoGET('sound-events')
 
 
 def main():

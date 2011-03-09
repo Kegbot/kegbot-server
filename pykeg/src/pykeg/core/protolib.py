@@ -84,7 +84,8 @@ def BeerTypeToProto(beertype, full=False):
   ret.style_id = str(beertype.style.id)
   ret.edition = beertype.edition
   # TODO(mikey): guarantee this at DB level
-  ret.abv = max(min(beertype.abv * 100.0, 100.0), 0.0)
+  abv = beertype.abv or 0.0
+  ret.abv = max(min(abv * 100.0, 100.0), 0.0)
   ret.calories_oz = beertype.calories_oz
   ret.carbs_oz = beertype.carbs_oz
   ret.specific_gravity = beertype.specific_gravity

@@ -26,8 +26,8 @@ var kegweb = {};
 
 // API Endpoints.
 kegweb.API_BASE = '/api/';
-kegweb.API_GET_EVENTS = 'event/';
-kegweb.API_GET_EVENTS_HTML = 'event/html/';
+kegweb.API_GET_EVENTS = 'events/';
+kegweb.API_GET_EVENTS_HTML = 'events/html/';
 
 // Misc globals.
 kegweb.lastEventId = -1;

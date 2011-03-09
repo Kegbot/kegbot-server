@@ -52,7 +52,7 @@ def ToProto(obj, full=False):
 @converts(models.AuthenticationToken)
 def AuthTokenToProto(record, full=False):
   ret = AttrDict()
-  ret.id = record.seqn
+  ret.id = str(record.seqn)
   ret.auth_device = record.auth_device
   ret.token_value = record.token_value
   if record.user:
@@ -63,84 +63,73 @@ def AuthTokenToProto(record, full=False):
   if full:
     ret.enabled = record.enabled
     ret.created_time = record.created
-    if record.expires:
-      ret.expire_time = record.expires
+    ret.expire_time = record.expires
     if record.pin:
       ret.pin = record.pin
-  return ret
-
-@converts(bdb_models.BeerType)
-def BeerTypeToProto(beertype, full=False):
-  ret = AttrDict()
-  ret.id = beertype.id
-  ret.name = beertype.name
-  ret.brewer_id = beertype.brewer.id
-  ret.style_id = beertype.style.id
-  ret.style = beertype.style.name
-  if beertype.edition is not None:
-    ret.edition = beertype.edition
-  if beertype.abv is not None:
-    ret.abv = beertype.abv
-  if beertype.calories_oz is not None:
-    ret.calories_oz = beertype.calories_oz
-  if beertype.carbs_oz is not None:
-    ret.carbs_oz = beertype.carbs_oz
-  ret.brewer = ToProto(beertype.brewer)
-  return ret
-
-@converts(bdb_models.Brewer)
-def BrewerToProto(brewer, full=False):
-  ret = AttrDict()
-  ret.id = brewer.id
-  ret.name = brewer.name
-  if brewer.country is not None:
-    ret.country = brewer.country
-  if brewer.origin_state is not None:
-    ret.origin_state = brewer.origin_state
-  if brewer.origin_city is not None:
-    ret.origin_city = brewer.origin_city
-  ret.production = brewer.production
-  if brewer.url is not None:
-    ret.url = brewer.url
-  if brewer.description is not None:
-    ret.description = brewer.description
   return ret
 
 @converts(bdb_models.BeerStyle)
 def BeerStyleToProto(style, full=False):
   ret = AttrDict()
-  ret.id = style.id
+  ret.id = str(style.id)
   ret.name = style.name
+  return ret
+
+@converts(bdb_models.BeerType)
+def BeerTypeToProto(beertype, full=False):
+  ret = AttrDict()
+  ret.id = str(beertype.id)
+  ret.name = beertype.name
+  ret.brewer_id = str(beertype.brewer.id)
+  ret.style_id = str(beertype.style.id)
+  ret.edition = beertype.edition
+  # TODO(mikey): guarantee this at DB level
+  ret.abv = max(min(beertype.abv * 100.0, 100.0), 0.0)
+  ret.calories_oz = beertype.calories_oz
+  ret.carbs_oz = beertype.carbs_oz
+  ret.specific_gravity = beertype.specific_gravity
+  ret.original_gravity = beertype.original_gravity
+  return ret
+
+@converts(bdb_models.Brewer)
+def BrewerToProto(brewer, full=False):
+  ret = AttrDict()
+  ret.id = str(brewer.id)
+  ret.name = brewer.name
+  ret.country = brewer.country or ''
+  ret.origin_state = brewer.origin_state or ''
+  ret.origin_city = brewer.origin_city or ''
+  ret.production = brewer.production or ''
+  ret.url = brewer.url or ''
+  ret.description = brewer.description or ''
   return ret
 
 @converts(models.Drink)
 def DrinkToProto(drink, full=False):
   ret = AttrDict()
-  ret.id = drink.seqn
+  ret.id = str(drink.seqn)
   ret.ticks = drink.ticks
   ret.volume_ml = drink.volume_ml
   ret.session_id = str(drink.session.seqn)
   ret.pour_time = drink.starttime
-  if drink.duration is not None:
-    ret.duration = drink.duration
+  ret.duration = drink.duration
   ret.status = drink.status
-  ret.is_valid = (drink.status == 'valid')
-  if drink.keg:
-    ret.keg_id = drink.keg.seqn
+  # TODO(mikey): still needed?
+  ret.keg_id = str(drink.keg.seqn)
+  ret.user_id = None
+  ret.auth_token_id = None
   if drink.user:
     ret.user_id = drink.user.username
-  else:
-    ret.user_id = None
   if drink.auth_token:
-    ret.auth_token = drink.auth_token
+    ret.auth_token_id = str(drink.auth_token.id)
   return ret
 
 @converts(models.Keg)
 def KegToProto(keg, full=False):
   ret = AttrDict()
-  ret.id = keg.seqn
-  ret.type_id = keg.type.id
-  ret.size_id = keg.size.id
+  ret.id = str(keg.seqn)
+  ret.type_id = str(keg.type.id)
+  ret.size_id = str(keg.size.id)
   ret.size_name = keg.size.name
   ret.size_volume_ml = keg.size.volume_ml
   rem = float(keg.remaining_volume())
@@ -149,15 +138,14 @@ def KegToProto(keg, full=False):
   ret.started_time = keg.startdate
   ret.finished_time = keg.enddate
   ret.status = keg.status
-  if keg.description:
-    ret.description = keg.description
+  ret.description = keg.description
   ret.spilled_ml = keg.spilled_ml
   return ret
 
 @converts(models.KegSize)
 def KegSizeToProto(size, full=False):
   ret = AttrDict()
-  ret.id = size.id
+  ret.id = str(size.id)
   ret.name = size.name
   ret.volume_ml = size.volume_ml
   return ret
@@ -169,10 +157,12 @@ def KegTapToProto(tap, full=False):
   ret.name = tap.name
   ret.meter_name = tap.meter_name
   ret.ml_per_tick = tap.ml_per_tick
-  if tap.description:
-    ret.description = tap.description
+  ret.description = tap.description
+  ret.current_keg_id = None
+  ret.thermo_sensor_id = None
+  ret.last_temperature = None
   if tap.current_keg:
-    ret.current_keg_id = tap.current_keg.seqn
+    ret.current_keg_id = str(tap.current_keg.seqn)
   if tap.temperature_sensor:
     ret.thermo_sensor_id = str(tap.temperature_sensor.seqn)
     log = tap.temperature_sensor.LastLog()
@@ -187,10 +177,8 @@ def SessionToProto(record, full=False):
   ret.start_time = record.starttime
   ret.end_time = record.endtime
   ret.volume_ml = record.volume_ml
-  if record.name:
-    ret.name = record.name
-  if record.slug:
-    ret.slug = record.slug
+  ret.name = record.name or ''
+  ret.slug = record.slug or ''
   return ret
 
 @converts(models.Thermolog)
@@ -200,6 +188,14 @@ def ThermoLogToProto(record, full=False):
   ret.sensor_id = str(record.sensor.seqn)
   ret.temperature_c = record.temp
   ret.record_time = record.time
+  return ret
+
+@converts(models.ThermoSensor)
+def ThermoSensorToProto(record, full=False):
+  ret = AttrDict()
+  ret.id = str(record.seqn)
+  ret.sensor_name = record.raw_name
+  ret.nice_name = record.nice_name
   return ret
 
 @converts(models.ThermoSummaryLog)
@@ -213,14 +209,6 @@ def ThermoSummaryLogToProto(record, full=False):
   ret.min_temp = record.min_temp
   ret.max_temp = record.max_temp
   ret.mean_temp = record.mean_temp
-  return ret
-
-@converts(models.ThermoSensor)
-def ThermoSensorToProto(record, full=False):
-  ret = AttrDict()
-  ret.id = record.seqn
-  ret.sensor_name = record.raw_name
-  ret.nice_name = record.nice_name
   return ret
 
 @converts(models.User)
@@ -255,7 +243,7 @@ def SessionChunkToProto(record, full=False):
   ret.id = str(record.seqn)
   ret.session_id = str(record.session.seqn)
   ret.username = record.user.username
-  ret.keg_id = record.keg.seqn
+  ret.keg_id = str(record.keg.seqn)
   ret.start_time = record.starttime
   ret.end_time = record.endtime
   ret.volume_ml = record.volume_ml
@@ -264,17 +252,23 @@ def SessionChunkToProto(record, full=False):
 @converts(models.SystemEvent)
 def SystemEventToProto(record, full=False):
   ret = AttrDict()
-  ret.id = record.seqn
+  ret.id = str(record.seqn)
   ret.kind = record.kind
   ret.time = record.when
+  ret.drink_id = None
+  ret.keg_id = None
+  ret.session_id = None
+  ret.user_id = None
+
   if record.drink:
-    ret.drink = record.drink.seqn
+    ret.drink_id = str(record.drink.seqn)
   if record.keg:
-    ret.keg = record.keg.seqn
+    ret.keg_id = str(record.keg.seqn)
   if record.session:
-    ret.session = record.session.seqn
+    ret.session_id = str(record.session.seqn)
   if record.user:
-    ret.user = record.user.username
+    ret.user_id = str(record.user.username)
+
   return ret
 
 @converts(soundserver_models.SoundEvent)

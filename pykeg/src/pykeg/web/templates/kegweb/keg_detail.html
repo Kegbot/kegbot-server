@@ -16,12 +16,7 @@
     <tr>
       <td><b>{{keg.type.name}}</b></td>
       <td valign="top" rowspan="5">
-        {% if keg.type.GetImage %}
-          <img src="{{ keg.type.GetImage.thumbnail.url }}">
-        {% else %}
-          <div style="font-size: 200%; color: #ccc;">?</div>
-          <div style="font-size: 8px; color: #ccc;">no image</div>
-        {% endif %}
+        {% include "kegweb/keg-image.html" %}
       </td>
     </tr>
     <tr>

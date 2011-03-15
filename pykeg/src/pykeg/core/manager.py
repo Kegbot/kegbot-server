@@ -466,7 +466,7 @@ class DrinkManager(Manager):
     keg_id = d.get('keg_id', None)
     username = d.get('user_id', '<None>')
 
-    self._logger.info('Logged drink %i username=%s keg=%s liters=%.2f ticks=%i' % (
+    self._logger.info('Logged drink %s username=%s keg=%s liters=%.2f ticks=%i' % (
       d.id, username, keg_id, d.volume_ml/1000.0, d.ticks))
 
     self._last_drink = d

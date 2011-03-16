@@ -13,7 +13,7 @@ Kegboard is essential to accurately recording all pour data.
 The current Kegboard is based on the popular Arduino AVR development board, and
 reflects several improvements from previous designs:
 
-* Onboard in FT232 serial-to-usb converter
+* Onboard FT232 serial-to-usb converter
 * Completely programmable via USB; no special programmer needed
 * Plenty of I/O, including two external interrupt pins (pulse counting)
 * Free C compiler and large standard library

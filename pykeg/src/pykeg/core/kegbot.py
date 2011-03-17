@@ -28,6 +28,8 @@ For more information, please see the kegbot documentation.
 """
 
 import logging
+import socket
+import sys
 import time
 import warnings
 warnings.simplefilter("ignore", DeprecationWarning)
@@ -41,11 +43,13 @@ from pykeg.core import kb_app
 from pykeg.core import kb_threads
 from pykeg.core import manager
 from pykeg.core.net import kegnet
+from pykeg.web.api import krest
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_boolean('web_backend', False,
-    'If true, uses the web backend implementation rather than a database connection.')
+gflags.DEFINE_boolean('web_backend', True,
+    'If true, uses the web backend implementation rather than a local '
+    'database connection.')
 
 class KegbotEnv(object):
   """ A class that wraps the context of the kegbot core.
@@ -103,11 +107,6 @@ class KegbotEnv(object):
     self._watchdog_thread = kb_threads.WatchdogThread(self, 'watchdog-thread')
     self.AddThread(self._watchdog_thread)
 
-    for tap in self._backend.GetAllTaps():
-      # TODO: get rid of max_tick_delta parameter entirely
-      self._tap_manager.RegisterTap(tap.meter_name, tap.ml_per_tick,
-          (1/tap.ml_per_tick*500))
-
   def AddThread(self, thr):
     self._threads.add(thr)
     if isinstance(thr, kb_threads.CoreThread):
@@ -144,6 +143,7 @@ class KegbotEnv(object):
 class KegbotCoreApp(kb_app.App):
   def __init__(self, name='core'):
     kb_app.App.__init__(self, name)
+    self._logger.info('Kegbot is starting up.')
     self._env = KegbotEnv()
 
   def _MainLoop(self):
@@ -164,6 +164,29 @@ class KegbotCoreApp(kb_app.App):
 
   def _Setup(self):
     kb_app.App._Setup(self)
+
+    self._logger.info('Querying backend liveness.')
+    try:
+      taps = self._env.GetBackend().GetAllTaps()
+    except socket.error, e:
+      self._logger.error('Kegbot backend was unreachable due to socket error: '
+          '%s' % e)
+      if FLAGS.web_backend:
+        self._logger.error('Is --api_url correct? (current=%s)' % FLAGS.api_url)
+      sys.exit(1)
+    except krest.ServerError, e:
+      self._logger.error('Kegbot API backend returned a server error: %s' % e)
+      self._logger.error('Is --api_url correct? (current=%s)' % FLAGS.api_url)
+      sys.exit(1)
+    self._logger.info('Backend appears to be alive.')
+
+    self._logger.info('Found %i tap%s, adding to tap manager.' % (len(taps),
+        ('s', '')[len(taps) == 1]))
+    for tap in taps:
+      # TODO: get rid of max_tick_delta parameter entirely
+      self._env.GetTapManager().RegisterTap(tap.meter_name, tap.ml_per_tick,
+          (1/tap.ml_per_tick*500))
+
     for thr in self._env.GetThreads():
       self._AddAppThread(thr)
 

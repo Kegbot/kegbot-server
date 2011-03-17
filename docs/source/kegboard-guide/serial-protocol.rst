@@ -383,7 +383,7 @@ The configuration command is not acknowleged. Instead, the host should issue a
 Note that the current kegboard implementation requires a manual reset for any of
 the values to take effect.
 
-``set_output`` command (0x83)
+``set_output`` command (0x84)
 ------------------------------------
 
 This command is sent to the board to enable or disable a device output.

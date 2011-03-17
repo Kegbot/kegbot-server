@@ -40,6 +40,7 @@ import Queue
 
 import gflags
 import serial
+import os
 import time
 
 from pykeg.core import importhacks
@@ -60,7 +61,7 @@ gflags.DEFINE_boolean('show_messages', True,
     'Print all messages going to and from the kegboard. Useful for '
     'debugging.')
 
-gflags.DEFINE_integer('required_firmware_version', 4,
+gflags.DEFINE_integer('required_firmware_version', 7,
     'Minimum firmware version required.  If the device has an older '
     'firmware version, the daemon will refuse to service it.  This '
     'value should probably not be changed.')
@@ -202,7 +203,7 @@ class KegboardDeviceIoThread(util.KegbotThread):
     ping_message = kegboard.PingCommand()
     self._reader.WriteMessage(ping_message)
 
-  def _MainLoop(self):
+  def ThreadMain(self):
     self._logger.info('Starting reader loop...')
 
     # Ping the board a couple of times before going into the listen loop.
@@ -230,10 +231,8 @@ class KegboardDeviceIoThread(util.KegbotThread):
         else:
           self._logger.error('Attached kegboard firmware version (%s) is '
               'less than the required version (%s); please update this '
-              'kegboard.' % (actual, required))
-          self._logger.warning('Messages from this board will be ignored '
-              'until it is updated.')
-          initialized = False
+              'kegboard.' % (version, FLAGS.required_firmware_version))
+          os._exit(1)
 
       if not initialized:
         self.Ping()

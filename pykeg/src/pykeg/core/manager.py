@@ -76,10 +76,11 @@ class Manager:
 
 
 class Tap:
-  def __init__(self, name, ml_per_tick, max_tick_delta):
+  def __init__(self, name, ml_per_tick, max_tick_delta, relay_name=None):
     self._name = name
     self._ml_per_tick = ml_per_tick
     self._meter = flow_meter.FlowMeter(name, max_delta=max_tick_delta)
+    self._relay_name = relay_name
 
   def __str__(self):
     return self._name
@@ -89,6 +90,9 @@ class Tap:
 
   def GetMeter(self):
     return self._meter
+
+  def GetRelayName(self):
+    return self._relay_name
 
   def TicksToMilliliters(self, amt):
     return self._ml_per_tick * float(amt)
@@ -127,11 +131,11 @@ class TapManager(Manager):
     if not self.TapExists(name):
       raise UnknownTapError
 
-  def RegisterTap(self, name, ml_per_tick, max_tick_delta):
+  def RegisterTap(self, name, ml_per_tick, max_tick_delta, relay_name=None):
     self._logger.info('Registering new tap: %s' % name)
     if self.TapExists(name):
       raise AlreadyRegisteredError
-    self._taps[name] = Tap(name, ml_per_tick, max_tick_delta)
+    self._taps[name] = Tap(name, ml_per_tick, max_tick_delta, relay_name)
 
   def UnregisterTap(self, name):
     self._logger.info('Unregistering tap: %s' % name)
@@ -307,7 +311,7 @@ class FlowManager(Manager):
       else:
         self._logger.info('User "%s" is replacing the existing flow' %
             username)
-        self.StopFlow(tap_name)
+        self.StopFlow(tap_name, disable_relay=False)
         current = None
 
     if current and current.GetUsername() == username:
@@ -322,13 +326,17 @@ class FlowManager(Manager):
       self._flow_map[tap_name] = new_flow
       self._logger.info('Starting flow: %s' % new_flow)
       self._PublishUpdate(new_flow)
+
+      # Open up the relay if the flow is authenticated.
+      if username:
+        self._PublishRelayEvent(new_flow, enable=True)
       return new_flow
 
   def SetUsername(self, flow, username):
     flow.SetUsername(username)
     self._PublishUpdate(flow)
 
-  def StopFlow(self, tap_name):
+  def StopFlow(self, tap_name, disable_relay=True):
     try:
       flow = self.GetFlow(tap_name)
     except UnknownTapError:
@@ -337,6 +345,7 @@ class FlowManager(Manager):
       return None
 
     self._logger.info('Stopping flow: %s' % flow)
+    self._PublishRelayEvent(flow, enable=False)
     tap = flow.GetTap()
     del self._flow_map[tap_name]
     self._StateChange(flow, kbevent.FlowUpdate.FlowState.COMPLETED)
@@ -400,10 +409,32 @@ class FlowManager(Manager):
   @EventHandler(kbevent.HeartbeatSecondEvent)
   def _HandleHeartbeatEvent(self, event):
     for flow in self.GetActiveFlows():
+      tap = flow.GetTap()
       if flow.IsIdle():
         self._logger.info('Flow has become too idle, ending: %s' % flow)
         self._StateChange(flow, kbevent.FlowUpdate.FlowState.IDLE)
         self.StopFlow(flow.GetTap().GetName())
+      else:
+        if tap.GetRelayName():
+          if flow.GetUsername():
+            self._PublishRelayEvent(flow, enable=True)
+
+  def _PublishRelayEvent(self, flow, enable=True):
+    self._logger.info('Publishing relay event: flow=%s, enable=%s' % (flow,
+        enable))
+    tap = flow.GetTap()
+    relay = tap.GetRelayName()
+    if not relay:
+      self._logger.info('No relay for this tap')
+      return
+
+    self._logger.info('Relay for this tap: %s' % relay)
+    if enable:
+      mode = kbevent.SetRelayOutputEvent.Mode.ENABLED
+    else:
+      mode = kbevent.SetRelayOutputEvent.Mode.DISABLED
+    ev = kbevent.SetRelayOutputEvent(output_name=relay, output_mode=mode)
+    self._PublishEvent(ev)
 
   @EventHandler(kbevent.FlowRequest)
   def _HandleFlowRequestEvent(self, event):
@@ -705,5 +736,6 @@ class SubscriptionManager(Manager):
   @EventHandler(kbevent.CreditAddedEvent)
   @EventHandler(kbevent.DrinkCreatedEvent)
   @EventHandler(kbevent.FlowUpdate)
+  @EventHandler(kbevent.SetRelayOutputEvent)
   def RepostEvent(self, event):
     self._server.SendEventToClients(event)

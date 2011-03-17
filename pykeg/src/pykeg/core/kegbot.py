@@ -185,7 +185,7 @@ class KegbotCoreApp(kb_app.App):
     for tap in taps:
       # TODO: get rid of max_tick_delta parameter entirely
       self._env.GetTapManager().RegisterTap(tap.meter_name, tap.ml_per_tick,
-          (1/tap.ml_per_tick*500))
+          (1/tap.ml_per_tick*500), relay_name=tap.relay_name)
 
     for thr in self._env.GetThreads():
       self._AddAppThread(thr)

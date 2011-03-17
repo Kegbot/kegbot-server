@@ -58,8 +58,8 @@ def auth_required(viewfunc):
 
 def staff_required(viewfunc):
   def _check_token(request, *args, **kwargs):
-    if not request.user or not request.user.is_staff or not \
-        request.user.is_superuser:
+    if not request.user or (not request.user.is_staff and not \
+        request.user.is_superuser):
       raise krest.PermissionDeniedError, "Logged-in staff user required"
     return viewfunc(request, *args, **kwargs)
   return wraps(viewfunc)(_check_token)

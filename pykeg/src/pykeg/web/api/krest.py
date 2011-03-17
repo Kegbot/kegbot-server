@@ -38,6 +38,12 @@ except ImportError:
   from urllib2 import URLError
 
 import gflags
+
+gflags.DEFINE_float('krest_timeout', 1.0,
+    'Socket timeout, in seconds, for Kegbot web API operations. '
+    'Note that this timeout only applies to blocking socket operations '
+    '(such as opening a connection) and not I/O.')
+
 FLAGS = gflags.FLAGS
 
 _DEFAULT_URL = 'http://localhost:8000/api/'
@@ -183,7 +189,7 @@ class KrestClient:
 
     try:
       # Issue a GET or POST (urlopen will decide based on encoded_post_data).
-      response_data = urlopen(url, encoded_post_data).read()
+      response_data = urlopen(url, data=encoded_post_data, timeout=FLAGS.krest_timeout).read()
     except HTTPError, e:
       raise ServerError('Caused by: %s' % e)
     except URLError, e:

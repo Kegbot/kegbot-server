@@ -270,6 +270,8 @@ class SimpleKegnetClient(KegnetClient):
       self.onDrinkCreated(event)
     elif isinstance(event, kbevent.CreditAddedEvent):
       self.onCreditAdded(event)
+    elif isinstance(event, kbevent.SetRelayOutputEvent):
+      self.onSetRelayOutput(event)
 
   def onFlowUpdate(self, event):
     pass
@@ -278,6 +280,9 @@ class SimpleKegnetClient(KegnetClient):
     pass
 
   def onCreditAdded(self, event):
+    pass
+
+  def onSetRelayOutput(self, event):
     pass
 
 

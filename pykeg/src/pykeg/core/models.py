@@ -163,8 +163,12 @@ class KegTap(models.Model):
   """A physical tap of beer."""
   site = models.ForeignKey(KegbotSite, related_name='taps')
   seqn = models.PositiveIntegerField(editable=False)
-  name = models.CharField(max_length=128)
-  meter_name = models.CharField(max_length=128)
+  name = models.CharField(max_length=128,
+      help_text='The display name for this tap. Example: Main Tap.')
+  meter_name = models.CharField(max_length=128,
+      help_text='Example: kegboard.flow0')
+  relay_name = models.CharField(max_length=128, blank=True, null=True,
+      help_text='Example: kegboard.relay0')
   ml_per_tick = models.FloatField(default=(1000.0/2200.0))
   description = models.TextField(blank=True, null=True)
   current_keg = models.ForeignKey('Keg', blank=True, null=True)

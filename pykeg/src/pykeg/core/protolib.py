@@ -157,6 +157,7 @@ def KegTapToProto(tap, full=False):
   ret.id = str(tap.seqn)
   ret.name = tap.name
   ret.meter_name = tap.meter_name
+  ret.relay_name = tap.relay_name or ''
   ret.ml_per_tick = tap.ml_per_tick
   ret.description = tap.description
   ret.current_keg_id = None

@@ -237,12 +237,12 @@ void writeThermoPacket(DS1820Sensor *sensor)
 
 void writeRelayPacket(int channel)
 {
-  char name[7] = "relay-";
+  char name[6] = "relay";
   int status = (int) (gRelayStatus[channel].enabled);
-  name[6] = 0x30 + channel;
+  name[5] = 0x30 + channel;
   KegboardPacket packet;
   packet.SetType(KBM_OUTPUT_STATUS);
-  packet.AddTag(KBM_OUTPUT_STATUS_TAG_OUTPUT_NAME, 7, name);
+  packet.AddTag(KBM_OUTPUT_STATUS_TAG_OUTPUT_NAME, 6, name);
   packet.AddTag(KBM_OUTPUT_STATUS_TAG_OUTPUT_READING, sizeof(status), (char*)(&status));
   packet.Print();
 }

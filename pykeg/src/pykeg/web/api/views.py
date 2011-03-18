@@ -311,8 +311,10 @@ def all_taps(request):
     }
     if tap.current_keg and tap.current_keg.type:
       tap_entry['beverage'] = obj_to_dict(tap.current_keg.type)
+      tap_entry['brewer'] = obj_to_dict(tap.current_keg.type.brewer)
     else:
       tap_entry['beverage'] = None
+      tap_entry['brewer'] = None
     tap_list.append(tap_entry)
   res = {'taps': tap_list}
   return res

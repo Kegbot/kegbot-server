@@ -76,7 +76,7 @@
   </div>
   <div class="kb-contentbox">
     {% comment %} TODO(mikey): Pagniate sessions. {% endcomment %}
-    {% for chunk in user.user_session_chunks.all %}
+    {% for chunk in drinker.user_session_chunks.all %}
       {% with chunk.session as session %}
         {% include "kegweb/keg-session.html" %}
       {% endwith %}

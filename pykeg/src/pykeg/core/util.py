@@ -21,6 +21,7 @@
 import asyncore
 import errno
 import os
+import pytz
 import sys
 import types
 import threading
@@ -374,3 +375,33 @@ def LogTraceback(log_method, tb_tuple=None):
     for line in frame.split('\n'):
       log_method('    ' + line.strip())
   log_method('Error was: %s: %s' % (tb_type, tb_value))
+
+def tzswap(dt, tz_from, tz_to):
+  """Reinterprets a datetime object produced with one timezone with another.
+
+  The input and output are both naieve datetimes, that is, those without any
+  tzinfo.
+  """
+  assert dt.tzinfo == None
+  # First, reinterpret the source datetime obj as being in the 'from' timezone.
+  res = dt.replace(tzinfo=tz_from)
+  # Next, update with the intended timezone.
+  res = res.astimezone(tz_to)
+  # Finally, strip away the new timezone to leave us with a naieve datetime once
+  # again.
+  res = res.replace(tzinfo=None)
+  return res
+
+def utc_to_local(dt, local_tz_name=None):
+  if not local_tz_name:
+    return dt
+  local_tz = pytz.timezone(local_tz_name)
+  utc_tz = pytz.timezone('UTC')
+  return tzswap(dt, utc_tz, local_tz)
+
+def local_to_utc(dt, local_tz_name=None):
+  if not local_tz_name:
+    return dt
+  local_tz = pytz.timezone(local_tz_name)
+  utc_tz = pytz.timezone('UTC')
+  return tzswap(dt, local_tz, utc_tz)

@@ -119,12 +119,18 @@ def BrewerToProto(brewer, full=False):
   ret = models_pb2.Brewer()
   ret.id = str(brewer.id)
   ret.name = brewer.name
-  ret.country = brewer.country or ''
-  ret.origin_state = brewer.origin_state or ''
-  ret.origin_city = brewer.origin_city or ''
-  ret.production = brewer.production or ''
-  ret.url = brewer.url or ''
-  ret.description = brewer.description or ''
+  if brewer.country is not None:
+    ret.country = brewer.country
+  if brewer.origin_state is not None:
+    ret.origin_state = brewer.origin_state
+  if brewer.origin_city is not None:
+    ret.origin_city = brewer.origin_city
+  if brewer.production is not None:
+    ret.production = brewer.production
+  if brewer.url is not None:
+    ret.url = brewer.url
+  if brewer.description is not None:
+    ret.description = brewer.description
   return ret
 
 @converts(models.Drink)
@@ -159,7 +165,7 @@ def KegToProto(keg, full=False):
   ret.started_time = datestr(keg.startdate)
   ret.finished_time = datestr(keg.enddate)
   ret.status = keg.status
-  if keg.description:
+  if keg.description is not None:
     ret.description = keg.description
   ret.spilled_ml = keg.spilled_ml
   return ret
@@ -180,7 +186,8 @@ def KegTapToProto(tap, full=False):
   ret.meter_name = tap.meter_name
   ret.relay_name = tap.relay_name or ''
   ret.ml_per_tick = tap.ml_per_tick
-  ret.description = tap.description
+  if tap.description is not None:
+    ret.description = tap.description
   if tap.current_keg:
     ret.current_keg_id = str(tap.current_keg.seqn)
   if tap.temperature_sensor:

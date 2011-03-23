@@ -27,7 +27,7 @@ from django.db.utils import DatabaseError
 from pykeg.core import kb_common
 from pykeg.core import config
 from pykeg.core import models
-from pykeg.core import protolib
+from pykeg.proto import protolib
 
 from pykeg.web.api import krest
 
@@ -148,7 +148,7 @@ class KegbotBackend(Backend):
     p.gender = gender
     p.weight = weight
     p.save()
-    return protolib.ToProto(u)
+    return protolib.ToDict(u)
 
   def CreateAuthToken(self, auth_device, token_value, username=None):
     token = models.AuthenticationToken.objects.create(
@@ -157,10 +157,10 @@ class KegbotBackend(Backend):
       user = self._GetUserObjFromUsername(username)
       token.user = user
     token.save()
-    return protolib.ToProto(token)
+    return protolib.ToDict(token)
 
   def GetAllTaps(self):
-    return protolib.ToProto(list(models.KegTap.objects.all()))
+    return protolib.ToDict(list(models.KegTap.objects.all()))
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False):
@@ -198,7 +198,7 @@ class KegbotBackend(Backend):
     d.save()
     d.PostProcess()
 
-    return protolib.ToProto(d)
+    return protolib.ToDict(d)
 
   def CancelDrink(self, seqn, spilled=False):
     try:
@@ -267,7 +267,7 @@ class KegbotBackend(Backend):
         sensor=sensor, time=when, defaults=defaults)
     record.temp = temperature
     record.save()
-    return protolib.ToProto(record)
+    return protolib.ToDict(record)
 
   def GetAuthToken(self, auth_device, token_value):
 
@@ -279,13 +279,13 @@ class KegbotBackend(Backend):
         raise NoTokenError(auth_device)
       fake_token = models.AuthenticationToken(auth_device='core.user',
           token_value=token_value, seqn=0, user=user, enabled=True)
-      return protolib.ToProto(fake_token)
+      return protolib.ToDict(fake_token)
 
     tok, created = models.AuthenticationToken.objects.get_or_create( site=self._site,
         auth_device=auth_device, token_value=token_value)
     if not tok.user:
       raise NoTokenError
-    return protolib.ToProto(tok)
+    return protolib.ToDict(tok)
 
 
 class WebBackend(Backend):

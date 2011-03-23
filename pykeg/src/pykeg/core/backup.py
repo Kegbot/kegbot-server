@@ -22,7 +22,7 @@ import sys
 
 from pykeg.core import kbjson
 from pykeg.core import models
-from pykeg.core import protolib
+from pykeg.proto import protolib
 
 from pykeg.beerdb import models as bdb_models
 
@@ -67,7 +67,7 @@ def dump(output_fp, kbsite, indent=None, log_cb=_no_log):
   log_cb('Generating backup data ...')
   for name, qs in items:
     log_cb('  .. dumping %s' % name)
-    res[name] = list(protolib.ToProto(qs, full=True))
+    res[name] = list(protolib.ToDict(qs, full=True))
 
   log_cb('Serializing and writing backup data ...')
   output_fp.write(kbjson.dumps(res, indent=indent))

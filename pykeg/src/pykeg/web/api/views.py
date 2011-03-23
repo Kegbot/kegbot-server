@@ -34,7 +34,7 @@ from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import backend
 from pykeg.core import kbjson
 from pykeg.core import models
-from pykeg.core import protolib
+from pykeg.proto import protolib
 from pykeg.web.api import krest
 from pykeg.web.api import forms
 
@@ -90,10 +90,7 @@ def ToJsonError(e):
   return result, http_code
 
 def obj_to_dict(o):
-  if hasattr(o, '__iter__'):
-    return [protolib.ToProto(x) for x in o]
-  else:
-    return protolib.ToProto(o)
+  return protolib.ToDict(o)
 
 def py_to_json(f):
   """Decorator that wraps an API method.

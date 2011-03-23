@@ -1,0 +1,326 @@
+// Describes an authentication token
+message AuthenticationToken {
+  // The token name, a combination of the auth device and unique key.
+  required string id = 1;
+
+  // The name of the auth device.
+  required string auth_device = 2;
+
+  // The unique key.
+  required string token_value = 3;
+
+  // The user owning the token.
+  optional string username = 4;
+
+  // The nice name of the token.
+  optional string nice_name = 5;
+
+  // True if the token is enabled.
+  optional bool enabled = 6;
+
+  // The date the token was created, as an ISO8061 string.
+  required string created_time = 7;
+
+  // The date after which the token is invalid, if any, as an ISO8061 string.
+  optional string expire_time = 8;
+
+  // The token's pin, if any.
+  optional string pin = 9;
+}
+
+// Describes a named beer variety, such as "India Pale Ale".
+message BeerStyle {
+
+  // The unique identifier for this beer style.
+  required string id = 1;
+
+  // The name of the beer style.
+  required string name = 2;
+
+}
+
+// Describes a beer's brewer, style, and contents.
+message BeerType {
+
+  // The unique identifier for this beer type.
+  required string id = 1;
+
+  // The brand name of the beer.
+  required string name = 2;
+
+  // Brewer information for the beer.  May refer to an 'unknown' or generic
+  // brewer record.
+  required string brewer_id = 3;
+
+  // Style information for the beer.  May refer to an 'unknown' or generic beer
+  // style.
+  required string style_id = 4;
+
+  // For seasonal or special edition beers, the year or other edition name.
+  optional string edition = 6;
+
+  // Alcohol by volume, as a percentage of the total volume.
+  optional float abv = 7;
+
+  // Number of calories per ounce of beverage.
+  optional float calories_oz = 8;
+
+  // Number of carbohydrates per ounce of beverage.
+  optional float carbs_oz = 9;
+
+  // Specific/final gravity of the beer, if known.
+  optional float specific_gravity = 10;
+
+  // Original gravity of the beer, if known.
+  optional float original_gravity = 11;
+
+}
+
+// Describes a specific producer of our favorite beverage.
+message Brewer {
+
+  // The unique identifier for this beer type.
+  required string id = 1;
+
+  // The name of the brewer.
+  required string name = 2;
+
+  // The country of the brewer's headquarters.
+  optional string country = 3 [default = ''];
+
+  // The state of the brewer's headquarters.
+  optional string origin_state = 4 [default = ''];
+
+  // The city of the brewer's headquarters.
+  optional string origin_city = 5 [default = ''];
+
+  // Type of production (usually either 'retail' or 'homebrew').
+  optional string production = 6 [default = ''];
+
+  // URL of brewer.
+  optional string url = 7 [default = ''];
+
+  // Free-form description.
+  optional string description = 8 [default = ''];
+
+}
+
+// Describes a single recorded pour from the Kegbot.
+message Drink {
+
+  // The unique identifier for this drink.
+  required string id = 1;
+
+  // The number of meter ticks recorded for the drink.
+  required uint32 ticks = 2;
+
+  // The volume of the drink, in milliliters.
+  required float volume_ml = 3;
+
+  // The session this drink belongs to.
+  required string session_id = 4;
+
+  // UTC time when the drink was poured, as ISO8061 string.
+  required string pour_time = 5;
+
+  // Duration, in seconds, of the pour.
+  optional uint32 duration = 6;
+
+  // Status of the drink.
+  required string status = 7;
+
+  // The Keg from which the drink was poured.  May be unset if the drink could
+  // not be associated with a keg.
+  optional string keg_id = 8;
+
+  // The User that poured the drink.  May be unset if the drinker was unknown.
+  optional string user_id = 9;
+
+  // Auth token value used to pour the drink, if known.
+  optional string auth_token_id = 10;
+}
+
+// Describes a single instance of a Keg that is or was attached to the Kegbot.
+message Keg {
+
+  // The unique identifier for this keg.
+  required string id = 1;
+
+  // The kind of beer within the keg.
+  required string type_id = 2;
+
+  // The size of the keg.
+  required string size_id = 3;
+
+  // The name of the keg size.
+  optional string size_name = 4;
+
+  // The volume of the keg size.
+  optional float size_volume_ml = 5;
+
+  required float volume_ml_remain = 6;
+  required float percent_full = 7;
+
+  // UTC time when the keg was 'started', as ISO8061 timestamp.  This should be
+  // no later than the time of the first Drink.
+  required string started_time = 8;
+
+  // Local time when the keg was 'completed', as ISO8061 timestamp.  This should
+  // be no sooner than the time of the most recent drink.  If the keg's `status`
+  // is not 'offline', then this value is meaningless.
+  required string finished_time = 9;
+
+  // The keg's current status.  Typically either "online" or "offline".
+  required string status = 10;
+
+  // The adminstrator's description of this keg.
+  optional string description = 11;
+
+  optional float spilled_ml = 12;
+}
+
+message KegSize {
+
+  // The unique identifier for this keg size.
+  required string id = 1;
+
+  // The name of the size ("Half Barrel", "Pony keg", ...)
+  required string name = 2;
+
+  // The volume of the size, in milliliters.
+  required float volume_ml = 3;
+
+}
+
+// Describes a tap which is available for pouring beer.
+message KegTap {
+
+  // The unique identifier for this tap.
+  required string id = 1;
+
+  // The name of the tap, a free-form string ("Main tap", "Wet bar", ...)
+  required string name = 2;
+
+  // The meter the tap is assigned to.
+  required string meter_name = 3;
+
+  // The relay name of the tap.
+  optional string relay_name = 4;
+
+  // Size of measurement.
+  required float ml_per_tick = 5;
+
+  // A longer description of the tap.
+  optional string description = 6;
+
+  // The Keg currently assigned to the tap.  May be unset if there is no keg
+  // configured.
+  optional string current_keg_id = 7;
+
+  // The temperature sensor for the tap, if any.
+  optional string thermo_sensor_id = 8;
+
+  // The last temperature log, if any.
+  optional ThermoLog last_temperature = 9;
+}
+
+message Session {
+  required string id = 1;
+  required string start_time = 2;
+  required string end_time = 3;
+  required float volume_ml = 4;
+  optional string name = 5;
+  optional string slug = 6;
+}
+
+message ThermoLog {
+  required string id = 1;
+
+  required string sensor_id = 2;
+
+  // The temperature, in degrees C.
+  required float temperature_c = 3;
+
+  // The recording date.
+  required string record_time = 4;
+}
+
+message ThermoSensor {
+  // The raw/unique name of the sensor.
+  required string sensor_name = 1;
+
+  // The friendly name for the sensor.
+  optional string nice_name = 2;
+}
+
+message ThermoSummaryLog {
+  required string id = 1;
+  required string sensor_id = 2;
+  required string date = 3;
+  required string period = 4;
+  required uint32 num_readings = 5;
+  required float min_temp = 6;
+  required float max_temp = 7;
+  required float mean_temp = 8;
+}
+
+// A drinker registered in the kegbot system.
+message User {
+
+  // The user's unique username.
+  required string username = 1;
+
+  // A URL to the profile picture of the user.  May be unset if the user does
+  // not have a profile picture.
+  optional string mugshot_url = 2;
+
+  // True if the user is active.  This value will be false for accounts which
+  // have been disabled by.
+  required bool is_active = 3 [default = true];
+
+  optional string first_name = 4;
+  optional string last_name = 5;
+  optional string email = 6;
+  optional string password = 7;
+  // True if the user is a member of the system's staff.
+  optional bool is_staff = 8;
+  // True if the user is an administrator.
+  optional bool is_superuser = 9;
+  // UTC time for the user's last login, as ISO8061 string.
+  optional string last_login = 10;
+  // UTC time for the user's registration, as ISO8061 string.
+  optional string date_joined = 11;
+}
+
+message UserProfile {
+  required string username = 1;
+  optional string gender = 2;
+  optional float weight = 3;
+}
+
+message SessionChunk {
+  required string id = 1;
+  required string session_id = 2;
+  required string username = 3;
+  required string keg_id = 4;
+  required string start_time = 5;
+  required string end_time = 6;
+  required float volume_ml = 7;
+}
+
+message SystemEvent {
+  required string id = 1;
+  required string kind = 2;
+  required string time = 3;
+  optional string drink_id = 4;
+  optional string keg_id = 5;
+  optional string session_id = 6;
+  optional string user_id = 7;
+}
+
+message SoundEvent {
+  required string event_name = 1;
+  optional string event_predicate = 2;
+  required string sound_url = 3;
+  optional string user = 4;
+}

@@ -267,6 +267,12 @@ class PingCommand(Message):
   MESSAGE_ID = 0x81
 
 
+class SetOutputCommand(Message):
+  MESSAGE_ID = 0x84
+  output_id = Uint8Field(0x01)
+  output_mode = OutputField(0x02)
+
+
 MESSAGE_ID_TO_CLASS = {}
 for cls in Message.__subclasses__():
   idnum = cls.MESSAGE_ID

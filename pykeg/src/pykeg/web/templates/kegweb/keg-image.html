@@ -1,0 +1,8 @@
+<div class="kb-tapbox-image" style="width: 100px; height: 100px; float: left;">
+  {% if keg.type.GetImage %}
+    <img src="{{ keg.type.GetImage.thumbnail.url }}" style="height: 100%; vertical-align: middle;">
+  {% else %}
+    <img src="/site_media/images/kegbot-unknown-square.png" style="height: 100%; vertical-align: middle;">
+  {% endif %}
+</div>
+

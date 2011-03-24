@@ -154,10 +154,27 @@ You can now start Kegweb. Try running the built in development server::
 	Development server is running at http://0.0.0.0:8000/
 	Quit the server with CONTROL-C.
 
-Go to the kegweb URL in your browser, eg http://localhost/
+Browse to the kegweb home page, eg http://localhost/
 
-Create a Keg
+Create a Keg 
 ------------
 
-TODO
+Browse to the kegweb admin site to access and set various kegbot settings, eg
+http://localhost/admin/
+
+Add a keg, http://localhost/admin/core/keg/
+
+* Select default site
+* Select beer type
+* Select keg size
+* Set start date
+* Set keg status
+* Optional entries: Description, Origcost, Notes
+* SAVE
+
+Set keg tap details, http://localhost/admin/core/kegtap/
+
+* Set Ml per tick. Recommeded settings - Swissflow SF800 meter(0.163934426) or
+  Vision 2000 meter(0.4545454545)
+* Select newely added keg in current keg drop down list.
 

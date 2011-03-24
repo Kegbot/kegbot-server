@@ -16,6 +16,9 @@ after updating::
 
 Core/General
 ^^^^^^^^^^^^
+* Support for per-tap relay control (solenoid valve control for authenticated
+  users.)
+* kegbot_core.py now uses the RESTful web API backend interface by default.
 * Kegbot daemons now perform automatic log rotation, every night at midnight.
 * When executed with ``--verbose``, daemons show a bit less useless spam.
 * The drink "endtime" column has been removed (not user-visible).
@@ -45,6 +48,7 @@ Kegweb
 * The values in the pints-per-session histogram are now less ambiguous.
 * The background image is now included in version control, and could be replaced
   locally.
+* Beer type images rendering has been cleaned up.
 
 API
 ^^^

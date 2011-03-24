@@ -29,7 +29,7 @@ admin.site.register(models.KegSize)
 admin.site.register(models.KegbotSite)
 
 class KegTapAdmin(admin.ModelAdmin):
-  list_display = ('name', 'meter_name', 'current_keg')
+  list_display = ('name', 'meter_name', 'relay_name', 'current_keg')
 admin.site.register(models.KegTap, KegTapAdmin)
 
 class KegAdmin(admin.ModelAdmin):

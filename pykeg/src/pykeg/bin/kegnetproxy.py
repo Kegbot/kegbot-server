@@ -101,7 +101,10 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
       result['flows'] = flow_dict
     elif self.path == '/status':
       result['ok'] = True
-    return self._DoResponse(body=kbjson.dumps(result), type="application/json")
+    body = kbjson.dumps(result)
+    if self.callback:
+      body = '%s(%s)' % (self.callback, body)
+    return self._DoResponse(body=body, type="application/json")
 
   def _DoResponse(self, body=None, code=httplib.OK, type="text/plain"):
     if code != httplib.OK and body is None:

@@ -8,14 +8,7 @@
     <table border="0">
       <tr>
         <td align="center" valign="center">
-          <div class="kb-tapbox-image">
-            {% if keg.type.GetImage %}
-            <img src="{{ keg.type.GetImage.thumbnail.url }}">
-            {% else %}
-            <div style="font-size: 200%; color: #ccc;">?</div>
-            <div style="font-size: 8px; color: #ccc;">no image</div>
-            {% endif %}
-          </div>
+          {% include "kegweb/keg-image.html" %}
         </td>
         <td valign="top">
           <div class="kb-tapbox-detail">

@@ -40,6 +40,7 @@ import Queue
 
 import gflags
 import serial
+import os
 import time
 
 from pykeg.core import importhacks
@@ -60,7 +61,7 @@ gflags.DEFINE_boolean('show_messages', True,
     'Print all messages going to and from the kegboard. Useful for '
     'debugging.')
 
-gflags.DEFINE_integer('required_firmware_version', 4,
+gflags.DEFINE_integer('required_firmware_version', 7,
     'Minimum firmware version required.  If the device has an older '
     'firmware version, the daemon will refuse to service it.  This '
     'value should probably not be changed.')
@@ -68,7 +69,29 @@ gflags.DEFINE_integer('required_firmware_version', 4,
 FLAGS.SetDefault('tap_name', kb_common.ALIAS_ALL_TAPS)
 
 class KegboardKegnetClient(kegnet.SimpleKegnetClient):
-  pass
+  def __init__(self, reader, addr=None):
+    kegnet.SimpleKegnetClient.__init__(self, addr)
+    self._reader = reader
+
+  def onSetRelayOutput(self, event):
+    self._logger.debug('Responding to relay event: %s' % event)
+    if not event.output_name:
+      return
+    try:
+      output_id = int(event.output_name[-1])
+    except ValueError:
+      return
+    if event.output_mode == event.Mode.ENABLED:
+      output_mode = 1
+    else:
+      output_mode = 0
+
+    # TODO(mikey): message.SetValue is lame, why doesn't attr access work as in
+    # other places? Fix it.
+    message = kegboard.SetOutputCommand()
+    message.SetValue('output_id', output_id)
+    message.SetValue('output_mode', output_mode)
+    self._reader.WriteMessage(message)
 
 class KegboardManagerApp(kb_app.App):
   def __init__(self, name='core'):
@@ -77,18 +100,21 @@ class KegboardManagerApp(kb_app.App):
   def _Setup(self):
     kb_app.App._Setup(self)
 
-    self._client = KegboardKegnetClient()
+    serial_fd = serial.Serial(FLAGS.kegboard_device, FLAGS.kegboard_speed)
+    reader = kegboard.KegboardReader(serial_fd)
 
-    self._client_thr = kegnet.KegnetClientThread('kegnet', self._client)
-    self._AddAppThread(self._client_thr)
+    self._client = KegboardKegnetClient(reader=reader)
 
     self._manager_thr = KegboardManagerThread('kegboard-manager',
         self._client)
     self._AddAppThread(self._manager_thr)
 
     self._device_io_thr = KegboardDeviceIoThread('device-io', self._manager_thr,
-        FLAGS.kegboard_device, FLAGS.kegboard_speed)
+        reader)
     self._AddAppThread(self._device_io_thr)
+
+    self._client_thr = kegnet.KegnetClientThread('kegnet', self._client)
+    self._AddAppThread(self._client_thr)
 
 
 class KegboardManagerThread(util.KegbotThread):
@@ -168,31 +194,16 @@ class KegboardDeviceIoThread(util.KegbotThread):
   This thread continuously reads from attached kegboard devices and passes
   messages to the KegboardManagerThread.
   """
-  def __init__(self, name, manager, device_path, device_speed):
+  def __init__(self, name, manager, reader):
     util.KegbotThread.__init__(self, name)
     self._manager = manager
-    self._device_path = device_path
-    self._device_speed = device_speed
-    self._reader = None
-    self._serial_fd = None
-
-  def _SetupSerial(self):
-    self._logger.info('Setting up serial port...')
-    self._serial_fd = serial.Serial(self._device_path, self._device_speed)
-    self._reader = kegboard.KegboardReader(self._serial_fd)
-
-  def run(self):
-    self._SetupSerial()
-    try:
-      self._MainLoop()
-    finally:
-      self._serial_fd.close()
+    self._reader = reader
 
   def Ping(self):
     ping_message = kegboard.PingCommand()
     self._reader.WriteMessage(ping_message)
 
-  def _MainLoop(self):
+  def ThreadMain(self):
     self._logger.info('Starting reader loop...')
 
     # Ping the board a couple of times before going into the listen loop.
@@ -220,10 +231,8 @@ class KegboardDeviceIoThread(util.KegbotThread):
         else:
           self._logger.error('Attached kegboard firmware version (%s) is '
               'less than the required version (%s); please update this '
-              'kegboard.' % (actual, required))
-          self._logger.warning('Messages from this board will be ignored '
-              'until it is updated.')
-          initialized = False
+              'kegboard.' % (version, FLAGS.required_firmware_version))
+          os._exit(1)
 
       if not initialized:
         self.Ping()

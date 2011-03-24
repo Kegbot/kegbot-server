@@ -127,6 +127,13 @@ class HeartbeatMinuteEvent(Event):
 class HeartbeatHourEvent(Event):
   pass
 
+class SetRelayOutputEvent(Event):
+  class Mode:
+    ENABLED = "enabled"
+    DISABLED = "disabled"
+  output_name = EventField()
+  output_mode = EventField()
+
 class CreditAddedEvent(Event):
   amount = EventField()
   username = EventField()

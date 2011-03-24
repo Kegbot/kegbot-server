@@ -151,6 +151,7 @@ class KegUi:
       tap = tap_status.tap
       keg = tap_status.get('keg')
       beverage = tap_status.beverage
+      brewer = tap_status.brewer
       tap_name = tap.name
       beer_name = 'Unknown Beer'
       brewer_name = 'Unknown Brewer'
@@ -160,7 +161,8 @@ class KegUi:
         pct_full = keg.percent_full
         if beverage:
           beer_name = beverage.name
-          brewer_name = beverage.brewer.name
+        if brewer:
+          brewer_name = brewer.name
       if curr_temp:
         curr_temp = tap.last_temperature.temperature_c
 

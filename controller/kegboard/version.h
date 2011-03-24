@@ -10,7 +10,9 @@
 //     Fix issue that caused flow events to be reported too frequently.
 //   v6 (2010-09-22)
 //     Added auth_token message.
-#define FIRMWARE_VERSION 6
+//   v7 (2011-03-16)
+//     Added implementation of `set_output` command, relay output watchdog.
+#define FIRMWARE_VERSION 7
 
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__

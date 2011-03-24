@@ -117,6 +117,6 @@ Kegboard includes a built-in "selftest" feature. This mode might be useful if
 you'd like to test your board without hooking it up to a flowmeter; maybe you
 don't have a meter, or don't want to waste precious beer testing it.
 
-To test your board, connect pin 11 to one of the flowmeter inputs. Pin 11
+To test your board, connect pin 12 to one of the flowmeter inputs. Pin 12
 generates a steady stream of pulses, similar to what a real flowmeter would do.
 

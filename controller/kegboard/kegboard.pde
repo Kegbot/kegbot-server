@@ -73,7 +73,6 @@ SoftwareSerial gSerialLcd = SoftwareSerial(KB_PIN_SERIAL_LCD_RX,
 // Up to 6 meters supported if using Arduino Mega
 static unsigned long volatile gMeters[] = {0, 0, 0, 0, 0, 0};
 static unsigned long volatile gLastMeters[] = {0, 0, 0, 0, 0, 0};
-static bool volatile gRelayStatus[] = {false, false};
 static uint8_t gOutputPins[] = {KB_PIN_RELAY_A, KB_PIN_RELAY_B};
 
 static KegboardPacket gInputPacket;
@@ -86,6 +85,14 @@ typedef struct {
 } RxPacketStat;
 
 static RxPacketStat gPacketStat;
+
+// Relay output status.
+typedef struct {
+  bool enabled;
+  unsigned long touched_timestamp_ms;
+} RelayOutputStat;
+
+static RelayOutputStat gRelayStatus[KB_NUM_RELAY_OUTPUTS];
 
 // Structure to keep information about this device's uptime. 
 typedef struct {
@@ -230,12 +237,12 @@ void writeThermoPacket(DS1820Sensor *sensor)
 
 void writeRelayPacket(int channel)
 {
-  char name[7] = "relay-";
-  int status = (int)(gRelayStatus[channel]);
-  name[6] = 0x30 + channel;
+  char name[6] = "relay";
+  int status = (int) (gRelayStatus[channel].enabled);
+  name[5] = 0x30 + channel;
   KegboardPacket packet;
   packet.SetType(KBM_OUTPUT_STATUS);
-  packet.AddTag(KBM_OUTPUT_STATUS_TAG_OUTPUT_NAME, 7, name);
+  packet.AddTag(KBM_OUTPUT_STATUS_TAG_OUTPUT_NAME, 6, name);
   packet.AddTag(KBM_OUTPUT_STATUS_TAG_OUTPUT_READING, sizeof(status), (char*)(&status));
   packet.Print();
 }
@@ -580,6 +587,20 @@ out_reset:
   resetInputPacket();
 }
 
+void setRelayOutput(uint8_t id, uint8_t mode) {
+  gRelayStatus[id].touched_timestamp_ms = millis();
+  if (mode == OUTPUT_DISABLED && gRelayStatus[id].enabled) {
+    digitalWrite(gOutputPins[id], LOW);
+    gRelayStatus[id].enabled = false;
+  } else if (mode == OUTPUT_ENABLED && !gRelayStatus[id].enabled) {
+    digitalWrite(gOutputPins[id], HIGH);
+    gRelayStatus[id].enabled = true;
+  } else {
+    return;
+  }
+  writeRelayPacket(id);
+}
+
 void handleInputPacket() {
   if (!gPacketStat.have_packet) {
     return;
@@ -593,21 +614,15 @@ void handleInputPacket() {
 
     case KBM_SET_OUTPUT: {
       uint8_t id, mode;
+
       if (!gInputPacket.ReadTag(KBM_SET_OUTPUT_TAG_OUTPUT_ID, &id)
-        || !gInputPacket.ReadTag(KBM_SET_OUTPUT_TAG_OUTPUT_MODE, &mode))
-        {
-          break;
+          || !gInputPacket.ReadTag(KBM_SET_OUTPUT_TAG_OUTPUT_MODE, &mode)) {
+        break;
       }
 
-      // TODO(mikey): bounds check id
-      if (mode == OUTPUT_DISABLED) {
-        digitalWrite(gOutputPins[id], LOW);
-        gRelayStatus[id] = false;
-      } else {
-        digitalWrite(gOutputPins[id], HIGH);
-        gRelayStatus[id] = true;
+      if (id < KB_NUM_RELAY_OUTPUTS) {
+        setRelayOutput(id, mode);
       }
-      writeRelayPacket(id);
       break;
     }
   }
@@ -642,6 +657,17 @@ void writeMeterPackets() {
 #endif
 }
 
+void stepRelayWatchdog() {
+  for (int i = 0; i < KB_NUM_RELAY_OUTPUTS; i++) {
+    if (gRelayStatus[i].enabled == true) {
+      unsigned long now = millis();
+      if ((now - gRelayStatus[i].touched_timestamp_ms) > KB_RELAY_WATCHDOG_MS) {
+        setRelayOutput(i, OUTPUT_DISABLED);
+      }
+    }
+  }
+}
+
 void loop()
 {
   updateTimekeeping();
@@ -650,9 +676,7 @@ void loop()
   handleInputPacket();
 
   writeMeterPackets();
-
-  //writeRelayPacket(0);
-  //writeRelayPacket(1);
+  stepRelayWatchdog();
 
 #if KB_ENABLE_ONEWIRE_THERMO
   stepOnewireThermoBus();

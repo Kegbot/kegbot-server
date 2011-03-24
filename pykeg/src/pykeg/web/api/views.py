@@ -34,7 +34,7 @@ from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import backend
 from pykeg.core import kbjson
 from pykeg.core import models
-from pykeg.core import protolib
+from pykeg.proto import protolib
 from pykeg.web.api import krest
 from pykeg.web.api import forms
 
@@ -58,8 +58,8 @@ def auth_required(viewfunc):
 
 def staff_required(viewfunc):
   def _check_token(request, *args, **kwargs):
-    if not request.user or not request.user.is_staff or not \
-        request.user.is_superuser:
+    if not request.user or (not request.user.is_staff and not \
+        request.user.is_superuser):
       raise krest.PermissionDeniedError, "Logged-in staff user required"
     return viewfunc(request, *args, **kwargs)
   return wraps(viewfunc)(_check_token)
@@ -90,10 +90,7 @@ def ToJsonError(e):
   return result, http_code
 
 def obj_to_dict(o):
-  if hasattr(o, '__iter__'):
-    return [protolib.ToProto(x) for x in o]
-  else:
-    return protolib.ToProto(o)
+  return protolib.ToDict(o)
 
 def py_to_json(f):
   """Decorator that wraps an API method.
@@ -311,8 +308,10 @@ def all_taps(request):
     }
     if tap.current_keg and tap.current_keg.type:
       tap_entry['beverage'] = obj_to_dict(tap.current_keg.type)
+      tap_entry['brewer'] = obj_to_dict(tap.current_keg.type.brewer)
     else:
       tap_entry['beverage'] = None
+      tap_entry['brewer'] = None
     tap_list.append(tap_entry)
   res = {'taps': tap_list}
   return res

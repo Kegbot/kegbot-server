@@ -276,7 +276,7 @@ def recent_events_html(request):
   results = []
   for event in events:
     row = {}
-    row['id'] = event.seqn
+    row['id'] = str(event.seqn)
     row['html'] = template.render(Context({'event': event}))
     results.append(row)
 

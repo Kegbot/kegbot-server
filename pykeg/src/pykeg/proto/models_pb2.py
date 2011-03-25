@@ -7,7 +7,6 @@ from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 
-
 DESCRIPTOR = descriptor.FileDescriptor(
   name='models.proto',
   package='',
@@ -1177,24 +1176,8 @@ _SOUNDEVENT = descriptor.Descriptor(
   serialized_end=2356,
 )
 
+
 _KEGTAP.fields_by_name['last_temperature'].message_type = _THERMOLOG
-DESCRIPTOR.message_types_by_name['AuthenticationToken'] = _AUTHENTICATIONTOKEN
-DESCRIPTOR.message_types_by_name['BeerStyle'] = _BEERSTYLE
-DESCRIPTOR.message_types_by_name['BeerType'] = _BEERTYPE
-DESCRIPTOR.message_types_by_name['Brewer'] = _BREWER
-DESCRIPTOR.message_types_by_name['Drink'] = _DRINK
-DESCRIPTOR.message_types_by_name['Keg'] = _KEG
-DESCRIPTOR.message_types_by_name['KegSize'] = _KEGSIZE
-DESCRIPTOR.message_types_by_name['KegTap'] = _KEGTAP
-DESCRIPTOR.message_types_by_name['Session'] = _SESSION
-DESCRIPTOR.message_types_by_name['ThermoLog'] = _THERMOLOG
-DESCRIPTOR.message_types_by_name['ThermoSensor'] = _THERMOSENSOR
-DESCRIPTOR.message_types_by_name['ThermoSummaryLog'] = _THERMOSUMMARYLOG
-DESCRIPTOR.message_types_by_name['User'] = _USER
-DESCRIPTOR.message_types_by_name['UserProfile'] = _USERPROFILE
-DESCRIPTOR.message_types_by_name['SessionChunk'] = _SESSIONCHUNK
-DESCRIPTOR.message_types_by_name['SystemEvent'] = _SYSTEMEVENT
-DESCRIPTOR.message_types_by_name['SoundEvent'] = _SOUNDEVENT
 
 class AuthenticationToken(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType

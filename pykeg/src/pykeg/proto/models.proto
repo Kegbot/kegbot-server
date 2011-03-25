@@ -1,3 +1,5 @@
+option java_package = "org.kegbot.proto";
+
 // Describes an authentication token
 message AuthenticationToken {
   // The token name, a combination of the auth device and unique key.

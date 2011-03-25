@@ -7,10 +7,11 @@ from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 
+
 DESCRIPTOR = descriptor.FileDescriptor(
-  name='proto/models.proto',
+  name='models.proto',
   package='',
-  serialized_pb='\n\x12proto/models.proto\"\xb9\x01\n\x13\x41uthenticationToken\x12\n\n\x02id\x18\x01 \x02(\t\x12\x13\n\x0b\x61uth_device\x18\x02 \x02(\t\x12\x13\n\x0btoken_value\x18\x03 \x02(\t\x12\x10\n\x08username\x18\x04 \x01(\t\x12\x11\n\tnice_name\x18\x05 \x01(\t\x12\x0f\n\x07\x65nabled\x18\x06 \x01(\x08\x12\x14\n\x0c\x63reated_time\x18\x07 \x02(\t\x12\x13\n\x0b\x65xpire_time\x18\x08 \x01(\t\x12\x0b\n\x03pin\x18\t \x01(\t\"%\n\tBeerStyle\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\"\xc2\x01\n\x08\x42\x65\x65rType\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tbrewer_id\x18\x03 \x02(\t\x12\x10\n\x08style_id\x18\x04 \x02(\t\x12\x0f\n\x07\x65\x64ition\x18\x06 \x01(\t\x12\x0b\n\x03\x61\x62v\x18\x07 \x01(\x02\x12\x13\n\x0b\x63\x61lories_oz\x18\x08 \x01(\x02\x12\x10\n\x08\x63\x61rbs_oz\x18\t \x01(\x02\x12\x18\n\x10specific_gravity\x18\n \x01(\x02\x12\x18\n\x10original_gravity\x18\x0b \x01(\x02\"\xa0\x01\n\x06\x42rewer\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\x07\x63ountry\x18\x03 \x01(\t:\x00\x12\x16\n\x0corigin_state\x18\x04 \x01(\t:\x00\x12\x15\n\x0borigin_city\x18\x05 \x01(\t:\x00\x12\x14\n\nproduction\x18\x06 \x01(\t:\x00\x12\r\n\x03url\x18\x07 \x01(\t:\x00\x12\x15\n\x0b\x64\x65scription\x18\x08 \x01(\t:\x00\"\xb6\x01\n\x05\x44rink\x12\n\n\x02id\x18\x01 \x02(\t\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\x12\x12\n\nsession_id\x18\x04 \x02(\t\x12\x11\n\tpour_time\x18\x05 \x02(\t\x12\x10\n\x08\x64uration\x18\x06 \x01(\r\x12\x0e\n\x06status\x18\x07 \x02(\t\x12\x0e\n\x06keg_id\x18\x08 \x01(\t\x12\x0f\n\x07user_id\x18\t \x01(\t\x12\x15\n\rauth_token_id\x18\n \x01(\t\"\xf4\x01\n\x03Keg\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0f\n\x07type_id\x18\x02 \x02(\t\x12\x0f\n\x07size_id\x18\x03 \x02(\t\x12\x11\n\tsize_name\x18\x04 \x01(\t\x12\x16\n\x0esize_volume_ml\x18\x05 \x01(\x02\x12\x18\n\x10volume_ml_remain\x18\x06 \x02(\x02\x12\x14\n\x0cpercent_full\x18\x07 \x02(\x02\x12\x14\n\x0cstarted_time\x18\x08 \x02(\t\x12\x15\n\rfinished_time\x18\t \x02(\t\x12\x0e\n\x06status\x18\n \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x0b \x01(\t\x12\x12\n\nspilled_ml\x18\x0c \x01(\x02\"6\n\x07KegSize\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\"\xcc\x01\n\x06KegTap\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x12\n\nmeter_name\x18\x03 \x02(\t\x12\x12\n\nrelay_name\x18\x04 \x01(\t\x12\x13\n\x0bml_per_tick\x18\x05 \x02(\x02\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x12\x16\n\x0e\x63urrent_keg_id\x18\x07 \x01(\t\x12\x18\n\x10thermo_sensor_id\x18\x08 \x01(\t\x12$\n\x10last_temperature\x18\t \x01(\x0b\x32\n.ThermoLog\"j\n\x07Session\x12\n\n\x02id\x18\x01 \x02(\t\x12\x12\n\nstart_time\x18\x02 \x02(\t\x12\x10\n\x08\x65nd_time\x18\x03 \x02(\t\x12\x11\n\tvolume_ml\x18\x04 \x02(\x02\x12\x0c\n\x04name\x18\x05 \x01(\t\x12\x0c\n\x04slug\x18\x06 \x01(\t\"V\n\tThermoLog\x12\n\n\x02id\x18\x01 \x02(\t\x12\x11\n\tsensor_id\x18\x02 \x02(\t\x12\x15\n\rtemperature_c\x18\x03 \x02(\x02\x12\x13\n\x0brecord_time\x18\x04 \x02(\t\"6\n\x0cThermoSensor\x12\x13\n\x0bsensor_name\x18\x01 \x02(\t\x12\x11\n\tnice_name\x18\x02 \x01(\t\"\x9c\x01\n\x10ThermoSummaryLog\x12\n\n\x02id\x18\x01 \x02(\t\x12\x11\n\tsensor_id\x18\x02 \x02(\t\x12\x0c\n\x04\x64\x61te\x18\x03 \x02(\t\x12\x0e\n\x06period\x18\x04 \x02(\t\x12\x14\n\x0cnum_readings\x18\x05 \x02(\r\x12\x10\n\x08min_temp\x18\x06 \x02(\x02\x12\x10\n\x08max_temp\x18\x07 \x02(\x02\x12\x11\n\tmean_temp\x18\x08 \x02(\x02\"\xdf\x01\n\x04User\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x13\n\x0bmugshot_url\x18\x02 \x01(\t\x12\x17\n\tis_active\x18\x03 \x02(\x08:\x04true\x12\x12\n\nfirst_name\x18\x04 \x01(\t\x12\x11\n\tlast_name\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x10\n\x08password\x18\x07 \x01(\t\x12\x10\n\x08is_staff\x18\x08 \x01(\x08\x12\x14\n\x0cis_superuser\x18\t \x01(\x08\x12\x12\n\nlast_login\x18\n \x01(\t\x12\x13\n\x0b\x64\x61te_joined\x18\x0b \x01(\t\"?\n\x0bUserProfile\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x0e\n\x06gender\x18\x02 \x01(\t\x12\x0e\n\x06weight\x18\x03 \x01(\x02\"\x89\x01\n\x0cSessionChunk\x12\n\n\x02id\x18\x01 \x02(\t\x12\x12\n\nsession_id\x18\x02 \x02(\t\x12\x10\n\x08username\x18\x03 \x02(\t\x12\x0e\n\x06keg_id\x18\x04 \x02(\t\x12\x12\n\nstart_time\x18\x05 \x02(\t\x12\x10\n\x08\x65nd_time\x18\x06 \x02(\t\x12\x11\n\tvolume_ml\x18\x07 \x02(\x02\"|\n\x0bSystemEvent\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04kind\x18\x02 \x02(\t\x12\x0c\n\x04time\x18\x03 \x02(\t\x12\x10\n\x08\x64rink_id\x18\x04 \x01(\t\x12\x0e\n\x06keg_id\x18\x05 \x01(\t\x12\x12\n\nsession_id\x18\x06 \x01(\t\x12\x0f\n\x07user_id\x18\x07 \x01(\t\"Z\n\nSoundEvent\x12\x12\n\nevent_name\x18\x01 \x02(\t\x12\x17\n\x0f\x65vent_predicate\x18\x02 \x01(\t\x12\x11\n\tsound_url\x18\x03 \x02(\t\x12\x0c\n\x04user\x18\x04 \x01(\t')
+  serialized_pb='\n\x0cmodels.proto\"\xb9\x01\n\x13\x41uthenticationToken\x12\n\n\x02id\x18\x01 \x02(\t\x12\x13\n\x0b\x61uth_device\x18\x02 \x02(\t\x12\x13\n\x0btoken_value\x18\x03 \x02(\t\x12\x10\n\x08username\x18\x04 \x01(\t\x12\x11\n\tnice_name\x18\x05 \x01(\t\x12\x0f\n\x07\x65nabled\x18\x06 \x01(\x08\x12\x14\n\x0c\x63reated_time\x18\x07 \x02(\t\x12\x13\n\x0b\x65xpire_time\x18\x08 \x01(\t\x12\x0b\n\x03pin\x18\t \x01(\t\"%\n\tBeerStyle\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\"\xc2\x01\n\x08\x42\x65\x65rType\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tbrewer_id\x18\x03 \x02(\t\x12\x10\n\x08style_id\x18\x04 \x02(\t\x12\x0f\n\x07\x65\x64ition\x18\x06 \x01(\t\x12\x0b\n\x03\x61\x62v\x18\x07 \x01(\x02\x12\x13\n\x0b\x63\x61lories_oz\x18\x08 \x01(\x02\x12\x10\n\x08\x63\x61rbs_oz\x18\t \x01(\x02\x12\x18\n\x10specific_gravity\x18\n \x01(\x02\x12\x18\n\x10original_gravity\x18\x0b \x01(\x02\"\xa0\x01\n\x06\x42rewer\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\x07\x63ountry\x18\x03 \x01(\t:\x00\x12\x16\n\x0corigin_state\x18\x04 \x01(\t:\x00\x12\x15\n\x0borigin_city\x18\x05 \x01(\t:\x00\x12\x14\n\nproduction\x18\x06 \x01(\t:\x00\x12\r\n\x03url\x18\x07 \x01(\t:\x00\x12\x15\n\x0b\x64\x65scription\x18\x08 \x01(\t:\x00\"\xb6\x01\n\x05\x44rink\x12\n\n\x02id\x18\x01 \x02(\t\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\x12\x12\n\nsession_id\x18\x04 \x02(\t\x12\x11\n\tpour_time\x18\x05 \x02(\t\x12\x10\n\x08\x64uration\x18\x06 \x01(\r\x12\x0e\n\x06status\x18\x07 \x02(\t\x12\x0e\n\x06keg_id\x18\x08 \x01(\t\x12\x0f\n\x07user_id\x18\t \x01(\t\x12\x15\n\rauth_token_id\x18\n \x01(\t\"\xf4\x01\n\x03Keg\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0f\n\x07type_id\x18\x02 \x02(\t\x12\x0f\n\x07size_id\x18\x03 \x02(\t\x12\x11\n\tsize_name\x18\x04 \x01(\t\x12\x16\n\x0esize_volume_ml\x18\x05 \x01(\x02\x12\x18\n\x10volume_ml_remain\x18\x06 \x02(\x02\x12\x14\n\x0cpercent_full\x18\x07 \x02(\x02\x12\x14\n\x0cstarted_time\x18\x08 \x02(\t\x12\x15\n\rfinished_time\x18\t \x02(\t\x12\x0e\n\x06status\x18\n \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x0b \x01(\t\x12\x12\n\nspilled_ml\x18\x0c \x01(\x02\"6\n\x07KegSize\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\"\xcc\x01\n\x06KegTap\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x12\n\nmeter_name\x18\x03 \x02(\t\x12\x12\n\nrelay_name\x18\x04 \x01(\t\x12\x13\n\x0bml_per_tick\x18\x05 \x02(\x02\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x12\x16\n\x0e\x63urrent_keg_id\x18\x07 \x01(\t\x12\x18\n\x10thermo_sensor_id\x18\x08 \x01(\t\x12$\n\x10last_temperature\x18\t \x01(\x0b\x32\n.ThermoLog\"j\n\x07Session\x12\n\n\x02id\x18\x01 \x02(\t\x12\x12\n\nstart_time\x18\x02 \x02(\t\x12\x10\n\x08\x65nd_time\x18\x03 \x02(\t\x12\x11\n\tvolume_ml\x18\x04 \x02(\x02\x12\x0c\n\x04name\x18\x05 \x01(\t\x12\x0c\n\x04slug\x18\x06 \x01(\t\"V\n\tThermoLog\x12\n\n\x02id\x18\x01 \x02(\t\x12\x11\n\tsensor_id\x18\x02 \x02(\t\x12\x15\n\rtemperature_c\x18\x03 \x02(\x02\x12\x13\n\x0brecord_time\x18\x04 \x02(\t\"6\n\x0cThermoSensor\x12\x13\n\x0bsensor_name\x18\x01 \x02(\t\x12\x11\n\tnice_name\x18\x02 \x01(\t\"\x9c\x01\n\x10ThermoSummaryLog\x12\n\n\x02id\x18\x01 \x02(\t\x12\x11\n\tsensor_id\x18\x02 \x02(\t\x12\x0c\n\x04\x64\x61te\x18\x03 \x02(\t\x12\x0e\n\x06period\x18\x04 \x02(\t\x12\x14\n\x0cnum_readings\x18\x05 \x02(\r\x12\x10\n\x08min_temp\x18\x06 \x02(\x02\x12\x10\n\x08max_temp\x18\x07 \x02(\x02\x12\x11\n\tmean_temp\x18\x08 \x02(\x02\"\xdf\x01\n\x04User\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x13\n\x0bmugshot_url\x18\x02 \x01(\t\x12\x17\n\tis_active\x18\x03 \x02(\x08:\x04true\x12\x12\n\nfirst_name\x18\x04 \x01(\t\x12\x11\n\tlast_name\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x10\n\x08password\x18\x07 \x01(\t\x12\x10\n\x08is_staff\x18\x08 \x01(\x08\x12\x14\n\x0cis_superuser\x18\t \x01(\x08\x12\x12\n\nlast_login\x18\n \x01(\t\x12\x13\n\x0b\x64\x61te_joined\x18\x0b \x01(\t\"?\n\x0bUserProfile\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x0e\n\x06gender\x18\x02 \x01(\t\x12\x0e\n\x06weight\x18\x03 \x01(\x02\"\x89\x01\n\x0cSessionChunk\x12\n\n\x02id\x18\x01 \x02(\t\x12\x12\n\nsession_id\x18\x02 \x02(\t\x12\x10\n\x08username\x18\x03 \x02(\t\x12\x0e\n\x06keg_id\x18\x04 \x02(\t\x12\x12\n\nstart_time\x18\x05 \x02(\t\x12\x10\n\x08\x65nd_time\x18\x06 \x02(\t\x12\x11\n\tvolume_ml\x18\x07 \x02(\x02\"|\n\x0bSystemEvent\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04kind\x18\x02 \x02(\t\x12\x0c\n\x04time\x18\x03 \x02(\t\x12\x10\n\x08\x64rink_id\x18\x04 \x01(\t\x12\x0e\n\x06keg_id\x18\x05 \x01(\t\x12\x12\n\nsession_id\x18\x06 \x01(\t\x12\x0f\n\x07user_id\x18\x07 \x01(\t\"Z\n\nSoundEvent\x12\x12\n\nevent_name\x18\x01 \x02(\t\x12\x17\n\x0f\x65vent_predicate\x18\x02 \x01(\t\x12\x11\n\tsound_url\x18\x03 \x02(\t\x12\x0c\n\x04user\x18\x04 \x01(\tB\x12\n\x10org.kegbot.proto')
 
 
 
@@ -94,8 +95,8 @@ _AUTHENTICATIONTOKEN = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=23,
-  serialized_end=208,
+  serialized_start=17,
+  serialized_end=202,
 )
 
 
@@ -129,8 +130,8 @@ _BEERSTYLE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=210,
-  serialized_end=247,
+  serialized_start=204,
+  serialized_end=241,
 )
 
 
@@ -220,8 +221,8 @@ _BEERTYPE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=250,
-  serialized_end=444,
+  serialized_start=244,
+  serialized_end=438,
 )
 
 
@@ -297,8 +298,8 @@ _BREWER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=447,
-  serialized_end=607,
+  serialized_start=441,
+  serialized_end=601,
 )
 
 
@@ -388,8 +389,8 @@ _DRINK = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=610,
-  serialized_end=792,
+  serialized_start=604,
+  serialized_end=786,
 )
 
 
@@ -493,8 +494,8 @@ _KEG = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=795,
-  serialized_end=1039,
+  serialized_start=789,
+  serialized_end=1033,
 )
 
 
@@ -535,8 +536,8 @@ _KEGSIZE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1041,
-  serialized_end=1095,
+  serialized_start=1035,
+  serialized_end=1089,
 )
 
 
@@ -619,8 +620,8 @@ _KEGTAP = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1098,
-  serialized_end=1302,
+  serialized_start=1092,
+  serialized_end=1296,
 )
 
 
@@ -682,8 +683,8 @@ _SESSION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1304,
-  serialized_end=1410,
+  serialized_start=1298,
+  serialized_end=1404,
 )
 
 
@@ -731,8 +732,8 @@ _THERMOLOG = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1412,
-  serialized_end=1498,
+  serialized_start=1406,
+  serialized_end=1492,
 )
 
 
@@ -766,8 +767,8 @@ _THERMOSENSOR = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1500,
-  serialized_end=1554,
+  serialized_start=1494,
+  serialized_end=1548,
 )
 
 
@@ -843,8 +844,8 @@ _THERMOSUMMARYLOG = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1557,
-  serialized_end=1713,
+  serialized_start=1551,
+  serialized_end=1707,
 )
 
 
@@ -941,8 +942,8 @@ _USER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1716,
-  serialized_end=1939,
+  serialized_start=1710,
+  serialized_end=1933,
 )
 
 
@@ -983,8 +984,8 @@ _USERPROFILE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1941,
-  serialized_end=2004,
+  serialized_start=1935,
+  serialized_end=1998,
 )
 
 
@@ -1053,8 +1054,8 @@ _SESSIONCHUNK = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2007,
-  serialized_end=2144,
+  serialized_start=2001,
+  serialized_end=2138,
 )
 
 
@@ -1123,8 +1124,8 @@ _SYSTEMEVENT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2146,
-  serialized_end=2270,
+  serialized_start=2140,
+  serialized_end=2264,
 )
 
 
@@ -1172,12 +1173,28 @@ _SOUNDEVENT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2272,
-  serialized_end=2362,
+  serialized_start=2266,
+  serialized_end=2356,
 )
 
-
 _KEGTAP.fields_by_name['last_temperature'].message_type = _THERMOLOG
+DESCRIPTOR.message_types_by_name['AuthenticationToken'] = _AUTHENTICATIONTOKEN
+DESCRIPTOR.message_types_by_name['BeerStyle'] = _BEERSTYLE
+DESCRIPTOR.message_types_by_name['BeerType'] = _BEERTYPE
+DESCRIPTOR.message_types_by_name['Brewer'] = _BREWER
+DESCRIPTOR.message_types_by_name['Drink'] = _DRINK
+DESCRIPTOR.message_types_by_name['Keg'] = _KEG
+DESCRIPTOR.message_types_by_name['KegSize'] = _KEGSIZE
+DESCRIPTOR.message_types_by_name['KegTap'] = _KEGTAP
+DESCRIPTOR.message_types_by_name['Session'] = _SESSION
+DESCRIPTOR.message_types_by_name['ThermoLog'] = _THERMOLOG
+DESCRIPTOR.message_types_by_name['ThermoSensor'] = _THERMOSENSOR
+DESCRIPTOR.message_types_by_name['ThermoSummaryLog'] = _THERMOSUMMARYLOG
+DESCRIPTOR.message_types_by_name['User'] = _USER
+DESCRIPTOR.message_types_by_name['UserProfile'] = _USERPROFILE
+DESCRIPTOR.message_types_by_name['SessionChunk'] = _SESSIONCHUNK
+DESCRIPTOR.message_types_by_name['SystemEvent'] = _SYSTEMEVENT
+DESCRIPTOR.message_types_by_name['SoundEvent'] = _SOUNDEVENT
 
 class AuthenticationToken(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType

@@ -75,7 +75,7 @@ def _ToAttrDict(obj):
           timeval = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%SZ')
           # Convert from UTC to local.
           try:
-            timeval = utc_to_local(timeval, settings.TIME_ZONE)
+            timeval = utl.utc_to_local(timeval, settings.TIME_ZONE)
           except pytz.UnknownTimeZoneError:
             pass
           obj[k] = timeval

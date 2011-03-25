@@ -17,7 +17,7 @@ def basedir():
 
 urlpatterns = patterns('',
     ### django admin site
-    (r'^admin/(.*)', admin.site.root),
+    (r'^admin/', include(admin.site.urls)),
 
     ### static media
     url(r'^site_media/(.*)$',

@@ -440,11 +440,11 @@ def last_drinks_html(request, limit=5):
 
 @py_to_json
 def last_drink_id(request):
+  last_id = 0
   last = _get_last_drinks(request, limit=1)
-  if not last.count():
-    return {'id': 0}
-  else:
-    return {'id': last[0].seqn}
+  if last.count():
+    last_id = str(last[0].seqn)
+  return {'id': str(last_id)}
 
 @py_to_json
 @staff_required

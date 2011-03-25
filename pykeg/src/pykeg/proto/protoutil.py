@@ -21,12 +21,16 @@
 from pykeg.core import util
 
 def ProtoMessageToDict(message):
+
   ret = util.AttrDict()
-  if not message.IsInitialized():
-    raise ValueError, 'Message not initialized'
+  #if not message.IsInitialized():
+  #  raise ValueError, 'Message not initialized'
   for descriptor, value in message.ListFields():
     if descriptor.type == descriptor.TYPE_MESSAGE:
-      ret[descriptor.name] = ProtoMessageToDict(value)
+      if descriptor.label == descriptor.LABEL_REPEATED:
+        ret[descriptor.name] = [ProtoMessageToDict(v) for v in value]
+      else:
+        ret[descriptor.name] = ProtoMessageToDict(value)
     else:
       ret[descriptor.name] = value
   return ret

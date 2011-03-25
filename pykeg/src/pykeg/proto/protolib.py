@@ -26,6 +26,7 @@ from pykeg.beerdb import models as bdb_models
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import models
 from pykeg.core import util
+from pykeg.proto import api_pb2
 from pykeg.proto import models_pb2
 from pykeg.proto import protoutil
 
@@ -301,4 +302,121 @@ def SoundEventToProto(record, full=False):
   ret.event_predicate = record.event_predicate
   ret.sound_url = record.soundfile.sound.url
   ret.user = record.user
+  return ret
+
+# Composite messages
+
+def GetDrinkDetail(drink):
+  ret = api_pb2.DrinkDetail()
+  ret.drink.MergeFrom(ToProto(drink))
+  if drink.user:
+    ret.user.MergeFrom(ToProto(drink.user))
+  if drink.keg:
+    ret.keg.MergeFrom(ToProto(drink.keg))
+  if drink.session:
+    ret.session.MergeFrom(ToProto(drink.session))
+  return ret
+
+def GetSessionDetail(session):
+  ret = api_pb2.SessionDetail()
+  ret.session.MergeFrom(ToProto(session))
+  for k in (c.keg for c in session.keg_chunks.all() if c.keg):
+    ret.kegs.add().MergeFrom(ToProto(k))
+  # TODO(mikey): stats
+  return ret
+
+def GetKegDetail(keg):
+  ret = api_pb2.KegDetail()
+  ret.keg.MergeFrom(ToProto(keg))
+  if keg.type:
+    ret.type.MergeFrom(ToProto(keg.type))
+  if keg.size:
+    ret.size.MergeFrom(ToProto(keg.size))
+  drinks = keg.drinks.valid()
+  for d in drinks:
+    ret.drinks.add().MergeFrom(ToProto(d))
+  sessions = (c.session for c in keg.keg_session_chunks.all())
+  for s in sessions:
+    ret.sessions.add().MergeFrom(ToProto(s))
+  return ret
+
+def GetTapDetail(tap):
+  ret = api_pb2.TapDetail()
+  ret.tap.MergeFrom(ToProto(tap))
+  if tap.current_keg:
+    ret.keg.MergeFrom(ToProto(tap.current_keg))
+    if tap.current_keg.type:
+      ret.beverage.MergeFrom(ToProto(tap.current_keg.type))
+      ret.brewer.MergeFrom(ToProto(tap.current_keg.type.brewer))
+  return ret
+
+def GetThermoSensorDetail(sensor):
+  ret = api_pb2.ThermoSensorDetail()
+  ret.sensor.MergeFrom(ToProto(sensor))
+  logs = sensor.thermolog_set.all()
+  if logs:
+    log = logs[0]
+    ret.last_temp = log.temp
+    ret.last_time = log.time
+  return ret
+
+def GetDrinkSet(drinks):
+  ret = api_pb2.DrinkSet()
+  for d in drinks:
+    ret.drinks.add().MergeFrom(ToProto(d))
+  return ret
+
+def GetKegSet(kegs):
+  ret = api_pb2.KegSet()
+  for k in kegs:
+    ret.kegs.add().MergeFrom(ToProto(k))
+  return ret
+
+def GetUserDetail(user):
+  ret = api_pb2.UserDetail()
+  ret.user.MergeFrom(ToProto(user))
+  return ret
+
+def GetTapDetailSet(taps):
+  ret = api_pb2.TapDetailSet()
+  for t in taps:
+    ret.taps.add().MergeFrom(GetTapDetail(t))
+  return ret
+
+def GetSessionSet(sessions):
+  ret = api_pb2.SessionSet()
+  for s in sessions:
+    ret.sessions.add().MergeFrom(ToProto(s))
+  return ret
+
+def GetSoundEventSet(events):
+  ret = api_pb2.SoundEventSet()
+  for e in events:
+    ret.events.add().MergeFrom(ToProto(e))
+  return ret
+
+def GetSystemEventSet(events):
+  ret = api_pb2.SystemEventSet()
+  for e in events:
+    ret.events.add().MergeFrom(ToProto(e))
+  return ret
+
+def GetThermoSensorSet(sensors):
+  ret = api_pb2.ThermoSensorSet()
+  for s in sensors:
+    ret.sensors.add().MergeFrom(ToProto(s))
+  return ret
+
+def GetThermoLogSet(logs):
+  ret = api_pb2.ThermoLogSet()
+  for log in logs:
+    ret.logs.add().MergeFrom(ToProto(log))
+  return ret
+
+def GetSystemEventHtmlSet(events):
+  ret = api_pb2.SystemEventHtmlSet()
+  for e in events:
+    item = ret.events.add()
+    item.id = e['id']
+    item.html = e['html']
   return ret

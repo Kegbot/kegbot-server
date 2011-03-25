@@ -89,6 +89,10 @@ message KegDetail {
   repeated Session sessions = 5;
 }
 
+message UserDetail {
+  required User user = 1;
+}
+
 message SystemEventHtml {
   required string id = 1;
   optional string html = 2;

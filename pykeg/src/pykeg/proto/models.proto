@@ -248,11 +248,14 @@ message ThermoLog {
 }
 
 message ThermoSensor {
+  // The id of the sensor
+  required string id = 1;
+
   // The raw/unique name of the sensor.
-  required string sensor_name = 1;
+  required string sensor_name = 2;
 
   // The friendly name for the sensor.
-  optional string nice_name = 2;
+  optional string nice_name = 3;
 }
 
 message ThermoSummaryLog {

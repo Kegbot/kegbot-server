@@ -86,6 +86,14 @@ def AuthTokenToProto(record, full=False):
       ret.pin = record.pin
   return ret
 
+@converts(bdb_models.BeerImage)
+def BeerImageToProto(record, full=False):
+  ret = models_pb2.Image()
+  ret.url = record.original_image.url
+  ret.width = record.original_image.width
+  ret.height = record.original_image.height
+  return ret
+
 @converts(bdb_models.BeerStyle)
 def BeerStyleToProto(style, full=False):
   ret = models_pb2.BeerStyle()
@@ -113,6 +121,8 @@ def BeerTypeToProto(beertype, full=False):
     ret.specific_gravity = beertype.specific_gravity
   if beertype.original_gravity is not None:
     ret.original_gravity = beertype.original_gravity
+  if beertype.image:
+    ret.image.MergeFrom(ToProto(beertype.image))
   return ret
 
 @converts(bdb_models.Brewer)
@@ -132,6 +142,8 @@ def BrewerToProto(brewer, full=False):
     ret.url = brewer.url
   if brewer.description is not None:
     ret.description = brewer.description
+  if brewer.image:
+    ret.image.MergeFrom(ToProto(beertype.image))
   return ret
 
 @converts(models.Drink)
@@ -243,7 +255,6 @@ def ThermoSummaryLogToProto(record, full=False):
 def UserToProto(user, full=False):
   ret = models_pb2.User()
   ret.username = user.username
-  ret.mugshot_url = user.get_profile().MugshotUrl()
   ret.is_active = user.is_active
   if full:
     ret.first_name = user.first_name
@@ -255,6 +266,17 @@ def UserToProto(user, full=False):
     ret.is_superuser = user.is_superuser
     ret.last_login = datestr(user.last_login)
     ret.date_joined = datestr(user.date_joined)
+  profile = user.get_profile()
+  if profile.mugshot:
+    ret.image.MergeFrom(ToProto(profile.mugshot))
+  return ret
+
+@converts(models.UserPicture)
+def UserPictureToProto(record, full=False):
+  ret = models_pb2.Image()
+  ret.url = record.image.url
+  ret.width = record.image.width
+  ret.height = record.image.height
   return ret
 
 @converts(models.UserProfile)

@@ -10,7 +10,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='models.proto',
   package='',
-  serialized_pb='\n\x0cmodels.proto\"\xb9\x01\n\x13\x41uthenticationToken\x12\n\n\x02id\x18\x01 \x02(\t\x12\x13\n\x0b\x61uth_device\x18\x02 \x02(\t\x12\x13\n\x0btoken_value\x18\x03 \x02(\t\x12\x10\n\x08username\x18\x04 \x01(\t\x12\x11\n\tnice_name\x18\x05 \x01(\t\x12\x0f\n\x07\x65nabled\x18\x06 \x01(\x08\x12\x14\n\x0c\x63reated_time\x18\x07 \x02(\t\x12\x13\n\x0b\x65xpire_time\x18\x08 \x01(\t\x12\x0b\n\x03pin\x18\t \x01(\t\"%\n\tBeerStyle\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\"\xc2\x01\n\x08\x42\x65\x65rType\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tbrewer_id\x18\x03 \x02(\t\x12\x10\n\x08style_id\x18\x04 \x02(\t\x12\x0f\n\x07\x65\x64ition\x18\x06 \x01(\t\x12\x0b\n\x03\x61\x62v\x18\x07 \x01(\x02\x12\x13\n\x0b\x63\x61lories_oz\x18\x08 \x01(\x02\x12\x10\n\x08\x63\x61rbs_oz\x18\t \x01(\x02\x12\x18\n\x10specific_gravity\x18\n \x01(\x02\x12\x18\n\x10original_gravity\x18\x0b \x01(\x02\"\xa0\x01\n\x06\x42rewer\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\x07\x63ountry\x18\x03 \x01(\t:\x00\x12\x16\n\x0corigin_state\x18\x04 \x01(\t:\x00\x12\x15\n\x0borigin_city\x18\x05 \x01(\t:\x00\x12\x14\n\nproduction\x18\x06 \x01(\t:\x00\x12\r\n\x03url\x18\x07 \x01(\t:\x00\x12\x15\n\x0b\x64\x65scription\x18\x08 \x01(\t:\x00\"\xb6\x01\n\x05\x44rink\x12\n\n\x02id\x18\x01 \x02(\t\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\x12\x12\n\nsession_id\x18\x04 \x02(\t\x12\x11\n\tpour_time\x18\x05 \x02(\t\x12\x10\n\x08\x64uration\x18\x06 \x01(\r\x12\x0e\n\x06status\x18\x07 \x02(\t\x12\x0e\n\x06keg_id\x18\x08 \x01(\t\x12\x0f\n\x07user_id\x18\t \x01(\t\x12\x15\n\rauth_token_id\x18\n \x01(\t\"\xf4\x01\n\x03Keg\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0f\n\x07type_id\x18\x02 \x02(\t\x12\x0f\n\x07size_id\x18\x03 \x02(\t\x12\x11\n\tsize_name\x18\x04 \x01(\t\x12\x16\n\x0esize_volume_ml\x18\x05 \x01(\x02\x12\x18\n\x10volume_ml_remain\x18\x06 \x02(\x02\x12\x14\n\x0cpercent_full\x18\x07 \x02(\x02\x12\x14\n\x0cstarted_time\x18\x08 \x02(\t\x12\x15\n\rfinished_time\x18\t \x02(\t\x12\x0e\n\x06status\x18\n \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x0b \x01(\t\x12\x12\n\nspilled_ml\x18\x0c \x01(\x02\"6\n\x07KegSize\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\"\xcc\x01\n\x06KegTap\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x12\n\nmeter_name\x18\x03 \x02(\t\x12\x12\n\nrelay_name\x18\x04 \x01(\t\x12\x13\n\x0bml_per_tick\x18\x05 \x02(\x02\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x12\x16\n\x0e\x63urrent_keg_id\x18\x07 \x01(\t\x12\x18\n\x10thermo_sensor_id\x18\x08 \x01(\t\x12$\n\x10last_temperature\x18\t \x01(\x0b\x32\n.ThermoLog\"j\n\x07Session\x12\n\n\x02id\x18\x01 \x02(\t\x12\x12\n\nstart_time\x18\x02 \x02(\t\x12\x10\n\x08\x65nd_time\x18\x03 \x02(\t\x12\x11\n\tvolume_ml\x18\x04 \x02(\x02\x12\x0c\n\x04name\x18\x05 \x01(\t\x12\x0c\n\x04slug\x18\x06 \x01(\t\"V\n\tThermoLog\x12\n\n\x02id\x18\x01 \x02(\t\x12\x11\n\tsensor_id\x18\x02 \x02(\t\x12\x15\n\rtemperature_c\x18\x03 \x02(\x02\x12\x13\n\x0brecord_time\x18\x04 \x02(\t\"B\n\x0cThermoSensor\x12\n\n\x02id\x18\x01 \x02(\t\x12\x13\n\x0bsensor_name\x18\x02 \x02(\t\x12\x11\n\tnice_name\x18\x03 \x01(\t\"\x9c\x01\n\x10ThermoSummaryLog\x12\n\n\x02id\x18\x01 \x02(\t\x12\x11\n\tsensor_id\x18\x02 \x02(\t\x12\x0c\n\x04\x64\x61te\x18\x03 \x02(\t\x12\x0e\n\x06period\x18\x04 \x02(\t\x12\x14\n\x0cnum_readings\x18\x05 \x02(\r\x12\x10\n\x08min_temp\x18\x06 \x02(\x02\x12\x10\n\x08max_temp\x18\x07 \x02(\x02\x12\x11\n\tmean_temp\x18\x08 \x02(\x02\"\xdf\x01\n\x04User\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x13\n\x0bmugshot_url\x18\x02 \x01(\t\x12\x17\n\tis_active\x18\x03 \x02(\x08:\x04true\x12\x12\n\nfirst_name\x18\x04 \x01(\t\x12\x11\n\tlast_name\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x10\n\x08password\x18\x07 \x01(\t\x12\x10\n\x08is_staff\x18\x08 \x01(\x08\x12\x14\n\x0cis_superuser\x18\t \x01(\x08\x12\x12\n\nlast_login\x18\n \x01(\t\x12\x13\n\x0b\x64\x61te_joined\x18\x0b \x01(\t\"?\n\x0bUserProfile\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x0e\n\x06gender\x18\x02 \x01(\t\x12\x0e\n\x06weight\x18\x03 \x01(\x02\"\x89\x01\n\x0cSessionChunk\x12\n\n\x02id\x18\x01 \x02(\t\x12\x12\n\nsession_id\x18\x02 \x02(\t\x12\x10\n\x08username\x18\x03 \x02(\t\x12\x0e\n\x06keg_id\x18\x04 \x02(\t\x12\x12\n\nstart_time\x18\x05 \x02(\t\x12\x10\n\x08\x65nd_time\x18\x06 \x02(\t\x12\x11\n\tvolume_ml\x18\x07 \x02(\x02\"|\n\x0bSystemEvent\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04kind\x18\x02 \x02(\t\x12\x0c\n\x04time\x18\x03 \x02(\t\x12\x10\n\x08\x64rink_id\x18\x04 \x01(\t\x12\x0e\n\x06keg_id\x18\x05 \x01(\t\x12\x12\n\nsession_id\x18\x06 \x01(\t\x12\x0f\n\x07user_id\x18\x07 \x01(\t\"Z\n\nSoundEvent\x12\x12\n\nevent_name\x18\x01 \x02(\t\x12\x17\n\x0f\x65vent_predicate\x18\x02 \x01(\t\x12\x11\n\tsound_url\x18\x03 \x02(\t\x12\x0c\n\x04user\x18\x04 \x01(\tB\x12\n\x10org.kegbot.proto')
+  serialized_pb='\n\x0cmodels.proto\"\xb9\x01\n\x13\x41uthenticationToken\x12\n\n\x02id\x18\x01 \x02(\t\x12\x13\n\x0b\x61uth_device\x18\x02 \x02(\t\x12\x13\n\x0btoken_value\x18\x03 \x02(\t\x12\x10\n\x08username\x18\x04 \x01(\t\x12\x11\n\tnice_name\x18\x05 \x01(\t\x12\x0f\n\x07\x65nabled\x18\x06 \x01(\x08\x12\x14\n\x0c\x63reated_time\x18\x07 \x02(\t\x12\x13\n\x0b\x65xpire_time\x18\x08 \x01(\t\x12\x0b\n\x03pin\x18\t \x01(\t\"%\n\tBeerStyle\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\"\xd9\x01\n\x08\x42\x65\x65rType\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tbrewer_id\x18\x03 \x02(\t\x12\x10\n\x08style_id\x18\x04 \x02(\t\x12\x0f\n\x07\x65\x64ition\x18\x06 \x01(\t\x12\x0b\n\x03\x61\x62v\x18\x07 \x01(\x02\x12\x13\n\x0b\x63\x61lories_oz\x18\x08 \x01(\x02\x12\x10\n\x08\x63\x61rbs_oz\x18\t \x01(\x02\x12\x18\n\x10specific_gravity\x18\n \x01(\x02\x12\x18\n\x10original_gravity\x18\x0b \x01(\x02\x12\x15\n\x05image\x18\x0c \x01(\x0b\x32\x06.Image\"\xb7\x01\n\x06\x42rewer\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\x07\x63ountry\x18\x03 \x01(\t:\x00\x12\x16\n\x0corigin_state\x18\x04 \x01(\t:\x00\x12\x15\n\x0borigin_city\x18\x05 \x01(\t:\x00\x12\x14\n\nproduction\x18\x06 \x01(\t:\x00\x12\r\n\x03url\x18\x07 \x01(\t:\x00\x12\x15\n\x0b\x64\x65scription\x18\x08 \x01(\t:\x00\x12\x15\n\x05image\x18\t \x01(\x0b\x32\x06.Image\"\xb6\x01\n\x05\x44rink\x12\n\n\x02id\x18\x01 \x02(\t\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\x12\x12\n\nsession_id\x18\x04 \x02(\t\x12\x11\n\tpour_time\x18\x05 \x02(\t\x12\x10\n\x08\x64uration\x18\x06 \x01(\r\x12\x0e\n\x06status\x18\x07 \x02(\t\x12\x0e\n\x06keg_id\x18\x08 \x01(\t\x12\x0f\n\x07user_id\x18\t \x01(\t\x12\x15\n\rauth_token_id\x18\n \x01(\t\"3\n\x05Image\x12\x0b\n\x03url\x18\x01 \x02(\t\x12\r\n\x05width\x18\x02 \x01(\r\x12\x0e\n\x06height\x18\x03 \x01(\r\"\xf4\x01\n\x03Keg\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0f\n\x07type_id\x18\x02 \x02(\t\x12\x0f\n\x07size_id\x18\x03 \x02(\t\x12\x11\n\tsize_name\x18\x04 \x01(\t\x12\x16\n\x0esize_volume_ml\x18\x05 \x01(\x02\x12\x18\n\x10volume_ml_remain\x18\x06 \x02(\x02\x12\x14\n\x0cpercent_full\x18\x07 \x02(\x02\x12\x14\n\x0cstarted_time\x18\x08 \x02(\t\x12\x15\n\rfinished_time\x18\t \x02(\t\x12\x0e\n\x06status\x18\n \x02(\t\x12\x13\n\x0b\x64\x65scription\x18\x0b \x01(\t\x12\x12\n\nspilled_ml\x18\x0c \x01(\x02\"6\n\x07KegSize\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x11\n\tvolume_ml\x18\x03 \x02(\x02\"\xcc\x01\n\x06KegTap\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04name\x18\x02 \x02(\t\x12\x12\n\nmeter_name\x18\x03 \x02(\t\x12\x12\n\nrelay_name\x18\x04 \x01(\t\x12\x13\n\x0bml_per_tick\x18\x05 \x02(\x02\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x12\x16\n\x0e\x63urrent_keg_id\x18\x07 \x01(\t\x12\x18\n\x10thermo_sensor_id\x18\x08 \x01(\t\x12$\n\x10last_temperature\x18\t \x01(\x0b\x32\n.ThermoLog\"j\n\x07Session\x12\n\n\x02id\x18\x01 \x02(\t\x12\x12\n\nstart_time\x18\x02 \x02(\t\x12\x10\n\x08\x65nd_time\x18\x03 \x02(\t\x12\x11\n\tvolume_ml\x18\x04 \x02(\x02\x12\x0c\n\x04name\x18\x05 \x01(\t\x12\x0c\n\x04slug\x18\x06 \x01(\t\"V\n\tThermoLog\x12\n\n\x02id\x18\x01 \x02(\t\x12\x11\n\tsensor_id\x18\x02 \x02(\t\x12\x15\n\rtemperature_c\x18\x03 \x02(\x02\x12\x13\n\x0brecord_time\x18\x04 \x02(\t\"B\n\x0cThermoSensor\x12\n\n\x02id\x18\x01 \x02(\t\x12\x13\n\x0bsensor_name\x18\x02 \x02(\t\x12\x11\n\tnice_name\x18\x03 \x01(\t\"\x9c\x01\n\x10ThermoSummaryLog\x12\n\n\x02id\x18\x01 \x02(\t\x12\x11\n\tsensor_id\x18\x02 \x02(\t\x12\x0c\n\x04\x64\x61te\x18\x03 \x02(\t\x12\x0e\n\x06period\x18\x04 \x02(\t\x12\x14\n\x0cnum_readings\x18\x05 \x02(\r\x12\x10\n\x08min_temp\x18\x06 \x02(\x02\x12\x10\n\x08max_temp\x18\x07 \x02(\x02\x12\x11\n\tmean_temp\x18\x08 \x02(\x02\"\xe1\x01\n\x04User\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x15\n\x05image\x18\x02 \x01(\x0b\x32\x06.Image\x12\x17\n\tis_active\x18\x03 \x02(\x08:\x04true\x12\x12\n\nfirst_name\x18\x04 \x01(\t\x12\x11\n\tlast_name\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x10\n\x08password\x18\x07 \x01(\t\x12\x10\n\x08is_staff\x18\x08 \x01(\x08\x12\x14\n\x0cis_superuser\x18\t \x01(\x08\x12\x12\n\nlast_login\x18\n \x01(\t\x12\x13\n\x0b\x64\x61te_joined\x18\x0b \x01(\t\"?\n\x0bUserProfile\x12\x10\n\x08username\x18\x01 \x02(\t\x12\x0e\n\x06gender\x18\x02 \x01(\t\x12\x0e\n\x06weight\x18\x03 \x01(\x02\"\x89\x01\n\x0cSessionChunk\x12\n\n\x02id\x18\x01 \x02(\t\x12\x12\n\nsession_id\x18\x02 \x02(\t\x12\x10\n\x08username\x18\x03 \x02(\t\x12\x0e\n\x06keg_id\x18\x04 \x02(\t\x12\x12\n\nstart_time\x18\x05 \x02(\t\x12\x10\n\x08\x65nd_time\x18\x06 \x02(\t\x12\x11\n\tvolume_ml\x18\x07 \x02(\x02\"|\n\x0bSystemEvent\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04kind\x18\x02 \x02(\t\x12\x0c\n\x04time\x18\x03 \x02(\t\x12\x10\n\x08\x64rink_id\x18\x04 \x01(\t\x12\x0e\n\x06keg_id\x18\x05 \x01(\t\x12\x12\n\nsession_id\x18\x06 \x01(\t\x12\x0f\n\x07user_id\x18\x07 \x01(\t\"Z\n\nSoundEvent\x12\x12\n\nevent_name\x18\x01 \x02(\t\x12\x17\n\x0f\x65vent_predicate\x18\x02 \x01(\t\x12\x11\n\tsound_url\x18\x03 \x02(\t\x12\x0c\n\x04user\x18\x04 \x01(\tB\x12\n\x10org.kegbot.proto')
 
 
 
@@ -211,6 +211,13 @@ _BEERTYPE = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='image', full_name='BeerType.image', index=10,
+      number=12, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -221,7 +228,7 @@ _BEERTYPE = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=244,
-  serialized_end=438,
+  serialized_end=461,
 )
 
 
@@ -288,6 +295,13 @@ _BREWER = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='image', full_name='Brewer.image', index=8,
+      number=9, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -297,8 +311,8 @@ _BREWER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=441,
-  serialized_end=601,
+  serialized_start=464,
+  serialized_end=647,
 )
 
 
@@ -388,8 +402,50 @@ _DRINK = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=604,
-  serialized_end=786,
+  serialized_start=650,
+  serialized_end=832,
+)
+
+
+_IMAGE = descriptor.Descriptor(
+  name='Image',
+  full_name='Image',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    descriptor.FieldDescriptor(
+      name='url', full_name='Image.url', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='width', full_name='Image.width', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='height', full_name='Image.height', index=2,
+      number=3, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=834,
+  serialized_end=885,
 )
 
 
@@ -493,8 +549,8 @@ _KEG = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=789,
-  serialized_end=1033,
+  serialized_start=888,
+  serialized_end=1132,
 )
 
 
@@ -535,8 +591,8 @@ _KEGSIZE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1035,
-  serialized_end=1089,
+  serialized_start=1134,
+  serialized_end=1188,
 )
 
 
@@ -619,8 +675,8 @@ _KEGTAP = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1092,
-  serialized_end=1296,
+  serialized_start=1191,
+  serialized_end=1395,
 )
 
 
@@ -682,8 +738,8 @@ _SESSION = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1298,
-  serialized_end=1404,
+  serialized_start=1397,
+  serialized_end=1503,
 )
 
 
@@ -731,8 +787,8 @@ _THERMOLOG = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1406,
-  serialized_end=1492,
+  serialized_start=1505,
+  serialized_end=1591,
 )
 
 
@@ -773,8 +829,8 @@ _THERMOSENSOR = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1494,
-  serialized_end=1560,
+  serialized_start=1593,
+  serialized_end=1659,
 )
 
 
@@ -850,8 +906,8 @@ _THERMOSUMMARYLOG = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1563,
-  serialized_end=1719,
+  serialized_start=1662,
+  serialized_end=1818,
 )
 
 
@@ -870,9 +926,9 @@ _USER = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='mugshot_url', full_name='User.mugshot_url', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
+      name='image', full_name='User.image', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -948,8 +1004,8 @@ _USER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1722,
-  serialized_end=1945,
+  serialized_start=1821,
+  serialized_end=2046,
 )
 
 
@@ -990,8 +1046,8 @@ _USERPROFILE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1947,
-  serialized_end=2010,
+  serialized_start=2048,
+  serialized_end=2111,
 )
 
 
@@ -1060,8 +1116,8 @@ _SESSIONCHUNK = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2013,
-  serialized_end=2150,
+  serialized_start=2114,
+  serialized_end=2251,
 )
 
 
@@ -1130,8 +1186,8 @@ _SYSTEMEVENT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2152,
-  serialized_end=2276,
+  serialized_start=2253,
+  serialized_end=2377,
 )
 
 
@@ -1179,12 +1235,15 @@ _SOUNDEVENT = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2278,
-  serialized_end=2368,
+  serialized_start=2379,
+  serialized_end=2469,
 )
 
 
+_BEERTYPE.fields_by_name['image'].message_type = _IMAGE
+_BREWER.fields_by_name['image'].message_type = _IMAGE
 _KEGTAP.fields_by_name['last_temperature'].message_type = _THERMOLOG
+_USER.fields_by_name['image'].message_type = _IMAGE
 
 class AuthenticationToken(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
@@ -1215,6 +1274,12 @@ class Drink(message.Message):
   DESCRIPTOR = _DRINK
   
   # @@protoc_insertion_point(class_scope:Drink)
+
+class Image(message.Message):
+  __metaclass__ = reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _IMAGE
+  
+  # @@protoc_insertion_point(class_scope:Image)
 
 class Keg(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType

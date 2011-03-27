@@ -76,6 +76,9 @@ message BeerType {
   // Original gravity of the beer, if known.
   optional float original_gravity = 11;
 
+  // Image for this beer.
+  optional Image image = 12;
+
 }
 
 // Describes a specific producer of our favorite beverage.
@@ -104,6 +107,9 @@ message Brewer {
 
   // Free-form description.
   optional string description = 8 [default = ''];
+
+  // Image/logo for this brewer.
+  optional Image image = 9;
 
 }
 
@@ -140,6 +146,13 @@ message Drink {
 
   // Auth token value used to pour the drink, if known.
   optional string auth_token_id = 10;
+}
+
+// Describes an image.
+message Image {
+  required string url = 1;
+  optional uint32 width = 2;
+  optional uint32 height = 3;
 }
 
 // Describes a single instance of a Keg that is or was attached to the Kegbot.
@@ -275,9 +288,9 @@ message User {
   // The user's unique username.
   required string username = 1;
 
-  // A URL to the profile picture of the user.  May be unset if the user does
-  // not have a profile picture.
-  optional string mugshot_url = 2;
+  // The profile picture of the user.  May be unset if the user does not have a
+  // profile picture.
+  optional Image image = 2;
 
   // True if the user is active.  This value will be false for accounts which
   // have been disabled by.

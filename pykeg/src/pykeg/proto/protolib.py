@@ -87,11 +87,15 @@ def AuthTokenToProto(record, full=False):
   return ret
 
 @converts(bdb_models.BeerImage)
-def BeerImageToProto(record, full=False):
+@converts(models.UserPicture)
+def ImageToProto(record, full=False):
   ret = models_pb2.Image()
   ret.url = record.original_image.url
-  ret.width = record.original_image.width
-  ret.height = record.original_image.height
+  try:
+    ret.width = record.original_image.width
+    ret.height = record.original_image.height
+  except IOError:
+    pass
   return ret
 
 @converts(bdb_models.BeerStyle)
@@ -269,14 +273,6 @@ def UserToProto(user, full=False):
   profile = user.get_profile()
   if profile.mugshot:
     ret.image.MergeFrom(ToProto(profile.mugshot))
-  return ret
-
-@converts(models.UserPicture)
-def UserPictureToProto(record, full=False):
-  ret = models_pb2.Image()
-  ret.url = record.image.url
-  ret.width = record.image.width
-  ret.height = record.image.height
   return ret
 
 @converts(models.UserProfile)

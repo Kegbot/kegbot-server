@@ -87,13 +87,23 @@ def AuthTokenToProto(record, full=False):
   return ret
 
 @converts(bdb_models.BeerImage)
-@converts(models.UserPicture)
 def ImageToProto(record, full=False):
   ret = models_pb2.Image()
   ret.url = record.original_image.url
   try:
     ret.width = record.original_image.width
     ret.height = record.original_image.height
+  except IOError:
+    pass
+  return ret
+
+@converts(models.UserPicture)
+def ImageToProto(record, full=False):
+  ret = models_pb2.Image()
+  ret.url = record.image.url
+  try:
+    ret.width = record.image.width
+    ret.height = record.image.height
   except IOError:
     pass
   return ret
@@ -358,6 +368,19 @@ def GetKegDetail(keg):
     ret.sessions.add().MergeFrom(ToProto(s))
   return ret
 
+def GetSystemEventDetail(event):
+  ret = api_pb2.SystemEventDetail()
+  ret.event.MergeFrom(ToProto(event))
+  image = None
+  if event.kind in ('drink_poured', 'session_started', 'session_joined') and event.user:
+    image = event.user.get_profile().mugshot
+  elif event.kind in ('keg_tapped', 'keg_ended'):
+    if event.keg.type and event.keg.type.image:
+      image = event.keg.type.image
+  if image:
+    ret.image.MergeFrom(ToProto(image))
+  return ret
+
 def GetTapDetail(tap):
   ret = api_pb2.TapDetail()
   ret.tap.MergeFrom(ToProto(tap))
@@ -417,6 +440,12 @@ def GetSystemEventSet(events):
   ret = api_pb2.SystemEventSet()
   for e in events:
     ret.events.add().MergeFrom(ToProto(e))
+  return ret
+
+def GetSystemEventDetailSet(events):
+  ret = api_pb2.SystemEventDetailSet()
+  for e in events:
+    ret.events.add().MergeFrom(GetSystemEventDetail(e))
   return ret
 
 def GetThermoSensorSet(sensors):

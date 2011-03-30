@@ -43,7 +43,7 @@ setup(
       'src/pykeg/bin/sound_server.py',
     ],
     install_requires = [
-      'django >= 1.2',
+      'django >= 1.3',
       'django-autoslug',
       'django-imagekit >= 0.3.3',
       'django-registration',

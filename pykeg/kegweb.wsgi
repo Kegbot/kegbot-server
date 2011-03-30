@@ -35,14 +35,15 @@ import os, site, sys
 # If you are using a virtualenv, set the path to its base directory here.  If
 # not (kegbot and all its dependencies are installed in the default Python
 # path), leave it blank.
-VIRTUAL_ENV = ''
+VIRTUAL_ENV = '/data/www/gertie.kegbot.net/kb-gertie'
 
 # The common_settings.py config needs to be on the PATH as well. By default,
 # kegbot looks in # $HOME/.kegbot and /etc/kegbot.  Only change this if you are
 # doing something different.
 EXTRA_PATHS = [
-    os.path.join(os.environ.get('HOME'), '.kegbot'),
-    '/etc/kegbot',
+    #os.path.join(os.environ.get('HOME'), '.kegbot'),
+    '/data/www/gertie.kegbot.net/settings'
+    #'/etc/kegbot',
 ]
 
 ### Main script -- should not need to edit past here.

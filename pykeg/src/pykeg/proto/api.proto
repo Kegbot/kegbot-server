@@ -31,6 +31,11 @@ message SystemEventSet {
   optional Paging paging = 2;
 }
 
+message SystemEventDetailSet {
+  repeated SystemEventDetail events = 1;
+  optional Paging paging = 2;
+}
+
 message SystemEventHtmlSet {
   repeated SystemEventHtml events = 1;
   optional Paging paging = 2;
@@ -91,6 +96,11 @@ message KegDetail {
 
 message UserDetail {
   required User user = 1;
+}
+
+message SystemEventDetail {
+  required SystemEvent event = 1;
+  optional Image image = 2;
 }
 
 message SystemEventHtml {

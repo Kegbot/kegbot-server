@@ -207,7 +207,7 @@ def get_keg_drinks(request, keg_id):
 def get_keg_events(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   events = keg.events.all()
-  return FromProto(protolib.GetSystemEventSet(events))
+  return FromProto(protolib.GetSystemEventDetailSet(events))
 
 @py_to_json
 def all_sessions(request):
@@ -217,7 +217,7 @@ def all_sessions(request):
 @py_to_json
 def all_events(request):
   events = request.kbsite.events.all()[:10]
-  return FromProto(protolib.GetSystemEventSet(events))
+  return FromProto(protolib.GetSystemEventDetailSet(events))
 
 @py_to_json
 @auth_required
@@ -271,7 +271,7 @@ def get_user_drinks(request, username):
 @py_to_json
 def get_user_events(request, username):
   user = get_object_or_404(models.User, username=username)
-  return FromProto(protolib.GetSystemEventSet(user.events.all()))
+  return FromProto(protolib.GetSystemEventDetailSet(user.events.all()))
 
 @py_to_json
 def get_user_stats(request, username):

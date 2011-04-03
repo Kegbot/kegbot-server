@@ -69,7 +69,7 @@ message ThermoLogSet {
 message TapDetail {
   required KegTap tap = 1;
   optional Keg keg = 2;
-  optional BeerType beverage = 3;
+  optional BeerType beer_type = 3;
   optional Brewer brewer = 4;
 }
 

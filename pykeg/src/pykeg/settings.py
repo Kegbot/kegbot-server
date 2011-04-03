@@ -118,11 +118,10 @@ try:
   import common_settings
   from common_settings import *
 except ImportError:
-  print 'Error: Could not find common_settings.py'
-  print 'Most likely, this means kegbot has not been configured properly.'
-  print 'Consult setup documentation.  Exiting...'
-  import sys
-  sys.exit(1)
+  msg = """ Error: Could not find common_settings.py
+  Most likely, this means kegbot has not been configured properly.
+  Consult setup documentation.  Exiting..."""
+  raise ImportError(msg)
 
 # Set API key
 import hashlib

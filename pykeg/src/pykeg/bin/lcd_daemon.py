@@ -149,21 +149,22 @@ class KegUi:
 
     for tap_status in tap_status.taps:
       tap = tap_status.tap
-      keg = tap_status.get('keg')
-      beverage = tap_status.beverage
+      keg = tap_status.keg
+      beer_type = tap_status.beer_type
       brewer = tap_status.brewer
       tap_name = tap.name
       beer_name = 'Unknown Beer'
       brewer_name = 'Unknown Brewer'
       pct_full = 0
-      curr_temp =  tap.get('last_temperature')
       if keg:
         pct_full = keg.percent_full
-        if beverage:
-          beer_name = beverage.name
+        if beer_type:
+          beer_name = beer_type.name
         if brewer:
           brewer_name = brewer.name
-      if curr_temp:
+
+      curr_temp = None
+      if tap.last_temperature:
         curr_temp = tap.last_temperature.temperature_c
 
       f = self._BuildTapFrame(tap_name, beer_name, brewer_name, pct_full, curr_temp)
@@ -213,8 +214,8 @@ class KegUi:
     self._lcdui.Activity()
 
     if event.state == event.FlowState.COMPLETED:
-      self.UpdateLastDrink(str(event.username), event.volume_ml,
-          event.last_activity_time)
+      date = event.last_activity_time
+      self.UpdateLastDrink(str(event.username), event.volume_ml, date)
       self._SetState(self.STATE_MAIN)
     else:
       self._SetState(self.STATE_POUR)
@@ -278,8 +279,8 @@ class KrestUpdaterThread(util.KegbotThread):
         username = 'unknown'
         if last_drink.user_id:
           username = str(last_drink.user_id)
-        self._lcdui.UpdateLastDrink(username,
-            last_drink.volume_ml, last_drink.pour_time)
+        date = util.iso8601str_to_datetime(last_drink.pour_time)
+        self._lcdui.UpdateLastDrink(username, last_drink.volume_ml, date)
       except IOError, e:
         self._logger.warning('Could not connect to kegweb: %s' % e)
       time.sleep(FLAGS.krest_update_interval)

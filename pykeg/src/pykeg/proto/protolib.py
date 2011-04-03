@@ -78,9 +78,9 @@ def AuthTokenToProto(record, full=False):
   if record.user:
     ret.username = str(record.user.username)
   ret.nice_name = record.nice_name
+  ret.created_time = datestr(record.created)
   if full:
     ret.enabled = record.enabled
-    ret.created_time = datestr(record.created)
     ret.expire_time = datestr(record.expires)
     if record.pin:
       ret.pin = record.pin
@@ -387,7 +387,7 @@ def GetTapDetail(tap):
   if tap.current_keg:
     ret.keg.MergeFrom(ToProto(tap.current_keg))
     if tap.current_keg.type:
-      ret.beverage.MergeFrom(ToProto(tap.current_keg.type))
+      ret.beer_type.MergeFrom(ToProto(tap.current_keg.type))
       ret.brewer.MergeFrom(ToProto(tap.current_keg.type.brewer))
   return ret
 

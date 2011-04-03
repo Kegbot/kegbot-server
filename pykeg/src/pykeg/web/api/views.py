@@ -74,6 +74,8 @@ def ToJsonError(e):
     e = krest.NotFoundError(e.message)
   elif isinstance(e, ValueError):
     e = krest.BadRequestError(str(e))
+  elif isinstance(e, backend.NoTokenError):
+    e = krest.NotFoundError(e.message)
 
   # Now determine the response based on the exception type.
   if isinstance(e, krest.Error):
@@ -288,7 +290,7 @@ def get_user_stats(request, username):
 def get_auth_token(request, auth_device, token_value):
   b = backend.KegbotBackend(site=request.kbsite)
   tok = b.GetAuthToken(auth_device, token_value)
-  return FromProto(protolib.GetAuthToken(tok))
+  return FromProto(tok)
 
 @py_to_json
 def all_thermo_sensors(request):
@@ -340,7 +342,7 @@ def thermo_sensor_post(request, sensor_name):
   cd = form.cleaned_data
   b = backend.KegbotBackend(site=request.kbsite)
   # TODO(mikey): use form fields to compute `when`
-  return b.LogSensorReading(sensor.raw_name, cd['temp_c'])
+  return FromProto(b.LogSensorReading(sensor.raw_name, cd['temp_c']))
 
 @py_to_json
 def get_thermo_sensor_logs(request, sensor_name):
@@ -413,7 +415,7 @@ def tap_detail_post(request, tap):
       duration=duration,
       auth_token=cd.get('auth_token'),
       spilled=cd.get('spilled'))
-    return res
+    return FromProto(res)
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 
@@ -430,7 +432,7 @@ def cancel_drink(request):
   b = backend.KegbotBackend(site=request.kbsite)
   try:
     res = b.CancelDrink(seqn=cd.get('id'), spilled=cd.get('spilled', False))
-    return res
+    return FromProto(res)
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 

@@ -18,10 +18,11 @@
 
 """Miscellaneous protobuf-related utils."""
 
+import datetime
+
 from pykeg.core import util
 
 def ProtoMessageToDict(message):
-
   ret = util.AttrDict()
   #if not message.IsInitialized():
   #  raise ValueError, 'Message not initialized'
@@ -45,8 +46,14 @@ def DictToProtoMessage(values, out_message):
     value = values.get(name)
     if field.type == field.TYPE_MESSAGE:
       inner_message = getattr(out_message, name)
-      value = DictToProtoMessage(value, inner_message)
+      if field.label == field.LABEL_REPEATED:
+        for subval in value:
+          DictToProtoMessage(subval, inner_message.add())
+      else:
+        DictToProtoMessage(value, inner_message)
     else:
+      if isinstance(value, datetime.datetime):
+        value = util.datetime_to_iso8601str(value)
       setattr(out_message, name, value)
   return out_message
 

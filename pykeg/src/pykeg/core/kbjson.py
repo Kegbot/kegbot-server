@@ -27,7 +27,11 @@ import pytz
 import re
 import types
 
-from django.conf import settings
+try:
+  from django.conf import settings
+  TIME_ZONE = settings.TIME_ZONE
+except ImportError:
+  TIME_ZONE = 'America/Los_Angeles'
 from pykeg.core import util
 
 try:
@@ -45,15 +49,8 @@ class JSONEncoder(json.JSONEncoder):
   """JSONEncoder which translate datetime instances to ISO8601 strings."""
   def default(self, obj):
     if isinstance(obj, datetime.datetime):
-      try:
-        # Convert from local to UTC.
-        # TODO(mikey): handle incoming datetimes with tzinfo.
-        obj = util.local_to_utc(obj, settings.TIME_ZONE)
-      except pytz.UnknownTimeZoneError:
-        pass
-      return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+      return util.datetime_to_iso8601str(obj, TIME_ZONE)
     return json.JSONEncoder.default(self, obj)
-
 
 def _ToAttrDict(obj):
   """JSONDecoder object_hook that translates dicts and ISO times.
@@ -72,13 +69,7 @@ def _ToAttrDict(obj):
     for k, v in obj.iteritems():
       if k.endswith('date') or k.endswith('time') or k.startswith('date') or k.startswith('last_login'):
         try:
-          timeval = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%SZ')
-          # Convert from UTC to local.
-          try:
-            timeval = util.utc_to_local(timeval, settings.TIME_ZONE)
-          except pytz.UnknownTimeZoneError:
-            pass
-          obj[k] = timeval
+          obj[k] = util.iso8601str_to_datetime(v, TIME_ZONE)
         except ValueError:
           pass
     return util.AttrDict(obj)

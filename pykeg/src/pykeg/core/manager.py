@@ -420,15 +420,15 @@ class FlowManager(Manager):
             self._PublishRelayEvent(flow, enable=True)
 
   def _PublishRelayEvent(self, flow, enable=True):
-    self._logger.info('Publishing relay event: flow=%s, enable=%s' % (flow,
+    self._logger.debug('Publishing relay event: flow=%s, enable=%s' % (flow,
         enable))
     tap = flow.GetTap()
     relay = tap.GetRelayName()
     if not relay:
-      self._logger.info('No relay for this tap')
+      self._logger.debug('No relay for this tap')
       return
 
-    self._logger.info('Relay for this tap: %s' % relay)
+    self._logger.debug('Relay for this tap: %s' % relay)
     if enable:
       mode = kbevent.SetRelayOutputEvent.Mode.ENABLED
     else:
@@ -494,8 +494,8 @@ class DrinkManager(Manager):
       self._logger.warning('No drink recorded (spillage?).')
       return
 
-    keg_id = d.get('keg_id', None)
-    username = d.get('username', '<None>')
+    keg_id = d.keg_id or None
+    username = d.user_id or '<None>'
 
     self._logger.info('Logged drink %s username=%s keg=%s liters=%.2f ticks=%i' % (
       d.id, username, keg_id, d.volume_ml/1000.0, d.ticks))
@@ -509,8 +509,8 @@ class DrinkManager(Manager):
     created.tap_name = tap_name
     created.start_time = d.pour_time
     created.end_time = d.pour_time
-    if d.get('username'):
-      created.username = d.username
+    if d.user_id:
+      created.username = d.user_id
     self._PublishEvent(created)
 
 

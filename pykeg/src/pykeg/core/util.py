@@ -19,6 +19,7 @@
 """General purpose utilities, bits, and bobs"""
 
 import asyncore
+import datetime
 import errno
 import os
 import pytz
@@ -27,6 +28,12 @@ import types
 import threading
 import traceback
 import logging
+
+try:
+  from django.conf import settings
+  TIME_ZONE = settings.TIME_ZONE
+except ImportError:
+  TIME_ZONE = 'America/Los_Angeles'
 
 ### Misc classes
 def Enum(*defs):
@@ -405,3 +412,18 @@ def local_to_utc(dt, local_tz_name=None):
   local_tz = pytz.timezone(local_tz_name)
   utc_tz = pytz.timezone('UTC')
   return tzswap(dt, local_tz, utc_tz)
+
+def datetime_to_iso8601str(dt, original_tz_name=TIME_ZONE):
+  try:
+    dt = local_to_utc(dt, original_tz_name)
+  except pytz.UnknownTimeZoneError:
+    pass
+  return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+def iso8601str_to_datetime(datestr, dest_tz_name=TIME_ZONE):
+  dt = datetime.datetime.strptime(datestr, '%Y-%m-%dT%H:%M:%SZ')
+  try:
+    dt = utc_to_local(dt, dest_tz_name)
+  except pytz.UnknownTimeZoneError:
+    pass
+  return dt

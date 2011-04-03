@@ -148,7 +148,7 @@ class KegbotBackend(Backend):
     p.gender = gender
     p.weight = weight
     p.save()
-    return protolib.ToDict(u)
+    return protolib.ToProto(u)
 
   def CreateAuthToken(self, auth_device, token_value, username=None):
     token = models.AuthenticationToken.objects.create(
@@ -157,10 +157,10 @@ class KegbotBackend(Backend):
       user = self._GetUserObjFromUsername(username)
       token.user = user
     token.save()
-    return protolib.ToDict(token)
+    return protolib.ToProto(token)
 
   def GetAllTaps(self):
-    return protolib.ToDict(list(models.KegTap.objects.all()))
+    return protolib.ToProto(list(models.KegTap.objects.all()))
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False):
@@ -198,7 +198,7 @@ class KegbotBackend(Backend):
     d.save()
     d.PostProcess()
 
-    return protolib.ToDict(d)
+    return protolib.ToProto(d)
 
   def CancelDrink(self, seqn, spilled=False):
     try:
@@ -243,6 +243,7 @@ class KegbotBackend(Backend):
       session.RecomputeStats()
 
     # TODO(mikey): recompute session.
+    return protolib.ToProto(d)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     if not when:
@@ -267,10 +268,9 @@ class KegbotBackend(Backend):
         sensor=sensor, time=when, defaults=defaults)
     record.temp = temperature
     record.save()
-    return protolib.ToDict(record)
+    return protolib.ToProto(record)
 
   def GetAuthToken(self, auth_device, token_value):
-
     # Special case for "core.user" psuedo auth device.
     if auth_device == 'core.user':
       try:
@@ -279,13 +279,13 @@ class KegbotBackend(Backend):
         raise NoTokenError(auth_device)
       fake_token = models.AuthenticationToken(auth_device='core.user',
           token_value=token_value, seqn=0, user=user, enabled=True)
-      return protolib.ToDict(fake_token)
+      return protolib.ToProto(fake_token)
 
     tok, created = models.AuthenticationToken.objects.get_or_create( site=self._site,
         auth_device=auth_device, token_value=token_value)
     if not tok.user:
       raise NoTokenError
-    return protolib.ToDict(tok)
+    return protolib.ToProto(tok)
 
 
 class WebBackend(Backend):
@@ -305,7 +305,7 @@ class WebBackend(Backend):
 
   def GetAllTaps(self):
     ts = self._client.TapStatus()
-    return [d['tap'] for d in self._client.TapStatus()['taps']]
+    return [d.tap for d in self._client.TapStatus().taps]
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False):
@@ -337,9 +337,7 @@ class WebBackend(Backend):
 
   def GetAuthToken(self, auth_device, token_value):
     try:
-      response = self._client.GetToken(auth_device, token_value)
-      token = response['token']
-      return token
+      return self._client.GetToken(auth_device, token_value)
     except krest.NotFoundError:
       raise NoTokenError
     except socket.error:

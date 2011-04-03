@@ -26,6 +26,7 @@ import pytz
 import sys
 import types
 import threading
+import time
 import traceback
 import logging
 
@@ -131,6 +132,8 @@ class AsyncoreThread(KegbotThread):
     self._logger.info('Starting up')
     while not self._quit:
       asyncore.loop(timeout=0.5, count=1)
+      if not asyncore.socket_map:
+        time.sleep(0.5)
     self._logger.info('Quitting')
 
 

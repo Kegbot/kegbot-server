@@ -1,3 +1,4 @@
+
 .. _data-model:
 
 ===========================
@@ -10,361 +11,784 @@ This document contains a reference of the most commonly used objects in the API.
 
 Object Types
 ============
+.. _model-authenticationtoken:
 
-.. _model-authtoken:
+AuthenticationToken
+===================
 
-AuthToken
----------
+An authentication token, which a drinker uses to authenticate to the system.
 
-An AuthToken object represents a unique key that identifies a user.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-auth_device           ``string``      The name of the authentication device
-                                      owning this token (for example,
-                                      *"onewire"*).
-token_value           ``string``      The device-specific token value.  For
-                                      instance, on onewire devices, the token
-                                      value will be a hexadecimal string giving
-                                      the unique 64-bit id.
-username              ``string``      The username the token is bound to, or
-                                      ``null`` if the token is unassigned.
-nice_name             ``string``      An admin-configurable "nice name", or
-                                      alias, for this token instance. May be
-                                      ``null`` if the token does not have a nice
-                                      name.
-enabled               ``bool``        Whether the token is active.
-created_time          ``date``        The date the token was created or
-                                      activated.
-expire_time           ``date``        The date after which the token is no
-                                      longer valid, or ``null`` if there is no
-                                      expiration.
-====================  ==============  ==========================================
+Fields
+------
+
+============  =======  ===================================================================================================================
+Name          Type     Description
+============  =======  ===================================================================================================================
+id            string   The unique identifier for this token.
+auth_device   string   The name of the auth device that owns this token, such as ``core.onewire`` or ``contrib.phidget.rfid``.
+token_value   string   The unique key.
+username      string   *(optional)* The user owning the token.
+nice_name     string   *(optional)* An optional human-readable name for this token.
+enabled       boolean  *(optional)* True if the token is enabled.
+created_time  string   The date the token was created, as an ISO8061 UTC timestamp.
+expire_time   string   *(optional)* The date after which the token is invalid, as an ISO8061 UTC timestamp. Only available to admin users.
+pin           string   *(optional)* The token's pin, if any. Only available to admin users.
+============  =======  ===================================================================================================================
+
 
 .. _model-beerstyle:
 
 BeerStyle
----------
+=========
 
-A BeerStyle describes a particular style of beer.
+A named beer style of beer, such as "India Pale Ale".
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-name                  ``string``      The name of this beer style.
-====================  ==============  ==========================================
+
+Fields
+------
+
+====  ======  ==========================================
+Name  Type    Description
+====  ======  ==========================================
+id    string  The unique identifier for this beer style.
+name  string  The name of the beer style.
+====  ======  ==========================================
+
 
 .. _model-beertype:
 
 BeerType
---------
+========
 
-A BeerType identifies a specific beer, produced by a specific
-:ref:`model-brewer`, and often in a particular :ref:`model-beerstyle`.  Several
-traits of the beer, such as its alcohol content, may also be given.
+A specific kind of beer: describes the beer's name, style, and brewer.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-name                  ``string``      The brand name of the beer.
-brewer_id             ``string``      The identifier for the :ref:`model-brewer`
-                                      which produces this beer.
-style_id              ``string``      The identifier for the style of this beer.
-edition               ``string``      For seasonal or special edition version of
-                                      a beers, the year or other indicative
-                                      name; ``null`` otherwise.
-calories_oz           ``float``       The number of calories per fluid ounce of
-                                      beer, or ``null`` if not known.
-carbs_oz              ``float``       Number of carbohydrates per ounce of
-                                      beer, or ``null`` if not known.
-abv                   ``float``       Alcohol by volume, as as percentage value
-                                      between 0.0 and 100.0, or ``null`` if not
-                                      known.
-original_gravity      ``float``       Original gravity of this beer, or ``null``
-                                      if not known.
-specific_gravity      ``float``       Specific gravity of this beer, or ``null``
-                                      if not known.
-====================  ==============  ==========================================
+
+Fields
+------
+
+================  ==================  =====================================================================================
+Name              Type                Description
+================  ==================  =====================================================================================
+id                string              The unique identifier for this beer type.
+name              string              The brand name of the beer.
+brewer_id         string              Brewer information for the beer.  May refer to an 'unknown' or generic brewer record.
+style_id          string              Style information for the beer.  May refer to an 'unknown' or generic beer style.
+edition           string              *(optional)* For seasonal or special edition beers, the year or other edition name.
+abv               float               *(optional)* Alcohol by volume, as a percentage of the total volume.
+calories_oz       float               *(optional)* Number of calories per ounce of beverage.
+carbs_oz          float               *(optional)* Number of carbohydrates per ounce of beverage.
+specific_gravity  float               *(optional)* Specific/final gravity of the beer, if known.
+original_gravity  float               *(optional)* Original gravity of the beer, if known.
+image             :ref:`model-image`  *(optional)* Image for this beer.
+================  ==================  =====================================================================================
+
 
 .. _model-brewer:
 
 Brewer
+======
+
+A specific producer of our favorite beverage.
+
+
+Fields
 ------
 
-A Brewer is a producer of beer.
+============  ==================  ========================================================================
+Name          Type                Description
+============  ==================  ========================================================================
+id            string              The unique identifier for this beer type.
+name          string              The name of the brewer.
+country       string              *(optional)* The country of the brewer's headquarters.
+origin_state  string              *(optional)* The state of the brewer's headquarters.
+origin_city   string              *(optional)* The city of the brewer's headquarters.
+production    string              *(optional)* Type of production (usually either 'retail' or 'homebrew').
+url           string              *(optional)* URL of brewer.
+description   string              *(optional)* Free-form description.
+image         :ref:`model-image`  *(optional)* Image or logo for this brewer.
+============  ==================  ========================================================================
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-name                  ``string``      Name of the brewer
-country               ``string``      Country where the brewer is based; may be
-                                      an empty string.
-origin_state          ``string``      State or province where the brewer is
-                                      based; may be an empty string.
-origin_city           ``string``      City where the brewer is based; may be an
-                                      empty string.
-production            ``string``      Type of production, either "commercial" or
-                                      "homebrew"; may be an empty string.
-url                   ``url``         Homepage of the brewer; may be an empty
-                                      string.
-description           ``string``      Free-form description of the brewer; may
-                                      be an empty string.
-====================  ==============  ==========================================
 
 .. _model-drink:
 
 Drink
------
+=====
 
-Drink objects represent a specific pour.  Typically, but not always, the Drink
-object lists the user known to have poured it, as well as the keg from which it
-came.
+Describes a single recorded pour from the Kegbot.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-ticks                 ``uint32``      The number of flow meter ticks recorded
-                                      for this drink.  Note that this value
-                                      should never change once set, regardless
-                                      of the volume_ml property.
-volume_ml             ``float``       The volume of the pour, in milliliters.
-session_id            ``string``      :ref:`model-session` that this drink
-                                      belongs to.
-pour_time             ``date``        The date of the pour.
-duration              ``int``         The duration of the pour, in seconds, or
-                                      ``null`` if not known.
-status                ``string``      The status of the drink: one of "valid" or
-                                      "invalid".
-keg_id                ``string``      The :ref:`model-keg` from which the drink
-                                      was poured, or ``null`` if not known.
-user_id               ``string``      The :ref:`model-user` who poured the
-                                      drink, or ``null`` if not known.
-auth_token_id         ``string``      The :ref:`model-authtoken` used to pour
-                                      the drink, or ``null`` if not known.
-====================  ==============  ==========================================
+
+Fields
+------
+
+=============  =======  ===============================================================================================================
+Name           Type     Description
+=============  =======  ===============================================================================================================
+id             string   The unique identifier for this drink.
+ticks          integer  The number of meter ticks recorded for the drink.
+volume_ml      float    The volume of the drink, in milliliters.
+session_id     string   The session this drink belongs to.
+pour_time      string   UTC time when the drink was poured, as an ISO8061 UTC timestamp.
+duration       integer  *(optional)* Duration, in seconds, of the pour.
+status         string   Status of the drink.
+keg_id         string   *(optional)* The Keg from which the drink was poured.  May be unset if the drink was not associated with a keg.
+user_id        string   *(optional)* The User that poured the drink.  Snset if the drinker was unknown (anonymous pour).
+auth_token_id  string   *(optional)* Auth token value used to pour the drink, if known.
+=============  =======  ===============================================================================================================
+
+
+.. _model-image:
+
+Image
+=====
+
+Describes an image.
+
+
+Fields
+------
+
+======  =======  ===============================================
+Name    Type     Description
+======  =======  ===============================================
+url     string   The URL of the original image.
+width   integer  *(optional)* The width of the image in pixels.
+height  integer  *(optional)* The height of the image in pixels.
+======  =======  ===============================================
+
 
 .. _model-keg:
 
 Keg
----
+===
 
-A Keg object records an instance of a particular type and quantity of beer.  In
-a running system, a Keg will be instantiated and linked to an active
-:ref:`model-kegtap`.  A :ref:`model-drink` recorded against that tap deducts
-from the known remaining volume.
+A single instance of a Keg that was attached to the Kegbot.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-type_id               ``string``      The :ref:`model-beertype` for this beer.
-size_id               ``string``      The :ref:`model-kegsize` of this keg.
-size_name             ``string``      The name of the :ref:`model-kegsize` of
-                                      this keg.
-size_volume_ml        ``float``       The total volume, in milliliters, for the
-                                      :ref:`model-kegsize` of this keg.
-volume_ml_remain      ``float``       The total volume remaining, in
-                                      milliliters.
-percent_full          ``float``       The total volume remaining, as a
-                                      percentage value between 0.0 and 100.0.
-started_time          ``date``        The time when the keg was first started,
-                                      or tapped.
-finished_time         ``date``        The time when the keg was finished, or
-                                      emptied.  This value is undefined if the
-                                      keg's status is not "offline".
-status                ``string``      Current status of the keg; either "online"
-                                      or "offline".
-description           ``string``      A site-specific description of this keg,
-                                      or ``null`` if not known.
-spilled_ml            ``float``       Total volume marked as spilled, in
-                                      milliliters.
-====================  ==============  ==========================================
+
+Fields
+------
+
+================  ======  =======================================================================================================================================================================================================
+Name              Type    Description
+================  ======  =======================================================================================================================================================================================================
+id                string  The unique identifier for this keg.
+type_id           string  The kind of beer within the keg.
+size_id           string  The size of the keg.
+size_name         string  *(optional)* The name of the keg size.
+size_volume_ml    float   *(optional)* The volume of the keg size.
+volume_ml_remain  float   Volume remaining in the keg, in milliliters.
+percent_full      float   Percentage of the keg that remains, as a value between 0 and 100.
+started_time      string  UTC time when the keg was started or tapped, as an ISO8061 UTC timestamp.
+finished_time     string  Local time when the keg was completed, as an ISO8061 UTC timestamp.  This should be no sooner than the time of the most recent drink.  If the keg's `status` is not 'offline', this value is undefined.
+status            string  The keg's current status.  Typically either "online" or "offline".
+description       string  *(optional)* The adminstrator's description of this keg.
+spilled_ml        float   *(optional)* Total portion of the original volume that was spoiled, in milliliters. Spilled volume is not attributed to any drink, but deducts from the keg total.
+================  ======  =======================================================================================================================================================================================================
 
 
 .. _model-kegsize:
 
 KegSize
--------
+=======
 
-A KegSize is a small object that gives a name and a volume to a particular
-quantity.
+A common keg size.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-name                  ``string``      Name of this size.
-volume_ml             ``float``       Total volume of this size, in
-                                      milliliters.
-====================  ==============  ==========================================
+
+Fields
+------
+
+=========  ======  =====================================================
+Name       Type    Description
+=========  ======  =====================================================
+id         string  The unique identifier for this keg size.
+name       string  The name of the size ("Half Barrel", "Pony keg", ...)
+volume_ml  float   The volume of the size, in milliliters.
+=========  ======  =====================================================
 
 
 .. _model-kegtap:
 
 KegTap
+======
+
+Describes a tap which is available for pouring beer.
+
+
+Fields
 ------
 
-Every available beer tap in the system is modeled by a KegTap.
+================  ======================  ================================================================================================
+Name              Type                    Description
+================  ======================  ================================================================================================
+id                string                  The unique identifier for this tap.
+name              string                  The name of the tap, a free-form string ("Main tap", "Wet bar", ...)
+meter_name        string                  The name of the flow meter assigned to this tap.
+relay_name        string                  *(optional)* The relay name of the tap.
+ml_per_tick       float                   Size of each flowmeter tick, in milliliters.
+description       string                  *(optional)* A longer description of the tap.
+current_keg_id    string                  *(optional)* The Keg currently assigned to the tap.  May be unset if there is no keg configured.
+thermo_sensor_id  string                  *(optional)* The temperature sensor for the tap, if any.
+last_temperature  :ref:`model-thermolog`  *(optional)* The last temperature log, if any.
+================  ======================  ================================================================================================
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-name                  ``string``      A short, descriptive name for the tap.
-meter_name            ``string``      The name of the flow meter that is
-                                      assigned to this tap.
-ml_per_tick           ``float``       Volume to record per tick of the
-                                      corresponding flow meter, in milliliters.
-description           ``string``      A longer description of the tap, or
-                                      ``null`` if not known.
-current_keg_id        ``string``      The :ref:`model-keg` currently assigned to
-                                      the tap, or ``null``.
-thermo_sensor_id      ``string``      The :ref:`model-thermosensor` assigned to
-                                      the tap, or ``null``.
-last_temperature      ``float```      The last recorded temperature of the
-                                      attached temperature sensor, in degrees C,
-                                      or ``null`` if no sensor configured.
-====================  ==============  ==========================================
 
 .. _model-session:
 
 Session
--------
+=======
 
-A Session is used to group drinks that are close to eachother in time.  Every
-:ref:`model-drink` is assigned to a session.
+A session is a group of drinks occuring within the same time window.  Every
+poured drink will be associated with exactly one session.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-start_time            ``date``        The time of the first :ref:`model-drink`
-                                      in the session.
-end_time              ``date``        The time of the last (most recent)
-                                      :ref:`model-drink` in the session.
-volume_ml             ``float``       Total volume poured, among all drinks in
-                                      the session.
-name                  ``string``      A descriptive name for the session; may be
-                                      empty if no name has been set.
-slug                  ``string``      A variation of the ``name`` field; may be
-                                      empty if no name has been set.
-====================  ==============  ==========================================
 
-.. _model-systemevent:
+Fields
+------
 
-System Event
-------------
+==========  ======  ===============================================================
+Name        Type    Description
+==========  ======  ===============================================================
+id          string  The unique identifier for this session.
+start_time  string  The time this session was started, as an ISO8061 UTC timestamp.
+end_time    string  The time this session ended, as an ISO8061 UTC timestamp.
+volume_ml   float   Total volume poured during this session, in milliliters.
+name        string  *(optional)* A name for this session.
+slug        string  *(optional)* The slugified name of this session.
+==========  ======  ===============================================================
 
-This object describes a system-wide event. System events are generated in
-response to drink and keg configuration activity.
-
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-type                  ``string``      The type of system event.
-                                      Currently-defined event types:
-                                      drink_poured, session_started,
-                                      session_joined, keg_tapped, keg_ended.
-time                  ``date``        The time of the event.
-drink_id              ``string``      The :ref:`model-drink` that this event
-                                      concerns; may be ``null``.
-keg_id                ``string``      The :ref:`model-keg` that this event
-                                      concerns; may be ``null``.
-session_id            ``string``      The :ref:`model-session` that this event
-                                      concerns; may be ``null``.
-user_id               ``string``      The :ref:`model-user` that this event
-                                      concerns; may be ``null``.
-====================  ==============  ==========================================
 
 .. _model-thermolog:
 
 ThermoLog
----------
+=========
 
-Temperature sensors emit periodic data, which are recorded as ThermoLog records.
+A log entry for a temperature sensor.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-sensor_id             ``string``      The :ref:`model-thermosensor` which
-                                      recorded the entry.
-temperature_c         ``float``       Temperature, in degrees celcius.
-record_time           ``date``        Time of recording.
-====================  ==============  ==========================================
+
+Fields
+------
+
+=============  ======  ================================================
+Name           Type    Description
+=============  ======  ================================================
+id             string  The unique identifier for this log entry.
+sensor_id      string  The sensor id that produced this log entry.
+temperature_c  float   The temperature, in degrees C.
+record_time    string  The recording date, as an ISO8061 UTC timestamp.
+=============  ======  ================================================
 
 
 .. _model-thermosensor:
 
 ThermoSensor
-------------
+============
 
-Represents a temperature sensor in the Kegbot system.
+A temperature sensor configured in the system.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-sensor_name           ``string``      The raw and unique name for the sensor.
-nice_name             ``string``      A human-readable, descriptive name for the
-                                      sensor.
-====================  ==============  ==========================================
+
+Fields
+------
+
+===========  ======  ==================================================
+Name         Type    Description
+===========  ======  ==================================================
+id           string  The unique identifier for this temperature sensor.
+sensor_name  string  The raw/unique name of the sensor.
+nice_name    string  *(optional)* The friendly name for the sensor.
+===========  ======  ==================================================
+
+
+.. _model-thermosummarylog:
+
+ThermoSummaryLog
+================
+
+A summarized log for a collection of temperature sensor events.
+
+
+Fields
+------
+
+============  =======  ========================================================================
+Name          Type     Description
+============  =======  ========================================================================
+id            string   The unique identifier for this log.
+sensor_id     string   The id of the sensor described by this summary.
+date          string   The start date that is covered by this log, as an ISO8061 UTC timestamp.
+period        string   The number of seconds follow ``date`` that are captured by this summary.
+num_readings  integer  The number of readings in this summary.
+min_temp      float    The minimum temperature observed.
+max_temp      float    The maximum temperature observed.
+mean_temp     float    The mean of all temperatures observed.
+============  =======  ========================================================================
+
 
 .. _model-user:
 
 User
-----
+====
 
-This object models a User in the system.
+A drinker registered in the kegbot system.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-username              ``username``    Unique identifier for the user.
-mugshot_url           ``url``         URL to the mugshot for this user.
-is_active             ``bool``        True if this is an active user.
-====================  ==============  ==========================================
 
-.. _model-usersession:
+Fields
+------
 
-UserSession
------------
+============  ==================  =========================================================================================================
+Name          Type                Description
+============  ==================  =========================================================================================================
+username      string              The user's unique username.
+image         :ref:`model-image`  *(optional)* The profile picture of the user.  May be unset if the user does not have a profile picture.
+is_active     boolean             True if the user is active.  This value will be false for accounts which have been disabled by the admin.
+first_name    string              *(optional)* The first name of the user. Not currently used.
+last_name     string              *(optional)* The last name of the user. Not currently used.
+email         string              *(optional)* The email address of the user. Only available to admin users.
+password      string              *(optional)* The password of the user. Only available to admin users.
+is_staff      boolean             *(optional)* True if the user is a member of the system's staff. Only available to admin users.
+is_superuser  boolean             *(optional)* True if the user is an administrator. Only available to admin users.
+last_login    string              *(optional)* UTC time for the user's last login, as ISO8061 string. Only available to admin users.
+date_joined   string              *(optional)* UTC time for the user's registration, as ISO8061 string. Only available to admin users.
+============  ==================  =========================================================================================================
 
-A UserSession describe's a particular user's contribution to a
-:ref:`model-session`, for a particular :ref:`model-keg`.
 
-====================  ==============  ==========================================
-Property              Type            Description
-====================  ==============  ==========================================
-id                    ``string``      An opaque, unique identifier for this
-                                      object.
-session_id            ``string``      The :ref:`model-session` that was
-                                      contributed to.
-username              ``string``      The :ref:`model-user`.
-keg_id                ``string``      The :ref:`model-keg` that was contributed
-                                      to.
-start_time            ``date``        Time of the user's first activity.
-end_time              ``date``        Time of the user's last activity.
-volume_ml             ``float``       Total volume poured by this user in the
-                                      session.
-====================  ==============  ==========================================
+.. _model-userprofile:
+
+UserProfile
+===========
+
+Extended information about a specific user.
+Only available to admin users.
+
+
+Fields
+------
+
+========  ======  ===============================================
+Name      Type    Description
+========  ======  ===============================================
+username  string  The user for this profile.
+gender    string  *(optional)* The gender of the user.
+weight    float   *(optional)* The weight of the user, in pounds.
+========  ======  ===============================================
+
+
+.. _model-sessionchunk:
+
+SessionChunk
+============
+
+A SessionChunk describes a specific user's contribution to a specific Keg, in
+a specific Session.
+
+
+Fields
+------
+
+==========  ======  =========================================================================
+Name        Type    Description
+==========  ======  =========================================================================
+id          string  The unique identifier for this chunk.
+session_id  string  The session id that this chunk corresponds to.
+username    string  The username that this chunk corresponds to.
+keg_id      string  The keg id that this chunk corresponds to.
+start_time  string  The time this user joined this session, as an ISO8061 UTC timestamp.
+end_time    string  The last activity for this user in this session, as an ISO8061 timestamp.
+volume_ml   float   The total volume poured by the user.
+==========  ======  =========================================================================
+
+
+.. _model-systemevent:
+
+SystemEvent
+===========
+
+Describes various events that happen in the system.
+
+
+Fields
+------
+
+==========  ======  ===========================================================================================================================================================================================
+Name        Type    Description
+==========  ======  ===========================================================================================================================================================================================
+id          string  The unqiue identifier for this event.
+kind        string  The kind of the event being reported. Current values: ``drink_poured``, ``session_started``, ``session_joined``, ``keg_tapped``, ``keg_ended``.
+time        string  The time of this event, as an ISO8061 UTC timestamp.
+drink_id    string  *(optional)* If a drink caused this event (as in ``drink_poured``, ``session_started``, and ``session_joined``), this field gives its id.
+keg_id      string  *(optional)* If this event relates to a specific keg (as in most events), this field gives its id.
+session_id  string  *(optional)* If this event relates to a specific session (as in ``drink_poured``, ``session_started``, and ``session_joined``), this field gives its id.
+user_id     string  *(optional)* If this event relates to a specific user (as in ``drink_poured``, ``session_started``, and ``session_joined`` when the user is not anonymous), this field gives the user's id.
+==========  ======  ===========================================================================================================================================================================================
+
+
+.. _model-soundevent:
+
+SoundEvent
+==========
+
+An administrator-defined sound file to play for certain pour events.
+
+
+Fields
+------
+
+===============  ======  ================================================================================
+Name             Type    Description
+===============  ======  ================================================================================
+event_name       string  The name of this event.
+event_predicate  string  *(optional)* The predicate for the event. Not currently used.
+sound_url        string  The URL for the sound file to play during this event.
+user             string  *(optional)* A specific username that this event applies to. Not currently used.
+===============  ======  ================================================================================
+
+
+.. _model-paging:
+
+Paging
+======
+
+Common
+
+
+Fields
+------
+
+=====  =======  =============
+Name   Type     Description
+=====  =======  =============
+total  integer  *(optional)* 
+limit  integer  *(optional)* 
+pos    integer  *(optional)* 
+=====  =======  =============
+
+
+.. _model-drinkset:
+
+DrinkSet
+========
+
+Responses
+
+
+Fields
+------
+
+======  ===================  =============
+Name    Type                 Description
+======  ===================  =============
+drinks  :ref:`model-drink`   
+paging  :ref:`model-paging`  *(optional)* 
+======  ===================  =============
+
+
+.. _model-kegset:
+
+KegSet
+======
+
+Fields
+------
+
+======  ===================  =============
+Name    Type                 Description
+======  ===================  =============
+kegs    :ref:`model-keg`     
+paging  :ref:`model-paging`  *(optional)* 
+======  ===================  =============
+
+
+.. _model-sessionset:
+
+SessionSet
+==========
+
+Fields
+------
+
+========  ====================  =============
+Name      Type                  Description
+========  ====================  =============
+sessions  :ref:`model-session`  
+paging    :ref:`model-paging`   *(optional)* 
+========  ====================  =============
+
+
+.. _model-systemeventset:
+
+SystemEventSet
+==============
+
+Fields
+------
+
+======  ========================  =============
+Name    Type                      Description
+======  ========================  =============
+events  :ref:`model-systemevent`  
+paging  :ref:`model-paging`       *(optional)* 
+======  ========================  =============
+
+
+.. _model-systemeventdetailset:
+
+SystemEventDetailSet
+====================
+
+Fields
+------
+
+======  ==============================  =============
+Name    Type                            Description
+======  ==============================  =============
+events  :ref:`model-systemeventdetail`  
+paging  :ref:`model-paging`             *(optional)* 
+======  ==============================  =============
+
+
+.. _model-systemeventhtmlset:
+
+SystemEventHtmlSet
+==================
+
+Fields
+------
+
+======  ============================  =============
+Name    Type                          Description
+======  ============================  =============
+events  :ref:`model-systemeventhtml`  
+paging  :ref:`model-paging`           *(optional)* 
+======  ============================  =============
+
+
+.. _model-soundeventset:
+
+SoundEventSet
+=============
+
+Fields
+------
+
+======  =======================  =============
+Name    Type                     Description
+======  =======================  =============
+events  :ref:`model-soundevent`  
+paging  :ref:`model-paging`      *(optional)* 
+======  =======================  =============
+
+
+.. _model-tapdetailset:
+
+TapDetailSet
+============
+
+Fields
+------
+
+======  ======================  =============
+Name    Type                    Description
+======  ======================  =============
+taps    :ref:`model-tapdetail`  
+paging  :ref:`model-paging`     *(optional)* 
+======  ======================  =============
+
+
+.. _model-drinkdetailhtmlset:
+
+DrinkDetailHtmlSet
+==================
+
+Fields
+------
+
+======  ============================  =============
+Name    Type                          Description
+======  ============================  =============
+drinks  :ref:`model-drinkdetailhtml`  
+paging  :ref:`model-paging`           *(optional)* 
+======  ============================  =============
+
+
+.. _model-thermosensorset:
+
+ThermoSensorSet
+===============
+
+Fields
+------
+
+=======  =========================  =============
+Name     Type                       Description
+=======  =========================  =============
+sensors  :ref:`model-thermosensor`  
+paging   :ref:`model-paging`        *(optional)* 
+=======  =========================  =============
+
+
+.. _model-thermologset:
+
+ThermoLogSet
+============
+
+Fields
+------
+
+======  ======================  =============
+Name    Type                    Description
+======  ======================  =============
+logs    :ref:`model-thermolog`  
+paging  :ref:`model-paging`     *(optional)* 
+======  ======================  =============
+
+
+.. _model-tapdetail:
+
+TapDetail
+=========
+
+Fields
+------
+
+=========  =====================  =============
+Name       Type                   Description
+=========  =====================  =============
+tap        :ref:`model-kegtap`    
+keg        :ref:`model-keg`       *(optional)* 
+beer_type  :ref:`model-beertype`  *(optional)* 
+brewer     :ref:`model-brewer`    *(optional)* 
+=========  =====================  =============
+
+
+.. _model-drinkdetail:
+
+DrinkDetail
+===========
+
+Fields
+------
+
+=======  ====================  =============
+Name     Type                  Description
+=======  ====================  =============
+drink    :ref:`model-drink`    
+user     :ref:`model-user`     *(optional)* 
+keg      :ref:`model-keg`      *(optional)* 
+session  :ref:`model-session`  *(optional)* 
+=======  ====================  =============
+
+
+.. _model-sessiondetail:
+
+SessionDetail
+=============
+
+Fields
+------
+
+=======  ====================  =============
+Name     Type                  Description
+=======  ====================  =============
+session  :ref:`model-session`  
+stats    string                *(optional)* 
+kegs     :ref:`model-keg`      
+=======  ====================  =============
+
+
+.. _model-kegdetail:
+
+KegDetail
+=========
+
+Fields
+------
+
+========  =====================  =============
+Name      Type                   Description
+========  =====================  =============
+keg       :ref:`model-keg`       
+type      :ref:`model-beertype`  *(optional)* 
+size      :ref:`model-kegsize`   *(optional)* 
+drinks    :ref:`model-drink`     
+sessions  :ref:`model-session`   
+========  =====================  =============
+
+
+.. _model-userdetail:
+
+UserDetail
+==========
+
+Fields
+------
+
+====  =================  ===========
+Name  Type               Description
+====  =================  ===========
+user  :ref:`model-user`  
+====  =================  ===========
+
+
+.. _model-systemeventdetail:
+
+SystemEventDetail
+=================
+
+Fields
+------
+
+=====  ========================  =============
+Name   Type                      Description
+=====  ========================  =============
+event  :ref:`model-systemevent`  
+image  :ref:`model-image`        *(optional)* 
+=====  ========================  =============
+
+
+.. _model-systemeventhtml:
+
+SystemEventHtml
+===============
+
+Fields
+------
+
+====  ======  =============
+Name  Type    Description
+====  ======  =============
+id    string  
+html  string  *(optional)* 
+====  ======  =============
+
+
+.. _model-thermosensordetail:
+
+ThermoSensorDetail
+==================
+
+Fields
+------
+
+=========  =========================  =============
+Name       Type                       Description
+=========  =========================  =============
+sensor     :ref:`model-thermosensor`  
+last_temp  float                      *(optional)* 
+last_time  string                     *(optional)* 
+=========  =========================  =============
+
+
+.. _model-drinkdetailhtml:
+
+DrinkDetailHtml
+===============
+
+Fields
+------
+
+========  ======  ===========
+Name      Type    Description
+========  ======  ===========
+id        string  
+box_html  string  
+========  ======  ===========
+
 

@@ -472,12 +472,12 @@ Responses
 Fields
 ------
 
-======  ===================  =============
-Name    Type                 Description
-======  ===================  =============
-drinks  :ref:`model-drink`   
-paging  :ref:`model-paging`  *(optional)* 
-======  ===================  =============
+======  =======================  ================================================
+Name    Type                     Description
+======  =======================  ================================================
+drinks  :ref:`model-drink` list  A list of :ref:`model-drink` objects
+paging  :ref:`model-paging`      *(optional)* A single :ref:`model-paging` object
+======  =======================  ================================================
 
 
 .. _model-kegset:
@@ -488,12 +488,12 @@ KegSet
 Fields
 ------
 
-======  ===================  =============
-Name    Type                 Description
-======  ===================  =============
-kegs    :ref:`model-keg`     
-paging  :ref:`model-paging`  *(optional)* 
-======  ===================  =============
+======  =====================  ================================================
+Name    Type                   Description
+======  =====================  ================================================
+kegs    :ref:`model-keg` list  A list of :ref:`model-keg` objects
+paging  :ref:`model-paging`    *(optional)* A single :ref:`model-paging` object
+======  =====================  ================================================
 
 
 .. _model-sessionset:
@@ -504,12 +504,12 @@ SessionSet
 Fields
 ------
 
-========  ====================  =============
-Name      Type                  Description
-========  ====================  =============
-sessions  :ref:`model-session`  
-paging    :ref:`model-paging`   *(optional)* 
-========  ====================  =============
+========  =========================  ================================================
+Name      Type                       Description
+========  =========================  ================================================
+sessions  :ref:`model-session` list  A list of :ref:`model-session` objects
+paging    :ref:`model-paging`        *(optional)* A single :ref:`model-paging` object
+========  =========================  ================================================
 
 
 .. _model-systemeventset:
@@ -520,12 +520,12 @@ SystemEventSet
 Fields
 ------
 
-======  ========================  =============
-Name    Type                      Description
-======  ========================  =============
-events  :ref:`model-systemevent`  
-paging  :ref:`model-paging`       *(optional)* 
-======  ========================  =============
+======  =============================  ================================================
+Name    Type                           Description
+======  =============================  ================================================
+events  :ref:`model-systemevent` list  A list of :ref:`model-systemevent` objects
+paging  :ref:`model-paging`            *(optional)* A single :ref:`model-paging` object
+======  =============================  ================================================
 
 
 .. _model-systemeventdetailset:
@@ -536,12 +536,12 @@ SystemEventDetailSet
 Fields
 ------
 
-======  ==============================  =============
-Name    Type                            Description
-======  ==============================  =============
-events  :ref:`model-systemeventdetail`  
-paging  :ref:`model-paging`             *(optional)* 
-======  ==============================  =============
+======  ===================================  ================================================
+Name    Type                                 Description
+======  ===================================  ================================================
+events  :ref:`model-systemeventdetail` list  A list of :ref:`model-systemeventdetail` objects
+paging  :ref:`model-paging`                  *(optional)* A single :ref:`model-paging` object
+======  ===================================  ================================================
 
 
 .. _model-systemeventhtmlset:
@@ -552,12 +552,12 @@ SystemEventHtmlSet
 Fields
 ------
 
-======  ============================  =============
-Name    Type                          Description
-======  ============================  =============
-events  :ref:`model-systemeventhtml`  
-paging  :ref:`model-paging`           *(optional)* 
-======  ============================  =============
+======  =================================  ================================================
+Name    Type                               Description
+======  =================================  ================================================
+events  :ref:`model-systemeventhtml` list  A list of :ref:`model-systemeventhtml` objects
+paging  :ref:`model-paging`                *(optional)* A single :ref:`model-paging` object
+======  =================================  ================================================
 
 
 .. _model-soundeventset:
@@ -568,12 +568,12 @@ SoundEventSet
 Fields
 ------
 
-======  =======================  =============
-Name    Type                     Description
-======  =======================  =============
-events  :ref:`model-soundevent`  
-paging  :ref:`model-paging`      *(optional)* 
-======  =======================  =============
+======  ============================  ================================================
+Name    Type                          Description
+======  ============================  ================================================
+events  :ref:`model-soundevent` list  A list of :ref:`model-soundevent` objects
+paging  :ref:`model-paging`           *(optional)* A single :ref:`model-paging` object
+======  ============================  ================================================
 
 
 .. _model-tapdetailset:
@@ -584,12 +584,12 @@ TapDetailSet
 Fields
 ------
 
-======  ======================  =============
-Name    Type                    Description
-======  ======================  =============
-taps    :ref:`model-tapdetail`  
-paging  :ref:`model-paging`     *(optional)* 
-======  ======================  =============
+======  ===========================  ================================================
+Name    Type                         Description
+======  ===========================  ================================================
+taps    :ref:`model-tapdetail` list  A list of :ref:`model-tapdetail` objects
+paging  :ref:`model-paging`          *(optional)* A single :ref:`model-paging` object
+======  ===========================  ================================================
 
 
 .. _model-drinkdetailhtmlset:
@@ -600,12 +600,12 @@ DrinkDetailHtmlSet
 Fields
 ------
 
-======  ============================  =============
-Name    Type                          Description
-======  ============================  =============
-drinks  :ref:`model-drinkdetailhtml`  
-paging  :ref:`model-paging`           *(optional)* 
-======  ============================  =============
+======  =================================  ================================================
+Name    Type                               Description
+======  =================================  ================================================
+drinks  :ref:`model-drinkdetailhtml` list  A list of :ref:`model-drinkdetailhtml` objects
+paging  :ref:`model-paging`                *(optional)* A single :ref:`model-paging` object
+======  =================================  ================================================
 
 
 .. _model-thermosensorset:
@@ -616,12 +616,12 @@ ThermoSensorSet
 Fields
 ------
 
-=======  =========================  =============
-Name     Type                       Description
-=======  =========================  =============
-sensors  :ref:`model-thermosensor`  
-paging   :ref:`model-paging`        *(optional)* 
-=======  =========================  =============
+=======  ==============================  ================================================
+Name     Type                            Description
+=======  ==============================  ================================================
+sensors  :ref:`model-thermosensor` list  A list of :ref:`model-thermosensor` objects
+paging   :ref:`model-paging`             *(optional)* A single :ref:`model-paging` object
+=======  ==============================  ================================================
 
 
 .. _model-thermologset:
@@ -632,12 +632,12 @@ ThermoLogSet
 Fields
 ------
 
-======  ======================  =============
-Name    Type                    Description
-======  ======================  =============
-logs    :ref:`model-thermolog`  
-paging  :ref:`model-paging`     *(optional)* 
-======  ======================  =============
+======  ===========================  ================================================
+Name    Type                         Description
+======  ===========================  ================================================
+logs    :ref:`model-thermolog` list  A list of :ref:`model-thermolog` objects
+paging  :ref:`model-paging`          *(optional)* A single :ref:`model-paging` object
+======  ===========================  ================================================
 
 
 .. _model-tapdetail:
@@ -648,14 +648,14 @@ TapDetail
 Fields
 ------
 
-=========  =====================  =============
+=========  =====================  ==================================================
 Name       Type                   Description
-=========  =====================  =============
-tap        :ref:`model-kegtap`    
-keg        :ref:`model-keg`       *(optional)* 
-beer_type  :ref:`model-beertype`  *(optional)* 
-brewer     :ref:`model-brewer`    *(optional)* 
-=========  =====================  =============
+=========  =====================  ==================================================
+tap        :ref:`model-kegtap`    A single :ref:`model-kegtap` object
+keg        :ref:`model-keg`       *(optional)* A single :ref:`model-keg` object
+beer_type  :ref:`model-beertype`  *(optional)* A single :ref:`model-beertype` object
+brewer     :ref:`model-brewer`    *(optional)* A single :ref:`model-brewer` object
+=========  =====================  ==================================================
 
 
 .. _model-drinkdetail:
@@ -666,14 +666,14 @@ DrinkDetail
 Fields
 ------
 
-=======  ====================  =============
+=======  ====================  =================================================
 Name     Type                  Description
-=======  ====================  =============
-drink    :ref:`model-drink`    
-user     :ref:`model-user`     *(optional)* 
-keg      :ref:`model-keg`      *(optional)* 
-session  :ref:`model-session`  *(optional)* 
-=======  ====================  =============
+=======  ====================  =================================================
+drink    :ref:`model-drink`    A single :ref:`model-drink` object
+user     :ref:`model-user`     *(optional)* A single :ref:`model-user` object
+keg      :ref:`model-keg`      *(optional)* A single :ref:`model-keg` object
+session  :ref:`model-session`  *(optional)* A single :ref:`model-session` object
+=======  ====================  =================================================
 
 
 .. _model-sessiondetail:
@@ -684,13 +684,13 @@ SessionDetail
 Fields
 ------
 
-=======  ====================  =============
-Name     Type                  Description
-=======  ====================  =============
-session  :ref:`model-session`  
-stats    string                *(optional)* 
-kegs     :ref:`model-keg`      
-=======  ====================  =============
+=======  =====================  ====================================
+Name     Type                   Description
+=======  =====================  ====================================
+session  :ref:`model-session`   A single :ref:`model-session` object
+stats    string                 *(optional)* 
+kegs     :ref:`model-keg` list  A list of :ref:`model-keg` objects
+=======  =====================  ====================================
 
 
 .. _model-kegdetail:
@@ -701,15 +701,15 @@ KegDetail
 Fields
 ------
 
-========  =====================  =============
-Name      Type                   Description
-========  =====================  =============
-keg       :ref:`model-keg`       
-type      :ref:`model-beertype`  *(optional)* 
-size      :ref:`model-kegsize`   *(optional)* 
-drinks    :ref:`model-drink`     
-sessions  :ref:`model-session`   
-========  =====================  =============
+========  =========================  ==================================================
+Name      Type                       Description
+========  =========================  ==================================================
+keg       :ref:`model-keg`           A single :ref:`model-keg` object
+type      :ref:`model-beertype`      *(optional)* A single :ref:`model-beertype` object
+size      :ref:`model-kegsize`       *(optional)* A single :ref:`model-kegsize` object
+drinks    :ref:`model-drink` list    A list of :ref:`model-drink` objects
+sessions  :ref:`model-session` list  A list of :ref:`model-session` objects
+========  =========================  ==================================================
 
 
 .. _model-userdetail:
@@ -720,11 +720,11 @@ UserDetail
 Fields
 ------
 
-====  =================  ===========
+====  =================  =================================
 Name  Type               Description
-====  =================  ===========
-user  :ref:`model-user`  
-====  =================  ===========
+====  =================  =================================
+user  :ref:`model-user`  A single :ref:`model-user` object
+====  =================  =================================
 
 
 .. _model-systemeventdetail:
@@ -735,12 +735,12 @@ SystemEventDetail
 Fields
 ------
 
-=====  ========================  =============
+=====  ========================  ===============================================
 Name   Type                      Description
-=====  ========================  =============
-event  :ref:`model-systemevent`  
-image  :ref:`model-image`        *(optional)* 
-=====  ========================  =============
+=====  ========================  ===============================================
+event  :ref:`model-systemevent`  A single :ref:`model-systemevent` object
+image  :ref:`model-image`        *(optional)* A single :ref:`model-image` object
+=====  ========================  ===============================================
 
 
 .. _model-systemeventhtml:
@@ -767,13 +767,13 @@ ThermoSensorDetail
 Fields
 ------
 
-=========  =========================  =============
+=========  =========================  =========================================
 Name       Type                       Description
-=========  =========================  =============
-sensor     :ref:`model-thermosensor`  
+=========  =========================  =========================================
+sensor     :ref:`model-thermosensor`  A single :ref:`model-thermosensor` object
 last_temp  float                      *(optional)* 
 last_time  string                     *(optional)* 
-=========  =========================  =============
+=========  =========================  =========================================
 
 
 .. _model-drinkdetailhtml:

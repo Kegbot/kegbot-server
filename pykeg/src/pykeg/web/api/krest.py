@@ -264,7 +264,7 @@ class KrestClient:
       'temp_c': float(temperature),
     }
     # TODO(mikey): include post data
-    return self.DoPOST(endpoint, models_pb2.Thermolog(), post_data=post_data)
+    return self.DoPOST(endpoint, models_pb2.ThermoLog(), post_data=post_data)
 
   def TapStatus(self):
     """Gets the status of all taps."""

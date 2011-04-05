@@ -54,7 +54,7 @@ def ToProto(obj, full=False):
     return None
   kind = obj.__class__
   if hasattr(obj, '__iter__'):
-    return (ToProto(item, full) for item in obj)
+    return [ToProto(item, full) for item in obj]
   elif kind in _CONVERSION_MAP:
     return _CONVERSION_MAP[kind](obj, full)
   else:

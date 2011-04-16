@@ -30,6 +30,9 @@ urlpatterns = patterns('',
      {'document_root': settings.MEDIA_ROOT, 'show_indexes': True},
      name='media'),
 
+    (r'^favicon.ico$', 'django.views.generic.simple.redirect_to',
+      {'url': '/site_media/images/favicon.ico'}),
+
     ### RESTful api
     (r'^api/', include('pykeg.web.api.urls')),
 

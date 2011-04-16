@@ -33,6 +33,7 @@ setup(
       'src/pykeg/bin/fb_publisher.py',
       'src/pykeg/bin/kegboard_daemon.py',
       'src/pykeg/bin/kegboard_monitor.py',
+      'src/pykeg/bin/kegboard-tester.py',
       'src/pykeg/bin/kegbot-admin.py',
       'src/pykeg/bin/kegbot_core.py',
       'src/pykeg/bin/kegbot_master.py',

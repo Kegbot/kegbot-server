@@ -35,6 +35,12 @@ from pykeg.core.net import kegnet
 from pykeg.web.api.krest import KrestClient
 
 try:
+  from django.conf import settings
+  TIME_ZONE = settings.TIME_ZONE
+except ImportError:
+  TIME_ZONE = 'America/Los_Angeles'
+
+try:
   import lcdui
 except ImportError:
   print>>sys.stderr, "Error: lcdui could not be imported."
@@ -279,7 +285,7 @@ class KrestUpdaterThread(util.KegbotThread):
         username = 'unknown'
         if last_drink.user_id:
           username = str(last_drink.user_id)
-        date = util.iso8601str_to_datetime(last_drink.pour_time)
+        date = util.iso8601str_to_datetime(last_drink.pour_time, TIME_ZONE)
         self._lcdui.UpdateLastDrink(username, last_drink.volume_ml, date)
       except IOError, e:
         self._logger.warning('Could not connect to kegweb: %s' % e)

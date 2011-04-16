@@ -44,10 +44,14 @@ Open the file ``~/.kegbot/common_settings.py`` in your favorite text editor.
 Look for the section labeled "Database Configuration", and edit it to have the
 following lines to the file::
 
-  DATABASE_ENGINE = 'mysql'
-  DATABASE_NAME = 'kegbot'
-  DATABASE_USER = 'kegbot'
-  DATABASE_PASSWORD = 'your-password'
+  DATABASES = {
+    'default' : {
+      'NAME' : 'kegbot',
+      'ENGINE' : 'django.db.backends.mysql',
+      'USER' : 'kegbot',
+      'PASSWORD': 'your-password',
+    },
+  }
 
 Replace the text `your-password` with the actual password you used (in
 :ref:`create-mysql-user`).
@@ -66,8 +70,12 @@ Open the file ``~/.kegbot/common_settings.py`` in your favorite text editor.
 Look for the section labeled "Database Configuration", and edit it to have the
 following lines to the file::
 
-  DATABASE_ENGINE = 'sqlite'
-  DATABASE_NAME = '/home/kegbot/kegbot.sqlite'
+  DATABASES = {
+    'default' : {
+      'NAME' : '/home/kegbot/kegbot.sqlite',
+      'ENGINE' : 'django.db.backends.sqlite3',
+    },
+  }
 
 Save the settings file.
 

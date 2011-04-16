@@ -4,17 +4,22 @@
 
 ### Database configuration
 
-# sqlite3 (default)
-DATABASE_ENGINE = 'sqlite3'
-DATABASE_NAME = '/usr/local/kegbot/kegbot.sqlite'
+# Database settings.  Edit so that one is named 'default'.
+DATABASES = {
+  # Example SQLite settings (rename to 'default' to use)
+  'example_sqlite' : {
+    'NAME' : '/usr/local/kegbot/kegbot.sqlite',
+    'ENGINE' : 'django.db.backends.sqlite3',
+  },
 
-# Other databases ('postgresql', 'mysql', or 'ado_mssql')
-#DATABASE_ENGINE = 'mysql'
-#DATABASE_NAME = 'kegbot'
-#DATABASE_USER = 'kegbot_user'
-#DATABASE_PASSWORD = 'kegbot_password'
-#DATABASE_HOST = '' # Set to empty string for localhost.
-#DATABASE_PORT = '' # Set to empty string for default port.
+  # Example MYSQL settings (rename to 'default' to use)
+  'example_mysql' : {
+    'NAME' : 'kegbot',
+    'ENGINE' : 'django.db.backends.mysql',
+    'USER' : 'kegbot_user',
+    'PASSWORD': 'kegbot_password',
+  },
+}
 
 ### Timezone and language
 
@@ -38,11 +43,6 @@ MEDIA_ROOT = 'media/'
 # URL of the directory above. The default is '/media/'. Note that the directory
 # name given in MEDIA_ROOT does not affect this.
 MEDIA_URL = '/media/'
-
-### Kegbot settings
-
-# Number of last drinks to show on the main page.
-KEGWEB_LAST_DRINKS_COUNT = 10
 
 ### Other stuff
 

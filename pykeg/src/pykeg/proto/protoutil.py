@@ -22,6 +22,12 @@ import datetime
 
 from pykeg.core import util
 
+try:
+  from django.conf import settings
+  TIME_ZONE = settings.TIME_ZONE
+except ImportError:
+  TIME_ZONE = 'America/Los_Angeles'
+
 def ProtoMessageToDict(message):
   ret = util.AttrDict()
   #if not message.IsInitialized():
@@ -53,7 +59,7 @@ def DictToProtoMessage(values, out_message):
         DictToProtoMessage(value, inner_message)
     else:
       if isinstance(value, datetime.datetime):
-        value = util.datetime_to_iso8601str(value)
+        value = util.datetime_to_iso8601str(value, TIME_ZONE)
       setattr(out_message, name, value)
   return out_message
 

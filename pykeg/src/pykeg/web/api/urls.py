@@ -49,7 +49,7 @@ urlpatterns = patterns('pykeg.web.api.views',
     url(r'^last-drinks/?$', 'last_drinks'),
     url(r'^last-drinks-html/?$', 'last_drinks_html'),
 
-    url(r'^get-access-token/?$', 'get_access_token'),
+    url(r'^get-api-key/?$', 'get_api_key'),
 
     url(r'', 'default_handler'),
 

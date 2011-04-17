@@ -395,9 +395,12 @@ def last_drink_id(request):
   return {'id': str(last_id)}
 
 @py_to_json
-@staff_required
-def get_access_token(request):
-  return {'token': AUTH_KEY}
+def get_api_key(request):
+  user = request.user
+  api_key = ''
+  if user and (user.is_staff or user.is_superuser):
+    api_key = str(user.get_profile().GetApiKey())
+  return {'api_key': api_key}
 
 def tap_detail(request, tap_id):
   if request.method == 'POST':

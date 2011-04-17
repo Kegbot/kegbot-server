@@ -16,4 +16,16 @@
     </table>
   </form>
 </div>
+
+{% if user.is_staff or user.is_superuser %}
+<div class="kb-contentbox-head">
+  api key
+</div>
+<div class="kb-contentbox">
+  <p>
+    Use this API key to access the kegbot web service. Ssh! Keep it secret!
+  </p>
+  <pre>{{ user.get_profile.GetApiKey.Encode }}</pre>
+</div>
+{% endif %}
 {% endblock %}

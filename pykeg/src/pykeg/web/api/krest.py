@@ -92,15 +92,15 @@ class BadRequestError(Error):
   HTTP_CODE = 401
 
 class NoAuthTokenError(Error):
-  """An api_auth_token is required."""
+  """An api_key is required."""
   HTTP_CODE = 401
 
 class BadAuthTokenError(Error):
-  """The api_auth_token given is invalid."""
+  """The api_key given is invalid."""
   HTTP_CODE = 401
 
 class PermissionDeniedError(Error):
-  """The api_auth_token given does not have permission for this resource."""
+  """The api_key given does not have permission for this resource."""
   HTTP_CODE = 401
 
 MAP_NAME_TO_EXCEPTION = dict((c.__name__, c) for c in Error.__subclasses__())
@@ -119,7 +119,7 @@ class KrestClient:
     if api_key is None:
       api_key = FLAGS.api_key
     self._api_url = api_url
-    self._api_auth_token = api_key
+    self._api_key = api_key
 
   def _Encode(self, s):
     return unicode(s).encode('utf-8')
@@ -143,8 +143,8 @@ class KrestClient:
     endpoint = endpoint.strip('/')
     return '%s/%s/%s' % (base, endpoint, param_str)
 
-  def SetAuthToken(self, api_auth_token):
-    self._api_auth_token = api_auth_token
+  def SetAuthToken(self, api_key):
+    self._api_key = api_key
 
   def DoGET(self, endpoint, out_msg, params=None):
     """Issues a GET request to the endpoint, and retuns the result.
@@ -181,11 +181,11 @@ class KrestClient:
 
     # If we have an api token, attach it.  Prefer to attach it to POST data, but
     # use GET if there is no POST data.
-    if self._api_auth_token:
+    if self._api_key:
       if post_data:
-        post_data['api_auth_token'] = self._api_auth_token
+        post_data['api_key'] = self._api_key
       else:
-        params['api_auth_token'] = self._api_auth_token
+        params['api_key'] = self._api_key
 
     url = self._GetURL(endpoint, params=params)
     encoded_post_data = self._EncodePostData(post_data)

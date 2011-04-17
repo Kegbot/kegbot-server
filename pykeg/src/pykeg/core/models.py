@@ -37,6 +37,8 @@ from pykeg.core import stats
 from pykeg.core import units
 from pykeg.core import util
 
+from pykeg.web.api.apikey import ApiKey
+
 from pykeg.beerdb import models as bdb
 
 """Django models definition for the kegbot database."""
@@ -132,10 +134,21 @@ class UserProfile(models.Model):
     if last_d:
       last_d[0]._UpdateUserStats()
 
+  def GetApiKey(self):
+    return ApiKey(self.id, self.api_secret)
+
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
   mugshot = models.ForeignKey(UserPicture, blank=True, null=True)
+  api_secret = models.CharField(max_length=256, blank=True, null=True,
+      default=ApiKey.NewSecret)
+
+def user_profile_pre_save(sender, instance, **kwargs):
+  if not instance.api_secret:
+    instance.api_secret = ApiKey.NewSecret()
+  # TODO(mikey): validate secret (length, hex chars) here too.
+pre_save.connect(user_profile_pre_save, sender=UserProfile)
 
 def user_post_save(sender, instance, **kwargs):
   defaults = {

@@ -20,6 +20,7 @@
 
 import datetime
 from functools import wraps
+import logging
 import sys
 from decimal import Decimal
 
@@ -36,26 +37,46 @@ from pykeg.core import kbjson
 from pykeg.core import models
 from pykeg.proto import protolib
 from pykeg.proto import protoutil
+from pykeg.web.api import apikey
 from pykeg.web.api import krest
 from pykeg.web.api import forms
 
-### Authentication
-
-AUTH_KEY = settings.KEGWEB_API_KEY
+_LOGGER = logging.getLogger(__name__)
 
 ### Decorators
 
+def check_authorization(request):
+  # Admin/staff users are always authorized.
+  if request.user.is_staff or request.user.is_superuser:
+    return True
+
+  keystr = request.REQUEST.get('api_key')
+  if not keystr:
+    raise krest.NoAuthTokenError
+
+  try:
+    key = apikey.ApiKey.FromString(keystr)
+  except ValueError:
+    raise krest.BadAuthTokenError
+
+  try:
+    user = models.User.objects.get(pk=key.uid())
+  except models.User.DoesNotExist:
+    raise krest.BadAuthTokenError
+
+  if not user.is_active:
+    raise krest.BadAuthTokenError
+
+  if not user.is_staff and not user.is_superuser:
+    raise krest.PermissionDeniedError
+
+  user_secret = user.get_profile().api_secret
+  if not user_secret or user_secret != key.secret():
+    raise krest.BadAuthTokenError
+
 def auth_required(viewfunc):
   def _check_token(request, *args, **kwargs):
-    # Check for api_auth_token; allow in either POST or GET arguments.
-    if request.user.is_staff or request.user.is_superuser:
-      pass
-    else:
-      tok = request.REQUEST.get('api_auth_token')
-      if not tok:
-        raise krest.NoAuthTokenError
-      if tok.lower() != AUTH_KEY.lower():
-        raise krest.BadAuthTokenError
+    check_authorization(request)
     return viewfunc(request, *args, **kwargs)
   return wraps(viewfunc)(_check_token)
 
@@ -228,6 +249,7 @@ def all_sound_events(request):
   return FromProto(protolib.GetSoundEventSet(events))
 
 @py_to_json
+@auth_required
 def recent_events_html(request):
   try:
     since = int(request.GET.get('since'))

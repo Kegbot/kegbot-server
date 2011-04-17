@@ -118,13 +118,6 @@ except ImportError:
   Consult setup documentation.  Exiting..."""
   raise ImportError(msg)
 
-# Set API key
-import hashlib
-_m = hashlib.sha256()
-_m.update(SECRET_KEY)
-_m.update('KEGWEB API')
-KEGWEB_API_KEY = _m.hexdigest()[:16].lower()
-
 ### Optional stuff
 if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:
   INSTALLED_APPS += ('pykeg.contrib.facebook',)

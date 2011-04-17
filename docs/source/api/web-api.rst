@@ -96,20 +96,18 @@ behavior.
 Security & Authentication
 -------------------------
 
-.. warning::
-  The ad-hoc, proprietary authentication scheme described here is a
-  placeholder. It will be replaced with something better soon..
-
 Most endpoints are considered **Public**, and can be accessed by any HTTP
 client without authentication.
 
-Some endpoints and actions, such as publishing a drink, require an access token
-to be processed.  The access token is unique to your kegbot site, and can be
-determined by loading the following URL in your browser from a superuser
-account: ``/api/get-access-token/``.
+Some endpoints and actions, such as publishing a drink, require a secret key
+in order to be processed, called the *api_key*.  All registered staff and
+superuser accounts have api access.  The key can be determined by logging in to
+your account profile and navigating to ``/account/``.  Example value:
+
+  100000018fe5b1e373a18d7dbb3e51917058aaa7
 
 When required, the token should be given as either an HTTP ``GET`` or ``POST``
-parameter.
+parameter named ``api_key``.
 
 Publishing
 ----------
@@ -707,7 +705,7 @@ Example
 
 .. code-block:: javascript
 
-  // curl -F api_auth_token=1a2b...cdef http://sfo.kegbot.net/api/auth-tokens/test.testval/
+  // curl -F api_key=1000...aaa7 http://sfo.kegbot.net/api/auth-tokens/test.testval/
   {
     "result": {
       "token": {

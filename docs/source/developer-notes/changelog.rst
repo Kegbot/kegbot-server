@@ -18,30 +18,31 @@ Core/General
 ^^^^^^^^^^^^
 * Support for per-tap relay control (solenoid valve control for authenticated
   users.)
-* kegbot_core.py now uses the RESTful web API backend interface by default.
+* ``kegbot_core.py`` now uses the RESTful web API backend interface by default.
 * Kegbot daemons now perform automatic log rotation, every night at midnight.
-* When executed with ``--verbose``, daemons show a bit less useless spam.
+* When executed with ``--verbose``, daemons now show less spam.
 * The drink "endtime" column has been removed (not user-visible).
 * Flag names have changed; ``--api_url`` and ``--api_key`` now control the base
-  API url and the api access key, respectively, for any program which uses the
-  Kegbot Web API.
+  API url and the API access key for any program which uses the Kegbot Web API.
 * The "soundserver" application has been improved and once again works. Yay.
 * Each keg record now has a "spilled" volume counter. This can be used to store
   the total amount of wasted or lost beverage which is not associated with a
   drink record.
-* When running ``kegbot-admin``, ``PYTHONPATH`` now has higher precendence than
+* When running ``kegbot-admin``, ``PYTHONPATH`` now has higher precedence than
   ``/etc/kegbot`` and ``~/.kegbot``. This makes it possible to provide an
-  alternate location for ``common_settings.py``. (If the preceeding was nonsense
+  alternate location for ``common_settings.py``. (If the preceding was nonsense
   to you, you are normal..)
+* Django 1.3 is now supported.
 
 Kegweb
 ^^^^^^
+* The account page for a logged-in admin now displays the API key for that user.
 * Various CSS changes and aesthetic tweaks.
-* System events are now shown on the Kegweb main page.
+* System events are shown on the Kegweb main page.
 * Automatic AJAX refresh of drinks (and now events) on the main page has been
   improved.
-* Session detail pages now show individual pours from that session.
-* Session detail pages now show the total number of authenticated drinkers.
+* Session detail pages show individual pours from that session.
+* Session detail pages show the total number of authenticated drinkers.
   (Guest/anonymous pours do not contribute to this count.)
 * Fixed a bug where previous keg was not being marked offline after a keg
   change.
@@ -52,6 +53,9 @@ Kegweb
 
 API
 ^^^
+* API keys are now calculated differently.  As a result, previously-used
+  API keys are invalid.  To determine your API key, visit ``/account/`` while
+  logged in as an admin user.
 * System events are now exposed in the web api.
 * Sessions are now exposed in the web api.
 * Date/time fields reported in the web api are now always expressed in UTC,

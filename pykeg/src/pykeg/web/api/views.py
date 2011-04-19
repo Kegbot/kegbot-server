@@ -249,7 +249,6 @@ def all_sound_events(request):
   return FromProto(protolib.GetSoundEventSet(events))
 
 @py_to_json
-@auth_required
 def recent_events_html(request):
   try:
     since = int(request.GET.get('since'))

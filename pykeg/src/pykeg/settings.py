@@ -81,6 +81,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'pykeg.web.middleware.KegbotSiteMiddleware',
+    'pykeg.web.middleware.SiteActiveMiddleware',
     'django.middleware.doc.XViewMiddleware',
 )
 

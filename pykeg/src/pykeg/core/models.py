@@ -74,6 +74,8 @@ class KegbotSite(models.Model):
   background_image = models.ImageField(blank=True, null=True,
       upload_to=misc_file_name,
       help_text='Background for this site.')
+  is_active = models.BooleanField(default=True,
+      help_text='On/off switch for this site.')
 
   def __str__(self):
     return '%s %s' % (self.name, self.description)

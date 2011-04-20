@@ -35,6 +35,7 @@ class SiteActiveMiddleware:
   """Middleware which throws 503s when KegbotSite.is_active is false."""
   ALLOWED_PATHS = (
       '/accounts/login/',
+      '/admin/',
       '/site_media/',
   )
   def _path_allowed(self, path):

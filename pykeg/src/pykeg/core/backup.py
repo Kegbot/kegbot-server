@@ -61,7 +61,6 @@ def dump(output_fp, kbsite, indent=None, log_cb=_no_log):
       ('profiles', models.UserProfile.objects.all().order_by('id')),
       ('drinks', kbsite.drinks.valid().order_by('id')),
       ('tokens', kbsite.tokens.all().order_by('id')),
-      #('configs', kbsite.configs.all()),
   )
 
   log_cb('Generating backup data ...')

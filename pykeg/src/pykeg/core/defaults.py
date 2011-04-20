@@ -26,30 +26,14 @@ from pykeg.core import units
 from pykeg.beerdb import models as bdb
 
 def db_is_installed():
-  try:
-    models.Config.objects.get(key='db.installed')
-    return True
-  except models.Config.DoesNotExist:
-    return False
+  return models.KegbotSite.objects.all() > 0
 
-def set_defaults():
+def set_defaults(force=False):
   """ default values (contents may change with schema) """
-  if db_is_installed():
+  if not force and db_is_installed():
     raise RuntimeError, "Database is already installed."
 
   site = models.KegbotSite.objects.create(name='default')
-
-  # config table defaults
-  default_config = (
-     ('logging.logfile', 'keg.log'),
-     ('logging.logformat', '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'),
-     ('logging.use_logfile', 'true'),
-     ('logging.use_stream', 'true'),
-     ('db.installed', 'true'),
-  )
-  for key, val in default_config:
-    rec = models.Config(site=site, key=key, value=val)
-    rec.save()
 
   # KegTap defaults
   main_tap = models.KegTap(site=site, name='Main Tap', meter_name='kegboard.flow0')

@@ -44,10 +44,6 @@ class Backend:
   backend.
   """
 
-  def GetConfig(self):
-    """Returns a KegbotConfig instance based on the current database values."""
-    raise NotImplementedError
-
   def CreateNewUser(self, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
       weight=kb_common.DEFAULT_NEW_USER_WEIGHT):
     """Creates a new User instance.
@@ -93,20 +89,10 @@ class KegbotBackend(Backend):
 
   def __init__(self, sitename='default', site=None):
     self._logger = logging.getLogger('backend')
-    self._config = config.KegbotConfig(self._GetConfigDict())
     if site:
       self._site = site
     else:
       self._site = models.KegbotSite.objects.get(name=sitename)
-
-  def _GetConfigDict(self):
-    try:
-      ret = {}
-      for row in models.Config.objects.all():
-        ret[row.key] = row.value
-      return ret
-    except DatabaseError, e:
-      raise BackendError, e
 
   def _GetTapFromName(self, tap_name):
     try:
@@ -136,9 +122,6 @@ class KegbotBackend(Backend):
       return models.User.objects.get(username=username)
     except models.User.DoesNotExist:
       return None
-
-  def GetConfig(self):
-    return self._config
 
   def CreateNewUser(self, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
       weight=kb_common.DEFAULT_NEW_USER_WEIGHT):
@@ -292,9 +275,6 @@ class WebBackend(Backend):
   def __init__(self, api_url=None, api_key=None):
     self._logger = logging.getLogger('api-backend')
     self._client = krest.KrestClient(api_url=api_url, api_key=api_key)
-
-  def GetConfig(self):
-    raise NotImplementedError
 
   def CreateNewUser(self, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
       weight=kb_common.DEFAULT_NEW_USER_WEIGHT):

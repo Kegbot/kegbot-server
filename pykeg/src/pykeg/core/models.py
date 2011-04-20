@@ -1002,22 +1002,6 @@ class RelayLog(models.Model):
 pre_save.connect(_set_seqn_pre_save, sender=RelayLog)
 
 
-class Config(models.Model):
-  def __str__(self):
-    return '%s=%s' % (self.key, self.value)
-
-  site = models.ForeignKey(KegbotSite, related_name='configs')
-  key = models.CharField(max_length=255, unique=True)
-  value = models.TextField()
-
-  @classmethod
-  def get(cls, key, default=None):
-    try:
-      return cls.objects.get(key=key)
-    except cls.DoesNotExist:
-      return default
-
-
 class _StatsModel(models.Model):
   STATS_BUILDER = None
   class Meta:

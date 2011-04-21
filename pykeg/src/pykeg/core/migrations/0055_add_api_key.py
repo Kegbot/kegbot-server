@@ -4,12 +4,18 @@ from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
+from pykeg.web.api import apikey
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
         # Adding field 'UserProfile.api_secret'
-        db.add_column('core_userprofile', 'api_secret', self.gf('django.db.models.fields.CharField')(default='450e596c97fe4cc3ef70c03f4d21c107e88cbfd7292f569e756e2e16232044b4', max_length=256, null=True, blank=True), keep_default=False)
+        db.add_column('core_userprofile', 'api_secret', self.gf('django.db.models.fields.CharField')(default='', max_length=256, null=True, blank=True), keep_default=False)
+        if not db.dry_run:
+          for profile in orm.UserProfile.objects.all():
+            profile.api_secret = apikey.ApiKey.NewSecret()
+            profile.save()
 
 
     def backwards(self, orm):

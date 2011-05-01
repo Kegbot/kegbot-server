@@ -43,7 +43,7 @@ class DrinkTweetLog(models.Model):
 
 class DrinkClassification(models.Model):
   name = models.CharField(max_length=256)
-  minimum_volume_ml = models.FloatField()
+  minimum_volume_ml = models.FloatField(default=0)
 
   def __str__(self):
     vol = units.Quantity(self.minimum_volume_ml, units.UNITS.Milliliter)

@@ -116,7 +116,7 @@ class Migration:
         'twitter.drinkclassification': {
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'minimum_volume': ('django.db.models.fields.IntegerField', [], {}),
-            'minimum_volume_ml': ('django.db.models.fields.FloatField', [], {}),
+            'minimum_volume_ml': ('django.db.models.fields.FloatField', [], {'default': '0'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '256'})
         },
         'twitter.drinkremark': {

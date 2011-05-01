@@ -170,8 +170,8 @@ def DrinkToProto(drink, full=False):
   ret.pour_time = datestr(drink.starttime)
   ret.duration = drink.duration
   ret.status = drink.status
-  # TODO(mikey): still needed?
-  ret.keg_id = str(drink.keg.seqn)
+  if drink.keg:
+    ret.keg_id = str(drink.keg.seqn)
   if drink.user:
     ret.user_id = drink.user.username
   if drink.auth_token:

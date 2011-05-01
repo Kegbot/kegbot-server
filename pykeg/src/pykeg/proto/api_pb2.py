@@ -3,11 +3,11 @@
 from google.protobuf import descriptor
 from google.protobuf import message
 from google.protobuf import reflection
-from google.protobuf import service
-from google.protobuf import service_reflection
 from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
+
+import models_pb2
 
 DESCRIPTOR = descriptor.FileDescriptor(
   name='api.proto',
@@ -814,8 +814,6 @@ _DRINKDETAILHTML = descriptor.Descriptor(
   serialized_end=1582,
 )
 
-import models_pb2
-
 _DRINKSET.fields_by_name['drinks'].message_type = models_pb2._DRINK
 _DRINKSET.fields_by_name['paging'].message_type = _PAGING
 _KEGSET.fields_by_name['kegs'].message_type = models_pb2._KEG
@@ -857,6 +855,27 @@ _USERDETAIL.fields_by_name['user'].message_type = models_pb2._USER
 _SYSTEMEVENTDETAIL.fields_by_name['event'].message_type = models_pb2._SYSTEMEVENT
 _SYSTEMEVENTDETAIL.fields_by_name['image'].message_type = models_pb2._IMAGE
 _THERMOSENSORDETAIL.fields_by_name['sensor'].message_type = models_pb2._THERMOSENSOR
+DESCRIPTOR.message_types_by_name['Paging'] = _PAGING
+DESCRIPTOR.message_types_by_name['DrinkSet'] = _DRINKSET
+DESCRIPTOR.message_types_by_name['KegSet'] = _KEGSET
+DESCRIPTOR.message_types_by_name['SessionSet'] = _SESSIONSET
+DESCRIPTOR.message_types_by_name['SystemEventSet'] = _SYSTEMEVENTSET
+DESCRIPTOR.message_types_by_name['SystemEventDetailSet'] = _SYSTEMEVENTDETAILSET
+DESCRIPTOR.message_types_by_name['SystemEventHtmlSet'] = _SYSTEMEVENTHTMLSET
+DESCRIPTOR.message_types_by_name['SoundEventSet'] = _SOUNDEVENTSET
+DESCRIPTOR.message_types_by_name['TapDetailSet'] = _TAPDETAILSET
+DESCRIPTOR.message_types_by_name['DrinkDetailHtmlSet'] = _DRINKDETAILHTMLSET
+DESCRIPTOR.message_types_by_name['ThermoSensorSet'] = _THERMOSENSORSET
+DESCRIPTOR.message_types_by_name['ThermoLogSet'] = _THERMOLOGSET
+DESCRIPTOR.message_types_by_name['TapDetail'] = _TAPDETAIL
+DESCRIPTOR.message_types_by_name['DrinkDetail'] = _DRINKDETAIL
+DESCRIPTOR.message_types_by_name['SessionDetail'] = _SESSIONDETAIL
+DESCRIPTOR.message_types_by_name['KegDetail'] = _KEGDETAIL
+DESCRIPTOR.message_types_by_name['UserDetail'] = _USERDETAIL
+DESCRIPTOR.message_types_by_name['SystemEventDetail'] = _SYSTEMEVENTDETAIL
+DESCRIPTOR.message_types_by_name['SystemEventHtml'] = _SYSTEMEVENTHTML
+DESCRIPTOR.message_types_by_name['ThermoSensorDetail'] = _THERMOSENSORDETAIL
+DESCRIPTOR.message_types_by_name['DrinkDetailHtml'] = _DRINKDETAILHTML
 
 class Paging(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
@@ -983,24 +1002,5 @@ class DrinkDetailHtml(message.Message):
   DESCRIPTOR = _DRINKDETAILHTML
   
   # @@protoc_insertion_point(class_scope:DrinkDetailHtml)
-
-
-_KEGWEBAPI = descriptor.ServiceDescriptor(
-  name='KegwebApi',
-  full_name='KegwebApi',
-  file=DESCRIPTOR,
-  index=0,
-  options=None,
-  serialized_start=1584,
-  serialized_end=1595,
-  methods=[
-])
-
-class KegwebApi(service.Service):
-  __metaclass__ = service_reflection.GeneratedServiceType
-  DESCRIPTOR = _KEGWEBAPI
-class KegwebApi_Stub(KegwebApi):
-  __metaclass__ = service_reflection.GeneratedServiceStubType
-  DESCRIPTOR = _KEGWEBAPI
 
 # @@protoc_insertion_point(module_scope)

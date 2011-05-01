@@ -23,203 +23,164 @@ import inspect
 import itertools
 import logging
 
+from pykeg.proto import models_pb2
+
+STAT_MAP = {}
+
+def stat(statname):
+  def decorate(f):
+    setattr(f, 'statname', statname)
+    return f
+  return decorate
+
 class StatsBuilder:
   def __init__(self, drink, previous=None):
-    self._drink = drink
-    self._logger = logging.getLogger('stats-builder')
-
-    if previous is None:
-      previous = {}
-    self._previous = previous
-
-    prev_seqn = self._previous.get('_seqn', -1)
-    prev_revision = self._previous.get('_revision', -1)
-
-    if prev_seqn == drink.seqn:
-      # Skip if asked to regenerate same stats.
-      self._logger.debug('skipping: same seqn')
-      return
-    elif prev_revision != self.REVISION:
-      # Invalidate previous stats if builder revisions have changed.
-      self._logger.debug('invalidating: older revision')
-      self._previous = {}
+    self.drink = drink
+    self.previous = previous
+    self.STAT_MAP = {}
+    for name, fn in inspect.getmembers(self, inspect.ismethod):
+      if hasattr(fn, 'statname'):
+        self.STAT_MAP[fn.statname] = fn
 
   def _AllDrinks(self):
-    raise NotImplementedError
-
-  def _AllStats(self):
-    for name, cls in inspect.getmembers(self, inspect.isclass):
-      if hasattr(cls, 'STAT_NAME'):
-        yield (cls.STAT_NAME, cls)
+    return []
 
   def Build(self):
-    drinks = self._AllDrinks()
-    result = copy.deepcopy(self._previous)
-    for statname, cls in self._AllStats():
-      o = cls()
-      if statname not in result:
-        self._logger.debug('+++ %s (FULL)' % statname)
-        result[statname] = o.Full(drinks)
-      else:
-        self._logger.debug('+++ %s (partial)' % statname)
-        result[statname] = o.Incremental(self._drink, result[statname])
-
-    result['_revision'] = self.REVISION
-    result['_seqn'] = self._drink.seqn
-    return result
-
-
-class Stat:
-  def __init__(self):
-    pass
-  def Full(self, drinks):
-    raise NotImplementedError
-  def Incremental(self, drink, previous):
-    raise NotImplementedError
+    self.stats = models_pb2.Stats()
+    if not self.drink:
+      return self.stats
+    self.drinks = self._AllDrinks()
+    if self.previous:
+      self.stats.MergeFrom(self.previous)
+    for statname, fn in self.STAT_MAP.iteritems():
+      fn()
+    return self.stats
 
 
 class BaseStatsBuilder(StatsBuilder):
   """Builder which generates a variety of stats from object information."""
 
-  class TotalVolume(Stat):
-    STAT_NAME = 'total_volume'
-    def Full(self, drinks):
-      return sum(drink.volume_ml for drink in drinks)
-    def Incremental(self, drink, previous):
-      return previous + drink.volume_ml
+  @stat('last_drink_id')
+  def LastDrinkId(self):
+    self.stats.last_drink_id = str(self.drink.seqn)
 
-  class TotalPours(Stat):
-    STAT_NAME = 'total_count'
-    def Full(self, drinks):
-      return drinks.count()
-    def Incremental(self, drink, previous):
-      return previous + 1
+  @stat('total_volume_ml')
+  def TotalVolume(self):
+    if not self.previous:
+      self.stats.total_volume_ml = sum(drink.volume_ml for drink in self.drinks)
+    else:
+      self.stats.total_volume_ml += self.drink.volume_ml
 
-  class AverageVolume(Stat):
-    STAT_NAME = 'volume_avg'
-    def Full(self, drinks):
-      count = drinks.count()
+  @stat('total_pours')
+  def TotalPours(self):
+    if not self.previous:
+      self.stats.total_pours = self.drinks.count()
+    else:
+      self.stats.total_pours += 1
+
+  @stat('average_volume_ml')
+  def AverageVolume(self):
+    if not self.previous:
+      count = self.drinks.count()
+      average = 0.0
       if count:
-        average = sum(drink.volume_ml for drink in drinks) / float(count)
-      else:
-        average = 0
-      return {'count': count, 'average': average}
-    def Incremental(self, drink, previous):
-      average = previous['average']
-      count = previous['count']
-      vol = drink.volume_ml
+        average = sum(drink.volume_ml for drink in self.drinks) / float(count)
+      self.stats.average_volume_ml = average
+    else:
+      vol = self.previous.total_volume_ml
+      count = self.previous.total_pours
+      vol += self.drink.volume_ml
+      count += 1
+      self.stats.average_volume_ml = vol / float(count)
 
-      res = previous
-      res['average'] = (average*count + vol) / (count + 1)
-      res['count'] = count + 1
-      return res
-
-  class LargestVolume(Stat):
-    STAT_NAME = 'volume_max'
-    def Full(self, drinks):
-      res = {'volume': 0, 'id': 0}
-      drinks = drinks.order_by('-volume_ml')
+  @stat('greatest_volume_ml')
+  def GreatestVolume(self):
+    if not self.previous:
+      res = 0
+      drinks = self.drinks.order_by('-volume_ml')
       if drinks.count():
-        res['volume'] = drinks[0].volume_ml
-        res['id'] = drinks[0].seqn
-      return res
-    def Incremental(self, drink, previous):
-      if drink.volume_ml <= previous['volume']:
-        return previous
-      previous['volume'] = drink.volume_ml
-      previous['id'] = drink.seqn
-      return previous
+        res = drinks[0].volume_ml
+      self.stats.greatest_volume_ml = res
+    else:
+      if self.drink.volume_ml > self.previous.greatest_volume_ml:
+        self.stats.greatest_volume_ml = self.drink.volume_ml
 
-  class SmallestVolume(Stat):
-    STAT_NAME = 'volume_min'
-    def Full(self, drinks):
-      res = {'volume': 0, 'id': 0}
-      drinks = drinks.order_by('volume_ml')
+  @stat('greatest_volume_id')
+  def GreatestVolumeId(self):
+    if not self.previous:
+      res = 0
+      drinks = self.drinks.order_by('-volume_ml')
       if drinks.count():
-        res['volume'] = drinks[0].volume_ml
-        res['id'] = drinks[0].seqn
-      return res
-    def Incremental(self, drink, previous):
-      if drink.volume_ml >= previous['volume']:
-        return previous
-      previous['volume'] = drink.volume_ml
-      previous['id'] = drink.seqn
-      return previous
+        res = drinks[0].seqn
+      self.stats.greatest_volume_id = str(res)
+    else:
+      if self.drink.volume_ml > self.previous.greatest_volume_ml:
+        self.stats.greatest_volume_id = str(self.drink.seqn)
 
-  class VolumeByDayOfweek(Stat):
-    STAT_NAME = 'volume_by_day_of_week'
-    def Full(self, drinks):
+  @stat('volume_by_day_of_week')
+  def VolumeByDayOfweek(self):
+    result = self.stats.volume_by_day_of_week
+    if not self.previous:
       # Note: uses the session's starttime, rather than the drink's. This causes
       # late-night sessions to be reported for the day on which they were
       # started.
-      volmap = dict((str(i), 0) for i in xrange(7))
-      for drink in drinks:
-        weekday = str(drink.session.starttime.weekday())
-        volmap[weekday] += drink.volume_ml
-      return volmap
-    def Incremental(self, drink, previous):
-      weekday = str(drink.session.starttime.weekday())
-      previous[weekday] += drink.volume_ml
-      return previous
-
-  class VolumeByDrinker(Stat):
-    STAT_NAME = 'volume_by_drinker'
-    def Full(self, drinks):
       volmap = {}
-      for drink in drinks:
+      for drink in self.drinks:
+        weekday = drink.session.starttime.strftime('%w')
+        if weekday not in volmap:
+          volmap[weekday] = 0.0
+        volmap[weekday] += drink.volume_ml
+      for weekday, volume_ml in volmap.iteritems():
+        if volume_ml:
+          day = result.add()
+          day.weekday = weekday
+          day.volume_ml = volume_ml
+    else:
+      drink_weekday = self.drink.session.starttime.strftime('%w')
+      for message in self.stats.volume_by_day_of_week:
+        if message.weekday == drink_weekday:
+          message.volume_ml += self.drink.volume_ml
+          return
+      message = result.add()
+      message.weekday = drink_weekday
+      message.volume_ml = self.drink.volume_ml
+
+  @stat('volume_by_drinker')
+  def VolumeByDrinker(self):
+    if not self.previous:
+      result = self.stats.volume_by_drinker
+      volmap = {}
+      for drink in self.drinks:
         if drink.user:
           u = drink.user.username
         else:
-          u = None
+          u = ''
         volmap[u] = volmap.get(u, 0) + drink.volume_ml
-      return volmap
-    def Incremental(self, drink, previous):
-      if drink.user:
-        u = drink.user.username
+      for username, volume_ml in volmap.iteritems():
+        if volume_ml:
+          record = result.add()
+          record.username = username
+          record.volume_ml = volume_ml
+    else:
+      result = self.stats.volume_by_drinker
+      if self.drink.user:
+        u = self.drink.user.username
       else:
-        u = None
-      previous[u] = previous.get(u, 0) + drink.volume_ml
-      return previous
-
-  class Drinkers(Stat):
-    STAT_NAME = 'drinkers'
-    def Full(self, drinks):
-      drinkers = set()
-      for drink in drinks:
-        u = None
-        if drink.user:
-          u = drink.user.username
-        if u not in drinkers:
-          drinkers.add(u)
-      return list(drinkers)
-    def Incremental(self, drink, previous):
-      u = None
-      if drink.user:
-        u = drink.user.username
-      if u not in previous:
-        previous.append(u)
-      return previous
-
-  class RegisteredDrinkers(Stat):
-    STAT_NAME = 'registered_drinkers'
-    def Full(self, drinks):
-      drinkers = set()
-      for drink in drinks:
-        if drink.user and drink.user.username not in drinkers:
-          drinkers.add(drink.user.username)
-      return list(drinkers)
-    def Incremental(self, drink, previous):
-      if drink.user and drink.user.username not in previous:
-        previous.append(drink.user.username)
-      return previous
-
+        u = ''
+      for message in result:
+        if message.username == u:
+          message.volume_ml += self.drink.volume_ml
+          return
+      message = result.add()
+      result.username = u
+      result.volume_ml = self.drink.volume_ml
 
 class SystemStatsBuilder(BaseStatsBuilder):
   """Builder of systemwide stats by drink."""
   REVISION = 5
 
   def _AllDrinks(self):
-    qs = self._drink.site.drinks.valid().filter(seqn__lte=self._drink.seqn)
+    qs = self.drink.site.drinks.valid().filter(seqn__lte=self.drink.seqn)
     qs = qs.order_by('seqn')
     return qs
 
@@ -230,7 +191,7 @@ class DrinkerStatsBuilder(SystemStatsBuilder):
 
   def _AllDrinks(self):
     qs = SystemStatsBuilder._AllDrinks(self)
-    qs = qs.filter(user=self._drink.user)
+    qs = qs.filter(user=self.drink.user)
     return qs
 
 
@@ -240,7 +201,7 @@ class KegStatsBuilder(SystemStatsBuilder):
 
   def _AllDrinks(self):
     qs = SystemStatsBuilder._AllDrinks(self)
-    qs = qs.filter(keg=self._drink.keg)
+    qs = qs.filter(keg=self.drink.keg)
     return qs
 
 
@@ -250,7 +211,7 @@ class SessionStatsBuilder(SystemStatsBuilder):
 
   def _AllDrinks(self):
     qs = SystemStatsBuilder._AllDrinks(self)
-    qs = qs.filter(session=self._drink.session)
+    qs = qs.filter(session=self.drink.session)
     return qs
 
 

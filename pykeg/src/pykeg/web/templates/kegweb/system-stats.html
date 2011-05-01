@@ -14,7 +14,7 @@
       <td align="right"><b>Total Drinks</b></td>
       <td>
         a total of
-        <b>{{ stats.total_count }} pour{{ stats.total_count|pluralize }}</b>
+        <b>{{ stats.total_pours }} pour{{ stats.total_pours|pluralize }}</b>
         have been recorded.
       </td>
     </tr>
@@ -22,7 +22,7 @@
       <td align="right"><b>Average Pour</b></td>
       <td>
         the average pour size is
-        <b>{{ stats.volume_avg.average|volume:"ounces"|floatformat }}
+        <b>{{ stats.average_volume_ml|volume:"ounces"|floatformat }}
         oz</b>.
       </td>
     </tr>

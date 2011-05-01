@@ -93,7 +93,7 @@ def KegVolumeChart(keg):
     raise ChartError('Bad value given for keg')
   stats = keg.GetStats()
 
-  served = units.Quantity(stats.get('total_volume', 0.0))
+  served = units.Quantity(stats.get('total_volume_ml', 0.0))
   served_pints = to_pints(served)
   full_pints = to_pints(keg.full_volume())
   remain_pints = full_pints - served_pints

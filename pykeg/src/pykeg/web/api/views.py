@@ -25,11 +25,16 @@ import sys
 from decimal import Decimal
 
 from django.conf import settings
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.forms import AuthenticationForm
+
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template import Context
 from django.template.loader import get_template
+from django.views.decorators.csrf import csrf_exempt
 
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import backend
@@ -459,6 +464,25 @@ def cancel_drink(request):
     return FromProto(res)
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
+
+@csrf_exempt
+@py_to_json
+def login(request):
+  if request.POST:
+    form = AuthenticationForm(data=request.POST)
+    if form.is_valid():
+      auth_login(request, form.get_user())
+      if request.session.test_cookie_worked():
+        request.session.delete_test_cookie()
+      return {'result': 'ok'}
+    else:
+      raise krest.PermissionDeniedError('Login failed.')
+  raise krest.BadRequestError('POST required.')
+
+@py_to_json
+def logout(request):
+  auth_logout(request)
+  return {'result': 'ok'}
 
 @py_to_json
 def default_handler(request):

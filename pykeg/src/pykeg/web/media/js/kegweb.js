@@ -84,7 +84,7 @@ kegweb.updateEventsTable = function(events) {
   for (var rowId in events) {
     var row = events[rowId];
     var animate = kegweb.eventsLoaded;
-    var eid = row['id'];
+    var eid = parseInt(row['id']);
     if (eid > kegweb.lastEventId) {
       kegweb.lastEventId = eid;
     }

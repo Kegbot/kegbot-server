@@ -66,9 +66,9 @@ def system_stats(request):
   context['stats'] = stats
 
   top_drinkers = []
-  for username, vol in stats.get('volume_by_drinker', {}).iteritems():
-    username = str(username)
-    vol = float(vol)
+  for drinkervol in stats.get('volume_by_drinker'):
+    username = str(drinkervol['username'])
+    vol = float(drinkervol['volume_ml'])
     try:
       user = models.User.objects.get(username=username)
     except models.User.DoesNotExist:

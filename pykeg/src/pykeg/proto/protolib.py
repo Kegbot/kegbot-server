@@ -157,7 +157,7 @@ def BrewerToProto(brewer, full=False):
   if brewer.description is not None:
     ret.description = brewer.description
   if brewer.image:
-    ret.image.MergeFrom(ToProto(beertype.image))
+    ret.image.MergeFrom(ToProto(brewer.image))
   return ret
 
 @converts(models.Drink)

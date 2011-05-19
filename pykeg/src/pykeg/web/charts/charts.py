@@ -93,7 +93,7 @@ def KegVolumeChart(keg):
     raise ChartError('Bad value given for keg')
   stats = keg.GetStats()
 
-  served = units.Quantity(stats.get('total_volume', 0.0))
+  served = units.Quantity(stats.total_volume_ml)
   served_pints = to_pints(served)
   full_pints = to_pints(keg.full_volume())
   remain_pints = full_pints - served_pints
@@ -139,16 +139,14 @@ def KegUsageByWeekday(keg):
     raise ChartError('Bad value given for keg')
   stats = keg.GetStats()
 
-  volmap = stats.get('volume_by_day_of_week')
+  volmap = [0] * 7
+  vols = stats.volume_by_day_of_week
   if not volmap:
     raise ChartError('Daily volumes unavailable')
 
-  vals = []
-  for k in sorted(volmap.keys()):
-    vals.append(to_pints(volmap[k]))
-  if len(vals) != 7:
-    raise ChartError('Volume data is corrupt')
-  return _DayOfWeekChart(vals)
+  for v in vols:
+    volmap[int(v.weekday)] += to_pints(v.volume_ml)
+  return _DayOfWeekChart(volmap)
 
 def UserSessionsByWeekday(user):
   """Shows a user's total session by volume by day of week."""
@@ -201,14 +199,15 @@ def UsersByVolume(keg_or_session):
     raise ChartError('Bad value for keg_or_session')
 
   stats = keg_or_session.GetStats()
-  volmap = stats.get('volume_by_drinker', {})
-  if not volmap:
+  vols = stats.volume_by_drinker
+  if not vols:
     raise ChartError('no data')
 
+  volmap = {}
   data = []
-  for username, volume_ml in volmap.iteritems():
-    pints = to_pints(volume_ml)
-    label = '<b>%s</b> (%.1f)' % (username, pints)
+  for entry in vols:
+    pints = to_pints(entry.volume_ml)
+    label = '<b>%s</b> (%.1f)' % (entry.username, pints)
     data.append((label, pints))
 
   other_vol = 0
@@ -299,7 +298,7 @@ def _DayOfWeekChart(vals):
   labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   # convert from 0=Monday to 0=Sunday
-  vals.insert(0, vals.pop(-1))
+  #vals.insert(0, vals.pop(-1))
 
   res = {
     'xAxis': {

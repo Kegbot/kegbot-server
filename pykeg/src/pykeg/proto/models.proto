@@ -470,3 +470,52 @@ message SoundEvent {
   // Not currently used.
   optional string user = 4;
 }
+
+// A collection of drink statistics.  The stats may cover a particular drinker,
+// keg, session, or the whole system.
+message Stats {
+
+  // The drink these stats were computed against.
+  optional string last_drink_id = 1;
+
+  // Total volume of all pours captured by this instance.
+  optional float total_volume_ml = 2;
+
+  // Total number of drinks poured.
+  optional uint32 total_pours = 3;
+
+  // Average volume of all pours.
+  optional float average_volume_ml = 4;
+
+  // Volume of pour with single greatest volume.
+  optional float greatest_volume_ml = 5;
+
+  // Id for pour with single greatest volume.
+  optional string greatest_volume_id = 6;
+
+  // Container message for the volumes by weekday.
+  message WeekdayVolume {
+    // The day of the week [0 (Sunday), 6]
+    required string weekday = 1;
+
+    // The total volume for this day.
+    required float volume_ml = 2;
+  }
+
+  // Pour volume, grouped by day of the week on which the session started.
+  repeated WeekdayVolume volume_by_day_of_week = 7;
+
+  // Container message for volumes by drinker.
+  message DrinkerVolume {
+    // The drinker.
+    required string username = 1;
+
+    // The total volume for this drinker.
+    required float volume_ml = 2;
+  }
+
+  // Pour volume, grouped by drinker.  Guest/anonymous pours are listed with
+  // an empty "username" field.
+  repeated DrinkerVolume volume_by_drinker = 8;
+
+}

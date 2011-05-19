@@ -40,11 +40,11 @@
      <tr>
         <td align="right" valign="top"><b>Total Volume</b></td>
         <td align="left">
-         {{ stats.total_volume|volume:"ounces"|floatformat:1}} ounces<br>
-         = {{ stats.total_volume|volume:"twelveounces"|floatformat:0}} 12-oz bottles<br>
-         = {{ stats.total_volume|volume:"pints"|floatformat:0}} pints<br>
-         = {{ stats.total_volume|volume:"gallons"|floatformat:1}} gallons<br>
-         = {{ stats.total_volume|volume:"halfbarrels"|floatformat:1}} kegs<br>
+         {{ stats.total_volume_ml|volume:"ounces"|floatformat:1}} ounces<br>
+         = {{ stats.total_volume_ml|volume:"twelveounces"|floatformat:0}} 12-oz bottles<br>
+         = {{ stats.total_volume_ml|volume:"pints"|floatformat:0}} pints<br>
+         = {{ stats.total_volume_ml|volume:"gallons"|floatformat:1}} gallons<br>
+         = {{ stats.total_volume_ml|volume:"halfbarrels"|floatformat:1}} kegs<br>
         </td>
      </tr>
   </table>

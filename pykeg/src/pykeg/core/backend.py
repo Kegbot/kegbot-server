@@ -133,6 +133,12 @@ class KegbotBackend(Backend):
     p.save()
     return protolib.ToProto(u)
 
+  def CreateTap(self, name, meter_name, relay_name=None, ml_per_tick=None):
+    tap = models.KegTap.objects.create(site=self._site, name=name,
+        meter_name=meter_name, relay_name=relay_name, ml_per_tick=ml_per_tick)
+    tap.save()
+    return protolib.ToProto(tap)
+
   def CreateAuthToken(self, auth_device, token_value, username=None):
     token = models.AuthenticationToken.objects.create(
         site=self._site, auth_device=auth_device, token_value=token_value)
@@ -146,7 +152,8 @@ class KegbotBackend(Backend):
     return protolib.ToProto(list(models.KegTap.objects.all()))
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=0, auth_token=None, spilled=False):
+      pour_time=None, duration=0, auth_token=None, spilled=False,
+      do_postprocess=True):
 
     tap = self._GetTapFromName(tap_name)
     if not tap:
@@ -179,7 +186,8 @@ class KegbotBackend(Backend):
         auth_token=auth_token)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
-    d.PostProcess()
+    if do_postprocess:
+      d.PostProcess()
 
     return protolib.ToProto(d)
 

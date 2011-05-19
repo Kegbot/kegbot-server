@@ -170,8 +170,8 @@ def DrinkToProto(drink, full=False):
   ret.pour_time = datestr(drink.starttime)
   ret.duration = drink.duration
   ret.status = drink.status
-  # TODO(mikey): still needed?
-  ret.keg_id = str(drink.keg.seqn)
+  if drink.keg:
+    ret.keg_id = str(drink.keg.seqn)
   if drink.user:
     ret.user_id = drink.user.username
   if drink.auth_token:
@@ -303,6 +303,17 @@ def SessionChunkToProto(record, full=False):
   ret.start_time = datestr(record.starttime)
   ret.end_time = datestr(record.endtime)
   ret.volume_ml = record.volume_ml
+  return ret
+
+@converts(models.SystemStats)
+@converts(models.UserStats)
+@converts(models.KegStats)
+@converts(models.SessionStats)
+def SystemStatsToProto(record, full=False):
+  stats = record.stats
+  ret = models_pb2.Stats()
+  for k, v  in stats.iteritems():
+    setattr(ret, k, v)
   return ret
 
 @converts(models.SystemEvent)

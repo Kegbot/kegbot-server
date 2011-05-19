@@ -57,7 +57,7 @@ setup(
 
       #'MySQL-python',
       #'pil',
-      'protobuf == 2.3.0-1',
+      'protobuf >= 2.4.1',
       'pylcdui >= 0.5.5',
       #'pysqlite>=2.0.3',
       'python-gflags >= 1.3',
@@ -69,8 +69,8 @@ setup(
       'pytz',
     ],
     dependency_links = [
+        'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',
-        'http://kegbot.org/kmedia/protobuf-2.3.0-1.tgz',
         'http://kegbot.org/kmedia/python-openid-2.2.5.tgz',
 
         # Self-maintained package due to upstream issue:

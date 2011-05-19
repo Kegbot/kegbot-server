@@ -36,16 +36,16 @@ from pykeg.hw.kegboard import kegboard_unittest
 from pykeg.hw.kegboard import crc16_unittest
 
 ALL_TEST_MODULES = (
-    #alarm_unittest,
+    alarm_unittest,
     stats_unittest,
-    #flow_meter_unittest,
-    #models_unittest,
-    #units_unittest,
-    #util_unittest,
-    #kegnet_unittest,
-    #kegbot_unittest,
-    #kegboard_unittest,
-    #crc16_unittest,
+    flow_meter_unittest,
+    models_unittest,
+    units_unittest,
+    util_unittest,
+    kegnet_unittest,
+    kegbot_unittest,
+    kegboard_unittest,
+    crc16_unittest,
 )
 
 def suite():

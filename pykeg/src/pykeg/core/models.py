@@ -37,6 +37,9 @@ from pykeg.core import stats
 from pykeg.core import units
 from pykeg.core import util
 
+from pykeg.proto import models_pb2
+from pykeg.proto import protoutil
+
 from pykeg.web.api.apikey import ApiKey
 
 from pykeg.beerdb import models as bdb
@@ -128,6 +131,7 @@ class UserProfile(models.Model):
       self._stats = qs[0].stats
     else:
       self._stats = {}
+    self._stats = protoutil.DictToProtoMessage(self._stats, models_pb2.Stats())
     return self._stats
 
   def RecomputeStats(self):
@@ -264,6 +268,7 @@ class Keg(models.Model):
       self._stats = qs[0].stats
     else:
       self._stats = {}
+    self._stats = protoutil.DictToProtoMessage(self._stats, models_pb2.Stats())
     return self._stats
 
   def RecomputeStats(self):
@@ -283,10 +288,10 @@ class Keg(models.Model):
     if not stats:
       return []
     ret = []
-    volmap = stats.get('volume_by_drinker', {})
-    for username, vol in volmap.iteritems():
-      username = str(username)
-      vol = float(vol)
+    entries = stats.volume_by_drinker
+    for entry in entries:
+      username = str(entry.username)
+      vol = entry.volume_ml
       try:
         user = User.objects.get(username=username)
       except User.DoesNotExist:
@@ -646,6 +651,7 @@ class DrinkingSession(AbstractChunk):
       self._stats = qs[0].stats
     else:
       self._stats = {}
+    self._stats = protoutil.DictToProtoMessage(self._stats, models_pb2.Stats())
     return self._stats
 
   def summarize_drinkers(self):
@@ -1013,11 +1019,11 @@ class _StatsModel(models.Model):
   stats = fields.JSONField()
 
   def Update(self, drink, force=False):
-    previous = self.stats
+    previous = protoutil.DictToProtoMessage(self.stats, models_pb2.Stats())
     if force:
       previous = None
     builder = self.STATS_BUILDER(drink, previous)
-    self.stats = builder.Build()
+    self.stats = protoutil.ProtoMessageToDict(builder.Build())
     self.save()
 
 

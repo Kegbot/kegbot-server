@@ -172,8 +172,8 @@ class BaseStatsBuilder(StatsBuilder):
           message.volume_ml += self.drink.volume_ml
           return
       message = result.add()
-      result.username = u
-      result.volume_ml = self.drink.volume_ml
+      message.username = u
+      message.volume_ml = self.drink.volume_ml
 
 class SystemStatsBuilder(BaseStatsBuilder):
   """Builder of systemwide stats by drink."""

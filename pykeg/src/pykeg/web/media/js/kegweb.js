@@ -84,7 +84,7 @@ kegweb.updateEventsTable = function(events) {
   for (var rowId in events) {
     var row = events[rowId];
     var animate = kegweb.eventsLoaded;
-    var eid = row['id'];
+    var eid = parseInt(row['id']);
     if (eid > kegweb.lastEventId) {
       kegweb.lastEventId = eid;
     }
@@ -93,14 +93,16 @@ kegweb.updateEventsTable = function(events) {
     var newDiv = '<div id="' + newDivName + '">';
     newDiv += row['html'];
     newDiv += '</div>';
+
+    newDivName = "#" + newDivName;
     $('#kb-recent-events').prepend(newDiv);
-    $('#' + newDivName).find("abbr.timeago").timeago();
+    $(newDivName).find("abbr.timeago").timeago();
 
     if (animate) {
-      $('#' + newDivName).css("display", "none");
-      $('#' + newDivName).css("background-color", "#ffc800");
-      $('#' + newDivName).show("slide", { direction: 'up' }, 1000, function() {
-          $('#' + newDivName).animate({ backgroundColor: "#ffffff" }, 1500);
+      $(newDivName).css("display", "none");
+      $(newDivName).css("background-color", "#ffc800");
+      $(newDivName).show("slide", { direction: "up" }, 1000, function() {
+          $(newDivName).animate({ backgroundColor: "#ffffff" }, 1500);
       });
     }
   }

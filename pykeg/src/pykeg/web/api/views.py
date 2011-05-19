@@ -284,7 +284,7 @@ def get_keg_sessions(request, keg_id):
 def get_keg_stats(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   stats = keg.GetStats()
-  return stats
+  return FromProto(stats)
 
 @py_to_json
 def all_taps(request):

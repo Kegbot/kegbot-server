@@ -1019,9 +1019,9 @@ class _StatsModel(models.Model):
   stats = fields.JSONField()
 
   def Update(self, drink, force=False):
-    previous = protoutil.DictToProtoMessage(self.stats, models_pb2.Stats())
-    if force:
-      previous = None
+    previous = None
+    if not force and self.stats:
+      previous = protoutil.DictToProtoMessage(self.stats, models_pb2.Stats())
     builder = self.STATS_BUILDER(drink, previous)
     self.stats = protoutil.ProtoMessageToDict(builder.Build())
     self.save()

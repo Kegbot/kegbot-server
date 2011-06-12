@@ -5,8 +5,8 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
-Current Version (in development)
---------------------------------
+Version 0.8.0 (2010-06-12)
+--------------------------
 
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::

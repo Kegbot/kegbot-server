@@ -60,10 +60,12 @@
 #include "buzzer.h"
 #endif
 
-#if KB_ENABLE_SERIAL_LCD
-#include <SoftwareSerial.h>
-SoftwareSerial gSerialLcd = SoftwareSerial(KB_PIN_SERIAL_LCD_RX,
-    KB_PIN_SERIAL_LCD_TX);
+#if KB_ENABLE_ID12_RFID
+#include <NewSoftSerial.h>
+NewSoftSerial gSerialRfid = NewSoftSerial(KB_PIN_SERIAL_RFID_RX, -1);
+int gRfidPos = -1;
+unsigned char gRfidChecksum = 0;
+unsigned char gRfidBuf[RFID_PAYLOAD_CHARS];
 #endif
 
 //
@@ -350,19 +352,10 @@ void setup()
   playMelody(BOOT_MELODY);
 #endif
 
-#if KB_ENABLE_SERIAL_LCD
-  pinMode(KB_PIN_SERIAL_LCD_RX, INPUT);
-  pinMode(KB_PIN_SERIAL_LCD_TX, OUTPUT);
-  gSerialLcd.begin(9600);
-
-  // Clear display
-  gSerialLcd.print('\x0c');
-
-  // Disable cursor
-  gSerialLcd.print('\xfe');
-  gSerialLcd.print('\x54');
-
-  gSerialLcd.print("Kegbot!");
+#if KB_ENABLE_ID12_RFID
+  gSerialRfid.begin(9600);
+  pinMode(KB_PIN_RFID_RESET, OUTPUT);
+  digitalWrite(KB_PIN_RFID_RESET, HIGH);
 #endif
 
   writeHelloPacket();
@@ -484,13 +477,66 @@ static void readSerialBytes(char *dest_buf, int num_bytes, int offset) {
   }
 }
 
-void debug(const char* msg) {
-#if KB_ENABLE_SERIAL_LCD
-  gSerialLcd.print('\x0c');
-  gSerialLcd.print(msg);
-  delay(500);
-#endif
+#if KB_ENABLE_ID12_RFID
+static void doProcessRfid() {
+  if (gSerialRfid.available() == 0) {
+    return;
+  }
+
+  if (gRfidPos == -1) {
+    if (gSerialRfid.read() != 0x02) {
+      return;
+    } else {
+      gRfidPos = 0;
+      gRfidChecksum = 0;
+    }
+  }
+
+  while (gRfidPos < 12) {
+    unsigned char b;
+    if (gSerialRfid.available() == 0) {
+      return;
+    }
+
+    b = gSerialRfid.read();
+    if (b == CR || b == LF || b == STX || b == ETX) {
+      goto out_reset;
+    }
+
+    // ASCII to hex
+    if (b >= '0' && b <= '9') {
+      b -= '0';
+    } else if (b >= 'A' && b <= 'F') {
+      b -= 'A';
+      b += 10;
+    }
+
+    if ((gRfidPos % 2) == 0) {
+      // Clears previous value.
+      gRfidBuf[gRfidPos / 2] = b << 4;
+    } else {
+      gRfidBuf[gRfidPos / 2] |= b;
+      gRfidChecksum ^= gRfidBuf[gRfidPos / 2];
+    }
+
+    gRfidPos++;
+  }
+
+  if (gRfidPos == RFID_PAYLOAD_CHARS) {
+    if (gRfidChecksum == 0) {
+      writeAuthPacket("core.rfid", gRfidBuf, 5, 1);
+    }
+  }
+
+out_hw_reset:
+  digitalWrite(KB_PIN_RFID_RESET, LOW);
+  delay(200);
+  digitalWrite(KB_PIN_RFID_RESET, HIGH);
+out_reset:
+  gRfidPos = -1;
+  gRfidChecksum = 0;
 }
+#endif
 
 void resetInputPacket() {
   memset(&gPacketStat, 0, sizeof(RxPacketStat));
@@ -689,6 +735,11 @@ void loop()
 #if KB_ENABLE_ONEWIRE_PRESENCE
   stepOnewireIdBus();
 #endif
+
+#if KB_ENABLE_ID12_RFID
+  doProcessRfid();
+#endif
+
 
 #if KB_ENABLE_SELFTEST
   doTestPulse();

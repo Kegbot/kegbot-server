@@ -15,8 +15,8 @@ AVRDUDE_CONF ?= $(ARDUINO_DIR)/hardware/tools/avrdude.conf
 endif
 
 ifeq ($(UNAME_S), Darwin)
-ARDUINO_DIR ?= /Applications/arduino-0015
-ARDUINO_PORT ?= /dev/cu.usb*
+ARDUINO_DIR ?= /Applications/Arduino.app/Contents/Resources/Java
+ARDUINO_PORT ?= /dev/tty.usbserial*
 endif
 
 include Arduino.mk

@@ -1,3 +1,22 @@
+2011-06-12 geoff culp <geoffculp@gmail.com>
+  
+  * kegboard-coaster: Expand pcb board size to 1.50" x 0.70", more clearance
+    for 0.1" pin headers.
+  * kegboard-mini: Move temperature sensor away from ATmega328. 
+  * kegboard-mini: Add new transistors to switch flow LED's.
+  
+2011-03-27 geoff culp <geoffculp@gmail.com>
+
+  * kegboard-mini: Changed relay's to Omron SPDT (G5SB) Sparkfun COM-10509. 
+    Expanded kegboard ~0.75" for larger relay footprint. Overall size: 4.05" x 2.10"
+  * kegboard-mini: Changed TEMPERATURE-SENSOR, wrong pin wiring in Sparkfun library.
+    Custom part available from https://github.com/geoffculp/GAC-Sparkfun-library-clone
+  * kegboard-coaster: Changed TEMPERATURE-SENSOR.
+  * kegboard-mini: Removed alarm header, moved ALARM pin to GPO header.
+  * kegboard-mini: Adjusted standoff positions to match Arduino standoff holes.   
+  * kegboard-mini: Added LED to ID-12 pin 10.
+  * kegboard-mini: Added pin labels to LED's and buzzer.  
+ 
 2010-09-08  mike wakerly <opensource@hoho.com>
 
   * kegboard-mini: initial (auto) routing of the board. TODO: fix up routing

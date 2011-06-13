@@ -138,6 +138,17 @@ PROGMEM prog_uint16_t BOOT_MELODY[] = {
 
   MELODY_NOTE(0, NOTE_SILENCE, 0)
 };
+
+#if (KB_ENABLE_BUZZER || KB_ENABLE_ONEWIRE_PRESENCE)
+PROGMEM prog_uint16_t AUTH_ON_MELODY[] = {
+  MELODY_NOTE(4, 1, 50), MELODY_NOTE(0, NOTE_SILENCE, 10),
+  MELODY_NOTE(4, 4, 50 ), MELODY_NOTE(0, NOTE_SILENCE, 10),
+  MELODY_NOTE(4, 8, 50),
+
+  MELODY_NOTE(0, NOTE_SILENCE, 0)
+};
+#endif
+
 #endif
 
 #if KB_ENABLE_ONEWIRE_THERMO
@@ -269,6 +280,9 @@ void writeMeterPacket(int channel)
 void writeAuthPacket(char* device_name, uint8_t* token, int token_len,
     char status) {
   KegboardPacket packet;
+#if KB_ENABLE_BUZZER
+  playMelody(AUTH_ON_MELODY);
+#endif
   packet.SetType(KBM_AUTH_TOKEN);
   packet.AddTag(KBM_AUTH_TOKEN_TAG_DEVICE, strlen(device_name), device_name);
   packet.AddTag(KBM_AUTH_TOKEN_TAG_TOKEN, token_len, (char*)token);

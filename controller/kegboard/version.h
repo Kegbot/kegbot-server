@@ -12,7 +12,10 @@
 //     Added auth_token message.
 //   v7 (2011-03-16)
 //     Added implementation of `set_output` command, relay output watchdog.
-#define FIRMWARE_VERSION 7
+//   v8 (2011-06-11)
+//     Expand 'set_output' to support onboard kegboard relay's, flow led's
+
+#define FIRMWARE_VERSION 8
 
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__

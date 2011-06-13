@@ -281,7 +281,9 @@ void writeAuthPacket(char* device_name, uint8_t* token, int token_len,
     char status) {
   KegboardPacket packet;
 #if KB_ENABLE_BUZZER
-  playMelody(AUTH_ON_MELODY);
+  if (status == 1) {
+    playMelody(AUTH_ON_MELODY);
+  }
 #endif
   packet.SetType(KBM_AUTH_TOKEN);
   packet.AddTag(KBM_AUTH_TOKEN_TAG_DEVICE, strlen(device_name), device_name);

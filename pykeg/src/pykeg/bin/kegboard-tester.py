@@ -47,14 +47,14 @@ class KegboardMonitorApp(kb_app.App):
     self._serial_fd.write(ping_message.ToBytes())
 
     while not self._do_quit:
-      for relay in (0, 1):
+      for relay in (0, 1, 2, 3, 4, 5):
         for mode in (1, 0):
           cmd = kegboard.SetOutputCommand()
           cmd.SetValue('output_id', relay)
           cmd.SetValue('output_mode', mode)
           self._logger.info('Sending relay command: %s' % cmd)
           self._reader.WriteMessage(cmd)
-          time.sleep(1.0)
+          time.sleep(2.0)
     self._serial_fd.close()
     self._logger.info('Reader loop ended.')
 

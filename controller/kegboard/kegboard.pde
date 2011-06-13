@@ -73,7 +73,7 @@ SoftwareSerial gSerialLcd = SoftwareSerial(KB_PIN_SERIAL_LCD_RX,
 // Up to 6 meters supported if using Arduino Mega
 static unsigned long volatile gMeters[] = {0, 0, 0, 0, 0, 0};
 static unsigned long volatile gLastMeters[] = {0, 0, 0, 0, 0, 0};
-static uint8_t gOutputPins[] = {KB_PIN_RELAY_A, KB_PIN_RELAY_B};
+static uint8_t gOutputPins[] = {KB_PIN_RELAY_A, KB_PIN_RELAY_B, KB_PIN_RELAY_C, KB_PIN_RELAY_D, KB_PIN_LED_FLOW_A, KB_PIN_LED_FLOW_B};
 
 static KegboardPacket gInputPacket;
 
@@ -335,6 +335,10 @@ void setup()
 
   pinMode(KB_PIN_RELAY_A, OUTPUT);
   pinMode(KB_PIN_RELAY_B, OUTPUT);
+  pinMode(KB_PIN_RELAY_C, OUTPUT);
+  pinMode(KB_PIN_RELAY_D, OUTPUT);
+  pinMode(KB_PIN_LED_FLOW_A, OUTPUT);
+  pinMode(KB_PIN_LED_FLOW_B, OUTPUT);
   pinMode(KB_PIN_ALARM, OUTPUT);
   pinMode(KB_PIN_TEST_PULSE, OUTPUT);
 

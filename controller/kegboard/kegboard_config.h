@@ -21,38 +21,52 @@
 #define KB_ENABLE_SERIAL_LCD 0
 
 //
-// Pin configuration
+// Pin configuration - KEGBOARD VERSION
 //
 
 // You may change values in this section if you know what you are doing --
 // though you ordinarily shouldn't need to change these.
 //
-// The default digital pin allocation is:
-//   2 - flowmeter 0 pulse (input)
-//   3 - flowmeter 1 pulse (input)
-//   4 - relay 0 control (output)
-//   5 - relay 1 control (output)
-//   6
-//   7 - thermo onewire bus (1-wire, input/output)
-//   8 - presence onewire bus (1-wire, input/output)
-//   9 - alarm (output)
-//   10
+//  Digital pin allocation:
+//    2 - flowmeter 0 pulse (input)
+//    3 - flowmeter 1 pulse (input)
+//    4 - flow 0 LED (output)
+//    5 - flow 1 LED (output)
+//    6 - rfid (input from ID-12)
+//    7 - thermo onewire bus (1-wire, input/output)
+//    8 - presence onewire bus (1-wire, input/output)
+//    9 - gpio pin C
+//   10 - rfid reset
 //   11 - buzzer (output)
 //   12 - test pulse train (output)
-//   13 - arduino onboard LED (if applicable)
+//   13 - alarm (output)
+//  Analog pin allocation:
+//   A0 - relay 0 control (output)
+//   A1 - relay 1 control (output)
+//   A2 - relay 2 control (output)
+//   A3 - relay 4 control (output)
+//   A4 - gpio pin A
+//   A5 - gpio pin B
+//
 
 #define KB_PIN_METER_A            2
 #define KB_PIN_METER_B            3
-#define KB_PIN_RELAY_A            4
-#define KB_PIN_RELAY_B            5
+#define KB_PIN_LED_FLOW_A         4
+#define KB_PIN_LED_FLOW_B         5
+#define KB_PIN_SERIAL_RFID_RX     6
 #define KB_PIN_ONEWIRE_THERMO     7
 #define KB_PIN_ONEWIRE_PRESENCE   8
-#define KB_PIN_ALARM              9
+#define KB_PIN_GPIO_C             9
+#define KB_PIN_RFID_RESET         10
 #define KB_PIN_BUZZER             11
 #define KB_PIN_TEST_PULSE         12
-
-#define KB_PIN_SERIAL_LCD_TX 6
-#define KB_PIN_SERIAL_LCD_RX 10
+#define KB_PIN_ALARM              13
+#define KB_PIN_RELAY_A            A0
+#define KB_PIN_RELAY_B            A1
+#define KB_PIN_RELAY_C            A2
+#define KB_PIN_RELAY_D            A3
+#define KB_PIN_GPIO_A             A4
+#define KB_PIN_GPIO_B             A5
 
 // Atmega1280 (aka Arduino mega) section
 #ifdef __AVR_ATmega1280__

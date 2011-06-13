@@ -40,7 +40,7 @@ from pykeg.core import util
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_string('master_config', '/etc/kegbot/master.cfg',
+gflags.DEFINE_string('master_config', '/etc/kegbot/kegbot_master.cfg',
     'Path to the master config file.')
 
 gflags.DEFINE_string('logfile_dir', '/var/log/kegbot',

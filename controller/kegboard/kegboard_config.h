@@ -44,7 +44,7 @@
 //   A0 - relay 0 control (output)
 //   A1 - relay 1 control (output)
 //   A2 - relay 2 control (output)
-//   A3 - relay 4 control (output)
+//   A3 - relay 3 control (output)
 //   A4 - gpio pin A
 //   A5 - gpio pin B
 //

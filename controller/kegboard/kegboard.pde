@@ -61,7 +61,7 @@
 #endif
 
 #if KB_ENABLE_ID12_RFID
-#include <NewSoftSerial.h>
+#include "NewSoftSerial.h"
 NewSoftSerial gSerialRfid = NewSoftSerial(KB_PIN_SERIAL_RFID_RX, -1);
 int gRfidPos = -1;
 unsigned char gRfidChecksum = 0;

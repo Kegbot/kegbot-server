@@ -5,6 +5,26 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Version 0.8.1 (2010-06-13)
+--------------------------
+*Note:* If you installed version 0.8.0 and find your api_key unusable, you need
+to regenerate it.  Log in and click the "regenerate api key" button on your
+account page.
+
+API
+^^^
+* Fixed incorrect API key generation affecting some users.
+
+Kegboard
+^^^^^^^^
+* Updated to firmware version 9, expanding support for ``set_output`` and adding
+  support for ID-12 RFID readers.
+
+Kegweb
+^^^^^^
+* Added "regenerate API key" button.
+
+
 Version 0.8.0 (2010-06-12)
 --------------------------
 

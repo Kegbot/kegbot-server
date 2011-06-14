@@ -26,6 +26,11 @@
     Use this API key to access the kegbot web service. Ssh! Keep it secret!
   </p>
   <pre>{{ user.get_profile.GetApiKey.Encode }}</pre>
+  <form action="regenerate-api-key/" method="POST">
+  {{ apikey_form.as_p }}
+  <input type="submit" name="regenerate api key" value="regenerate api key">
+  </form>
+
 </div>
 {% endif %}
 {% endblock %}

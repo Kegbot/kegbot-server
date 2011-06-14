@@ -4,6 +4,7 @@ from pykeg.core import features
 urlpatterns = patterns('pykeg.web.account.views',
     url(r'^$', 'account_main', name='kb-account-main'),
     url(r'^mugshot/$', 'edit_mugshot', name='account-mugshot'),
+    url(r'^regenerate-api-key/$', 'regenerate_api_key', name='regen-api-key'),
 )
 
 if features.use_facebook():

@@ -141,7 +141,7 @@ class UserProfile(models.Model):
       last_d[0]._UpdateUserStats()
 
   def GetApiKey(self):
-    return ApiKey(self.id, self.api_secret)
+    return ApiKey(self.user.id, self.api_secret)
 
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)

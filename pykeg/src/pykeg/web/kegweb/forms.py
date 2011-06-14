@@ -66,3 +66,7 @@ NEW_USERS = models.User.objects.all().order_by('-date_joined')
 class ClaimTokenForm(forms.Form):
   token = forms.ModelChoiceField(queryset=UNASSIGNED_TOKEN_QS)
   user = forms.ModelChoiceField(queryset=NEW_USERS)
+
+class RegenerateApiKeyForm(forms.Form):
+  pass
+

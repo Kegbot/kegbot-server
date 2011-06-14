@@ -24,8 +24,11 @@ from django.http import Http404
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.views.generic.simple import redirect_to
+
 from pykeg.core import models
 from pykeg.web.kegweb import forms
+from pykeg.web.api import apikey
 
 @login_required
 def account_main(request):
@@ -59,4 +62,14 @@ def edit_mugshot(request):
       profile.save()
   return render_to_response('account/mugshot.html', context)
 
+@login_required
+def regenerate_api_key(request):
+  if request.method != 'POST':
+    raise Http404
+  form = forms.RegenerateApiKeyForm(request.POST)
+  if form.is_valid():
+    profile = request.user.get_profile()
+    profile.api_secret = apikey.ApiKey.NewSecret()
+    profile.save()
+  return redirect_to(request, url='/account')
 

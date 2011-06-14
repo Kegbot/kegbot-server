@@ -57,27 +57,27 @@ def check_authorization(request):
 
   keystr = request.REQUEST.get('api_key')
   if not keystr:
-    raise krest.NoAuthTokenError
+    raise krest.NoAuthTokenError('The parameter "api_key" is required')
 
   try:
     key = apikey.ApiKey.FromString(keystr)
-  except ValueError:
-    raise krest.BadAuthTokenError
+  except ValueError, e:
+    raise krest.BadAuthTokenError('Error parsing API key: %s' % e)
 
   try:
     user = models.User.objects.get(pk=key.uid())
   except models.User.DoesNotExist:
-    raise krest.BadAuthTokenError
+    raise krest.BadAuthTokenError('API user %s does not exist' % key.uid())
 
   if not user.is_active:
-    raise krest.BadAuthTokenError
+    raise krest.BadAuthTokenError('User is inactive')
 
   if not user.is_staff and not user.is_superuser:
-    raise krest.PermissionDeniedError
+    raise krest.PermissionDeniedError('User is not staff/superuser')
 
   user_secret = user.get_profile().api_secret
   if not user_secret or user_secret != key.secret():
-    raise krest.BadAuthTokenError
+    raise krest.BadAuthTokenError('User secret does not match')
 
 def auth_required(viewfunc):
   def _check_token(request, *args, **kwargs):

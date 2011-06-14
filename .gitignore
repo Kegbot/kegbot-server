@@ -1,5 +1,3 @@
-syntax: glob
-
 ### global stuff
 *.pyc
 

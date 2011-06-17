@@ -280,16 +280,16 @@ void writeMeterPacket(int channel)
 void writeAuthPacket(char* device_name, uint8_t* token, int token_len,
     char status) {
   KegboardPacket packet;
-#if KB_ENABLE_BUZZER
-  if (status == 1) {
-    playMelody(AUTH_ON_MELODY);
-  }
-#endif
   packet.SetType(KBM_AUTH_TOKEN);
   packet.AddTag(KBM_AUTH_TOKEN_TAG_DEVICE, strlen(device_name), device_name);
   packet.AddTag(KBM_AUTH_TOKEN_TAG_TOKEN, token_len, (char*)token);
   packet.AddTag(KBM_AUTH_TOKEN_TAG_STATUS, 1, &status);
   packet.Print();
+#if KB_ENABLE_BUZZER
+  if (status == 1) {
+    playMelody(AUTH_ON_MELODY);
+  }
+#endif
 }
 
 #if KB_ENABLE_SELFTEST

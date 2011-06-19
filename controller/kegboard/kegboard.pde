@@ -548,6 +548,7 @@ static void doProcessRfid() {
   if (gRfidPos == RFID_PAYLOAD_CHARS) {
     if (gRfidChecksum == 0) {
       writeAuthPacket("core.rfid", gRfidBuf+1, 5, 1);
+      writeAuthPacket("core.rfid", gRfidBuf+1, 5, 0);
     }
   }
 

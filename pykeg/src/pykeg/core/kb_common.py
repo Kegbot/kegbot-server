@@ -38,7 +38,7 @@ ALIAS_ALL_TAPS = '__all_taps__'
 # Device names
 AUTH_MODULE_CORE_ONEWIRE = 'core.onewire'
 AUTH_MODULE_CORE_RFID = 'core.rfid'
-AUTH_MODULE_CONTRIB_PHIDGET_RFID = AUTH_MODULE_CORE_ONEWIRE
+AUTH_MODULE_CONTRIB_PHIDGET_RFID = AUTH_MODULE_CORE_RFID
 
 # Flag which determines whether an auth device is captive or non-captive.  A
 # captive device is one which captures the authentication token, and provides a

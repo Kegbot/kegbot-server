@@ -75,7 +75,14 @@ unsigned char gRfidBuf[RFID_PAYLOAD_CHARS];
 // Up to 6 meters supported if using Arduino Mega
 static unsigned long volatile gMeters[] = {0, 0, 0, 0, 0, 0};
 static unsigned long volatile gLastMeters[] = {0, 0, 0, 0, 0, 0};
-static uint8_t gOutputPins[] = {KB_PIN_RELAY_A, KB_PIN_RELAY_B, KB_PIN_RELAY_C, KB_PIN_RELAY_D, KB_PIN_LED_FLOW_A, KB_PIN_LED_FLOW_B};
+static uint8_t gOutputPins[] = {
+  KB_PIN_RELAY_A,
+  KB_PIN_RELAY_B,
+  KB_PIN_RELAY_C,
+  KB_PIN_RELAY_D,
+  KB_PIN_LED_FLOW_A,
+  KB_PIN_LED_FLOW_B
+};
 
 static KegboardPacket gInputPacket;
 
@@ -139,7 +146,7 @@ PROGMEM prog_uint16_t BOOT_MELODY[] = {
   MELODY_NOTE(0, NOTE_SILENCE, 0)
 };
 
-#if (KB_ENABLE_BUZZER || KB_ENABLE_ONEWIRE_PRESENCE)
+#if (KB_ENABLE_ID12_RFID || KB_ENABLE_ONEWIRE_PRESENCE)
 PROGMEM prog_uint16_t AUTH_ON_MELODY[] = {
   MELODY_NOTE(4, 1, 50), MELODY_NOTE(0, NOTE_SILENCE, 10),
   MELODY_NOTE(4, 4, 50 ), MELODY_NOTE(0, NOTE_SILENCE, 10),
@@ -147,9 +154,8 @@ PROGMEM prog_uint16_t AUTH_ON_MELODY[] = {
 
   MELODY_NOTE(0, NOTE_SILENCE, 0)
 };
-#endif
-
-#endif
+#endif  // KB_ENABLE_ID12_RFID || KB_ENABLE_ONEWIRE_PRESENCE
+#endif  // KB_ENABLE_BUZZER
 
 #if KB_ENABLE_ONEWIRE_THERMO
 static OneWire gOnewireThermoBus(KB_PIN_ONEWIRE_THERMO);
@@ -510,6 +516,7 @@ static void doProcessRfid() {
 
   while (gRfidPos < 12) {
     unsigned char b;
+    int rfid_index = (RFID_PAYLOAD_CHARS/2 - 1) - gRfidPos / 2;
     if (gSerialRfid.available() == 0) {
       return;
     }
@@ -529,10 +536,10 @@ static void doProcessRfid() {
 
     if ((gRfidPos % 2) == 0) {
       // Clears previous value.
-      gRfidBuf[gRfidPos / 2] = b << 4;
+      gRfidBuf[rfid_index] = b << 4;
     } else {
-      gRfidBuf[gRfidPos / 2] |= b;
-      gRfidChecksum ^= gRfidBuf[gRfidPos / 2];
+      gRfidBuf[rfid_index] |= b;
+      gRfidChecksum ^= gRfidBuf[rfid_index];
     }
 
     gRfidPos++;
@@ -540,14 +547,14 @@ static void doProcessRfid() {
 
   if (gRfidPos == RFID_PAYLOAD_CHARS) {
     if (gRfidChecksum == 0) {
-      writeAuthPacket("core.rfid", gRfidBuf, 5, 1);
+      writeAuthPacket("core.rfid", gRfidBuf+1, 5, 1);
     }
   }
 
-out_hw_reset:
   digitalWrite(KB_PIN_RFID_RESET, LOW);
   delay(200);
   digitalWrite(KB_PIN_RFID_RESET, HIGH);
+
 out_reset:
   gRfidPos = -1;
   gRfidChecksum = 0;
@@ -755,7 +762,6 @@ void loop()
 #if KB_ENABLE_ID12_RFID
   doProcessRfid();
 #endif
-
 
 #if KB_ENABLE_SELFTEST
   doTestPulse();

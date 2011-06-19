@@ -37,7 +37,8 @@ ALIAS_ALL_TAPS = '__all_taps__'
 
 # Device names
 AUTH_MODULE_CORE_ONEWIRE = 'core.onewire'
-AUTH_MODULE_CONTRIB_PHIDGET_RFID = 'core.rfid'
+AUTH_MODULE_CORE_RFID = 'core.rfid'
+AUTH_MODULE_CONTRIB_PHIDGET_RFID = AUTH_MODULE_CORE_ONEWIRE
 
 # Flag which determines whether an auth device is captive or non-captive.  A
 # captive device is one which captures the authentication token, and provides a
@@ -49,7 +50,7 @@ AUTH_MODULE_CONTRIB_PHIDGET_RFID = 'core.rfid'
 # the token is removed (see flow timeout, next).
 AUTH_DEVICE_CAPTIVE = {
   AUTH_MODULE_CORE_ONEWIRE: True,
-  AUTH_MODULE_CONTRIB_PHIDGET_RFID: False,
+  AUTH_MODULE_CORE_RFID: False,
   'default': True
 }
 
@@ -61,7 +62,7 @@ AUTH_DEVICE_CAPTIVE = {
 # device, like an RFID, to timeout sooner.
 AUTH_DEVICE_MAX_IDLE_SECS = {
   AUTH_MODULE_CORE_ONEWIRE: 120,
-  AUTH_MODULE_CONTRIB_PHIDGET_RFID: 20,
+  AUTH_MODULE_CORE_RFID: 20,
   'default': 10
 }
 

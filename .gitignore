@@ -8,7 +8,10 @@ docs/build
 pykeg/build
 pykeg/dist
 pykeg/kegbot.log
-pykeg/media/mugshots
+pykeg/src/pykeg/web/media/mugshots
+pykeg/src/pykeg/web/media/beerdb
+pykeg/src/pykeg/web/media/sounds
+pykeg/src/pykeg/web/media/cache
 pykeg/setup.log
 pykeg/sounds
 pykeg/src/kegbot.egg-info

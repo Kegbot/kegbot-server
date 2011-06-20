@@ -1,5 +1,6 @@
 ### global stuff
 *.pyc
+*.egg
 
 ### docs
 docs/build

@@ -180,7 +180,7 @@ inline void NewSoftSerial::tunedDelay(uint16_t delay) {
     "cpi %A0, 0xFF \n\t"
     "cpc %B0, %1 \n\t"
     "brne .-10 \n\t"
-    : "+r" (delay), "+a" (tmp)
+    : "+w" (delay), "+a" (tmp)
     : "0" (delay)
     );
 }

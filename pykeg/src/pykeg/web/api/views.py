@@ -367,12 +367,13 @@ def thermo_sensor_get(request, sensor_name):
 @py_to_json
 @auth_required
 def thermo_sensor_post(request, sensor_name):
-  sensor = _get_sensor_or_404(request, sensor_name)
   form = forms.ThermoPostForm(request.POST)
   if not form.is_valid():
     raise krest.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
   b = backend.KegbotBackend(site=request.kbsite)
+  sensor, created = models.ThermoSensor.objects.get_or_create(site=request.kbsite,
+      raw_name=sensor_name)
   # TODO(mikey): use form fields to compute `when`
   return FromProto(b.LogSensorReading(sensor.raw_name, cd['temp_c']))
 

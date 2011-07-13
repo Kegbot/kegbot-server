@@ -388,7 +388,7 @@ def tzswap(dt, tz_from, tz_to):
   """
   assert dt.tzinfo == None
   # First, reinterpret the source datetime obj as being in the 'from' timezone.
-  res = dt.replace(tzinfo=tz_from)
+  res = tz_from.localize(dt)
   # Next, update with the intended timezone.
   res = res.astimezone(tz_to)
   # Finally, strip away the new timezone to leave us with a naieve datetime once

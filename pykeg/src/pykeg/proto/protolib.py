@@ -126,7 +126,7 @@ def BeerTypeToProto(beertype, full=False):
     ret.edition = beertype.edition
   # TODO(mikey): guarantee this at DB level
   abv = beertype.abv or 0.0
-  ret.abv = max(min(abv * 100.0, 100.0), 0.0)
+  ret.abv = max(min(abv, 100.0), 0.0)
   if beertype.calories_oz is not None:
     ret.calories_oz = beertype.calories_oz
   if beertype.carbs_oz is not None:

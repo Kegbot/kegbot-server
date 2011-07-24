@@ -26,11 +26,11 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
 
       ### drinkers
       (r'^drinkers/$', 'user_list'),
-      url(r'^drinkers/(?P<username>\w+)', 'user_detail', name='drinker'),
+      url(r'^drinkers/(?P<username>[\w@.+-_]+)', 'user_detail', name='drinker'),
       (r'^drinkers/(?P<user_id>\d+)', 'user_detail_by_id'),
       # redirects to the above for compatibility
       (r'^drinker/(?P<user_id>\d+)', 'redirect_to', {'url': '/drinkers/%(user_id)s'}),
-      (r'^drinker/(?P<username>\w+)', 'redirect_to', {'url': '/drinkers/%(username)s'}),
+      (r'^drinker/(?P<username>[\w@.+-_]+)', 'redirect_to', {'url': '/drinkers/%(username)s'}),
 
       ### drink related
       (r'^drinks/$', 'drink_list'),

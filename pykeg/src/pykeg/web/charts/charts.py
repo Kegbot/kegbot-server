@@ -155,7 +155,8 @@ def UserSessionsByWeekday(user):
   chunks = user.user_session_chunks.all()
   weekdays = [0] * 7
   for chunk in chunks:
-    weekday = chunk.starttime.weekday()
+    # Convert from Sunday = 6 to Sunday = 0
+    weekday = (chunk.starttime.weekday() + 1) % 7
     weekdays[weekday] += to_pints(chunk.Volume())
   return _DayOfWeekChart(weekdays)
 

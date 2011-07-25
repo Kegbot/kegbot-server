@@ -235,6 +235,7 @@ def get_keg_drinks(request, keg_id):
 def get_keg_events(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   events = keg.events.all()
+  events = apply_since(request, events)
   return FromProto(protolib.GetSystemEventDetailSet(events))
 
 @py_to_json
@@ -244,8 +245,21 @@ def all_sessions(request):
 
 @py_to_json
 def all_events(request):
-  events = request.kbsite.events.all()[:10]
+  events = request.kbsite.events.all().order_by('-seqn')
+  events = apply_since(request, events)
+  events = events[:20]
   return FromProto(protolib.GetSystemEventDetailSet(events))
+
+def apply_since(request, query):
+  """Restricts the query to `since` events, if given."""
+  since_str = request.GET.get('since')
+  if since_str:
+    try:
+      since = int(since_str)
+      return query.filter(seqn__gt=since)
+    except (ValueError, TypeError):
+      pass
+  return query
 
 @py_to_json
 @auth_required
@@ -255,12 +269,8 @@ def all_sound_events(request):
 
 @py_to_json
 def recent_events_html(request):
-  try:
-    since = int(request.GET.get('since'))
-    events = request.kbsite.events.filter(seqn__gt=since).order_by('-seqn')
-  except (ValueError, TypeError):
-    events = request.kbsite.events.all().order_by('-seqn')
-
+  events = request.kbsite.events.all().order_by('-seqn')
+  events = apply_since(request, events)
   events = events[:20]
 
   template = get_template('kegweb/event-box.html')

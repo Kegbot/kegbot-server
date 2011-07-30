@@ -150,7 +150,7 @@ message DrinkDetail {
 
 message SessionDetail {
   required Session session = 1;
-  optional string stats = 2;
+  optional Stats stats = 2;
   repeated Keg kegs = 3;
 }
 

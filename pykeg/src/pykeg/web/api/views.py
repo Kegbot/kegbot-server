@@ -221,6 +221,13 @@ def get_session(request, session_id):
   return protoutil.ProtoMessageToDict(protolib.GetSessionDetail(session))
 
 @py_to_json
+def get_session_stats(request, session_id):
+  session = get_object_or_404(models.DrinkingSession, seqn=session_id,
+      site=request.kbsite)
+  stats = session.GetStats()
+  return FromProto(stats)
+
+@py_to_json
 def get_keg(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return protoutil.ProtoMessageToDict(protolib.GetKegDetail(keg))
@@ -242,6 +249,17 @@ def get_keg_events(request, keg_id):
 def all_sessions(request):
   sessions = request.kbsite.sessions.all()
   return FromProto(protolib.GetSessionSet(sessions))
+
+@py_to_json
+def current_sessions(request):
+  session_list = []
+  try:
+    latest = request.kbsite.sessions.latest()
+    if latest.IsActive():
+      session_list.append(latest)
+  except models.DrinkingSession.DoesNotExist:
+    pass
+  return FromProto(protolib.GetSessionSet(session_list))
 
 @py_to_json
 def all_events(request):

@@ -719,6 +719,11 @@ class DrinkingSession(AbstractChunk):
     chunks = self.user_chunks.all().order_by('-volume_ml')
     return chunks
 
+  def IsActive(self):
+    now = datetime.datetime.now()
+    delta = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
+    return (self.endtime + delta) >= now
+
   def Rebuild(self):
     self.volume_ml = 0
     self.chunks.all().delete()

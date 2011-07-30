@@ -361,6 +361,7 @@ def GetSessionDetail(session):
   ret.session.MergeFrom(ToProto(session))
   for k in (c.keg for c in session.keg_chunks.all() if c.keg):
     ret.kegs.add().MergeFrom(ToProto(k))
+  ret.stats.MergeFrom(session.GetStats())
   # TODO(mikey): stats
   return ret
 

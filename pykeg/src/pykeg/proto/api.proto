@@ -9,6 +9,53 @@ message Paging {
   optional uint32 pos = 3;
 }
 
+// Requests
+
+message RecordDrinkRequest {
+  required string tap_name = 1;
+
+  // The number of ticks, as reported by the flowmeter.  Required.
+  required uint32 ticks = 2;
+
+  // The volume of the pour.  If unspecified, the backend will use the current
+  // tap configuration to compute the pour's volume based on the value of
+  // "ticks".
+  optional float volume_ml = 3;
+
+  // The username responsible for the pour.  If unspecified, this pour is
+  // treated as an anonymous pour.
+  optional string username = 4;
+
+  // The date and time of the pour, in seconds before "now", where "now" is the
+  // current time on the backend at the time the request is processed.  If this
+  // field is unspecified, a default value of "0" (meaning "now") is assumed.
+  // This value is ignored if "record_date" is specified.
+  optional uint32 seconds_ago = 5 [default = 0];
+
+  // The absolute date and time of the pour, as an ISO8061 UTC timestamp.  If
+  // specified and valid, this value supercedes any value given for
+  // "seconds_ago", which will be ignored.
+  optional string record_date = 6;
+
+  // The time taken, in seconds, to complete the pour.
+  optional uint32 duration_seconds = 7;
+
+  // The authentication token used to pour the drink.
+  optional string auth_token = 8;
+
+  // If true, the pour is recorded as "spilled": no drink record will be
+  // generated, and all fields other than "tap_name" and the volume ("ticks", or
+  // "volume_ml" if given) are ignored.  The volume will be added to the
+  // spilled total for the tap’s current keg.
+  optional bool spilled = 9;
+}
+
+message RecordTemperatureRequest {
+  required string sensor_name = 1;
+  required float temp_c = 2;
+  optional string record_date = 3;
+}
+
 // Responses
 
 message DrinkSet {
@@ -96,6 +143,11 @@ message KegDetail {
 
 message UserDetail {
   required User user = 1;
+}
+
+message UserDetailSet {
+  repeated UserDetail users = 1;
+  optional Paging paging = 2;
 }
 
 message SystemEventDetail {

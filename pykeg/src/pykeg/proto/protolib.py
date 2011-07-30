@@ -429,6 +429,12 @@ def GetUserDetail(user):
   ret.user.MergeFrom(ToProto(user))
   return ret
 
+def GetUserDetailSet(users):
+  ret = api_pb2.UserDetailSet()
+  for u in users:
+    ret.users.add().MergeFrom(GetUserDetail(u))
+  return ret
+
 def GetTapDetailSet(taps):
   ret = api_pb2.TapDetailSet()
   for t in taps:

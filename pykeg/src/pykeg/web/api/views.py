@@ -302,6 +302,12 @@ def all_taps(request):
   return FromProto(protolib.GetTapDetailSet(taps))
 
 @py_to_json
+@auth_required
+def user_list(request):
+  users = models.User.objects.filter(is_active=True).order_by('username')
+  return FromProto(protolib.GetUserDetailSet(users))
+
+@py_to_json
 def get_user(request, username):
   user = get_object_or_404(models.User, username=username)
   return FromProto(protolib.GetUserDetail(user))

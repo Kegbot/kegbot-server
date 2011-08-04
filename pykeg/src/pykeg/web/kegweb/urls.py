@@ -1,12 +1,5 @@
 from django.conf.urls.defaults import *
 
-try:
-  from registration.views import register
-  from pykeg.web.kegweb.forms import KegbotRegistrationForm
-  USE_DJANGO_REGISTRATION = True
-except ImportError:
-  USE_DJANGO_REGISTRATION = False
-
 urlpatterns = patterns('pykeg.web.kegweb.views',
       ### main page
       url(r'^$', 'index', name='kb-home'),
@@ -44,17 +37,4 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
           'session_detail', name='kb-session')
 
 )
-
-### accounts and registration
-# uses the stock django-registration views, except we need to override the
-# registration class for acocunt/register
-if USE_DJANGO_REGISTRATION:
-  from django.contrib.auth import views as auth_views
-  urlpatterns += patterns('',
-    url(r'^accounts/register/$', register,
-      {'form_class':KegbotRegistrationForm},
-      name='registration_register',
-    ),
-   (r'^accounts/', include('registration.urls')),
-  )
 

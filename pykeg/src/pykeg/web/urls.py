@@ -11,6 +11,13 @@ from django.contrib.auth.views import password_reset_complete
 from django.contrib import admin
 admin.autodiscover()
 
+try:
+  from registration.views import register
+  from pykeg.web.kegweb.forms import KegbotRegistrationForm
+  USE_DJANGO_REGISTRATION = True
+except ImportError:
+  USE_DJANGO_REGISTRATION = False
+
 def basedir():
   """ Get the pwd of this module, eg for use setting absolute paths """
   return os.path.abspath(os.path.dirname(__file__))
@@ -70,5 +77,18 @@ if features.use_twitter():
   urlpatterns += patterns('',
       ### twitter kegweb stuff
       (r'^twitter/', include('pykeg.web.contrib.twitter.urls')),
+  )
+
+### accounts and registration
+# uses the stock django-registration views, except we need to override the
+# registration class for acocunt/register
+if USE_DJANGO_REGISTRATION:
+  from django.contrib.auth import views as auth_views
+  urlpatterns += patterns('',
+    url(r'^accounts/register/$', register,
+      {'form_class':KegbotRegistrationForm},
+      name='registration_register',
+    ),
+   (r'^accounts/', include('registration.urls')),
   )
 

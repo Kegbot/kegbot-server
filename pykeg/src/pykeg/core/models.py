@@ -255,13 +255,13 @@ class Keg(models.Model):
     return None
 
   def previous(self):
-    q = Keg.objects.filter(startdate__lt=self.startdate).order_by('-startdate')
+    q = Keg.objects.filter(site=self.site, startdate__lt=self.startdate).order_by('-startdate')
     if q.count():
       return q[0]
     return None
 
   def next(self):
-    q = Keg.objects.filter(startdate__gt=self.startdate).order_by('startdate')
+    q = Keg.objects.filter(site=self.site, startdate__gt=self.startdate).order_by('startdate')
     if q.count():
       return q[0]
     return None

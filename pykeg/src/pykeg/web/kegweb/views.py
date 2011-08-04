@@ -42,7 +42,19 @@ from pykeg.web.kegweb import view_util
 
 ### main views
 
+def kbsite_aware(f):
+  def new_function(*args, **kwargs):
+    if 'kbsite_name' in kwargs:
+      kbsite_name = kwargs['kbsite_name']
+      del kwargs['kbsite_name']
+      request = args[0]
+      if not hasattr(request, kbsite):
+        request.kbsite = get_object_or_404(models.KegbotSite, name=kbsite_name)
+    return f(*args, **kwargs)
+  return new_function
+
 @cache_page(30)
+@kbsite_aware
 def index(request):
   context = RequestContext(request)
   try:

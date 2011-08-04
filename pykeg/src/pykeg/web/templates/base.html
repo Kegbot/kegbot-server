@@ -6,17 +6,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <title>kegbot :: {% block title %}Default Page{% endblock %}</title>
-  <link rel="stylesheet" href="/site_media/style.css" />
-  <link rel="icon" type="image/png" href="/site_media/images/kegbot-icon-72x72.png" />
-  {% if kbsite %}
-  {% if kbsite.background_image %}
+  <link rel="stylesheet" href="{{ STATIC_URL }}style.css" />
+  <link rel="icon" type="image/png" href="{{ STATIC_URL}}images/kegbot-icon-72x72.png" />
   <style>
     body {
+  {% if kbsite %}{% if kbsite.background_image %}
       background-image: url({{kbsite.background_image.url}});
+  {% else %}
+      background-image: url({{ STATIC_URL }}images/background.png);
+  {% endif %} {% endif %}
     }
   </style>
-  {% endif %}
-  {% endif %}
 
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
   <script type="text/javascript">
@@ -24,15 +24,15 @@
     google.load("jqueryui", "1");
     google.load('visualization', '1', {'packages':['table']});
   </script>
-  <script type="text/javascript" src="/site_media/js/kegweb.js"></script>
-  <script type="text/javascript" src="/site_media/js/jquery.timeago.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/kegweb.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.timeago.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
         kegweb.onReady();
         $("abbr.timeago").timeago();
     });
   </script>
-  <script type="text/javascript" src="/site_media/highcharts/js/highcharts.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}highcharts/js/highcharts.js"></script>
   {% block kb-extrajs %}{%endblock%}
 </head>
 
@@ -65,12 +65,12 @@
 
         {% if user.is_staff %}
         <div class="kb-header-link">
-          <a href="{% url kegadmin-main %}">keg admin</a>
+          <a href="{% url kegadmin-main kbsite.name %}">keg admin</a>
         </div>
         {% endif %}
 
         <div class="kb-header-link">
-          <a href="{% url auth_logout %}">logout {{user.username}}</a>
+          <a href="{% url django.contrib.auth.views.logout %}">logout {{user.username}}</a>
         </div>
         {% else %}
         <div class="kb-header-link">

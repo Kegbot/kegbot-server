@@ -7,12 +7,12 @@
 {% block content %}
 <div class="kb-contentbox">
   <div id="kb-admin-nav">
-    <div class="kb-admin-nav-tab" url="{% url kegadmin-main %}">
-      <a href="{% url kegadmin-main %}">kegadmin main</a>
+    <div class="kb-admin-nav-tab" url="{% url kegadmin-main kbsite.url %}">
+      <a href="{% url kegadmin-main kbsite.url %}">kegadmin main</a>
     </div>
 
-    <div class="kb-admin-nav-tab" url="{% url kegadmin-tap-list %}">
-      <a href="{% url kegadmin-tap-list %}">taps</a>
+    <div class="kb-admin-nav-tab" url="{% url kegadmin-tap-list kbsite.url %}">
+      <a href="{% url kegadmin-tap-list kbsite.url %}">taps</a>
     </div>
 
     <div class="kb-admin-subnav">

@@ -4,7 +4,7 @@
   keg {{ event.keg.seqn }} is done.<br>
   </div>
   <div class="kb-event-box-info">
-    <a href="{% url keg event.keg.seqn %}">{{event.keg.type.name}}</a> by
+    <a href="{% url kb-keg kbsite.url event.keg.seqn %}">{{event.keg.type.name}}</a> by
     {{ event.keg.type.brewer }}<br>
     {{ event.keg.size.name }}
   </div>

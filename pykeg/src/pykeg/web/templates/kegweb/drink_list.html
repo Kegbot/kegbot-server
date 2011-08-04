@@ -22,7 +22,7 @@
 
         {% for drink in drink_list %}
         data.setCell({{forloop.counter0}}, 0, {{drink.seqn}},
-            '<a href="{% url drink drink.seqn %}">{{drink.seqn}}</a>');
+            '<a href="{% url kb-drink kbsite.url drink.seqn %}">{{drink.seqn}}</a>');
         data.setCell({{forloop.counter0}}, 1, {{drink.Volume.ConvertTo.Ounce}},
           '{{drink.Volume.ConvertTo.Ounce|floatformat}}');
         {% if drink.calories %}
@@ -31,7 +31,7 @@
         {% endif %}
         data.setCell({{forloop.counter0}}, 3,
         {% if drink.user %}
-        '<a href="{%url pykeg.web.kegweb.views.user_detail drink.user.username %}">{{ drink.user}}</a>');
+        '<a href="{%url kb-drinker kbsite.url drink.user.username %}">{{ drink.user}}</a>');
         {% else %}
         'guest');
         {% endif %}

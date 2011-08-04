@@ -1,7 +1,7 @@
 {% load kegweblib %}
 <div class="kb-tapbox">
   <div class="kb-tapbox-header">
-    <h2><a href="{% url pykeg.web.kegweb.views.keg_detail keg.seqn %}">{% if keg.tap %}{{ keg.tap.name }}: {% endif %} {{ keg.type.name }}</a></h2>
+    <h2><a href="{% url kb-keg kbsite.url keg.seqn %}">{% if keg.tap %}{{ keg.tap.name }}: {% endif %} {{ keg.type.name }}</a></h2>
     <span class="kb-byline">{{ keg.size.name }}, tapped {% timeago keg.startdate %}</span>
   </div>
   <div class="kb-tapbox-content">

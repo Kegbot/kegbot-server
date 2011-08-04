@@ -1,7 +1,7 @@
 {% load kegweblib %}
 <div class="kb-drink-box" style="background-color: #eeeeff">
   <div>
-    <a href="{% url drinker event.user.username %}">{{ event.user }}</a>
+    <a href="{% url kb-drinker kbsite.url event.user.username %}">{{ event.user }}</a>
     started drinking.
   </div>
   <div class="kb-event-box-dateline">

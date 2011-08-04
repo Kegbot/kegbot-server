@@ -21,7 +21,7 @@
       <td>
         {% for chunk in keg_chunks %}
           {% if chunk.keg %}
-            <a href="{% url keg chunk.keg.seqn %}">Keg #{{ chunk.keg.seqn }} ({{ chunk.keg.type }})</a><br>
+            <a href="{% url kb-keg kbsite.url chunk.keg.seqn %}">Keg #{{ chunk.keg.seqn }} ({{ chunk.keg.type }})</a><br>
           {% endif %}
         {% endfor %}
       </td>
@@ -50,7 +50,7 @@
         {% if chunk.user %}
         <div class="kb-drink-box-mugshot">
           {% with chunk.user as drinker %}
-            {% mugshot_box drinker 96 %}
+            {% mugshot_box kbsite.url drinker 96 %}
           {% endwith %}
         </div>
         {% endif %}
@@ -83,7 +83,7 @@
         <td align="center" valign="center">
           <div class="kb-drink-box-mugshot">
             {% with chunk.user as drinker %}
-              {% mugshot_box drinker 96 %}
+              {% mugshot_box kbsite.url drinker 96 %}
             {% endwith %}
             {% if chunk.user %}{{ chunk.user }}{% else %}anonymous{% endif %}
           </div>

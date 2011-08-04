@@ -25,6 +25,11 @@
     google.load('visualization', '1', {'packages':['table']});
   </script>
   <script type="text/javascript" src="{{ STATIC_URL }}js/kegweb.js"></script>
+  {% if kbsite.url %}
+  <script>
+    kegweb.API_BASE = "/{{ kbsite.url }}/api/";
+  </script>
+  {% endif %}
   <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.timeago.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
@@ -46,28 +51,31 @@
       {% block header-text %}{% endblock %}
 
       <div id="kb-main-header-links">
+        {% if kbsite %}
         <div class="kb-header-link">
-          <a href="/">main</a>
+          <a href="{% url kb-home kbsite.url %}">main</a>
         </div>
 
         <div class="kb-header-link">
-          <a href="/kegs">kegs</a>
+          <a href="{% url kb-kegs kbsite.url %}">kegs</a>
         </div>
 
         <div class="kb-header-link">
-          <a href="/stats">all-time stats</a>
+          <a href="{% url kb-stats kbsite.url %}">all-time stats</a>
         </div>
+
+        {% if user.is_staff %}
+        <div class="kb-header-link">
+          <a href="{% url kegadmin-main kbsite.url %}">keg admin</a>
+        </div>
+        {% endif %}
+
+        {% endif %}
 
         {% if user.is_authenticated %}
         <div class="kb-header-link">
           <a href="/account">account</a>
         </div>
-
-        {% if user.is_staff %}
-        <div class="kb-header-link">
-          <a href="{% url kegadmin-main kbsite.name %}">keg admin</a>
-        </div>
-        {% endif %}
 
         <div class="kb-header-link">
           <a href="{% url django.contrib.auth.views.logout %}">logout {{user.username}}</a>

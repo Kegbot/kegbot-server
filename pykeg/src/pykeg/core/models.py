@@ -83,6 +83,12 @@ class KegbotSite(models.Model):
   def __str__(self):
     return '%s %s' % (self.name, self.description)
 
+  def url(self):
+    if self.name == 'default':
+      return ''
+    else:
+      return self.name
+
 class UserPicture(models.Model):
   def __str__(self):
     return "%s UserPicture" % (self.user,)

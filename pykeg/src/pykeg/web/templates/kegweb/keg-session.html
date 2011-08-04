@@ -29,7 +29,7 @@
       {% if chunk.user %}
       <div class="kb-session-box-icon">
         {% with chunk.user as drinker %}
-          {% mugshot_box drinker 48 %}
+          {% mugshot_box kbsite.url drinker 48 %}
         {% endwith %}
       </div>
       {% endif %}

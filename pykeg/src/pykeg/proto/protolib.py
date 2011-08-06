@@ -101,11 +101,13 @@ def ImageToProto(record, full=False):
 def ImageToProto(record, full=False):
   ret = models_pb2.Image()
   ret.url = record.image.url
-  try:
-    ret.width = record.image.width
-    ret.height = record.image.height
-  except IOError:
-    pass
+  # TODO(mikey): This can be expensive depending on the storage backend
+  # (attempts to fetch image).
+  #try:
+  #  ret.width = record.image.width
+  #  ret.height = record.image.height
+  #except IOError:
+  #  pass
   return ret
 
 @converts(bdb_models.BeerStyle)

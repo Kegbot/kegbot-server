@@ -7,10 +7,11 @@
 </div>
 <div class="kb-contentbox">
   <form enctype="multipart/form-data" method="post" action="">
+  {% csrf_token %}
     <table class="kb-form">
       <tr>
         <td>
-          {% mugshot_box kbsite.url user %}
+          <img src="{{user.get_profile.MugshotUrl}}">
         </td>
       </tr>
       <tr>

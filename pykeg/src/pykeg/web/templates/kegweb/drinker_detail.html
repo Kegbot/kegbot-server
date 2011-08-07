@@ -18,21 +18,21 @@
          <b>Total Sessions</b>
        </td>
        <td>
-         {{ drinker.user_session_chunks.all.count }}
+         {{ sessions.count }}
        </td>
      </tr>
 
      <tr>
         <td align="right" valign="top"><b>Total Drinks</b></td>
-        <td align="left">{{ drinker.drinks.valid.count }}</td>
+        <td align="left">{{ drinks.valid.count }}</td>
      </tr>
 
-     {% if drinker.drinks.valid.count %}
+     {% if drinks.valid.count %}
      <tr>
         <td align="right" valign="top"><b>Last Drink</b></td>
         <td align="left">
-          {{ drinker.drinks.valid.0.starttime|date:"l, F j, Y" }}<br>
-          <i>({% timeago drinker.drinks.valid.0.starttime%})</i>
+          {{ drinks.valid.0.starttime|date:"l, F j, Y" }}<br>
+          <i>({% timeago drinks.valid.0.starttime%})</i>
         </td>
      </tr>
      {% endif %}
@@ -64,7 +64,7 @@
 
   <p>
     <b>all sessions, by pints per session</b><br>
-    {% chart sessions_volume drinker.user_session_chunks.all 350 100 %}
+    {% chart sessions_volume sessions 350 100 %}
   </p>
 </div>
 {% endblock %}
@@ -76,7 +76,7 @@
   </div>
   <div class="kb-contentbox">
     {% comment %} TODO(mikey): Pagniate sessions. {% endcomment %}
-    {% for chunk in drinker.user_session_chunks.all %}
+    {% for chunk in sessions %}
       {% with chunk.session as session %}
         {% include "kegweb/keg-session.html" %}
       {% endwith %}

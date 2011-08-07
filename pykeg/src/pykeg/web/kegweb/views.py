@@ -101,7 +101,16 @@ def user_detail(request, username):
   user = get_object_or_404(models.User, username=username)
   stats = user.get_profile().GetStats()
 
+  # TODO(mikey): add site to UserSessionChunk
+  sessions = []
+  for s in user.user_session_chunks.all():
+    if s.session.site == request.kbsite:
+      sessions.append(s)
+  drinks = user.drinks.filter(site=request.kbsite)
+
   context = RequestContext(request, {
+      'drinks': drinks,
+      'sessions': sessions,
       'stats': stats,
       'drinker': user})
   return render_to_response('kegweb/drinker_detail.html', context)

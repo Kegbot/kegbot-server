@@ -367,19 +367,20 @@ def GetSessionDetail(session):
   # TODO(mikey): stats
   return ret
 
-def GetKegDetail(keg):
+def GetKegDetail(keg, full=False):
   ret = api_pb2.KegDetail()
   ret.keg.MergeFrom(ToProto(keg))
   if keg.type:
     ret.type.MergeFrom(ToProto(keg.type))
   if keg.size:
     ret.size.MergeFrom(ToProto(keg.size))
-  drinks = keg.drinks.valid()
-  for d in drinks:
-    ret.drinks.add().MergeFrom(ToProto(d))
-  sessions = (c.session for c in keg.keg_session_chunks.all())
-  for s in sessions:
-    ret.sessions.add().MergeFrom(ToProto(s))
+  if full:
+    drinks = keg.drinks.valid()
+    for d in drinks:
+      ret.drinks.add().MergeFrom(ToProto(d))
+    sessions = (c.session for c in keg.keg_session_chunks.all())
+    for s in sessions:
+      ret.sessions.add().MergeFrom(ToProto(s))
   return ret
 
 def GetSystemEventDetail(event):
@@ -421,10 +422,10 @@ def GetDrinkSet(drinks):
     ret.drinks.add().MergeFrom(ToProto(d))
   return ret
 
-def GetKegSet(kegs):
-  ret = api_pb2.KegSet()
+def GetKegDetailSet(kegs, full=False):
+  ret = api_pb2.KegDetailSet()
   for k in kegs:
-    ret.kegs.add().MergeFrom(ToProto(k))
+    ret.kegs.add().MergeFrom(GetKegDetail(k, full=full))
   return ret
 
 def GetUserDetail(user):

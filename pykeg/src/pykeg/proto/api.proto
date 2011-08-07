@@ -17,6 +17,25 @@ message Paging {
 
 // Requests
 
+message UserRegistrationRequest {
+
+  // Desired username.
+  required string username = 1;
+
+  // User's e-mail address.
+  required string email = 2;
+
+  // Initial password for logging in.  If unspecified, the account will be
+  // registered with a random password, which can be e-mailed to the user.
+  optional string password = 3;
+
+  // One of "male", "female".
+  optional string gender = 4;
+
+  // Twitter username.
+  optional string twitter_name = 5;
+}
+
 // Message used for recording a new drink on the backend.
 message RecordDrinkRequest {
 
@@ -84,8 +103,8 @@ message DrinkSet {
   optional Paging paging = 2;
 }
 
-message KegSet {
-  repeated Keg kegs = 1;
+message KegDetailSet {
+  repeated KegDetail kegs = 1;
   optional Paging paging = 2;
 }
 

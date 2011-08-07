@@ -188,7 +188,7 @@ def last_drinks(request, limit=5):
 @kbsite_aware
 def all_kegs(request):
   kegs = request.kbsite.kegs.all().order_by('-startdate')
-  return FromProto(protolib.GetKegSet(kegs))
+  return FromProto(protolib.GetKegDetailSet(kegs, full=False))
 
 @py_to_json
 @kbsite_aware
@@ -238,7 +238,7 @@ def get_session_stats(request, session_id):
 @kbsite_aware
 def get_keg(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
-  return protoutil.ProtoMessageToDict(protolib.GetKegDetail(keg))
+  return protoutil.ProtoMessageToDict(protolib.GetKegDetail(keg, full=True))
 
 @py_to_json
 @kbsite_aware

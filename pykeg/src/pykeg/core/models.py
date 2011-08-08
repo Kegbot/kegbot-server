@@ -46,16 +46,6 @@ from pykeg.beerdb import models as bdb
 
 """Django models definition for the kegbot database."""
 
-def mugshot_file_name(instance, filename):
-  rand_salt = random.randrange(0xffff)
-  new_filename = '%04x-%s' % (rand_salt, filename)
-  return os.path.join('mugshots', instance.user.username, new_filename)
-
-def misc_file_name(instance, filename):
-  rand_salt = random.randrange(0xffff)
-  new_filename = '%04x-%s' % (rand_salt, filename)
-  return os.path.join('misc', new_filename)
-
 def _set_seqn_pre_save(sender, instance, **kwargs):
   if instance.seqn:
     return
@@ -74,10 +64,7 @@ class KegbotSite(models.Model):
       help_text='The title of this site, eg "San Francisco"')
   description = models.TextField(blank=True, null=True,
       help_text='Description of this site')
-  background_image = models.ImageField(blank=True, null=True,
-      upload_to=misc_file_name,
-      help_text='DEPRECATED')
-  new_background_image = models.ForeignKey('Picture', blank=True, null=True,
+  background_image = models.ForeignKey('Picture', blank=True, null=True,
       help_text='Background for this site.')
   is_active = models.BooleanField(default=True,
       help_text='On/off switch for this site.')
@@ -90,14 +77,6 @@ class KegbotSite(models.Model):
       return ''
     else:
       return self.name
-
-class UserPicture(models.Model):
-  def __str__(self):
-    return "%s UserPicture" % (self.user,)
-
-  user = models.ForeignKey(User)
-  image = models.ImageField(upload_to=mugshot_file_name)
-  active = models.BooleanField(default=True)
 
 
 class UserProfile(models.Model):
@@ -154,8 +133,7 @@ class UserProfile(models.Model):
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
-  mugshot = models.ForeignKey(UserPicture, blank=True, null=True)
-  new_mugshot = models.ForeignKey('Picture', blank=True, null=True)
+  mugshot = models.ForeignKey('Picture', blank=True, null=True)
   api_secret = models.CharField(max_length=256, blank=True, null=True,
       default=ApiKey.NewSecret)
 

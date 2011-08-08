@@ -97,7 +97,7 @@ def ImageToProto(record, full=False):
     pass
   return ret
 
-@converts(models.UserPicture)
+@converts(models.Picture)
 def ImageToProto(record, full=False):
   ret = models_pb2.Image()
   ret.url = record.image.url

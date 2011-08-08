@@ -52,7 +52,7 @@ def edit_mugshot(request):
     form = forms.MugshotForm(request.POST, request.FILES)
     context['mugshot_form'] = form
     if form.is_valid():
-      pic = models.UserPicture.objects.create(user=request.user)
+      pic = models.Picture.objects.create(user=request.user)
       image = request.FILES['new_mugshot']
       pic.image.save(image.name, image)
       pic.save()

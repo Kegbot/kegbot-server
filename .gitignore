@@ -1,4 +1,5 @@
 ### global stuff
+*.DS_Store
 *.pyc
 *.egg
 
@@ -8,6 +9,7 @@ docs/build
 ### pykeg
 pykeg/build
 pykeg/dist
+pykeg/distribute*gz
 pykeg/kegbot.log
 pykeg/src/pykeg/web/media/mugshots
 pykeg/src/pykeg/web/media/beerdb

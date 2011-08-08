@@ -68,6 +68,11 @@ unsigned char gRfidChecksum = 0;
 unsigned char gRfidBuf[RFID_PAYLOAD_CHARS];
 #endif
 
+#if KB_ENABLE_MAGSTRIPE
+#include "MagStripe.h"
+#include "PCInterrupt.h"
+#endif
+
 //
 // Other Globals
 //
@@ -166,6 +171,10 @@ static DS1820Sensor gThermoSensor;
 static OneWire gOnewireIdBus(KB_PIN_ONEWIRE_PRESENCE);
 #endif
 
+#if KB_ENABLE_MAGSTRIPE
+static MagStripe gMagStripe(KB_PIN_MAGSTRIPE_CLOCK, KB_PIN_MAGSTRIPE_DATA, KB_PIN_MAGSTRIPE_CARD_PRESENT);
+#endif
+
 //
 // ISRs
 //
@@ -175,10 +184,12 @@ void meterInterruptA()
   gMeters[0] += 1;
 }
 
+#ifdef KB_PIN_METER_B
 void meterInterruptB()
 {
   gMeters[1] += 1;
 }
+#endif
 
 #ifdef KB_PIN_METER_C
 void meterInterruptC()
@@ -205,6 +216,13 @@ void meterInterruptE()
 void meterInterruptF()
 {
   gMeters[5] += 1;
+}
+#endif
+
+#ifdef KB_ENABLE_MAGSTRIPE
+void magStripeClockInterrupt()
+{
+  gMagStripe.clockData();
 }
 #endif
 
@@ -329,9 +347,11 @@ void setup()
   digitalWrite(KB_PIN_METER_A, HIGH);
   attachInterrupt(0, meterInterruptA, RISING);
 
+#ifdef KB_PIN_METER_B
   pinMode(KB_PIN_METER_B, INPUT);
   digitalWrite(KB_PIN_METER_B, HIGH);
   attachInterrupt(1, meterInterruptB, RISING);
+#endif
 
 #ifdef KB_PIN_METER_C
   pinMode(KB_PIN_METER_C, INPUT);
@@ -378,6 +398,10 @@ void setup()
   gSerialRfid.begin(9600);
   pinMode(KB_PIN_RFID_RESET, OUTPUT);
   digitalWrite(KB_PIN_RFID_RESET, HIGH);
+#endif
+
+#if KB_ENABLE_MAGSTRIPE
+  PCattachInterrupt(KB_PIN_MAGSTRIPE_CLOCK, magStripeClockInterrupt, FALLING);
 #endif
 
   writeHelloPacket();
@@ -562,6 +586,19 @@ out_reset:
 }
 #endif
 
+#if KB_ENABLE_MAGSTRIPE
+void doProcessMagStripe()
+{
+  // Return if there is no data
+  uint8_t* data;
+  int dataSize = gMagStripe.getData(&data);
+  if (dataSize <= 0) return;
+
+  writeAuthPacket("magstripe", data, dataSize, 1);
+  writeAuthPacket("magstripe", data, dataSize, 0);
+}
+#endif
+
 void resetInputPacket() {
   memset(&gPacketStat, 0, sizeof(RxPacketStat));
   gInputPacket.Reset();
@@ -716,7 +753,9 @@ void writeMeterPackets() {
   }
 
   writeMeterPacket(0);
+#ifdef KB_PIN_METER_B
   writeMeterPacket(1);
+#endif
 #ifdef KB_PIN_METER_C
   writeMeterPacket(2);
 #endif
@@ -762,6 +801,10 @@ void loop()
 
 #if KB_ENABLE_ID12_RFID
   doProcessRfid();
+#endif
+
+#if KB_ENABLE_MAGSTRIPE
+  doProcessMagStripe();
 #endif
 
 #if KB_ENABLE_SELFTEST

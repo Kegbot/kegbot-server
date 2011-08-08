@@ -6,6 +6,7 @@ Copyright (c) 2006 David A. Mellis.  All rights reserved.
    multi-instance support, porting to 8MHz processors,
    various optimizations, PROGMEM delay tables, inverse logic and 
    direct port writing by Mikal Hart
+-- Support for using the separate PCInterrupt code by John Boiles
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

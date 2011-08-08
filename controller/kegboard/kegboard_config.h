@@ -20,6 +20,9 @@
 // Enable ID-12 RFID?
 #define KB_ENABLE_ID12_RFID 1
 
+// Enable MagStripe reader?
+#define KB_ENABLE_MAGSTRIPE 0
+
 //
 // Pin configuration - KEGBOARD VERSION
 //
@@ -67,6 +70,11 @@
 #define KB_PIN_RELAY_D            A3
 #define KB_PIN_GPIO_A             A4
 #define KB_PIN_GPIO_B             A5
+
+
+#define KB_PIN_MAGSTRIPE_CLOCK    3
+#define KB_PIN_MAGSTRIPE_DATA     A4
+#define KB_PIN_MAGSTRIPE_CARD_PRESENT A5
 
 // Atmega1280 (aka Arduino mega) section
 #ifdef __AVR_ATmega1280__

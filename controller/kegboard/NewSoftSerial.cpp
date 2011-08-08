@@ -5,7 +5,8 @@ Copyright (c) 2006 David A. Mellis.  All rights reserved.
 -- Tuning, circular buffer, derivation from class Print,
    multi-instance support, porting to 8MHz processors,
    various optimizations, PROGMEM delay tables, inverse logic and 
-   direct port writing by Mikal Hart
+   direct port writing by Mikal Hart.
+-- Support for using the PCInterrupt by John Boiles
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -39,6 +40,7 @@ http://arduiniana.org.
 #include "WConstants.h"
 #include "pins_arduino.h"
 #include "NewSoftSerial.h"
+#include "PCInterrupt.h"
 
 // Abstractions for maximum portability between processors
 // These are macros to associate pins to pin change interrupts
@@ -55,6 +57,9 @@ http://arduiniana.org.
 #define digitalPinToPCMSKbit(p) 0
 #endif
 #endif
+
+// TODO(johnb): These delays may need to be modified to support the PCInterrupt code
+// I've tested them to work for 9600 baud, but that's it
 
 //
 // Lookup table
@@ -312,34 +317,6 @@ inline void NewSoftSerial::handle_interrupt()
   }
 }
 
-#if defined(PCINT0_vect)
-ISR(PCINT0_vect)
-{
-  NewSoftSerial::handle_interrupt();
-}
-#endif
-
-#if defined(PCINT1_vect)
-ISR(PCINT1_vect)
-{
-  NewSoftSerial::handle_interrupt();
-}
-#endif
-
-#if defined(PCINT2_vect)
-ISR(PCINT2_vect)
-{
-  NewSoftSerial::handle_interrupt();
-}
-#endif
-
-#if defined(PCINT3_vect)
-ISR(PCINT3_vect)
-{
-  NewSoftSerial::handle_interrupt();
-}
-#endif
-
 //
 // Constructor
 //
@@ -407,11 +384,7 @@ void NewSoftSerial::begin(long speed)
   // Set up RX interrupts, but only if we have a valid RX baud rate
   if (_rx_delay_stopbit)
   {
-    if (digitalPinToPCICR(_receivePin))
-    {
-      *digitalPinToPCICR(_receivePin) |= _BV(digitalPinToPCICRbit(_receivePin));
-      *digitalPinToPCMSK(_receivePin) |= _BV(digitalPinToPCMSKbit(_receivePin));
-    }
+    PCattachInterrupt(_receivePin, NewSoftSerial::handle_interrupt, CHANGE);
     tunedDelay(_tx_delay); // if we were low this establishes the end
   }
 
@@ -425,8 +398,7 @@ void NewSoftSerial::begin(long speed)
 
 void NewSoftSerial::end()
 {
-  if (digitalPinToPCMSK(_receivePin))
-    *digitalPinToPCMSK(_receivePin) &= ~_BV(digitalPinToPCMSKbit(_receivePin));
+  PCdetachInterrupt(_receivePin);
 }
 
 

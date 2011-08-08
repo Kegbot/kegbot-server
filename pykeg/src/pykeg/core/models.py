@@ -76,6 +76,8 @@ class KegbotSite(models.Model):
       help_text='Description of this site')
   background_image = models.ImageField(blank=True, null=True,
       upload_to=misc_file_name,
+      help_text='DEPRECATED')
+  new_background_image = models.ForeignKey('Picture', blank=True, null=True,
       help_text='Background for this site.')
   is_active = models.BooleanField(default=True,
       help_text='On/off switch for this site.')
@@ -153,6 +155,7 @@ class UserProfile(models.Model):
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
   mugshot = models.ForeignKey(UserPicture, blank=True, null=True)
+  new_mugshot = models.ForeignKey('Picture', blank=True, null=True)
   api_secret = models.CharField(max_length=256, blank=True, null=True,
       default=ApiKey.NewSecret)
 
@@ -1171,3 +1174,32 @@ class SystemEvent(models.Model):
       e.save()
 
 pre_save.connect(_set_seqn_pre_save, sender=SystemEvent)
+
+
+def pics_file_name(instance, filename):
+  rand_salt = random.randrange(0xffff)
+  new_filename = '%04x-%s' % (rand_salt, filename)
+  return os.path.join('pics', new_filename)
+
+class Picture(models.Model):
+  seqn = models.PositiveIntegerField(editable=False)
+  site = models.ForeignKey(KegbotSite, related_name='pictures',
+      blank=True, null=True,
+      help_text='Site owning this picture')
+  image = models.ImageField(upload_to=pics_file_name,
+      help_text='The image')
+  created_date = models.DateTimeField(default=datetime.datetime.now)
+  caption = models.TextField(blank=True, null=True,
+      help_text='Caption for the picture')
+  user = models.ForeignKey(User, blank=True, null=True,
+      help_text='User this picture is associated with, if any')
+  keg = models.ForeignKey(Keg, blank=True, null=True, related_name='pictures',
+      help_text='Keg this picture is associated with, if any')
+  session = models.ForeignKey(DrinkingSession, blank=True, null=True,
+      on_delete=models.SET_NULL,
+      related_name='pictures',
+      help_text='Session this picture is associated with, if any')
+  drink = models.ForeignKey(Drink, blank=True, null=True,
+      help_text='Drink this picture is associated with, if any')
+
+pre_save.connect(_set_seqn_pre_save, sender=Picture)

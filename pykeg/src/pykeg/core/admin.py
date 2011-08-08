@@ -80,3 +80,8 @@ class SystemEventAdmin(admin.ModelAdmin):
   list_display = ('seqn', 'kind', 'when', 'user', 'drink', 'keg', 'session')
   list_filter = ('kind', 'when')
 admin.site.register(models.SystemEvent, SystemEventAdmin)
+
+class PictureAdmin(admin.ModelAdmin):
+  list_display = ('seqn', 'created_date', 'user', 'drink', 'keg', 'session', 'caption')
+  list_filter = ('created_date',)
+admin.site.register(models.Picture, PictureAdmin)

@@ -49,6 +49,7 @@ class Migration(SchemaMigration):
                   user=profile.user, seqn=seqn)
               new_mugshot.save()
               profile.mugshot = None
+              profile.new_mugshot = new_mugshot
               profile.save()
               seqn += 1
 

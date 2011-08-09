@@ -219,7 +219,7 @@ void meterInterruptF()
 }
 #endif
 
-#ifdef KB_ENABLE_MAGSTRIPE
+#if KB_ENABLE_MAGSTRIPE
 void magStripeClockInterrupt()
 {
   gMagStripe.clockData();

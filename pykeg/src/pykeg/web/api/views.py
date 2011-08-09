@@ -428,6 +428,7 @@ def _thermo_sensor_get(request, sensor_name):
   }
   return res
 
+@csrf_exempt
 @py_to_json
 @auth_required
 def thermo_sensor_post(request, sensor_name):
@@ -481,6 +482,7 @@ def get_api_key(request):
     api_key = str(user.get_profile().GetApiKey())
   return {'api_key': api_key}
 
+@csrf_exempt
 @kbsite_aware
 def tap_detail(request, tap_id):
   if request.method == 'POST':
@@ -524,6 +526,7 @@ def _tap_detail_post(request, tap):
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 
+@csrf_exempt
 @py_to_json
 @auth_required
 @kbsite_aware

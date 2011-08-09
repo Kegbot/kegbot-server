@@ -22,6 +22,7 @@
   <h2>add/replace keg</h2>
 
   <form action="" method="POST">
+  {% csrf_token %}
   <table class="kb-statstable">
   {{ change_keg_form.as_table }}
   </table>

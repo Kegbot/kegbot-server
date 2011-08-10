@@ -44,6 +44,8 @@ from pykeg.web.api.apikey import ApiKey
 
 from pykeg.beerdb import models as bdb
 
+from imagekit.models import ImageModel
+
 """Django models definition for the kegbot database."""
 
 def _set_seqn_pre_save(sender, instance, **kwargs):
@@ -1159,7 +1161,11 @@ def pics_file_name(instance, filename):
   new_filename = '%04x-%s' % (rand_salt, filename)
   return os.path.join('pics', new_filename)
 
-class Picture(models.Model):
+class Picture(ImageModel):
+  class IKOptions:
+    spec_module = 'pykeg.core.imagespecs'
+    image_field = 'image'
+
   seqn = models.PositiveIntegerField(editable=False)
   site = models.ForeignKey(KegbotSite, related_name='pictures',
       blank=True, null=True,
@@ -1178,6 +1184,7 @@ class Picture(models.Model):
       related_name='pictures',
       help_text='Session this picture is associated with, if any')
   drink = models.ForeignKey(Drink, blank=True, null=True,
+      related_name='pictures',
       help_text='Drink this picture is associated with, if any')
 
 pre_save.connect(_set_seqn_pre_save, sender=Picture)

@@ -163,6 +163,24 @@ message Image {
 
   // The height of the image in pixels.
   optional uint32 height = 3;
+
+  // The date the picture was created.
+  optional string created_date = 4;
+
+  // The caption, if any.
+  optional string caption = 5;
+
+  // The user associated with this picture, if any.
+  optional string user_id = 6;
+
+  // The keg associated with this picture, if any.
+  optional string keg_id = 7;
+
+  // The session associated with this picture, if any.
+  optional string session_id = 8;
+
+  // The drink associated with this picture, if any.
+  optional string drink_id = 9;
 }
 
 // A single instance of a Keg that was attached to the Kegbot.

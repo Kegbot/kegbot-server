@@ -87,7 +87,7 @@ def AuthTokenToProto(record, full=False):
   return ret
 
 @converts(bdb_models.BeerImage)
-def ImageToProto(record, full=False):
+def BeerImageToProto(record, full=False):
   ret = models_pb2.Image()
   ret.url = record.original_image.url
   try:
@@ -108,6 +108,18 @@ def ImageToProto(record, full=False):
   #  ret.height = record.image.height
   #except IOError:
   #  pass
+  if record.created_date:
+    ret.created_date = datestr(record.created_date)
+  if record.caption:
+    ret.caption = record.caption
+  if record.user:
+    ret.user_id = record.user.username
+  if record.keg:
+    ret.keg_id = str(record.keg.seqn)
+  if record.session:
+    ret.session_id = str(record.session.seqn)
+  if record.drink:
+    ret.drink_id = str(record.drink.seqn)
   return ret
 
 @converts(bdb_models.BeerStyle)

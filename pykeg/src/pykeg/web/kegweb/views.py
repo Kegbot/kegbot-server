@@ -55,6 +55,14 @@ def index(request):
     page = None
   context['page_node'] = page
   context['taps'] = request.kbsite.taps.all()
+
+  try:
+    session = request.kbsite.sessions.latest()
+    if session.IsActive():
+      context['current_session'] = session
+  except models.DrinkingSession.DoesNotExist:
+    pass
+
   return render_to_response('index.html', context)
 
 @cache_page(30)

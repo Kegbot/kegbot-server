@@ -21,6 +21,13 @@
       {% endwith %}
     {% endif %}
   {% endfor %}
+
+{% if current_session %}
+<h1>Now Drinking</h1>
+{% with current_session as session %}
+{% include "kegweb/keg-session.html" %}
+{% endwith %}
+{% endif %}
 </div>
 {% endblock col-1 %}
 

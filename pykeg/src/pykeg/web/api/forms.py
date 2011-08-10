@@ -18,6 +18,8 @@
 
 from django import forms
 
+from pykeg.core import models
+
 class DrinkPostForm(forms.Form):
   """Form to handle posts to /tap/<tap_id>/"""
   ticks = forms.IntegerField()
@@ -39,3 +41,12 @@ class ThermoPostForm(forms.Form):
   temp_c = forms.FloatField()
   when = forms.IntegerField(required=False)
   now = forms.IntegerField(required=False)
+
+class CreateKegTapForm(forms.ModelForm):
+  class Meta:
+    model = models.KegTap
+    fields = ('name', 'meter_name', 'relay_name', 'ml_per_tick', 'description')
+
+class PhotoForm(forms.Form):
+  photo = forms.ImageField()
+  created_date = forms.CharField(required=False)

@@ -219,6 +219,23 @@ def get_drink(request, drink_id):
   drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
   return protoutil.ProtoMessageToDict(protolib.GetDrinkDetail(drink))
 
+@csrf_exempt
+@auth_required
+@py_to_json
+@kbsite_aware
+def add_drink_photo(request, drink_id):
+  if request.method != 'POST':
+    raise Http404('Method not supported')
+  drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
+  pic = models.Picture.objects.create(site=request.kbsite)
+  pic.image = request.FILES['photo']
+  pic.drink = drink
+  pic.user = drink.user
+  pic.keg = drink.keg
+  pic.session = drink.session
+  pic.save()
+
+
 @py_to_json
 @kbsite_aware
 def get_session(request, session_id):

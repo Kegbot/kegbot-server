@@ -31,6 +31,7 @@
       {% endif %}
 
    </table>
+
 </div>
 
 {% endblock %}
@@ -53,5 +54,14 @@
   </table>
   {% endwith %}
 </div>
+
+  {% with drink.pictures.all as pictures %}
+    {% if pictures.count %}
+<div class="kb-contentbox">
+      <h1>beer goggles!</h1>
+      {% include "kegweb/picture-gallery.html" %}
+</div>
+    {% endif %}
+  {% endwith %}
 
 {% endblock %}

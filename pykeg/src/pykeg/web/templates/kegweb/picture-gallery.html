@@ -1,0 +1,10 @@
+<div class="kb-picture-gallery">
+
+{% for pic in pictures %}
+  <div class="kb-picture-gallery-item">
+    <a href="{{ pic.image.url }}"><img src="{{ pic.thumbnail.url }}" alt="{{
+      pic.caption }}" /></a><br/>
+  </div>
+{% endfor %}
+
+</div>

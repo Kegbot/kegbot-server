@@ -234,7 +234,7 @@ def add_drink_photo(request, drink_id):
   pic.keg = drink.keg
   pic.session = drink.session
   pic.save()
-
+  return obj_to_dict(pic)
 
 @py_to_json
 @kbsite_aware

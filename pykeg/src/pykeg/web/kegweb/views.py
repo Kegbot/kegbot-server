@@ -147,14 +147,6 @@ def keg_detail(request, keg_id):
   return render_to_response('kegweb/keg_detail.html', context)
 
 @kbsite_aware
-def drink_list(request):
-  all_drinks = request.kbsite.drinks.valid()
-  return object_list(request,
-      queryset=all_drinks,
-      template_name='kegweb/drink_list.html',
-      template_object_name='drink')
-
-@kbsite_aware
 def drink_detail(request, drink_id):
   drink = get_object_or_404(models.Drink, site=request.kbsite, seqn=drink_id)
   context = RequestContext(request, {'drink': drink})

@@ -26,7 +26,6 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
       (r'^drinker/(?P<username>[\w@.+-_]+)', 'redirect_to', {'url': '/drinkers/%(username)s'}),
 
       ### drink related
-      url(r'^drinks/$', 'drink_list', name='kb-drinks'),
       url(r'^drinks/(?P<drink_id>\d+)', 'drink_detail', name='kb-drink'),
       # redirects to the above for compatibility
       (r'^drink/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),

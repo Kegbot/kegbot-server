@@ -9,9 +9,7 @@
       </td>
       <td align="left" valign="center">
         <h2>{{ user.username }}</h2>
-        {{ volume.ConvertTo.Pint|floatformat:0 }} pints<br>
-        <span style="font-size:0.7em;"><i>{{ volume.ConvertTo.Ounce|floatformat:2 }}
-        oz</i></span>
+        {% volume volume_ml %}
       </td>
     </tr>
   </table>

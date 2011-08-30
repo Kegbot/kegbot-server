@@ -34,13 +34,11 @@ from django.views.generic.list_detail import object_list
 from django.views.generic.simple import redirect_to
 
 from pykeg.core import models
-from pykeg.core import units
 
 from pykeg.web.util import kbsite_aware
 
 from pykeg.web.kegweb import forms
 from pykeg.web.kegweb import models as kegweb_models
-from pykeg.web.kegweb import view_util
 
 ### main views
 
@@ -85,8 +83,7 @@ def system_stats(request):
       user = models.User.objects.get(username=username)
     except models.User.DoesNotExist:
       continue  # should not happen
-    volume = units.Quantity(vol)
-    top_drinkers.append((volume, user))
+    top_drinkers.append((vol, user))
   top_drinkers.sort(reverse=True)
 
   context['top_drinkers'] = top_drinkers[:10]

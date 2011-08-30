@@ -75,11 +75,11 @@
     </tr>
 
     <tr>
-      <th>Pints Poured</th>
+      <th>Total Poured</th>
       <td>
-        {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
+        {% volume keg.served_volume %}
         {% if not keg.is_empty %}
-          ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
+          ({% volume keg.remaining_volume %} remain)
         {% endif %}<br/>
         {% chart keg_volume keg 340 60 %}
       </td>
@@ -105,8 +105,8 @@
 
     {% if keg.spilled_volume > 0 %}
     <tr>
-      <th>Pints Spilled/Lost</th>
-      <td>{{ keg.spilled_volume.ConvertTo.Pint|floatformat:2 }}</td>
+      <th>Total Spilled/Lost</th>
+      <td>{% volume keg.spilled_volume %}</td>
     </tr>
     {% endif %}
 
@@ -164,7 +164,7 @@
        top drinkers
     </div>
     <div class="kb-contentbox">
-      {% for volume,user in keg.TopDrinkers %}
+      {% for volume_ml,user in keg.TopDrinkers %}
         {% include "kegweb/volume-user.html" %}
       {% endfor %}
     </div>

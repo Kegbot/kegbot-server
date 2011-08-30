@@ -28,6 +28,7 @@ var kegweb = {};
 kegweb.API_BASE = '/api/';
 kegweb.API_GET_EVENTS = 'events/';
 kegweb.API_GET_EVENTS_HTML = 'events/html/';
+kegweb.AUTOUNITS_SETTINGS = {};
 
 // Misc globals.
 kegweb.lastEventId = -1;
@@ -97,6 +98,7 @@ kegweb.updateEventsTable = function(events) {
     newDivName = "#" + newDivName;
     $('#kb-recent-events').prepend(newDiv);
     $(newDivName).find("abbr.timeago").timeago();
+    $(newDivName).find("span.hmeasure").autounits(kegweb.AUTOUNITS_SETTINGS);
 
     if (animate) {
       $(newDivName).css("display", "none");
@@ -109,4 +111,26 @@ kegweb.updateEventsTable = function(events) {
   if (!kegweb.eventsLoaded) {
     kegweb.eventsLoaded = true;
   }
+}
+
+kegweb.setDisplayUnits = function(useMetric) {
+  kegweb.AUTOUNITS_SETTINGS.metric = useMetric;
+  $.cookie("autounits_metric_cookie", useMetric);
+
+  $("span.hmeasure").autounits(kegweb.AUTOUNITS_SETTINGS);
+
+  var toggleBox = $("#units-selector");
+  var text;
+  if (useMetric) {
+    text = "units: metric ";
+    text += "(<a href='#' onClick='kegweb.setDisplayUnits(false);'>";
+    text += "switch to imperial";
+    text += "</a>)";
+  } else {
+    text = "units: imperial ";
+    text += "(<a href='#' onClick='kegweb.setDisplayUnits(true);'>";
+    text += "switch to metric";
+    text += "</a>)";
+  }
+  toggleBox.html(text);
 }

@@ -88,6 +88,34 @@ class TimeagoNode(Node):
     return '<abbr class="timeago" title="%s">%s</abbr>' % (iso, alt)
 
 
+### volume
+
+@register.tag('volume')
+def volumetag(parser, token):
+  """{% volume <amount> %}"""
+  tokens = token.contents.split()
+  if len(tokens) < 2:
+    raise TemplateSyntaxError, '%s requires at least 2 tokens' % tokens[0]
+  return VolumeNode(tokens[1], tokens[2:])
+
+class VolumeNode(Node):
+  TEMPLATE = """
+    <span class="hmeasure" title="%(title)s">
+      <span class="num">%(num)s</span>
+      <span class="unit">%(unit)s</span>
+    </span>""".strip()
+
+  def __init__(self, volume_varname, extra_args):
+    self._volume_varname = volume_varname
+    self._extra_args = extra_args
+
+  def render(self, context):
+    tv = Variable(self._volume_varname)
+    num = tv.resolve(context)
+    unit = 'mL'
+    title = '%s %s' % (float(num), unit)
+    return VolumeNode.TEMPLATE % vars()
+
 ### chart
 
 @register.tag('chart')

@@ -15,10 +15,7 @@
           <td align="center" valign="center">
             {% with session.GetStats.total_volume_ml as volume_ml %}
             <div style="font-size: 1.4em;">
-              {{ volume_ml|volume|floatformat:1 }}
-            </div>
-            <div style="font-size: 8px;">
-              pint{{ volume_ml|pluralize }}
+              {% volume volume_ml nohuman %}
             </div>
             {% endwith %}
           </td>

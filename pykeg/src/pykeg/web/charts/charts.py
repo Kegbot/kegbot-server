@@ -157,7 +157,7 @@ def UserSessionsByWeekday(user):
   for chunk in chunks:
     # Convert from Sunday = 6 to Sunday = 0
     weekday = (chunk.starttime.weekday() + 1) % 7
-    weekdays[weekday] += to_pints(chunk.Volume())
+    weekdays[weekday] += to_pints(chunk.volume_ml)
   return _DayOfWeekChart(weekdays)
 
 def SessionVolumes(sessions):
@@ -171,7 +171,7 @@ def SessionVolumes(sessions):
     '5+'
   ]
   for sess in sessions:
-    pints = round(to_pints(sess.Volume()), 1)
+    pints = round(to_pints(sess.volume_ml), 1)
     intval = int(pints)
     if intval >= len(buckets):
       buckets[-1] += 1
@@ -253,7 +253,7 @@ def UserSessionChunks(user_chunk):
   max_pints = user_chunk.session.UserChunksByVolume()
   if not max_pints:
     raise ChartUnavailableError, "Error: session corrupt"
-  max_pints = float(max_pints[0].Volume().ConvertTo.Pint)
+  max_pints = to_pints(max_pints[0].volume_ml)
   drinks = user_chunk.GetDrinks()
   totals = {}
   for drink in drinks:
@@ -261,7 +261,7 @@ def UserSessionChunks(user_chunk):
       label = 'keg %i' % drink.keg.seqn
     else:
       label = 'unknown keg'
-    totals[label] = totals.get(label, 0) + float(drink.Volume().ConvertTo.Pint)
+    totals[label] = totals.get(label, 0) + to_pints(drink.volume_ml)
 
   series = []
   for name, tot in totals.iteritems():

@@ -30,9 +30,18 @@
     kegweb.API_BASE = "/{{ kbsite.url }}/api/";
   </script>
   {% endif %}
+  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.timeago.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.autounits.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
+        var autounits_metric_default = {% if kbsettings.display_units != 'metric' %}false{% else %}true{% endif%};
+        kegweb.AUTOUNITS_SETTINGS['metric'] = autounits_metric_default;
+        var autounits_metric_cookie = $.cookie("autounits_metric_cookie");
+        if (autounits_metric_cookie) {
+          kegweb.AUTOUNITS_SETTINGS = !!autounits_metric_cookie;
+        }
+        kegweb.setDisplayUnits(kegweb.AUTOUNITS_SETTINGS['metric']);
         kegweb.onReady();
         $("abbr.timeago").timeago();
     });
@@ -127,6 +136,8 @@
     <div id="kb-footer">
       this is <a href="http://kegbot.org/">kegbot</a>:
       &copy; 2003-{% now "Y" %} mike wakerly<br>
+
+      <span id="units-selector"></span> |
       charts by <a href="http://highcharts.com/">highcharts</a>
     </div>
 

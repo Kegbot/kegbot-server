@@ -15,11 +15,11 @@
             <div class="kb-tapbox-stats">
               <p>
                 <b>Total Poured</b>:
-                {{keg.served_volume.ConvertTo.Pint|floatformat:0}} pints
+                {% volume keg.served_volume %}
                 {% if keg.is_empty %}
                   (empty!)
                 {% else %}
-                  ({{keg.remaining_volume.ConvertTo.Pint|floatformat:0}} remain)
+                  ({% volume keg.remaining_volume %} remain)
                 {% endif %}
                 {% chart keg_volume keg 320 50 %}
                 </p>

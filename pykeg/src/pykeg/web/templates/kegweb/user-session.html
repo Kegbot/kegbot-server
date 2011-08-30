@@ -4,12 +4,7 @@
     <table border="0" width="100%" height="100%">
       <tr>
         <td align="center" valign="center">
-          <div style="font-size: 200%;">
-            {{ session.Volume.ConvertTo.Pint|floatformat:0 }}
-          </div>
-          <div style="font-size: 8px;">
-            pints
-          </div>
+          {% volume session.volume_ml %}
         </td>
       </tr>
     </table>

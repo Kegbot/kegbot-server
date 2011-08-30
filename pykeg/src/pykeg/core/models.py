@@ -80,6 +80,16 @@ class KegbotSite(models.Model):
     else:
       return self.name
 
+class SiteSettings(models.Model):
+  DISPLAY_UNITS_CHOICES = (
+    ('metric', 'Metric units (L)'),
+    ('imperial', 'Imperial units (oz, pint)'),
+  )
+
+  site = models.ForeignKey(KegbotSite, related_name='settings', unique=True)
+  display_units = models.CharField(max_length=64, choices=DISPLAY_UNITS_CHOICES,
+      default='imperial',
+      help_text='Unit system to use for display purposes.')
 
 class UserProfile(models.Model):
   """Extra per-User information."""
@@ -157,9 +167,6 @@ post_save.connect(user_post_save, sender=User)
 
 class KegSize(models.Model):
   """ A convenient table of common Keg sizes """
-  def Volume(self):
-    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
-
   def __str__(self):
     return "%s [%.2f gal]" % (self.name, self.Volume().ConvertTo.USGallon)
 
@@ -201,17 +208,17 @@ class Keg(models.Model):
     unique_together = ('site', 'seqn')
 
   def full_volume(self):
-    return self.size.Volume()
+    return self.size.volume_ml
 
   def served_volume(self):
     drinks = Drink.objects.filter(keg__exact=self, status__exact='valid')
-    tot = units.Quantity(0, units.RECORD_UNIT)
+    total = 0
     for d in drinks:
-      tot += d.Volume()
-    return tot
+      total += d.volume_ml
+    return total
 
   def spilled_volume(self):
-    return units.Quantity(self.spilled_ml, units.RECORD_UNIT)
+    return self.spilled_ml
 
   def remaining_volume(self):
     return self.full_volume() - self.served_volume() - self.spilled_volume()
@@ -285,8 +292,7 @@ class Keg(models.Model):
         user = User.objects.get(username=username)
       except User.DoesNotExist:
         continue  # should not happen
-      volume = units.Quantity(vol)
-      ret.append((volume, user))
+      ret.append((vol, user))
     ret.sort(reverse=True)
     return ret
 
@@ -349,9 +355,6 @@ class Drink(models.Model):
     unique_together = ('site', 'seqn')
     get_latest_by = 'starttime'
     ordering = ('-starttime',)
-
-  def Volume(self):
-    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
 
   def GetSession(self):
     return self.session
@@ -578,9 +581,6 @@ class AbstractChunk(models.Model):
   endtime = models.DateTimeField()
   volume_ml = models.FloatField(default=0)
 
-  def Volume(self):
-    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
-
   def Duration(self):
     return self.endtime - self.startime
 
@@ -679,9 +679,6 @@ class DrinkingSession(AbstractChunk):
       return self.name
     else:
       return 'Session %i' % (self.seqn,)
-
-  def Volume(self):
-    return units.Quantity(self.volume_ml, units.RECORD_UNIT)
 
   def Duration(self):
     return self.endtime - self.startime

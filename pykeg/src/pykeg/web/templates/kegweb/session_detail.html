@@ -32,7 +32,7 @@
       <th>Drink Count</th>
       <td>
         {{ session.drinks.valid.count }} pours,
-        {{session.Volume.ConvertTo.Pint|floatformat:0}} pints
+        {% volume session.volume_ml %}
       </td>
     </tr>
 

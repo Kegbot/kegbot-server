@@ -1,4 +1,5 @@
 from pykeg.core import features
+from pykeg.core import models
 
 def enabled_features(request):
   """Adds a USE_FEATURENAME flags for each enabled feature.
@@ -16,5 +17,9 @@ def enabled_features(request):
 
 def kbsite(request):
   ret = {}
-  ret['kbsite'] = request.kbsite
+  kbsite = request.kbsite
+  ret['kbsite'] = kbsite
+  if kbsite:
+    kbsettings, _ = models.SiteSettings.objects.get_or_create(site=request.kbsite)
+    ret['kbsettings'] = kbsettings
   return ret

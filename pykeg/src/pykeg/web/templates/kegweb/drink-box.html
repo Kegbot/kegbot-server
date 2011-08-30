@@ -6,7 +6,7 @@
   <div class="kb-drink-box-details">
     <div class="kb-drink-box-details-headline">
       {% if drink.user %}<a href="{% url kb-drinker kbsite.url drink.user.username %}">{{drink.user.username}}</a> {% else %} guest{% endif %} poured
-      <b>{{ drink.volume_ml|volume:"ounces"|floatformat:2 }} oz</b>
+      {% volume drink.volume_ml %}
     </div>
     <div class="kb-event-box-info">
       <a href="{% url kb-drink kbsite.url drink.seqn %}">drink {{drink.seqn}}</a>

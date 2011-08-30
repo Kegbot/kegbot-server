@@ -22,8 +22,7 @@
       <td align="right"><b>Average Pour</b></td>
       <td>
         the average pour size is
-        <b>{{ stats.average_volume_ml|volume:"ounces"|floatformat }}
-        oz</b>.
+        <b>{% volume stats.average_volume_ml %}</b>
       </td>
     </tr>
   </table>
@@ -39,7 +38,7 @@
   <table>
     <tr>
       <td valign="top">
-        {% for volume,user in top_drinkers %}
+        {% for volume_ml,user in top_drinkers %}
           {% include "kegweb/volume-user.html" %}
         {% endfor %}
       </td>

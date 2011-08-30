@@ -115,7 +115,7 @@ kegweb.updateEventsTable = function(events) {
 
 kegweb.setDisplayUnits = function(useMetric) {
   kegweb.AUTOUNITS_SETTINGS.metric = useMetric;
-  $.cookie("autounits_metric_cookie", useMetric);
+  $.cookie("autounits_metric_cookie", useMetric, { path: '/' });
 
   $("span.hmeasure").autounits(kegweb.AUTOUNITS_SETTINGS);
 

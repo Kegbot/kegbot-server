@@ -80,7 +80,7 @@ class KegbotSite(models.Model):
     else:
       return self.name
 
-class SiteSettings(models.Model):
+class SiteSetting(models.Model):
   DISPLAY_UNITS_CHOICES = (
     ('metric', 'Metric units (L)'),
     ('imperial', 'Imperial units (oz, pint)'),

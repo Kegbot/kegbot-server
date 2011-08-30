@@ -20,6 +20,6 @@ def kbsite(request):
   kbsite = request.kbsite
   ret['kbsite'] = kbsite
   if kbsite:
-    kbsettings, _ = models.SiteSettings.objects.get_or_create(site=request.kbsite)
+    kbsettings, _ = models.SiteSetting.objects.get_or_create(site=request.kbsite)
     ret['kbsettings'] = kbsettings
   return ret

@@ -91,6 +91,9 @@ class SiteSettings(models.Model):
       default='imperial',
       help_text='Unit system to use for display purposes.')
 
+  class Meta:
+    verbose_name_plural = "SiteSettings"
+
 class UserProfile(models.Model):
   """Extra per-User information."""
   GENDER_CHOICES = (

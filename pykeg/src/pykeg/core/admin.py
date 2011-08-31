@@ -26,7 +26,6 @@ admin.site.register(models.UserProfile)
 
 admin.site.register(models.KegSize)
 admin.site.register(models.KegbotSite)
-admin.site.register(models.SiteSettings)
 
 class KegTapAdmin(admin.ModelAdmin):
   list_display = ('name', 'meter_name', 'relay_name', 'current_keg')
@@ -85,3 +84,7 @@ class PictureAdmin(admin.ModelAdmin):
   list_display = ('seqn', 'created_date', 'user', 'drink', 'keg', 'session', 'caption')
   list_filter = ('created_date',)
 admin.site.register(models.Picture, PictureAdmin)
+
+class SiteSettingsAdmin(admin.ModelAdmin):
+  list_display = ('site', 'display_units')
+admin.site.register(models.SiteSettings, SiteSettingsAdmin)

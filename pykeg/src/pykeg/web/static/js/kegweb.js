@@ -113,9 +113,12 @@ kegweb.updateEventsTable = function(events) {
   }
 }
 
-kegweb.setDisplayUnits = function(useMetric) {
-  kegweb.AUTOUNITS_SETTINGS.metric = useMetric;
-  $.cookie("autounits_metric_cookie", useMetric, { path: '/' });
+kegweb.refreshDisplayUnits = function(useMetric) {
+  var override = $.cookie("autounits_usemetric");
+  if (override != null) {
+    useMetric = (override == 'true');
+  }
+  kegweb.AUTOUNITS_SETTINGS['metric'] = useMetric;
 
   $("span.hmeasure").autounits(kegweb.AUTOUNITS_SETTINGS);
 
@@ -123,14 +126,20 @@ kegweb.setDisplayUnits = function(useMetric) {
   var text;
   if (useMetric) {
     text = "units: metric ";
-    text += "(<a href='#' onClick='kegweb.setDisplayUnits(false);'>";
+    text += "(<a href='#' onClick='kegweb.overrideDisplayUnits(false);'>";
     text += "switch to imperial";
     text += "</a>)";
   } else {
     text = "units: imperial ";
-    text += "(<a href='#' onClick='kegweb.setDisplayUnits(true);'>";
+    text += "(<a href='#' onClick='kegweb.overrideDisplayUnits(true);'>";
     text += "switch to metric";
     text += "</a>)";
   }
   toggleBox.html(text);
 }
+
+kegweb.overrideDisplayUnits = function(useMetric) {
+  $.cookie("autounits_usemetric", useMetric, { path: '/' });
+  kegweb.refreshDisplayUnits(useMetric);
+}
+

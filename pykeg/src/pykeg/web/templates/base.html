@@ -35,13 +35,8 @@
   <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.autounits.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
-        var autounits_metric_default = {% if kbsettings.display_units != 'metric' %}false{% else %}true{% endif%};
-        kegweb.AUTOUNITS_SETTINGS['metric'] = autounits_metric_default;
-        var autounits_metric_cookie = $.cookie("autounits_metric_cookie");
-        if (autounits_metric_cookie) {
-          kegweb.AUTOUNITS_SETTINGS['metric'] = !!autounits_metric_cookie;
-        }
-        kegweb.setDisplayUnits(kegweb.AUTOUNITS_SETTINGS['metric']);
+        var defaultUseMetric = {% if kbsettings.display_units != 'metric' %}false{% else %}true{% endif%};
+        kegweb.refreshDisplayUnits(defaultUseMetric);
         kegweb.onReady();
         $("abbr.timeago").timeago();
     });

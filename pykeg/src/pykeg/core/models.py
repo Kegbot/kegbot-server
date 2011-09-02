@@ -171,7 +171,8 @@ post_save.connect(user_post_save, sender=User)
 class KegSize(models.Model):
   """ A convenient table of common Keg sizes """
   def __str__(self):
-    return "%s [%.2f gal]" % (self.name, self.Volume().ConvertTo.USGallon)
+    gallons = units.Quantity(self.volume_ml).Amount(units.UNITS.USGallon)
+    return "%s [%.2f gal]" % (self.name, gallons)
 
   name = models.CharField(max_length=128)
   volume_ml = models.FloatField()

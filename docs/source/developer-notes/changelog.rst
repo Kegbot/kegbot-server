@@ -5,6 +5,34 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Version 0.8.2 (2010-08-05)
+--------------------------
+*Note:* Due to changes in the Kegbot core, you must run the following commands
+after updating::
+  
+  $ kegbot-admin.py migrate
+  $ kegbot-admin.py createcachetable cache
+
+Core/General
+^^^^^^^^^^^^
+* Pictures can be attached to drinks.
+* Better support for ID-12 RFID tokens.
+
+API
+^^^
+* Added an endpoint for session statis.
+* Fixed ABV return value.
+* Return more detail on the kegs list endpoint.
+
+Kegweb
+^^^^^^
+* Added support for displaying measurements in metric units.
+* Updated to use django staticfiles module.
+
+Kegboard
+^^^^^^^^
+* Added support for magstrip readers.
+
 Version 0.8.1 (2010-06-13)
 --------------------------
 *Note:* If you installed version 0.8.0 and find your api_key unusable, you need

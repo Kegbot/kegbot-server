@@ -5,7 +5,7 @@ use_setuptools()
 
 from setuptools import setup, find_packages
 
-VERSION = "0.8.1"
+VERSION = "0.8.2"
 SHORT_DESCRIPTION = "Kegbot kegerator controller software"
 LONG_DESCRIPTION = """This package contains Kegbot core controller and Django
 frontend package.
@@ -48,6 +48,7 @@ setup(
       'django-autoslug',
       'django-imagekit >= 0.3.3',
       'django-registration',
+      'django-sentry',
       'django_extensions',
 
       # NOTE(mikey): socialregistration does not yet declare the

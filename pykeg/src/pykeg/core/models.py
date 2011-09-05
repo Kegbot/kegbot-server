@@ -92,7 +92,7 @@ class SiteSettings(models.Model):
       help_text='Unit system to use for display purposes.')
 
   class Meta:
-    verbose_name_plural = "SiteSettings"
+    verbose_name_plural = "site settings"
 
 class UserProfile(models.Model):
   """Extra per-User information."""

@@ -56,8 +56,8 @@ setup(
       'facebook-python-sdk',
       'django-socialregistration >= 0.4.2',
 
-      'MySQL-python',
-      'pil',
+      #'MySQL-python',
+      #'pil',
       'protobuf >= 2.4.1',
       'pylcdui >= 0.5.5',
       #'pysqlite>=2.0.3',

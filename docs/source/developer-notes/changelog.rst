@@ -5,6 +5,13 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Version 0.8.3 (2010-08-09)
+--------------------------
+
+Core/General
+^^^^^^^^^^^^
+* Fix a temperature recording bug that appeared in v0.8.2.
+
 Version 0.8.2 (2010-08-05)
 --------------------------
 *Note:* Due to changes in the Kegbot core, you must run the following commands

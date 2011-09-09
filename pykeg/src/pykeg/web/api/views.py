@@ -448,7 +448,7 @@ def _thermo_sensor_get(request, sensor_name):
 @csrf_exempt
 @py_to_json
 @auth_required
-def thermo_sensor_post(request, sensor_name):
+def _thermo_sensor_post(request, sensor_name):
   form = forms.ThermoPostForm(request.POST)
   if not form.is_valid():
     raise krest.BadRequestError, _form_errors(form)

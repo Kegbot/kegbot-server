@@ -196,7 +196,7 @@ class KrestClient:
     except HTTPError, e:
       raise ServerError('Caused by: %s' % e)
     except URLError, e:
-      raise e.reason
+      raise ServerError('URL Error, reason: %s' % e.reason)
 
     return self._DecodeResponse(response_data, out_msg)
 

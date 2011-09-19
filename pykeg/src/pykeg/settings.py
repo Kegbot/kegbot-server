@@ -16,7 +16,6 @@ INSTALLED_APPS = (
     'django_extensions',
     'imagekit',
     'pykeg.beerdb',
-    'pykeg.billing',
     'pykeg.contrib.soundserver',
     'pykeg.contrib.twitter',
     'pykeg.core',

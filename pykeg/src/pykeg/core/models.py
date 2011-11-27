@@ -782,6 +782,7 @@ class Thermolog(models.Model):
   class Meta:
     unique_together = ('site', 'seqn')
     get_latest_by = 'time'
+    ordering = ('-time',)
 
   site = models.ForeignKey(KegbotSite, related_name='thermologs')
   seqn = models.PositiveIntegerField(editable=False)

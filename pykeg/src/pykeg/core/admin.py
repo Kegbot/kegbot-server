@@ -73,8 +73,6 @@ class ThermoSummaryLogAdmin(admin.ModelAdmin):
 
 admin.site.register(models.ThermoSummaryLog, ThermoSummaryLogAdmin)
 
-admin.site.register(models.RelayLog)
-
 class SystemEventAdmin(admin.ModelAdmin):
   list_display = ('seqn', 'kind', 'when', 'user', 'drink', 'keg', 'session')
   list_filter = ('kind', 'when')

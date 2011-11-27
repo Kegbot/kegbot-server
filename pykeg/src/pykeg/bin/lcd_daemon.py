@@ -194,7 +194,7 @@ class KegUi:
     user_widget.set_contents(str(flow_update.username))
 
     amt = units.Quantity(flow_update.volume_ml, units.UNITS.Milliliter)
-    ounces = amt.ConvertTo.Ounce
+    ounces = amt.InOunces()
 
     ounces_widget = f.GetWidget('ounces')
     ounces_widget.set_contents('%.2f' % ounces)
@@ -204,7 +204,7 @@ class KegUi:
 
   def UpdateLastDrink(self, username, volume_ml, date):
     vol = units.Quantity(volume_ml, units.UNITS.Milliliter)
-    size = '%.2f ounces' % vol.ConvertTo.Ounce
+    size = '%.2f ounces' % vol.InOunces()
     when = date.strftime('%b %d %I:%M%p').lower()
 
     f = self._last_drink_frame

@@ -22,7 +22,7 @@ from pykeg.core import models
 from pykeg.core import units
 
 def to_pints(volume):
-  return float(units.Quantity(volume).ConvertTo.Pint)
+  return float(units.Quantity(volume).InPints())
 
 class ChartError(Exception):
   """Base chart exception."""

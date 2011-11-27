@@ -72,19 +72,19 @@ class QuantityTestCase(unittest.TestCase):
   """Test the units.Quantity class"""
   def testBasicUsage(self):
     v = units.Quantity(1234.0)
-    self.assertEqual(1.234, v.ConvertTo.Liter)
+    self.assertEqual(1.234, v.InLiters())
 
     v.IncAmount(1, UNITS.Liter)
-    self.assertEqual(2.234, v.ConvertTo.Liter)
+    self.assertEqual(2.234, v.InLiters())
 
     v.Clear()
-    self.assertEqual(0, v.ConvertTo.Liter)
+    self.assertEqual(0, v.InLiters())
 
     v.SetAmount(256, UNITS.Ounce)
-    self.assertEqual(2.0, v.ConvertTo.USGallon)
+    self.assertEqual(2.0, v.InUSGallons())
 
     v.IncAmount(-0.5, UNITS.USGallon)
-    self.assertEqual(1.5, v.ConvertTo.USGallon)
+    self.assertEqual(1.5, v.InUSGallons())
 
     v1 = units.Quantity(123.0)
     v2 = units.Quantity(123, from_units=units.Quantity.DEFAULT_UNITS)

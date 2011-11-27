@@ -54,6 +54,7 @@ def Enum(*defs):
     def __getitem__(self, i):  return constants[i]
     def __repr__(self):        return 'Enum' + str(names)
     def __str__(self):         return 'enum ' + str(constants)
+    def get_names(self):       return names
 
   class EnumValue(object):
     __slots__ = ('__value')

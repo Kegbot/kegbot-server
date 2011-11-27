@@ -143,7 +143,7 @@ def gentestdata():
         start = drink_time + drink_num*drink_interval
         end = start + datetime.timedelta(seconds=10)
         vol = drink_vols[drink_num%len(drink_vols)]
-        drink = models.Drink(ticks=vol.ConvertTo.KbMeterTick,
+        drink = models.Drink(ticks=vol.InKbMeterTicks(),
                              volume_ml=vol.Amount(units.RECORD_UNIT),
                              starttime=start, user=u, keg=k, status='valid')
         drink.save()

@@ -79,7 +79,7 @@ class CoreModelsTestCase(unittest.TestCase):
 
   def testKegStuff(self):
     """Test basic keg relations that should always work."""
-    self.assertEqual(self.keg.size.Volume().ConvertTo.Liter, 2.0)
+    self.assertEqual(self.keg.size.Volume().InLiters(), 2.0)
     self.assertEqual(self.keg.type.brewer.name, "Moonshine Beers")
 
     self.assertEqual(self.keg.served_volume(), 0.0)
@@ -104,7 +104,7 @@ class CoreModelsTestCase(unittest.TestCase):
     drinks = {}
     base_time = datetime.datetime(2009,1,1,1,0,0)
 
-    ticks = volume = vol.ConvertTo.KbMeterTick
+    ticks = volume = vol.InKbMeterTicks()
 
     td_10m = datetime.timedelta(minutes=10)
     td_200m = datetime.timedelta(minutes=200)

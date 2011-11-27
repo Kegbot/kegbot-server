@@ -297,17 +297,17 @@ def volume(text, fmt='pints'):
   except ValueError:
     return text
   if fmt == 'pints':
-    res = vol.ConvertTo.Pint
+    res = vol.InPints()
   elif fmt == 'liters':
-    res = vol.ConvertTo.Liter
+    res = vol.InLiters()
   elif fmt == 'ounces':
-    res = vol.ConvertTo.Ounce
+    res = vol.InOunces()
   elif fmt == 'gallons':
-    res = vol.ConvertTo.USGallon
+    res = vol.InUSGallons()
   elif fmt == 'twelveounces':
-    res = vol.ConvertTo.TwelveOunceBeer
+    res = vol.InTwelveOunceBeers()
   elif fmt == 'halfbarrels':
-    res = vol.ConvertTo.HalfBarrelKeg
+    res = vol.InHalfBarrelKegs()
   else:
     raise TemplateSyntaxError, 'Unknown volume format: %s' % fmt
   return float(res)

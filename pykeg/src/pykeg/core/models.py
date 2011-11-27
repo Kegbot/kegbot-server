@@ -172,7 +172,7 @@ post_save.connect(_user_post_save, sender=User)
 class KegSize(models.Model):
   """ A convenient table of common Keg sizes """
   def __str__(self):
-    gallons = units.Quantity(self.volume_ml).Amount(units.UNITS.USGallon)
+    gallons = units.Quantity(self.volume_ml).InUSGallons()
     return "%s [%.2f gal]" % (self.name, gallons)
 
   name = models.CharField(max_length=128)
@@ -367,17 +367,14 @@ class Drink(models.Model):
     domain = Site.objects.get_current().domain
     return 'http://%s/d/%i' % (domain, self.id)
 
+  def Volume(self):
+    return units.Quantity(self.volume_ml)
+
   def calories(self):
     if not self.keg or not self.keg.type:
       return 0
-    cal = self.keg.type.calories_oz * self.Volume().ConvertTo.Ounce
-    return cal
-
-  def bac(self):
-    bacs = self.bac_set.all()
-    if bacs.count() == 1:
-      return bacs[0].bac
-    return 0
+    ounces = self.Volume().InOunces()
+    return self.keg.type.calories_oz * ounces
 
   def __str__(self):
     return "Drink %s:%i by %s" % (self.site.name, self.seqn, self.user)
@@ -523,7 +520,7 @@ class _AbstractChunk(models.Model):
   volume_ml = models.FloatField(default=0)
 
   def Duration(self):
-    return self.endtime - self.startime
+    return self.endtime - self.starttime
 
   def _AddDrinkNoSave(self, drink):
     if self.starttime > drink.starttime:
@@ -620,9 +617,6 @@ class DrinkingSession(_AbstractChunk):
       return self.name
     else:
       return 'Session %i' % (self.seqn,)
-
-  def Duration(self):
-    return self.endtime - self.startime
 
   def AddDrink(self, drink):
     super(DrinkingSession, self).AddDrink(drink)

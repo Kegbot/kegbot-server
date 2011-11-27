@@ -118,7 +118,7 @@ class TwitterKegnetClient(kegnet.SimpleKegnetClient):
     return tweet_log
 
   def _GenerateTweet(self, drink, tweet_to):
-    ounces = drink.Volume().ConvertTo.Ounce
+    ounces = drink.Volume().InOunces()
     config = self._backend.GetConfig()
 
     try:

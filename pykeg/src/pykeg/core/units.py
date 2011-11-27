@@ -119,29 +119,27 @@ class _UnitConverter:
 UnitConverter = _UnitConverter(CONVERSIONS)
 
 
-class Quantity:
+class _QuantityMeta(type):
+  def __init__(cls, name, bases, attr):
+    super(_QuantityMeta, cls).__init__(name, bases, attr)
+    for unit_name in UNITS.get_names():
+      unit = getattr(UNITS, unit_name)
+      prop_name = 'In' + unit_name + 's'
+      def convert_fn(self, to_units=unit):
+        return self.Amount(to_units)
+      setattr(cls, prop_name, convert_fn)
+
+class Quantity(object):
   DEFAULT_UNITS = UNITS.Milliliter
-
-  class _AttributeConverter:
-    def __init__(self, qty=0):
-      self._qty = qty
-
-    def __getattr__(self, name):
-      qty_obj = self.__dict__['_qty']
-      return UnitConverter.Convert(qty_obj.Amount(),
-                                   qty_obj.units(),
-                                   getattr(UNITS, name))
+  __metaclass__ = _QuantityMeta
 
   def __init__(self, amount, units=None, from_units=None):
     if units is None:
       units = self.DEFAULT_UNITS
     self._units = units
-
     if from_units is None:
       from_units = self._units
-
     self._amount = UnitConverter.Convert(amount, from_units, self.units())
-    self.ConvertTo = Quantity._AttributeConverter(self)
 
   def __add__(self, other, subtract=False):
     val = 0
@@ -195,7 +193,6 @@ class Quantity:
     self.SetAmount(0)
 
   def Amount(self, in_units=None):
-    # Same as self.ConvertTo.<in_units>
     if in_units is None:
       in_units = self.units()
     return UnitConverter.Convert(self._amount, self.units(), in_units)

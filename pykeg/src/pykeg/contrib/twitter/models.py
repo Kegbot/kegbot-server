@@ -47,7 +47,7 @@ class DrinkClassification(models.Model):
 
   def __str__(self):
     vol = units.Quantity(self.minimum_volume_ml, units.UNITS.Milliliter)
-    oz = vol.ConvertTo.Ounce
+    oz = vol.InOunces()
     return '%s (%.1foz or more)' % (self.name, oz)
 
   @classmethod

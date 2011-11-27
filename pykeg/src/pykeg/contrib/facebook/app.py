@@ -63,7 +63,7 @@ class FBKegnetClient(kegnet.SimpleKegnetClient):
     else:
       beer_name = 'beer'
 
-    ounces = drink.Volume().ConvertTo.Ounce
+    ounces = drink.Volume().InOunces()
     message = 'just poured %(ounces).1f ounces of %(beer_name)s from Kegbot.' % vars()
 
     action_links = [

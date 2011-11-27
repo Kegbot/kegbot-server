@@ -18,21 +18,21 @@
          <b>Total Sessions</b>
        </td>
        <td>
-         {{ sessions.count }}
+         {{ sessions|length }}
        </td>
      </tr>
 
      <tr>
         <td align="right" valign="top"><b>Total Drinks</b></td>
-        <td align="left">{{ drinks.valid.count }}</td>
+        <td align="left">{{ drinks.count }}</td>
      </tr>
 
-     {% if drinks.valid.count %}
+     {% if drinks.count %}
      <tr>
         <td align="right" valign="top"><b>Last Drink</b></td>
         <td align="left">
-          {{ drinks.valid.0.starttime|date:"l, F j, Y" }}<br>
-          <i>({% timeago drinks.valid.0.starttime%})</i>
+          {{ drinks.0.starttime|date:"l, F j, Y" }}<br>
+          <i>({% timeago drinks.0.starttime%})</i>
         </td>
      </tr>
      {% endif %}

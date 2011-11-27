@@ -47,7 +47,6 @@ class AuthenticationTokenAdmin(admin.ModelAdmin):
   search_fields = ('user__username', 'token_value', 'nice_name')
 admin.site.register(models.AuthenticationToken, AuthenticationTokenAdmin)
 
-admin.site.register(models.BAC)
 admin.site.register(models.DrinkingSession)
 
 class ThermoSensorAdmin(admin.ModelAdmin):

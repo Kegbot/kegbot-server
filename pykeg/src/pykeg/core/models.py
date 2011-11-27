@@ -482,62 +482,6 @@ class AuthenticationToken(models.Model):
 
 pre_save.connect(_set_seqn_pre_save, sender=AuthenticationToken)
 
-class BAC(models.Model):
-  """ Calculated table of instantaneous blood alcohol estimations.
-
-  A BAC value may be added by Kegbot after each pour of a registered drinker.
-  A relationship to the drink causing the calculation is stored, to ease
-  lookup by Drink.
-
-  TODO(mikey): consider making the Drink optional so that intermediate values
-  can be added. Seems of dubious utility.
-  TODO(mikey): if Drink is mandatory, should eliminated rectime.
-  """
-  user = models.ForeignKey(User)
-  drink = models.ForeignKey(Drink)
-  rectime = models.DateTimeField()
-  bac = models.FloatField()
-
-  def __str__(self):
-    return "%s BAC at %s" % (self.user, self.drink)
-
-  @classmethod
-  def ProcessDrink(cls, d):
-    """Generate the bac for a drink"""
-    bac_qs = d.bac_set.all()
-    if len(bac_qs):
-      # Already has a recorded BAC.
-      return bac_qs[0]
-
-    if not d.user:
-      return
-
-    try:
-      profile = d.user.get_profile()
-    except UserProfile.DoesNotExist:
-      # can't compute bac if there is no profile
-      return
-    if not d.keg:
-      return
-    if not d.keg.type.abv:
-      return
-
-    # TODO: delete/update previous bac for this drink iff exists
-
-    # consider previously recorded bac for non-guest users
-    matches = BAC.objects.filter(user=d.user).order_by('-rectime')
-    prev_bac = 0
-    if len(matches):
-      last_bac = matches[0]
-      prev_bac = util.decomposeBAC(last_bac.bac, (d.starttime - last_bac.rectime).seconds)
-
-    now = util.instantBAC(profile.gender, profile.weight, d.keg.type.abv,
-                          d.Volume().ConvertTo.Ounce)
-    b = BAC(user=d.user, drink=d, rectime=d.starttime, bac=now+prev_bac)
-    b.save()
-    return b
-
-
 def _find_session_in_window(qset, when, window):
   matching = qset.filter(
       starttime__lte=when + window,

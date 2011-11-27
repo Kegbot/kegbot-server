@@ -319,7 +319,7 @@ class Keg(models.Model):
   notes = models.TextField(blank=True, null=True,
       help_text='Private notes about this keg, viewable only by admins.')
 
-def _KegPreSave(sender, instance, **kwargs):
+def _keg_pre_save(sender, instance, **kwargs):
   keg = instance
   # We don't need to do anything if the keg is still online.
   if keg.status != 'offline':
@@ -340,13 +340,13 @@ def _KegPreSave(sender, instance, **kwargs):
       keg.enddate = drink.starttime
 
 pre_save.connect(_set_seqn_pre_save, sender=Keg)
-pre_save.connect(_KegPreSave, sender=Keg)
+pre_save.connect(_keg_pre_save, sender=Keg)
 
-def _KegPostSave(sender, instance, **kwargs):
+def _keg_post_save(sender, instance, **kwargs):
   keg = instance
   SystemEvent.ProcessKeg(keg)
 
-post_save.connect(_KegPostSave, sender=Keg)
+post_save.connect(_keg_post_save, sender=Keg)
 
 
 class DrinkManager(models.Manager):
@@ -575,7 +575,7 @@ class SessionManager(models.Manager):
   def valid(self):
     return self.filter(volume_ml__gt=kb_common.MIN_SESSION_VOLUME_DISPLAY_ML)
 
-class AbstractChunk(models.Model):
+class _AbstractChunk(models.Model):
   class Meta:
     abstract = True
     get_latest_by = 'starttime'
@@ -600,7 +600,7 @@ class AbstractChunk(models.Model):
     self.save()
 
 
-class DrinkingSession(AbstractChunk):
+class DrinkingSession(_AbstractChunk):
   """A collection of contiguous drinks. """
   class Meta:
     unique_together = ('site', 'seqn')
@@ -764,7 +764,7 @@ class DrinkingSession(AbstractChunk):
     drink.save()
     return session
 
-def _DrinkingSessionPreSave(sender, instance, **kwargs):
+def _drinking_session_pre_save(sender, instance, **kwargs):
   session = instance
   if not session.name:
     session.name = 'Session %i' % session.seqn
@@ -774,10 +774,10 @@ def _DrinkingSessionPreSave(sender, instance, **kwargs):
   session.slug = ''
 
 pre_save.connect(_set_seqn_pre_save, sender=DrinkingSession)
-pre_save.connect(_DrinkingSessionPreSave, sender=DrinkingSession)
+pre_save.connect(_drinking_session_pre_save, sender=DrinkingSession)
 
 
-class SessionChunk(AbstractChunk):
+class SessionChunk(_AbstractChunk):
   """A specific user and keg contribution to a session."""
   class Meta:
     unique_together = ('session', 'user', 'keg')
@@ -791,7 +791,7 @@ class SessionChunk(AbstractChunk):
       null=True)
 
 
-class UserSessionChunk(AbstractChunk):
+class UserSessionChunk(_AbstractChunk):
   """A specific user's contribution to a session (spans all kegs)."""
   class Meta:
     unique_together = ('session', 'user')
@@ -809,7 +809,7 @@ class UserSessionChunk(AbstractChunk):
     return self.session.drinks.filter(user=self.user).order_by('starttime')
 
 
-class KegSessionChunk(AbstractChunk):
+class KegSessionChunk(_AbstractChunk):
   """A specific keg's contribution to a session (spans all users)."""
   class Meta:
     unique_together = ('session', 'keg')
@@ -990,20 +990,6 @@ class ThermoSummaryLog(models.Model):
   mean_temp = models.FloatField()
 
 pre_save.connect(_set_seqn_pre_save, sender=ThermoSummaryLog)
-
-
-class RelayLog(models.Model):
-  """ A log from an IRelay device of relay events/ """
-  class Meta:
-    unique_together = ('site', 'seqn')
-
-  site = models.ForeignKey(KegbotSite, related_name='relaylogs')
-  seqn = models.PositiveIntegerField(editable=False)
-  name = models.CharField(max_length=128)
-  status = models.CharField(max_length=32)
-  time = models.DateTimeField()
-
-pre_save.connect(_set_seqn_pre_save, sender=RelayLog)
 
 
 class _StatsModel(models.Model):

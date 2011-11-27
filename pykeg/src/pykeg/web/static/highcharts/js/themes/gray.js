@@ -4,7 +4,7 @@
  */
 
 Highcharts.theme = {
-	colors: ["#DDDF0D", "#7798BF", "#55BF3B", "#DF5353", "#aaeeee", "#ff0066", "#eeaaee", 
+	colors: ["#DDDF0D", "#7798BF", "#55BF3B", "#DF5353", "#aaeeee", "#ff0066", "#eeaaee",
 		"#55BF3B", "#DF5353", "#7798BF", "#aaeeee"],
 	chart: {
 		backgroundColor: {
@@ -21,13 +21,13 @@ Highcharts.theme = {
 		plotBorderWidth: 0
 	},
 	title: {
-		style: { 
+		style: {
 			color: '#FFF',
 			font: '16px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
 		}
 	},
 	subtitle: {
-		style: { 
+		style: {
 			color: '#DDD',
 			font: '12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
 		}
@@ -46,7 +46,7 @@ Highcharts.theme = {
 			style: {
 				color: '#AAA',
 				font: 'bold 12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
-			}				
+			}
 		}
 	},
 	yAxis: {
@@ -65,7 +65,7 @@ Highcharts.theme = {
 			style: {
 				color: '#AAA',
 				font: 'bold 12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
-			}				
+			}
 		}
 	},
 	legend: {
@@ -97,8 +97,8 @@ Highcharts.theme = {
 			color: '#FFF'
 		}
 	},
-	
-	
+
+
 	plotOptions: {
 		line: {
 			dataLabels: {
@@ -117,15 +117,18 @@ Highcharts.theme = {
 			marker: {
 				lineColor: '#333'
 			}
+		},
+		candlestick: {
+			lineColor: 'white'
 		}
 	},
-	
+
 	toolbar: {
 		itemStyle: {
 			color: '#CCC'
 		}
 	},
-	
+
 	navigation: {
 		buttonOptions: {
 			backgroundColor: {
@@ -140,7 +143,7 @@ Highcharts.theme = {
 			hoverSymbolStroke: '#FFFFFF'
 		}
 	},
-	
+
 	exporting: {
 		buttons: {
 			exportButton: {
@@ -150,8 +153,103 @@ Highcharts.theme = {
 				symbolFill: '#7797BE'
 			}
 		}
-	},	
-	
+	},
+
+	// scroll charts
+	rangeSelector: {
+		buttonTheme: {
+			fill: {
+				linearGradient: [0, 0, 0, 20],
+				stops: [
+					[0.4, '#888'],
+					[0.6, '#555']
+				]
+			},
+			stroke: '#000000',
+			style: {
+				color: '#CCC',
+				fontWeight: 'bold'
+			},
+			states: {
+				hover: {
+					fill: {
+						linearGradient: [0, 0, 0, 20],
+						stops: [
+							[0.4, '#BBB'],
+							[0.6, '#888']
+						]
+					},
+					stroke: '#000000',
+					style: {
+						color: 'white'
+					}
+				},
+				select: {
+					fill: {
+						linearGradient: [0, 0, 0, 20],
+						stops: [
+							[0.1, '#000'],
+							[0.3, '#333']
+						]
+					},
+					stroke: '#000000',
+					style: {
+						color: 'yellow'
+					}
+				}
+			}
+		},
+		inputStyle: {
+			backgroundColor: '#333',
+			color: 'silver'
+		},
+		labelStyle: {
+			color: 'silver'
+		}
+	},
+
+	navigator: {
+		handles: {
+			backgroundColor: '#666',
+			borderColor: '#AAA'
+		},
+		outlineColor: '#CCC',
+		maskFill: 'rgba(16, 16, 16, 0.5)',
+		series: {
+			color: '#7798BF',
+			lineColor: '#A6C7ED'
+		}
+	},
+
+	scrollbar: {
+		barBackgroundColor: {
+				linearGradient: [0, 0, 0, 20],
+				stops: [
+					[0.4, '#888'],
+					[0.6, '#555']
+				]
+			},
+		barBorderColor: '#CCC',
+		buttonArrowColor: '#CCC',
+		buttonBackgroundColor: {
+				linearGradient: [0, 0, 0, 20],
+				stops: [
+					[0.4, '#888'],
+					[0.6, '#555']
+				]
+			},
+		buttonBorderColor: '#CCC',
+		rifleColor: '#FFF',
+		trackBackgroundColor: {
+			linearGradient: [0, 0, 0, 10],
+			stops: [
+				[0, '#000'],
+				[1, '#333']
+			]
+		},
+		trackBorderColor: '#666'
+	},
+
 	// special colors for some of the demo examples
 	legendBackgroundColor: 'rgba(48, 48, 48, 0.8)',
 	legendBackgroundColorSolid: 'rgb(70, 70, 70)',

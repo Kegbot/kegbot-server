@@ -19,6 +19,8 @@
 from django.contrib import admin
 from pykeg.beerdb import models
 
+from imagekit.admin import AdminThumbnail
+
 class BeerTypeInline(admin.TabularInline):
   model = models.BeerType
 
@@ -36,4 +38,6 @@ admin.site.register(models.BeerType, BeerTypeAdmin)
 
 class BeerImageAdmin(admin.ModelAdmin):
   model = models.BeerImage
+  list_display = ('__str__', 'admin_thumbnail')
+  admin_thumbnail = AdminThumbnail(image_field='thumbnail')
 admin.site.register(models.BeerImage, BeerImageAdmin)

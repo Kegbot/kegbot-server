@@ -33,6 +33,7 @@ from autoslug import AutoSlugField
 
 from pykeg.core import kb_common
 from pykeg.core import fields
+from pykeg.core import managers
 from pykeg.core import stats
 from pykeg.core import units
 from pykeg.core import util
@@ -152,20 +153,20 @@ class UserProfile(models.Model):
   api_secret = models.CharField(max_length=256, blank=True, null=True,
       default=ApiKey.NewSecret)
 
-def user_profile_pre_save(sender, instance, **kwargs):
+def _user_profile_pre_save(sender, instance, **kwargs):
   if not instance.api_secret:
     instance.api_secret = ApiKey.NewSecret()
   # TODO(mikey): validate secret (length, hex chars) here too.
-pre_save.connect(user_profile_pre_save, sender=UserProfile)
+pre_save.connect(_user_profile_pre_save, sender=UserProfile)
 
-def user_post_save(sender, instance, **kwargs):
+def _user_post_save(sender, instance, **kwargs):
   defaults = {
     'weight': kb_common.DEFAULT_NEW_USER_WEIGHT,
     'gender': kb_common.DEFAULT_NEW_USER_GENDER,
   }
   profile, new = UserProfile.objects.get_or_create(user=instance,
       defaults=defaults)
-post_save.connect(user_post_save, sender=User)
+post_save.connect(_user_post_save, sender=User)
 
 
 class KegSize(models.Model):
@@ -349,10 +350,6 @@ def _keg_post_save(sender, instance, **kwargs):
 post_save.connect(_keg_post_save, sender=Keg)
 
 
-class DrinkManager(models.Manager):
-  def valid(self):
-    return self.filter(status='valid')
-
 class Drink(models.Model):
   """ Table of drinks records """
   class Meta:
@@ -385,7 +382,7 @@ class Drink(models.Model):
   def __str__(self):
     return "Drink %s:%i by %s" % (self.site.name, self.seqn, self.user)
 
-  objects = DrinkManager()
+  objects = managers.DrinkManager()
 
   site = models.ForeignKey(KegbotSite, related_name='drinks')
   seqn = models.PositiveIntegerField(editable=False)
@@ -541,7 +538,7 @@ class BAC(models.Model):
     return b
 
 
-def find_session_in_window(qset, when, window):
+def _find_session_in_window(qset, when, window):
   matching = qset.filter(
       starttime__lte=when + window,
       endtime__gte=when - window
@@ -570,10 +567,6 @@ def find_session_in_window(qset, when, window):
 
   return None
 
-
-class SessionManager(models.Manager):
-  def valid(self):
-    return self.filter(volume_ml__gt=kb_common.MIN_SESSION_VOLUME_DISPLAY_ML)
 
 class _AbstractChunk(models.Model):
   class Meta:
@@ -607,7 +600,7 @@ class DrinkingSession(_AbstractChunk):
     get_latest_by = 'starttime'
     ordering = ('-starttime',)
 
-  objects = SessionManager()
+  objects = managers.SessionManager()
   site = models.ForeignKey(KegbotSite, related_name='sessions')
   seqn = models.PositiveIntegerField(editable=False)
   name = models.CharField(max_length=256, blank=True, null=True)
@@ -748,7 +741,7 @@ class DrinkingSession(_AbstractChunk):
     # Return last session if one already exists
     q = drink.site.sessions.all()
     window = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
-    session = find_session_in_window(q, drink.starttime, window)
+    session = _find_session_in_window(q, drink.starttime, window)
     if session:
       session.AddDrink(drink)
       drink.session = session
@@ -816,7 +809,7 @@ class KegSessionChunk(_AbstractChunk):
     get_latest_by = 'starttime'
     ordering = ('-starttime',)
 
-  objects = SessionManager()
+  objects = managers.SessionManager()
   session = models.ForeignKey(DrinkingSession, related_name='keg_chunks')
   keg = models.ForeignKey(Keg, related_name='keg_session_chunks', blank=True,
       null=True)
@@ -933,7 +926,7 @@ class Thermolog(models.Model):
 
       old_entries.delete()
 
-def thermolog_post_save(sender, instance, **kwargs):
+def _thermolog_post_save(sender, instance, **kwargs):
   # TODO(mikey): prevent thermolog entries from being changed; if a particular
   # record is saved more than once, the average temperature will be invalid.
   daily_date = datetime.datetime(year=instance.time.year,
@@ -967,7 +960,7 @@ def thermolog_post_save(sender, instance, **kwargs):
   daily_log.save()
 
 pre_save.connect(_set_seqn_pre_save, sender=Thermolog)
-post_save.connect(thermolog_post_save, sender=Thermolog)
+post_save.connect(_thermolog_post_save, sender=Thermolog)
 
 
 class ThermoSummaryLog(models.Model):
@@ -1143,7 +1136,7 @@ class SystemEvent(models.Model):
 pre_save.connect(_set_seqn_pre_save, sender=SystemEvent)
 
 
-def pics_file_name(instance, filename):
+def _pics_file_name(instance, filename):
   rand_salt = random.randrange(0xffff)
   new_filename = '%04x-%s' % (rand_salt, filename)
   return os.path.join('pics', new_filename)
@@ -1157,7 +1150,7 @@ class Picture(ImageModel):
   site = models.ForeignKey(KegbotSite, related_name='pictures',
       blank=True, null=True,
       help_text='Site owning this picture')
-  image = models.ImageField(upload_to=pics_file_name,
+  image = models.ImageField(upload_to=_pics_file_name,
       help_text='The image')
   created_date = models.DateTimeField(default=datetime.datetime.now)
   caption = models.TextField(blank=True, null=True,

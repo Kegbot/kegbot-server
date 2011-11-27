@@ -799,74 +799,7 @@ class Thermolog(models.Model):
   def TempF(self):
     return util.CtoF(self.temp)
 
-  @classmethod
-  def CompressLogs(cls):
-    now = datetime.datetime.now()
-
-    # keep at least the most recent 24 hours
-    keep_time = now - datetime.timedelta(hours=24)
-
-    # round down to the start of the day
-    keep_date = datetime.datetime(year=keep_time.year, month=keep_time.month,
-        day=keep_time.day)
-
-    print "Compressing thermo logs prior to", keep_date
-
-    def _LogGroup(sensor, records):
-      num_readings = len(records)
-      temps = [x.temp for x in records]
-      min_temp = min(temps)
-      max_temp = max(temps)
-      sum_temps = sum(temps)
-      mean_temp = sum_temps / num_readings
-
-      base_date = records[0].time
-      daily_date = datetime.datetime(year=base_date.year,
-          month=base_date.month, day=base_date.day)
-
-      print "%s\t%s\t%s\t%s\t%s" % (daily_date, num_readings, min_temp, max_temp,
-          mean_temp)
-      try:
-        ThermoSummaryLog.objects.get(date=daily_date, period='daily')
-        # Oops! Group already exists
-        print "Warning: log already exists for", daily_date
-        return
-      except ThermoSummaryLog.DoesNotExist:
-        pass
-      new_rec = ThermoSummaryLog.objects.create(
-          sensor=sensor,
-          date=daily_date,
-          period='daily',
-          num_readings=num_readings,
-          min_temp=min_temp,
-          max_temp=max_temp,
-          mean_temp=mean_temp)
-
-    for sensor in ThermoSensor.objects.all():
-      old_entries = sensor.thermolog_set.filter(time__lt=keep_date).order_by('time')
-
-      group = []
-      group_date = None
-      for entry in old_entries:
-        entry_date = datetime.datetime(year=entry.time.year,
-            month=entry.time.month, day=entry.time.day)
-        if group_date is None:
-          group_date = entry_date
-        if group_date == entry_date:
-          group.append(entry)
-        else:
-          _LogGroup(sensor, group)
-          group = [entry]
-          group_date = entry_date
-
-      if group:
-        _LogGroup(sensor, group)
-
-      old_entries.delete()
-
 def _thermolog_post_save(sender, instance, **kwargs):
-  # TODO(mikey): prevent thermolog entries from being changed; if a particular
-  # record is saved more than once, the average temperature will be invalid.
   daily_date = datetime.datetime(year=instance.time.year,
       month=instance.time.month,
       day=instance.time.day)
@@ -896,6 +829,12 @@ def _thermolog_post_save(sender, instance, **kwargs):
       daily_log.min_temp = instance.temp
 
   daily_log.save()
+
+  # Keep at least the most recent 24 hours, dropping any older entries.
+  now = datetime.datetime.now()
+  keep_time = now - datetime.timedelta(hours=24)
+  old_entries = Thermolog.objects.filter(site=instance.site, time__lt=keep_time)
+  old_entries.delete()
 
 pre_save.connect(_set_seqn_pre_save, sender=Thermolog)
 post_save.connect(_thermolog_post_save, sender=Thermolog)

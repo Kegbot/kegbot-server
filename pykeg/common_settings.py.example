@@ -66,3 +66,13 @@ TEMPLATE_DIRS = (
 )
 
 MANAGERS = ADMINS
+
+### django-storages
+### Uncomment to use AWS as a backend for static/media files.
+#AWS_ACCESS_KEY_ID = 'xxx'
+#AWS_SECRET_ACCESS_KEY = 'yyy'
+#AWS_STORAGE_BUCKET_NAME = 'kegbot'
+#AWS_QUERYSTRING_AUTH = False
+#AWS_S3_SECURE_URLS = False
+#DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+#STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'

@@ -27,14 +27,9 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
 
     ### static media
-    url(r'^site_media/(.*)$',
-      'django.views.static.serve',
-      {'document_root': os.path.join(basedir(), 'static')},
-      name='site-media'),
-
     url(r'^media/(.*)$',
      'django.views.static.serve',
-     {'document_root': settings.MEDIA_ROOT, 'show_indexes': True},
+     {'document_root': settings.MEDIA_ROOT, 'show_indexes': False},
      name='media'),
 
     (r'^favicon.ico$', 'django.views.generic.simple.redirect_to',

@@ -50,7 +50,7 @@
         {% if chunk.user %}
         <div class="kb-drink-box-mugshot">
           {% with chunk.user as drinker %}
-            {% mugshot_box kbsite.url drinker 96 %}
+            {% mugshot_box drinker 96 %}
           {% endwith %}
         </div>
         {% endif %}
@@ -83,7 +83,7 @@
         <td align="center" valign="center">
           <div class="kb-drink-box-mugshot">
             {% with chunk.user as drinker %}
-              {% mugshot_box kbsite.url drinker 96 %}
+              {% mugshot_box drinker 96 %}
             {% endwith %}
             {% if chunk.user %}{{ chunk.user }}{% else %}anonymous{% endif %}
           </div>

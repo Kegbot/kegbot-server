@@ -1,5 +1,21 @@
 {% spaceless %}
 <div style="width:{{boxsize}}; height:{{boxsize}};{{extra}}">
-  <a href="{{user_url}}"><img border="0" width="{{boxsize}}" height="{{boxsize}}" src="{{img_url}}"></a>
+  {% if user %}
+    {% with user.get_profile as profile %}
+      <a href="{% url kb-drinker kbsite.url user.username %}">
+        <img border="0" width="{{boxsize}}" height="{{boxsize}}"
+        {% if profile.mugshot %}
+          src="{{ profile.mugshot.thumbnail.url }}"
+        {% else %}
+          src="{{STATIC_URL}}images/unknown-drinker.png"
+        {% endif %}
+        />
+      </a>
+    {% endwith %}
+  {% else %}
+    <img border="0" width="{{boxsize}}" height="{{boxsize}}"
+      src="{{STATIC_URL}}images/unknown-drinker.png" />
+  {% endif %}
+  </a>
 </div>
 {% endspaceless %}

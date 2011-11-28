@@ -120,14 +120,6 @@ class UserProfile(models.Model):
     if qs:
       return qs[0]
 
-  def MugshotUrl(self):
-    if self.mugshot:
-      img_url = self.mugshot.image.url
-    else:
-      args = ('images/unknown-drinker.png',)
-      img_url = urlresolvers.reverse('site-media', args=args)
-    return img_url
-
   def GetStats(self):
     if hasattr(self, '_stats'):
       return self._stats

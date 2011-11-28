@@ -100,7 +100,9 @@ def BeerImageToProto(record, full=False):
 @converts(models.Picture)
 def ImageToProto(record, full=False):
   ret = models_pb2.Image()
-  ret.url = record.image.url
+  ret.url = record.resized.url
+  ret.original_url = record.image.url
+  ret.thumbnail_url = record.thumbnail.url
   # TODO(mikey): This can be expensive depending on the storage backend
   # (attempts to fetch image).
   #try:

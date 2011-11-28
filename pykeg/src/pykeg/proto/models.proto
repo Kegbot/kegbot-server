@@ -181,6 +181,10 @@ message Image {
 
   // The drink associated with this picture, if any.
   optional string drink_id = 9;
+
+  optional string thumbnail_url = 10;
+
+  optional string original_url = 11;
 }
 
 // A single instance of a Keg that was attached to the Kegbot.

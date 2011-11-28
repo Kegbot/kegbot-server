@@ -46,10 +46,12 @@ setup(
     install_requires = [
       'django >= 1.3',
       'django-autoslug',
-      'django-imagekit >= 0.3.3',
+      'django-imagekit >= 1.0',
       'django-registration',
       'django-sentry',
       'django_extensions',
+      'django-storages',
+      'boto',
 
       # NOTE(mikey): socialregistration does not yet declare the
       # facebook-python-sdk prerequisite for itself.
@@ -68,6 +70,7 @@ setup(
       #'python-openid >= 2.2.5',  # removeme once PIL package works
       'tweepy',
       'pytz',
+      'raven',
     ],
     dependency_links = [
         'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',

@@ -24,7 +24,9 @@ INSTALLED_APPS = (
     'pykeg.web.account',
     'pykeg.web.charts',
     'pykeg.web.kegweb',
+    'raven.contrib.django',
     'registration',
+    'sentry',
     'socialregistration',
     'south',
     'django_nose', # must be after south
@@ -101,6 +103,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.transaction.TransactionMiddleware',
     'pykeg.web.middleware.KegbotSiteMiddleware',
     'pykeg.web.middleware.SiteActiveMiddleware',
     'django.middleware.doc.XViewMiddleware',
@@ -112,10 +115,10 @@ AUTHENTICATION_BACKENDS = (
 )
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'cache',
-    }
+    #'default': {
+    #    'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+    #    'LOCATION': 'cache',
+    #}
 }
 
 ### django.contrib.messages

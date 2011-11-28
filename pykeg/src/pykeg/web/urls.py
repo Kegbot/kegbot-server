@@ -63,6 +63,9 @@ urlpatterns = patterns('',
     ### kegadmin
     (r'^(?P<kbsite_name>)kegadmin/', include('pykeg.web.kegadmin.urls')),
 
+    ### sentry
+    (r'^sentry/', include('sentry.web.urls')),
+
     ### main kegweb urls
     (r'(?P<kbsite_name>)', include('pykeg.web.kegweb.urls')),
 )

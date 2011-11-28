@@ -50,3 +50,7 @@ class CreateKegTapForm(forms.ModelForm):
 class PhotoForm(forms.Form):
   photo = forms.ImageField()
   created_date = forms.CharField(required=False)
+
+class DebugLogForm(forms.Form):
+  message = forms.CharField()
+  client_name = forms.CharField(required=False)

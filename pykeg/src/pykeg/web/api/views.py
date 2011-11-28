@@ -24,6 +24,8 @@ import logging
 import sys
 from decimal import Decimal
 
+import raven
+
 from django.conf import settings
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -587,3 +589,27 @@ def logout(request):
 @kbsite_aware
 def default_handler(request):
   raise Http404, "Not an API endpoint: %s" % request.path[:100]
+
+
+class LocalRavenClient(raven.Client):
+  logger = logging.getLogger('kegbot.api.client.debug')
+  def send(self, **kwargs):
+    from sentry.models import GroupedMessage
+    return GroupedMessage.objects.from_kwargs(**kwargs)
+
+@csrf_exempt
+@auth_required
+@py_to_json
+@kbsite_aware
+def debug_log(request):
+  if request.method != 'POST':
+    raise Http404('Method not supported')
+  form = forms.DebugLogForm(request.POST)
+  if not form.is_valid():
+    raise krest.BadRequestError(_form_errors(form))
+  client = LocalRavenClient([])
+  message = form.cleaned_data['message']
+  ident = client.get_ident(client.create_from_text(message))
+  client.send()
+  return {'log_id': ident}
+

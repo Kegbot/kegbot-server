@@ -1,0 +1,3 @@
+[submodule "pykeg/src/pykeg/web/static/bootstrap"]
+	path = pykeg/src/pykeg/web/static/bootstrap
+	url = https://github.com/twitter/bootstrap.git

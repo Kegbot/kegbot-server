@@ -1,149 +1,40 @@
-/* @group Basics */
+/*!
+ * Kegweb main css.
+ */
+
+@import "../bootstrap/lib/bootstrap.less";
+@import "bootstrap-variables.less";
+
+/* Page header tweaks */
+.page-header {
+  background-color: #f5f5f5;
+  padding: 20px 20px 10px;
+  margin: -20px -20px 20px;
+}
 
 body {
-  background: #fff;
-  font-family: "Lucida Grande", Lucida, Verdana, sans-serif;
-  color: black;
-  margin: 0px;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
 }
 
-h1 {
-  font: bold 200%/100% "Lucida Grande", Arial, sans-serif;
-  position: relative;
-  color: #000;
-  margin-top: 0px;
-  margin-bottom: 16px;
-}
 
-h2 {
-  font: bold 140%/80% "Lucida Grande", Arial, sans-serif;
-  position: relative;
-  margin: 0;
-  color: #8e8e8e;
-  margin-bottom: 16px;
-}
-
-a:link {
-  color: navy;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-a:visited {
-  color: navy;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-a:active {
-  color: navy;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-a:hover {
-  color: navy;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.clear {
-  clear: both;
-  height: 1px;
-  overflow: hidden;
-}
-
-/* @end */
-
-/* @group Kegweb Main */
-
-#kb-main-page {
-  margin-left: auto;
-  margin-right: auto;
-  width: 900px;
-}
-
-#kb-main-container {
-  width: 900px;
-  margin-top: 16px;
-}
-
-#kb-main-header {
-  border-bottom: 1px solid gray;
-  background-color: #00B1FE;
-  margin-left: 0px;
-  margin-top: 0px;
-  width: 900px;
-  border-bottom: 2px solid #007BFE;
-}
-
-#kb-main-header-text {
-  font: bold 280%/100% "Lucida Grande", Arial, sans-serif;
-  color: #1A5568;
-  margin: 16px;
-}
-
-#kb-main-header-links {
-  font: bold 12px "Lucida Grande", Lucida, Verdana, sans-serif;
-  color: gray;
-  padding-left: 16px;
-}
-
-#kb-pagetitle {
-  padding-left: 16px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  margin-top: 16px;
-  margin-bottom: 0px;
-  background-color: silver;
-  
-    background-color: #113341;
-  color: #fff;
-    -webkit-border-radius: 15px;
-  -moz-border-radius: 15px;
-
-
-}
-
-#kb-pagetitle h1 {
-  margin-bottom: 0px;
-    color: #fff;
+// Override container.content.
+// Add white background.
+.container > .content {
+  background-color: #fff;
+  padding: 20px;
+  //margin: 0 -20px; /* negative indent the amount of the padding to maintain the grid system */
+  -webkit-border-radius: 0 0 6px 6px;
+     -moz-border-radius: 0 0 6px 6px;
+          border-radius: 0 0 6px 6px;
+  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+     -moz-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+          box-shadow: 0 1px 2px rgba(0,0,0,.15);
 }
 
 .kb-byline {
   font-size: 0.8em;
   color:  #888;
 }
-
-.kb-header-link {
-  height: 16px;
-  float: left;
-  clear: all;
-  border-left: 1px solid #000;
-  padding-left: 2px;
-  padding-right: 16px;
-}
-
-.kb-main-content {
-  padding-top: 16px;
-  border: 1px solid #ACB6C0;
-  margin-bottom: 16px;
-  background-color: rgba(255,255,255,0.9);
-}
-
-#kb-footer {
-  font: 8px "Lucida Grande", Lucida, Verdana, sans-serif;
-  color: #C3C0C0;
-  text-align: center;
-  margin-top: 8px;
-}
-
-#kb-recent-events {
-}
-
-/* @end */
 
 /* @group Tapbox */
 
@@ -240,47 +131,6 @@ a:hover {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
 }
-
-/* @end */
-
-/* @group Main Content */
-
-.kb-contentbox-head {
-  font: bold 200%/100% "Lucida Grande", Arial, sans-serif;
-  position: relative;
-  margin: 0;
-  color: #000;
-  margin-bottom: 16px;
-  padding-left: 16px;
-/
-
-* match kb-main-header */
-}
-
-.kb-contentbox {
-  padding-left: 16px;
-
-
-/* match kb-main-header */
-  margin-bottom: 16px;
-}
-
-.kb-twocol-left {
-  width: 500px;
-  height: 100%;
-  float: left;
-  margin-right: 8px;
-}
-
-.kb-twocol-right {
-  border-left: 1px #C3C0C0 dotted;
-  height: 100%;
-  float : left;
-
-}
-
-
-/* @end */
 
 /* @group Tables */
 

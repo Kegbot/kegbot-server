@@ -6,7 +6,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <title>kegbot :: {% block title %}Default Page{% endblock %}</title>
-  <link rel="stylesheet" href="{{ STATIC_URL }}style.css" />
+  <link rel="stylesheet/less" type="text/css" href="{{ STATIC_URL }}bootstrap/lib/bootstrap.less" />
+  <link rel="stylesheet/less" type="text/css" href="{{ STATIC_URL }}css/kegweb.less" />
   <link rel="icon" type="image/png" href="{{ STATIC_URL}}images/kegbot-icon-72x72.png" />
   <style>
     body {
@@ -18,6 +19,7 @@
     }
   </style>
 
+  <script type="text/javascript" src="{{ STATIC_URL }}less/less-1.1.5.min.js"></script>
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
   <script type="text/javascript">
     google.load("jquery", "1");

@@ -61,6 +61,11 @@ def index(request):
   except models.DrinkingSession.DoesNotExist:
     pass
 
+  recent_images = models.Picture.objects.filter(
+      site=request.kbsite,
+      drink__isnull=False).order_by('-created_date')[:9]
+  context['recent_images'] = recent_images
+
   return render_to_response('index.html', context)
 
 @cache_page(30)

@@ -1,38 +1,54 @@
 {% load kegweblib %}
-<div class="kb-keg-session">
-  <div class="kb-session-box-headline">
-    <a href="{{ session.get_absolute_url}}">{{ session.GetTitle }}</a>
-  </div>
-  <div class="kb-session-box-detail">
-    <div style="margin-top: 4px; margin-bottom: 4px;">
-      <span class="kb-session-box-summary">
-        {{session.summarize_drinkers|safe}}
-      </span>
-    </div>
-    <div class="kb-award-box">
-      <table border="0" width="100%" height="100%">
-        <tr>
-          <td align="center" valign="center">
-            {% with session.GetStats.total_volume_ml as volume_ml %}
-            <div style="font-size: 1.4em;">
-              {% volume volume_ml nohuman %}
-            </div>
-            {% endwith %}
-          </td>
-        </tr>
-      </table>
-    </div>
-    {% for chunk in session.UserChunksByVolume %}
-      {% if chunk.user %}
-      <div class="kb-session-box-icon">
-        {% mugshot_box chunk.user 48 %}
+<div class="row">
+  <div class="span9">
+
+    <div class="kb-tapbox">
+      <div class="kb-tapbox-header">
+        <h2>{{ session.GetTitle }}</h2>
+        <small>{{session.summarize_drinkers|safe}}</small>
       </div>
-      {% endif %}
-    {% endfor %}
-    <div class="clear"></div>
-    <div class="kb-session-box-dateline">
-      {{ session.starttime|date:"l, F j" }} at
-      {{ session.starttime|date:"P" }}
-    </div>
-  </div>
-</div>
+
+      <div class="kb-tapbox-content">
+        <div class="kb-award-box">
+          <table border="0" width="100%" height="100%">
+            <tr>
+              <td align="center" valign="center">
+                {% with session.GetStats.total_volume_ml as volume_ml %}
+                <div style="font-size: 1.4em;">
+                  {% volume volume_ml nohuman %}
+                </div>
+                {% endwith %}
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% for chunk in session.UserChunksByVolume %}
+          {% if chunk.user %}
+          <div class="kb-session-box-icon">
+            {% mugshot_box chunk.user 48 %}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="kb-tapbox-footer">
+
+        <div class="row">
+          <div class="span7">
+              {% timeago session.starttime %}<br/>
+              <small>
+                {{ session.starttime|date:"l, F j Y" }},
+                {{ session.starttime|date:"P" }}
+              </small>
+          </div>
+          <div class="span2">
+            <div style="padding-right: 10px;">
+              <a class="btn small info"
+              href="{{ session.get_absolute_url }}">Details &raquo;</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- kb-tapbox -->
+  </div> <!-- span9 -->
+</div> <!-- row -->

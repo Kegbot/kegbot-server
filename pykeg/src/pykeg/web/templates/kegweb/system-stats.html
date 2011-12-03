@@ -2,16 +2,14 @@
 {% load kegweblib %}
 
 {% block title %}all-time system stats{% endblock %}
+{% block pagetitle %}all-time system stats{% endblock %}
 
 {% block col-1 %}
-<div class="kb-contentbox-head">
-  all-time stats
-</div>
-<div class="kb-contentbox">
-  <p>
-  <table border="0" class="kb-statstable">
+<h2>Summary</h2>
+<table border="0" class="condensed-table">
+  <tbody>
     <tr>
-      <td align="right"><b>Total Drinks</b></td>
+      <th>Total Drinks</th>
       <td>
         a total of
         <b>{{ stats.total_pours }} pour{{ stats.total_pours|pluralize }}</b>
@@ -19,30 +17,23 @@
       </td>
     </tr>
     <tr>
-      <td align="right"><b>Average Pour</b></td>
+      <th>Average Pour</th>
       <td>
         the average pour size is
         <b>{% volume stats.average_volume_ml %}</b>
       </td>
     </tr>
-  </table>
-  </p>
-</div>
+  </tbody>
+</table>
 {% endblock col-1 %}
 
 {% block col-2 %}
-<div class="kb-contentbox-head">
-   top drinkers
-</div>
-<div class="kb-contentbox">
-  <table>
-    <tr>
-      <td valign="top">
-        {% for volume_ml,user in top_drinkers %}
-          {% include "kegweb/volume-user.html" %}
-        {% endfor %}
-      </td>
-    </tr>
-  </table>
+<div class="row">
+  <div class="span5">
+    <h2>Top Drinkers</h2>
+    {% with top_drinkers as ranked_drinkers %}
+      {% include "kegweb/drinker-rank.html" %}
+    {% endwith %}
+  </div>
 </div>
 {% endblock col-2 %}

@@ -3,17 +3,8 @@
 
 {% block title %}main page{% endblock %}
 
-{% block header-text %}
-<div id="kb-main-header-text">
-  {% if kbsite.title %}{{kbsite.title}}{% else %}kegbot beer device{% endif %}
-</div>
-{% endblock %}
-
-{% comment %} Inhibit page title on main page. {% endcomment %}
-{% block header-margin %}{% endblock %}
-
 {% block col-1 %}
-<div class="kb-contentbox">
+  <h2>On Tap</h2>
   {% for tap in taps %}
     {% if tap.current_keg %}
       {% with tap.current_keg as keg %}
@@ -22,18 +13,27 @@
     {% endif %}
   {% endfor %}
 
-{% if current_session %}
-<h1>Now Drinking</h1>
-{% with current_session as session %}
-{% include "kegweb/keg-session.html" %}
-{% endwith %}
-{% endif %}
-</div>
+  {% if current_session %}
+    <p>
+      <h2>Now Drinking</h2>
+      {% with current_session as session %}
+        {% include "kegweb/keg-session.html" %}
+      {% endwith %}
+    </p>
+  {% endif %}
+
+  {% with recent_images as pictures %}  
+  {% if pictures.count %}
+  <h2>Recent Pictures</h2>
+    {% include "kegweb/picture-gallery.html" %}
+  {% endif %}
+  {% endwith %}
+  
 {% endblock col-1 %}
 
 {% block col-2 %}
 <div class="kb-contentbox">
-  <h1>recent events</h1>
+  <h2>Recent Activity</h2>
   <div id="kb-recent-events"> </div>
 </div>
 

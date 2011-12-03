@@ -38,7 +38,7 @@ from pykeg.web.charts import charts
 register = Library()
 
 @register.inclusion_tag('kegweb/mugshot_box.html')
-def mugshot_box(user, boxsize=100):
+def mugshot_box(user, boxsize=0):
   # TODO(mikey): Copying STATIC_URL in since the context processor which sets it
   # is not running; what's the right approach? Set `takes_context` on the
   # decorator and copy the parent context?
@@ -56,16 +56,17 @@ def render_page(page):
 
 @register.tag('navitem')
 def navitem(parser, token):
-  """{% navitem <viewname> <title> %}"""
-  tokens = token.contents.split()
+  """{% navitem <viewname> <title> [exact] %}"""
+  tokens = token.split_contents()
   if len(tokens) < 3:
-    raise TemplateSyntaxError, '%s requires 3 tokens' % tokens[0]
-  return NavitemNode(tokens[1], ' '.join(tokens[2:]))
+    raise TemplateSyntaxError, '%s requires at least 3 tokens' % tokens[0]
+  return NavitemNode(*tokens[1:])
 
 class NavitemNode(Node):
-  def __init__(self, viewname, title):
-    self._viewname = viewname
-    self._title = title
+  def __init__(self, *args):
+    self._viewname = args[0]
+    self._title = args[1]
+    self._exact = 'exact' in args[2:]
 
   def render(self, context):
     viewname = self._viewname
@@ -77,7 +78,11 @@ class NavitemNode(Node):
       urlbase = reverse(viewname)
 
     request_path = context['request_path']
-    active = request_path.startswith(urlbase)
+
+    if self._exact:
+      active = (request_path == urlbase)
+    else:
+      active = request_path.startswith(urlbase)
     if active:
       res = '<li class="active">'
     else:

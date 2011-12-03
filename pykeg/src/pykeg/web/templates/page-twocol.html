@@ -1,12 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-
-<!-- keg box: 2/3rd main width -->
-<div class="kb-twocol-left">
+<div class="row">
+  <div class="span9"> <!-- left col -->
   {% block col-1 %}{% endblock %}
-</div>
-<div class="kb-twocol-right">
+  </div> <!-- end left col -->
+  <div class="span5"> <!-- right col -->
   {% block col-2 %}{% endblock %}
+  </div> <!-- end right col -->
 </div>
-<div style="clear: both;">&nbsp; </div>
 {% endblock %}

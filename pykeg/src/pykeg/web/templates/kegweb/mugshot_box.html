@@ -1,21 +1,25 @@
 {% spaceless %}
-<div style="width:{{boxsize}}; height:{{boxsize}};{{extra}}">
-  {% if user %}
-    {% with user.get_profile as profile %}
-      <a href="{% url kb-drinker kbsite.url user.username %}">
-        <img border="0" width="{{boxsize}}" height="{{boxsize}}"
-        {% if profile.mugshot %}
-          src="{{ profile.mugshot.thumbnail.url }}"
-        {% else %}
-          src="{{STATIC_URL}}images/unknown-drinker.png"
-        {% endif %}
-        />
-      </a>
-    {% endwith %}
-  {% else %}
-    <img border="0" width="{{boxsize}}" height="{{boxsize}}"
-      src="{{STATIC_URL}}images/unknown-drinker.png" />
-  {% endif %}
+<div>
+{% with user.get_profile as profile %}
+
+{% if user %}
+  <a href="{% url kb-drinker kbsite.url user.username %}">
+{% endif %}
+
+  <img
+    {% if boxsize %}
+      style="width:{{boxsize}}px; height:{{boxsize}}px"
+    {% else %}
+      style="width:100%;"
+    {% endif %}
+{% if user and profile.mugshot %}
+      src="{{ profile.mugshot.thumbnail.url }}"
+{% else %}
+      src="{{STATIC_URL}}images/unknown-drinker.png"
+{% endif %}
+    />
   </a>
+{% endwith %}
+
 </div>
 {% endspaceless %}

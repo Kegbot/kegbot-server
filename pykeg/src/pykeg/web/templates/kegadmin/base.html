@@ -1,43 +1,15 @@
 {% extends "base.html" %}
+{% load kegweblib %}
 
 {% block title %}kegbot admin{% endblock %}
 
 {% block pagetitle %}keg admin{% endblock %}
 
 {% block content %}
-<div class="kb-contentbox">
-  <div id="kb-admin-nav">
-    <div class="kb-admin-nav-tab" url="{% url kegadmin-main kbsite.url %}">
-      <a href="{% url kegadmin-main kbsite.url %}">kegadmin main</a>
-    </div>
-
-    <div class="kb-admin-nav-tab" url="{% url kegadmin-tap-list kbsite.url %}">
-      <a href="{% url kegadmin-tap-list kbsite.url %}">taps</a>
-    </div>
-
-    <div class="kb-admin-subnav">
-      {% block kegadmin-tap-subnav %}{% endblock %}
-    </div>
-
-    <script>
-      $("div.kb-admin-nav-tab").click(function() {
-        window.location = $(this).attr("url");
-        return false;
-      });
-
-      $("div.kb-admin-nav-tab").hover(function() {
-        $(this).addClass("kb-admin-nav-tab-hover");
-      }, function() {
-        $(this).removeClass("kb-admin-nav-tab-hover");
-      });
-    </script>
-  </div>
-
-  <div style="float: left;">
+<div class="row">
+  <div class="span14">
     {% block kegadmin-main %}{%endblock%}
   </div>
-
-  <div class="clear"></div>
 </div>
 
 {% endblock %}

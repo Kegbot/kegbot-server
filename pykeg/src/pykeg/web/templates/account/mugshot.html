@@ -1,32 +1,30 @@
 {% extends "account/base.html" %}
 {% load kegweblib %}
 
-{% block kb-account-main %}
-<div class="kb-contentbox-head">
-  edit mugshot
-</div>
-<div class="kb-contentbox">
-  <form enctype="multipart/form-data" method="post" action="">
-  {% csrf_token %}
-    <table class="kb-form">
-      <tr>
-        <td>
-          {% mugshot_box user 100 %}
-        </td>
-      </tr>
-      <tr>
-        <td>
-          {{mugshot_form.as_p}}
-        </td>
-      </tr>
-      <tr>
-        <td valign="top">
-          <input type="submit" value="update mugshot" />
-        </td>
-      </tr>
-    </table>
-  </form>
-</div>
+{% block pagetitle %}Account: Mugshot{% endblock %}
 
-</div>
+{% block kb-account-main %}
+<h2>Change Mugshot</h2>
+
+<form enctype="multipart/form-data" method="post" action="">
+{% csrf_token %}
+  <table class="kb-form">
+    <tr>
+      <td>
+        {% mugshot_box user 100 %}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {{mugshot_form.as_p}}
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">
+        <button type="submit" class="btn primary">Save Changes</button>
+      </td>
+    </tr>
+  </table>
+</form>
+
 {% endblock %}

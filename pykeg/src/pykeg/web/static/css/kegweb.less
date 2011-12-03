@@ -16,10 +16,14 @@ body {
   padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
 }
 
+.sidebar {
+  margin-top: 20px;
+}
+
 
 // Override container.content.
 // Add white background.
-.container > .content {
+.container-fluid > .content {
   background-color: #fff;
   padding: 20px;
   //margin: 0 -20px; /* negative indent the amount of the padding to maintain the grid system */
@@ -31,68 +35,81 @@ body {
           box-shadow: 0 1px 2px rgba(0,0,0,.15);
 }
 
-.kb-byline {
-  font-size: 0.8em;
-  color:  #888;
-}
-
 /* @group Tapbox */
 
+.center-block {
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.badge {
+  width: 90%;
+  border: 1px solid @grayLighter;
+  margin: 8px;
+  .border-radius(6px);
+  .clearfix();
+}
+
+.badge-header {
+  font-size: @basefont + 2px;
+  color: @grayDark;
+  font-weight: bold;
+  padding: 2px;
+  .border-radius(6px 6px 0px 0px);
+
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  font: bold;
+}
+.badge-content {
+  text-align: center;
+}
+
 .kb-tapbox {
-  width: 480px;
-  border: 0px solid #C3C0C0;
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.3);
+  .border-radius(6px);
+  .box-shadow(0 3px 7px rgba(0,0,0,0.3));
+  .clearfix();
   margin-top: 8px;
   margin-bottom: 8px;
-  
-    -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  
-  /*
-  border: 1px solid #007BFE;
-    background: #b2def2;
-    */
-  padding: 5px;
-	
 }
 
-.kb-tapbox-header h2 {
-  font: bold 120%/80% "Lucida Grande", Arial, sans-serif;
-  position: relative;
-  margin: 0;
-  color: #1A5568;
-  margin-bottom: 0px;
-  border-bottom: none;
-}
-
-.kb-tapbox-header {
-  border-bottom: 1px solid #aaa;
-}
-
-.kb-tapbox-description {
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  background: #b2def2;
-  padding: 8px;
-  margin-bottom: 8px;
-}
-
-.kb-tapbox-subheader {
-  color: #888;
-  margin-bottom: 12px;
+.kb-tapbox-left {
+  .center-block();
+  padding: 4px;
 }
 
 .kb-tapbox-content {
-  padding: 4px;
-  font: 80%/100% "Lucida Grande", Arial, sans-serif;
+  .clearfix();
+}
+
+.kb-tapbox-header {
+  .border-radius(6px 6px 0px 0px);
+  .gradientBar(@grayLight, @grayLighter);
+  padding-left: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.kb-tapbox-footer {
+  font-size: @basefont - 2px;
+  font-weight: bold;
+
+  .border-radius(0px 0px 6px 6px);
+  background-color: #f5f5f5;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-top: 1px solid #eee;
+  text-align: right;
 }
 
 .kb-tapbox-image {
   min-width: 96px;
   min-height: 96px;
-  border: 1px solid #ccc;
-  background-color: #fff;
   text-align: center;
   margin-right: 8px;
+  padding: 8px;
 }
 
 .kb-tapbox-detail {
@@ -100,25 +117,9 @@ body {
   width: 320px;
 }
 
-.kb-tapbox-footer {
-  border-top: 1px solid #C3C0C0;
-  font: 12px "Lucida Grande", Lucida, Verdana, sans-serif;
-  text-align: right;
-  width: 100%;
-  margin-top: 4px;
-  padding: 1px;
-}
-
-.kb-tapbox-stats {
-  
-}
-
-.kb-tapbox-stats p {
-  margin: 0px;
-}
-
-.kb-tapbox-stats .kb-chartbox {
-  
+.kb-keg-description {
+  color: @grayDark;
+  margin-bottom: 8px;
 }
 
 /* @end */
@@ -126,45 +127,9 @@ body {
 /* @group Charts */
 
 .kb-chartbox-error {
-  border: 1px solid #B2DEF2;
   color: #ccc;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
+  .center-block();
 }
-
-/* @group Tables */
-
-table {
-  font: 80%/100% "Lucida Grande", Arial, sans-serif;
-}
-
-.kb-formtable th {
-  text-align: right;
-  margin-right: 4px;
-  vertical-align: top;
-  font-weight: bold;
-}
-
-.kb-formtable td {
-  text-align: left;
-  vertical-align: top;
-  color: #8f8f8f;
-  font-size: 0.8em;
-}
-
-.kb-statstable th {
-  text-align: right;
-  margin-right: 8px;
-  vertical-align: top;
-  font-weight: bold;
-}
-
-.kb-statstable td {
-  text-align: left;
-  vertical-align: top;
-}
-
-/* @end */
 
 /* @group Events */
 
@@ -236,110 +201,12 @@ table {
 }
 
 .kb-drink-box-details-headline {
-  
+
 }
 
 /* @end */
-
-/* @group Forms */
-
-.kb-form {
-  font-size: 0.8em;
-}
-
-.kb-form th {
-  text-align: right;
-  vertical-align: top;
-}
-
-.kb-form tr {
-  
-}
-
-.kb-form td {
-  color: #888;
-  font-size: 0.7em;
-}
-
-ul.errorlist {
-  color: #bb3333;
-  font-size: 11px;
-  font-weight: bold;
-  list-style-type: none;
-  margin: 0px;
-}
-
-ul.errorlist li {
-  margin-left: 0px;
-}
-
-/* @end */
-
-div.plainboxhead {
-  border: 1px solid #333;
-  border-bottom: 0px;
-  padding: 5px;
-  background: #369;
-}
-
-div.plainbox {
-  border: 1px solid #333;
-  padding: 5px;
-  background: #ccd;
-}
-
-div.keg-summary {
-  width: 700px;
-  margin-bottom: 16px;
-}
 
 /* @group Sessions */
-
-.kb-keg-session {
-  width: 460px;
-  margin-bottom: 8px;
-  padding: 8px;
-  background: #b2def2;
-  border: 1px solid #277394;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-}
-
-.kb-session-box-headline {
-  font-size: 1.2em;
-  font-weight: bold;
-}
-
-.kb-session-box-detail {
-  padding-left: 16px;
-  padding-right: 16px;
-  font: normal normal normal 80%/100% 'Lucida Grande', Arial, sans-serif;
-}
-
-.kb-session-box-summary {
-  margin-bottom: 4px;
-  background-color: #113341;
-  color: #fff;
-  font-size: 0.7em;
-  padding: 3px;
-}
-
-.kb-session-box-summary a:link {
-  color: #fff;
-}
-
-.kb-session-box-summary a:visited {
-  color: #fff;
-}
-
-.kb-session-box-summary a:hover {
-  color: #ccf;
-}
-
-.kb-session-box-summary a:active {
-  color: #ccf;
-}
 
 .kb-award-box {
   width: 48px;
@@ -388,37 +255,6 @@ div.keg-summary {
 
 .kb-admin-subnav-tap {
   margin-bottom: 10px;
-}
-
-/* @end */
-
-/* @group Messages */
-
-#kb-message-container {
-  width: 900px;
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.kb-message-box {
-  width: 100%;
-  font-weight: bold;
-  font-size: 0.7em;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 2px;
-}
-
-.kb-message-success {
-  background-color: #99ED84;
-  width: 100%;
-  padding: 2px;
-}
-
-.kb-message-error {
-  background-color: #FCA7A7;
-  width: 100%;
-  padding: 2px;
 }
 
 /* @end */

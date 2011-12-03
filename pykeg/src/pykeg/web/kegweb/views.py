@@ -39,6 +39,7 @@ from pykeg.web.util import kbsite_aware
 
 from pykeg.web.kegweb import forms
 from pykeg.web.kegweb import models as kegweb_models
+from pykeg.web.kegweb import signals
 
 ### main views
 

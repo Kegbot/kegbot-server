@@ -1,10 +1,22 @@
-<div class="kb-picture-gallery">
+<ul class="media-grid">
 
 {% for pic in pictures %}
-  <div class="kb-picture-gallery-item">
-    <a href="{{ pic.image.url }}"><img src="{{ pic.thumbnail.url }}" alt="{{
-      pic.caption }}" /></a><br/>
-  </div>
+{% with pic.GetCaption as caption %}
+<li>
+  <a class="gallery-image" rel="gallery" href="{{ pic.resized.url }}"
+    {% if caption %} title="{{caption}}" {% endif %}>
+    <img class="thumbnail" src="{{ pic.thumbnail.url }}" alt="{{ caption }}" />
+  </a>
+</li>
+{% endwith %}
 {% endfor %}
+<script>
+  $("a.gallery-image").fancybox({
+    'speedIn' : 100,
+    'speedOut' : 100,
+    'titlePosition' : 'inside',
+    'cyclic' : true,
+  });
+</script>
 
-</div>
+</ul>

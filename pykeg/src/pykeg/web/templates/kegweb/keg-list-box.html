@@ -1,8 +1,0 @@
-<div class="keg-summary">
-  {% include "kegweb/keg-image.html" %}
-  <h2><a href="{% url kb-keg kbsite.url keg.seqn %}">Keg {{ keg.seqn }}: {{keg.type.name}}</a></h2>
-  {% if keg.status == "online" %}
-  {% else %}
-  {% endif %}
-  <br clear="all"/>
-</div>

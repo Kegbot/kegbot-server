@@ -23,7 +23,7 @@
 
   <form action="" method="POST">
   {% csrf_token %}
-  <table class="kb-statstable">
+  <table class="condensed-table">
   {{ change_keg_form.as_table }}
   </table>
   <input type="submit" name="submit"/>
@@ -32,6 +32,5 @@
 
 <div class="kb-contentbox">
   <h2>configuration</h2>
-  
 </div>
 {% endblock %}

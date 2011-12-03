@@ -47,14 +47,20 @@
     volume_ml = parseFloat(volume_ml);
 
     if (!settings.metric) {
-      var oz = toOunces(volume_ml);
-      if (oz < 10) {
-        oz = oz.toFixed(2);
-      } else {
-        oz = oz.toFixed(1);
+      var amt = toOunces(volume_ml);
+      var units = "oz";
+      if (amt > 8) {
+        amt /= 16.0;
+        units = "pints";
       }
 
-      return oz + " oz";
+      if (amt < 10) {
+        amt = amt.toFixed(2);
+      } else {
+        amt = amt.toFixed(1);
+      }
+
+      return amt + " " + units;
     } else {
       var liters = volume_ml / 1000.0;
       if (liters < 0.5) {

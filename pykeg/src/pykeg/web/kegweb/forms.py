@@ -1,10 +1,14 @@
 from django import forms
 from django.conf import settings
+from django.contrib.auth.forms import AuthenticationForm
 
 from registration.models import RegistrationProfile
 from registration.forms import RegistrationForm
 
 from pykeg.core import models
+
+class LoginForm(AuthenticationForm):
+  next_page = forms.CharField(required=False, widget=forms.HiddenInput)
 
 class KegbotRegistrationForm(RegistrationForm):
   WEIGHT_CHOICES = (

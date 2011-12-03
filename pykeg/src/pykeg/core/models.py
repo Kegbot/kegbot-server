@@ -1047,4 +1047,15 @@ class Picture(models.Model):
       related_name='pictures',
       help_text='Drink this picture is associated with, if any')
 
+  def GetCaption(self):
+    if self.caption:
+      return self.caption
+    elif self.drink:
+      if self.user:
+        return '%s pouring drink %s' % (self.user.username, self.drink.seqn)
+      else:
+        return 'An unknown drinker pouring drink %s' % (self.drink.seqn,)
+    else:
+      return ''
+
 pre_save.connect(_set_seqn_pre_save, sender=Picture)

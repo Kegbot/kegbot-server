@@ -171,6 +171,7 @@ message SessionDetail {
   required Session session = 1;
   optional Stats stats = 2;
   repeated Keg kegs = 3;
+  repeated Drink drinks = 4;
 }
 
 message KegDetail {
@@ -193,6 +194,8 @@ message UserDetailSet {
 message SystemEventDetail {
   required SystemEvent event = 1;
   optional Image image = 2;
+  optional DrinkDetail drink_detail = 3;
+  optional KegDetail keg_detail = 4;
 }
 
 message SystemEventHtml {

@@ -378,6 +378,8 @@ def GetSessionDetail(session):
   ret.session.MergeFrom(ToProto(session))
   for k in (c.keg for c in session.keg_chunks.all() if c.keg):
     ret.kegs.add().MergeFrom(ToProto(k))
+  for d in session.drinks.all():
+    ret.drinks.add().MergeFrom(ToProto(d))
   ret.stats.MergeFrom(session.GetStats())
   # TODO(mikey): stats
   return ret
@@ -409,6 +411,13 @@ def GetSystemEventDetail(event):
       image = event.keg.type.image
   if image:
     ret.image.MergeFrom(ToProto(image))
+
+  # TODO(mikey): This is too expensive.
+  if False:
+    if event.kind == 'drink_poured':
+      ret.drink_detail.MergeFrom(GetDrinkDetail(event.drink))
+    elif event.kind in ('keg_tapped', 'keg_ended'):
+      ret.keg_detail.MergeFrom(GetKegDetail(event.keg))
   return ret
 
 def GetTapDetail(tap):

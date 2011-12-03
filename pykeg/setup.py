@@ -46,6 +46,7 @@ setup(
     install_requires = [
       'django >= 1.3',
       'django-autoslug',
+      'django-debug-toolbar',
       'django-imagekit >= 1.0',
       'django-registration',
       'django-sentry',

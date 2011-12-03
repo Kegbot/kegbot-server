@@ -13,6 +13,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
 
+    'debug_toolbar',
     'django_extensions',
     'imagekit',
     'pykeg.beerdb',
@@ -104,10 +105,12 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'pykeg.web.middleware.KegbotSiteMiddleware',
     'pykeg.web.middleware.SiteActiveMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (

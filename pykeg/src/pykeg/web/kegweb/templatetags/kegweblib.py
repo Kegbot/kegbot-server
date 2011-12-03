@@ -22,6 +22,8 @@ import pytz
 
 from django.conf import settings
 from django.core import urlresolvers
+from django.core.urlresolvers import NoReverseMatch
+from django.core.urlresolvers import reverse
 from django.template import Library
 from django.template import Node
 from django.template import TemplateSyntaxError
@@ -49,6 +51,39 @@ def mugshot_box(user, boxsize=100):
 @register.inclusion_tag('kegweb/page_block.html')
 def render_page(page):
   return {'page' : page}
+
+### navitem
+
+@register.tag('navitem')
+def navitem(parser, token):
+  """{% navitem <viewname> <title> %}"""
+  tokens = token.contents.split()
+  if len(tokens) < 3:
+    raise TemplateSyntaxError, '%s requires 3 tokens' % tokens[0]
+  return NavitemNode(tokens[1], ' '.join(tokens[2:]))
+
+class NavitemNode(Node):
+  def __init__(self, viewname, title):
+    self._viewname = viewname
+    self._title = title
+
+  def render(self, context):
+    viewname = self._viewname
+    title = Variable(self._title).resolve(context)
+    kbsite = context['kbsite']
+    try:
+      urlbase = reverse(viewname, args=[kbsite.url()])
+    except NoReverseMatch, e:
+      urlbase = reverse(viewname)
+
+    request_path = context['request_path']
+    active = request_path.startswith(urlbase)
+    if active:
+      res = '<li class="active">'
+    else:
+      res = '<li>'
+    res += '<a href="%s">%s</a></li>' % (urlbase, title)
+    return res
 
 
 ### timeago
@@ -184,13 +219,6 @@ class ChartNode(Node):
       return ChartNode.ERROR_TMPL % vars()
     chart_base = {
       'chart': {
-        'backgroundColor': {
-            'linearGradient': [0, 0, 500, 500],
-            'stops': [
-                [0, 'rgb(255, 255, 255)'],
-                [1, 'rgb(178, 222, 242)']
-            ]
-        },
         'borderColor': '#eeeeff',
         'borderWidth': 0,
         'renderTo': 'chart-%s-container' % chart_id,

@@ -65,23 +65,11 @@ def _set_seqn_pre_save(sender, instance, **kwargs):
 class KegbotSite(models.Model):
   name = models.CharField(max_length=64, unique=True,
       help_text='A short single-word name for this site, eg "default" or "sfo"')
-  title = models.CharField(max_length=64, blank=True, null=True,
-      help_text='The title of this site. Example: "Kegbot San Francisco"')
-  description = models.TextField(blank=True, null=True,
-      help_text='Description of this site')
-  background_image = models.ForeignKey('Picture', blank=True, null=True,
-      help_text='Background for this site.')
   is_active = models.BooleanField(default=True,
       help_text='On/off switch for this site.')
 
   def __str__(self):
-    return '%s %s' % (self.name, self.description)
-
-  def url(self):
-    if self.name == 'default':
-      return ''
-    else:
-      return self.name
+    return self.name
 
 def _kegbotsite_post_save(sender, instance, **kwargs):
   """Creates a SiteSettings object if none already exists."""
@@ -98,6 +86,12 @@ class SiteSettings(models.Model):
   display_units = models.CharField(max_length=64, choices=DISPLAY_UNITS_CHOICES,
       default='imperial',
       help_text='Unit system to use for display purposes.')
+  title = models.CharField(max_length=64, blank=True, null=True,
+      help_text='The title of this site. Example: "Kegbot San Francisco"')
+  description = models.TextField(blank=True, null=True,
+      help_text='Description of this site')
+  background_image = models.ForeignKey('Picture', blank=True, null=True,
+      help_text='Background for this site.')
 
   class Meta:
     verbose_name_plural = "site settings"

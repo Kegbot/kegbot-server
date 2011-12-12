@@ -25,7 +25,11 @@ from pykeg.core import util
 admin.site.register(models.UserProfile)
 
 admin.site.register(models.KegSize)
-admin.site.register(models.KegbotSite)
+
+class KegbotSiteAdmin(admin.ModelAdmin):
+  list_display = ('name', 'is_active')
+  list_filter = ('is_active',)
+admin.site.register(models.KegbotSite, KegbotSiteAdmin)
 
 class KegTapAdmin(admin.ModelAdmin):
   list_display = ('name', 'meter_name', 'relay_name', 'current_keg')
@@ -83,5 +87,5 @@ class PictureAdmin(admin.ModelAdmin):
 admin.site.register(models.Picture, PictureAdmin)
 
 class SiteSettingsAdmin(admin.ModelAdmin):
-  list_display = ('site', 'display_units')
+  list_display = ('site', 'title', 'description')
 admin.site.register(models.SiteSettings, SiteSettingsAdmin)

@@ -71,6 +71,11 @@ class KegbotSite(models.Model):
   def __str__(self):
     return self.name
 
+  def url(self):
+    if self.name == 'default':
+      return ''
+    return self.name
+
 def _kegbotsite_post_save(sender, instance, **kwargs):
   """Creates a SiteSettings object if none already exists."""
   settings, _ = SiteSettings.objects.get_or_create(site=instance)

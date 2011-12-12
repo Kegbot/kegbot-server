@@ -66,7 +66,7 @@ class KegbotSite(models.Model):
   name = models.CharField(max_length=64, unique=True,
       help_text='A short single-word name for this site, eg "default" or "sfo"')
   title = models.CharField(max_length=64, blank=True, null=True,
-      help_text='The title of this site, eg "San Francisco"')
+      help_text='The title of this site. Example: "Kegbot San Francisco"')
   description = models.TextField(blank=True, null=True,
       help_text='Description of this site')
   background_image = models.ForeignKey('Picture', blank=True, null=True,
@@ -83,13 +83,18 @@ class KegbotSite(models.Model):
     else:
       return self.name
 
+def _kegbotsite_post_save(sender, instance, **kwargs):
+  """Creates a SiteSettings object if none already exists."""
+  settings, _ = SiteSettings.objects.get_or_create(site=instance)
+post_save.connect(_kegbotsite_post_save, sender=KegbotSite)
+
 class SiteSettings(models.Model):
   DISPLAY_UNITS_CHOICES = (
     ('metric', 'Metric units (L)'),
     ('imperial', 'Imperial units (oz, pint)'),
   )
 
-  site = models.ForeignKey(KegbotSite, related_name='settings', unique=True)
+  site = models.OneToOneField(KegbotSite, related_name='settings')
   display_units = models.CharField(max_length=64, choices=DISPLAY_UNITS_CHOICES,
       default='imperial',
       help_text='Unit system to use for display purposes.')
@@ -236,6 +241,9 @@ class Keg(models.Model):
 
   def is_empty(self):
     return float(self.remaining_volume()) <= 0
+
+  def is_active(self):
+    return self.status == 'online'
 
   def tap(self):
     q = self.kegtap_set.all()

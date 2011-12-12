@@ -20,9 +20,6 @@ def kbsite(request):
   ret = {}
   kbsite = request.kbsite
   ret['kbsite'] = kbsite
-  if kbsite:
-    kbsettings, _ = models.SiteSettings.objects.get_or_create(site=request.kbsite)
-    ret['kbsettings'] = kbsettings
   ret['request_path'] = request.path
 
   # TODO(mikey): move to own processor

@@ -1,9 +1,10 @@
 {% load kegweblib %}
+{% with keg.current_tap as tap %}
 <div class="row">
   <div class="span9">
     <div class="kb-tapbox">
       <div class="kb-tapbox-header">
-        <h3>{% if keg.tap %}{{ keg.tap.name }}: {% endif %} {{ keg.type.name }}</h3>
+        <h3>{% if tap %}{{ tap.name }}: {% endif %} {{ keg.type.name }}</h3>
       </div>
 
       <div class="kb-tapbox-content">
@@ -30,15 +31,15 @@
             </div>
 
             <div class="badge">
-              {% if keg.tap %}
-              {% if keg.tap.temperature_sensor %}
+              {% if tap %}
+              {% if tap.temperature_sensor %}
               <div class="badge-header">
                 Temperature
               </div>
               <div class="badge-content">
-                {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C /
-                {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F
-                {% chart sensor keg.tap.temperature_sensor 300 50 %}
+                {{ tap.Temperature.TempC|floatformat:1}}&deg;C /
+                {{ tap.Temperature.TempF|floatformat:1}}&deg;F
+                {% chart sensor tap.temperature_sensor 300 50 %}
               </div>
               {% endif %}
               {% endif %}
@@ -63,3 +64,4 @@
     </div>
   </div> <!-- row -->
 </div> <!-- span9 -->
+{% endwith %}

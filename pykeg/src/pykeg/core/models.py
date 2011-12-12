@@ -83,14 +83,14 @@ post_save.connect(_kegbotsite_post_save, sender=KegbotSite)
 
 class SiteSettings(models.Model):
   DISPLAY_UNITS_CHOICES = (
-    ('metric', 'Metric units (L)'),
-    ('imperial', 'Imperial units (oz, pint)'),
+    ('metric', 'Metric (mL, L)'),
+    ('imperial', 'Imperial (oz, pint)'),
   )
 
   site = models.OneToOneField(KegbotSite, related_name='settings')
   display_units = models.CharField(max_length=64, choices=DISPLAY_UNITS_CHOICES,
       default='imperial',
-      help_text='Unit system to use for display purposes.')
+      help_text='Default unit system to use when displaying volumetric data.')
   title = models.CharField(max_length=64, blank=True, null=True,
       help_text='The title of this site. Example: "Kegbot San Francisco"')
   description = models.TextField(blank=True, null=True,
@@ -189,7 +189,8 @@ class KegTap(models.Model):
       help_text='Example: kegboard.relay0')
   ml_per_tick = models.FloatField(default=(1000.0/2200.0))
   description = models.TextField(blank=True, null=True)
-  current_keg = models.ForeignKey('Keg', blank=True, null=True)
+  current_keg = models.OneToOneField('Keg', blank=True, null=True,
+      related_name='current_tap')
   max_tick_delta = models.PositiveIntegerField(default=100)
   temperature_sensor = models.ForeignKey('ThermoSensor', blank=True, null=True)
 
@@ -243,12 +244,6 @@ class Keg(models.Model):
 
   def is_active(self):
     return self.status == 'online'
-
-  def tap(self):
-    q = self.kegtap_set.all()
-    if q:
-      return q[0]
-    return None
 
   def previous(self):
     q = Keg.objects.filter(site=self.site, startdate__lt=self.startdate).order_by('-startdate')

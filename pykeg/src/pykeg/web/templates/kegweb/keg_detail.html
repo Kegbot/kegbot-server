@@ -107,18 +107,18 @@
           </td>
         </tr>
 
-        {% if keg.tap %}
-        {% if keg.tap.temperature_sensor %}
+        {% with keg.current_tap as tap %}
+        {% if tap and tap.temperature_sensor %}
         <tr>
           <th>Temperature</th>
           <td>
-            {{ keg.tap.Temperature.TempC|floatformat:1}}&deg;C / 
-            {{ keg.tap.Temperature.TempF|floatformat:1}}&deg;F<br/>
-            {% chart sensor keg.tap.temperature_sensor 340 60 %}
+            {{ tap.Temperature.TempC|floatformat:1}}&deg;C / 
+            {{ tap.Temperature.TempF|floatformat:1}}&deg;F<br/>
+            {% chart sensor tap.temperature_sensor 340 60 %}
           </td>
         </tr>
         {% endif %}
-        {% endif %}
+        {% endwith %}
 
         <tr>
           <th>Pints by Weekday</th>

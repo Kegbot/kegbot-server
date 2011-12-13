@@ -393,7 +393,7 @@ def get_user_stats(request, username):
   # TODO(mikey_) fix stats
   stats = user.get_profile().GetStats()
   res = {
-    'stats': stats,
+    'stats': FromProto(stats),
   }
   return res
 

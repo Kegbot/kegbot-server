@@ -423,6 +423,7 @@ def _get_sensor_or_404(request, sensor_name):
       raise Http404
   return sensor
 
+@csrf_exempt
 @kbsite_aware
 def get_thermo_sensor(request, sensor_name):
   if request.method == 'POST':
@@ -447,7 +448,6 @@ def _thermo_sensor_get(request, sensor_name):
   }
   return res
 
-@csrf_exempt
 @py_to_json
 @auth_required
 def _thermo_sensor_post(request, sensor_name):

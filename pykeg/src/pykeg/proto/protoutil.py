@@ -33,13 +33,16 @@ def ProtoMessageToDict(message):
   #if not message.IsInitialized():
   #  raise ValueError, 'Message not initialized'
   for descriptor, value in message.ListFields():
-    if descriptor.type == descriptor.TYPE_MESSAGE:
-      if descriptor.label == descriptor.LABEL_REPEATED:
+    if descriptor.label == descriptor.LABEL_REPEATED:
+      if descriptor.type == descriptor.TYPE_MESSAGE:
         ret[descriptor.name] = [ProtoMessageToDict(v) for v in value]
       else:
-        ret[descriptor.name] = ProtoMessageToDict(value)
+        ret[descriptor.name] = [v for v in value]
     else:
-      ret[descriptor.name] = value
+      if descriptor.type == descriptor.TYPE_MESSAGE:
+        ret[descriptor.name] = ProtoMessageToDict(value)
+      else:
+        ret[descriptor.name] = value
   return ret
 
 def DictToProtoMessage(values, out_message):
@@ -58,8 +61,15 @@ def DictToProtoMessage(values, out_message):
       else:
         DictToProtoMessage(value, inner_message)
     else:
-      if isinstance(value, datetime.datetime):
-        value = util.datetime_to_iso8601str(value, TIME_ZONE)
-      setattr(out_message, name, value)
+      if field.label == field.LABEL_REPEATED:
+        out = getattr(out_message, name)
+        for v in value:
+          if isinstance(v, datetime.datetime):
+            v = util.datetime_to_iso8601str(v, TIME_ZONE)
+          out.append(v)
+      else:
+        if isinstance(value, datetime.datetime):
+          value = util.datetime_to_iso8601str(value, TIME_ZONE)
+        setattr(out_message, name, value)
   return out_message
 

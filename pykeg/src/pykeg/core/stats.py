@@ -145,6 +145,33 @@ class BaseStatsBuilder(StatsBuilder):
       message.weekday = drink_weekday
       message.volume_ml = self.drink.volume_ml
 
+  @stat('registered_drinkers')
+  def RegisteredDrinkers(self):
+    if not self.previous:
+      drinkers = set()
+      for drink in self.drinks:
+        if drink.user:
+          drinkers.add(str(drink.user.username))
+      self.stats.registered_drinkers.extend(drinkers)
+    else:
+      if self.drink.user:
+        result = self.stats.registered_drinkers
+        if self.drink.username not in result:
+          result.add(str(self.drink.username))
+
+  @stat('has_guest_pour')
+  def HasGuestPour(self):
+    if not self.previous:
+      for drink in self.drinks:
+        if not drink.user:
+          self.stats.has_guest_pour = True
+          return
+      self.stats.has_guest_pour = False
+    else:
+      if not self.stats.has_guest_pour:
+        if not self.drink.user:
+          self.stats.has_guest_pour = True
+
   @stat('volume_by_drinker')
   def VolumeByDrinker(self):
     if not self.previous:

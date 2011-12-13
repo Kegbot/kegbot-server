@@ -540,4 +540,10 @@ message Stats {
   // an empty "username" field.
   repeated DrinkerVolume volume_by_drinker = 8;
 
+  // List of all known drinkers.
+  repeated string registered_drinkers = 9;
+
+  // True if these stats include at least one guest pour.
+  optional bool has_guest_pour = 10;
+
 }

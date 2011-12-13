@@ -19,7 +19,7 @@ class Migration(SchemaMigration):
         
         if not db.dry_run:
             for site in orm.KegbotSite.objects.all():
-                ss = site.settings
+                ss, created = orm.SiteSettings.objects.get_or_create(site=site)
                 ss.title = site.title
                 ss.description = site.description
                 ss.background_image = site.background_image

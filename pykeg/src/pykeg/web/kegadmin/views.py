@@ -61,6 +61,7 @@ def tap_list(request):
       tinfo['end_form'] = forms.KegHiddenSelectForm(initial={'keg':tap.current_keg})
     all_taps.append(tinfo)
   context['all_taps'] = all_taps
+  context['create_tap_form'] = forms.CreateTapForm()
   return render_to_response('kegadmin/tap-edit.html', context)
 
 @staff_member_required
@@ -72,6 +73,7 @@ def do_end_keg(request):
       keg = form.cleaned_data['keg']
       if keg.site == request.kbsite:
         keg.status = "offline"
+        keg.enddate = datetime.datetime.now()
         keg.save()
         if keg.current_tap:
           keg.current_tap.current_keg = None

@@ -1,13 +1,16 @@
 {% extends "kegadmin/base.html" %}
 {% load kegweblib %}
 
-{% block title %}tap admin{% endblock %}
+{% block pagetitle %}Keg Admin{% endblock %}
 
 {% block kegadmin-main %}
-<div class="kb-contentbox">
-  <h1>kegadmin: main</h1>
-  <p>
-    this page intentionally left blank.
-  </p>
-</div>
+<h2>General Settings</h2>
+
+<form action="" method="POST">{% csrf_token %}
+  <table class="condensed-table">
+    {{ settings_form.as_table }}
+  </table>
+  <button type="submit" class="btn primary">Update Settings</button>
+</form>
+
 {% endblock %}

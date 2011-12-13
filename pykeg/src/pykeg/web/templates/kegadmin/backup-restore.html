@@ -1,0 +1,50 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+
+{% block pagetitle %}Kegbot Admin: Backup and Restore{% endblock %}
+
+{% block kegadmin-main %}
+<div class="kb-contentbox">
+  <h2>Create and Download a Backup</h2>
+  <p>
+    Select desired backup format below.
+  </p>
+  <p>
+    <div class="row">
+      <div class="span3">
+        <button class="btn success fill-parent-width" href="#gz">JSON (Minimal)</button>
+      </div>
+      <div class="span7">
+        <p>
+          Minimized JSON text format.
+        </p>
+      </div>
+    </div>
+    <br/>
+
+    <div class="row">
+      <div class="span3">
+        <button class="btn success fill-parent-width" href="#gz">JSON (Pretty)</button>
+      </div>
+      <div class="span7">
+        <p>
+          Pretty-printed JSON text format (largest file size).
+        </p>
+      </div>
+    </div>
+    <br/>
+
+    <div class="row">
+      <div class="span3">
+        <button class="btn success fill-parent-width" href="#gz">Binary</button>
+      </div>
+      <div class="span7">
+        <p>
+          Kegbot binary backup format (smallest file size).
+        </p>
+      </div>
+    </div>
+
+  </p>
+</div>
+{% endblock %}

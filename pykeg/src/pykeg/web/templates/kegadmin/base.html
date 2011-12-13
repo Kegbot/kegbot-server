@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 {% load kegweblib %}
 
-{% block title %}kegbot admin{% endblock %}
-
-{% block pagetitle %}keg admin{% endblock %}
+{% block title %}Keg Admin{% endblock %}
 
 {% block content %}
 <div class="row">
-  <div class="span14">
-    {% block kegadmin-main %}{%endblock%}
+  <div class="span3">
+    <ul class="pills pills-vertical" data-pills="pills">
+      {% include "kegadmin/nav-items.html" %}
+    </ul>
+  </div>
+
+  <div class="span11">
+    {% block kegadmin-main %}{% endblock %}
   </div>
 </div>
 

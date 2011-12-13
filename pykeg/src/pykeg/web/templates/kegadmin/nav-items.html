@@ -1,0 +1,12 @@
+{% load kegweblib %}
+
+{% navitem kegadmin-main "General" exact %}
+{% navitem kegadmin-taps "Taps" %}
+{% comment %}
+{% navitem kegadmin-backup-restore "Backup &amp; Restore" %}
+{% endcomment %}
+<li class="divider"></li>
+<li><a href='{% url admin:index %}' target="_blank">Database Admin &raquo;</a></li>
+<li class="divider"></li>
+<li><a href='http://kegbot.org/developer/bug' target="_blank">Report a Bug &raquo;</a></li>
+

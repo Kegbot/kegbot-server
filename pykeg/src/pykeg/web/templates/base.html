@@ -13,7 +13,6 @@
   <script type="text/javascript">
     google.load("jquery", "1");
     google.load("jqueryui", "1");
-    google.load('visualization', '1', {'packages':['table']});
   </script>
   <script type="text/javascript" src="{{ STATIC_URL }}js/kegweb.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
@@ -49,8 +48,8 @@
 
   <style>
     body {
-  {% if kbsite %}{% if kbsite.background_image %}
-      background-image: url({{kbsite.background_image.image.url}});
+  {% if kbsite %}{% if kbsite.settings.background_image %}
+      background-image: url({{kbsite.settings.background_image.image.url}});
   {% else %}
       background-image: url({{ STATIC_URL }}images/background.png);
   {% endif %} {% endif %}
@@ -67,8 +66,8 @@
     <div class="fill">
       <div class="container">
         <a class="brand" href="{% url kb-home kbsite.url %}">{% spaceless %}
-          {% if kbsite.title %}
-            {{kbsite.title}}
+          {% if kbsite.settings.title %}
+            {{kbsite.settings.title}}
           {% else %}
             kegbot beer device
           {% endif %}
@@ -79,10 +78,9 @@
           {% if user.is_authenticated %}{% navitem kb-account-main "Account" %}{% endif %}
           {% if user.is_staff %}
             <li class="dropdown" data-dropdown="dropdown">
-              <a class="dropdown-toggle" href="#">Admin</a>
+              <a class="dropdown-toggle" href="{% url kegadmin-main kbsite.url %}">Admin</a>
               <ul class="dropdown-menu">
-                {% navitem kegadmin-tap-list "Manage Taps" %}
-                <li><a href='{% url admin:index %}' target="_blank">Django Admin</a></li>
+                {% include "kegadmin/nav-items.html" %}
               </ul>
             </li>
           {% endif %}

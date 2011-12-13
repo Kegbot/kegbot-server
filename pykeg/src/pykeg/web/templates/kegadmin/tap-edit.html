@@ -1,36 +1,144 @@
-{% extends "kegadmin/tap-base.html" %}
+{% extends "kegadmin/base.html" %}
 {% load kegweblib %}
 
-{% block title %}tap admin: edit tap {{ tap.seqn }}{% endblock %}
-{% block pagetitle %}tap admin: edit tap {{ tap.seqn }}{% endblock %}
+{% block pagetitle %}Keg Admin: Taps{% endblock %}
 
 {% block kegadmin-main %}
+{% for tapinfo in all_taps %}
+{% with tapinfo.tap as tap %}
+{% with tap.current_keg as keg %}
 
-{% if tap.current_keg %}
-<div class="kb-contentbox">
-  <h2>current keg</h2>
+<!-- Tap {{ tap }} -->
+<div class="row">
+  <div class="span11">
+    <h2>{{ tap.name }}</h2>
+    <div class="well">
+      <table class="condensed-table zebra-striped">
+        <tbody>
+          <!-- row: current keg -->
+          {% if keg %}
+          <tr>
+            <th>
+              <div class="span3">
+                <p>
+                  <!-- TODO: get rid of form -->
+                  <form method="GET" action="{% url kegadmin-edit-keg kbsite.url keg.seqn %}">
+                  <button type="submit" class="btn small fill-parent-width">
+                    Edit Keg
+                  </button>
+                  </form>
+                </p>
+                <p>
+                  <form action="{% url kegadmin-do-end-keg kbsite.url %}" method="POST">
+                    {% csrf_token %}
+                    {{ tapinfo.end_form }}
+                    <button type="submit" class="btn danger small fill-parent-width">End Keg</button>
+                  </form>
+                </p>
+              </div>
+            </th>
+            <td>
+                <h4>{{ keg.type}}</h4>
+                <small>
+                  {% if keg.is_empty %}
+                    Empty,
+                  {% else %}
+                    {% volume keg.remaining_volume %} remaining
+                    ({{ keg.percent_full|floatformat:1 }}% full),
+                  {% endif %}
+                  tapped {% timeago keg.startdate %}
+                </small>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <th>
+              <div class="span3">
+                <p>
+                  <button type="submit" class="btn success small fill-parent-width">
+                    Add a Keg
+                  </button>
+                </p>
+              </div>
+            </th>
+            <td>
+              <h4>Empty Tap</h4>
+              Add a keg to this tap.
+            </td>
+          </tr>
+          {% endif %}
 
-  {% with tap.current_keg as keg %}
-  <p>
-    <b>Keg #{{keg.seqn}}</b>: {{ keg.type }}
-  </p>
-  {% endwith %}
-{% endif %}
+          {% with keg.drinks.latest as drink %}
+          {% if drink %}
+          <tr>
+            <th>
+              <div class="span3">
+                <p>
+                  <button type="submit" class="btn small fill-parent-width">Adjust Drink</button>
+                </p>
+                <p>
+                  <button type="submit" class="btn danger small fill-parent-width">Cancel Drink</button>
+                </p>
+              </div>
+            </th>
+            <td>
+              <h4>Last Pour</h4>
+              <a href="{% url kb-drink kbsite.url drink.seqn %}"
+                target="_new">Drink {{ drink.seqn }}</a> by {{ drink.user }}
+            </td>
+          </tr>
+          {% endif %}
+          {% endwith %}
+
+          <tr>
+            <th>
+              <div class="span3">
+                <p>
+                  <button type="submit" class="btn small fill-parent-width">
+                    Configure Tap
+                  </button>
+                </p>
+              </div>
+            </th>
+            <td>
+              <h4>Edit Tap Name and Settings</h4>
+            </td>
+        </tbody>
+      </table>
+
+    </div> <!-- well -->
+  </div>
 </div>
 
-<div class="kb-contentbox">
-  <h2>add/replace keg</h2>
+{% endwith %}
+{% endwith %}
+{% endfor %}
 
-  <form action="" method="POST">
-  {% csrf_token %}
-  <table class="condensed-table">
-  {{ change_keg_form.as_table }}
-  </table>
-  <input type="submit" name="submit"/>
-  </form>
+<div class="row">
+  <div class="span11">
+    <h2>Add a New Tap</h2>
+    <div class="well">
+      <table class="condensed-table zebra-striped">
+        <tbody>
+          <tr>
+            <th>
+              <div class="span3">
+                <p>
+                  <button type="submit" class="btn success small fill-parent-width">Create Tap</button>
+                </p>
+              </div>
+            </th>
+            <td>
+              <h4>Detals for New Tap</h4>
+              <table class="condensed-table zebra-striped">
+              {{ create_tap_form.as_table }}
+              </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<div class="kb-contentbox">
-  <h2>configuration</h2>
-</div>
 {% endblock %}

@@ -1,24 +1,19 @@
 {% extends "account/base.html" %}
 {% load kegweblib %}
 
-{% block title %}link your twitter account{% endblock %}
+{% block pagetitle %}Link Twitter Account{% endblock %}
 
 {% block kb-account-main %}
-<div class="kb-contentbox-head">
-  link your twitter account
-</div>
-<div class="kb-contentbox">
-  <p>
-    before you can announce your beers on twitter, you need to link your
-    twitter account.
-  </p>
-  <p>
-    <b>note:</b> you will be able to configure settings after linking; the
-    default is to <i>not</i> post anything to twitter.
-  </p>
-  <p>
-    {% load twitter_tags %}
-    {% twitter_button %}
-  </p>
-</div>
+<p>
+  Before you can announce your beers on Twitter, you need to link your
+  account.
+</p>
+<p>
+  <strong>Note:</strong> you will be able to configure settings after linking; the
+  default is to <i>not</i> post anything to twitter.
+</p>
+<p>
+  {% load twitter_tags %}
+  {% twitter_button %}
+</p>
 {% endblock %}

@@ -22,12 +22,14 @@ import cStringIO
 import datetime
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.template import RequestContext
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
+from django.template import RequestContext
+from django.views.generic.simple import redirect_to
 
 from pykeg.core import backup
 from pykeg.core import models
@@ -39,14 +41,44 @@ from pykeg.web.kegadmin import forms
 @kbsite_aware
 def kegadmin_main(request):
   context = RequestContext(request)
+  form = forms.SiteSettingsForm(instance=request.kbsite.settings)
+  if request.method == 'POST':
+    form = forms.SiteSettingsForm(request.POST, instance=request.kbsite.settings)
+    if form.is_valid():
+      form.save()
+  context['settings_form'] = form
   return render_to_response('kegadmin/index.html', context)
 
 @staff_member_required
 @kbsite_aware
 def tap_list(request):
   context = RequestContext(request)
-  context['taps'] = request.kbsite.taps.all()
-  return render_to_response('kegadmin/tap-list.html', context)
+  taps = request.kbsite.taps.all()
+  all_taps = []
+  for tap in taps:
+    tinfo = {'tap' : tap}
+    if tap.current_keg:
+      tinfo['end_form'] = forms.KegHiddenSelectForm(initial={'keg':tap.current_keg})
+    all_taps.append(tinfo)
+  context['all_taps'] = all_taps
+  return render_to_response('kegadmin/tap-edit.html', context)
+
+@staff_member_required
+@kbsite_aware
+def do_end_keg(request):
+  if request.method == 'POST':
+    form = forms.KegHiddenSelectForm(request.POST)
+    if form.is_valid():
+      keg = form.cleaned_data['keg']
+      if keg.site == request.kbsite:
+        keg.status = "offline"
+        keg.save()
+        if keg.current_tap:
+          keg.current_tap.current_keg = None
+          keg.current_tap.save()
+        messages.success(request, 'The keg was deactivated.')
+  result_url = reverse('kegadmin-taps', args=[request.kbsite.url()])
+  return redirect_to(request, result_url)
 
 @staff_member_required
 @kbsite_aware
@@ -76,15 +108,26 @@ def edit_tap(request, tap_id):
       form = forms.ChangeKegForm()
 
   context['taps'] = request.kbsite.taps.all()
-  context['tap'] = tap
   context['change_keg_form'] = form
+  context['create_tap_form'] = forms.CreateTapForm()
   return render_to_response('kegadmin/tap-edit.html', context)
 
 @staff_member_required
 @kbsite_aware
-def view_stats(request):
+def create_tap(request):
   context = RequestContext(request)
-  keg_stats = models.KegStats.objects.all()
+  form = forms.ChangeKegForm()
+
+@staff_member_required
+@kbsite_aware
+def edit_keg(request, keg_id):
+  context = RequestContext(request)
+
+@staff_member_required
+@kbsite_aware
+def backup_restore(request):
+  context = RequestContext(request)
+  return render_to_response('kegadmin/backup-restore.html', context)
 
 @staff_member_required
 @kbsite_aware

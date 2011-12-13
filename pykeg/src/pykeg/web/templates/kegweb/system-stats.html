@@ -9,9 +9,16 @@
 <table border="0" class="condensed-table">
   <tbody>
     <tr>
+      <th>Total Drinkers</th>
+      <td>
+        This Kegbot has served at least
+        <b>{{ stats.volume_by_drinker|length }}</b> unique drinkers.
+      </td>
+    </tr>
+    <tr>
       <th>Total Drinks</th>
       <td>
-        a total of
+        A total of
         <b>{{ stats.total_pours }} pour{{ stats.total_pours|pluralize }}</b>
         have been recorded.
       </td>
@@ -19,8 +26,8 @@
     <tr>
       <th>Average Pour</th>
       <td>
-        the average pour size is
-        <b>{% volume stats.average_volume_ml %}</b>
+        The average pour size is
+        <b>{% volume stats.average_volume_ml %}</b>.
       </td>
     </tr>
   </tbody>

@@ -1,10 +1,8 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
 
-{% block title %}drinker details for {{ drinker.username }}{% endblock %}
-
 {% block pagetitle %}
-  drinker overview: {{ drinker.username }}
+  Drinker Details: {{ drinker.username }}
 {% endblock %}
 
 {% block sidebar %}
@@ -19,34 +17,55 @@
     <h2>Summary</h2>
     <table class="condensed-table">
        <tr>
-         <th>Total Sessions</td>
-         <td>{{ sessions|length }}</td>
-       </tr>
-
-       <tr>
-          <th>Total Drinks</th>
-          <td>{{ drinks.count }}</td>
-       </tr>
-
-       {% if drinks.count %}
-       <tr>
-          <th>Last Drink</th>
-          <td>
-            {{ drinks.0.starttime|date:"l, F j, Y" }}<br>
-            <i>({% timeago drinks.0.starttime%})</i>
-          </td>
-       </tr>
-       {% endif %}
-
-       <tr>
           <th>Total Volume</th>
           <td> {% volume stats.total_volume_ml %}</td>
        </tr>
+
+       <tr>
+          <th>Total Pours</th>
+          <td>{{ stats.total_pours }}</td>
+       </tr>
+
+       <tr>
+         <th>Total Sessions</td>
+         <td>{{ stats.sessions_count }}</td>
+       </tr>
+
+       {% if stats.total_pours %}
+       <tr>
+          <th>Average Pour</th>
+          <td>{% volume stats.average_volume_ml %}</td>
+       </tr>
+
+       <tr>
+          <th>Largest Pour</th>
+          <td>{% volume stats.greatest_volume_ml %}</td>
+       </tr>
+
+       <tr>
+          <th>Member Since</th>
+          <td>
+            {{ drinker.date_joined|date:"l, F j Y" }}<br>
+            <i>({% timeago drinker.date_joined %})</i>
+          </td>
+       </tr>
+
+       {% with drinker.drinks.latest as last_drink %}
+       <tr>
+          <th>Last Drink</th>
+          <td>
+            {{ last_drink.starttime|date:"l, F j Y" }}<br>
+            <i>({% timeago last_drink.starttime%})</i>
+          </td>
+       </tr>
+       {% endwith %}
+       {% endif %}
 
     </table>
   </div> <!-- span9 -->
 </div> <!-- row -->
 
+{% if sessions %}
 <div class="row">
   <div class="span9">
   <h2>All Sessions</h2>
@@ -57,12 +76,17 @@
     {% endfor %}
   </div>
 </div>
+{% endif %}
+
 {% endblock %}
 
 {% block col-2 %}
 <div class="row">
   <div class="span5">
     <h2>Drinker Stats</h2>
+    {% if not stats.total_pours %}
+    No sessions recorded for {{ drinker }}, nothing to display!
+    {% else %}
     <div class="kb-contentbox">
       <p>
         <b>total pints, by day of week</b><br>
@@ -73,6 +97,7 @@
         <b>all sessions, by pints per session</b><br>
         {% chart sessions_volume sessions 350 100 %}
       </p>
+      {% endif %}
     </div>
   </div> <!-- span5 -->
 </div>

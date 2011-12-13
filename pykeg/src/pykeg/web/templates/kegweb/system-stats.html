@@ -24,6 +24,14 @@
       </td>
     </tr>
     <tr>
+      <th>Total Sessions</th>
+      <td>
+        A total of
+        <b>{{ stats.sessions_count }} drinking session{{ stats.sessions_count|pluralize }}</b>
+        {% if stats.sessions_count == 1 %}has{% else %}have{% endif %} been recorded.
+      </td>
+    </tr>
+    <tr>
       <th>Average Pour</th>
       <td>
         The average pour size is

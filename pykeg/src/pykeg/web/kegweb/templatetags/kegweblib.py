@@ -37,16 +37,12 @@ from pykeg.web.charts import charts
 
 register = Library()
 
-@register.inclusion_tag('kegweb/mugshot_box.html')
-def mugshot_box(user, boxsize=0):
-  # TODO(mikey): Copying STATIC_URL in since the context processor which sets it
-  # is not running; what's the right approach? Set `takes_context` on the
-  # decorator and copy the parent context?
-  return {
-      'STATIC_URL': settings.STATIC_URL,
-      'user' : user,
-      'boxsize' : boxsize,
-  }
+@register.inclusion_tag('kegweb/mugshot_box.html', takes_context=True)
+def mugshot_box(context, user, boxsize=0):
+  c = copy.copy(context)
+  c['user'] = user
+  c['boxsize'] = boxsize
+  return c
 
 @register.inclusion_tag('kegweb/page_block.html')
 def render_page(page):

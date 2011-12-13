@@ -124,6 +124,8 @@ CACHES = {
     #}
 }
 
+CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
+
 ### django.contrib.messages
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 

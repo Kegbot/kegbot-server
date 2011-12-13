@@ -159,6 +159,37 @@ class BaseStatsBuilder(StatsBuilder):
         if self.drink.username not in result:
           result.add(str(self.drink.username))
 
+  @stat('sessions_count')
+  def SessionsCount(self):
+    if not self.previous:
+      all_sessions = set()
+      for drink in self.drinks:
+        all_sessions.add(str(drink.session.seqn))
+      self.stats.sessions_count = len(all_sessions)
+    else:
+      self.stats.sessions_count += 1
+
+  @stat('volume_by_year')
+  def VolumeByYear(self):
+    if not self.previous:
+      volmap = {}
+      for drink in self.drinks:
+        year = drink.starttime.year
+        volmap[year] = volmap.get(year, 0) + drink.volume_ml
+      for year, volume_ml in volmap.iteritems():
+        rec = self.stats.volume_by_year.add()
+        rec.year = year
+        rec.volume_ml = volume_ml
+    else:
+      year = self.drink.starttime.year
+      for entry in self.stats.volume_by_year:
+        if entry.year == year:
+          entry.volume_ml += drink.volume_ml
+          return
+      rec = self.stats.volume_by_year.add()
+      rec.year = year
+      rec.volume_ml = self.drink.volume_ml
+
   @stat('has_guest_pour')
   def HasGuestPour(self):
     if not self.previous:

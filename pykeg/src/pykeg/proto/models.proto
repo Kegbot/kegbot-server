@@ -546,4 +546,31 @@ message Stats {
   // True if these stats include at least one guest pour.
   optional bool has_guest_pour = 10;
 
+  // Count of all sessions.
+  optional uint32 sessions_count = 11;
+
+  // Container message for volumes by year.
+  message YearlyVolume {
+    // The year.
+    required uint32 year = 1;
+
+    // The volume.
+    required float volume_ml = 2;
+  }
+
+  // Volume by year.
+  repeated YearlyVolume volume_by_year = 12;
+
+  // Container message for sessions by peer.
+  message PeerSessionCount {
+    // The peer.
+    required string peer_name = 1;
+
+    // The count.
+    required uint32 joint_session_count = 2;
+  }
+
+  // Sessions by peer.
+  repeated PeerSessionCount peer_affinities = 13;
+
 }

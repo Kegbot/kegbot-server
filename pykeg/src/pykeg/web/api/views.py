@@ -34,7 +34,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.template import Context
+from django.template import RequestContext
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 
@@ -328,7 +328,7 @@ def recent_events_html(request):
   template = get_template('kegweb/event-box.html')
   results = []
   for event in events:
-    ctx = Context({
+    ctx = RequestContext(request, {
       'event': event,
       'kbsite': request.kbsite,
     })
@@ -479,7 +479,7 @@ def last_drinks_html(request, limit=5):
   for d in last_drinks:
     row = {}
     row['id'] = d.id
-    row['box_html'] = template.render(Context({'drink': d}))
+    row['box_html'] = template.render(RequestContext(request, {'drink': d}))
     results.append(row)
   return results
 

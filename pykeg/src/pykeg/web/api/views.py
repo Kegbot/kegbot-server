@@ -22,6 +22,7 @@ import datetime
 from functools import wraps
 import logging
 import sys
+import traceback
 from decimal import Decimal
 
 import raven
@@ -96,7 +97,7 @@ def staff_required(viewfunc):
     return viewfunc(request, *args, **kwargs)
   return wraps(viewfunc)(_check_token)
 
-def ToJsonError(e):
+def ToJsonError(e, exc_info):
   """Converts an exception to an API error response."""
   # Wrap some common exception types into Krest types
   if isinstance(e, Http404):
@@ -115,6 +116,10 @@ def ToJsonError(e):
     code = 'ServerError'
     http_code = 500
     message = 'An internal error occurred: %s' % str(e)
+    if settings.DEBUG:
+      message += "\n" + "\n".join(traceback.format_exception(*exc_info))
+      client = LocalRavenClient([])
+      client.create_from_exception(exc_info)
   result = {
     'error' : {
       'code' : code,
@@ -155,7 +160,7 @@ def py_to_json(f):
     except Exception, e:
       if settings.DEBUG and 'deb' in request.GET:
         raise
-      result_data, http_code = ToJsonError(e)
+      result_data, http_code = ToJsonError(e, sys.exc_info())
     return HttpResponse(kbjson.dumps(result_data, indent=indent),
         mimetype='application/json', status=http_code)
   return new_function

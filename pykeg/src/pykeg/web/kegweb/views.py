@@ -72,19 +72,15 @@ def index(request):
 @cache_page(30)
 @kbsite_aware
 def system_stats(request):
-  context = RequestContext(request)
-
-  stats_qs = request.kbsite.systemstats_set.all()
-  if stats_qs:
-    stats = stats_qs[0].stats
-  else:
-    stats = {}
-  context['stats'] = stats
+  stats = request.kbsite.GetStats()
+  context = RequestContext(request, {
+    'stats': stats,
+  })
 
   top_drinkers = []
-  for drinkervol in stats.get('volume_by_drinker', []):
-    username = str(drinkervol['username'])
-    vol = float(drinkervol['volume_ml'])
+  for drinkervol in stats.volume_by_drinker:
+    username = drinkervol.username
+    vol = drinkervol.volume_ml
     try:
       user = models.User.objects.get(username=username)
     except models.User.DoesNotExist:
@@ -149,7 +145,10 @@ def keg_list(request):
 @kbsite_aware
 def keg_detail(request, keg_id):
   keg = get_object_or_404(models.Keg, site=request.kbsite, seqn=keg_id)
-  context = RequestContext(request, {'keg': keg, 'stats': keg.GetStats()})
+  context = RequestContext(request, {
+    'keg': keg,
+    'stats': keg.GetStats(),
+    'sessions': keg.Sessions()})
   return render_to_response('kegweb/keg_detail.html', context)
 
 @kbsite_aware
@@ -188,8 +187,10 @@ def claim_token(request):
 @kbsite_aware
 def session_detail(request, year, month, day, seqn, slug):
   session = get_object_or_404(models.DrinkingSession, site=request.kbsite, seqn=seqn)
-  context = RequestContext(request)
-  context['session'] = session
+  context = RequestContext(request, {
+    'session': session,
+    'stats': session.GetStats(),
+  })
   return render_to_response('kegweb/session_detail.html', context)
 
 

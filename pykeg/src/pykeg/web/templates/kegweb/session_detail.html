@@ -43,7 +43,7 @@
         <tr>
           <th>Registered Drinkers</th>
           <td>
-            {{ session.GetStats.registered_drinkers|length }} drinkers
+            {{ stats.registered_drinkers|length }} drinkers
           </td>
         </tr>
       </tbody>
@@ -98,7 +98,7 @@
 <div class="row">
   <div class="span5">
     <h2>Drinker Breakdown</h2>
-    {% chart users_by_volume session 350 250 %}
+    {% chart users_by_volume stats 350 250 %}
   </div>
 </div>
 

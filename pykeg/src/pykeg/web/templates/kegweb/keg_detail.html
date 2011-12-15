@@ -79,22 +79,7 @@
           </td>
         </tr>
 
-        <tr>
-          <th>Pour Count</th>
-          <td>
-            {{ keg.drinks.valid.count }} pours by
-            {% with keg.GetStats.registered_drinkers as drinkers %}
-              {{ drinkers|length }} known drinker{{ drinkers|length|pluralize }}.
-            {% endwith %}
-          </td>
-        </tr>
-
-        <tr>
-          <th>Sessions</th>
-          <td>
-            {{ keg.keg_session_chunks.all.count }} drinking sessions
-          </td>
-        </tr>
+        {% include "kegweb/basic-stats.html" %}
 
         <tr>
           <th>Total Poured</th>
@@ -120,11 +105,6 @@
         {% endif %}
         {% endwith %}
 
-        <tr>
-          <th>Pints by Weekday</th>
-          <td>{% chart volume_by_day keg 340 100 %}</td>
-        </tr>
-
         {% if keg.spilled_volume > 0 %}
         <tr>
           <th>Total Spilled/Lost</th>
@@ -137,16 +117,16 @@
   </div>
 </div>
 
+{% if sessions %}
 <div class="row">
   <div class="span9">
     <h2>All Sessions</h2>
-    {% for chunk in keg.keg_session_chunks.all %}
-      {% with chunk.session as session %}
-        {% include "kegweb/keg-session.html" %}
-      {% endwith %}
+    {% for session in sessions %}
+      {% include "kegweb/keg-session.html" %}
     {% endfor %}
   </div>
 </div>
+{% endif %}
 
 {% endblock col-1 %}
 
@@ -154,7 +134,7 @@
 <div class="row">
   <div class="span5">
     <h2>Top Drinkers</h2>
-    {% chart users_by_volume keg 280 220 %}<br/>
+    {% chart users_by_volume stats 280 220 %}<br/>
     {% with keg.TopDrinkers as ranked_drinkers %}
       {% include "kegweb/drinker-rank.html" %}
     {% endwith %}

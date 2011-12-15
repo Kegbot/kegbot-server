@@ -1,0 +1,42 @@
+{% load kegweblib %}
+<tr>
+  <th>Sessions</th>
+  <td>
+    A total of
+    <b>{{ stats.sessions_count }} drinking session{{ stats.sessions_count|pluralize }}</b>
+    {% if stats.sessions_count == 1 %}has{% else %}have{% endif %} been recorded.
+  </td>
+</tr>
+
+<tr>
+  <th>Drinks</th>
+  <td>
+    A total of
+    <b>{{ stats.total_pours }} pour{{ stats.total_pours|pluralize }}</b> have been recorded,
+    totalling <b>{% volume stats.total_volume_ml %}</b>.
+  </td>
+</tr>
+
+<tr>
+  <th>Drinkers</th>
+  <td>
+    At least
+    <b>{{ stats.registered_drinkers|length }} known
+    drinker{{ stats.registered_drinkers|length|pluralize }}</b> {% if stats.has_guest_pour %}(and untold guests){% endif %}
+    have poured.
+  </td>
+</tr>
+
+<tr>
+  <th>Average Pour</th>
+  <td>
+    The average pour size is
+    <b>{% volume stats.average_volume_ml %}</b>.
+  </td>
+</tr>
+
+<tr>
+  <th>Volume by Weekday</th>
+  <td>{% chart volume_by_day stats 340 100 %}</td>
+</tr>
+

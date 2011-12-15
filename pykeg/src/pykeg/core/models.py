@@ -76,6 +76,13 @@ class KegbotSite(models.Model):
       return ''
     return self.name
 
+  def GetStats(self):
+    try:
+      stats = SystemStats.objects.get(site=self).stats
+    except SystemStats.DoesNotExist:
+      stats = {}
+    return protoutil.DictToProtoMessage(stats, models_pb2.Stats())
+
 def _kegbotsite_post_save(sender, instance, **kwargs):
   """Creates a SiteSettings object if none already exists."""
   settings, _ = SiteSettings.objects.get_or_create(site=instance)
@@ -125,15 +132,11 @@ class UserProfile(models.Model):
       return qs[0]
 
   def GetStats(self):
-    if hasattr(self, '_stats'):
-      return self._stats
-    qs = self.user.stats.all()
-    if qs:
-      self._stats = qs[0].stats
-    else:
-      self._stats = {}
-    self._stats = protoutil.DictToProtoMessage(self._stats, models_pb2.Stats())
-    return self._stats
+    try:
+      stats = UserStats.objects.get(user=self).stats
+    except UserStats.DoesNotExist:
+      stats = {}
+    return protoutil.DictToProtoMessage(stats, models_pb2.Stats())
 
   def RecomputeStats(self):
     self.user.stats.all().delete()
@@ -258,15 +261,11 @@ class Keg(models.Model):
     return None
 
   def GetStats(self):
-    if hasattr(self, '_stats'):
-      return self._stats
-    qs = self.stats.all()
-    if qs:
-      self._stats = qs[0].stats
-    else:
-      self._stats = {}
-    self._stats = protoutil.DictToProtoMessage(self._stats, models_pb2.Stats())
-    return self._stats
+    try:
+      stats = KegStats.objects.get(keg=self).stats
+    except KegStats.DoesNotExist:
+      stats = {}
+    return protoutil.DictToProtoMessage(stats, models_pb2.Stats())
 
   def RecomputeStats(self):
     self.stats.all().delete()
@@ -559,15 +558,11 @@ class DrinkingSession(_AbstractChunk):
       'slug' : slug})
 
   def GetStats(self):
-    if hasattr(self, '_stats'):
-      return self._stats
-    qs = self.stats.all()
-    if qs:
-      self._stats = qs[0].stats
-    else:
-      self._stats = {}
-    self._stats = protoutil.DictToProtoMessage(self._stats, models_pb2.Stats())
-    return self._stats
+    try:
+      stats = SessionStats.objects.get(session=self).stats
+    except SessionStats.DoesNotExist:
+      stats = {}
+    return protoutil.DictToProtoMessage(stats, models_pb2.Stats())
 
   def summarize_drinkers(self):
     def fmt(user):

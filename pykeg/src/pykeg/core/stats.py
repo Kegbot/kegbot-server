@@ -184,7 +184,7 @@ class BaseStatsBuilder(StatsBuilder):
       year = self.drink.starttime.year
       for entry in self.stats.volume_by_year:
         if entry.year == year:
-          entry.volume_ml += drink.volume_ml
+          entry.volume_ml += self.drink.volume_ml
           return
       rec = self.stats.volume_by_year.add()
       rec.year = year

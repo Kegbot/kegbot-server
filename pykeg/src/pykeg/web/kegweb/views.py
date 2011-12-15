@@ -110,7 +110,10 @@ def user_list(request):
 @kbsite_aware
 def user_detail(request, username):
   user = get_object_or_404(models.User, username=username)
-  stats = user.get_profile().GetStats()
+  try:
+    stats = models.UserStats.objects.get(site=request.kbsite, user=user).stats
+  except models.UserStats.DoesNotExist:
+    stats = None
 
   # TODO(mikey): add site to UserSessionChunk
   sessions = []

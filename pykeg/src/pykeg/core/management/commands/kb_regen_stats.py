@@ -28,18 +28,26 @@ class Command(NoArgsCommand):
   args = '<none>'
 
   def handle(self, **options):
-    drinks = models.Drink.objects.valid()
-
     models.SystemStats.objects.all().delete()
-    last_drinks = models.Drink.objects.valid().order_by('-starttime')
+    models.KegStats.objects.all().delete()
+    models.UserStats.objects.all().delete()
+    models.SessionStats.objects.all().delete()
+
+    for site in models.KegbotSite.objects.all():
+      print 'site: %s' % site
+      self.handle_site(site)
+
+  def handle_site(self, site):
+    drinks = site.drinks.valid()
+
+    last_drinks = drinks.order_by('-starttime')
     if last_drinks:
       progbar('recalc system stats', 0, 1)
       last_drinks[0]._UpdateSystemStats()
     progbar('recalc system stats', 1, 1)
     print ''
 
-    models.KegStats.objects.all().delete()
-    kegs = models.Keg.objects.all()
+    kegs = site.kegs.all()
     count = kegs.count()
     pos = 0
     for k in kegs:
@@ -50,27 +58,25 @@ class Command(NoArgsCommand):
         last_drinks[0]._UpdateKegStats()
     print ''
 
-    models.UserStats.objects.all().delete()
     users = models.User.objects.all()
     count = users.count()
     pos = 0
     for user in users:
       pos += 1
       progbar('recalc user stats', pos, count)
-      user_drinks = user.drinks.valid().order_by('-starttime')
+      user_drinks = user.drinks.valid().filter(site=site).order_by('-starttime')
       if user_drinks:
         last = user_drinks[0]
         last._UpdateUserStats()
     print ''
 
-    models.SessionStats.objects.all().delete()
     sessions = models.DrinkingSession.objects.all()
     count = sessions.count()
     pos = 0
     for session in sessions:
       pos += 1
       progbar('recalc session stats', pos, count)
-      session_drinks = session.drinks.valid().order_by('-starttime')
+      session_drinks = session.drinks.valid().filter(site=site).order_by('-starttime')
       if session_drinks:
         last = session_drinks[0]
         last._UpdateSessionStats()

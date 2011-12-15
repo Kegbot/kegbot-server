@@ -407,26 +407,17 @@ class Drink(models.Model):
 
   def _UpdateUserStats(self):
     if self.user:
-      defaults = {
-        'site': self.site,
-      }
-      stats, created = self.user.stats.get_or_create(defaults=defaults)
+      stats, created = UserStats.objects.get_or_create(user=self.user, site=self.site)
       stats.Update(self)
 
   def _UpdateKegStats(self):
     if self.keg:
-      defaults = {
-        'site': self.site,
-      }
-      stats, created = self.keg.stats.get_or_create(defaults=defaults)
+      stats, created = KegStats.objects.get_or_create(keg=self.keg, site=self.site)
       stats.Update(self)
 
   def _UpdateSessionStats(self):
     if self.session:
-      defaults = {
-        'site': self.site,
-      }
-      stats, created = self.session.stats.get_or_create(defaults=defaults)
+      stats, created = SessionStats.objects.get_or_create(session=self.session, site=self.site)
       stats.Update(self)
 
   def PostProcess(self):
@@ -861,11 +852,9 @@ pre_save.connect(_set_seqn_pre_save, sender=ThermoSummaryLog)
 
 class _StatsModel(models.Model):
   STATS_BUILDER = None
+
   class Meta:
     abstract = True
-  site = models.ForeignKey(KegbotSite)
-  date = models.DateTimeField(default=datetime.datetime.now)
-  stats = fields.JSONField()
 
   def Update(self, drink, force=False):
     previous = None
@@ -874,6 +863,10 @@ class _StatsModel(models.Model):
     builder = self.STATS_BUILDER(drink, previous)
     self.stats = protoutil.ProtoMessageToDict(builder.Build())
     self.save()
+
+  site = models.ForeignKey(KegbotSite)
+  date = models.DateTimeField(default=datetime.datetime.now)
+  stats = fields.JSONField()
 
 
 class SystemStats(_StatsModel):
@@ -884,8 +877,10 @@ class SystemStats(_StatsModel):
 
 
 class UserStats(_StatsModel):
+  class Meta:
+    unique_together = ('site', 'user')
   STATS_BUILDER = stats.DrinkerStatsBuilder
-  user = models.ForeignKey(User, unique=True, related_name='stats')
+  user = models.ForeignKey(User, blank=True, null=True, related_name='stats')
 
   def __str__(self):
     return 'UserStats for %s' % self.user
@@ -1061,3 +1056,4 @@ class Picture(models.Model):
       return ''
 
 pre_save.connect(_set_seqn_pre_save, sender=Picture)
+

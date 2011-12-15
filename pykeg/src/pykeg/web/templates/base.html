@@ -105,7 +105,7 @@
           <ul class="nav secondary-nav">
             <li class="dropdown" data-dropdown="dropdown">
               <a href="#" class="dropdown-toggle">
-                {{ request.user.username }}
+                {{ user.username }}
               </a>
               <ul class="dropdown-menu">
                 <li><a href="{% url django.contrib.auth.views.logout %}">Logout</a></li>

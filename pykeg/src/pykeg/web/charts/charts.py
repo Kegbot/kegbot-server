@@ -127,18 +127,14 @@ def KegVolumeChart(keg):
   }
   return res
 
-def KegUsageByWeekday(keg):
-  """ Shows a horizontal bar chart of keg served/remaining volume.
+def VolumeByWeekday(stats):
+  """ Shows a histogram of volume by day of the week.
 
   Syntax:
-    {% chart volume_by_day <keg> width height %}
+    {% chart volume_by_day <stats> width height %}
   Args:
-    obj - the keg or drinking session instance to chart
+    stats - a stats object containing volume_by_day_of_week
   """
-  if not isinstance(keg, models.Keg):
-    raise ChartError('Bad value given for keg')
-  stats = keg.GetStats()
-
   volmap = [0] * 7
   vols = stats.volume_by_day_of_week
   if not volmap:
@@ -194,12 +190,7 @@ def SessionVolumes(sessions):
   }
   return res
 
-def UsersByVolume(keg_or_session):
-  if not isinstance(keg_or_session, models.Keg) and not \
-      isinstance(keg_or_session, models.DrinkingSession):
-    raise ChartError('Bad value for keg_or_session')
-
-  stats = keg_or_session.GetStats()
+def UsersByVolume(stats):
   vols = stats.volume_by_drinker
   if not vols:
     raise ChartError('no data')

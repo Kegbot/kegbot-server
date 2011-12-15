@@ -275,9 +275,9 @@ class ChartNode(Node):
     """Shows keg or session usage by day of the week.
 
     Args:
-      obj - the models.Keg or models.DrinkingSession instance to chart
+      obj - the stats instance to chart
     """
-    return charts.KegUsageByWeekday(obj)
+    return charts.VolumeByWeekday(obj)
 
   def chart_sessions_weekday(self, obj):
     """Vertical bar chart showing session volume by day of week.
@@ -301,7 +301,7 @@ class ChartNode(Node):
     """Pie chart showing users by volume.
 
     Args:
-      obj - the models.Keg or models.DrinkingSession instance to chart
+      obj - the stats instance to chart
     """
     return charts.UsersByVolume(obj)
 

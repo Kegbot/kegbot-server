@@ -65,11 +65,11 @@
   </div> <!-- span9 -->
 </div> <!-- row -->
 
-{% if sessions %}
+{% if chunks %}
 <div class="row">
   <div class="span9">
-  <h2>All Sessions</h2>
-    {% for chunk in sessions %}
+  <h2>Recent Sessions</h2>
+    {% for chunk in chunks %}
       {% with chunk.session as session %}
         {% include "kegweb/keg-session.html" %}
       {% endwith %}
@@ -95,7 +95,7 @@
 
       <p>
         <b>all sessions, by pints per session</b><br>
-        {% chart sessions_volume sessions 350 100 %}
+        {% chart sessions_volume chunks 350 100 %}
       </p>
       {% endif %}
     </div>

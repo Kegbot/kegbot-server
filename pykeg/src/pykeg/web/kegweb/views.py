@@ -111,16 +111,15 @@ def user_detail(request, username):
   except models.UserStats.DoesNotExist:
     stats = None
 
-  # TODO(mikey): add site to UserSessionChunk
-  sessions = []
-  for s in user.user_session_chunks.all():
-    if s.session.site == request.kbsite:
-      sessions.append(s)
+  # TODO(mikey): Limit to "recent" sessions for now.
+  # Bug: https://github.com/Kegbot/kegbot/issues/37
+  chunks = models.UserSessionChunk.objects.filter(site=request.kbsite,
+      user=user).select_related(depth=1)[:10]
   drinks = user.drinks.filter(site=request.kbsite)
 
   context = RequestContext(request, {
       'drinks': drinks,
-      'sessions': sessions,
+      'chunks': chunks,
       'stats': stats,
       'drinker': user})
   return render_to_response('kegweb/drinker_detail.html', context)

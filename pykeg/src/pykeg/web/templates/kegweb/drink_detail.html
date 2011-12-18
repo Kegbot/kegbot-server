@@ -45,39 +45,22 @@
   </div>
 </div>
 
+<div class="row">
+  <div class="span9">
+  <h2>This Session</h2>
+  {% with drink.session as session %}
+    {% include "kegweb/keg-session.html" %}
+  {% endwith %}
+  </div>
+</div>
+
 {% endblock %}
 
 {% block col-2 %}
-<div class="row">
-  <div class="span5">
-    <h2>Session</h2>
-    {% with drink.GetSession as session %}
-    <table class="condensed-tabled">
-      <tbody>
-        <tr>
-          <th>Drinkers</th>
-          <td>{{session.users.count}}</td>
-        </tr>
-        <tr>
-          <th>Volume</th>
-          <td>{% volume session.volume_ml %}</td>
-        </tr>
-      </tbody>
-    </table>
-    {% endwith %}
-  </div>
-</div>
-{% endblock %}
-
-{% block extra-content %}
 {% with drink.pictures.all as pictures %}
 {% if pictures.count %}
-<div class="row">
-  <div class="span14">
-    <h2>Beer Goggles!</h2>
-    {% include "kegweb/picture-gallery.html" %}
-  </div>
-</div>
+<h2>Beer Goggles!</h2>
+{% include "kegweb/picture-gallery.html" %}
 {% endif %}
 {% endwith %}
 {% endblock %}

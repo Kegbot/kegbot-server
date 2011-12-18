@@ -711,6 +711,7 @@ class UserSessionChunk(_AbstractChunk):
     get_latest_by = 'starttime'
     ordering = ('-starttime',)
 
+  site = models.ForeignKey(KegbotSite, related_name='user_chunks')
   session = models.ForeignKey(DrinkingSession, related_name='user_chunks')
   user = models.ForeignKey(User, related_name='user_session_chunks', blank=True,
       null=True)
@@ -730,6 +731,7 @@ class KegSessionChunk(_AbstractChunk):
     ordering = ('-starttime',)
 
   objects = managers.SessionManager()
+  site = models.ForeignKey(KegbotSite, related_name='keg_chunks')
   session = models.ForeignKey(DrinkingSession, related_name='keg_chunks')
   keg = models.ForeignKey(Keg, related_name='keg_session_chunks', blank=True,
       null=True)
@@ -748,7 +750,7 @@ class ThermoSensor(models.Model):
   nice_name = models.CharField(max_length=128)
 
   def __str__(self):
-    return self.nice_name
+    return '%s (%s) ' % (self.nice_name, self.raw_name)
 
   def LastLog(self):
     try:

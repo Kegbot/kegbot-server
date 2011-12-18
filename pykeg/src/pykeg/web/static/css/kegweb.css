@@ -364,13 +364,13 @@ body{padding-top:40px;}
 .badge:after{clear:both;}
 .badge-header{font-size:15px;color:#404040;font-weight:bold;padding:2px;-webkit-border-radius:6px 6px 0px 0px;-moz-border-radius:6px 6px 0px 0px;border-radius:6px 6px 0px 0px;text-align:center;border-bottom:1px solid #eee;font:bold;}
 .badge-content{text-align:center;}
-.kb-tapbox{width:100%;border:1px solid rgba(0, 0, 0, 0.3);-webkit-border-radius:6px;-moz-border-radius:6px;border-radius:6px;-webkit-box-shadow:0 3px 7px rgba(0, 0, 0, 0.3);-moz-box-shadow:0 3px 7px rgba(0, 0, 0, 0.3);box-shadow:0 3px 7px rgba(0, 0, 0, 0.3);zoom:1;margin-top:8px;margin-bottom:8px;}.kb-tapbox:before,.kb-tapbox:after{display:table;content:"";zoom:1;}
+.kb-tapbox{width:100%;border:1px solid rgba(0, 0, 0, 0.3);zoom:1;margin-top:8px;margin-bottom:8px;}.kb-tapbox:before,.kb-tapbox:after{display:table;content:"";zoom:1;}
 .kb-tapbox:after{clear:both;}
 .kb-tapbox-left{display:block;margin-left:auto;margin-right:auto;display:block;margin:0 auto;text-align:center;padding:4px;}
 .kb-tapbox-content{zoom:1;}.kb-tapbox-content:before,.kb-tapbox-content:after{display:table;content:"";zoom:1;}
 .kb-tapbox-content:after{clear:both;}
-.kb-tapbox-header{-webkit-border-radius:6px 6px 0px 0px;-moz-border-radius:6px 6px 0px 0px;border-radius:6px 6px 0px 0px;background-color:#e6e6e6;background-repeat:repeat-x;background-image:-khtml-gradient(linear, left top, left bottom, from(#bfbfbf), to(#e6e6e6));background-image:-moz-linear-gradient(top, #bfbfbf, #e6e6e6);background-image:-ms-linear-gradient(top, #bfbfbf, #e6e6e6);background-image:-webkit-gradient(linear, left top, left bottom, color-stop(0%, #bfbfbf), color-stop(100%, #e6e6e6));background-image:-webkit-linear-gradient(top, #bfbfbf, #e6e6e6);background-image:-o-linear-gradient(top, #bfbfbf, #e6e6e6);background-image:linear-gradient(top, #bfbfbf, #e6e6e6);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#bfbfbf', endColorstr='#e6e6e6', GradientType=0);text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);border-color:#e6e6e6 #e6e6e6 #bfbfbf;border-color:rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);padding-left:5px;border-bottom:1px solid #eee;}
-.kb-tapbox-footer{font-size:11px;font-weight:bold;-webkit-border-radius:0px 0px 6px 6px;-moz-border-radius:0px 0px 6px 6px;border-radius:0px 0px 6px 6px;background-color:#f5f5f5;padding-top:5px;padding-bottom:5px;border-top:1px solid #eee;text-align:right;}
+.kb-tapbox-header{background-color:#e6e6e6;background-repeat:repeat-x;background-image:-khtml-gradient(linear, left top, left bottom, from(#bfbfbf), to(#e6e6e6));background-image:-moz-linear-gradient(top, #bfbfbf, #e6e6e6);background-image:-ms-linear-gradient(top, #bfbfbf, #e6e6e6);background-image:-webkit-gradient(linear, left top, left bottom, color-stop(0%, #bfbfbf), color-stop(100%, #e6e6e6));background-image:-webkit-linear-gradient(top, #bfbfbf, #e6e6e6);background-image:-o-linear-gradient(top, #bfbfbf, #e6e6e6);background-image:linear-gradient(top, #bfbfbf, #e6e6e6);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#bfbfbf', endColorstr='#e6e6e6', GradientType=0);text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);border-color:#e6e6e6 #e6e6e6 #bfbfbf;border-color:rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);padding-left:5px;padding-bottom:5px;border-bottom:1px solid #eee;}
+.kb-tapbox-footer{font-size:11px;font-weight:bold;background-color:#f5f5f5;padding-top:5px;padding-bottom:5px;border-top:1px solid #eee;text-align:right;}
 .kb-tapbox-image{min-width:96px;min-height:96px;text-align:center;margin-right:8px;padding:8px;}
 .kb-tapbox-detail{margin-left:12px;width:320px;}
 .kb-keg-description{color:#404040;margin-bottom:8px;}
@@ -385,7 +385,6 @@ body{padding-top:40px;}
 .kb-drink-box-mugshot{float:left;margin-right:8px;}
 .kb-session-box-icon{float:left;margin-right:2px;margin-bottom:2px;}
 .kb-drink-box-details{margin-left:8px;}
-.kb-award-box{width:48px;height:48px;background:#4e4e4e;color:#eee;float:left;margin-right:2px;margin-bottom:2px;}
 #kb-admin-nav{float:left;width:160px;margin-right:32px;margin-bottom:16px;font-size:0.9em;}
 .kb-admin-nav-tab{width:160px;height:32px;line-height:32px;background-color:#eee;margin-bottom:2px;padding-left:4px;}
 .kb-admin-nav-tab-hover{background-color:#aaa;cursor:pointer;}

@@ -25,11 +25,8 @@ from django.shortcuts import get_object_or_404
 
 class KegbotSiteMiddleware:
   def process_view(self, request, view_func, view_args, view_kwargs):
-    kbsite_name = view_kwargs.pop('kbsite_name', None)
-    if kbsite_name is not None:
-      if kbsite_name == '':
-        kbsite_name = 'default'
-      request.kbsite = get_object_or_404(models.KegbotSite, name=kbsite_name)
+    kbsite_name = view_kwargs.pop('kbsite_name', 'default')
+    request.kbsite = get_object_or_404(models.KegbotSite, name=kbsite_name)
     return None
 
 class SiteActiveMiddleware:

@@ -34,11 +34,9 @@ from django.views.generic.simple import redirect_to
 from pykeg.core import backup
 from pykeg.core import models
 
-from pykeg.web.util import kbsite_aware
 from pykeg.web.kegadmin import forms
 
 @staff_member_required
-@kbsite_aware
 def kegadmin_main(request):
   context = RequestContext(request)
   form = forms.SiteSettingsForm(instance=request.kbsite.settings)
@@ -50,7 +48,6 @@ def kegadmin_main(request):
   return render_to_response('kegadmin/index.html', context)
 
 @staff_member_required
-@kbsite_aware
 def tap_list(request):
   context = RequestContext(request)
   taps = request.kbsite.taps.all()
@@ -65,7 +62,6 @@ def tap_list(request):
   return render_to_response('kegadmin/tap-edit.html', context)
 
 @staff_member_required
-@kbsite_aware
 def do_end_keg(request):
   if request.method == 'POST':
     form = forms.KegHiddenSelectForm(request.POST)
@@ -83,7 +79,6 @@ def do_end_keg(request):
   return redirect_to(request, result_url)
 
 @staff_member_required
-@kbsite_aware
 def edit_tap(request, tap_id):
   context = RequestContext(request)
   tap = get_object_or_404(models.KegTap, site=request.kbsite, seqn=tap_id)
@@ -115,24 +110,20 @@ def edit_tap(request, tap_id):
   return render_to_response('kegadmin/tap-edit.html', context)
 
 @staff_member_required
-@kbsite_aware
 def create_tap(request):
   context = RequestContext(request)
   form = forms.ChangeKegForm()
 
 @staff_member_required
-@kbsite_aware
 def edit_keg(request, keg_id):
   context = RequestContext(request)
 
 @staff_member_required
-@kbsite_aware
 def backup_restore(request):
   context = RequestContext(request)
   return render_to_response('kegadmin/backup-restore.html', context)
 
 @staff_member_required
-@kbsite_aware
 def generate_backup(request):
   context = RequestContext(request)
 

@@ -48,7 +48,6 @@ from pykeg.proto import protoutil
 from pykeg.web.api import apikey
 from pykeg.web.api import forms
 from pykeg.web.api import krest
-from pykeg.web.util import kbsite_aware
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -186,19 +185,16 @@ def FromProto(m):
   return protoutil.ProtoMessageToDict(m)
 
 @py_to_json
-@kbsite_aware
 def last_drinks(request, limit=5):
   drinks = _get_last_drinks(request, limit)
   return FromProto(protolib.GetDrinkSet(drinks))
 
 @py_to_json
-@kbsite_aware
 def all_kegs(request):
   kegs = request.kbsite.kegs.all().order_by('-startdate')
   return FromProto(protolib.GetKegDetailSet(kegs, full=False))
 
 @py_to_json
-@kbsite_aware
 def all_drinks(request, limit=100):
   qs = request.kbsite.drinks.valid()
   total = len(qs)
@@ -221,15 +217,13 @@ def all_drinks(request, limit=100):
   return FromProto(result)
 
 @py_to_json
-@kbsite_aware
 def get_drink(request, drink_id):
   drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
   return protoutil.ProtoMessageToDict(protolib.GetDrinkDetail(drink))
 
+@py_to_json
 @csrf_exempt
 @auth_required
-@py_to_json
-@kbsite_aware
 def add_drink_photo(request, drink_id):
   if request.method != 'POST':
     raise Http404('Method not supported')
@@ -244,14 +238,12 @@ def add_drink_photo(request, drink_id):
   return obj_to_dict(pic)
 
 @py_to_json
-@kbsite_aware
 def get_session(request, session_id):
   session = get_object_or_404(models.DrinkingSession, seqn=session_id,
       site=request.kbsite)
   return protoutil.ProtoMessageToDict(protolib.GetSessionDetail(session))
 
 @py_to_json
-@kbsite_aware
 def get_session_stats(request, session_id):
   session = get_object_or_404(models.DrinkingSession, seqn=session_id,
       site=request.kbsite)
@@ -259,20 +251,17 @@ def get_session_stats(request, session_id):
   return FromProto(stats)
 
 @py_to_json
-@kbsite_aware
 def get_keg(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return protoutil.ProtoMessageToDict(protolib.GetKegDetail(keg, full=True))
 
 @py_to_json
-@kbsite_aware
 def get_keg_drinks(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   drinks = keg.drinks.valid()
   return FromProto(protolib.GetDrinkSet(drinks))
 
 @py_to_json
-@kbsite_aware
 def get_keg_events(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   events = keg.events.all()
@@ -280,13 +269,11 @@ def get_keg_events(request, keg_id):
   return FromProto(protolib.GetSystemEventDetailSet(events))
 
 @py_to_json
-@kbsite_aware
 def all_sessions(request):
   sessions = request.kbsite.sessions.all()
   return FromProto(protolib.GetSessionSet(sessions))
 
 @py_to_json
-@kbsite_aware
 def current_sessions(request):
   session_list = []
   try:
@@ -298,7 +285,6 @@ def current_sessions(request):
   return FromProto(protolib.GetSessionSet(session_list))
 
 @py_to_json
-@kbsite_aware
 def all_events(request):
   events = request.kbsite.events.all().order_by('-seqn')
   events = apply_since(request, events)
@@ -318,13 +304,11 @@ def apply_since(request, query):
 
 @py_to_json
 @auth_required
-@kbsite_aware
 def all_sound_events(request):
   events = soundserver_models.SoundEvent.objects.all()
   return FromProto(protolib.GetSoundEventSet(events))
 
 @py_to_json
-@kbsite_aware
 def recent_events_html(request):
   events = request.kbsite.events.all().order_by('-seqn')
   events = apply_since(request, events)
@@ -346,53 +330,45 @@ def recent_events_html(request):
   return FromProto(protolib.GetSystemEventHtmlSet(results))
 
 @py_to_json
-@kbsite_aware
 def get_keg_sessions(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   sessions = [c.session for c in keg.keg_session_chunks.all()]
   return FromProto(protolib.GetSessionSet(sessions))
 
 @py_to_json
-@kbsite_aware
 def get_keg_stats(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   stats = keg.GetStats()
   return FromProto(stats)
 
 @py_to_json
-@kbsite_aware
 def all_taps(request):
   taps = request.kbsite.taps.all().order_by('name')
   return FromProto(protolib.GetTapDetailSet(taps))
 
 @py_to_json
 @auth_required
-@kbsite_aware
 def user_list(request):
   users = models.User.objects.filter(is_active=True).order_by('username')
   return FromProto(protolib.GetUserDetailSet(users))
 
 @py_to_json
-@kbsite_aware
 def get_user(request, username):
   user = get_object_or_404(models.User, username=username)
   return FromProto(protolib.GetUserDetail(user))
 
 @py_to_json
-@kbsite_aware
 def get_user_drinks(request, username):
   user = get_object_or_404(models.User, username=username)
   drinks = user.drinks.valid()
   return FromProto(protolib.GetDrinkSet(drinks))
 
 @py_to_json
-@kbsite_aware
 def get_user_events(request, username):
   user = get_object_or_404(models.User, username=username)
   return FromProto(protolib.GetSystemEventDetailSet(user.events.all()))
 
 @py_to_json
-@kbsite_aware
 def get_user_stats(request, username):
   user = get_object_or_404(models.User, username=username)
   # TODO(mikey_) fix stats
@@ -404,14 +380,12 @@ def get_user_stats(request, username):
 
 @py_to_json
 @auth_required
-@kbsite_aware
 def get_auth_token(request, auth_device, token_value):
   b = backend.KegbotBackend(site=request.kbsite)
   tok = b.GetAuthToken(auth_device, token_value)
   return FromProto(tok)
 
 @py_to_json
-@kbsite_aware
 def all_thermo_sensors(request):
   sensors = list(request.kbsite.thermosensors.all())
   return FromProto(protolib.GetThermoSensorSet(sensors))
@@ -429,7 +403,6 @@ def _get_sensor_or_404(request, sensor_name):
   return sensor
 
 @csrf_exempt
-@kbsite_aware
 def get_thermo_sensor(request, sensor_name):
   if request.method == 'POST':
     return _thermo_sensor_post(request, sensor_name)
@@ -467,14 +440,12 @@ def _thermo_sensor_post(request, sensor_name):
   return FromProto(b.LogSensorReading(sensor.raw_name, cd['temp_c']))
 
 @py_to_json
-@kbsite_aware
 def get_thermo_sensor_logs(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
   logs = sensor.thermolog_set.all()[:60*2]
   return FromProto(protolib.GetThermoLogSet(logs))
 
 @py_to_json
-@kbsite_aware
 def last_drinks_html(request, limit=5):
   last_drinks = _get_last_drinks(request, limit)
 
@@ -489,7 +460,6 @@ def last_drinks_html(request, limit=5):
   return results
 
 @py_to_json
-@kbsite_aware
 def last_drink_id(request):
   last_id = 0
   last = _get_last_drinks(request, limit=1)
@@ -498,7 +468,6 @@ def last_drink_id(request):
   return {'id': str(last_id)}
 
 @py_to_json
-@kbsite_aware
 def get_api_key(request):
   user = request.user
   api_key = ''
@@ -507,7 +476,6 @@ def get_api_key(request):
   return {'api_key': api_key}
 
 @csrf_exempt
-@kbsite_aware
 def tap_detail(request, tap_id):
   if request.method == 'POST':
     return _tap_detail_post(request, tap_id)
@@ -550,10 +518,9 @@ def _tap_detail_post(request, tap):
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 
-@csrf_exempt
 @py_to_json
+@csrf_exempt
 @auth_required
-@kbsite_aware
 def cancel_drink(request):
   #if request.method != 'POST':
   #  raise krest.BadRequestError, 'Method not supported at this endpoint'
@@ -569,9 +536,8 @@ def cancel_drink(request):
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 
-@csrf_exempt
 @py_to_json
-@kbsite_aware
+@csrf_exempt
 def login(request):
   if request.POST:
     form = AuthenticationForm(data=request.POST)
@@ -585,13 +551,11 @@ def login(request):
   raise krest.BadRequestError('POST required.')
 
 @py_to_json
-@kbsite_aware
 def logout(request):
   auth_logout(request)
   return {'result': 'ok'}
 
 @py_to_json
-@kbsite_aware
 def default_handler(request):
   raise Http404, "Not an API endpoint: %s" % request.path[:100]
 
@@ -602,10 +566,9 @@ class LocalRavenClient(raven.Client):
     from sentry.models import GroupedMessage
     return GroupedMessage.objects.from_kwargs(**kwargs)
 
+@py_to_json
 @csrf_exempt
 @auth_required
-@py_to_json
-@kbsite_aware
 def debug_log(request):
   if request.method != 'POST':
     raise Http404('Method not supported')

@@ -35,8 +35,6 @@ from django.views.generic.simple import redirect_to
 
 from pykeg.core import models
 
-from pykeg.web.util import kbsite_aware
-
 from pykeg.web.kegweb import forms
 from pykeg.web.kegweb import models as kegweb_models
 from pykeg.web.kegweb import signals
@@ -44,7 +42,6 @@ from pykeg.web.kegweb import signals
 ### main views
 
 @cache_page(30)
-@kbsite_aware
 def index(request):
   context = RequestContext(request)
   try:
@@ -70,7 +67,6 @@ def index(request):
   return render_to_response('index.html', context)
 
 @cache_page(30)
-@kbsite_aware
 def system_stats(request):
   stats = request.kbsite.GetStats()
   context = RequestContext(request, {
@@ -95,7 +91,6 @@ def system_stats(request):
 
 ### object lists and detail (generic views)
 
-@kbsite_aware
 def user_list(request):
   user_list = models.User.objects.all()
   return object_list(request,
@@ -103,7 +98,6 @@ def user_list(request):
       template_object_name='drinker',
       template_name='kegweb/drinker_list.html')
 
-@kbsite_aware
 def user_detail(request, username):
   user = get_object_or_404(models.User, username=username)
   try:
@@ -124,7 +118,6 @@ def user_detail(request, username):
       'drinker': user})
   return render_to_response('kegweb/drinker_detail.html', context)
 
-@kbsite_aware
 def user_detail_by_id(request, user_id):
   try:
     user = models.User.objects.get(pk=user_id)
@@ -132,7 +125,6 @@ def user_detail_by_id(request, user_id):
     raise Http404
   return redirect_to(request, url='/drinker/'+user.username)
 
-@kbsite_aware
 def keg_list(request):
   all_kegs = request.kbsite.kegs.all().order_by('-id')
   return object_list(request,
@@ -141,7 +133,6 @@ def keg_list(request):
       template_name='kegweb/keg_list.html')
 
 @cache_page(30)
-@kbsite_aware
 def keg_detail(request, keg_id):
   keg = get_object_or_404(models.Keg, site=request.kbsite, seqn=keg_id)
   context = RequestContext(request, {
@@ -150,7 +141,6 @@ def keg_detail(request, keg_id):
     'sessions': keg.Sessions()})
   return render_to_response('kegweb/keg_detail.html', context)
 
-@kbsite_aware
 def drink_detail(request, drink_id):
   drink = get_object_or_404(models.Drink, site=request.kbsite, seqn=drink_id)
   context = RequestContext(request, {'drink': drink})
@@ -158,13 +148,11 @@ def drink_detail(request, drink_id):
 
 ### auth
 
-@kbsite_aware
 def webauth(request):
   context = {}
   return render_to_response('kegweb/webauth.html', context)
 
 @login_required
-@kbsite_aware
 def claim_token(request):
   if request.method == 'POST':
     form = forms.ClaimTokenForm(request.POST)
@@ -183,7 +171,6 @@ def claim_token(request):
   context['form'] = form
   return render_to_response('kegweb/claim_token.html', context)
 
-@kbsite_aware
 def session_detail(request, year, month, day, seqn, slug):
   session = get_object_or_404(models.DrinkingSession, site=request.kbsite, seqn=seqn)
   context = RequestContext(request, {

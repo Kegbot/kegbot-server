@@ -17,11 +17,9 @@ def enabled_features(request):
   return ret
 
 def kbsite(request):
-  ret = {}
-  kbsite = request.kbsite
-  ret['kbsite'] = kbsite
-  ret['request_path'] = request.path
-
-  # TODO(mikey): move to own processor
-  ret['login_form'] = LoginForm(initial={'next_page': request.path})
+  ret = {
+    'kbsite': getattr(request, 'kbsite', None),
+    'request_path': request.path,
+    'login_form': LoginForm(initial={'next_page': request.path}),
+  }
   return ret

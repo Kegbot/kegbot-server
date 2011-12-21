@@ -21,15 +21,16 @@ from pykeg.core import models
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 
 class KegbotSiteMiddleware:
-  def process_request(self, request):
-    if not hasattr(request, 'kbsite'):
-      sitename = 'default'
-      try:
-        request.kbsite = models.KegbotSite.objects.get(name=sitename)
-      except models.KegbotSite.DoesNotExist:
-        request.kbsite = None
+  def process_view(self, request, view_func, view_args, view_kwargs):
+    kbsite_name = view_kwargs.pop('kbsite_name', None)
+    if kbsite_name is not None:
+      if kbsite_name == '':
+        kbsite_name = 'default'
+      request.kbsite = get_object_or_404(models.KegbotSite, name=kbsite_name)
+    return None
 
 class SiteActiveMiddleware:
   """Middleware which throws 503s when KegbotSite.is_active is false."""

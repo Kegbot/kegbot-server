@@ -45,13 +45,13 @@ class SiteActiveMiddleware:
         return True
     return False
 
-  def process_request(self, request):
-    kbsite = None
-    if hasattr(request, 'kbsite'):
-      kbsite = request.kbsite
+  def process_view(self, request, view_func, view_args, view_kwargs):
+    if not hasattr(request, 'kbsite'):
+      return None
+    kbsite = request.kbsite
 
     # We have a KegbotSite, and that site is active: nothing to do.
-    if kbsite and kbsite.is_active:
+    if kbsite.is_active:
       return None
 
     # If the request is for a whitelisted path, allow it.
@@ -61,5 +61,5 @@ class SiteActiveMiddleware:
     # Allow staff/superusers access if inactive.
     if request.user.is_staff or request.user.is_superuser:
       return None
-    else:
-      return HttpResponse('Site temporarily unavailable', status=503)
+
+    return HttpResponse('Site temporarily unavailable', status=503)

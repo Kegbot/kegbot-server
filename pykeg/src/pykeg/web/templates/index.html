@@ -25,10 +25,11 @@
   {% with recent_images as pictures %}  
   {% if pictures.count %}
   <h2>Recent Pictures</h2>
+    <div class="well">
     {% include "kegweb/picture-gallery.html" %}
+    </div>
   {% endif %}
   {% endwith %}
-  
 {% endblock col-1 %}
 
 {% block col-2 %}

@@ -611,12 +611,12 @@ class DrinkingSession(_AbstractChunk):
 
     # Update or create a UserSessionChunk.
     chunk, created = UserSessionChunk.objects.get_or_create(session=self,
-        user=drink.user, defaults=defaults)
+        site=drink.site, user=drink.user, defaults=defaults)
     chunk.AddDrink(drink)
 
     # Update or create a KegSessionChunk.
     chunk, created = KegSessionChunk.objects.get_or_create(session=self,
-        keg=drink.keg, defaults=defaults)
+        site=drink.site, keg=drink.keg, defaults=defaults)
     chunk.AddDrink(drink)
 
   def UserChunksByVolume(self):

@@ -158,7 +158,7 @@ class BaseStatsBuilder(StatsBuilder):
         result = self.stats.registered_drinkers
         username = str(self.drink.user.username)
         if username not in result:
-          result.add(username)
+          result.append(username)
 
   @stat('sessions_count')
   def SessionsCount(self):

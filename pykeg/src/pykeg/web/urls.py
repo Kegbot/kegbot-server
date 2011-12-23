@@ -87,6 +87,6 @@ if USE_DJANGO_REGISTRATION:
       {'form_class':KegbotRegistrationForm},
       name='registration_register',
     ),
-   (r'^(?P<kbsite_name>)accounts/', include('registration.urls')),
+   (r'^accounts/', include('registration.urls')),
   )
 

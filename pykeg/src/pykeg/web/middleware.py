@@ -28,15 +28,12 @@ class KegbotSiteMiddleware:
     """Removes kbsite_name from kwargs if present, and attaches the
     corresponding KegbotSite instance to the request as the "kbsite" attribute.
 
-    If kbsite_name is an empty string, the default site is selected.
-
-    If kbsite_name is None (or not in kwargs), no site is attached.
+    If kbsite_name is None, the default site is selected.
     """
     kbsite_name = view_kwargs.pop('kbsite_name', None)
-    if kbsite_name == '':
+    if not kbsite_name:
       kbsite_name = 'default'
-    if kbsite_name:
-      request.kbsite = get_object_or_404(models.KegbotSite, name=kbsite_name)
+    request.kbsite = get_object_or_404(models.KegbotSite, name=kbsite_name)
     return None
 
 class SiteActiveMiddleware:

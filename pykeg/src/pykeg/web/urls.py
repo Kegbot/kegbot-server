@@ -36,21 +36,21 @@ urlpatterns = patterns('',
       {'url': '/site_media/images/favicon.ico'}),
 
     ### RESTful api
-    (r'^api/', include('pykeg.web.api.urls')),
+    (r'^(?P<kbsite_name>)api/', include('pykeg.web.api.urls')),
 
     ### account
-    (r'^account/', include('pykeg.web.account.urls')),
-    (r'^accounts/password/reset/$', password_reset, {'template_name':
+    (r'^(?P<kbsite_name>)account/', include('pykeg.web.account.urls')),
+    (r'^(?P<kbsite_name>)accounts/password/reset/$', password_reset, {'template_name':
      'registration/password_reset.html'}),
-    (r'^accounts/password/reset/done/$', password_reset_done, {'template_name':
+    (r'^(?P<kbsite_name>)accounts/password/reset/done/$', password_reset_done, {'template_name':
      'registration/password_reset_done.html'}),
-    (r'^accounts/password/reset/confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', password_reset_confirm, {'template_name':
+    (r'^(?P<kbsite_name>)accounts/password/reset/confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', password_reset_confirm, {'template_name':
      'registration/password_reset_confirm.html'}),
-    (r'^accounts/password/reset/complete/$', password_reset_complete, {'template_name':
+    (r'^(?P<kbsite_name>)accounts/password/reset/complete/$', password_reset_complete, {'template_name':
      'registration/password_reset_complete.html'}),
 
     ### socialregistration
-    (r'^sr/', include('socialregistration.urls')),
+    (r'^(?P<kbsite_name>)sr/', include('socialregistration.urls')),
 
     ### charts
     (r'^(?P<kbsite_name>)charts/', include('pykeg.web.charts.urls')),
@@ -59,7 +59,7 @@ urlpatterns = patterns('',
     (r'^(?P<kbsite_name>)kegadmin/', include('pykeg.web.kegadmin.urls')),
 
     ### sentry
-    (r'^sentry/', include('sentry.web.urls')),
+    (r'^(?P<kbsite_name>)sentry/', include('sentry.web.urls')),
 
     ### main kegweb urls
     (r'(?P<kbsite_name>)', include('pykeg.web.kegweb.urls')),
@@ -68,13 +68,13 @@ urlpatterns = patterns('',
 if features.use_facebook():
   urlpatterns += patterns('',
       ### facebook kegweb stuff
-      (r'^fb/', include('pykeg.web.contrib.facebook.urls')),
+      (r'^(?P<kbsite_name>)fb/', include('pykeg.web.contrib.facebook.urls')),
   )
 
 if features.use_twitter():
   urlpatterns += patterns('',
       ### twitter kegweb stuff
-      (r'^twitter/', include('pykeg.web.contrib.twitter.urls')),
+      (r'^(?P<kbsite_name>)twitter/', include('pykeg.web.contrib.twitter.urls')),
   )
 
 ### accounts and registration
@@ -83,10 +83,10 @@ if features.use_twitter():
 if USE_DJANGO_REGISTRATION:
   from django.contrib.auth import views as auth_views
   urlpatterns += patterns('',
-    url(r'^accounts/register/$', register,
+    url(r'^(?P<kbsite_name>)accounts/register/$', register,
       {'form_class':KegbotRegistrationForm},
       name='registration_register',
     ),
-   (r'^accounts/', include('registration.urls')),
+   (r'^(?P<kbsite_name>)accounts/', include('registration.urls')),
   )
 

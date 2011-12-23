@@ -274,10 +274,16 @@ class Keg(models.Model):
       last_d[0]._UpdateKegStats()
 
   def Sessions(self):
-    chunks = SessionChunk.objects.filter(keg=self)
-    res = list(set(c.session for c in chunks))
-    res.sort()
-    return res
+    chunks = SessionChunk.objects.filter(keg=self).order_by('-starttime').select_related(depth=2)
+    sessions = []
+    sess = None
+    for c in chunks:
+      # Skip same sessions
+      if c.session == sess:
+        continue
+      sess = c.session
+      sessions.append(sess)
+    return sessions
 
   def TopDrinkers(self):
     stats = self.GetStats()

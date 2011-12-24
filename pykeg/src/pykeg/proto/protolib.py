@@ -77,11 +77,13 @@ def AuthTokenToProto(record, full=False):
   ret.token_value = record.token_value
   if record.user:
     ret.username = str(record.user.username)
-  ret.nice_name = record.nice_name
+  if record.nice_name:
+    ret.nice_name = record.nice_name
   ret.created_time = datestr(record.created)
   if full:
     ret.enabled = record.enabled
-    ret.expire_time = datestr(record.expires)
+    if record.expires:
+      ret.expire_time = datestr(record.expires)
     if record.pin:
       ret.pin = record.pin
   return ret

@@ -36,7 +36,6 @@ warnings.simplefilter("ignore", DeprecationWarning)
 
 import gflags
 
-from pykeg.core import alarm
 from pykeg.core import backend
 from pykeg.core import kbevent
 from pykeg.core import kb_app
@@ -74,7 +73,6 @@ class KegbotEnv(object):
       self._backend = backend.KegbotBackend()
 
     # Build managers
-    self._alarm_manager = alarm.AlarmManager()
     self._tap_manager = manager.TapManager('tap-manager', self._event_hub)
     self._flow_manager = manager.FlowManager('flow-manager', self._event_hub,
         self._tap_manager)
@@ -101,7 +99,6 @@ class KegbotEnv(object):
 
     self.AddThread(kb_threads.EventHubServiceThread(self, 'eventhub-thread'))
     self.AddThread(kb_threads.NetProtocolThread(self, 'net-thread'))
-    self.AddThread(kb_threads.AlarmManagerThread(self, 'alarmmanager-thread'))
     self.AddThread(kb_threads.HeartbeatThread(self, 'heartbeat-thread'))
 
     self._watchdog_thread = kb_threads.WatchdogThread(self, 'watchdog-thread')
@@ -114,9 +111,6 @@ class KegbotEnv(object):
 
   def GetWatchdogThread(self):
     return self._watchdog_thread
-
-  def GetAlarmManager(self):
-    return self._alarm_manager
 
   def GetBackend(self):
     return self._backend

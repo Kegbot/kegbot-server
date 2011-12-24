@@ -24,7 +24,6 @@ routine to return a unittest.TestSuite.
 
 from django.utils import unittest
 
-from pykeg.core import alarm_unittest
 from pykeg.core import stats_unittest
 from pykeg.core import flow_meter_unittest
 from pykeg.core import kegbot_unittest
@@ -36,7 +35,6 @@ from pykeg.hw.kegboard import kegboard_unittest
 from pykeg.hw.kegboard import crc16_unittest
 
 ALL_TEST_MODULES = (
-    alarm_unittest,
     stats_unittest,
     flow_meter_unittest,
     models_unittest,

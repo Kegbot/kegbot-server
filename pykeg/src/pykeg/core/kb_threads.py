@@ -75,18 +75,6 @@ class HeartbeatThread(CoreThread):
         seconds = 0
 
 
-class AlarmManagerThread(CoreThread):
-
-  def ThreadMain(self):
-    am = self._kb_env.GetAlarmManager()
-    while not self._quit:
-      alarm = am.WaitForNextAlarm(1.0)
-      if alarm is not None:
-        self._logger.info('firing alarm: %s' % alarm)
-        event = alarm.event()
-        self._kb_env.GetEventHub().PublishEvent(event)
-
-
 class EventHandlerThread(CoreThread):
   """ Basic event handling thread. """
   def __init__(self, kb_env, name):

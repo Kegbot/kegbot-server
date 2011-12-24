@@ -168,7 +168,9 @@ class BaseStatsBuilder(StatsBuilder):
         all_sessions.add(str(drink.session.seqn))
       self.stats.sessions_count = len(all_sessions)
     else:
-      self.stats.sessions_count += 1
+      first_drink = self.drink.session.drinks.order_by('seqn')[0]
+      if self.drink.seqn == first_drink.seqn:
+        self.stats.sessions_count += 1
 
   @stat('volume_by_year')
   def VolumeByYear(self):

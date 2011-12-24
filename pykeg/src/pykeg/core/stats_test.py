@@ -46,18 +46,20 @@ class StatsTestCase(unittest.TestCase):
     #        volume_ml=amt, username=user.username, do_postprocess=False)
     #    self.drinks.append(d)
 
-  def assertProtosEqual(self, m1, m2):
-    d1 = ProtoMessageToDict(m1)
-    d2 = ProtoMessageToDict(m2)
+  def assertProtosEqual(self, expected, actual):
+    d1 = ProtoMessageToDict(expected)
+    d2 = ProtoMessageToDict(actual)
+    msg = ''
     for k, v in d1.iteritems():
       if k not in d2:
-        self.fail('Value for %s not present in m2' % k)
+        msg += 'Value for %s not present in actual. \n' % k
       elif v != d2[k]:
-        self.fail('Values for %s differ: expected "%s", got "%s"' %
-            (k, v, d2[k]))
+        msg += 'Values for %s differ: expected "%s", actual "%s". \n' % (k, v, d2[k])
     for k, v in d2.iteritems():
       if k not in d1:
-        self.fail('Value for %s not present in m1' % k)
+        msg += 'Value for %s not present in expected. \n' % k
+    if msg:
+      self.fail(msg)
 
   def _getEmptyStats(self):
     s = models_pb2.Stats()
@@ -90,12 +92,18 @@ class StatsTestCase(unittest.TestCase):
     expected.average_volume_ml = 100.0
     expected.greatest_volume_ml = 100.0
     expected.greatest_volume_id = "1"
+    expected.has_guest_pour = False
     d = expected.volume_by_day_of_week.add()
     d.weekday = "0"  # Sunday
     d.volume_ml = 100
     u = expected.volume_by_drinker.add()
     u.username = "user1"
     u.volume_ml = 100
+    y = expected.volume_by_year.add()
+    y.year = 2011
+    y.volume_ml = 100
+    expected.registered_drinkers.append("user1")
+    expected.sessions_count = 1
 
     system_stats_d1 = stats.SystemStatsBuilder(drink1).Build()
     self.assertProtosEqual(expected, system_stats_d1)
@@ -117,6 +125,8 @@ class StatsTestCase(unittest.TestCase):
     d.volume_ml += 200
     u = expected.volume_by_drinker[0]
     u.volume_ml += 200
+    y = expected.volume_by_year[0]
+    y.volume_ml += 200
 
     system_stats_d2 = stats.SystemStatsBuilder(drink2).Build()
     self.assertProtosEqual(expected, system_stats_d2)

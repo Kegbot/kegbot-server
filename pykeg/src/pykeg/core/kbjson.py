@@ -23,7 +23,6 @@ datetime instances to ISO8601 strings, and decoding them back.
 """
 
 import datetime
-import pytz
 import re
 import types
 
@@ -32,6 +31,7 @@ try:
   TIME_ZONE = settings.TIME_ZONE
 except ImportError:
   TIME_ZONE = 'America/Los_Angeles'
+
 from pykeg.core import util
 
 try:

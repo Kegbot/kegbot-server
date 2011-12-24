@@ -6,6 +6,8 @@ import datetime
 import kbjson
 import unittest
 
+from pykeg.core import util
+
 SAMPLE_INPUT = """
 {
   "event": "my-event",
@@ -28,20 +30,21 @@ class JsonTestCase(unittest.TestCase):
     GMT = pytz.timezone('GMT')
 
     eastern_stamp = datetime.datetime(2010, 12, 30, 8)
-    as_pacific = kbjson._tzswap(eastern_stamp, EASTERN, PACIFIC)
+    as_pacific = util.tzswap(eastern_stamp, EASTERN, PACIFIC)
     self.assertEqual(as_pacific, datetime.datetime(2010, 12, 30, 5))
     self.assertEqual(as_pacific.tzinfo, None)
 
 
   def testBasicUse(self):
+    tz = 'America/Los_Angeles'
+    kbjson.TIME_ZONE = tz
     obj = kbjson.loads(SAMPLE_INPUT)
     print obj
     self.assertEqual(obj.event, "my-event")
     self.assertEqual(obj.sub.list, [1,2,3])
 
-    orig_date = datetime.datetime(2010, 6, 11, 23, 1, 1)
-    expected_date = kbjson.utc_to_local(orig_date)
-    self.assertEqual(obj.iso_time, expected_date)
+    expected = util.utc_to_local(datetime.datetime(2010, 6, 11, 23, 1, 1), tz)
+    self.assertEqual(obj.iso_time, expected)
     self.assertEqual(obj.bad_time, "123-45")  # fails strptime
 
 if __name__ == '__main__':

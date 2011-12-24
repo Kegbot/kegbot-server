@@ -32,7 +32,8 @@ class Command(BaseCommand):
         type='string',
         action='store',
         dest='site',
-        help='Site to load to.'),
+        default='default',
+        help='Site to load to/from.'),
       make_option('-d', '--dump',
         type='string',
         action='store',
@@ -60,10 +61,7 @@ class Command(BaseCommand):
     if not (bool(options['dump']) ^ bool(options['restore'])):
       raise CommandError('Must give exactly one of: --dump=<filename>, --restore=<filename>')
 
-    try:
-      kbsite = models.KegbotSite.objects.get(name=options['site'])
-    except models.KegbotSite.DoesNotExist:
-      raise CommandError('Site does not exist')
+    kbsite = self.prep_site(options['site'], options['restore'])
 
     if options['restore']:
       input_fp = open(options['restore'], 'r')
@@ -76,6 +74,18 @@ class Command(BaseCommand):
       output_fp = open(options['dump'], 'w')
       backup.dump(output_fp, kbsite, indent, self.debug)
       output_fp.close()
+
+  def prep_site(self, sitename, restore):
+    if restore:
+      if models.KegbotSite.objects.filter(name=sitename).count():
+        raise CommandError('Cannot restore: Site "%s" already exists; delete '
+            'with kb_delete_site first ' % (sitename,))
+      kbsite = models.KegbotSite.objects.create(name=sitename)
+    else:
+      try:
+        kbsite = models.KegbotSite.objects.get(name=sitename)
+      except models.KegbotSite.DoesNotExist:
+        raise CommandError('Cannot dump: Site "%s" does not exist' % (sitename,))
 
   def debug(self, msg):
     print msg

@@ -33,10 +33,10 @@ distclean: clean fixtures_clean
 
 test:
 	@echo "--- Running all tests"
-	@$(ADMIN_COMMAND) test --exe -i ".*_unittest" pykeg
+	$(ADMIN_COMMAND) test pykeg
 # Extra args for coverage:
 # --with-coverage --cover-package=pykeg --cover-html \
-# --cover-html-dir=buid/coverage 
+# --cover-html-dir=buid/coverage
 
 ### These targets are obsolete or rarely used
 

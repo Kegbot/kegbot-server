@@ -162,8 +162,10 @@ TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
 TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
 TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 
-#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = ['--exe']
 SKIP_SOUTH_TESTS = True
+SOUTH_TESTS_MIGRATE = False
 
 try:
   import common_settings

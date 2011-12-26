@@ -47,8 +47,8 @@ from pykeg.web.api import krest
 FLAGS = gflags.FLAGS
 
 gflags.DEFINE_boolean('web_backend', True,
-    'If true, uses the web backend implementation rather than a local '
-    'database connection.')
+    'DEPRECATED.  Setting this flag has no effect.  Web backend '
+    'is always used.')
 
 class KegbotEnv(object):
   """ A class that wraps the context of the kegbot core.
@@ -56,21 +56,21 @@ class KegbotEnv(object):
   An instance of this class owns all the threads and services used in the kegbot
   core. It is commonly passed around to objects that the core creates.
   """
-  def __init__(self):
+  def __init__(self, local_backend=False):
     self._event_hub = kbevent.EventHub()
     self._logger = logging.getLogger('env')
 
     self._kegnet_server = kegnet.KegnetServer(name='kegnet', kb_env=self,
         addr=FLAGS.kb_core_bind_addr)
 
-    if FLAGS.web_backend:
-      # Web backend.
-      self._logger.info('Using web backend: %s' % FLAGS.api_url)
-      self._backend = backend.WebBackend()
-    else:
+    if local_backend:
       # Database backend.
       self._logger.info('Using database backend.')
       self._backend = backend.KegbotBackend()
+    else:
+      # Web backend.
+      self._logger.info('Using web backend: %s' % FLAGS.api_url)
+      self._backend = backend.WebBackend()
 
     # Build managers
     self._tap_manager = manager.TapManager('tap-manager', self._event_hub)
@@ -135,10 +135,10 @@ class KegbotEnv(object):
 
 
 class KegbotCoreApp(kb_app.App):
-  def __init__(self, name='core'):
+  def __init__(self, name='core', local_backend=False):
     kb_app.App.__init__(self, name)
     self._logger.info('Kegbot is starting up.')
-    self._env = KegbotEnv()
+    self._env = KegbotEnv(local_backend=local_backend)
 
   def _MainLoop(self):
     event = kbevent.StartCompleteEvent()

@@ -12,12 +12,14 @@ import kegbot
 
 from django.test import TestCase
 
+from pykeg.core import backend
 from pykeg.core import defaults
 from pykeg.core import kbevent
 from pykeg.core import models
 from pykeg.core import kb_common
 from pykeg.core import units
 from pykeg.core.net import kegnet
+from pykeg.proto import protolib
 
 from pykeg.beerdb import models as bdb_models
 
@@ -26,8 +28,8 @@ LOGGER = logging.getLogger('unittest')
 class KegbotTestCase(TestCase):
   def setUp(self):
     del logging.root.handlers[:]
-    defaults.set_defaults()
-    #defaults.gentestdata()
+    if not defaults.db_is_installed():
+      defaults.set_defaults()
 
     models.Drink.objects.all().delete()
 
@@ -50,7 +52,7 @@ class KegbotTestCase(TestCase):
         name='Test Tap', meter_name='test_meter_name',
         ml_per_tick=(1000.0/2200.0), current_keg=self.test_keg)
 
-    self.kegbot = kegbot.KegbotCoreApp()
+    self.kegbot = kegbot.KegbotCoreApp(local_backend=True)
     self.env = self.kegbot._env
     self.backend = self.env.GetBackend()
 
@@ -61,7 +63,7 @@ class KegbotTestCase(TestCase):
     self.test_user_2 = self.backend.CreateNewUser('tester_2')
     self.test_token_2 = self.backend.CreateAuthToken('core.onewire',
         'baadcafebeeff00d', 'tester_2')
-    kb_common.AUTH_TOKEN_MAX_IDLE['core.onewire'] = 2
+    kb_common.AUTH_DEVICE_MAX_IDLE_SECS['core.onewire'] = 2
 
     # Kill the kegbot flow processing thread so we can single step it.
     self.service_thread = self.env._service_thread
@@ -76,13 +78,18 @@ class KegbotTestCase(TestCase):
         break
 
   def tearDown(self):
+    msg = ''
     for thr in self.env.GetThreads():
-      self.assert_(thr.isAlive(), "thread %s died unexpectedly" % thr.getName())
+      if not thr.isAlive():
+        msg += "thread %s died unexpectedly \n" % thr.getName()
     self.kegbot.Quit()
     for thr in self.env.GetThreads():
-      self.assert_(not thr.isAlive(), "thread %s stuck" % thr.getName())
+      if thr.isAlive():
+        msg += "thread %s stuck \n" % thr.getName()
     del self.kegbot
     del self.env
+    if msg:
+      self.fail(msg)
 
   def testSimpleFlow(self):
     # Synthesize a 2200-tick flow. The FlowManager should zero on the initial

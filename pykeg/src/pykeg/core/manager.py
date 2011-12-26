@@ -67,9 +67,6 @@ class Manager:
         ret[event_type].add(method)
     return ret
 
-  def GetStatus(self):
-    return []
-
   def _PublishEvent(self, event):
     """Convenience alias for EventHub.PublishEvent"""
     self._event_hub.PublishEvent(event)
@@ -110,16 +107,6 @@ class TapManager(Manager):
   def __init__(self, name, event_hub):
     Manager.__init__(self, name, event_hub)
     self._taps = {}
-
-  def GetStatus(self):
-    ret = []
-    for tap in self.GetAllTaps():
-      meter = tap.GetMeter()
-      ret.append('Tap "%s"' % tap.GetName())
-      ret.append('  last activity: %s' % (meter.GetLastActivity(),))
-      ret.append('   last reading: %s' % (meter.GetLastReading(),))
-      ret.append('    total ticks: %s' % (meter.GetTicks(),))
-      ret.append('')
 
   def TapExists(self, name):
     return name in self._taps
@@ -268,24 +255,6 @@ class FlowManager(Manager):
     flows."""
     ret = self._next_flow_id
     self._next_flow_id += 1
-    return ret
-
-  def GetStatus(self):
-    ret = []
-    active_flows = self.GetActiveFlows()
-    if not active_flows:
-      ret.append('Active flows: None')
-    else:
-      ret.append('Active flows: %i' % len(active_flows))
-      for flow in active_flows:
-        ret.append('  Flow on tap %s' % flow.GetTap())
-        ret.append('         username: %s' % flow.GetUsername())
-        ret.append('            ticks: %i' % flow.GetTicks())
-        ret.append('      volume (mL): %i' % flow.GetVolumeMl())
-        ret.append('       start time: %s' % flow.GetStartTime())
-        ret.append('      last active: %s' % flow.GetEndTime())
-        ret.append('')
-
     return ret
 
   def GetActiveFlows(self):
@@ -448,12 +417,6 @@ class DrinkManager(Manager):
   def __init__(self, name, event_hub, backend):
     Manager.__init__(self, name, event_hub)
     self._backend = backend
-    self._last_drink = None
-
-  def GetStatus(self):
-    ret = []
-    ret.append('Last drink: %s' % self._last_drink)
-    return ret
 
   @EventHandler(kbevent.FlowUpdate)
   def HandleFlowUpdateEvent(self, event):
@@ -480,18 +443,15 @@ class DrinkManager(Manager):
             'MIN_VOLUME_TO_RECORD (%i)' % (volume_ml, kb_common.MIN_VOLUME_TO_RECORD))
         return
 
-    # XXX mikey
-    spilled = False
-
     # Log the drink.  If the username is empty or invalid, the backend will
     # assign it to the default (anonymous) user.  The backend will assign the
     # drink to a keg.
     d = self._backend.RecordDrink(tap_name, ticks=ticks, username=username,
         pour_time=pour_time, duration=duration, auth_token=auth_token,
-        spilled=spilled)
+        spilled=False)
 
     if not d:
-      self._logger.warning('No drink recorded (spillage?).')
+      self._logger.warning('No drink recorded.')
       return
 
     keg_id = d.keg_id or None
@@ -499,8 +459,6 @@ class DrinkManager(Manager):
 
     self._logger.info('Logged drink %s username=%s keg=%s liters=%.2f ticks=%i' % (
       d.id, username, keg_id, d.volume_ml/1000.0, d.ticks))
-
-    self._last_drink = d
 
     # notify listeners
     created = kbevent.DrinkCreatedEvent()
@@ -522,16 +480,6 @@ class ThermoManager(Manager):
     self._sensor_log = {}
     seconds = kb_common.THERMO_RECORD_DELTA_SECONDS
     self._record_interval = datetime.timedelta(seconds=seconds)
-
-  def GetStatus(self):
-    ret = []
-    if not self._name_to_last_record:
-      ret.append('No readings.')
-      return ret
-    ret.append('Last recorded temperature(s):')
-    for sensor, value in self._name_to_last_record.iteritems():
-      ret.append('  %s: %.2f' % (sensor, value))
-    return ret
 
   @EventHandler(kbevent.HeartbeatMinuteEvent)
   def _HandleHeartbeat(self, event):

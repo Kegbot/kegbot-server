@@ -198,23 +198,6 @@ class App(object):
     if FLAGS.pidfile:
       os.unlink(FLAGS.pidfile)
 
-  def _DumpStatus(self):
-    self._logger.info('-------- Begin Status Dump --------')
-    if len(self._threads):
-      self._logger.info('Status of threads:')
-    for thr in self._threads:
-      if thr.isAlive():
-        thrstatus = 'running'
-      else:
-        thrstatus = '   DEAD'
-      self._logger.info('%s: %s' % (thr.getName(), thrstatus))
-      lines = thr.GetStatus()
-      if lines:
-        for line in lines:
-          self._logger.info(line)
-        self._logger.info('')
-    self._logger.info('-------- End Status Dump --------')
-
   def _AddAppThread(self, thr):
     """Add a threading.Thread to the set of registered threads.
 
@@ -270,19 +253,15 @@ class App(object):
   def _SetupSignalHandlers(self):
     """Set up handlers for signals received by main process.
 
-    Sets HUP, INT, QUIT, TERM to cause a quit;
-    Sets USR1 to cause a status dump.
+    Sets HUP, INT, QUIT, TERM to quit.
     """
     signal.signal(signal.SIGHUP, self._QuitSignalHandler)
     signal.signal(signal.SIGINT, self._QuitSignalHandler)
     signal.signal(signal.SIGQUIT, self._QuitSignalHandler)
     signal.signal(signal.SIGTERM, self._QuitSignalHandler)
-    signal.signal(signal.SIGUSR1, self._DumpSignalHandler)
 
   def _QuitSignalHandler(self, signum, frame):
     """ All handled signals cause a quit """
     self._logger.info('Got signal %i' % signum)
     self.Quit()
 
-  def _DumpSignalHandler(self, signum, frame):
-    self._DumpStatus()

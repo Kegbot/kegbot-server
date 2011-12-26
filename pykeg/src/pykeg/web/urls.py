@@ -50,7 +50,7 @@ urlpatterns = patterns('',
      'registration/password_reset_complete.html'}),
 
     ### socialregistration
-    (r'^(?P<kbsite_name>)sr/', include('socialregistration.urls')),
+    (r'^sr/', include('socialregistration.urls')),
 
     ### charts
     (r'^(?P<kbsite_name>)charts/', include('pykeg.web.charts.urls')),
@@ -62,19 +62,13 @@ urlpatterns = patterns('',
     (r'^(?P<kbsite_name>)sentry/', include('sentry.web.urls')),
 
     ### main kegweb urls
-    (r'(?P<kbsite_name>)', include('pykeg.web.kegweb.urls')),
+    (r'^(?P<kbsite_name>)', include('pykeg.web.kegweb.urls')),
 )
 
 if features.use_facebook():
   urlpatterns += patterns('',
       ### facebook kegweb stuff
       (r'^(?P<kbsite_name>)fb/', include('pykeg.web.contrib.facebook.urls')),
-  )
-
-if features.use_twitter():
-  urlpatterns += patterns('',
-      ### twitter kegweb stuff
-      (r'^(?P<kbsite_name>)twitter/', include('pykeg.web.contrib.twitter.urls')),
   )
 
 ### accounts and registration

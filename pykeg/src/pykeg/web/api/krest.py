@@ -23,33 +23,28 @@ import functools
 import socket
 import sys
 import types
+import urllib2
 
 from pykeg.core import kbjson
 from pykeg.proto import api_pb2
 from pykeg.proto import models_pb2
 from pykeg.proto import protoutil
 
-try:
-  from urllib.parse import urlencode
-  from urllib.request import urlopen
-  from urllib.error import HTTPError
-  from urllib.error import URLError
-except ImportError:
-  from urllib import urlencode
-  from urllib2 import urlopen
-  from urllib2 import HTTPError
-  from urllib2 import URLError
+import urllib2
+from urllib import urlencode
+from urllib2 import HTTPError
+from urllib2 import URLError
 
 import gflags
 
-gflags.DEFINE_float('krest_timeout', 1.0,
+gflags.DEFINE_float('krest_timeout', 10.0,
     'Socket timeout, in seconds, for Kegbot web API operations. '
     'Note that this timeout only applies to blocking socket operations '
     '(such as opening a connection) and not I/O.')
 
 FLAGS = gflags.FLAGS
 
-_DEFAULT_URL = 'http://localhost:8000/api/'
+_DEFAULT_URL = 'http://localhost:8001/api/'
 _DEFAULT_KEY = ''
 try:
   from pykeg import settings
@@ -109,6 +104,37 @@ def ErrorCodeToException(code, message=None):
   cls = MAP_NAME_TO_EXCEPTION.get(code, Error)
   return cls(message)
 
+def decode_response(response_data, out_msg):
+  """Decodes the string `response_data` as a JSON response.
+
+  For normal responses, the return value is the Python JSON-decoded 'result'
+  field of the response.  If the response is an error, a RemoteError exception
+  is raised.
+  """
+  # Decode JSON.
+  try:
+    d = kbjson.loads(response_data)
+  except ValueError, e:
+    raise ServerError('Malformed response: %s' % e)
+
+  if 'error' in d:
+    # Response had an error: translate to exception.
+    err = d.get('error', {})
+    code = err.get('code', 'Unknown')
+    message = err.get('message', None)
+    e = ErrorCodeToException(code, message)
+    raise e
+  elif 'result' in d:
+    # Response was OK, return the result.
+    result = d.get('result')
+    if out_msg:
+      return protoutil.DictToProtoMessage(result, out_msg)
+    else:
+      return None
+  else:
+    # WTF?
+    raise ValueError('Invalid response from server: missing result or error')
+
 ### end common
 
 class KrestClient:
@@ -120,6 +146,7 @@ class KrestClient:
       api_key = FLAGS.api_key
     self._api_url = api_url
     self._api_key = api_key
+    self._opener = urllib2.build_opener(KrestHTTPErrorProcessor)
 
   def _Encode(self, s):
     return unicode(s).encode('utf-8')
@@ -192,46 +219,14 @@ class KrestClient:
 
     try:
       # Issue a GET or POST (urlopen will decide based on encoded_post_data).
-      response_data = urlopen(url, data=encoded_post_data, timeout=FLAGS.krest_timeout).read()
+      response_data = self._opener.open(url, data=encoded_post_data,
+          timeout=FLAGS.krest_timeout).read()
     except HTTPError, e:
       raise ServerError('Caused by: %s' % e)
     except URLError, e:
       raise ServerError('URL Error, reason: %s' % e.reason)
 
-    return self._DecodeResponse(response_data, out_msg)
-
-  def _DecodeResponse(self, response_data, out_msg):
-    """Decodes the string `response_data` as a JSON response.
-
-    For normal responses, the return value is the Python JSON-decoded 'result'
-    field of the response.  If the response is an error, a RemoteError exception
-    is raised.
-    """
-    # Decode JSON.
-    try:
-      d = kbjson.loads(response_data)
-    except ValueError, e:
-      raise ServerError('Malformed response: %s' % e)
-
-    if 'error' in d:
-      # Response had an error: translate to exception.
-      err = d.get('error')
-      if type(err) != types.DictType:
-        raise ValueError('Invalid error response from server')
-      code = err.get('code', 'Error')
-      message = err.get('message', None)
-      e = ErrorCodeToException(code, message)
-      raise e
-    elif 'result' in d:
-      # Response was OK, return the result.
-      result = d.get('result')
-      if out_msg:
-        return protoutil.DictToProtoMessage(result, out_msg)
-      else:
-        return None
-    else:
-      # WTF?
-      raise ValueError('Invalid response from server: missing result or error')
+    return decode_response(response_data, out_msg)
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False):
@@ -289,6 +284,16 @@ class KrestClient:
     """Gets a list of all drinks."""
     return self.DoGET('sound-events', api_pb2.SoundEventSet())
 
+class KrestHTTPErrorProcessor(urllib2.BaseHandler):
+  def _handle_error(self, request, response, code, msg, hdrs):
+    data = response.read()
+    decode_response(data, None)
+
+  http_error_401 = _handle_error
+  http_error_403 = _handle_error
+  http_error_404 = _handle_error
+  http_error_405 = _handle_error
+  http_error_500 = _handle_error
 
 def main():
   c = KrestClient()

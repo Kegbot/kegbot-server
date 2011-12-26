@@ -1,22 +1,9 @@
 {% extends "base.html" %}
 {% load kegweblib %}
 
-{% block title %}logout{% endblock %}
-
-{% block kb-extrajs %}
-   {% if USE_FACEBOOK %}
-   {% load facebook_tags %}
-   {% facebook_js %}
-   {% endif %}
-{% endblock %}
+{% block title %}Logged Out{% endblock %}
+{% block pagetitle %}Logged Out{% endblock %}
 
 {% block content %}
-<div class="kb-contentbox-head">
-   logged out
-</div>
-<div class="kb-contentbox">
-  <p>
-    you are now logged out.
-  </p>
-</div>
+  You hav been logged out.  So long!
 {% endblock %}

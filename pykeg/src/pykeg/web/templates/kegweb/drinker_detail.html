@@ -1,9 +1,8 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
 
-{% block pagetitle %}
-  Drinker Details: {{ drinker.username }}
-{% endblock %}
+{% block title %}Drinker Details: {{ drinker.username }}{% endblock %}
+{% block pagetitle %}Drinker Details: {{ drinker.username }}{% endblock %}
 
 {% block sidebar %}
   <div class="well">

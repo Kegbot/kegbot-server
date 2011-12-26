@@ -1,5 +1,6 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
+{% load humanize %}
 
 {% block title %}session detail: {{ session.GetTitle}}{% endblock %}
 {% block pagetitle %}{{ session.GetTitle}}{% endblock %}
@@ -43,7 +44,8 @@
         <tr>
           <th>Registered Drinkers</th>
           <td>
-            {{ stats.registered_drinkers|length }} drinkers
+            {{ stats.registered_drinkers|length }}
+            drinker{{ stats.registered_drinkers|length|pluralize }}
           </td>
         </tr>
       </tbody>
@@ -62,21 +64,26 @@
     {% endcomment %}
 
     <h2>Drinkers by Volume</h2>
-    {% for chunk in session.UserChunksByVolume %}
-    <div class="row">
-      <div class="span2">
-        <div class="kb-drink-box-mugshot">
-          {% with chunk.user as drinker %}
-            {% mugshot_box drinker 96 %}
-          {% endwith %}
-          {% if chunk.user %}{{ chunk.user }}{% else %}anonymous{% endif %}
-        </div>
-      </div>
-      <div class="span7">
-        {% chart user_session_chunks chunk 350 100 %}
-      </div>
-    </div>
-    {% endfor %}
+    <table class="condensed-table">
+      <tbody>
+        {% for chunk in session.UserChunksByVolume %}
+        <tr>
+          <td>
+            <div class="kb-drink-box-mugshot">
+              {% with chunk.user as drinker %}
+                {% mugshot_box drinker 96 %}
+              {% endwith %}
+             <span class="label">{{ forloop.counter|ordinal }}</span>
+              {% if chunk.user %}{{ chunk.user }}{% else %}anonymous{% endif %}
+            </div>
+          </td>
+          <td>
+            {% chart user_session_chunks chunk 350 100 %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
   </div>
 </div>

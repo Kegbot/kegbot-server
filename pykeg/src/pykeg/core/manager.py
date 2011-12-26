@@ -146,9 +146,9 @@ class TapManager(Manager):
     self._CheckTapExists(name)
     return self._taps[name]
 
-  def UpdateDeviceReading(self, name, value):
+  def UpdateDeviceReading(self, name, value, when=None):
     meter = self.GetTap(name).GetMeter()
-    delta = meter.SetTicks(value)
+    delta = meter.SetTicks(value, when=when)
     return delta
 
 

@@ -41,11 +41,11 @@ class TapForm(forms.ModelForm):
         'temperature_sensor')
 
   ml_per_tick = ka_widgets.ChoiceWithOtherField(
-      label='Meter mL per tick',
+      label='Meter type',
       choices=(
-        (1/2.2, 'Vision 2000 Meter (%s)' % (1/2.2) ),
-        (1/6.0, 'SwissFlow Meter (%s)' % (1/6.0) ),
-        (0, 'Other:'),
+        (1/2.2, 'Vision 2000 Meter (%s mL/tick)' % (1/2.2) ),
+        (1/6.0, 'SwissFlow Meter (%s mL/tick)' % (1/6.0) ),
+        (0, 'Other (specify in mL/tick):'),
       ),
   )
 

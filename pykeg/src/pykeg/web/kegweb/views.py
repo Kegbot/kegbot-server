@@ -135,10 +135,11 @@ def keg_list(request):
 @cache_page(30)
 def keg_detail(request, keg_id):
   keg = get_object_or_404(models.Keg, site=request.kbsite, seqn=keg_id)
+  sessions = keg.Sessions()
   context = RequestContext(request, {
     'keg': keg,
     'stats': keg.GetStats(),
-    'sessions': keg.Sessions()})
+    'sessions': sessions})
   return render_to_response('kegweb/keg_detail.html', context)
 
 def drink_detail(request, drink_id):

@@ -1,16 +1,19 @@
 {% extends "kegadmin/base.html" %}
 {% load kegweblib %}
+{% load bootstrap %}
 
 {% block pagetitle %}Keg Admin{% endblock %}
 
 {% block kegadmin-main %}
 <h2>General Settings</h2>
 
-<form action="" method="POST">{% csrf_token %}
-  <table class="condensed-table">
-    {{ settings_form.as_table }}
-  </table>
-  <button type="submit" class="btn primary">Update Settings</button>
-</form>
+<div class="well">
+  <form action="" method="POST">{% csrf_token %}
+    {{ settings_form|bootstrap }}
+    <div class="actions">
+      <button type="submit" class="btn primary">Update Settings</button>
+    </div>
+  </form>
+</div>
 
 {% endblock %}

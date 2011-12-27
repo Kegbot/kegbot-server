@@ -3,6 +3,8 @@ from django import forms
 from pykeg.core import models
 from pykeg.beerdb import models as bdb
 
+from pykeg.web.kegadmin import widgets as ka_widgets
+
 ALL_TAPS = models.KegTap.objects.all()
 ALL_SIZES = models.KegSize.objects.all()
 ALL_BEER_TYPES = bdb.BeerType.objects.all().order_by('name')
@@ -32,11 +34,26 @@ class TapForm(forms.ModelForm):
 class KegHiddenSelectForm(forms.Form):
   keg = forms.ModelChoiceField(queryset=ALL_KEGS, widget=forms.HiddenInput)
 
-class CreateTapForm(forms.ModelForm):
+class TapForm(forms.ModelForm):
   class Meta:
     model = models.KegTap
-    fields = ('name', 'meter_name', 'relay_name', 'ml_per_tick', 'description',
+    fields = ('name', 'meter_name', 'relay_name', 'description',
         'temperature_sensor')
+
+  ml_per_tick = ka_widgets.ChoiceWithOtherField(
+      label='Meter mL per tick',
+      choices=(
+        (1/2.2, 'Vision 2000 Meter (%s)' % (1/2.2) ),
+        (1/6.0, 'SwissFlow Meter (%s)' % (1/6.0) ),
+        (0, 'Other:'),
+      ),
+  )
+
+  def __init__(self, *args, **kwargs):
+    site = kwargs.pop('site', None)
+    super(TapForm, self).__init__(*args, **kwargs)
+    self.fields['temperature_sensor'].queryset = models.ThermoSensor.objects.filter(site=site)
+    self.fields['temperature_sensor'].empty_label = 'No sensor.'
 
 class SiteSettingsForm(forms.ModelForm):
   class Meta:

@@ -1,5 +1,6 @@
 {% extends "kegadmin/base.html" %}
 {% load kegweblib %}
+{% load bootstrap %}
 
 {% block pagetitle %}Keg Admin: Taps{% endblock %}
 
@@ -13,98 +14,107 @@
   <div class="span11">
     <h2>{{ tap.name }}</h2>
     <div class="well">
-      <table class="condensed-table zebra-striped">
-        <tbody>
-          <!-- row: current keg -->
-          {% if keg %}
-          <tr>
-            <th>
-              <div class="span3">
-                <p>
-                  <!-- TODO: get rid of form -->
-                  <form method="GET" action="{% url kegadmin-edit-keg kbsite.url keg.seqn %}">
-                  <button type="submit" class="btn small fill-parent-width">
-                    Edit Keg
-                  </button>
-                  </form>
-                </p>
-                <p>
-                  <form action="{% url kegadmin-do-end-keg kbsite.url %}" method="POST">
-                    {% csrf_token %}
-                    {{ tapinfo.end_form }}
-                    <button type="submit" class="btn danger small fill-parent-width">End Keg</button>
-                  </form>
-                </p>
-              </div>
-            </th>
-            <td>
-                <h4>{{ keg.type}}</h4>
-                <small>
-                  {% if keg.is_empty %}
-                    Empty,
-                  {% else %}
-                    {% volume keg.remaining_volume %} remaining
-                    ({{ keg.percent_full|floatformat:1 }}% full),
-                  {% endif %}
-                  tapped {% timeago keg.startdate %}
-                </small>
-            </td>
-          </tr>
+      <ul class="tabs" data-tabs="tabs">
+        <li class="active"><a href="#tap-{{tap.id}}-keg">Keg</a></li>
+        <li><a href="#tap-{{tap.id}}-settings">Settings</a></li>
+        <li><a href="#tap-{{tap.id}}-last">Last Pour</a></li>
+      </ul>
+
+      <div class="pill-content">
+        <div class="active" id="tap-{{tap.id}}-keg">
+            {% if keg and keg.is_active %}
+            <div class="row">
+            <div class="span3">
+              {% comment %}
+              <p>
+                <!-- TODO: get rid of form -->
+                <form method="GET" action="{% url kegadmin-edit-keg kbsite.url keg.seqn %}">
+                <button type="submit" class="btn small fill-parent-width">
+                  Edit Keg
+                </button>
+                </form>
+              </p>
+              {% endcomment %}
+              <p>
+                <form action="{% url kegadmin-do-end-keg kbsite.url %}" method="POST">
+                  {% csrf_token %}
+                  {{ tapinfo.end_form|bootstrap }}
+                  <button type="submit" class="btn danger small fill-parent-width">End Keg</button>
+                </form>
+              </p>
+            </div>
+            <div class="span7">
+              <h4>{{ keg.type}}</h4>
+              <small>
+                {% if keg.is_empty %}
+                  Empty,
+                {% else %}
+                  {% volume keg.remaining_volume %} remaining
+                  ({{ keg.percent_full|floatformat:1 }}% full),
+                {% endif %}
+                tapped {% timeago keg.startdate %}
+              </small>
+            </div> <!-- /span11 -->
+          </div> <!-- /row -->
           {% else %}
-          <tr>
-            <th>
-              <div class="span3">
-                <p>
-                  <button type="submit" class="btn success small fill-parent-width">
-                    Add a Keg
-                  </button>
-                </p>
-              </div>
-            </th>
-            <td>
-              <h4>Empty Tap</h4>
-              Add a keg to this tap.
-            </td>
-          </tr>
-          {% endif %}
+          <h4>
+            Empty tap, activate a new keg.
+            <small>Time for a beer run?</small>
+          </h4>
 
-          {% with keg.drinks.latest as drink %}
-          {% if drink %}
-          <tr>
-            <th>
-              <div class="span3">
-                <p>
-                  <button type="submit" class="btn small fill-parent-width">Adjust Drink</button>
-                </p>
-                <p>
-                  <button type="submit" class="btn danger small fill-parent-width">Cancel Drink</button>
-                </p>
+          <form action="{% url kegadmin-edit-tap kbsite.url tap.seqn %}" method="POST" class="form-stacked">
+              {% csrf_token %}
+              {{ tapinfo.keg_form|bootstrap }}
+              <div class="actions">
+                <input type="submit" class="btn success"
+                    name="{{ tapinfo.prefix }}-submit"
+                    value="Activate Keg"/>
               </div>
-            </th>
-            <td>
-              <h4>Last Pour</h4>
-              <a href="{% url kb-drink kbsite.url drink.seqn %}"
-                target="_new">Drink {{ drink.seqn }}</a> by {{ drink.user }}
-            </td>
-          </tr>
+          </form>
+          </p>
           {% endif %}
-          {% endwith %}
+        </div> <!-- /keg -->
 
-          <tr>
-            <th>
-              <div class="span3">
-                <p>
-                  <button type="submit" class="btn small fill-parent-width">
-                    Configure Tap
-                  </button>
-                </p>
+        <div id="tap-{{tap.id}}-settings">
+          <form action="" method="POST" class="form-stacked">
+              {% csrf_token %}
+              {{ tapinfo.edit_form|bootstrap }}
+              <div class="actions">
+                <input type="submit" class="btn primary"
+                    name="{{ tapinfo.prefix }}-submit" value="Update Tap"/>
               </div>
-            </th>
-            <td>
-              <h4>Edit Tap Name and Settings</h4>
-            </td>
-        </tbody>
-      </table>
+          </form>
+        </div>
+
+        <div id="tap-{{tap.id}}-last">
+          <table class="condensed-table zebra-striped">
+            <tbody>
+              {% with keg.drinks.latest as drink %}
+              {% if drink %}
+              <tr>
+                <th>
+                  <div class="span3">
+                    <p>
+                      <button type="submit" class="btn small fill-parent-width">Adjust Drink</button>
+                    </p>
+                    <p>
+                      <button type="submit" class="btn danger small fill-parent-width">Cancel Drink</button>
+                    </p>
+                  </div>
+                </th>
+                <td>
+                  <h4>Last Pour</h4>
+                  <a href="{% url kb-drink kbsite.url drink.seqn %}"
+                    target="_new">Drink {{ drink.seqn }}</a> by {{ drink.user }}
+                </td>
+              </tr>
+              {% endif %}
+              {% endwith %}
+            </tbody>
+          </table>
+        </div>
+
+      </div> <!-- /pill-content -->
 
     </div> <!-- well -->
   </div>
@@ -114,31 +124,23 @@
 {% endwith %}
 {% endfor %}
 
+{% comment %}
 <div class="row">
   <div class="span11">
     <h2>Add a New Tap</h2>
     <div class="well">
-      <table class="condensed-table zebra-striped">
-        <tbody>
-          <tr>
-            <th>
-              <div class="span3">
-                <p>
-                  <button type="submit" class="btn success small fill-parent-width">Create Tap</button>
-                </p>
-              </div>
-            </th>
-            <td>
-              <h4>Detals for New Tap</h4>
-              <table class="condensed-table zebra-striped">
-              {{ create_tap_form.as_table }}
-              </table>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <form action="" method="POST" class="form-stacked">
+        {% csrf_token %}
+        {{ create_tap_form|bootstrap }}
+        <div class="actions">
+          <input type="submit" class="btn success"
+              name="{{ tapinfo.prefix }}-submit" value="Create Tap"/>
+        </div>
+      </form>
     </div>
   </div>
 </div>
+
+{% endcomment %}
 
 {% endblock %}

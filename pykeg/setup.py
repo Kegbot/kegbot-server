@@ -46,6 +46,7 @@ setup(
     install_requires = [
       'django >= 1.3',
       'django-autoslug',
+      'django-bootstrap-form',
       'django-debug-toolbar',
       'django-imagekit >= 1.0',
       'django-registration',
@@ -77,6 +78,7 @@ setup(
         'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',
         'http://kegbot.org/kmedia/python-openid-2.2.5.tgz',
+        'https://github.com/tzangms/django-bootstrap-form/tarball/master#egg=django-bootstrap-form',
 
         # Self-maintained package due to upstream issue:
         # http://github.com/facebook/python-sdk/issues/#issue/21

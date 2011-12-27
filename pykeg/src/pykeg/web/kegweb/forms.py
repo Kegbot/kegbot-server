@@ -61,7 +61,7 @@ class UserProfileForm(forms.ModelForm):
 
 
 class MugshotForm(forms.Form):
-  new_mugshot = forms.ImageField(required=False)
+  new_mugshot = forms.ImageField(required=True)
 
 
 UNASSIGNED_TOKEN_QS = models.AuthenticationToken.objects.filter(user=None)

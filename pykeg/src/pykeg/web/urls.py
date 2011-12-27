@@ -59,7 +59,7 @@ urlpatterns = patterns('',
     (r'^(?P<kbsite_name>)kegadmin/', include('pykeg.web.kegadmin.urls')),
 
     ### sentry
-    (r'^(?P<kbsite_name>)sentry/', include('sentry.web.urls')),
+    (r'^sentry/', include('sentry.web.urls')),
 
     ### main kegweb urls
     (r'^(?P<kbsite_name>)', include('pykeg.web.kegweb.urls')),

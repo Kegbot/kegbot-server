@@ -160,17 +160,16 @@ def backup_restore(request):
 def generate_backup(request):
   context = RequestContext(request)
 
-  indent = None
-  indent_param = request.GET.get('indent', None)
-  if indent_param:
-    try:
-      indent = int(indent_param)
-    except ValueError:
-      pass
+  fmt = request.GET.get('fmt', 'minjson')
+  if fmt == 'json':
+    indent = 2
+  else:
+    indent = None
+    fmt = 'minjson'
 
   kbsite = request.kbsite
   datestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-  filename = 'kegbot-%s.%s.json.txt' % (kbsite.name, datestr)
+  filename = 'kegbot-%s.%s.%s.txt' % (kbsite.name, datestr, fmt)
 
   output_fp = cStringIO.StringIO()
   backup.dump(output_fp, kbsite, indent=indent)

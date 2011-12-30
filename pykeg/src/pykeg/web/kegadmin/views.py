@@ -46,6 +46,7 @@ def kegadmin_main(request):
     form = forms.SiteSettingsForm(request.POST, instance=request.kbsite.settings)
     if form.is_valid():
       form.save()
+      messages.success(request, 'Site settings were successfully updated.')
   context['settings_form'] = form
   return render_to_response('kegadmin/index.html', context)
 

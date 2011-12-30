@@ -58,6 +58,6 @@ class TapForm(forms.ModelForm):
 class SiteSettingsForm(forms.ModelForm):
   class Meta:
     model = models.SiteSettings
-    fields = ('title', 'description', 'display_units')
+    fields = ('title', 'description', 'display_units', 'event_web_hook')
 
 #BeerTypeFormSet = inlineformset_factory(models.Brewer, models.BeerType)

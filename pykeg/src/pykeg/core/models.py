@@ -104,6 +104,8 @@ class SiteSettings(models.Model):
       help_text='Description of this site')
   background_image = models.ForeignKey('Picture', blank=True, null=True,
       help_text='Background for this site.')
+  event_web_hook = models.URLField(blank=True, null=True, verify_exists=False,
+      help_text='Web hook URL for newly-generated events.')
 
   class Meta:
     verbose_name_plural = "site settings"

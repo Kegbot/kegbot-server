@@ -5,14 +5,31 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
-Version 0.8.3 (2010-08-09)
+Version 0.8.4 (2011-12-30)
+--------------------------
+
+Core/General
+^^^^^^^^^^^^
+* Several improvements to stats handling.
+* ``kegbot_core`` local backend is officially deprecated.
+* Web hook support: post event details to an arbitrary URL after a pour.
+
+Kegweb
+^^^^^^
+* Major improvements to the Kegweb look-and-feel.
+* Added Bootstrap and rewrote kegweb css in lesscss.
+* Units can now be displayed in metric.
+* Kegadmin improvements: tap settings are editable, add taps.
+
+
+Version 0.8.3 (2011-08-09)
 --------------------------
 
 Core/General
 ^^^^^^^^^^^^
 * Fix a temperature recording bug that appeared in v0.8.2.
 
-Version 0.8.2 (2010-08-05)
+Version 0.8.2 (2011-08-05)
 --------------------------
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
@@ -40,7 +57,7 @@ Kegboard
 ^^^^^^^^
 * Added support for magstrip readers.
 
-Version 0.8.1 (2010-06-13)
+Version 0.8.1 (2011-06-13)
 --------------------------
 *Note:* If you installed version 0.8.0 and find your api_key unusable, you need
 to regenerate it.  Log in and click the "regenerate api key" button on your
@@ -60,7 +77,7 @@ Kegweb
 * Added "regenerate API key" button.
 
 
-Version 0.8.0 (2010-06-12)
+Version 0.8.0 (2011-06-12)
 --------------------------
 
 *Note:* Due to changes in the Kegbot core, you must run the following commands

@@ -5,15 +5,13 @@ use_setuptools()
 
 from setuptools import setup, find_packages
 
-VERSION = "0.8.3"
+VERSION = "0.8.4"
 SHORT_DESCRIPTION = "Kegbot kegerator controller software"
 LONG_DESCRIPTION = """This package contains Kegbot core controller and Django
 frontend package.
 
 Kegbot is a hardware and software system to record and monitor access to a beer
 kegerator.  For more information and documentation, see http://kegbot.org/
-
-**Note:** This package is still *experimental* and subject to change.
 """
 
 setup(

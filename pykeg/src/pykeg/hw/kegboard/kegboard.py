@@ -20,6 +20,7 @@
 
 import cStringIO
 import errno
+import glob
 import logging
 import struct
 import string
@@ -29,9 +30,15 @@ import gflags
 from pykeg.core import util
 from pykeg.hw.kegboard import crc16
 
+_DEVICES = glob.glob('/dev/ttyUSB*') + glob.glob('/dev/cu.usbserial*')
+if _DEVICES:
+  _DEFAULT_PORT = _DEVICES[0]
+else:
+  _DEFAULT_PORT = '/dev/ttyUSB0'
+
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_string('kegboard_device', '/dev/ttyUSB0',
+gflags.DEFINE_string('kegboard_device', _DEFAULT_PORT,
     'An explicit device file (eg /dev/ttyUSB0) on which to listen for kegboard '
     'packets.')
 

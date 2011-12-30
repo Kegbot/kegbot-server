@@ -30,6 +30,11 @@ INSTALLED_APPS = (
     'registration',
     'sentry',
     'socialregistration',
+
+    # Celery and dependencies.
+    'djcelery',
+    'djkombu',
+
     'south',
     'django_nose', # must be after south
 )
@@ -154,6 +159,12 @@ ACCOUNT_ACTIVATION_DAYS = 3
 # replace with site-specific values in common_settings.py, if desired.
 FACEBOOK_API_KEY = ''
 FACEBOOK_SECRET_KEY = ''
+
+### Celery
+
+import djcelery
+djcelery.setup_loader()
+BROKER_URL = "django://"
 
 ### Twitter
 

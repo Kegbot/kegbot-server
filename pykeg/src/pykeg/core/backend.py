@@ -27,6 +27,7 @@ from django.db.utils import DatabaseError
 from pykeg.core import kb_common
 from pykeg.core import config
 from pykeg.core import models
+from pykeg.core import tasks
 from pykeg.proto import protolib
 
 from pykeg.web.api import krest
@@ -188,6 +189,12 @@ class KegbotBackend(Backend):
     d.save()
     if do_postprocess:
       d.PostProcess()
+      hook_url = self._site.settings.event_web_hook
+      if hook_url:
+        events = models.SystemEvent.objects.filter(drink=d)
+        if events:
+          event_list = [protolib.ToDict(e) for e in events]
+          tasks.post_webhook_event.delay(hook_url, event_list)
 
     return protolib.ToProto(d)
 

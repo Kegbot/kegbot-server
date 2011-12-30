@@ -73,6 +73,11 @@ setup(
       'tweepy',
       'pytz',
       'raven',
+
+      # Celery and dependencies
+      'Celery',
+      'django-celery',
+      'django-kombu',
     ],
     dependency_links = [
         'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',

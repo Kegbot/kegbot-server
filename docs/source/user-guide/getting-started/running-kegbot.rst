@@ -1,180 +1,110 @@
 .. _running-kegbot:
 
-Running Kegbot
-==============
+Running the Kegbot Core
+=======================
 
-Congratulations! You're now ready to start up Kegbot.  There are a few programs
-included in the ``bin/`` directory of ``pykeg`` that you will now become
-familiar with:
+With your webserver online, you're now ready to start sending drink and sensor
+data to it.  To do this, you must run the *Kegbot Core*.
 
-* ``kegbot-admin.py``, an administrative utility tool
-* ``kegbot_core.py``, the core kegbot daemon
-* ``kegboard_daemon.py``, the daemon that listens to the kegboard
+The "core" itself is actually separated into two programs:
 
-Overview of Kegbot Apps
------------------------
-
-Kegbot is actually comprised of several programs.  All programs are located in
-the `bin/` directory of the pykeg tree.
-
-All applications share some common command-line flags; you can run
-`<programname> --help` to see detailed command-line options for each program.
-This section gives a short overview of each.
-
-kegbot-admin.py
-^^^^^^^^^^^^^^^
-
-This program is clone of django's `django-admin.py` program; it contains a
-variety of tools and management commands.
-
-kegbot_core.py
-^^^^^^^^^^^^^^
-
-`kegbot_core` is the central manager of the kegbot system.  It listens to the
-microcontroller, authenticates users, and records drinks.
-
-kegboard_daemon.py
-^^^^^^^^^^^^^^^^^^
-
-This program implements a listener for the kegboard hardware device.  It
-connects to the kegbot core and reports sensor data.
-
-kegboard_monitor.py
-^^^^^^^^^^^^^^^^^^^
-
-A simple application which listens to a kegboard and dumps all packets it
-receives.  This is primarily useful in debugging.
-
-kegbot_master.py
-^^^^^^^^^^^^^^^^
-
-`kegbot_master` is a daemon manager; you can use it to start and stop several
-kegboard applications as daemons.
-
-lcd_daemon.py
-^^^^^^^^^^^^^
-
-A daemon that attaches to the kegbot core and an LCD device, and prints status
-updates to the LCD.  Supports Matrix-Orbital and Crystalfontz displays.
-
-rfid_daemon.py
-^^^^^^^^^^^^^^
-
-This daemon will attach to a Phidgets RFID device, and report the IDs of devices
-it reads to the kegbot core authentication system.
-
-sound_server.py
-^^^^^^^^^^^^^^^
-
-This optional daemon will play sound files when various flow events occur.
-
-test_flow.py
-^^^^^^^^^^^^
-
-This is a test application which synthesizes fake kegboard packets.
+* ``kegbot_core.py``, the core kegbot daemon.  It listens for sensor data on a
+  local network interface, and reports it to the Kegweb service.
+* ``kegboard_daemon.py``, the program that talks to your kegboard.  When it
+  receives sensor data, it reports it to kegbot_core.
 
 
-Run Kegbot Core
----------------
+Starting ``kegbot_core.py``
+---------------------------
 
-You're now ready to run the Kegbot core process::
+To launch kegbot_core, you will need to know two values:
 
-	% ./bin/kegbot_core.py
-	2009-09-10 00:23:36,259 INFO     (tap-manager) Registering new tap: flow0
-	2009-09-10 00:23:36,466 INFO     (main) Starting all service threads.
-	2009-09-10 00:23:36,466 INFO     (main) starting thread "alarmmanager-thread"
-	2009-09-10 00:23:36,474 INFO     (main) starting thread "eventhub-thread"
-	2009-09-10 00:23:36,475 INFO     (main) starting thread "net-thread"
-	2009-09-10 00:23:36,476 INFO     (net-thread) network thread started
-	2009-09-10 00:23:36,476 INFO     (main) starting thread "flowmonitor-thread"
-	2009-09-10 00:23:36,477 INFO     (main) starting thread "service-thread"
-	2009-09-10 00:23:36,478 INFO     (main) starting thread "watchdog-thread"
-	2009-09-10 00:23:36,479 INFO     (main) All threads started.
+* ``api_url``: the URL of your kegweb's API address, up to and including
+  ``/api/``.
+* ``api_key``: your secret API key, visible on the *Account* page.
 
-If successful, you should see something like the above.
+Here's an example of successfully launching the core::
 
-You can also see options for any application in ``bin/`` by using the ``--help``
-or ``--helpshort`` flags::
+  % kegbot_core.py --api_url=http://localhost:8000/api/ --api_key=100000010457a3747caf2040b061851074517573
+  2011-12-30 12:31:11,057 INFO     (main) Kegbot is starting up.
+  2011-12-30 12:31:11,057 INFO     (env) Using web backend: http://localhost:8000/api/
+  2011-12-30 12:31:11,064 INFO     (main) Querying backend liveness.
+  2011-12-30 12:31:11,077 INFO     (main) Backend appears to be alive.
+  2011-12-30 12:31:11,077 INFO     (main) Found 2 taps, adding to tap manager.
+  2011-12-30 12:31:11,077 INFO     (tap-manager) Registering new tap: kegboard.flow0
+  2011-12-30 12:31:11,077 INFO     (tap-manager) Registering new tap: kegboard.flow1
+  2011-12-30 12:31:11,078 INFO     (main) Starting all service threads.
+  2011-12-30 12:31:11,078 INFO     (main) starting thread "service-thread"
+  2011-12-30 12:31:11,086 INFO     (main) starting thread "eventhub-thread"
+  2011-12-30 12:31:11,086 INFO     (main) starting thread "net-thread"
+  2011-12-30 12:31:11,086 INFO     (net-thread) network thread started
+  2011-12-30 12:31:11,087 INFO     (kegnet) Starting server on ('localhost', 9805)
+  2011-12-30 12:31:11,087 INFO     (main) starting thread "heartbeat-thread"
+  2011-12-30 12:31:11,088 INFO     (main) starting thread "watchdog-thread"
+  2011-12-30 12:31:11,088 INFO     (main) All threads started.
 
-	% ./bin/kegbot_core.py --help
-	Kegbot Core Application.
-	
-	This is the Kegbot Core application, which runs the main drink recording and
-	post-processing loop. There is exactly one instance of a kegbot core per kegbot
-	system.
-	
-	For more information, please see the kegbot documentation.
-	
-	flags:
-	
-	pykeg.core.kb_app:
-		--[no]daemon: Run application in daemon mode
-			(default: 'false')
-		-?,--[no]help: show this help
-		--[no]helpshort: show usage only for this module
-		--[no]log_to_file: Send log messages to the log file defined by --logfile
-			(default: 'true')
-		--[no]log_to_stdout: Send log messages to the console
-			(default: 'true')
-		--logfile: Default log file for log messages
-			(default: 'kegbot.log')
-		--logformat: Default format to use for log messages.
-			(default: '%(asctime)s %(levelname)-8s (%(name)s) %(message)s')
-		--[no]verbose: Generate extra logging information.
-			(default: 'false')
-	
-	pykeg.core.net.kegnet_server:
-		--kb_core_bind_addr: Address that the kegnet server should bind to.
-			(default: 'localhost:9805')
-	
-	google3.pyglib.flags:
-		--flagfile: Insert flag definitions from the given file into the command line.
-			(default: '')
-		--undefok: comma-separated list of flag names that it is okay to specify on
-			the command line even if the program does not define a flag with that name.
-			IMPORTANT: flags in this list that have arguments MUST use the --flag=value
-			format.
-			(default: '')
+.. tip::
+  You can get usage information from most kegbot command-line programs by
+  running the command with ``--help``.
+  
+  Most kegbot programs support the following common flags: ``--daemon``,
+  ``--verbose``, and several others, listed in the "pykeg.core.kb_app" section
+  of ``--help``.
 
-Start up kegboard daemon
-------------------------
+Testing your kegboard
+---------------------
+Before you start reporting data, make sure your kegboard is working.  Plug it
+in, and run the monitor::
 
-TODO
+  % kegboard-monitor.py
+  2011-12-30 12:52:09,219 INFO     (main) Setting up serial port...
+  2011-12-30 12:52:09,236 INFO     (main) Starting reader loop...
+  2011-12-30 12:52:09,239 INFO     (kegboard-reader) Packet framing broken (found '\x00', expected 'K'); reframing.
+  2011-12-30 12:52:11,943 INFO     (kegboard-reader) Packet framing fixed.
+  <HelloMessage: firmware_version=8>
+  <TemperatureReadingMessage: sensor_name=thermo-7c0000009b596628 sensor_reading=22.875>
 
-Start up Kegweb
----------------
+Running the monitor should cause your kegboard to reset and show something
+similar to the above.  If you are having problems, you may need to specify
+``--kegboard_device``.
 
-You can now start Kegweb. Try running the built in development server::
+Running ``kegboard_daemon.py``
+------------------------------
 
-	% ./bin/kegbot-admin.py runserver 0.0.0.0:8000
-	Validating models...
-	0 errors found
+You're now ready to run the Kegbot daemon::
 
-	Django version 1.0.2 final, using settings 'pykeg.settings'
-	Development server is running at http://0.0.0.0:8000/
-	Quit the server with CONTROL-C.
+  % kegboard_daemon.py 
+  2011-12-30 12:55:41,064 INFO     (main) Starting all service threads.
+  2011-12-30 12:55:41,064 INFO     (main) starting thread "kegboard-manager"
+  2011-12-30 12:55:41,064 INFO     (kegboard-manager) Starting main loop.
+  2011-12-30 12:55:41,065 INFO     (main) starting thread "device-io"
+  2011-12-30 12:55:41,065 INFO     (device-io) Starting reader loop...
+  2011-12-30 12:55:41,065 INFO     (main) starting thread "kegnet"
+  2011-12-30 12:55:41,066 INFO     (kegnet) Connecting to localhost:9805
+  2011-12-30 12:55:41,066 INFO     (main) All threads started.
+  2011-12-30 12:55:41,067 INFO     (main) Running generic main loop (going to sleep).
+  2011-12-30 12:55:41,067 INFO     (kegboard-reader) Packet framing broken (found '\n', expected 'K'); reframing.
+  2011-12-30 12:55:41,068 INFO     (kegnet) Connected!
+  2011-12-30 12:55:43,770 INFO     (kegboard-reader) Packet framing fixed.
+  2011-12-30 12:55:43,771 INFO     (device-io) Found a Kegboard! Firmware version 8
+  2011-12-30 12:55:43,780 INFO     (kegboard-manager) RX: <HelloMessage: firmware_version=8>
+  2011-12-30 12:55:44,796 INFO     (kegboard-manager) RX: <TemperatureReadingMessage: sensor_name=thermo-7c0000009b596628 sensor_reading=24.1875>
 
-Browse to the kegweb home page, eg http://localhost/
+As you can see, the daemon started up, connected to the ``kegbot_core.py``
+process (listening on ``localhost:9805``), and started receiving messages.
 
-Create a Keg 
-------------
+Navigate back to your ``kegbot_core`` process.  You should see some new log
+messages from the kegboard daemon::
 
-Browse to the kegweb admin site to access and set various kegbot settings, eg
-http://localhost/admin/
+  2011-12-30 12:55:41,068 INFO     (kegnet) Remote host connected: 127.0.0.1:58321
+  2011-12-30 12:55:44,833 INFO     (thermo-manager) Recording temperature sensor=kegboard.thermo-7c0000009b596628 value=24.1875
+  2011-12-30 12:55:44,833 INFO     (thermo-manager) Additional readings will only be shown with --verbose
 
-Add a keg, http://localhost/admin/core/keg/
+If you're running the `standalone webserver <webserver-standalone>`_ in another
+window, you should see the core posting new temperature readings via the web
+api::
 
-* Select default site
-* Select beer type
-* Select keg size
-* Set start date
-* Set keg status
-* Optional entries: Description, Origcost, Notes
-* SAVE
+  [30/Dec/2011 12:55:45] "POST /api/thermo-sensors/kegboard.thermo-7c0000009b596628/ HTTP/1.1" 200 133
+  [30/Dec/2011 12:55:47] "POST /api/thermo-sensors/kegboard.thermo-7c0000009b596628/ HTTP/1.1" 200 131
 
-Set keg tap details, http://localhost/admin/core/kegtap/
-
-* Set Ml per tick. Recommeded settings - Swissflow SF800 meter(0.163934426) or
-  Vision 2000 meter(0.4545454545)
-* Select newely added keg in current keg drop down list.
-
+Now try pouring a drink!

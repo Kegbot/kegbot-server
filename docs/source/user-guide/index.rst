@@ -21,6 +21,7 @@ Contents:
    installation/kegbot-install
    installation/database-install
    installation/configure
+   getting-started/running-webserver
    getting-started/running-kegbot
 
 ..

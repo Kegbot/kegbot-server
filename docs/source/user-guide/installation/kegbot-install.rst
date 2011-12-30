@@ -11,9 +11,7 @@ You can select from one of a few ways to install:
 
 * :ref:`Automatically, using easy_install <install-easy>`, the recommended way to
   quickly get going with the latest release.
-* :ref:`From a source release <install-source>`, which also contains the Kegboard
-  controller code and documentation.
-* :ref:`Using Mercurial <install-hg>`, to grab the latest, bleed-edge development
+* :ref:`Using Git <install-git>`, to grab the latest, bleed-edge development
   code from version control.
 
 If in doubt, proceed to the next section for the easiest method.
@@ -51,65 +49,26 @@ package installer.
 
 Easy, right? We hope so! You're now ready to skip to :ref:`configure-kegbot`.
 
-.. _install-source:
 
-Install from a source release
+.. _install-git:
+
+Install with Git (developers)
 -----------------------------
 
-You can also install Kegbot directly from a source release.
+You can download the latest Kegbot code as source, using git.
 
-#. Find the source release on the `downloads page <http://code.google.com/p/kegbot/downloads/list>`_.
+#. If you don't already have the ``git`` program, start by installing it.  On Ubuntu, use the following::
 
-#. Unpack the the source release::
+	% sudo apt-get install git-core
 
-	% tar -zxf kegbot-0.6.0.tgz
+#. Next, check out the kegbot sources using the ``git`` command::
 
-#. Install using `setup.py`::
+	% git clone https://github.com/Kegbot/kegbot.git
 
-	% cd kegbot-0.6.0/
-	% sudo ./setup.py install
+#. You should now have a complete working copy of the kegbot tree in ``kegbot/``.
 
-#. You should now have the Kegbot python modules installed, and a handful of
-   command line tools which use them. Confirm everything was installed by
-   attempting to use one of the tools::
-
-	% kegbot-admin.py
-	Type 'kegbot-admin.py help' for usage.
-
-.. note::
-  The instructions used `setup.py` to install the source system-wide, but you
-  could instead perform a local install which does not need `sudo`.  See
-  :ref:`using-virtualenv` for details.
-
-Easy enough, right? We hope so! You're now ready to skip to
-:ref:`configure-kegbot`.
-
-.. _install-hg:
-
-Install from Mercurial (developers)
------------------------------------
-
-You can download the latest Kegbot code as source, using the `Mercurial
-<http://mercurial.selenic.com/>`_ version control tool.  (If you're familiar
-with Subversion, Mercurial is pretty similar.)
-
-#. If you don't already have the ``hg`` program, start by installing it.  On Ubuntu, use the following::
-
-	% sudo apt-get install mercurial
-
-#. Next, check out the kegbot sources using the ``hg`` command. (This example
-   syncs to the latest revision tagged `stableish`)::
-
-	% hg clone -r stableish https://kegbot.googlecode.com/hg/ kegbot-hg
-
-#. You should now have a complete working copy of the kegbot tree::
-
-	% ls kegbot-hg
-	common_settings.py.example  kegbot_master.cfg.example  Makefile     README.txt  src
-	distribute_setup.py         LICENSE.txt                MANIFEST.in  setup.py
-
-You may want to continue on to :ref:`using-virtualenv`, which is the
-recommended way to install and run kegbot without installing it system-wide.
+Continue on to :ref:`using-virtualenv`, which is the recommended way to install
+and run kegbot without installing it system-wide.
 
 .. _using-virtualenv:
 

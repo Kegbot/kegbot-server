@@ -91,10 +91,9 @@ are looking for help getting started, this should be your first stop.
 Bug reports
 ^^^^^^^^^^^
 
-Please visit the `Kegbot Bugs Database
-<http://code.google.com/p/kegbot/issues/list>`_ at our Google Code site to
-browse and report bugs.  In addition to problem reports, we welcome patches
-and improvements to the Kegbot code.
+Please visit the `Kegbot Bugs Database <http://b.kegbot.org/>`_ at Github to
+browse and report bugs.  In addition to problem reports, we welcome patches and
+improvements to the Kegbot code.
 
 
 IRC

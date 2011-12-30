@@ -3,8 +3,7 @@
 Setup & Configure Kegbot
 ========================
 
-In this section, you will point your new Kegbot installation to its database,
-and get the development webserver up and running.
+In this section, you will point your new Kegbot installation to its database.
 
 Create the settings file
 ------------------------

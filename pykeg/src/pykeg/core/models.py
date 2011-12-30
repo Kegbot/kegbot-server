@@ -896,6 +896,7 @@ class UserStats(_StatsModel):
 class KegStats(_StatsModel):
   STATS_BUILDER = stats.KegStatsBuilder
   keg = models.ForeignKey(Keg, unique=True, related_name='stats')
+  completed = models.BooleanField(default=False)
 
   def __str__(self):
     return 'KegStats for %s' % self.keg
@@ -904,6 +905,7 @@ class KegStats(_StatsModel):
 class SessionStats(_StatsModel):
   STATS_BUILDER = stats.SessionStatsBuilder
   session = models.ForeignKey(DrinkingSession, unique=True, related_name='stats')
+  completed = models.BooleanField(default=False)
 
   def __str__(self):
     return 'SessionStats for %s' % self.session

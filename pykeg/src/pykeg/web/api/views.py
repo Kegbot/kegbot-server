@@ -350,12 +350,12 @@ def all_taps(request):
 @auth_required
 def user_list(request):
   users = models.User.objects.filter(is_active=True).order_by('username')
-  return FromProto(protolib.GetUserDetailSet(users))
+  return FromProto(protolib.GetUserDetailSet(users, full=True))
 
 @py_to_json
 def get_user(request, username):
   user = get_object_or_404(models.User, username=username)
-  return FromProto(protolib.GetUserDetail(user))
+  return FromProto(protolib.GetUserDetail(user, full=True))
 
 @py_to_json
 def get_user_drinks(request, username):

@@ -292,7 +292,6 @@ def UserToProto(user, full=False):
     ret.first_name = user.first_name
     ret.last_name = user.last_name
     ret.email = user.email
-    ret.password = user.password
     ret.is_staff = user.is_staff
     ret.is_active = user.is_active
     ret.is_superuser = user.is_superuser
@@ -454,15 +453,15 @@ def GetKegDetailSet(kegs, full=False):
     ret.kegs.add().MergeFrom(GetKegDetail(k, full=full))
   return ret
 
-def GetUserDetail(user):
+def GetUserDetail(user, full=False):
   ret = api_pb2.UserDetail()
-  ret.user.MergeFrom(ToProto(user))
+  ret.user.MergeFrom(ToProto(user, full))
   return ret
 
-def GetUserDetailSet(users):
+def GetUserDetailSet(users, full=False):
   ret = api_pb2.UserDetailSet()
   for u in users:
-    ret.users.add().MergeFrom(GetUserDetail(u))
+    ret.users.add().MergeFrom(GetUserDetail(u, full))
   return ret
 
 def GetTapDetailSet(taps):

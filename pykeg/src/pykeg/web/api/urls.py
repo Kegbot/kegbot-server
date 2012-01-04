@@ -52,6 +52,7 @@ urlpatterns = patterns('pykeg.web.api.views',
     url(r'^users/(?P<username>[\w@.+-_]+)/events/?$', 'get_user_events'),
     url(r'^users/(?P<username>[\w@.+-_]+)/stats/?$', 'get_user_stats'),
     url(r'^users/(?P<username>[\w@.+-_]+)/?$', 'get_user'),
+    url(r'^stats/?$', 'get_system_stats'),
 
     url(r'^last-drink-id/?$', 'last_drink_id'),
     url(r'^last-drinks/?$', 'last_drinks'),

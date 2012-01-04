@@ -342,6 +342,11 @@ def get_keg_stats(request, keg_id):
   return FromProto(stats)
 
 @py_to_json
+def get_system_stats(request):
+  stats = request.kbsite.GetStats()
+  return FromProto(stats)
+
+@py_to_json
 def all_taps(request):
   taps = request.kbsite.taps.all().order_by('name')
   return FromProto(protolib.GetTapDetailSet(taps))

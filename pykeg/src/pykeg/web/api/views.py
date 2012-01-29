@@ -221,8 +221,8 @@ def get_drink(request, drink_id):
   drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
   return protoutil.ProtoMessageToDict(protolib.GetDrinkDetail(drink))
 
-@py_to_json
 @csrf_exempt
+@py_to_json
 @auth_required
 def add_drink_photo(request, drink_id):
   if request.method != 'POST':
@@ -523,8 +523,8 @@ def _tap_detail_post(request, tap):
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 
-@py_to_json
 @csrf_exempt
+@py_to_json
 @auth_required
 def cancel_drink(request):
   #if request.method != 'POST':
@@ -541,8 +541,8 @@ def cancel_drink(request):
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 
-@py_to_json
 @csrf_exempt
+@py_to_json
 def login(request):
   if request.POST:
     form = AuthenticationForm(data=request.POST)
@@ -571,8 +571,8 @@ class LocalRavenClient(raven.Client):
     from sentry.models import GroupedMessage
     return GroupedMessage.objects.from_kwargs(**kwargs)
 
-@py_to_json
 @csrf_exempt
+@py_to_json
 @auth_required
 def debug_log(request):
   if request.method != 'POST':

@@ -42,7 +42,7 @@
         $("abbr.timeago").timeago();
         $(".tabs").tabs();
         $(".pills").pills();
-        $(".alert-message").alert()
+        $(".alert").alert()
     });
   </script>
 
@@ -66,8 +66,9 @@
 </head>
 
 <body>
-  <div class="topbar">
+  <div class="navbar navbar-fixed-top">
     <div class="fill">
+     <div class="navbar-inner">
       <div class="container">
         <a class="brand" href="{% url kb-home kbsite.url %}">{% spaceless %}
           {% if kbsite.settings.title %}
@@ -81,8 +82,10 @@
           {% navitem kb-stats "Stats" %}
           {% if user.is_authenticated %}{% navitem kb-account-main "Account" %}{% endif %}
           {% if user.is_staff %}
-            <li class="dropdown" data-dropdown="dropdown">
-              <a class="dropdown-toggle" href="{% url kegadmin-main kbsite.url %}">Admin</a>
+            <li class="dropdown">
+              <a  href="#" class="dropdown-toggle" data-toggle="dropdown">Admin
+                <b class="caret"></b>
+              </a>
               <ul class="dropdown-menu">
                 {% include "kegadmin/nav-items.html" %}
               </ul>
@@ -103,9 +106,10 @@
         </form>
         {% else %}
           <ul class="nav secondary-nav">
-            <li class="dropdown" data-dropdown="dropdown">
-              <a href="#" class="dropdown-toggle">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 {{ user.username }}
+                <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
                 <li><a href="{% url django.contrib.auth.views.logout %}">Logout</a></li>
@@ -114,6 +118,7 @@
           </ul>
         {% endif %}
       </div>
+     </div>
     </div>
   </div>
 
@@ -127,7 +132,7 @@
         <h1>{% block pagetitle %}{% endblock %}</h1>
         {% block breadcrumbs %}{% endblock %}
         {% for message in messages %}
-          <div class="alert-message {{message.tags}}">
+          <div class="alert {{message.tags}}">
             <a class="close" href="#">×</a>
             <p>
               {{message}}

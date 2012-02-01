@@ -1,7 +1,7 @@
 {% load kegweblib %}
 {% with keg.current_tap as tap %}
 <div class="row">
-  <div class="span9">
+  <div class="span8">
     <div class="kb-tapbox">
       <div class="kb-tapbox-header">
         <h3>{% if tap %}{{ tap.name }}: {% endif %} {{ keg.type.name }}</h3>
@@ -63,5 +63,5 @@
       </div>
     </div>
   </div> <!-- row -->
-</div> <!-- span9 -->
+</div> <!-- span8 -->
 {% endwith %}

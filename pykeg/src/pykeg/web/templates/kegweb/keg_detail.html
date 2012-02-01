@@ -35,7 +35,7 @@
 {% block col-1 %}
 
 <div class="row">
-  <div class="span9">
+  <div class="span8">
     <h2>{{keg.type.name}}</h2>
     <span class="label">{{keg.type.brewer}}</span>
   </div>
@@ -47,7 +47,7 @@
 
 {% if keg.description %}
 <div class="row">
-  <div class="span9">
+  <div class="span8">
     <blockquote>
       <p>{{ keg.description}}</p>
     </blockquote>
@@ -56,7 +56,7 @@
 {% endif %}
 
 <div class="row">
-  <div class="span9">
+  <div class="span8">
     <table class="condensed-table">
       <tbody>
         <tr>
@@ -119,7 +119,7 @@
 
 {% if sessions %}
 <div class="row">
-  <div class="span9">
+  <div class="span8">
     <h2>All Sessions</h2>
     {% for session in sessions %}
       {% include "kegweb/keg-session.html" %}

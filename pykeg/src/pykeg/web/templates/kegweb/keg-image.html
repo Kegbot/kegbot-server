@@ -1,8 +1,8 @@
 <div class="kb-tapbox-image">
   {% if keg.type.GetImage %}
-    <img src="{{ keg.type.GetImage.thumbnail.url }}" style="width: 100%;">
+    <img src="{{ keg.type.GetImage.thumbnail.url }}">
   {% else %}
-    <img src="{{ STATIC_URL }}images/kegbot-unknown-square.png" style="width: 100%;">
+    <img src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
   {% endif %}
 </div>
 

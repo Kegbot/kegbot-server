@@ -12,7 +12,7 @@
 
 {% block col-1 %}
 <div class="row">
-  <div class="span9">
+  <div class="span8">
     <h2>Summary</h2>
     <table class="condensed-table">
        <tr>
@@ -61,12 +61,12 @@
        {% endif %}
 
     </table>
-  </div> <!-- span9 -->
+  </div> <!-- span8 -->
 </div> <!-- row -->
 
 {% if chunks %}
 <div class="row">
-  <div class="span9">
+  <div class="span8">
   <h2>Recent Sessions</h2>
     {% for chunk in chunks %}
       {% with chunk.session as session %}
@@ -81,7 +81,7 @@
 
 {% block col-2 %}
 <div class="row">
-  <div class="span5">
+  <div class="span4">
     <h2>Drinker Stats</h2>
     {% if not stats.total_pours %}
     No sessions recorded for {{ drinker }}, nothing to display!
@@ -98,6 +98,6 @@
       </p>
       {% endif %}
     </div>
-  </div> <!-- span5 -->
+  </div> <!-- span4 -->
 </div>
 {% endblock %}

@@ -1,7 +1,5 @@
 {% load kegweblib %}
 {% with keg.current_tap as tap %}
-<div class="row">
-  <div class="span8">
     <div class="kb-tapbox">
       <div class="kb-tapbox-header">
         <h3>{% if tap %}{{ tap.name }}: {% endif %} {{ keg.type.name }}</h3>
@@ -9,12 +7,12 @@
 
       <div class="kb-tapbox-content">
         <div class="row">
-          <div class="span3">
+          <div class="span4">
             <div class="kb-tapbox-left">
               {% include "kegweb/keg-image.html" %}
             </div>
           </div>
-          <div class="span6">
+          <div class="span7">
             <div class="badge">
               <div class="badge-header">
                 Total Poured
@@ -48,7 +46,7 @@
         </div>
         <div class="kb-tapbox-footer">
           <div class="row">
-            <div class="span7">
+            <div class="span9">
               {{ keg.size.name }}<br/>
               <small>tapped {% timeago keg.startdate %}</small>
             </div>
@@ -62,6 +60,4 @@
         </div>
       </div>
     </div>
-  </div> <!-- row -->
-</div> <!-- span8 -->
 {% endwith %}

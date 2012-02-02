@@ -3,7 +3,7 @@
 
 {% block title %}main page{% endblock %}
 
-{% block col-1 %}
+{% block col-2 %}
   <h2>On Tap</h2>
   {% for tap in taps %}
     {% if tap.current_keg %}
@@ -30,12 +30,12 @@
     </div>
   {% endif %}
   {% endwith %}
-{% endblock col-1 %}
+{% endblock col-2 %}
 
-{% block col-2 %}
+{% block col-3 %}
 <div class="kb-contentbox">
   <h2>Recent Activity</h2>
   <div id="kb-recent-events"> </div>
 </div>
 
-{% endblock col-2 %}
+{% endblock col-3 %}

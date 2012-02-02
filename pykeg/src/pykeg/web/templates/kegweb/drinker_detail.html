@@ -4,13 +4,13 @@
 {% block title %}Drinker Details: {{ drinker.username }}{% endblock %}
 {% block pagetitle %}Drinker Details: {{ drinker.username }}{% endblock %}
 
-{% block sidebar %}
+{% block col-1 %}
   <div class="well">
     {% mugshot_box drinker %}
   </div>
-{% endblock %}
+{% endblock col-1 %}
 
-{% block col-1 %}
+{% block col-2 %}
 <div class="row">
   <div class="span8">
     <h2>Summary</h2>
@@ -66,7 +66,7 @@
 
 {% if chunks %}
 <div class="row">
-  <div class="span8">
+  <div class="span10">
   <h2>Recent Sessions</h2>
     {% for chunk in chunks %}
       {% with chunk.session as session %}
@@ -77,11 +77,10 @@
 </div>
 {% endif %}
 
-{% endblock %}
+{% endblock col-2 %}
 
-{% block col-2 %}
+{% block col-3 %}
 <div class="row">
-  <div class="span4">
     <h2>Drinker Stats</h2>
     {% if not stats.total_pours %}
     No sessions recorded for {{ drinker }}, nothing to display!
@@ -98,6 +97,5 @@
       </p>
       {% endif %}
     </div>
-  </div> <!-- span4 -->
 </div>
-{% endblock %}
+{% endblock col-3 %}

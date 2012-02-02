@@ -4,7 +4,7 @@
 {% block title %}all-time system stats{% endblock %}
 {% block pagetitle %}all-time system stats{% endblock %}
 
-{% block col-1 %}
+{% block col-2 %}
 <h2>Summary</h2>
 <table border="0" class="condensed-table">
   <tbody>
@@ -20,16 +20,14 @@
 
   </tbody>
 </table>
-{% endblock col-1 %}
+{% endblock col-2 %}
 
-{% block col-2 %}
+{% block col-3 %}
 <div class="row">
-  <div class="span5">
     <h2>Top Drinkers</h2>
     {% chart users_by_volume stats 280 220 %}<br/>
     {% with top_drinkers as ranked_drinkers %}
       {% include "kegweb/drinker-rank.html" %}
     {% endwith %}
-  </div>
 </div>
-{% endblock col-2 %}
+{% endblock col-3 %}

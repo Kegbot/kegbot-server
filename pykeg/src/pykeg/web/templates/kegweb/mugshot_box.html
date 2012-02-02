@@ -9,6 +9,8 @@
   <img
     {% if boxsize %}
       style="width:{{boxsize}}px; height:{{boxsize}}px"
+    {% else %}
+      style="width:100%;"
     {% endif %}
 {% if user and profile.mugshot %}
       src="{{ profile.mugshot.thumbnail.url }}"

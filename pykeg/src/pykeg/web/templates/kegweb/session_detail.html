@@ -5,7 +5,7 @@
 {% block title %}session detail: {{ session.GetTitle}}{% endblock %}
 {% block pagetitle %}{{ session.GetTitle}}{% endblock %}
 
-{% block col-1 %}
+{% block col-2 %}
 
 <div class="row">
   <div class="span8">
@@ -99,22 +99,18 @@
 {% endif %}
 {% endwith %}
 
-{% endblock col-1 %}
+{% endblock col-2 %}
 
-{% block col-2 %}
+{% block col-3 %}
 <div class="row">
-  <div class="span5">
     <h2>Drinker Breakdown</h2>
     {% chart users_by_volume stats 350 250 %}
-  </div>
 </div>
 
 <div class="row">
-  <div class="span5">
     <h2>All Pours</h2>
     {% for drink in session.drinks.all %}
       {% include "kegweb/drink-box.html" %}
     {% endfor %}
-  </div>
 </div>
-{% endblock col-2 %}
+{% endblock col-3 %}

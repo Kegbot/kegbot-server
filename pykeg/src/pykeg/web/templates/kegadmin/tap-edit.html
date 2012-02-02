@@ -14,7 +14,7 @@
   <div class="span11">
     <h2>{{ tap.name }}</h2>
     <div class="well">
-      <ul class="tabs" data-tabs="tabs">
+      <ul class="nav nav-tabs" data-tabs="tabs">
         <li class="active"><a href="#tap-{{tap.id}}-keg">Keg</a></li>
         <li><a href="#tap-{{tap.id}}-settings">Settings</a></li>
         <li><a href="#tap-{{tap.id}}-last">Last Pour</a></li>
@@ -39,7 +39,7 @@
                 <form action="{% url kegadmin-do-end-keg kbsite.url %}" method="POST">
                   {% csrf_token %}
                   {{ tapinfo.end_form|bootstrap }}
-                  <button type="submit" class="btn danger small fill-parent-width">End Keg</button>
+                  <button type="submit" class="btn btn-danger small fill-parent-width">End Keg</button>
                 </form>
               </p>
             </div>
@@ -66,7 +66,7 @@
               {% csrf_token %}
               {{ tapinfo.keg_form|bootstrap }}
               <div class="actions">
-                <input type="submit" class="btn success"
+                <input type="submit" class="btn btn-success"
                     name="{{ tapinfo.prefix }}-submit"
                     value="Activate Keg"/>
               </div>
@@ -80,7 +80,7 @@
               {% csrf_token %}
               {{ tapinfo.edit_form|bootstrap }}
               <div class="actions">
-                <input type="submit" class="btn primary"
+                <input type="submit" class="btn btn-primary"
                     name="{{ tapinfo.prefix }}-submit" value="Update Tap"/>
               </div>
           </form>
@@ -98,7 +98,7 @@
                       <button type="submit" class="btn small fill-parent-width">Adjust Drink</button>
                     </p>
                     <p>
-                      <button type="submit" class="btn danger small fill-parent-width">Cancel Drink</button>
+                      <button type="submit" class="btn btn-danger small fill-parent-width">Cancel Drink</button>
                     </p>
                   </div>
                 </th>
@@ -133,7 +133,7 @@
         {% csrf_token %}
         {{ create_tap_form|bootstrap }}
         <div class="actions">
-          <input type="submit" class="btn success"
+          <input type="submit" class="btn btn-success"
               name="{{ tapinfo.prefix }}-submit" value="Create Tap"/>
         </div>
       </form>

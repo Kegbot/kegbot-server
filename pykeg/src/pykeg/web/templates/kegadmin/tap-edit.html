@@ -14,14 +14,14 @@
   <div class="span11">
     <h2>{{ tap.name }}</h2>
     <div class="well">
-      <ul class="nav nav-tabs" data-tabs="tabs">
-        <li class="active"><a href="#tap-{{tap.id}}-keg">Keg</a></li>
-        <li><a href="#tap-{{tap.id}}-settings">Settings</a></li>
-        <li><a href="#tap-{{tap.id}}-last">Last Pour</a></li>
+      <ul id="tab" class="nav nav-tabs">
+        <li class="active"><a href="#tap-{{tap.id}}-keg" data-toggle="tab">Keg</a></li>
+        <li><a href="#tap-{{tap.id}}-settings" data-toggle="tab">Settings</a></li>
+        <li><a href="#tap-{{tap.id}}-last" data-toggle="tab">Last Pour</a></li>
       </ul>
 
-      <div class="pill-content">
-        <div class="active" id="tap-{{tap.id}}-keg">
+      <div class="tab-content">
+        <div class="tab-pane fade active in" id="tap-{{tap.id}}-keg">
             {% if keg and keg.is_active %}
             <div class="row">
             <div class="span3">
@@ -75,7 +75,7 @@
           {% endif %}
         </div> <!-- /keg -->
 
-        <div id="tap-{{tap.id}}-settings">
+        <div class="tab-pane fade" id="tap-{{tap.id}}-settings">
           <form action="" method="POST" class="form-stacked">
               {% csrf_token %}
               {{ tapinfo.edit_form|bootstrap }}
@@ -86,7 +86,7 @@
           </form>
         </div>
 
-        <div id="tap-{{tap.id}}-last">
+        <div class="tab-pane fade" id="tap-{{tap.id}}-last">
           <table class="condensed-table zebra-striped">
             <tbody>
               {% with keg.drinks.latest as drink %}
@@ -114,7 +114,7 @@
           </table>
         </div>
 
-      </div> <!-- /pill-content -->
+      </div> <!-- tab-content -->
 
     </div> <!-- well -->
   </div>

@@ -19,10 +19,10 @@
 
   <script type="text/javascript" src="{{ STATIC_URL }}js/kegweb.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alerts.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-buttons.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tabs.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-twipsy.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alert.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-button.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tooltip.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-popover.js"></script>
 
   {% if kbsite.url %}
@@ -40,8 +40,6 @@
         kegweb.refreshDisplayUnits(defaultUseMetric);
         kegweb.onReady();
         $("abbr.timeago").timeago();
-        $(".tabs").tabs();
-        $(".pills").pills();
         $(".alert").alert()
     });
   </script>
@@ -93,16 +91,16 @@
           {% endif %}
         </ul>
         {% if not user.is_authenticated %}
-        <form action="/accounts/login/" class="pull-right" method="POST">
+        <form action="/accounts/login/" class="navbar-search pull-right" method="POST">
         {% csrf_token %}
         {% with login_form as form %}
           {% for hidden in form.hidden_fields %}
           {{ hidden }}
           {% endfor %}
         {% endwith %}
-          <input class="input-small" name="username" type="text" placeholder="Username" >
-          <input class="input-small" name="password" type="password" placeholder="Password">
-          <button class="btn" type="submit">Sign in</button>
+          <input class="search-query" name="username" type="text" placeholder="Username" >
+          <input class="search-query" name="password" type="password" placeholder="Password">
+          <button class="btn" type="submit"><i class="icon-ok"></i></button>
         </form>
         {% else %}
           <ul class="nav secondary-nav">
@@ -133,7 +131,7 @@
         {% block breadcrumbs %}{% endblock %}
         {% for message in messages %}
           <div class="alert {{message.tags}}">
-            <a class="close" href="#">×</a>
+            <a class="close" data-dismiss="alert" href="#">×</a>
             <p>
               {{message}}
             </p>

@@ -278,7 +278,7 @@ def current_sessions(request):
   session_list = []
   try:
     latest = request.kbsite.sessions.latest()
-    if latest.IsActive():
+    if latest.IsActiveNow():
       session_list.append(latest)
   except models.DrinkingSession.DoesNotExist:
     pass

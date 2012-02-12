@@ -54,7 +54,7 @@ def index(request):
 
   try:
     session = request.kbsite.sessions.latest()
-    if session.IsActive():
+    if session.IsActiveNow():
       context['current_session'] = session
   except models.DrinkingSession.DoesNotExist:
     pass

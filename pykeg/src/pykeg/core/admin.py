@@ -51,7 +51,11 @@ class AuthenticationTokenAdmin(admin.ModelAdmin):
   search_fields = ('user__username', 'token_value', 'nice_name')
 admin.site.register(models.AuthenticationToken, AuthenticationTokenAdmin)
 
-admin.site.register(models.DrinkingSession)
+class DrinkingSessionAdmin(admin.ModelAdmin):
+  list_display = ('id', 'site', 'seqn', 'starttime', 'endtime', 'volume_ml', 'GetTitle')
+  list_filter = ('site', 'starttime')
+  search_fields = ('name',)
+admin.site.register(models.DrinkingSession, DrinkingSessionAdmin)
 
 class ThermoSensorAdmin(admin.ModelAdmin):
   list_display = ('nice_name', 'raw_name')

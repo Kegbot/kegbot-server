@@ -526,7 +526,7 @@ class DrinkingSession(_AbstractChunk):
       null=True)
 
   def __str__(self):
-    return "Session #%s: %s" % (self.id, self.starttime)
+    return "Session #%s: %s" % (self.seqn, self.starttime)
 
   def RecomputeStats(self):
     self.stats.all().delete()
@@ -619,8 +619,11 @@ class DrinkingSession(_AbstractChunk):
     chunks = self.user_chunks.all().order_by('-volume_ml')
     return chunks
 
-  def IsActive(self):
-    return self.endtime > datetime.datetime.now()
+  def IsActiveNow(self):
+    return self.IsActive(datetime.datetime.now())
+
+  def IsActive(self, now):
+    return self.endtime > now
 
   def Rebuild(self):
     self.volume_ml = 0
@@ -655,7 +658,7 @@ class DrinkingSession(_AbstractChunk):
 
     # Return last session if one already exists
     q = drink.site.sessions.all().order_by('-endtime')[:1]
-    if q and q[0].IsActive():
+    if q and q[0].IsActive(drink.starttime):
       session = q[0]
       session.AddDrink(drink)
       drink.session = session

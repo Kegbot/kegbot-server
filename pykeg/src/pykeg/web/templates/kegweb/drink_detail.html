@@ -5,14 +5,14 @@
 {% block pagetitle %}drink {{ drink.seqn }} by {{ drink.user.username }}{% endblock %}
 
 {% if drink.user %}
-{% block col-1 %}
+{% block sidebar %}
   <div class="well">
     {% mugshot_box drink.user %}
   </div>
-{% endblock col-1 %}
+{% endblock sidebar %}
 {% endif %}
 
-{% block col-2 %}
+{% block col-1 %}
 <div class="row">
   <div class="span8">
     <h2>Summary</h2>
@@ -54,13 +54,13 @@
   </div>
 </div>
 
-{% endblock col-2 %}
+{% endblock col-1 %}
 
-{% block col-3 %}
+{% block col-2 %}
 {% with drink.pictures.all as pictures %}
 {% if pictures.count %}
 <h2>Beer Goggles!</h2>
 {% include "kegweb/picture-gallery.html" %}
 {% endif %}
 {% endwith %}
-{% endblock col-3 %}
+{% endblock col-2 %}

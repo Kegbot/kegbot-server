@@ -65,84 +65,82 @@
 
 <body>
   <div class="navbar navbar-fixed-top">
-    <div class="fill">
-     <div class="navbar-inner">
-      <div class="container">
-        <a class="brand" href="{% url kb-home kbsite.url %}">{% spaceless %}
-          {% if kbsite.settings.title %}
-            {{kbsite.settings.title}}
-          {% else %}
-            kegbot beer device
-          {% endif %}
-        {% endspaceless %}</a>
-        <ul class="nav">
-          {% navitem kb-kegs "Kegs" %}
-          {% navitem kb-stats "Stats" %}
-          {% if user.is_authenticated %}{% navitem kb-account-main "Account" %}{% endif %}
-          {% if user.is_staff %}
-            <li class="dropdown">
-              <a  href="#" class="dropdown-toggle" data-toggle="dropdown">Admin
-                <b class="caret"></b>
-              </a>
-              <ul class="dropdown-menu">
-                {% include "kegadmin/nav-items.html" %}
-              </ul>
-            </li>
-          {% endif %}
-        </ul>
-        {% if not user.is_authenticated %}
-        <form action="/accounts/login/" class="navbar-search pull-right" method="POST">
-        {% csrf_token %}
-        {% with login_form as form %}
-          {% for hidden in form.hidden_fields %}
-          {{ hidden }}
-          {% endfor %}
-        {% endwith %}
-          <input class="search-query" name="username" type="text" placeholder="Username" >
-          <input class="search-query" name="password" type="password" placeholder="Password">
-          <button class="btn" type="submit"><i class="icon-ok"></i></button>
-        </form>
+   <div class="navbar-inner">
+    <div class="container-fluid">
+      <a class="brand" href="{% url kb-home kbsite.url %}">{% spaceless %}
+        {% if kbsite.settings.title %}
+          {{kbsite.settings.title}}
         {% else %}
-          <ul class="nav secondary-nav">
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                {{ user.username }}
-                <b class="caret"></b>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a href="{% url django.contrib.auth.views.logout %}">Logout</a></li>
-              </ul>
-            </ul>
-          </ul>
+          kegbot beer device
         {% endif %}
+      {% endspaceless %}</a>
+      <ul class="nav">
+        {% navitem kb-kegs "Kegs" %}
+        {% navitem kb-stats "Stats" %}
+        {% if user.is_authenticated %}{% navitem kb-account-main "Account" %}{% endif %}
+        {% if user.is_staff %}
+          <li class="dropdown">
+            <a  href="#" class="dropdown-toggle" data-toggle="dropdown">Admin
+              <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+              {% include "kegadmin/nav-items.html" %}
+            </ul>
+          </li>
+        {% endif %}
+      </ul>
+      {% if not user.is_authenticated %}
+      <form action="/accounts/login/" class="navbar-search pull-right" method="POST">
+      {% csrf_token %}
+      {% with login_form as form %}
+        {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+        {% endfor %}
+      {% endwith %}
+        <input class="search-query" name="username" type="text" placeholder="Username" >
+        <input class="search-query" name="password" type="password" placeholder="Password">
+        <button class="btn" type="submit"><i class="icon-ok"></i></button>
+      </form>
+      {% else %}
+        <p class="navbar-text pull-right">
+          Logged in as <strong>{{ user.username }}</strong>.
+          (<a href="{% url django.contrib.auth.views.logout %}">logout</a>)
+        </p>
+      {% endif %}
       </div>
-     </div>
     </div>
-  </div>
+  </div> <!-- /.navbar -->
 
   <div class="container-fluid">
-    <div class="sidebar">
-      {% block sidebar %}{% endblock %}
-    </div>
-    <div class="content">
-      {% block header-margin %}
-      <div class="page-header">
-        <h1>{% block pagetitle %}{% endblock %}</h1>
-        {% block breadcrumbs %}{% endblock %}
-        {% for message in messages %}
-          <div class="alert {{message.tags}}">
-            <a class="close" data-dismiss="alert" href="#">×</a>
-            <p>
-              {{message}}
-            </p>
-          </div>
-        {% endfor %}
-      </div>
-      {% endblock %}
+    <div class="row-fluid">
+      <div class="span2">
+        <div class="sidebar">
+          {% block sidebar %}&nbsp;{% endblock %}
+        </div>
+      </div> <!-- /span2 -->
 
-      {% block content %}{% endblock %}
-      {% block extra-content %}{% endblock %}
-    </div> <!-- content -->
+      <div class="span10">
+        {% block header-margin %}
+        <div class="page-header">
+          <h1>{% block pagetitle %}{% endblock %}</h1>
+          {% block breadcrumbs %}{% endblock %}
+          {% for message in messages %}
+            <div class="alert {{message.tags}}">
+              <a class="close" data-dismiss="alert" href="#">×</a>
+              <p>
+                {{message}}
+              </p>
+            </div>
+          {% endfor %}
+        </div>
+        {% endblock %}
+
+        <div id="content">
+        {% block content %}{% endblock %}
+        {% block extra-content %}{% endblock %}
+        </div>
+      </div> <!-- /span10 -->
+    </div> <!-- /row-fluid -->
     <footer>
       <p>
         <small>
@@ -154,7 +152,6 @@
         </small>
       </p>
     </footer>
-
-  </div> <!-- container -->
+  </div> <!-- /container-fluid -->
 </body>
 

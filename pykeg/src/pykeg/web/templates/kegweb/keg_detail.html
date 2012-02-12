@@ -9,7 +9,7 @@
   keg {{ keg.seqn }} detail
 {% endblock %}
 
-{% block col-1 %}
+{% block sidebar %}
   <div class="well">
   {% include "kegweb/keg-image.html" %}
 
@@ -29,100 +29,88 @@
   {% endif %}
   {% endwith %} {% endwith %}
   </div>
-{% endblock col-1 %}
+{% endblock sidebar %}
 
 
-{% block col-2 %}
-
-<div class="row">
-    <h2>{{keg.type.name}}</h2>
-    <span class="label">{{keg.type.brewer}}</span>
-</div>
-
-<div class="row">
-  &nbsp;
-</div>
+{% block col-1 %}
+<h2>{{keg.type.name}}</h2>
+<span class="label">{{keg.type.brewer}}</span>
+<p/>
 
 {% if keg.description %}
-<div class="row">
-    <blockquote>
-      <p>{{ keg.description}}</p>
-    </blockquote>
-</div>
+<blockquote>
+  <p>{{ keg.description}}</p>
+</blockquote>
 {% endif %}
 
-<div class="row">
-    <table class="condensed-table">
-      <tbody>
-        <tr>
-          <th>Status</th>
-          <td>
-            {% ifequal keg.status "online" %}
-            this keg is <b>online</b>, and is {{ keg.keg_age.days }}
-            day{{keg.keg_age.days|pluralize}} old.
-            <br/>
-            it is
-            {% if keg.is_empty %}
-              <i>empty</i>.
-            {% else %}
-              <i>{{ keg.percent_full|floatformat:2 }}% full</i>.
-            {% endif %}
-            {% else %}
-            this keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
-            day{{keg.keg_age.days|pluralize}}.
-            {% endifequal %}
-          </td>
-        </tr>
-
-        {% include "kegweb/basic-stats.html" %}
-
-        <tr>
-          <th>Total Poured</th>
-          <td>
-            {% volume keg.served_volume %}
-            {% if not keg.is_empty %}
-              ({% volume keg.remaining_volume %} remain)
-            {% endif %}<br/>
-            {% chart keg_volume keg 340 60 %}
-          </td>
-        </tr>
-
-        {% with keg.current_tap as tap %}
-        {% if tap and tap.temperature_sensor %}
-        <tr>
-          <th>Temperature</th>
-          <td>
-            {{ tap.Temperature.TempC|floatformat:1}}&deg;C / 
-            {{ tap.Temperature.TempF|floatformat:1}}&deg;F<br/>
-            {% chart sensor tap.temperature_sensor 340 60 %}
-          </td>
-        </tr>
+<table class="condensed-table">
+  <tbody>
+    <tr>
+      <th>Status</th>
+      <td>
+        {% ifequal keg.status "online" %}
+        this keg is <b>online</b>, and is {{ keg.keg_age.days }}
+        day{{keg.keg_age.days|pluralize}} old.
+        <br/>
+        it is
+        {% if keg.is_empty %}
+          <i>empty</i>.
+        {% else %}
+          <i>{{ keg.percent_full|floatformat:2 }}% full</i>.
         {% endif %}
-        {% endwith %}
+        {% else %}
+        this keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
+        day{{keg.keg_age.days|pluralize}}.
+        {% endifequal %}
+      </td>
+    </tr>
 
-        {% if keg.spilled_volume > 0 %}
-        <tr>
-          <th>Total Spilled/Lost</th>
-          <td>{% volume keg.spilled_volume %}</td>
-        </tr>
-        {% endif %}
+    {% include "kegweb/basic-stats.html" %}
 
-      </tbody>
-    </table>
-</div>
+    <tr>
+      <th>Total Poured</th>
+      <td>
+        {% volume keg.served_volume %}
+        {% if not keg.is_empty %}
+          ({% volume keg.remaining_volume %} remain)
+        {% endif %}<br/>
+        {% chart keg_volume keg 340 60 %}
+      </td>
+    </tr>
+
+    {% with keg.current_tap as tap %}
+    {% if tap and tap.temperature_sensor %}
+    <tr>
+      <th>Temperature</th>
+      <td>
+        {{ tap.Temperature.TempC|floatformat:1}}&deg;C / 
+        {{ tap.Temperature.TempF|floatformat:1}}&deg;F<br/>
+        {% chart sensor tap.temperature_sensor 340 60 %}
+      </td>
+    </tr>
+    {% endif %}
+    {% endwith %}
+
+    {% if keg.spilled_volume > 0 %}
+    <tr>
+      <th>Total Spilled/Lost</th>
+      <td>{% volume keg.spilled_volume %}</td>
+    </tr>
+    {% endif %}
+
+  </tbody>
+</table>
 
 {% if sessions %}
-<div class="row">
-    <h2>All Sessions</h2>
-    {% for session in sessions %}
-      {% include "kegweb/keg-session.html" %}
-    {% endfor %}
-</div>
+<h2>All Sessions</h2>
+{% for session in sessions %}
+  {% include "kegweb/keg-session.html" %}
+{% endfor %}
 {% endif %}
 
-{% endblock col-2 %}
+{% endblock col-1 %}
 
-{% block col-3 %}
+{% block col-2 %}
 <div class="row">
     <h2>Top Drinkers</h2>
     {% chart users_by_volume stats 280 220 %}<br/>
@@ -131,5 +119,5 @@
     {% endwith %}
 </div>
 
-{% endblock col-3 %}
+{% endblock col-2 %}
 

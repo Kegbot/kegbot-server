@@ -88,7 +88,7 @@ def tap_list(request):
         #widget.attrs['class'] = new_class.strip()
 
     tinfo['edit_form'] = edit_form
-    if tap.current_keg:
+    if tap.current_keg and tap.current_keg.is_active():
       tinfo['end_form'] = forms.KegHiddenSelectForm(initial={'keg':tap.current_keg})
     else:
       tinfo['keg_form'] = forms.ChangeKegForm()

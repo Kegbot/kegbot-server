@@ -106,9 +106,17 @@ class SiteSettings(models.Model):
       help_text='Background for this site.')
   event_web_hook = models.URLField(blank=True, null=True, verify_exists=False,
       help_text='Web hook URL for newly-generated events.')
+  session_timeout_minutes = models.PositiveIntegerField(
+      default=kb_common.DRINK_SESSION_TIME_MINUTES,
+      help_text='Maximum time in minutes that a session may be idle (no pours) '
+          'before it is considered to be finished.  '
+          'Recommended value is %s.' % kb_common.DRINK_SESSION_TIME_MINUTES)
 
   class Meta:
     verbose_name_plural = "site settings"
+
+  def GetSessionTimeoutDelta(self):
+    return datetime.timedelta(minutes=self.session_timeout_minutes)
 
 class UserProfile(models.Model):
   """Extra per-User information."""
@@ -475,36 +483,6 @@ class AuthenticationToken(models.Model):
 
 pre_save.connect(_set_seqn_pre_save, sender=AuthenticationToken)
 
-def _find_session_in_window(qset, when, window):
-  matching = qset.filter(
-      starttime__lte=when + window,
-      endtime__gte=when - window
-  )
-
-  if matching:
-    return matching[0]
-
-  # Match objects ending just before the start
-  earlier = qset.filter(
-      endtime__gte=(when - window),
-      starttime__lt=when,
-  )
-
-  if earlier:
-    return earlier[0]
-
-  # Match objects occuring just after the end
-  newer = qset.filter(
-      starttime__lte=(when - window),
-      endtime__gt=when,
-  )
-
-  if newer:
-    return newer[0]
-
-  return None
-
-
 class _AbstractChunk(models.Model):
   class Meta:
     abstract = True
@@ -519,10 +497,13 @@ class _AbstractChunk(models.Model):
     return self.endtime - self.starttime
 
   def _AddDrinkNoSave(self, drink):
+    session_delta = drink.site.settings.GetSessionTimeoutDelta()
+    session_end = drink.starttime + session_delta
+
     if self.starttime > drink.starttime:
       self.starttime = drink.starttime
-    if self.endtime < drink.starttime:
-      self.endtime = drink.starttime
+    if self.endtime < session_end:
+      self.endtime = session_end
     self.volume_ml += drink.volume_ml
 
   def AddDrink(self, drink):
@@ -612,7 +593,12 @@ class DrinkingSession(_AbstractChunk):
 
   def AddDrink(self, drink):
     super(DrinkingSession, self).AddDrink(drink)
-    defaults = {'starttime': drink.starttime, 'endtime': drink.starttime}
+    session_delta = drink.site.settings.GetSessionTimeoutDelta()
+
+    defaults = {
+      'starttime': drink.starttime,
+      'endtime': drink.starttime + session_delta,
+    }
 
     # Update or create a SessionChunk.
     chunk, created = SessionChunk.objects.get_or_create(session=self,
@@ -634,9 +620,7 @@ class DrinkingSession(_AbstractChunk):
     return chunks
 
   def IsActive(self):
-    now = datetime.datetime.now()
-    delta = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
-    return (self.endtime + delta) >= now
+    return self.endtime > datetime.datetime.now()
 
   def Rebuild(self):
     self.volume_ml = 0
@@ -650,6 +634,7 @@ class DrinkingSession(_AbstractChunk):
       # remain a placeholder.
       return
 
+    session_delta = self.site.settings.GetSessionTimeoutDelta()
     min_time = None
     max_time = None
     for d in drinks:
@@ -659,7 +644,7 @@ class DrinkingSession(_AbstractChunk):
       if max_time is None or d.starttime > max_time:
         max_time = d.starttime
     self.starttime = min_time
-    self.endtime = max_time
+    self.endtime = max_time + session_delta
     self.save()
 
   @classmethod
@@ -669,10 +654,9 @@ class DrinkingSession(_AbstractChunk):
       return drink.session
 
     # Return last session if one already exists
-    q = drink.site.sessions.all()
-    window = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
-    session = _find_session_in_window(q, drink.starttime, window)
-    if session:
+    q = drink.site.sessions.all().order_by('-endtime')[:1]
+    if q and q[0].IsActive():
+      session = q[0]
       session.AddDrink(drink)
       drink.session = session
       drink.save()

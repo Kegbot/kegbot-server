@@ -15,10 +15,6 @@ MIN_SESSION_VOLUME_DISPLAY_ML = 177  # 6 ounces
 # (see UserDrinkingSession table)
 DRINK_SESSION_TIME_MINUTES = 90
 
-# Maximum time between different UserDrinkingSession records to be considered
-# 'concurrent' (see DrinkingSessionGroup table)
-GROUP_SESSION_TIME_MINUTES = 90
-
 # The maximum difference between consecutive meter readings that is considered
 # valid.
 MAX_METER_READING_DELTA = 2200*2

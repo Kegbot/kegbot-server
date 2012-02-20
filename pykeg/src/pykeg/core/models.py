@@ -106,6 +106,9 @@ class SiteSettings(models.Model):
       help_text='Background for this site.')
   event_web_hook = models.URLField(blank=True, null=True, verify_exists=False,
       help_text='Web hook URL for newly-generated events.')
+  google_analytics_id = models.CharField(blank=True, null=True, max_length=64,
+      help_text='Set to your Google Analytics ID to enable tracking. '
+      'Example: UA-XXXX-y')
   session_timeout_minutes = models.PositiveIntegerField(
       default=kb_common.DRINK_SESSION_TIME_MINUTES,
       help_text='Maximum time in minutes that a session may be idle (no pours) '

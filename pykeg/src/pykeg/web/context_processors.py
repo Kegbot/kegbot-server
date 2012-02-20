@@ -17,9 +17,14 @@ def enabled_features(request):
   return ret
 
 def kbsite(request):
+  kbsite = getattr(request, 'kbsite', None)
+  analytics_id = None
+  if kbsite:
+    analytics_id = kbsite.settings.google_analytics_id
   ret = {
     'kbsite': getattr(request, 'kbsite', None),
     'request_path': request.path,
     'login_form': LoginForm(initial={'next_page': request.path}),
+    'GOOGLE_ANALYTICS_ID': analytics_id,
   }
   return ret

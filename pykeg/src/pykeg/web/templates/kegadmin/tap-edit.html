@@ -80,8 +80,14 @@
               {% csrf_token %}
               {{ tapinfo.edit_form|bootstrap }}
               <div class="actions">
-                <input type="submit" class="btn btn-primary"
-                    name="{{ tapinfo.prefix }}-submit" value="Update Tap"/>
+                <button type="submit" class="btn btn-primary"
+                    name="{{ tapinfo.prefix }}-submit">
+                  <i class="icon-ok icon-white"></i> Update Tap</button>
+                </button>
+                <button type="submit" class="btn btn-danger"
+                    name="{{ tapinfo.prefix }}-delete">
+                  <i class="icon-trash icon-white"></i> Delete Tap</button>
+                </button>
               </div>
           </form>
         </div>
@@ -124,7 +130,6 @@
 {% endwith %}
 {% endfor %}
 
-{% comment %}
 <div class="row">
   <div class="span11">
     <h2>Add a New Tap</h2>
@@ -133,14 +138,13 @@
         {% csrf_token %}
         {{ create_tap_form|bootstrap }}
         <div class="actions">
-          <input type="submit" class="btn btn-success"
-              name="{{ tapinfo.prefix }}-submit" value="Create Tap"/>
+          <button type="submit" class="btn btn-success"
+              name="new-tap-submit">
+                <i class="icon-ok icon-white"></i> Create Tap</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-
-{% endcomment %}
 
 {% endblock %}

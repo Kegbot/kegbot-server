@@ -50,9 +50,49 @@ def kegadmin_main(request):
   context['settings_form'] = form
   return render_to_response('kegadmin/index.html', context)
 
+def _create_or_update_tap(tap, request):
+  if tap:
+    prefix = 'tap-%s' % (tap.seqn,)
+  else:
+    prefix = None
+  form = forms.TapForm(request.POST, site=request.kbsite, instance=tap,
+      prefix=prefix)
+  if form.is_valid():
+    new_tap = form.save(commit=False)
+    new_tap.site = request.kbsite
+    val = form.cleaned_data['ml_per_tick']
+    ml = val[0]
+    if ml == '0':
+      ml = val[1]
+    new_tap.ml_per_tick = float(ml)
+    new_tap.save()
+    if tap:
+      messages.success(request, 'Tap "%s" was updated.' % new_tap.name)
+    else:
+      messages.success(request, 'Tap "%s" was created.' % new_tap.name)
+    form = forms.TapForm(site=request.kbsite)
+  else:
+    messages.error(request, 'The tap form had errors, please correct them.')
+  return form
+
 @staff_member_required
 def tap_list(request):
   context = RequestContext(request)
+
+  # Create a new tap if needed.
+  if request.method == 'POST' and 'new-tap-submit' in request.POST:
+    context['create_tap_form'] = _create_or_update_tap(None, request)
+  else:
+    context['create_tap_form'] = forms.TapForm(site=request.kbsite)
+
+  for tap in request.kbsite.taps.all():
+    submit_name = 'tap-%s-delete' % tap.seqn
+    if request.method == 'POST' and submit_name in request.POST:
+      tap_name = tap.name
+      tap.delete()
+      messages.success(request, 'Tap "%s" was deleted.' % tap_name)
+
+  # Build/process forms for all taps.
   taps = [{'tap': tap} for tap in request.kbsite.taps.all()]
   for tinfo in taps:
     tap = tinfo['tap']
@@ -61,40 +101,19 @@ def tap_list(request):
 
     # Demux multiple forms using submit button name.
     submit_name = "%s-submit" % prefix
-    edit_form = None
     if request.method == 'POST' and submit_name in request.POST:
-      edit_form = forms.TapForm(request.POST, site=request.kbsite, instance=tap, prefix=prefix)
-      if edit_form.is_valid():
-        tap = edit_form.save(commit=False)
-        val = edit_form.cleaned_data['ml_per_tick']
-        ml = val[0]
-        if ml == '0':
-          ml = val[1]
-        tap.ml_per_tick = float(ml)
-        tap.save()
-        messages.success(request, 'Tap "%s" was updated.' % tap.name)
-      else:
-        messages.error(request, 'Your form had errors, please correct them.')
-    if not edit_form:
+      edit_form = _create_or_update_tap(tap, request)
+    else:
       edit_form = forms.TapForm(site=request.kbsite, instance=tap,
           prefix=prefix, initial={'ml_per_tick': (str(tap.ml_per_tick), str(tap.ml_per_tick))})
-
-    for field in edit_form.fields.values():
-      widget = field.widget
-      if widget.is_hidden:
-        continue
-      if isinstance(widget, widgets.Textarea) or isinstance(widget, widgets.TextInput):
-        new_class = widget.attrs.get('class', '') + ' span10'
-        #widget.attrs['class'] = new_class.strip()
-
     tinfo['edit_form'] = edit_form
+
     if tap.current_keg and tap.current_keg.is_active():
       tinfo['end_form'] = forms.KegHiddenSelectForm(initial={'keg':tap.current_keg})
     else:
       tinfo['keg_form'] = forms.ChangeKegForm()
 
   context['all_taps'] = taps
-  context['create_tap_form'] = forms.TapForm(site=request.kbsite)
   return render_to_response('kegadmin/tap-edit.html', context)
 
 @staff_member_required

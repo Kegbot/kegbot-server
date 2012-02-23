@@ -117,8 +117,9 @@ def ToJsonError(e, exc_info):
     message = 'An internal error occurred: %s' % str(e)
     if settings.DEBUG:
       message += "\n" + "\n".join(traceback.format_exception(*exc_info))
-      client = LocalRavenClient([])
-      client.create_from_exception(exc_info)
+  if settings.DEBUG:
+    client = LocalRavenClient([])
+    client.create_from_exception(exc_info)
   result = {
     'error' : {
       'code' : code,
@@ -157,9 +158,10 @@ def py_to_json(f):
     try:
       result_data = {'result' : f(*args, **kwargs)}
     except Exception, e:
+      exc_info = sys.exc_info()
       if settings.DEBUG and 'deb' in request.GET:
-        raise
-      result_data, http_code = ToJsonError(e, sys.exc_info())
+        raise exc_info[1], None, exc_info[2]
+      result_data, http_code = ToJsonError(e, exc_info)
     return HttpResponse(kbjson.dumps(result_data, indent=indent),
         mimetype='application/json', status=http_code)
   return new_function

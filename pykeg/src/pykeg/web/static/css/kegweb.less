@@ -178,8 +178,9 @@ div#content {
   margin-bottom: 8px;
   padding: 8px;
   border: 1px solid #eee;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
+  display: inline-block;
+  .border-radius(5px);
+  .clearfix();
 }
 
 .kb-event-box-session-start {
@@ -192,28 +193,23 @@ div#content {
   padding: 5px;
 }
 
-.kb-drink-box {
+.kb-event-box {
   width: 300px;
   margin-bottom: 8px;
   padding: 8px;
   border: 1px solid #eee;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
+  vertical-align: middle;
+  .border-radius(5px);
 }
 
-.kb-drink-box-mugshot {
+.kb-event-box-details {
+  vertical-align: middle;
+}
+
+.kb-event-box-image {
+  vertical-align: middle;
   float: left;
   margin-right: 8px;
-}
-
-.kb-session-box-icon {
-  float: left;
-  margin-right: 2px;
-  margin-bottom: 2px;
-}
-
-.kb-drink-box-details {
-  margin-left: 8px;
 }
 
 .kb-drink-box-details-headline {

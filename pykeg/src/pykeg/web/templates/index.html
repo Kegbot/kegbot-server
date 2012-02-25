@@ -3,6 +3,36 @@
 
 {% block title %}main page{% endblock %}
 
+{% block kb-extrajs %}
+{% verbatim %}
+<script id="systemeventlist" type="text/html">
+  <div id="eventlist"></div>
+</script>
+
+<script id="systemevent" type="text/html">
+  <div class="kb-event-box">
+    {{#image}}
+    <div class="kb-event-box-image">
+      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
+    </div>
+    {{/image}}
+    <div class="kb-event-box-details">
+      Event {{ event.id }}: {{ event.user_id }} {{ eventTitle }}<br/>
+      <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
+    </div>
+  </div>
+</script>
+{% endverbatim %}
+
+<script>
+$(document).ready(function () {
+  //ich.refresh();
+  var app = new KegwebAppRouter({ append_at: $('#kb-system-events') });
+  window.app = app;
+});
+</script>
+{% endblock %}
+
 {% block col-1 %}
   <h2>On Tap</h2>
   {% for tap in taps %}
@@ -35,7 +65,8 @@
 {% block col-2 %}
 <div class="kb-contentbox">
   <h2>Recent Activity</h2>
-  <div id="kb-recent-events"> </div>
+  <div id="kb-system-events">
+  </div>
 </div>
 
 {% endblock col-2 %}

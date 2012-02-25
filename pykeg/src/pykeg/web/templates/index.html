@@ -17,7 +17,53 @@
     </div>
     {{/image}}
     <div class="kb-event-box-details">
-      Event {{ event.id }}: {{ event.user_id }} {{ eventTitle }}<br/>
+      <b>{{ eventUser }}</b>
+      {{ eventTitle }}<br/>
+      <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
+    </div>
+  </div>
+</script>
+
+<script id="systemevent_keg_ended" type="text/html">
+  <div class="kb-event-box">
+    {{#image}}
+    <div class="kb-event-box-image">
+      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
+    </div>
+    {{/image}}
+    <div class="kb-event-box-details">
+      <b>keg {{ event.keg_id }}</b>
+      was ended
+      <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
+    </div>
+  </div>
+</script>
+
+<script id="systemevent_keg_started" type="text/html">
+  <div class="kb-event-box">
+    {{#image}}
+    <div class="kb-event-box-image">
+      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
+    </div>
+    {{/image}}
+    <div class="kb-event-box-details">
+      <b>keg {{ event.keg_id }}</b>
+      was tapped!
+      <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
+    </div>
+  </div>
+</script>
+
+<script id="systemevent" type="text/html">
+  <div class="kb-event-box">
+    {{#image}}
+    <div class="kb-event-box-image">
+      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
+    </div>
+    {{/image}}
+    <div class="kb-event-box-details">
+      <b>{{ eventUser }}</b>
+      {{ eventTitle }}<br/>
       <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
     </div>
   </div>

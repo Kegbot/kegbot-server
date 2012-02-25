@@ -17,13 +17,20 @@
     google.load("jqueryui", "1");
   </script>
 
-  <script type="text/javascript" src="{{ STATIC_URL }}js/kegweb.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alert.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-button.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tooltip.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-popover.js"></script>
+
+  <script type="text/javascript" src="{{ STATIC_URL }}lib/underscore/underscore.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}lib/backbone/backbone.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}lib/mustache/mustache.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}lib/icanhaz/ICanHaz.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}lib/spin/spin.js"></script>
+
+  <script type="text/javascript" src="{{ STATIC_URL }}js/kegweb.js"></script>
 
   {% if kbsite.url %}
   <script>

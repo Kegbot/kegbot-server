@@ -148,17 +148,20 @@ var SystemEvent = Backbone.Model.extend({
       title = "started drinking";
     } else if (kind == "session_started") {
       title = "started a new session";
-    } else if (kind == "keg_tapped") {
-      title = "tapped a new keg";
-    } else if (kind == "keg_ended") {
-      title = "ended the keg";
     } else {
       title = "unknown event";
+    }
+    var username;
+    if (event.user_id) {
+      username = event.user_id;
+    } else {
+      username = "guest";
     }
     this.set({
       id: spec.event.id,
       htmlId: 'systemevent_' + this.cid,
       eventTitle: title,
+      eventUser: username,
     });
 
   }
@@ -166,7 +169,22 @@ var SystemEvent = Backbone.Model.extend({
 
 var SystemEventView = Backbone.View.extend({
   render: function () {
-    this.setElement(ich.systemevent(this.model.toJSON()));
+    var kind = this.model.get('event').kind;
+    switch (kind) {
+      case "keg_tapped":
+        this.setElement(ich.systemevent_keg_started(this.model.toJSON()));
+        break;
+      case "keg_ended":
+        this.setElement(ich.systemevent_keg_ended(this.model.toJSON()));
+        break;
+      case "drink_poured":
+      case "session_started":
+      case "session_joined":
+        this.setElement(ich.systemevent(this.model.toJSON()));
+        break;
+      default:
+        break;
+    }
     this.$("abbr.timeago").timeago();
     return this;
   },

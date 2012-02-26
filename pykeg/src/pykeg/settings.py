@@ -26,6 +26,7 @@ INSTALLED_APPS = (
     'pykeg.web.account',
     'pykeg.web.charts',
     'pykeg.web.kegweb',
+    'icanhaz',
     'raven.contrib.django',
     'registration',
     'sentry',
@@ -178,6 +179,8 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = ['--exe']
 SKIP_SOUTH_TESTS = True
 SOUTH_TESTS_MIGRATE = False
+
+ICANHAZ_APP_DIRNAMES = ['static/jstemplates', 'jstemplates']
 
 try:
   import common_settings

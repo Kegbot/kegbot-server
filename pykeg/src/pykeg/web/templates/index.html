@@ -1,74 +1,14 @@
 {% extends "page-twocol.html" %}
+{% load icanhaz %}
 {% load kegweblib %}
 
 {% block title %}main page{% endblock %}
 
 {% block kb-extrajs %}
-{% verbatim %}
-<script id="systemeventlist" type="text/html">
-  <div id="eventlist"></div>
-</script>
-
-<script id="systemevent" type="text/html">
-  <div class="kb-event-box">
-    {{#image}}
-    <div class="kb-event-box-image">
-      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
-    </div>
-    {{/image}}
-    <div class="kb-event-box-details">
-      <b>{{ eventUser }}</b>
-      {{ eventTitle }}<br/>
-      <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
-    </div>
-  </div>
-</script>
-
-<script id="systemevent_keg_ended" type="text/html">
-  <div class="kb-event-box">
-    {{#image}}
-    <div class="kb-event-box-image">
-      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
-    </div>
-    {{/image}}
-    <div class="kb-event-box-details">
-      <b>keg {{ event.keg_id }}</b>
-      was ended
-      <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
-    </div>
-  </div>
-</script>
-
-<script id="systemevent_keg_started" type="text/html">
-  <div class="kb-event-box">
-    {{#image}}
-    <div class="kb-event-box-image">
-      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
-    </div>
-    {{/image}}
-    <div class="kb-event-box-details">
-      <b>keg {{ event.keg_id }}</b>
-      was tapped!
-      <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
-    </div>
-  </div>
-</script>
-
-<script id="systemevent" type="text/html">
-  <div class="kb-event-box">
-    {{#image}}
-    <div class="kb-event-box-image">
-      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
-    </div>
-    {{/image}}
-    <div class="kb-event-box-details">
-      <b>{{ eventUser }}</b>
-      {{ eventTitle }}<br/>
-      <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
-    </div>
-  </div>
-</script>
-{% endverbatim %}
+{% icanhaz "systemevent" %}
+{% icanhaz "systemevent_list" %}
+{% icanhaz "systemevent_keg_started" %}
+{% icanhaz "systemevent_keg_ended" %}
 
 <script>
 $(document).ready(function () {
@@ -98,7 +38,7 @@ $(document).ready(function () {
     </p>
   {% endif %}
 
-  {% with recent_images as pictures %}  
+  {% with recent_images as pictures %}
   {% if pictures.count %}
   <h2>Recent Pictures</h2>
     <div class="well">

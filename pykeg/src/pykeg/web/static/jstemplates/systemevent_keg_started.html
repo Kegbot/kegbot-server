@@ -1,0 +1,13 @@
+<div class="kb-event-box">
+  {{#image}}
+  <div class="kb-event-box-image">
+    <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
+  </div>
+  {{/image}}
+  <div class="kb-event-box-details">
+    <b>keg {{ event.keg_id }}</b>
+    was tapped!
+    <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
+  </div>
+</div>
+

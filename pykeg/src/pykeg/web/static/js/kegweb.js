@@ -219,7 +219,7 @@ var KegwebAppView = Backbone.View.extend({
   },
 
   render: function() {
-    $(this.el).html(ich.systemeventlist(this.model.toJSON()));
+    $(this.el).html(ich.systemevent_list(this.model.toJSON()));
     //$(this.el).html("here");
     this.eventList = this.$('#eventlist');
     return this;

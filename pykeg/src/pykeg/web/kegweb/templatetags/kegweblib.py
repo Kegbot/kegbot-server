@@ -148,34 +148,6 @@ class VolumeNode(Node):
     return VolumeNode.TEMPLATE % vars()
 
 
-### verbatim
-# adapted from https://gist.github.com/629508
-
-class VerbatimNode(template.Node):
-  def __init__(self, text):
-    self.text = text
-
-  def render(self, context):
-    return self.text
-
-@register.tag
-def verbatim(parser, token):
-  text = []
-  while True:
-    token = parser.tokens.pop(0)
-    if token.contents == 'endverbatim':
-      break
-    if token.token_type == template.TOKEN_VAR:
-      text.append('{{')
-    elif token.token_type == template.TOKEN_BLOCK:
-      text.append('{%')
-    text.append(token.contents)
-    if token.token_type == template.TOKEN_VAR:
-      text.append('}}')
-    elif token.token_type == template.TOKEN_BLOCK:
-      text.append('%}')
-  return VerbatimNode(''.join(text))
-
 ### chart
 
 @register.tag('chart')

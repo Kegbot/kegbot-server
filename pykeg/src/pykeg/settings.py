@@ -171,9 +171,13 @@ BROKER_URL = "django://"
 
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET_KEY =''
+TWITTER_ACCESS_TOKEN_KEY=''
+TWITTER_ACCESS_TOKEN_SECRET=''
 TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
 TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
 TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
+# Minimum size of a drink that we'd want to tweet about:
+TWITTER_MIN_OZ = 2.0
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = ['--exe']

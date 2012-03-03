@@ -33,6 +33,10 @@ from pykeg.core import kb_app
 from pykeg.core import models as core_models
 from pykeg.core.net import kegnet
 from pykeg.contrib.twitter import models
+import pykeg.core.importhacks
+
+from django.conf import settings
+
 
 import twitter
 
@@ -51,8 +55,8 @@ class TwitterKegnetClient(kegnet.SimpleKegnetClient):
     self._backend = backend.KegbotBackend()
 
   def onDrinkCreated(self, event):
-    self._logger.info('Processing new drink %i for user %s' % (event.drink_id,
-        event.username))
+    #self._logger.info('Processing new drink %i for user %s' % (event.drink_id,
+    #    event.username))
 
     # TODO(mikey): this should not be allowed to use the DB directly. Quick hack
     # for now..
@@ -76,11 +80,11 @@ class TwitterKegnetClient(kegnet.SimpleKegnetClient):
         # Twitter name unknown: use kegbot username (with no '@')
         self._logger.warning('User %s has not enabled twitter link.' % (drink.user,))
         tweet_to = drink.user.username
-    else:
-      config = self._backend.GetConfig()
-      if not config.getboolean('contrib.twitter.tweet_unknown'):
-        self._logger.info('Tweeting for unknown users is disabled.')
-        return
+    #else:
+    #  config = self._backend.GetConfig()
+    #  if not config.getboolean('contrib.twitter.tweet_unknown'):
+    #    self._logger.info('Tweeting for unknown users is disabled.')
+    #    return
 
     tweet = self._GenerateTweet(drink, tweet_to)
     if not tweet:
@@ -97,18 +101,12 @@ class TwitterKegnetClient(kegnet.SimpleKegnetClient):
         tweet_log.tweet))
 
   def _DoTweet(self, tweet):
-    config = self._backend.GetConfig()
-    twitter_name = config.get('contrib.twitter.login_name')
-    twitter_pass = config.get('contrib.twitter.login_pass')
-
     # compress extra spaces
     tweet = ' '.join(tweet.split())
 
-    if not twitter_name or not twitter_pass:
-      self._logger.warning('No twitter login credentials')
-      return
-
-    api = twitter.Api(username=twitter_name, password=twitter_pass)
+    api = twitter.Api(consumer_key=settings.TWITTER_CONSUMER_KEY, consumer_secret=settings.TWITTER_CONSUMER_SECRET_KEY,
+        access_token_key=settings.TWITTER_ACCESS_TOKEN_KEY,
+        access_token_secret=settings.TWITTER_ACCESS_TOKEN_SECRET)
     api.SetXTwitterHeaders('Kegbot', 'http://kegbot.org/', '1.0')
     self._logger.info('Posting tweet [%i]: "%s"' % (len(tweet), tweet))
     status = api.PostUpdate(tweet)
@@ -119,10 +117,9 @@ class TwitterKegnetClient(kegnet.SimpleKegnetClient):
 
   def _GenerateTweet(self, drink, tweet_to):
     ounces = drink.Volume().InOunces()
-    config = self._backend.GetConfig()
 
     try:
-      min_ounces = float(config.get('contrib.twitter.min_oz'))
+      min_ounces = float(settings.TWITTER_MIN_OZ)
     except (TypeError, ValueError):
       min_ounces = 2.0
 

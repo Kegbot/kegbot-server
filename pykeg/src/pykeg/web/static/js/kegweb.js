@@ -152,8 +152,8 @@ var SystemEvent = Backbone.Model.extend({
       title = "unknown event";
     }
     var username;
-    if (event.user_id) {
-      username = event.user_id;
+    if (spec.event.user_id) {
+      username = spec.event.user_id;
     } else {
       username = "guest";
     }

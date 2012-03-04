@@ -68,3 +68,6 @@ class SiteSettingsForm(forms.ModelForm):
     )
 
 #BeerTypeFormSet = inlineformset_factory(models.Brewer, models.BeerType)
+
+class TweetForm(forms.Form):
+  tweet = forms.CharField(max_length=140, required=True)

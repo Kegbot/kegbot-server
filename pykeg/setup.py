@@ -35,7 +35,6 @@ setup(
       'src/pykeg/bin/kegbot-admin.py',
       'src/pykeg/bin/kegbot_core.py',
       'src/pykeg/bin/kegbot_master.py',
-      'src/pykeg/bin/kegbot_twitter.py',
       'src/pykeg/bin/kegnetproxy.py',
       'src/pykeg/bin/lcd_daemon.py',
       'src/pykeg/bin/rfid_daemon.py',
@@ -56,7 +55,7 @@ setup(
       # NOTE(mikey): socialregistration does not yet declare the
       # facebook-python-sdk prerequisite for itself.
       'facebook-python-sdk',
-      'django-socialregistration >= 0.4.2',
+      'django-socialregistration >= 0.5.3',
 
       #'MySQL-python',
       #'pil',
@@ -72,6 +71,7 @@ setup(
       'django-icanhaz',
       'pytz',
       'raven',
+      'requests',  # needed by oauth
 
       # Celery and dependencies
       'Celery',

@@ -5,6 +5,38 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Current Version (in development)
+--------------------------------
+
+Upgrade Notes
+^^^^^^^^^^^^^
+Twitter and Facebook support is being changed.  Any existing Twitter/Facebook
+connections will be lost.
+
+**Important:** Please run the following commands to delete the old
+Twitter/Facebook support prior to upgrading::
+  $ kegbot-admin.py migrate contrib.twitter zero
+  $ kegbot-admin.py migrate contrib.facebook zero
+
+*Note:* Due to changes in the Kegbot core, you must run the following commands
+after updating::
+  
+  $ kegbot-admin.py migrate
+
+*Note:* To post tweets, you must run the `celery` daemon::
+  
+  $ kegbot-admin.py celeryd --loglevel=INFO
+
+Core/General
+^^^^^^^^^^^^
+* Session timeout is now configurable on the Kegadmin page.
+* Improvements to error logging.
+
+Kegweb
+^^^^^^
+* You can now link a Google Analytics account.
+* Taps can be created and deleted using Kegadmin.
+
 Version 0.8.4 (2011-12-30)
 --------------------------
 

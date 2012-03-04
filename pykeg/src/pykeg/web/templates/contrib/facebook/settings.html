@@ -1,11 +1,10 @@
 {% extends "account/base.html" %}
 {% load kegweblib %}
-{% load facebook_tags %}
+{% load facebook %}
 
 {% block kb-extrajs %}
    {% if USE_FACEBOOK %}
-   {% load facebook_tags %}
-   {% facebook_js %}
+   {% load facebook %}
    {% endif %}
 {% endblock %}
 

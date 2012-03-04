@@ -18,8 +18,9 @@ INSTALLED_APPS = (
     'bootstrapform',
     'imagekit',
     'pykeg.beerdb',
+    'pykeg.connections',
+    'pykeg.connections.twitter',
     'pykeg.contrib.soundserver',
-    'pykeg.contrib.twitter',
     'pykeg.core',
     'pykeg.web',
     'pykeg.web.api',
@@ -31,6 +32,9 @@ INSTALLED_APPS = (
     'registration',
     'sentry',
     'socialregistration',
+    'socialregistration.contrib.twitter',
+    'socialregistration.contrib.facebook',
+
 
     # Celery and dependencies.
     'djcelery',
@@ -167,6 +171,15 @@ import djcelery
 djcelery.setup_loader()
 BROKER_URL = "django://"
 
+CELERY_QUEUES = {
+  'default' : {
+    'exchange': 'default',
+    'binding_key': 'default'
+  },
+}
+CELERY_DEFAULT_QUEUE = "default"
+CELERYD_CONCURRENCY = 3
+
 ### Twitter
 
 TWITTER_CONSUMER_KEY = ''
@@ -193,12 +206,12 @@ except ImportError:
 
 ### Optional stuff
 if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:
-  INSTALLED_APPS += ('pykeg.contrib.facebook',)
+  #INSTALLED_APPS += ('pykeg.contrib.facebook',)
   MIDDLEWARE_CLASSES += (
     'socialregistration.middleware.FacebookMiddleware',
   )
   AUTHENTICATION_BACKENDS += (
-    'socialregistration.auth.FacebookAuth',
+    'socialregistration.contrib.facebook.auth.FacebookAuth',
   )
 
 if TWITTER_CONSUMER_KEY and TWITTER_CONSUMER_SECRET_KEY:

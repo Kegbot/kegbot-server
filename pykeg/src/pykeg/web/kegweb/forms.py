@@ -25,9 +25,6 @@ class KegbotRegistrationForm(RegistrationForm):
       help_text='Used for BAC estimation.')
   weight = forms.ChoiceField(choices=WEIGHT_CHOICES,
       help_text='Used for BAC estimation, kept private. You can lie.')
-  twitter_name = forms.CharField(required=False,
-      help_text='Do you use twitter? Enter your twitter name here to enable '
-        'tweets announcing your drinks.')
 
   def save(self, profile_callback=None):
     new_user = RegistrationProfile.objects.create_inactive_user(username=self.cleaned_data['username'],
@@ -41,16 +38,6 @@ class KegbotRegistrationForm(RegistrationForm):
     new_profile.gender = self.cleaned_data['gender']
     new_profile.weight = self.cleaned_data['weight']
     new_profile.save()
-
-    if 'pykeg.contrib.twitter' in settings.INSTALLED_APPS:
-      twitter_name = self.cleaned_data.get('twitter_name')
-      if twitter_name:
-        from pykeg.contrib.twitter import models as twitter_models
-        link = twitter_models.UserTwitterLink()
-        link.user_profile = new_profile
-        link.twitter_name = twitter_name
-        link.save()
-
     return new_user
 
 

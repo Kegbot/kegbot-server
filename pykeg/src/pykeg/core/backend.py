@@ -189,12 +189,8 @@ class KegbotBackend(Backend):
     d.save()
     if do_postprocess:
       d.PostProcess()
-      hook_url = self._site.settings.event_web_hook
-      if hook_url:
-        events = models.SystemEvent.objects.filter(drink=d)
-        if events:
-          event_list = [protolib.ToDict(e) for e in events]
-          tasks.post_webhook_event.delay(hook_url, event_list)
+      event_list = [e for e in models.SystemEvent.objects.filter(drink=d).order_by('id')]
+      tasks.handle_new_events.delay(self._site, event_list)
 
     return protolib.ToProto(d)
 

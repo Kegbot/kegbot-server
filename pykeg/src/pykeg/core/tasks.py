@@ -20,6 +20,7 @@
 
 from pykeg.core import kbjson
 from pykeg.core import util
+from pykeg.proto import protolib
 
 from urllib import urlencode
 import urllib2
@@ -28,7 +29,7 @@ from celery.decorators import task
 
 @task
 def post_webhook_event(hook_url, event_list):
-  post_data = kbjson.dumps({'events': event_list})
+  post_data = kbjson.dumps({'events': [protolib.ToDict(e) for e in event_list]})
   post_data = urlencode({'payload': post_data})
   opener = urllib2.build_opener()
   opener.addheaders = [
@@ -41,5 +42,16 @@ def post_webhook_event(hook_url, event_list):
     return False
 
 @task
-def handle_new_events(event_list):
+def handle_new_events(site, event_list):
+  from pykeg.connections.twitter import tasks
+
+  # Web hook.
+  hook_url = site.settings.event_web_hook
+  if hook_url:
+    post_webhook_event.delay(hook_url, event_list)
+
+  # Twitter.
+  for event in event_list:
+    tasks.tweet_event.delay(event)
+
   return True

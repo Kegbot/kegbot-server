@@ -39,18 +39,18 @@ urlpatterns = patterns('',
     (r'^(?P<kbsite_name>)api/', include('pykeg.web.api.urls')),
 
     ### account
-    (r'^(?P<kbsite_name>)account/', include('pykeg.web.account.urls')),
-    (r'^(?P<kbsite_name>)accounts/password/reset/$', password_reset, {'template_name':
+    (r'^account/', include('pykeg.web.account.urls')),
+    (r'^accounts/password/reset/$', password_reset, {'template_name':
      'registration/password_reset.html'}),
-    (r'^(?P<kbsite_name>)accounts/password/reset/done/$', password_reset_done, {'template_name':
+    (r'^accounts/password/reset/done/$', password_reset_done, {'template_name':
      'registration/password_reset_done.html'}),
-    (r'^(?P<kbsite_name>)accounts/password/reset/confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', password_reset_confirm, {'template_name':
+    (r'^accounts/password/reset/confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', password_reset_confirm, {'template_name':
      'registration/password_reset_confirm.html'}),
-    (r'^(?P<kbsite_name>)accounts/password/reset/complete/$', password_reset_complete, {'template_name':
+    (r'^accounts/password/reset/complete/$', password_reset_complete, {'template_name':
      'registration/password_reset_complete.html'}),
 
     ### socialregistration
-    (r'^sr/', include('socialregistration.urls')),
+    (r'^sr/', include('socialregistration.urls', namespace='socialregistration')),
 
     ### charts
     (r'^(?P<kbsite_name>)charts/', include('pykeg.web.charts.urls')),

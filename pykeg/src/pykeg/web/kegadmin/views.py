@@ -35,6 +35,8 @@ from django.views.decorators.http import require_POST
 
 from pykeg.core import backup
 from pykeg.core import models
+from pykeg.connections.twitter import models as twitter_models
+from pykeg.connections.twitter import util as twitter_util
 
 from pykeg.web.kegadmin import forms
 
@@ -115,6 +117,29 @@ def tap_list(request):
 
   context['all_taps'] = taps
   return render_to_response('kegadmin/tap-edit.html', context)
+
+@staff_member_required
+def connections(request):
+  context = RequestContext(request)
+  kbsite = request.kbsite
+  tweet_form = forms.TweetForm()
+  if request.method == 'POST':
+    tweet_form = forms.TweetForm(request.POST)
+    if tweet_form.is_valid():
+      if kbsite.twitter_profile.is_enabled():
+        tweet = tweet_form.cleaned_data['tweet']
+        twitter_util.update_site_status(kbsite, tweet)
+        tweet_form = forms.TweetForm()
+        messages.success(request, 'Tweetz0red!')
+      else:
+        messages.error(request, 'Twitter profile not enabled.')
+  try:
+    twitter_profile = request.kbsite.twitter_profile
+  except twitter_models.SiteTwitterProfile.DoesNotExist:
+    twitter_profile = None
+  context['twitter_profile'] = twitter_profile
+  context['tweet_form'] = tweet_form
+  return render_to_response('kegadmin/connections.html', context)
 
 @staff_member_required
 @require_POST

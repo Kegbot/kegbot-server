@@ -381,7 +381,12 @@ class Drink(models.Model):
 
   def ShortUrl(self):
     domain = Site.objects.get_current().domain
-    return 'http://%s/d/%i' % (domain, self.id)
+    parts = ['http://%s' % domain]
+    if self.site.url():
+      parts.append(self.site.url())
+    parts.append('d')
+    parts.append(str(self.seqn))
+    return '/'.join(parts)
 
   def Volume(self):
     return units.Quantity(self.volume_ml)

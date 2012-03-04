@@ -21,14 +21,20 @@
 """Kegweb main views."""
 
 from django.http import Http404
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.http import HttpResponseRedirect
+from django.views.decorators.http import require_POST
 from django.views.generic.simple import redirect_to
+
+from socialregistration.contrib.twitter import models as sr_twitter_models
 
 from pykeg.core import models
 from pykeg.web.kegweb import forms
 from pykeg.web.api import apikey
+from pykeg.connections.twitter import forms as twitter_forms
 
 @login_required
 def account_main(request):
@@ -43,6 +49,21 @@ def account_main(request):
   context['user'] = user
   context['profile_form'] = form
   return render_to_response('account/index.html', context)
+
+@login_required
+def connections(request):
+  user = request.user
+  context = RequestContext(request)
+  twitter_profile = None
+  try:
+    twitter_profile = sr_twitter_models.TwitterProfile.objects.get(user=user)
+  except sr_twitter_models.TwitterProfile.DoesNotExist:
+    pass
+  context['twitter_profile'] = twitter_profile
+  context['twitter_settings_form'] = twitter_forms.TwitterSettingsForm()
+  if twitter_profile:
+    context['twitter_settings_form'] = twitter_forms.TwitterSettingsForm(instance=twitter_profile.settings)
+  return render_to_response('account/connections.html', context)
 
 @login_required
 def edit_mugshot(request):
@@ -63,9 +84,8 @@ def edit_mugshot(request):
   return render_to_response('account/mugshot.html', context)
 
 @login_required
+@require_POST
 def regenerate_api_key(request):
-  if request.method != 'POST':
-    raise Http404
   form = forms.RegenerateApiKeyForm(request.POST)
   if form.is_valid():
     profile = request.user.get_profile()
@@ -73,3 +93,23 @@ def regenerate_api_key(request):
     profile.save()
   return redirect_to(request, url='/account')
 
+@login_required
+@require_POST
+def remove_twitter(request):
+  form = twitter_forms.UnlinkTwitterForm(request.POST)
+  if form.is_valid():
+    sr_twitter_models.TwitterProfile.objects.filter(user=request.user).delete()
+  # TODO(mikey): HttpResponseRedirect
+  return redirect_to(request, url='/account')
+
+@login_required
+@require_POST
+def update_twitter_settings(request):
+  user = request.user
+  twitter_profile = sr_twitter_models.TwitterProfile.objects.get(user=user)
+  form = twitter_forms.TwitterSettingsForm(request.POST, instance=twitter_profile.settings)
+  if form.is_valid():
+    form.save()
+    messages.success(request, 'Twitter settings were successfully updated.')
+  # TODO(mikey): HttpResponseRedirect
+  return redirect_to(request, url='/account')

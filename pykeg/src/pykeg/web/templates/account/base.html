@@ -9,11 +9,9 @@
     <ul class="nav nav-pills nav-stacked" data-pills="pills">
       {% navitem kb-account-main "Account Main" exact %}
       {% navitem account-mugshot "Mugshot" %}
+      {% navitem account-connections "Connections" %}
       {% if USE_FACEBOOK %}
       {% navitem fb-account-settings "Facebook" %}
-      {% endif %}
-      {% if USE_TWITTER %}
-      {% navitem twitter-account-settings "Twitter" %}
       {% endif %}
     </ul>
   </div>

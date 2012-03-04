@@ -1,0 +1,58 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load bootstrap %}
+
+{% block title %}Kegbot Admin: Connections{% endblock %}
+{% block pagetitle %}Kegbot Admin: Connections{% endblock %}
+
+{% block kegadmin-main %}
+<div class="row">
+  <div class="span11">
+    <h2>Twitter</h2>
+    <div class="well">
+      <h4>Link Twitter Account</h4>
+      <p>
+        <form method="post"
+          action="{% url site_twitter_redirect kbsite_name=kbsite.url %}">
+        {% csrf_token %}
+        {% if twitter_profile.is_enabled %}
+        <button type="submit" class="btn btn-info btn-small" name="link">
+          <i class="icon-repeat icon-white"></i> Re-link Account</button>
+        </button>
+        <button type="submit" class="btn btn-danger btn-small" name="remove">
+          <i class="icon-remove icon-white"></i> Remove Account</button>
+        </button>
+        <p>
+          <small>
+          Current account: <strong><a target="_blank"
+            href="http://twitter.com/{{twitter_profile.twitter_name}}">@{{twitter_profile.twitter_name}}</a></strong>
+          </small>
+        </p>
+        {% else %}
+        <button type="submit" class="btn btn-info btn-small" name="submit">
+          <i class="icon-share-alt icon-white"></i> Link Account</button>
+        </button>
+        {% endif %}
+        {% comment %}
+        <input type="image"
+          onclick="this.form.submit();"
+          src="https://si0.twimg.com/images/dev/buttons/sign-in-with-twitter-l.png"/>
+        {% endcomment %}
+        </form>
+      </p>
+
+      {% if twitter_profile.is_enabled %}
+      <h4>Tweet Something as @{{ twitter_profile.twitter_name }}</h4>
+      <form action="" method="post">
+      {% csrf_token %}
+      <p>
+        {{ tweet_form.tweet }}
+        <button type="submit" class="btn btn-success small">
+          <i class="icon-comment icon-white"></i> Tweet</button>
+      </p>
+      </form>
+      {% endif %}
+    </div> <!-- /well -->
+  </div> <!-- /span11 -->
+</div>
+{% endblock %}

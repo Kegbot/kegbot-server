@@ -51,6 +51,20 @@ MEDIA_URL = '/media/'
 FACEBOOK_API_KEY = None
 FACEBOOK_SECRET_KEY = None
 
+### Twitter
+### Sign up for the Twitter API, and complete these values. Consumer key and secret are necessary for Twitter
+### OAuth authentication. Access token key and secret are necessary in addition 
+### to consumer key / secret for posting tweets.
+
+TWITTER_CONSUMER_KEY = ''
+TWITTER_CONSUMER_SECRET_KEY =''
+TWITTER_ACCESS_TOKEN_KEY=''
+TWITTER_ACCESS_TOKEN_SECRET=''
+TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
+TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
+TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
+
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'p7jep28p$+7kb8n=qr+1!i80&5d&!2q_lruhs-%rs(urq4)f*j'
 

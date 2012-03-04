@@ -422,3 +422,16 @@ def iso8601str_to_datetime(datestr, dest_tz_name):
   except pytz.UnknownTimeZoneError:
     pass
   return dt
+
+_KEGBOT_VERSION = None
+def kegbot_version():
+  global _KEGBOT_VERSION
+  if _KEGBOT_VERSION is None:
+    try:
+      import pkg_resources
+      _KEGBOT_VERSION = pkg_resources.get_distribution("kegbot").version
+    except ImportError:
+      _KEGBOT_VERSION = 'Unknown'
+    except pkg_resources.DistributionNotFound:
+      _KEGBOT_VERSION = 'Unknown'
+  return _KEGBOT_VERSION

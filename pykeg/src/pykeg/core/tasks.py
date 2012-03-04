@@ -19,6 +19,7 @@
 """Celery tasks for the Kegbot core."""
 
 from pykeg.core import kbjson
+from pykeg.core import util
 
 from urllib import urlencode
 import urllib2
@@ -29,7 +30,16 @@ from celery.decorators import task
 def post_webhook_event(hook_url, event_list):
   post_data = kbjson.dumps({'events': event_list})
   post_data = urlencode({'payload': post_data})
-  # TODO(mikey): set user agent to Kegbot.
-  urllib2.urlopen(hook_url, data=post_data)
-  return True
+  opener = urllib2.build_opener()
+  opener.addheaders = [
+    ('User-agent', 'Kegbot/%s' % util.kegbot_version()),
+  ]
+  try:
+    opener.open(hook_url, data=post_data, timeout=5)
+    return True
+  except urllib2.URLError:
+    return False
 
+@task
+def handle_new_events(event_list):
+  return True

@@ -89,14 +89,21 @@
   <div class="navbar navbar-fixed-top">
    <div class="navbar-inner">
     <div class="container-fluid">
-      <a class="brand" href="{% url kb-home kbsite.url %}">{% spaceless %}
-        {% if kbsite.settings.title %}
-          {{kbsite.settings.title}}
-        {% else %}
-          kegbot beer device
-        {% endif %}
-      {% endspaceless %}</a>
+      {% spaceless %}
+      {% if kbsite %}
+      <a class="brand" href="{% url kb-home kbsite.url %}">
+      {% else %}
+      <a class="brand" href="/">
+      {% endif %}
+
+      {% if kbsite.settings.title %}
+        {{kbsite.settings.title}}
+      {% else %}
+        kegbot beer device
+      {% endif %}
+      </a>{% endspaceless %}
       <ul class="nav">
+        {% if kbsite %}
         {% navitem kb-kegs "Kegs" %}
         {% navitem kb-stats "Stats" %}
         {% if user.is_authenticated %}{% navitem kb-account-main "Account" %}{% endif %}
@@ -109,6 +116,7 @@
               {% include "kegadmin/nav-items.html" %}
             </ul>
           </li>
+        {% endif %}
         {% endif %}
       </ul>
       {% if not user.is_authenticated %}

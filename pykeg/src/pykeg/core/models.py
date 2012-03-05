@@ -76,6 +76,13 @@ class KegbotSite(models.Model):
       return ''
     return self.name
 
+  def full_url(self):
+    domain = Site.objects.get_current().domain
+    parts = ['http://%s' % domain]
+    if self.url():
+      parts.append(self.url())
+    return '/'.join(parts)
+
   def GetStats(self):
     try:
       stats = SystemStats.objects.get(site=self).stats

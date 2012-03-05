@@ -28,8 +28,8 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
       ### drink related
       url(r'^drinks/(?P<drink_id>\d+)', 'drink_detail', name='kb-drink'),
       # redirects to the above for compatibility
-      (r'^drink/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
-      (r'^d/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
+      (r'^drink/(?P<drink_id>\d+)', 'short_drink_detail'),
+      (r'^d/(?P<drink_id>\d+)', 'short_drink_detail'),
 
       ### sessions
       url(r'^session/(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})/(?P<seqn>\d+)/(?P<slug>[-\w]+)',

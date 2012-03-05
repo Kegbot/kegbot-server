@@ -32,6 +32,8 @@ from django.views.decorators.cache import cache_page
 from django.views.generic.list_detail import object_detail
 from django.views.generic.list_detail import object_list
 from django.views.generic.simple import redirect_to
+from django.contrib.sites.models import Site
+from django.http import HttpResponseRedirect
 
 from pykeg.core import models
 
@@ -141,6 +143,10 @@ def keg_detail(request, keg_id):
     'stats': keg.GetStats(),
     'sessions': sessions})
   return render_to_response('kegweb/keg_detail.html', context)
+
+def short_drink_detail(request, drink_id):
+  url = request.kbsite.full_url() + '/drinks/' + str(drink_id)
+  return HttpResponseRedirect(url)
 
 def drink_detail(request, drink_id):
   drink = get_object_or_404(models.Drink, site=request.kbsite, seqn=drink_id)

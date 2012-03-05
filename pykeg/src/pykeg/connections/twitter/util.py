@@ -4,8 +4,8 @@ import tweepy
 
 from . import models
 
-_CONSUMER_KEY = settings.TWITTER_CONSUMER_KEY
-_CONSUMER_SECRET = settings.TWITTER_CONSUMER_SECRET_KEY
+_CONSUMER_KEY = getattr(settings, 'TWITTER_CONSUMER_KEY', '')
+_CONSUMER_SECRET = getattr(settings, 'TWITTER_CONSUMER_SECRET_KEY', '')
 
 HEADERS = {
   'User-Agent': 'Kegbot',

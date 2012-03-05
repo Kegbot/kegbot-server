@@ -68,10 +68,15 @@ class NavitemNode(Node):
   def render(self, context):
     viewname = self._viewname
     title = Variable(self._title).resolve(context)
+    urlbase = None
     kbsite = context['kbsite']
-    try:
-      urlbase = reverse(viewname, args=[kbsite.url()])
-    except NoReverseMatch, e:
+
+    if kbsite:
+      try:
+        urlbase = reverse(viewname, args=[kbsite.url()])
+      except NoReverseMatch, e:
+        pass
+    if not urlbase:
       urlbase = reverse(viewname)
 
     request_path = context['request_path']

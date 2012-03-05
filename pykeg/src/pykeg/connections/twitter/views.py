@@ -65,7 +65,9 @@ def site_twitter_redirect(request):
   try:
     return HttpResponseRedirect(client.get_redirect_url())
   except OAuthError, error:
-    return self.render_to_response({'error': error})
+    url = _site_url(request, 'kegadmin-connections')
+    messages.error(request, 'Error: %s' % str(error))
+    return HttpResponseRedirect(url)
 
 @staff_member_required
 def site_twitter_callback(request):

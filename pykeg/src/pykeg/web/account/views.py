@@ -29,11 +29,13 @@ from django.http import HttpResponseRedirect
 from django.views.decorators.http import require_POST
 from django.views.generic.simple import redirect_to
 
+from socialregistration.contrib.foursquare import models as sr_foursquare_models
 from socialregistration.contrib.twitter import models as sr_twitter_models
 
 from pykeg.core import models
 from pykeg.web.kegweb import forms
 from pykeg.web.api import apikey
+from pykeg.connections.foursquare import forms as foursquare_forms
 from pykeg.connections.twitter import forms as twitter_forms
 
 @login_required
@@ -54,6 +56,7 @@ def account_main(request):
 def connections(request):
   user = request.user
   context = RequestContext(request)
+
   twitter_profile = None
   try:
     twitter_profile = sr_twitter_models.TwitterProfile.objects.get(user=user)
@@ -63,6 +66,17 @@ def connections(request):
   context['twitter_settings_form'] = twitter_forms.TwitterSettingsForm()
   if twitter_profile:
     context['twitter_settings_form'] = twitter_forms.TwitterSettingsForm(instance=twitter_profile.settings)
+
+  foursquare_profile = None
+  try:
+    foursquare_profile = sr_foursquare_models.FoursquareProfile.objects.get(user=user)
+  except sr_foursquare_models.FoursquareProfile.DoesNotExist:
+    pass
+  context['foursquare_profile'] = foursquare_profile
+  context['foursquare_settings_form'] = foursquare_forms.FoursquareSettingsForm()
+  if foursquare_profile:
+    context['foursquare_settings_form'] = foursquare_forms.FoursquareSettingsForm(instance=foursquare_profile.settings)
+
   return render_to_response('account/connections.html', context)
 
 @login_required
@@ -111,5 +125,26 @@ def update_twitter_settings(request):
   if form.is_valid():
     form.save()
     messages.success(request, 'Twitter settings were successfully updated.')
+  # TODO(mikey): HttpResponseRedirect
+  return redirect_to(request, url='/account')
+
+@login_required
+@require_POST
+def remove_foursquare(request):
+  form = foursquare_forms.UnlinkFoursquareForm(request.POST)
+  if form.is_valid():
+    sr_foursquare_models.FoursquareProfile.objects.filter(user=request.user).delete()
+  # TODO(mikey): HttpResponseRedirect
+  return redirect_to(request, url='/account')
+
+@login_required
+@require_POST
+def update_foursquare_settings(request):
+  user = request.user
+  foursquare_profile = sr_foursquare_models.FoursquareProfile.objects.get(user=user)
+  form = foursquare_forms.FoursquareSettingsForm(request.POST, instance=foursquare_profile.settings)
+  if form.is_valid():
+    form.save()
+    messages.success(request, 'Foursquare settings were successfully updated.')
   # TODO(mikey): HttpResponseRedirect
   return redirect_to(request, url='/account')

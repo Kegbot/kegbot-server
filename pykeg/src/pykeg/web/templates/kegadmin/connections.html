@@ -47,11 +47,29 @@
       {% csrf_token %}
       <p>
         {{ tweet_form.tweet }}
-        <button type="submit" class="btn btn-success small">
+        <button type="submit" class="btn btn-success small"
+            name="tweet-form-submit">
           <i class="icon-comment icon-white"></i> Tweet</button>
       </p>
       </form>
       {% endif %}
+    </div> <!-- /well -->
+  </div> <!-- /span11 -->
+</div>
+
+<div class="row">
+  <div class="span11">
+    <h2>Foursquare</h2>
+    <div class="well">
+      <form action="" method="POST">
+      {% csrf_token %}
+      {{ foursquare_settings_form|bootstrap }}
+      <p>
+        <button type="submit" class="btn btn-success small"
+            name="foursquare-settings-submit">
+          <i class="icon-ok icon-white"></i> Update</button>
+      </p>
+      </form>
     </div> <!-- /well -->
   </div> <!-- /span11 -->
 </div>

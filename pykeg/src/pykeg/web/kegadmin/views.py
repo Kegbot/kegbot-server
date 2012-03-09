@@ -35,6 +35,8 @@ from django.views.decorators.http import require_POST
 
 from pykeg.core import backup
 from pykeg.core import models
+from pykeg.connections.foursquare import forms as foursquare_forms
+from pykeg.connections.foursquare import models as foursquare_models
 from pykeg.connections.twitter import models as twitter_models
 from pykeg.connections.twitter import util as twitter_util
 
@@ -122,8 +124,9 @@ def tap_list(request):
 def connections(request):
   context = RequestContext(request)
   kbsite = request.kbsite
+
   tweet_form = forms.TweetForm()
-  if request.method == 'POST':
+  if request.method == 'POST' and 'tweet-form-submit' in request.POST:
     tweet_form = forms.TweetForm(request.POST)
     if tweet_form.is_valid():
       if kbsite.twitter_profile.is_enabled():
@@ -133,12 +136,22 @@ def connections(request):
         messages.success(request, 'Tweetz0red!')
       else:
         messages.error(request, 'Twitter profile not enabled.')
+
+  instance, _ = foursquare_models.SiteFoursquareSettings.objects.get_or_create(site=kbsite)
+  foursquare_form = foursquare_forms.SiteFoursquareSettingsForm(instance=instance)
+  if request.method == 'POST' and 'foursquare-settings-submit' in request.POST:
+    foursquare_form = foursquare_forms.SiteFoursquareSettingsForm(request.POST, instance=instance)
+    if foursquare_form.is_valid():
+      foursquare_form.save()
+      messages.success(request, 'Foursquare settings updated!')
+
   try:
     twitter_profile = request.kbsite.twitter_profile
   except twitter_models.SiteTwitterProfile.DoesNotExist:
     twitter_profile = None
   context['twitter_profile'] = twitter_profile
   context['tweet_form'] = tweet_form
+  context['foursquare_settings_form'] = foursquare_form
   return render_to_response('kegadmin/connections.html', context)
 
 @staff_member_required

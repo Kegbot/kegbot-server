@@ -17,7 +17,6 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
-from django.db.models.signals import post_save
 from pykeg.core import models as core_models
 
 ### Helpers
@@ -30,9 +29,9 @@ class _SettingsMixin(models.Model):
   enabled = models.BooleanField(default=True,
       help_text='Deselect to disable all posting from this account.')
   post_session_joined = models.BooleanField(default=True,
-      help_text='Post at the start of a new drinking session.')
+      help_text='Tweet at the start of a new drinking session.')
   post_drink_poured = models.BooleanField(default=False,
-      help_text='Post when a new drink is poured.')
+      help_text='Tweet when a new drink is poured.')
 
 ### Site-specific
 
@@ -51,12 +50,6 @@ class SiteTwitterProfile(models.Model):
 
 class SiteTwitterSettings(_SettingsMixin):
   profile = models.OneToOneField(SiteTwitterProfile, related_name='settings')
-
-def _kegbotsite_post_save(sender, instance, **kwargs):
-  """Creates a SiteTwitterProfile object if none already exists."""
-  profile, _ = SiteTwitterProfile.objects.get_or_create(site=instance)
-  settings, _ = SiteTwitterSettings.objects.get_or_create(profile=profile)
-post_save.connect(_kegbotsite_post_save, sender=core_models.KegbotSite)
 
 ### User-specific
 from socialregistration import signals as sr_signals

@@ -19,6 +19,7 @@ INSTALLED_APPS = (
     'imagekit',
     'pykeg.beerdb',
     'pykeg.connections',
+    'pykeg.connections.foursquare',
     'pykeg.connections.twitter',
     'pykeg.contrib.soundserver',
     'pykeg.core',
@@ -34,6 +35,7 @@ INSTALLED_APPS = (
     'socialregistration',
     'socialregistration.contrib.twitter',
     'socialregistration.contrib.facebook',
+    'socialregistration.contrib.foursquare',
 
 
     # Celery and dependencies.
@@ -187,6 +189,11 @@ TWITTER_CONSUMER_SECRET_KEY =''
 TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
 TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
 TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
+
+### Foursquare
+FOURSQUARE_CLIENT_ID = ''
+FOURSQUARE_CLIENT_SECRET = ''
+FOURSQUARE_REQUEST_PERMISSIONS = ''
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = ['--exe']

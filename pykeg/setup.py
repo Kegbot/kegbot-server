@@ -77,8 +77,12 @@ setup(
       'Celery',
       'django-celery',
       'django-kombu',
+
+      'poster',  # needed by foursquare
+      'foursquare',
     ],
     dependency_links = [
+        'https://github.com/mLewisLogic/foursquare/tarball/master#egg=foursquare',
         'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',
         'http://kegbot.org/kmedia/python-openid-2.2.5.tgz',

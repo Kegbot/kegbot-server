@@ -126,6 +126,8 @@ class BeerType(BeerDBModel):
   image = models.ForeignKey(BeerImage, blank=True, null=True,
       related_name='beers')
 
+  untappd_beer_id = models.IntegerField(blank=True, null=True, help_text='Untappd.com beer id for this beer, if known')
+
   def __str__(self):
     return "%s by %s" % (self.name, self.brewer)
 

@@ -21,6 +21,7 @@ INSTALLED_APPS = (
     'pykeg.connections',
     'pykeg.connections.foursquare',
     'pykeg.connections.twitter',
+    'pykeg.connections.untappd',
     'pykeg.contrib.soundserver',
     'pykeg.core',
     'pykeg.web',

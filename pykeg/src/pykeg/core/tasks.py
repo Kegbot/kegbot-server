@@ -24,6 +24,7 @@ from pykeg.proto import protolib
 
 from pykeg.connections.foursquare import tasks as foursquare_tasks
 from pykeg.connections.twitter import tasks as twitter_tasks
+from pykeg.connections.untappd import tasks as untappd_tasks
 
 from urllib import urlencode
 import urllib2
@@ -55,5 +56,6 @@ def handle_new_events(site, event_list):
   for event in event_list:
     twitter_tasks.tweet_event.delay(event)
     foursquare_tasks.checkin_event.delay(event)
+    untappd_tasks.checkin_event.delay(event)
 
   return True

@@ -51,6 +51,10 @@ MEDIA_URL = '/media/'
 FACEBOOK_API_KEY = None
 FACEBOOK_SECRET_KEY = None
 
+# You'll need an API key from Untappd to enable Untappd features.
+UNTAPPD_API_KEY = ''
+GMT_OFFSET = '-8'
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'p7jep28p$+7kb8n=qr+1!i80&5d&!2q_lruhs-%rs(urq4)f*j'
 

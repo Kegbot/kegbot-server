@@ -80,6 +80,10 @@ setup(
 
       'poster',  # needed by foursquare
       'foursquare',
+
+      # Tornado
+      'tornado',
+      'rjdj.djangotornado',
     ],
     dependency_links = [
         'https://github.com/mLewisLogic/foursquare/tarball/master#egg=foursquare',
@@ -87,11 +91,15 @@ setup(
         'http://dist.repoze.org/PIL-1.1.6.tar.gz',
         'http://kegbot.org/kmedia/python-openid-2.2.5.tgz',
         'https://github.com/tzangms/django-bootstrap-form/tarball/master#egg=django-bootstrap-form',
+        'https://github.com/rjdj/django-tornado/tarball/master#egg=rjdj.djangotornado',
 
         # Self-maintained package due to upstream issue:
         # http://github.com/facebook/python-sdk/issues/#issue/21
         'http://github.com/downloads/mik3y/python-sdk/facebook-python-sdk-0.1-1.tar.gz',
     ],
     include_package_data = True,
+    entry_points = {
+      'console_scripts': ['instance=django.core.management:execute_manager'],
+    },
 
 )

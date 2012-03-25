@@ -4,11 +4,13 @@ from pykeg.core import features
 
 from django.conf import settings
 from django.conf.urls.defaults import *
-from django.contrib.auth.views import password_reset
-from django.contrib.auth.views import password_reset_done
-from django.contrib.auth.views import password_reset_confirm
-from django.contrib.auth.views import password_reset_complete
 from django.contrib import admin
+from django.contrib.auth.views import password_reset
+from django.contrib.auth.views import password_reset_complete
+from django.contrib.auth.views import password_reset_confirm
+from django.contrib.auth.views import password_reset_done
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 admin.autodiscover()
 
 try:
@@ -83,4 +85,7 @@ if USE_DJANGO_REGISTRATION:
     ),
    (r'^accounts/', include('registration.urls')),
   )
+
+if settings.DEBUG:
+  urlpatterns += staticfiles_urlpatterns()
 

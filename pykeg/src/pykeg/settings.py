@@ -43,6 +43,9 @@ INSTALLED_APPS = (
     'djcelery',
     'djkombu',
 
+    # Tornado
+    'rjdj.djangotornado',
+
     'south',
     'django_nose', # must be after south
 )

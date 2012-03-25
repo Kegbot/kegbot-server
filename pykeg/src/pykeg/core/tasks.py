@@ -22,9 +22,7 @@ from pykeg.core import kbjson
 from pykeg.core import util
 from pykeg.proto import protolib
 
-from pykeg.connections.foursquare import tasks as foursquare_tasks
-from pykeg.connections.twitter import tasks as twitter_tasks
-from pykeg.connections.untappd import tasks as untappd_tasks
+from pykeg.connections import tasks as connection_tasks
 
 from urllib import urlencode
 import urllib2
@@ -47,15 +45,11 @@ def post_webhook_event(hook_url, event_list):
 
 @task
 def handle_new_events(site, event_list):
-  # Web hook.
   hook_url = site.settings.event_web_hook
   if hook_url:
     post_webhook_event.delay(hook_url, event_list)
 
-  # Twitter & foursquare.
   for event in event_list:
-    twitter_tasks.tweet_event.delay(event)
-    foursquare_tasks.checkin_event.delay(event)
-    untappd_tasks.checkin_event.delay(event)
+    connection_tasks.handle_new_event.delay(event)
 
   return True

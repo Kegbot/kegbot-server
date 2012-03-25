@@ -31,3 +31,7 @@ def handle_new_event(event):
   twitter_tasks.tweet_event.delay(event)
   foursquare_tasks.checkin_event.delay(event)
   untappd_tasks.checkin_event.delay(event)
+
+@task
+def handle_new_picture(picture):
+  foursquare_tasks.handle_new_picture(picture)

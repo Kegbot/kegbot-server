@@ -38,11 +38,13 @@ from django.shortcuts import get_object_or_404
 from django.template import RequestContext
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import backend
 from pykeg.core import kbjson
 from pykeg.core import models
+from pykeg.core import tasks
 from pykeg.proto import protolib
 from pykeg.proto import protoutil
 from pykeg.web.api import apikey
@@ -237,6 +239,7 @@ def add_drink_photo(request, drink_id):
   pic.keg = drink.keg
   pic.session = drink.session
   pic.save()
+  tasks.handle_new_picture.delay(pic.id)
   return obj_to_dict(pic)
 
 @py_to_json
@@ -286,6 +289,7 @@ def current_sessions(request):
     pass
   return FromProto(protolib.GetSessionSet(session_list))
 
+@never_cache
 @py_to_json
 def all_events(request):
   events = request.kbsite.events.all().order_by('-seqn')

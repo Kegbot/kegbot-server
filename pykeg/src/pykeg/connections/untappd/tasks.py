@@ -16,21 +16,17 @@
 
 """Celery tasks for Untappd."""
 
-import pykeg.core.importhacks
 from pykeg.core import models as core_models
-from pykeg.beerdb import models as beerdb_models
+from pykeg.connections.foursquare import models as foursquare_models
 from django.contrib.sites.models import Site
-from pykeg.core.net import kegnet
 from . import models
 from django.conf import settings
 
 from urllib import urlencode
 import urllib2
 import base64
-import logging
 
 from celery.decorators import task
-
 
 # Available template vars:
 #   name         : user name, or @twitter_name if known
@@ -119,17 +115,33 @@ def do_checkin(event):
       print 'User %s has not enabled untappd link.' % drink.user
       return
 
+  try:
+    site_4sq_settings = foursquare_models.SiteFoursquareSettings.objects.get(site=event.site)
+    #venue_id = site_4sq_settings.venue_id
+    venue_id = ''
+  except foursquare_models.SiteFoursquareSettings.DoesNotExist:
+    venue_id = ''
+
   kbvars = _get_vars(event)
 
   shout = DEFAULT_CHECKIN_TEMPLATE % kbvars
-  
-  params = urlencode({'bid': beerid, 'gmt_offset': settings.GMT_OFFSET, 'shout':shout})
+
+  params = {
+    'bid': beerid,
+    'gmt_offset': settings.GMT_OFFSET,
+    'shout': shout,
+  }
+
+  if venue_id:
+    params['foursquare_id'] = venue_id
+
+  params = urlencode(params)
   req = urllib2.Request("http://api.untappd.com/v3/checkin?key=" + settings.UNTAPPD_API_KEY, params)
-  
+
   base64string = base64.encodestring('%s:%s' % (untappd_link.untappd_name, untappd_link.untappd_password_hash))[:-1]
   authheader =  "Basic %s" % base64string
   req.add_header("Authorization", authheader)
-  
+
   response = urllib2.urlopen(req)
-  
+
   print response.read()

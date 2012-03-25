@@ -126,7 +126,7 @@ def do_user_tweet(event, kbvars):
     return
 
   profile = util.get_user_profile(user)
-  if not profile.settings.enabled:
+  if not profile or not profile.settings.enabled:
     print 'User has disabled Twitter'
     return
 

@@ -148,6 +148,12 @@ def short_drink_detail(request, drink_id):
   url = request.kbsite.full_url() + '/drinks/' + str(drink_id)
   return HttpResponseRedirect(url)
 
+def short_session_detail(request, session_id):
+  session = get_object_or_404(models.DrinkingSession, site=request.kbsite,
+      seqn=session_id)
+  url = session.get_absolute_url()
+  return HttpResponseRedirect(url)
+
 def drink_detail(request, drink_id):
   drink = get_object_or_404(models.Drink, site=request.kbsite, seqn=drink_id)
   context = RequestContext(request, {'drink': drink})

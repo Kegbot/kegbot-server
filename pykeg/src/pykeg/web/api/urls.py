@@ -32,7 +32,6 @@ urlpatterns = patterns('pykeg.web.api.views',
     url(r'^sessions/(?P<session_id>\d+)/?$', 'get_session'),
     url(r'^sessions/(?P<session_id>\d+)/stats/?$', 'get_session_stats'),
     url(r'^events/?$', 'all_events'),
-    url(r'^events/html/?$', 'recent_events_html'),
     url(r'^sound-events/?$', 'all_sound_events'),
     url(r'^kegs/?$', 'all_kegs'),
     url(r'^kegs/(?P<keg_id>\d+)/?$', 'get_keg'),
@@ -56,7 +55,6 @@ urlpatterns = patterns('pykeg.web.api.views',
 
     url(r'^last-drink-id/?$', 'last_drink_id'),
     url(r'^last-drinks/?$', 'last_drinks'),
-    url(r'^last-drinks-html/?$', 'last_drinks_html'),
 
     url(r'^get-api-key/?$', 'get_api_key'),
 

@@ -182,6 +182,7 @@ def BrewerToProto(brewer, full=False):
 def DrinkToProto(drink, full=False):
   ret = models_pb2.Drink()
   ret.id = str(drink.seqn)
+  ret.url = drink.get_absolute_url()
   ret.ticks = drink.ticks
   ret.volume_ml = drink.volume_ml
   ret.session_id = str(drink.session.seqn)
@@ -200,6 +201,7 @@ def DrinkToProto(drink, full=False):
 def KegToProto(keg, full=False):
   ret = models_pb2.Keg()
   ret.id = str(keg.seqn)
+  ret.url = keg.get_absolute_url()
   ret.type_id = str(keg.type.id)
   ret.size_id = str(keg.size.id)
   ret.size_name = keg.size.name
@@ -246,6 +248,7 @@ def KegTapToProto(tap, full=False):
 def SessionToProto(record, full=False):
   ret = models_pb2.Session()
   ret.id = str(record.seqn)
+  ret.url = record.get_absolute_url()
   ret.start_time = datestr(record.starttime)
   ret.end_time = datestr(record.endtime)
   ret.volume_ml = record.volume_ml
@@ -287,6 +290,7 @@ def ThermoSummaryLogToProto(record, full=False):
 def UserToProto(user, full=False):
   ret = models_pb2.User()
   ret.username = user.username
+  ret.url = user.get_profile().get_absolute_url()
   ret.is_active = user.is_active
   if full:
     ret.first_name = user.first_name
@@ -413,12 +417,15 @@ def GetSystemEventDetail(event):
   if image:
     ret.image.MergeFrom(ToProto(image))
 
-  # TODO(mikey): This is too expensive.
-  if False:
-    if event.kind == 'drink_poured':
-      ret.drink_detail.MergeFrom(GetDrinkDetail(event.drink))
-    elif event.kind in ('keg_tapped', 'keg_ended'):
-      ret.keg_detail.MergeFrom(GetKegDetail(event.keg))
+  if event.user:
+    ret.user.MergeFrom(ToProto(event.user))
+  if event.drink:
+    ret.drink.MergeFrom(ToProto(event.drink))
+  if event.keg:
+    ret.keg.MergeFrom(ToProto(event.keg))
+  if event.session:
+    ret.session.MergeFrom(ToProto(event.session))
+
   return ret
 
 def GetTapDetail(tap):
@@ -484,8 +491,6 @@ def GetSoundEventSet(events):
 
 def GetSystemEventSet(events):
   ret = api_pb2.SystemEventSet()
-  for e in events:
-    ret.events.add().MergeFrom(ToProto(e))
   return ret
 
 def GetSystemEventDetailSet(events):
@@ -506,10 +511,3 @@ def GetThermoLogSet(logs):
     ret.logs.add().MergeFrom(ToProto(log))
   return ret
 
-def GetSystemEventHtmlSet(events):
-  ret = api_pb2.SystemEventHtmlSet()
-  for e in events:
-    item = ret.events.add()
-    item.id = e['id']
-    item.html = e['html']
-  return ret

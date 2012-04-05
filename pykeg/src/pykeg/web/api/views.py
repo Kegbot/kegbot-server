@@ -122,6 +122,7 @@ def ToJsonError(e, exc_info):
   if settings.DEBUG:
     client = LocalRavenClient([])
     client.create_from_exception(exc_info)
+    client.send()
   result = {
     'error' : {
       'code' : code,
@@ -315,27 +316,6 @@ def all_sound_events(request):
   return FromProto(protolib.GetSoundEventSet(events))
 
 @py_to_json
-def recent_events_html(request):
-  events = request.kbsite.events.all().order_by('-seqn')
-  events = apply_since(request, events)
-  events = events[:20]
-
-  template = get_template('kegweb/event-box.html')
-  results = []
-  for event in events:
-    ctx = RequestContext(request, {
-      'event': event,
-      'kbsite': request.kbsite,
-    })
-    row = {}
-    row['id'] = str(event.seqn)
-    row['html'] = template.render(ctx)
-    results.append(row)
-  results.reverse()
-
-  return FromProto(protolib.GetSystemEventHtmlSet(results))
-
-@py_to_json
 def get_keg_sessions(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   sessions = [c.session for c in keg.keg_session_chunks.all()]
@@ -455,20 +435,6 @@ def get_thermo_sensor_logs(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
   logs = sensor.thermolog_set.all()[:60*2]
   return FromProto(protolib.GetThermoLogSet(logs))
-
-@py_to_json
-def last_drinks_html(request, limit=5):
-  last_drinks = _get_last_drinks(request, limit)
-
-  # render each drink
-  template = get_template('kegweb/drink-box.html')
-  results = []
-  for d in last_drinks:
-    row = {}
-    row['id'] = d.id
-    row['box_html'] = template.render(RequestContext(request, {'drink': d}))
-    results.append(row)
-  return results
 
 @py_to_json
 def last_drink_id(request):

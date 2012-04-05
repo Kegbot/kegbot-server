@@ -22,7 +22,7 @@ import os
 import random
 
 from django.conf import settings
-from django.core import urlresolvers
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
@@ -60,7 +60,6 @@ def _set_seqn_pre_save(sender, instance, **kwargs):
   else:
     seqn = prev[0].seqn + 1
   instance.seqn = seqn
-
 
 class KegbotSite(models.Model):
   name = models.CharField(max_length=64, unique=True,
@@ -167,6 +166,10 @@ class UserProfile(models.Model):
   def GetApiKey(self):
     return ApiKey(self.user.id, self.api_secret)
 
+  @models.permalink
+  def get_absolute_url(self):
+    return ('kb-drinker', ('', self.user.username))
+
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
@@ -235,6 +238,10 @@ class Keg(models.Model):
   """ Record for each installed Keg. """
   class Meta:
     unique_together = ('site', 'seqn')
+
+  @models.permalink
+  def get_absolute_url(self):
+    return ('kb-keg', (self.site.url(), str(self.seqn)))
 
   def full_volume(self):
     return self.size.volume_ml
@@ -386,11 +393,12 @@ class Drink(models.Model):
   def PourDuration(self):
     return self.duration
 
+  @models.permalink
+  def get_absolute_url(self):
+    return ('kb-drink', (self.site.url(), str(self.seqn)))
+
   def ShortUrl(self):
-    domain = Site.objects.get_current().domain
-    parts = ['http://%s' % domain]
-    if self.site.url():
-      parts.append(self.site.url())
+    parts = [self.site.full_url()]
     parts.append('d')
     parts.append(str(self.seqn))
     return '/'.join(parts)

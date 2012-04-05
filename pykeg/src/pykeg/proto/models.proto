@@ -150,6 +150,9 @@ message Drink {
 
   // Auth token value used to pour the drink, if known.
   optional string auth_token_id = 10;
+
+  // Canonical URL for this object.
+  optional string url = 11;
 }
 
 // Describes an image.
@@ -229,6 +232,9 @@ message Keg {
   // Spilled volume is not attributed to any drink, but deducts from the keg
   // total.
   optional float spilled_ml = 12;
+
+  // Canonical URL for this object.
+  optional string url = 13;
 }
 
 // A common keg size.
@@ -298,6 +304,9 @@ message Session {
 
   // The slugified name of this session.
   optional string slug = 6;
+
+  // Canonical URL for this object.
+  optional string url = 7;
 }
 
 // A log entry for a temperature sensor.
@@ -402,6 +411,9 @@ message User {
   // UTC time for the user's registration, as ISO8061 string.
   // Only available to admin users.
   optional string date_joined = 11;
+
+  // Canonical URL for this object.
+  optional string url = 12;
 }
 
 // Extended information about a specific user.

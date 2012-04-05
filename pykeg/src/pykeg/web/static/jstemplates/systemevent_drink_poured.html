@@ -1,0 +1,29 @@
+<div class="kb-event-box">
+  {{#image}}
+  <div class="kb-event-box-image">
+    {{#user}}
+    <a href="{{ user.url }}">
+    {{/user}}
+      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
+    {{#user}}
+    </a>
+    {{/user}}
+  </div>
+  {{/image}}
+  <div class="kb-event-box-details">
+    {{#user}}
+    <b><a href="{{user.url}}">{{ user.username }}</a></b>
+    {{/user}}
+    {{^user}}
+    <b>a guest</b>
+    {{/user}}
+    poured
+    <a href="{{ drink.url }}">
+      <span class="hmeasure">
+        <span class="num">{{ drink.volume_ml }}</span>
+        <span class="unit">mL</span>
+      </span></a>
+    <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
+  </div>
+</div>
+

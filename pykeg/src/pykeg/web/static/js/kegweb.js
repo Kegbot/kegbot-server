@@ -155,14 +155,15 @@ var SystemEvent = Backbone.Model.extend({
     if (spec.event.user_id) {
       username = spec.event.user_id;
     } else {
-      username = "guest";
+      username = "a guest";
     }
     this.set({
       id: spec.event.id,
       htmlId: 'systemevent_' + this.cid,
       eventTitle: title,
       eventUser: username,
-    });
+    })
+    this.set(spec);
 
   }
 });
@@ -178,6 +179,8 @@ var SystemEventView = Backbone.View.extend({
         this.setElement(ich.systemevent_keg_ended(this.model.toJSON()));
         break;
       case "drink_poured":
+        this.setElement(ich.systemevent_drink_poured(this.model.toJSON()));
+        break;
       case "session_started":
       case "session_joined":
         this.setElement(ich.systemevent(this.model.toJSON()));
@@ -186,6 +189,7 @@ var SystemEventView = Backbone.View.extend({
         break;
     }
     this.$("abbr.timeago").timeago();
+    this.$("span.hmeasure").autounits(kegweb.AUTOUNITS_SETTINGS);
     return this;
   },
 });

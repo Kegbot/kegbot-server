@@ -30,6 +30,7 @@ class DrinkPostForm(forms.Form):
   duration = forms.IntegerField(required=False)
   auth_token = forms.CharField(required=False)
   spilled = forms.BooleanField(required=False)
+  shout = forms.CharField(required=False)
 
 class CancelDrinkForm(forms.Form):
   """Form to handled posts to /cancel-drink/"""

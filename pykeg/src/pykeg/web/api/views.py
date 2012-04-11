@@ -490,7 +490,8 @@ def _tap_detail_post(request, tap):
       pour_time=pour_time,
       duration=duration,
       auth_token=cd.get('auth_token'),
-      spilled=cd.get('spilled'))
+      spilled=cd.get('spilled'),
+      shout=cd.get('shout'))
     return FromProto(res)
   except backend.BackendError, e:
     raise krest.ServerError(str(e))

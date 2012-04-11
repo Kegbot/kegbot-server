@@ -79,6 +79,9 @@ message RecordDrinkRequest {
   // "volume_ml" if given) are ignored.  The volume will be added to the
   // spilled total for the tap’s current keg.
   optional bool spilled = 9;
+
+  // Optional message from the user about the pour.
+  optional string shout = 10;
 }
 
 // Message used for recording a temperature sensor reading on the backend.

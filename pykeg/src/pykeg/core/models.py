@@ -415,32 +415,6 @@ class Drink(models.Model):
   def __str__(self):
     return "Drink %s:%i by %s" % (self.site.name, self.seqn, self.user)
 
-  objects = managers.DrinkManager()
-
-  site = models.ForeignKey(KegbotSite, related_name='drinks')
-  seqn = models.PositiveIntegerField(editable=False)
-
-  # Ticks records the actual meter reading, which is never changed once
-  # recorded.
-  ticks = models.PositiveIntegerField()
-
-  # Volume is the actual volume of the drink.  Its initial value is a function
-  # of `ticks`, but it may be adjusted, eg due to calibration or mis-recording.
-  volume_ml = models.FloatField()
-
-  starttime = models.DateTimeField()
-  duration = models.PositiveIntegerField(blank=True, default=0)
-  user = models.ForeignKey(User, null=True, blank=True, related_name='drinks')
-  keg = models.ForeignKey(Keg, null=True, blank=True, related_name='drinks')
-  status = models.CharField(max_length=128, choices = (
-     ('valid', 'valid'),
-     ('invalid', 'invalid'),
-     ('deleted', 'deleted'),
-     ), default = 'valid')
-  session = models.ForeignKey('DrinkingSession',
-      related_name='drinks', null=True, blank=True, editable=False)
-  auth_token = models.CharField(max_length=256, blank=True, null=True)
-
   def _UpdateSystemStats(self):
     stats, created = SystemStats.objects.get_or_create(site=self.site)
     stats.Update(self)
@@ -466,6 +440,34 @@ class Drink(models.Model):
     self._UpdateKegStats()
     self._UpdateSessionStats()
     SystemEvent.ProcessDrink(self)
+
+  objects = managers.DrinkManager()
+
+  site = models.ForeignKey(KegbotSite, related_name='drinks')
+  seqn = models.PositiveIntegerField(editable=False)
+
+  # Ticks records the actual meter reading, which is never changed once
+  # recorded.
+  ticks = models.PositiveIntegerField()
+
+  # Volume is the actual volume of the drink.  Its initial value is a function
+  # of `ticks`, but it may be adjusted, eg due to calibration or mis-recording.
+  volume_ml = models.FloatField()
+
+  starttime = models.DateTimeField()
+  duration = models.PositiveIntegerField(blank=True, default=0)
+  user = models.ForeignKey(User, null=True, blank=True, related_name='drinks')
+  keg = models.ForeignKey(Keg, null=True, blank=True, related_name='drinks')
+  status = models.CharField(max_length=128, choices = (
+     ('valid', 'valid'),
+     ('invalid', 'invalid'),
+     ('deleted', 'deleted'),
+     ), default = 'valid')
+  session = models.ForeignKey('DrinkingSession',
+      related_name='drinks', null=True, blank=True, editable=False)
+  auth_token = models.CharField(max_length=256, blank=True, null=True)
+  shout = models.TextField(blank=True, null=True,
+      help_text='Comment from the drinker at the time of the pour.')
 
 pre_save.connect(_set_seqn_pre_save, sender=Drink)
 

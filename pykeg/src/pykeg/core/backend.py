@@ -63,7 +63,8 @@ class Backend:
     raise NotImplementedError
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=0, auth_token=None, spilled=False):
+      pour_time=None, duration=0, auth_token=None, spilled=False,
+      shout=''):
     """Records a new drink with the given parameters."""
     raise NotImplementedError
 
@@ -154,7 +155,7 @@ class KegbotBackend(Backend):
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False,
-      do_postprocess=True):
+      shout='', do_postprocess=True):
 
     tap = self._GetTapFromName(tap_name)
     if not tap:
@@ -184,7 +185,7 @@ class KegbotBackend(Backend):
 
     d = models.Drink(ticks=ticks, site=self._site, keg=keg, user=user,
         volume_ml=volume_ml, starttime=pour_time, duration=duration,
-        auth_token=auth_token)
+        auth_token=auth_token, shout=shout)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
     if do_postprocess:
@@ -299,10 +300,11 @@ class WebBackend(Backend):
     return [d.tap for d in self._client.TapStatus().taps]
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=0, auth_token=None, spilled=False):
+      pour_time=None, duration=0, auth_token=None, spilled=False, shout=''):
     return self._client.RecordDrink(tap_name=tap_name, ticks=ticks,
         volume_ml=volume_ml, username=username, pour_time=pour_time,
-        duration=duration, auth_token=auth_token, spilled=spilled)
+        duration=duration, auth_token=auth_token, spilled=spilled,
+        shout=shout)
 
   def CancelDrink(self, seqn, spilled=False):
     return self._client.CancelDrink(seqn, spilled)

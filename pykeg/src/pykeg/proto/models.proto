@@ -153,6 +153,9 @@ message Drink {
 
   // Canonical URL for this object.
   optional string url = 11;
+
+  // Comment from the drinker at the time of the pour.
+  optional string shout = 12;
 }
 
 // Describes an image.

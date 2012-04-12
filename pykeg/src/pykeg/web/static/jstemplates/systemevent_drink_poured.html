@@ -23,7 +23,12 @@
         <span class="num">{{ drink.volume_ml }}</span>
         <span class="unit">mL</span>
       </span></a>
-    <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
+      {{#drink.shout}}
+      <br/>
+      <i>"{{drink.shout}}"</i>
+      {{/drink.shout}}
+    <br/>
   </div>
+  <small><abbr class="timeago" title="{{ event.time }}">{{ event.time }}</abbr></small>
 </div>
 

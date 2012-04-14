@@ -281,14 +281,16 @@ def all_sessions(request):
 
 @py_to_json
 def current_sessions(request):
-  session_list = []
+  current = None
   try:
     latest = request.kbsite.sessions.latest()
     if latest.IsActiveNow():
-      session_list.append(latest)
+      current = latest
   except models.DrinkingSession.DoesNotExist:
     pass
-  return FromProto(protolib.GetSessionSet(session_list))
+  if current:
+    return FromProto(protolib.GetSessionDetail(current))
+  raise Http404
 
 @never_cache
 @py_to_json

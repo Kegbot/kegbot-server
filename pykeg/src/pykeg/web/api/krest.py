@@ -229,7 +229,7 @@ class KrestClient:
     return decode_response(response_data, out_msg)
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=0, auth_token=None, spilled=False):
+      pour_time=None, duration=0, auth_token=None, spilled=False, shout=''):
     endpoint = '/taps/%s' % tap_name
     post_data = {
       'tap_name': tap_name,
@@ -243,6 +243,8 @@ class KrestClient:
     if pour_time:
       post_data['pour_time'] = int(pour_time.strftime('%s'))
       post_data['now'] = int(datetime.datetime.now().strftime('%s'))
+    if shout:
+      post_data['shout'] = shout
     return self.DoPOST(endpoint, models_pb2.Drink(), post_data=post_data)
 
   def CancelDrink(self, seqn, spilled=False):

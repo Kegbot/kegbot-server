@@ -22,10 +22,8 @@ import random
 
 from django.db import models
 from pykeg.core import fields as core_fields
+from pykeg.core import imagespecs
 from django_extensions.db import fields as ext_fields
-from imagekit.models import ImageSpec
-from imagekit.processors import Adjust
-from imagekit.processors import resize
 
 PRODUCTION_CHOICES = (
   ('commercial', 'Commercial brewer'),
@@ -53,17 +51,13 @@ def beer_file_name(instance, filename):
 
 
 class BeerImage(BeerDBModel):
-  original_image = models.ImageField(upload_to=beer_file_name)
-  resized = ImageSpec(
-      [resize.Crop(320, 320)],
-      image_field='original_image', format='PNG')
-  thumbnail = ImageSpec(
-      [Adjust(contrast=1.2, sharpness=1.1), resize.Crop(128, 128)],
-      image_field='original_image', format='PNG')
+  image = models.ImageField(upload_to=beer_file_name)
+  resized = imagespecs.resized
+  thumbnail = imagespecs.thumbnail
   num_views = models.PositiveIntegerField(editable=False, default=0)
 
   def __str__(self):
-    return '%s' % self.original_image.name
+    return '%s' % self.image.name
 
 
 class Brewer(BeerDBModel):

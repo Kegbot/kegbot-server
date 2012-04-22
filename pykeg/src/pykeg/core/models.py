@@ -33,6 +33,7 @@ from autoslug import AutoSlugField
 
 from pykeg.core import kb_common
 from pykeg.core import fields
+from pykeg.core import imagespecs
 from pykeg.core import managers
 from pykeg.core import stats
 from pykeg.core import units
@@ -44,10 +45,6 @@ from pykeg.proto import protoutil
 from pykeg.web.api.apikey import ApiKey
 
 from pykeg.beerdb import models as bdb
-
-from imagekit.models import ImageSpec
-from imagekit.processors import Adjust
-from imagekit.processors import resize
 
 """Django models definition for the kegbot database."""
 
@@ -1032,23 +1029,14 @@ def _pics_file_name(instance, filename):
   return os.path.join('pics', new_filename)
 
 class Picture(models.Model):
-  class IKOptions:
-    spec_module = 'pykeg.core.imagespecs'
-    image_field = 'image'
-
   seqn = models.PositiveIntegerField(editable=False)
   site = models.ForeignKey(KegbotSite, related_name='pictures',
       blank=True, null=True,
       help_text='Site owning this picture')
   image = models.ImageField(upload_to=_pics_file_name,
       help_text='The image')
-
-  resized = ImageSpec(
-      [resize.Crop(320, 320)],
-      image_field='image', format='PNG')
-  thumbnail = ImageSpec(
-      [Adjust(contrast=1.2, sharpness=1.1), resize.Crop(128, 128)],
-      image_field='image', format='PNG')
+  resized = imagespecs.resized
+  thumbnail = imagespecs.thumbnail
 
   created_date = models.DateTimeField(default=datetime.datetime.now)
   caption = models.TextField(blank=True, null=True,

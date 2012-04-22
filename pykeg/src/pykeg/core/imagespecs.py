@@ -1,25 +1,49 @@
-from imagekit.specs import ImageSpec
-from imagekit import processors
+# Copyright 2012 Mike Wakerly <opensource@hoho.com>
+#
+# This file is part of the Pykeg package of the Kegbot project.
+# For more information on Pykeg or Kegbot, see http://kegbot.org/
+#
+# Pykeg is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# Pykeg is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-class ResizeThumb(processors.Resize):
-    width = 128
-    height = 128
-    crop = True
+from imagekit.models import ImageSpec
+from imagekit.processors import Adjust
+from imagekit.processors import resize
 
-class ResizeDisplay(processors.Resize):
-    width = 320
+resized = ImageSpec(
+    processors=[resize.Fit(1024, 1024)],
+    image_field='image',
+    format='PNG',
+    pre_cache=False,
+)
 
-class EnhanceThumb(processors.Adjustment):
-    contrast = 1.2
-    sharpness = 1.1
+small_resized = ImageSpec(
+    processors=[resize.Fit(256, 256)],
+    image_field='image',
+    format='PNG',
+    pre_cache=False,
+)
 
-class Thumbnail(ImageSpec):
-    access_as = 'thumbnail'
-    pre_cache = True
-    processors = [ResizeThumb, EnhanceThumb]
+thumbnail = ImageSpec(
+    processors=[Adjust(contrast=1.2, sharpness=1.1), resize.Crop(256, 256)],
+    image_field='image',
+    format='PNG',
+    pre_cache=False,
+)
 
-class Display(ImageSpec):
-    increment_count = False
-    processors = [ResizeDisplay]
-
-
+small_thumbnail = ImageSpec(
+    processors=[Adjust(contrast=1.2, sharpness=1.1), resize.Crop(64, 64)],
+    image_field='image',
+    format='PNG',
+    pre_cache=False,
+)

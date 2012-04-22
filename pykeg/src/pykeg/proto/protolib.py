@@ -91,10 +91,10 @@ def AuthTokenToProto(record, full=False):
 @converts(bdb_models.BeerImage)
 def BeerImageToProto(record, full=False):
   ret = models_pb2.Image()
-  ret.url = record.original_image.url
+  ret.url = record.image.url
   try:
-    ret.width = record.original_image.width
-    ret.height = record.original_image.height
+    ret.width = record.image.width
+    ret.height = record.image.height
   except IOError:
     pass
   return ret

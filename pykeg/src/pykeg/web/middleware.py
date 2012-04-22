@@ -33,7 +33,10 @@ class KegbotSiteMiddleware:
     kbsite_name = view_kwargs.pop('kbsite_name', None)
     if not kbsite_name:
       kbsite_name = 'default'
-    request.kbsite = get_object_or_404(models.KegbotSite, name=kbsite_name)
+    try:
+      request.kbsite = models.KegbotSite.objects.get(name=kbsite_name)
+    except models.KegbotSite.DoesNotExist:
+      pass
     return None
 
 class SiteActiveMiddleware:

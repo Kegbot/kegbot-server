@@ -12,7 +12,7 @@ import models_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='api.proto',
   package='',
-  serialized_pb='\n\tapi.proto\x1a\x0cmodels.proto\"3\n\x06Paging\x12\r\n\x05total\x18\x01 \x01(\r\x12\r\n\x05limit\x18\x02 \x01(\r\x12\x0b\n\x03pos\x18\x03 \x01(\r\"r\n\x17UserRegistrationRequest\x12\x10\n\x08username\x18\x01 \x02(\t\x12\r\n\x05\x65mail\x18\x02 \x02(\t\x12\x10\n\x08password\x18\x03 \x01(\t\x12\x0e\n\x06gender\x18\x04 \x01(\t\x12\x14\n\x0ctwitter_name\x18\x05 \x01(\t\"\xd5\x01\n\x12RecordDrinkRequest\x12\x10\n\x08tap_name\x18\x01 \x01(\t\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x01(\x02\x12\x10\n\x08username\x18\x04 \x01(\t\x12\x16\n\x0bseconds_ago\x18\x05 \x01(\r:\x01\x30\x12\x13\n\x0brecord_date\x18\x06 \x01(\t\x12\x18\n\x10\x64uration_seconds\x18\x07 \x01(\r\x12\x12\n\nauth_token\x18\x08 \x01(\t\x12\x0f\n\x07spilled\x18\t \x01(\x08\x12\r\n\x05shout\x18\n \x01(\t\"T\n\x18RecordTemperatureRequest\x12\x13\n\x0bsensor_name\x18\x01 \x02(\t\x12\x0e\n\x06temp_c\x18\x02 \x02(\x02\x12\x13\n\x0brecord_date\x18\x03 \x01(\t\";\n\x08\x44rinkSet\x12\x16\n\x06\x64rinks\x18\x01 \x03(\x0b\x32\x06.Drink\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"A\n\x0cKegDetailSet\x12\x18\n\x04kegs\x18\x01 \x03(\x0b\x32\n.KegDetail\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"A\n\nSessionSet\x12\x1a\n\x08sessions\x18\x01 \x03(\x0b\x32\x08.Session\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"G\n\x0eSystemEventSet\x12\x1c\n\x06\x65vents\x18\x01 \x03(\x0b\x32\x0c.SystemEvent\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"S\n\x14SystemEventDetailSet\x12\"\n\x06\x65vents\x18\x01 \x03(\x0b\x32\x12.SystemEventDetail\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"E\n\rSoundEventSet\x12\x1b\n\x06\x65vents\x18\x01 \x03(\x0b\x32\x0b.SoundEvent\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"A\n\x0cTapDetailSet\x12\x18\n\x04taps\x18\x01 \x03(\x0b\x32\n.TapDetail\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"J\n\x0fThermoSensorSet\x12\x1e\n\x07sensors\x18\x01 \x03(\x0b\x32\r.ThermoSensor\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"A\n\x0cThermoLogSet\x12\x18\n\x04logs\x18\x01 \x03(\x0b\x32\n.ThermoLog\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"k\n\tTapDetail\x12\x14\n\x03tap\x18\x01 \x02(\x0b\x32\x07.KegTap\x12\x11\n\x03keg\x18\x02 \x01(\x0b\x32\x04.Keg\x12\x1c\n\tbeer_type\x18\x03 \x01(\x0b\x32\t.BeerType\x12\x17\n\x06\x62rewer\x18\x04 \x01(\x0b\x32\x07.Brewer\"g\n\x0b\x44rinkDetail\x12\x15\n\x05\x64rink\x18\x01 \x02(\x0b\x32\x06.Drink\x12\x13\n\x04user\x18\x02 \x01(\x0b\x32\x05.User\x12\x11\n\x03keg\x18\x03 \x01(\x0b\x32\x04.Keg\x12\x19\n\x07session\x18\x04 \x01(\x0b\x32\x08.Session\"m\n\rSessionDetail\x12\x19\n\x07session\x18\x01 \x02(\x0b\x32\x08.Session\x12\x15\n\x05stats\x18\x02 \x01(\x0b\x32\x06.Stats\x12\x12\n\x04kegs\x18\x03 \x03(\x0b\x32\x04.Keg\x12\x16\n\x06\x64rinks\x18\x04 \x03(\x0b\x32\x06.Drink\"\x83\x01\n\tKegDetail\x12\x11\n\x03keg\x18\x01 \x02(\x0b\x32\x04.Keg\x12\x17\n\x04type\x18\x02 \x01(\x0b\x32\t.BeerType\x12\x16\n\x04size\x18\x03 \x01(\x0b\x32\x08.KegSize\x12\x16\n\x06\x64rinks\x18\x04 \x03(\x0b\x32\x06.Drink\x12\x1a\n\x08sessions\x18\x05 \x03(\x0b\x32\x08.Session\"!\n\nUserDetail\x12\x13\n\x04user\x18\x01 \x02(\x0b\x32\x05.User\"D\n\rUserDetailSet\x12\x1a\n\x05users\x18\x01 \x03(\x0b\x32\x0b.UserDetail\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"\xa1\x01\n\x11SystemEventDetail\x12\x1b\n\x05\x65vent\x18\x01 \x02(\x0b\x32\x0c.SystemEvent\x12\x15\n\x05image\x18\x02 \x01(\x0b\x32\x06.Image\x12\x13\n\x04user\x18\x03 \x01(\x0b\x32\x05.User\x12\x15\n\x05\x64rink\x18\x04 \x01(\x0b\x32\x06.Drink\x12\x11\n\x03keg\x18\x05 \x01(\x0b\x32\x04.Keg\x12\x19\n\x07session\x18\x06 \x01(\x0b\x32\x08.Session\"Y\n\x12ThermoSensorDetail\x12\x1d\n\x06sensor\x18\x01 \x02(\x0b\x32\r.ThermoSensor\x12\x11\n\tlast_temp\x18\x02 \x01(\x02\x12\x11\n\tlast_time\x18\x03 \x01(\t2\x0b\n\tKegwebApiB\x12\n\x10org.kegbot.proto')
+  serialized_pb='\n\tapi.proto\x1a\x0cmodels.proto\"3\n\x06Paging\x12\r\n\x05total\x18\x01 \x01(\r\x12\r\n\x05limit\x18\x02 \x01(\r\x12\x0b\n\x03pos\x18\x03 \x01(\r\"r\n\x17UserRegistrationRequest\x12\x10\n\x08username\x18\x01 \x02(\t\x12\r\n\x05\x65mail\x18\x02 \x02(\t\x12\x10\n\x08password\x18\x03 \x01(\t\x12\x0e\n\x06gender\x18\x04 \x01(\t\x12\x14\n\x0ctwitter_name\x18\x05 \x01(\t\"\xd5\x01\n\x12RecordDrinkRequest\x12\x10\n\x08tap_name\x18\x01 \x01(\t\x12\r\n\x05ticks\x18\x02 \x02(\r\x12\x11\n\tvolume_ml\x18\x03 \x01(\x02\x12\x10\n\x08username\x18\x04 \x01(\t\x12\x16\n\x0bseconds_ago\x18\x05 \x01(\r:\x01\x30\x12\x13\n\x0brecord_date\x18\x06 \x01(\t\x12\x18\n\x10\x64uration_seconds\x18\x07 \x01(\r\x12\x12\n\nauth_token\x18\x08 \x01(\t\x12\x0f\n\x07spilled\x18\t \x01(\x08\x12\r\n\x05shout\x18\n \x01(\t\"T\n\x18RecordTemperatureRequest\x12\x13\n\x0bsensor_name\x18\x01 \x02(\t\x12\x0e\n\x06temp_c\x18\x02 \x02(\x02\x12\x13\n\x0brecord_date\x18\x03 \x01(\t\";\n\x08\x44rinkSet\x12\x16\n\x06\x64rinks\x18\x01 \x03(\x0b\x32\x06.Drink\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"A\n\x0cKegDetailSet\x12\x18\n\x04kegs\x18\x01 \x03(\x0b\x32\n.KegDetail\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"A\n\nSessionSet\x12\x1a\n\x08sessions\x18\x01 \x03(\x0b\x32\x08.Session\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"G\n\x0eSystemEventSet\x12\x1c\n\x06\x65vents\x18\x01 \x03(\x0b\x32\x0c.SystemEvent\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"S\n\x14SystemEventDetailSet\x12\"\n\x06\x65vents\x18\x01 \x03(\x0b\x32\x12.SystemEventDetail\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"E\n\rSoundEventSet\x12\x1b\n\x06\x65vents\x18\x01 \x03(\x0b\x32\x0b.SoundEvent\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"A\n\x0cTapDetailSet\x12\x18\n\x04taps\x18\x01 \x03(\x0b\x32\n.TapDetail\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"J\n\x0fThermoSensorSet\x12\x1e\n\x07sensors\x18\x01 \x03(\x0b\x32\r.ThermoSensor\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"A\n\x0cThermoLogSet\x12\x18\n\x04logs\x18\x01 \x03(\x0b\x32\n.ThermoLog\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"k\n\tTapDetail\x12\x14\n\x03tap\x18\x01 \x02(\x0b\x32\x07.KegTap\x12\x11\n\x03keg\x18\x02 \x01(\x0b\x32\x04.Keg\x12\x1c\n\tbeer_type\x18\x03 \x01(\x0b\x32\t.BeerType\x12\x17\n\x06\x62rewer\x18\x04 \x01(\x0b\x32\x07.Brewer\"\x7f\n\x0b\x44rinkDetail\x12\x15\n\x05\x64rink\x18\x01 \x02(\x0b\x32\x06.Drink\x12\x13\n\x04user\x18\x02 \x01(\x0b\x32\x05.User\x12\x11\n\x03keg\x18\x03 \x01(\x0b\x32\x04.Keg\x12\x19\n\x07session\x18\x04 \x01(\x0b\x32\x08.Session\x12\x16\n\x06images\x18\x05 \x03(\x0b\x32\x06.Image\"\x85\x01\n\rSessionDetail\x12\x19\n\x07session\x18\x01 \x02(\x0b\x32\x08.Session\x12\x15\n\x05stats\x18\x02 \x01(\x0b\x32\x06.Stats\x12\x12\n\x04kegs\x18\x03 \x03(\x0b\x32\x04.Keg\x12\x16\n\x06\x64rinks\x18\x04 \x03(\x0b\x32\x06.Drink\x12\x16\n\x06images\x18\x05 \x03(\x0b\x32\x06.Image\"\x9b\x01\n\tKegDetail\x12\x11\n\x03keg\x18\x01 \x02(\x0b\x32\x04.Keg\x12\x17\n\x04type\x18\x02 \x01(\x0b\x32\t.BeerType\x12\x16\n\x04size\x18\x03 \x01(\x0b\x32\x08.KegSize\x12\x16\n\x06\x64rinks\x18\x04 \x03(\x0b\x32\x06.Drink\x12\x1a\n\x08sessions\x18\x05 \x03(\x0b\x32\x08.Session\x12\x16\n\x06images\x18\x06 \x03(\x0b\x32\x06.Image\"!\n\nUserDetail\x12\x13\n\x04user\x18\x01 \x02(\x0b\x32\x05.User\"D\n\rUserDetailSet\x12\x1a\n\x05users\x18\x01 \x03(\x0b\x32\x0b.UserDetail\x12\x17\n\x06paging\x18\x02 \x01(\x0b\x32\x07.Paging\"\xa1\x01\n\x11SystemEventDetail\x12\x1b\n\x05\x65vent\x18\x01 \x02(\x0b\x32\x0c.SystemEvent\x12\x15\n\x05image\x18\x02 \x01(\x0b\x32\x06.Image\x12\x13\n\x04user\x18\x03 \x01(\x0b\x32\x05.User\x12\x15\n\x05\x64rink\x18\x04 \x01(\x0b\x32\x06.Drink\x12\x11\n\x03keg\x18\x05 \x01(\x0b\x32\x04.Keg\x12\x19\n\x07session\x18\x06 \x01(\x0b\x32\x08.Session\"Y\n\x12ThermoSensorDetail\x12\x1d\n\x06sensor\x18\x01 \x02(\x0b\x32\r.ThermoSensor\x12\x11\n\tlast_temp\x18\x02 \x01(\x02\x12\x11\n\tlast_time\x18\x03 \x01(\t2\x0b\n\tKegwebApiB\x12\n\x10org.kegbot.proto')
 
 
 
@@ -647,6 +647,13 @@ _DRINKDETAIL = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='images', full_name='DrinkDetail.images', index=4,
+      number=5, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -657,7 +664,7 @@ _DRINKDETAIL = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=1241,
-  serialized_end=1344,
+  serialized_end=1368,
 )
 
 
@@ -696,6 +703,13 @@ _SESSIONDETAIL = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='images', full_name='SessionDetail.images', index=4,
+      number=5, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -705,8 +719,8 @@ _SESSIONDETAIL = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1346,
-  serialized_end=1455,
+  serialized_start=1371,
+  serialized_end=1504,
 )
 
 
@@ -752,6 +766,13 @@ _KEGDETAIL = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='images', full_name='KegDetail.images', index=5,
+      number=6, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -761,8 +782,8 @@ _KEGDETAIL = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1458,
-  serialized_end=1589,
+  serialized_start=1507,
+  serialized_end=1662,
 )
 
 
@@ -789,8 +810,8 @@ _USERDETAIL = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1591,
-  serialized_end=1624,
+  serialized_start=1664,
+  serialized_end=1697,
 )
 
 
@@ -824,8 +845,8 @@ _USERDETAILSET = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1626,
-  serialized_end=1694,
+  serialized_start=1699,
+  serialized_end=1767,
 )
 
 
@@ -887,8 +908,8 @@ _SYSTEMEVENTDETAIL = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1697,
-  serialized_end=1858,
+  serialized_start=1770,
+  serialized_end=1931,
 )
 
 
@@ -929,8 +950,8 @@ _THERMOSENSORDETAIL = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1860,
-  serialized_end=1949,
+  serialized_start=1933,
+  serialized_end=2022,
 )
 
 _DRINKSET.fields_by_name['drinks'].message_type = models_pb2._DRINK
@@ -959,15 +980,18 @@ _DRINKDETAIL.fields_by_name['drink'].message_type = models_pb2._DRINK
 _DRINKDETAIL.fields_by_name['user'].message_type = models_pb2._USER
 _DRINKDETAIL.fields_by_name['keg'].message_type = models_pb2._KEG
 _DRINKDETAIL.fields_by_name['session'].message_type = models_pb2._SESSION
+_DRINKDETAIL.fields_by_name['images'].message_type = models_pb2._IMAGE
 _SESSIONDETAIL.fields_by_name['session'].message_type = models_pb2._SESSION
 _SESSIONDETAIL.fields_by_name['stats'].message_type = models_pb2._STATS
 _SESSIONDETAIL.fields_by_name['kegs'].message_type = models_pb2._KEG
 _SESSIONDETAIL.fields_by_name['drinks'].message_type = models_pb2._DRINK
+_SESSIONDETAIL.fields_by_name['images'].message_type = models_pb2._IMAGE
 _KEGDETAIL.fields_by_name['keg'].message_type = models_pb2._KEG
 _KEGDETAIL.fields_by_name['type'].message_type = models_pb2._BEERTYPE
 _KEGDETAIL.fields_by_name['size'].message_type = models_pb2._KEGSIZE
 _KEGDETAIL.fields_by_name['drinks'].message_type = models_pb2._DRINK
 _KEGDETAIL.fields_by_name['sessions'].message_type = models_pb2._SESSION
+_KEGDETAIL.fields_by_name['images'].message_type = models_pb2._IMAGE
 _USERDETAIL.fields_by_name['user'].message_type = models_pb2._USER
 _USERDETAILSET.fields_by_name['users'].message_type = _USERDETAIL
 _USERDETAILSET.fields_by_name['paging'].message_type = _PAGING

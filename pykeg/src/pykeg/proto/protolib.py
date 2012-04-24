@@ -378,6 +378,8 @@ def GetDrinkDetail(drink):
     ret.keg.MergeFrom(ToProto(drink.keg))
   if drink.session:
     ret.session.MergeFrom(ToProto(drink.session))
+  for i in drink.pictures.all():
+    ret.images.add().MergeFrom(ToProto(i))
   return ret
 
 def GetSessionDetail(session):
@@ -387,8 +389,9 @@ def GetSessionDetail(session):
     ret.kegs.add().MergeFrom(ToProto(k))
   for d in session.drinks.all():
     ret.drinks.add().MergeFrom(ToProto(d))
+  for i in session.pictures.all():
+    ret.images.add().MergeFrom(ToProto(i))
   ret.stats.MergeFrom(session.GetStats())
-  # TODO(mikey): stats
   return ret
 
 def GetKegDetail(keg, full=False):
@@ -405,6 +408,8 @@ def GetKegDetail(keg, full=False):
     sessions = (c.session for c in keg.keg_session_chunks.all())
     for s in sessions:
       ret.sessions.add().MergeFrom(ToProto(s))
+  for i in keg.pictures.all():
+    ret.images.add().MergeFrom(ToProto(i))
   return ret
 
 def GetSystemEventDetail(event):

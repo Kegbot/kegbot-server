@@ -158,6 +158,7 @@ message DrinkDetail {
   optional User user = 2;
   optional Keg keg = 3;
   optional Session session = 4;
+  repeated Image images = 5;
 }
 
 message SessionDetail {
@@ -165,6 +166,7 @@ message SessionDetail {
   optional Stats stats = 2;
   repeated Keg kegs = 3;
   repeated Drink drinks = 4;
+  repeated Image images = 5;
 }
 
 message KegDetail {
@@ -173,6 +175,7 @@ message KegDetail {
   optional KegSize size = 3;
   repeated Drink drinks = 4;
   repeated Session sessions = 5;
+  repeated Image images = 6;
 }
 
 message UserDetail {

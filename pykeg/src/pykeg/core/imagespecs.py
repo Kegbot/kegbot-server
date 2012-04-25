@@ -20,30 +20,35 @@ from imagekit.models import ImageSpec
 from imagekit.processors import Adjust
 from imagekit.processors import resize
 
+if hasattr(resize, 'Fit'):
+  ResizeToFit = resize.Fit
+  Crop = resize.Crop
+else:
+  ResizeToFit = resize.ResizeToFit
+  from imagekit.processors import crop
+  Crop = crop.Crop
+
+
 resized = ImageSpec(
-    processors=[resize.Fit(1024, 1024)],
+    processors=[ResizeToFit(1024, 1024)],
     image_field='image',
     format='PNG',
-    pre_cache=False,
 )
 
 small_resized = ImageSpec(
-    processors=[resize.Fit(256, 256)],
+    processors=[ResizeToFit(256, 256)],
     image_field='image',
     format='PNG',
-    pre_cache=False,
 )
 
 thumbnail = ImageSpec(
-    processors=[Adjust(contrast=1.2, sharpness=1.1), resize.Crop(256, 256)],
+    processors=[Adjust(contrast=1.2, sharpness=1.1), Crop(256, 256)],
     image_field='image',
     format='PNG',
-    pre_cache=False,
 )
 
 small_thumbnail = ImageSpec(
-    processors=[Adjust(contrast=1.2, sharpness=1.1), resize.Crop(64, 64)],
+    processors=[Adjust(contrast=1.2, sharpness=1.1), Crop(64, 64)],
     image_field='image',
     format='PNG',
-    pre_cache=False,
 )

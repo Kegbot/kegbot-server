@@ -28,12 +28,6 @@ urlpatterns = patterns('',
     ### django admin site
     (r'^admin/', include(admin.site.urls)),
 
-    ### static media
-    url(r'^media/(.*)$',
-     'django.views.static.serve',
-     {'document_root': settings.MEDIA_ROOT, 'show_indexes': False},
-     name='media'),
-
     (r'^favicon.ico$', 'django.views.generic.simple.redirect_to',
       {'url': '/site_media/images/favicon.ico'}),
 
@@ -88,4 +82,7 @@ if USE_DJANGO_REGISTRATION:
 
 if settings.DEBUG:
   urlpatterns += staticfiles_urlpatterns()
+  urlpatterns += patterns('',
+    url(r'^media/(?P<path>.*)$', 'django.views.static.serve', { 'document_root': settings.MEDIA_ROOT, }),
+  )
 

@@ -45,7 +45,7 @@ setup(
       'django-autoslug',
       'django-bootstrap-form',
       'django-debug-toolbar',
-      'django-imagekit >= 1.0',
+      'django-imagekit >= 2.0',
       'django-registration',
       'django-sentry',
       'django_extensions',

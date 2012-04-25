@@ -72,12 +72,12 @@ class JSONField(models.TextField):
     else:
       return value
 
-  def get_db_prep_save(self, value):
+  def get_db_prep_save(self, value, connection):
     """Convert our JSON object to a string before we save"""
     if not value:
-      return super(JSONField, self).get_db_prep_save("")
+      return super(JSONField, self).get_db_prep_save("", connection)
     else:
-      return super(JSONField, self).get_db_prep_save(kbjson.dumps(value))
+      return super(JSONField, self).get_db_prep_save(kbjson.dumps(value), connection)
 
 try:
   from south.modelsinspector import add_introspection_rules

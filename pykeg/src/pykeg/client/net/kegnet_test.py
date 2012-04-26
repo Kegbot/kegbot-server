@@ -8,7 +8,7 @@ import unittest
 
 import gflags
 
-from pykeg.core.net import kegnet
+from pykeg.client.net import kegnet
 
 FLAGS = gflags.FLAGS
 

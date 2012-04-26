@@ -67,7 +67,7 @@ sys.path[:0] = _sys_path_prepend
 
 # Import django (which must be done after any path adjustments), and start the
 # handler.
-from django.core.handlers.wsgi import WSGIHandler
-os.environ['DJANGO_SETTINGS_MODULE'] = 'pykeg.settings'
-application = WSGIHandler()
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pykeg.settings')
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
 

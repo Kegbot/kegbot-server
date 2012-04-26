@@ -45,9 +45,9 @@ from pykeg.core.backend import backend
 from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import kbjson
 from pykeg.core import models
-from pykeg.core import tasks
 from pykeg.proto import protolib
 from pykeg.proto import protoutil
+from pykeg.web import tasks
 from pykeg.web.api import apikey
 from pykeg.web.api import forms
 from pykeg.web.api import krest

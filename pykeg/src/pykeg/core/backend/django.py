@@ -24,7 +24,7 @@ import logging
 from . import backend
 from pykeg.core import kb_common
 from pykeg.core import models
-from pykeg.core import tasks
+from pykeg.web import tasks
 from pykeg.proto import protolib
 
 class KegbotBackend(backend.Backend):

@@ -3,7 +3,6 @@ from django.core.management.base import CommandError
 
 import datetime
 
-from pykeg.core import backend
 from pykeg.core import defaults
 from pykeg.core import models
 from pykeg.core import units

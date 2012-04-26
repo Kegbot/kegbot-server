@@ -28,7 +28,8 @@ from south.management.commands import migrate
 from south.management.commands import syncdb
 from pykeg.core.management.commands import kb_set_defaults
 
-from pykeg.core import backend
+from pykeg.core.backend import backend
+from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import defaults
 
 
@@ -38,7 +39,7 @@ class Command(NoArgsCommand):
   def handle(self, **options):
     installed = False
     try:
-      b = backend.KegbotBackend()
+      b = KegbotBackend()
       installed = defaults.db_is_installed()
     except backend.BackendError, e:
       pass

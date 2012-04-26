@@ -20,7 +20,7 @@ import datetime
 
 from django.utils import unittest
 
-from pykeg.core import backend
+from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import models
 from pykeg.core import stats
 from pykeg.proto import models_pb2
@@ -29,7 +29,7 @@ from pykeg.proto.protoutil import ProtoMessageToDict
 class StatsTestCase(unittest.TestCase):
   def setUp(self):
     self.site, created = models.KegbotSite.objects.get_or_create(name='default')
-    self.backend = backend.KegbotBackend(site=self.site)
+    self.backend = KegbotBackend(site=self.site)
 
     test_usernames = ('user1', 'user2', 'user3')
     self.users = [self.backend.CreateNewUser(name) for name in test_usernames]

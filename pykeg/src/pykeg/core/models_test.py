@@ -3,7 +3,7 @@
 import datetime
 import unittest
 
-from pykeg.core import backend
+from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import kb_common
 from pykeg.core import models
 from pykeg.core import units
@@ -14,7 +14,7 @@ class CoreModelsTestCase(unittest.TestCase):
   def setUp(self):
     models.KegbotSite.objects.filter(name='default').delete()
     self.site, created = models.KegbotSite.objects.get_or_create(name='default')
-    self.backend = backend.KegbotBackend(site=self.site)
+    self.backend = KegbotBackend(site=self.site)
     self.brewer = bdb_models.Brewer.objects.create(
         name='Moonshine Beers',
         country='USA',

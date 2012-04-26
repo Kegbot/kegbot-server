@@ -19,7 +19,7 @@
 import datetime
 import math
 
-from pykeg.core import backend
+from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import models
 from pykeg.core import units
 
@@ -41,7 +41,7 @@ def set_defaults(force=False):
   secondary_tap = models.KegTap(site=site, name='Second Tap', meter_name='kegboard.flow1')
   secondary_tap.save()
 
-  b = backend.KegbotBackend()
+  b = KegbotBackend()
 
   # brewer defaults
   unk_brewer = bdb.Brewer(name='Unknown Brewer')

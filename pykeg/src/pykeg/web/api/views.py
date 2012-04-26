@@ -41,7 +41,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 
 from pykeg.contrib.soundserver import models as soundserver_models
-from pykeg.core import backend
+from pykeg.core.backend import backend
+from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import kbjson
 from pykeg.core import models
 from pykeg.core import tasks
@@ -374,7 +375,7 @@ def get_user_stats(request, username):
 @py_to_json
 @auth_required
 def get_auth_token(request, auth_device, token_value):
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = KegbotBackend(site=request.kbsite)
   tok = b.GetAuthToken(auth_device, token_value)
   return FromProto(tok)
 
@@ -426,7 +427,7 @@ def _thermo_sensor_post(request, sensor_name):
   if not form.is_valid():
     raise krest.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = KegbotBackend(site=request.kbsite)
   sensor, created = models.ThermoSensor.objects.get_or_create(site=request.kbsite,
       raw_name=sensor_name)
   # TODO(mikey): use form fields to compute `when`
@@ -483,7 +484,7 @@ def _tap_detail_post(request, tap):
   duration = cd.get('duration')
   if duration is None:
     duration = 0
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = KegbotBackend(site=request.kbsite)
   try:
     res = b.RecordDrink(tap_name=tap,
       ticks=cd['ticks'],
@@ -509,7 +510,7 @@ def cancel_drink(request):
   if not form.is_valid():
     raise krest.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = KegbotBackend(site=request.kbsite)
   try:
     res = b.CancelDrink(seqn=cd.get('id'), spilled=cd.get('spilled', False))
     return FromProto(res)

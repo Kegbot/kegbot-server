@@ -22,7 +22,7 @@
 import datetime
 import unittest
 
-from pykeg.core import flow_meter
+from . import flow_meter
 
 MAX_DELTA = 5000
 

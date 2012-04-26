@@ -4,9 +4,9 @@
 
 import unittest
 
-from pykeg.core import kbevent
+from . import kbevent
+from . import manager
 from pykeg.core import kb_common
-from pykeg.core import manager
 
 class _MockKegbotCore(object):
   pass

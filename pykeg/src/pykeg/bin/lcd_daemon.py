@@ -30,7 +30,7 @@ import time
 from pykeg.core import kb_app
 from pykeg.core import units
 from pykeg.core import util
-from pykeg.core.net import kegnet
+from pykeg.client.net import kegnet
 
 from pykeg.web.api.krest import KrestClient
 

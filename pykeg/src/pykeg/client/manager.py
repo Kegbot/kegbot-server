@@ -24,10 +24,9 @@ import time
 import threading
 import logging
 
-from pykeg.core import backend
-from pykeg.core import flow_meter
+from . import flow_meter
+from . import kbevent
 from pykeg.core import kb_common
-from pykeg.core import kbevent
 from pykeg.core import util
 
 

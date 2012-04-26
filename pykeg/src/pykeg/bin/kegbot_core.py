@@ -19,7 +19,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from pykeg.core import importhacks
-from pykeg.core import kegbot
+from pykeg.client import kegbot
 
 __doc__ = kegbot.__doc__
 

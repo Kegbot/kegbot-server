@@ -36,7 +36,7 @@ import time
 
 import gflags
 
-from pykeg.core import kbevent
+from .. import kbevent
 from pykeg.core import kbjson
 from pykeg.core import kb_common
 from pykeg.core import util

@@ -12,13 +12,12 @@ import kegbot
 
 from django.test import TestCase
 
-from pykeg.core import backend
+from . import kbevent
+from .net import kegnet
 from pykeg.core import defaults
-from pykeg.core import kbevent
 from pykeg.core import models
 from pykeg.core import kb_common
 from pykeg.core import units
-from pykeg.core.net import kegnet
 from pykeg.proto import protolib
 
 from pykeg.beerdb import models as bdb_models

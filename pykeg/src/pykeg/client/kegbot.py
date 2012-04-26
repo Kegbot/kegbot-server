@@ -36,19 +36,15 @@ warnings.simplefilter("ignore", DeprecationWarning)
 
 import gflags
 
-from pykeg.core import backend
-from pykeg.core import kbevent
+from . import kbevent
+from . import kb_threads
+from . import manager
+from .net import kegnet
+from pykeg.core.backend.web import WebBackend
 from pykeg.core import kb_app
-from pykeg.core import kb_threads
-from pykeg.core import manager
-from pykeg.core.net import kegnet
 from pykeg.web.api import krest
 
 FLAGS = gflags.FLAGS
-
-gflags.DEFINE_boolean('web_backend', True,
-    'DEPRECATED.  Setting this flag has no effect.  Web backend '
-    'is always used.')
 
 class KegbotEnv(object):
   """ A class that wraps the context of the kegbot core.
@@ -63,14 +59,7 @@ class KegbotEnv(object):
     self._kegnet_server = kegnet.KegnetServer(name='kegnet', kb_env=self,
         addr=FLAGS.kb_core_bind_addr)
 
-    if local_backend:
-      # Database backend.
-      self._logger.info('Using database backend.')
-      self._backend = backend.KegbotBackend()
-    else:
-      # Web backend.
-      self._logger.info('Using web backend: %s' % FLAGS.api_url)
-      self._backend = backend.WebBackend()
+    self._backend = WebBackend()
 
     # Build managers
     self._tap_manager = manager.TapManager('tap-manager', self._event_hub)

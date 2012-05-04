@@ -15,11 +15,11 @@ Download the software from the `Arduino Downloads Page
 Mac OS X, and Windows.
 
 .. note::
-  The minimum supported version is Arduino 0018.
+  The recommended version is Arduino 1.0
 
 When unzipped you will have a single directory that contains all the arduino
-software. The name will be something like ``arduino-0018/`` (the version number
-may be different.)
+software. The name will be something like ``arduino-1.0/`` (the version number
+will be different for previous versions.)
 
 Place this directory somewhere appropriate. For Mac users, you can drag it to
 your Applications folder.
@@ -32,25 +32,27 @@ needs to be programmed with the custom Kegboard firmware.
 
 Binary versions of the Kegboard firmware are not generally available, so you
 will need to build it yourself. This process isn't too hard; if you already have
-the Arduino software installed, and you have a pykeg software tree somewhere,
-then you're most of the way there.
+the Arduino software installed, and you have a clone of the kegboard github repository tree somewhere,
+then you're most of the way there.  
 
-The latest version of the Kegboard firmware is available in the **kegbot**
-distribution, under the directory ``controller/kegboard/``.
+The latest version of the Kegboard firmware is available in the **kegboard**
+distribution, under the directory ``src/kegboard/``.
 
-The file ``kegboard.pde`` is the main source to the firmware. This file is a
+You can also download the entire kegboard github repository as a zip file. `Download Link <https://github.com/Kegbot/kegboard/zipball/master>`
+
+The file ``kegboard.ino`` is the main source to the firmware. This file is a
 C source file, using the file extension preferred by the Arduino development
 tools.
 
 Build and Flash: Command Line
 -----------------------------
 
-Building on the command line is pretty easy.  First, find your **kegbot** tree
+Building on the command line is pretty easy.  First, find your **kegboard** tree
 and navigate to the firmware's home:
 
 .. code-block:: none
 
-  cd kegbot/controller/kegboard
+  cd kegboard/src/kegboard
 
 Before we can build, we need to know where the arduino software is installed.
 Locate the path to the ``arduino-xxxx/`` directory and export it as shown below:
@@ -58,10 +60,10 @@ Locate the path to the ``arduino-xxxx/`` directory and export it as shown below:
 .. code-block:: none
 
   ### Mac example
-  export ARDUINO_DIR=/Applications/arduino-0018
+  export ARDUINO_DIR=/Applications/arduino-1.0
 
   ### Linux example
-  export ARDUINO_DIR=/usr/local/arduino-0018
+  export ARDUINO_DIR=/usr/local/arduino-1.0
 
 Finally, perform the build:
 
@@ -83,7 +85,7 @@ To upload, run the following command:
 Build and Flash: GUI
 --------------------
 
-Open the file ``kegboard.pde`` in the Arduino studio. You should see a listing
+Open the file ``kegboard.ino`` in the Arduino studio. You should see a listing
 of the source.
 
 You should not need to make any changes to the source file to have a working

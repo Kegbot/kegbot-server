@@ -5,8 +5,8 @@ use_setuptools()
 
 from setuptools import setup, find_packages
 
-VERSION = "0.8.4"
-SHORT_DESCRIPTION = "Kegbot kegerator controller software"
+VERSION = '0.8.4'
+SHORT_DESCRIPTION = 'Kegbot kegerator controller software'
 LONG_DESCRIPTION = """This package contains Kegbot core controller and Django
 frontend package.
 
@@ -15,13 +15,13 @@ kegerator.  For more information and documentation, see http://kegbot.org/
 """
 
 setup(
-    name = "kegbot",
+    name = 'kegbot',
     version = VERSION,
     description = SHORT_DESCRIPTION,
     long_description = LONG_DESCRIPTION,
-    author = "mike wakerly",
-    author_email = "opensource@hoho.com",
-    url = "http://kegbot.org/",
+    author = 'mike wakerly',
+    author_email = 'opensource@hoho.com',
+    url = 'http://kegbot.org/',
     packages = find_packages('src'),
     package_dir = {
       '' : 'src',
@@ -50,21 +50,18 @@ setup(
       'django-storages',
       'boto',
 
-      # NOTE(mikey): socialregistration does not yet declare the
-      # facebook-python-sdk prerequisite for itself.
-      'facebook-python-sdk',
-      'django-socialregistration >= 0.5.3',
+      'facebook-sdk >= 0.3.0',
+      'django-socialregistration >= 0.5.4',
 
-      #'MySQL-python',
-      #'pil',
+      'MySQL-python',
+      'pil',
       'protobuf >= 2.4.1',
       'pylcdui >= 0.5.5',
-      #'pysqlite>=2.0.3',
-      'python-gflags >= 1.3',
+      'pysqlite>=2.0.3',
+      'python-gflags >= 1.8',
       'South >= 0.7.3',
       'Sphinx',
       'django_nose',
-      #'python-openid >= 2.2.5',  # removeme once PIL package works
       'tweepy',
       'django-icanhaz',
       'pytz',
@@ -86,14 +83,8 @@ setup(
     dependency_links = [
         'https://github.com/mLewisLogic/foursquare/tarball/master#egg=foursquare',
         'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
-        'http://dist.repoze.org/PIL-1.1.6.tar.gz',
-        'http://kegbot.org/kmedia/python-openid-2.2.5.tgz',
         'https://github.com/tzangms/django-bootstrap-form/tarball/master#egg=django-bootstrap-form',
         'https://github.com/rjdj/django-tornado/tarball/master#egg=rjdj.djangotornado',
-
-        # Self-maintained package due to upstream issue:
-        # http://github.com/facebook/python-sdk/issues/#issue/21
-        'http://github.com/downloads/mik3y/python-sdk/facebook-python-sdk-0.1-1.tar.gz',
     ],
     include_package_data = True,
     entry_points = {

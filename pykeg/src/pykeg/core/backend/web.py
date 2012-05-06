@@ -75,7 +75,7 @@ class WebBackend(backend.Backend):
     try:
       return self._client.GetToken(auth_device, token_value)
     except krest.NotFoundError:
-      raise NoTokenError
+      raise backend.NoTokenError
     except socket.error:
       self._logger.warning('Socket error fetching token; ignoring.')
-      raise NoTokenError
+      raise backend.NoTokenError

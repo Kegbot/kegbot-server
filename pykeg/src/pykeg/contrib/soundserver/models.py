@@ -19,6 +19,7 @@
 import os
 import random
 
+from pykeg.core import models as core_models
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -29,6 +30,7 @@ def sound_file_name(instance, filename):
 
 
 class SoundFile(models.Model):
+  site = models.ForeignKey(core_models.KegbotSite, related_name='sound_files')
   sound = models.FileField(upload_to=sound_file_name)
   title = models.CharField(max_length=128)
   active = models.BooleanField(default=True)
@@ -38,6 +40,7 @@ class SoundFile(models.Model):
 
 
 class SoundEvent(models.Model):
+  site = models.ForeignKey(core_models.KegbotSite, related_name='sound_events')
   event_name = models.CharField(max_length=256)
   event_predicate = models.CharField(max_length=256, blank=True, null=True)
   soundfile = models.ForeignKey(SoundFile)

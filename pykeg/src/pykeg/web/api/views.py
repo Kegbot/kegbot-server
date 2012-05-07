@@ -31,6 +31,7 @@ from django.conf import settings
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
+from django.db.utils import IntegrityError
 
 from django.http import Http404
 from django.http import HttpResponse
@@ -535,6 +536,38 @@ def login(request):
 def logout(request):
   auth_logout(request)
   return {'result': 'ok'}
+
+@csrf_exempt
+@py_to_json
+def register(request):
+  if not request.POST:
+    raise krest.BadRequestError('POST required.')
+  form = forms.RegisterForm(request.POST)
+  errors = {}
+  if not form.is_valid():
+    errors = _form_errors(form)
+  else:
+    username = form.cleaned_data['username']
+    try:
+      u = models.User()
+      u.username = username
+      u.email = form.cleaned_data['email']
+      u.save()
+      u.set_password(form.cleaned_data['password'])
+      if 'photo' in request.FILES:
+        pic = models.Picture.objects.create(user=u)
+        photo = request.FILES['photo']
+        pic.image.save(photo.name, photo)
+        pic.save()
+        profile = u.get_profile()
+        profile.mugshot = pic
+        profile.save()
+      return FromProto(protolib.GetUserDetail(u, full=True))
+    except IntegrityError:
+      user_errs = errors.get('username', [])
+      user_errs.append('Username not available.')
+      errors['username'] = user_errs
+  raise krest.BadRequestError(errors)
 
 @py_to_json
 def default_handler(request):

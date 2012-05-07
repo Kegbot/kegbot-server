@@ -55,3 +55,9 @@ class PhotoForm(forms.Form):
 class DebugLogForm(forms.Form):
   message = forms.CharField()
   client_name = forms.CharField(required=False)
+
+class RegisterForm(forms.Form):
+  username = forms.CharField(max_length=32)
+  email = forms.EmailField()
+  password = forms.CharField()
+  photo = forms.ImageField(required=False)

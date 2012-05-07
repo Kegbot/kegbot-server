@@ -11,13 +11,15 @@ pykeg/build
 pykeg/dist
 pykeg/distribute*gz
 pykeg/kegbot.log
-pykeg/src/pykeg/web/media/mugshots
-pykeg/src/pykeg/web/media/beerdb
-pykeg/src/pykeg/web/media/sounds
-pykeg/src/pykeg/web/media/cache
+pykeg/media
 pykeg/setup.log
 pykeg/sounds
 pykeg/src/kegbot.egg-info
+pykeg/src/pykeg/web/media/beerdb
+pykeg/src/pykeg/web/media/cache
+pykeg/src/pykeg/web/media/mugshots
+pykeg/src/pykeg/web/media/sounds
+pykeg/static
 
 ### controller
 controller/kegboard/build-cli

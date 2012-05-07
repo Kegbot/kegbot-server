@@ -15,6 +15,7 @@
   <div class="span8">
     <h2>Summary</h2>
     <table class="table table-condensed">
+      {% if stats %}
        <tr>
           <th>Total Volume</th>
           <td> {% volume stats.total_volume_ml %}</td>
@@ -40,6 +41,8 @@
           <th>Largest Pour</th>
           <td>{% volume stats.greatest_volume_ml %}</td>
        </tr>
+       {% endif %}
+       {% endif %}
 
        <tr>
           <th>Member Since</th>
@@ -50,6 +53,7 @@
        </tr>
 
        {% with drinker.drinks.latest as last_drink %}
+       {% if last_drink %}
        <tr>
           <th>Last Drink</th>
           <td>
@@ -57,8 +61,8 @@
             <i>({% timeago last_drink.starttime%})</i>
           </td>
        </tr>
-       {% endwith %}
        {% endif %}
+       {% endwith %}
 
     </table>
   </div> <!-- span8 -->
@@ -83,7 +87,7 @@
 <div class="row">
     <h2>Drinker Stats</h2>
     {% if not stats.total_pours %}
-    No sessions recorded for {{ drinker }}, nothing to display!
+    Looks like {{ drinker }} has never poured a drink. Boo!
     {% else %}
     <div class="kb-contentbox">
       <p>

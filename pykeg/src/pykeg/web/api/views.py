@@ -539,6 +539,7 @@ def logout(request):
 
 @csrf_exempt
 @py_to_json
+@auth_required
 def register(request):
   if not request.POST:
     raise krest.BadRequestError('POST required.')
@@ -572,7 +573,6 @@ def register(request):
 @py_to_json
 def default_handler(request):
   raise Http404, "Not an API endpoint: %s" % request.path[:100]
-
 
 class LocalRavenClient(raven.Client):
   logger = logging.getLogger('kegbot.api.client.debug')

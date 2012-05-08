@@ -471,7 +471,7 @@ pre_save.connect(_set_seqn_pre_save, sender=Drink)
 class AuthenticationToken(models.Model):
   """A secret token to authenticate a user, optionally pin-protected."""
   class Meta:
-    unique_together = ('site', 'seqn', 'auth_device', 'token_value')
+    unique_together = (('site', 'seqn'), ('site', 'auth_device', 'token_value'))
 
   def __str__(self):
     ret = "%s: %s" % (self.auth_device, self.token_value)
@@ -503,6 +503,11 @@ class AuthenticationToken(models.Model):
       return True
     return datetime.datetime.now() < self.expires
 
+def _auth_token_pre_save(sender, instance, **kwargs):
+  if instance.auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
+    instance.token_value = instance.token_value.lower()
+
+pre_save.connect(_auth_token_pre_save, sender=AuthenticationToken)
 pre_save.connect(_set_seqn_pre_save, sender=AuthenticationToken)
 
 class _AbstractChunk(models.Model):

@@ -217,7 +217,9 @@ class KegbotBackend(backend.Backend):
           token_value=token_value, seqn=0, user=user, enabled=True)
       return protolib.ToProto(fake_token)
 
-    tok, created = models.AuthenticationToken.objects.get_or_create( site=self._site,
+    if token_value and auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
+      token_value = token_value.lower()
+    tok, created = models.AuthenticationToken.objects.get_or_create(site=self._site,
         auth_device=auth_device, token_value=token_value)
     if not tok.user:
       raise backend.NoTokenError

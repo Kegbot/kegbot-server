@@ -10,14 +10,15 @@
 {% icanhaz "systemevent_list" %}
 {% icanhaz "systemevent_keg_started" %}
 {% icanhaz "systemevent_keg_ended" %}
-
-<script>
-$(document).ready(function () {
-  //ich.refresh();
-  var app = new KegwebAppRouter({ append_at: $('#kb-system-events') });
-  window.app = app;
-});
-</script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+		setInterval(function() {
+			window.app.systemEvents.fetch({
+				add: true
+			});
+		}, 2000);
+    });
+  </script>
 {% endblock %}
 
 {% block col-1 %}

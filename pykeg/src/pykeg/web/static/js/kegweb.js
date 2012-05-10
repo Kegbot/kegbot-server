@@ -21,7 +21,6 @@
 //
 // Kegweb namespace setup
 //
-
 var kegweb = {};
 
 // API Endpoints.
@@ -29,228 +28,235 @@ kegweb.API_BASE = '/api/';
 kegweb.API_GET_EVENTS = 'events/';
 kegweb.AUTOUNITS_SETTINGS = {};
 
-// Misc globals.
-kegweb.lastEventId = -1;
-kegweb.eventsLoaded = false;
-
 //
 // Kegweb functions.
 //
 
-/**
- * Based Kegweb onRead function, called when any kegweb page is loaded.
- */
-kegweb.onReady = function() {
-  kegweb.refreshCallback();
-  setInterval(kegweb.refreshCallback, 10000);
-};
-
-/**
- * Fetches the latest events in pre-processed HTML format.
- *
- * @param {function(Array)} callback A callback function to process the events.
- * @param {number} since Fetch only events that are newer than this event id.
- */
-kegweb.getEvents = function(callback, since) {
-  var url = kegweb.API_BASE + kegweb.API_GET_EVENTS;
-  if (since) {
-    url += '?since=' + since;
-  }
-  $.getJSON(url, function(data) {
-    if (data['result'] && data['result']['events']) {
-      callback(data['result']['events']);
-    }
-  });
-}
-
-/**
- * Interval callback that will refresh all items on the page.
- */
-kegweb.refreshCallback = function() {
-  // Events table.
-  if ($("#kb-system-events")) {
-    if (kegweb.lastEventId >= 0) {
-      kegweb.getEvents(kegweb.updateEventsTable, kegweb.lastEventId);
-    } else {
-      kegweb.getEvents(kegweb.updateEventsTable);
-    }
-  }
-}
-
-/**
- * Updates the kb-recent-events table from a list of events.
- */
-kegweb.updateEventsTable = function(events) {
-  events.reverse();
-  for (var rowId in events) {
-    var row = events[rowId];
-    var animate = kegweb.eventsLoaded;
-    var eid = parseInt(row['event']['id']);
-    if (eid > kegweb.lastEventId) {
-      kegweb.lastEventId = eid;
-    }
-
-    var l = window.app.model.systemevents;
-    var e = new SystemEvent(row);
-    if (l.get(e.id)) {
-      // Already in collection, grr.
-    } else {
-      l.add(e);
-    }
-
-    /*
-    if (animate) {
-    }
-    */
-  }
-  if (!kegweb.eventsLoaded) {
-    kegweb.eventsLoaded = true;
-  }
-}
-
 kegweb.refreshDisplayUnits = function(useMetric) {
-  var override = $.cookie("autounits_usemetric");
-  if (override != null) {
-    useMetric = (override == 'true');
-  }
-  kegweb.AUTOUNITS_SETTINGS['metric'] = useMetric;
+    var override = $.cookie("autounits_usemetric");
+    if (override != null) {
+        useMetric = (override == 'true');
+    }
+    kegweb.AUTOUNITS_SETTINGS['metric'] = useMetric;
 
-  $("span.hmeasure").autounits(kegweb.AUTOUNITS_SETTINGS);
+    $("span.hmeasure").autounits(kegweb.AUTOUNITS_SETTINGS);
 
-  var toggleBox = $("#units-selector");
-  var text;
-  if (useMetric) {
-    text = "units: metric ";
-    text += "(<a href='#' onClick='kegweb.overrideDisplayUnits(false);'>";
-    text += "switch to imperial";
-    text += "</a>)";
-  } else {
-    text = "units: imperial ";
-    text += "(<a href='#' onClick='kegweb.overrideDisplayUnits(true);'>";
-    text += "switch to metric";
-    text += "</a>)";
-  }
-  toggleBox.html(text);
+    var toggleBox = $("#units-selector");
+    var text;
+    if (useMetric) {
+        text = "units: metric ";
+        text += "(<a href='#' onClick='kegweb.overrideDisplayUnits(false);'>";
+        text += "switch to imperial";
+        text += "</a>)";
+    } else {
+        text = "units: imperial ";
+        text += "(<a href='#' onClick='kegweb.overrideDisplayUnits(true);'>";
+        text += "switch to metric";
+        text += "</a>)";
+    }
+    toggleBox.html(text);
 }
 
 kegweb.overrideDisplayUnits = function(useMetric) {
-  $.cookie("autounits_usemetric", useMetric, { path: '/' });
-  kegweb.refreshDisplayUnits(useMetric);
+    $.cookie("autounits_usemetric", useMetric, {
+        path: '/'
+    });
+    kegweb.refreshDisplayUnits(useMetric);
 }
 
-var SystemEvent = Backbone.Model.extend({
-  initialize: function (spec) {
-    var title = "Unknown event.";
-    var kind = spec.event.kind;
-    if (kind == "drink_poured") {
-      title = "poured a drink";
-    } else if (kind == "session_joined") {
-      title = "started drinking";
-    } else if (kind == "session_started") {
-      title = "started a new session";
-    } else {
-      title = "unknown event";
-    }
-    var username;
-    if (spec.event.user_id) {
-      username = spec.event.user_id;
-    } else {
-      username = "a guest";
-    }
-    this.set({
-      id: spec.event.id,
-      htmlId: 'systemevent_' + this.cid,
-      eventTitle: title,
-      eventUser: username,
-    })
-    this.set(spec);
+$(function() {
 
-  }
-});
+    //
+    // BACKBONE MODELS
+    //
+    var SystemEvent = Backbone.Model.extend({
+        initialize: function(spec) {
+            var title = "Unknown event.";
+            var kind = spec.event.kind;
+            if (kind == "drink_poured") {
+                title = "poured a drink";
+            } else if (kind == "session_joined") {
+                title = "started drinking";
+            } else if (kind == "session_started") {
+                title = "started a new session";
+            } else {
+                title = "unknown event";
+            }
+            var username;
+            if (spec.event.user_id) {
+                username = spec.event.user_id;
+            } else {
+                username = "a guest";
+            }
+            this.set({
+                kind: spec.event.kind,
+                htmlId: 'systemevent_' + this.cid,
+                eventTitle: title,
+                eventUser: username,
+            })
+            this.set(spec);
+			
+            this.id = spec.event.id;
+            this.cid = this.id;
+        }
+    });
 
-var SystemEventView = Backbone.View.extend({
-  render: function () {
-    var kind = this.model.get('event').kind;
-    switch (kind) {
-      case "keg_tapped":
-        this.setElement(ich.systemevent_keg_started(this.model.toJSON()));
-        break;
-      case "keg_ended":
-        this.setElement(ich.systemevent_keg_ended(this.model.toJSON()));
-        break;
-      case "drink_poured":
-        this.setElement(ich.systemevent_drink_poured(this.model.toJSON()));
-        break;
-      case "session_started":
-      case "session_joined":
-        this.setElement(ich.systemevent(this.model.toJSON()));
-        break;
-      default:
-        break;
-    }
-    this.$("abbr.timeago").timeago();
-    this.$("span.hmeasure").autounits(kegweb.AUTOUNITS_SETTINGS);
-    return this;
-  },
-});
+    var SystemEventList = Backbone.Collection.extend({
+        model: SystemEvent,
 
-var SystemEventList = Backbone.Collection.extend({
-  model: SystemEvent,
-  url: '/api/events',
-  comparator: function (e) {
-    var evt = e.get("event");
-    return e.get("event").id;
-  },
-  initialize: function () {
-    // TODO
-  },
-});
+        url: function() {
+            if (this.length == 0) {
+                return "/api/events/";
+            } else {
+                return "/api/events/?since=" + this.last().id;
+            }
+        },
 
-var KegwebAppModel = Backbone.Model.extend({
-  initialize: function () {
-    this.systemevents = new SystemEventList();
-  }
-});
+        comparator: function(e) {
+            var evt = e.get("event");
+            return e.get("event").id;
+        },
 
-var KegwebAppView = Backbone.View.extend({
-  initialize: function() {
-    _.bindAll(this, "addSystemEvent");
-    this.model.systemevents.bind('add', this.addSystemEvent);
-  },
+        initialize: function() {
+            this.lastEventId = -1;
+            this.on("add", function(event) {
+                console.log("Event added: " + event);
+                var eventId = parseInt(event.id);
+                if (eventId > this.lastEventId) {
+                    this.lastEventId = eventId;
+                }
 
-  events: {
-    // User events
-  },
+                var kind = event.get("kind");
+                if (kind == "session_started") {
+                    var sessionId = event.get("event").session_id;
+                    if (app.drinkingSessions.get(sessionId) == null) {
+                        console.log("New session started: " + sessionId);
+                    var ds = new DrinkingSession({
+                        id: sessionId
+                    });
+                    ds.fetch();
+                    app.drinkingSessions.add(ds);
+                    }
+                }
+            }, this);
+        },
 
-  render: function() {
-    $(this.el).html(ich.systemevent_list(this.model.toJSON()));
-    //$(this.el).html("here");
-    this.eventList = this.$('#eventlist');
-    return this;
-  },
+        parse: function(response) {
+            if ("events" in response.result) {
+                return response.result.events;
+            } else {
+                return Array();
+            }
+        },
+    });
 
-  addSystemEvent: function (systemEvent) {
-    var view = new SystemEventView({model: systemEvent});
-    var el = view.render().el;
+    var DrinkingSession = Backbone.Model.extend({
+        urlRoot: "/api/sessions/",
 
-    if (kegweb.eventsLoaded) {
-      $(el).css("display", "none");
-      $(el).css("background-color", "#ffc800");
-      $(el).show("slide", { direction: "up" }, 1000, function() {
-          $(el).animate({ backgroundColor: "#ffffff" }, 1500);
-      });
-    }
+        initialize: function(spec) {
+            this.id = spec.id;
+            this.set(spec);
+        }
+    });
 
-    this.eventList.prepend(el);
-  },
+    var DrinkingSessionList = Backbone.Collection.extend({
+        model: DrinkingSession,
+        url: "/api/sessions/",
 
-});
+        initialize: function() {
+            this.on("add", function(session) {
+                console.log("Session added: " + session.get("id"));
+            });
+        },
 
-var KegwebAppRouter = Backbone.Router.extend({
-  initialize: function (params) {
-    this.model = new KegwebAppModel({});
-    this.view = new KegwebAppView({model: this.model});
-    params.append_at.append(this.view.render().el);
-    return this;
-  },
+        comparator: function(session) {
+            return session.get("id");
+        },
+
+        parse: function(response) {
+            if ("sessions" in response.result) {
+                return response.result.sessions;
+            } else {
+                return Array();
+            }
+        },
+    });
+
+    //
+    // BACKBONE VIEWS
+    //
+    var SystemEventView = Backbone.View.extend({
+        render: function() {
+            var kind = this.model.get('event').kind;
+            switch (kind) {
+            case "keg_tapped":
+                this.setElement(ich.systemevent_keg_started(this.model.toJSON()));
+                break;
+            case "keg_ended":
+                this.setElement(ich.systemevent_keg_ended(this.model.toJSON()));
+                break;
+            case "drink_poured":
+                this.setElement(ich.systemevent_drink_poured(this.model.toJSON()));
+                break;
+            case "session_started":
+            case "session_joined":
+                this.setElement(ich.systemevent(this.model.toJSON()));
+                break;
+            default:
+                break;
+            }
+            this.$("abbr.timeago").timeago();
+            this.$("span.hmeasure").autounits(kegweb.AUTOUNITS_SETTINGS);
+
+            var el = this.$el;
+            el.css("display", "none");
+            el.css("background-color", "#ffc800");
+            el.show("slide", {
+                direction: "up"
+            }, 1000, function() {
+                el.animate({
+                    backgroundColor: "#ffffff"
+                }, 1500);
+            });
+
+            return this;
+        },
+    });
+
+    var SystemEventListView = Backbone.View.extend({
+        //tagName: "div",
+        //className: "kbSystemEvents",
+        el: $("#kb-system-events"),
+
+        initialize: function(options) {
+            this.collection.bind("add", function(model) {
+                var eventView = new SystemEventView({
+                    model: model
+                });
+                $(this.el).prepend(eventView.render().el);
+            }, this);
+        },
+
+        render: function() {
+			console.log("Event list: render!");
+            return this;
+        }
+
+    });
+
+    //
+    // BACKBONE APP
+    //
+    var KegwebAppModel = Backbone.Model.extend({
+        initialize: function() {
+            this.systemEvents = new SystemEventList();
+            this.drinkingSessions = new DrinkingSessionList();
+            this.eventListView = new SystemEventListView({
+                collection: this.systemEvents
+            });
+			console.log("Kegbot app initialized!");
+        }
+    });
+	
+    window.app = new KegwebAppModel();
 });

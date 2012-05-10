@@ -44,8 +44,7 @@
   <script type="text/javascript">
     $(document).ready(function() {
         var defaultUseMetric = {% if kbsite.settings.display_units != 'metric' %}false{% else %}true{% endif%};
-        kegweb.refreshDisplayUnits(defaultUseMetric);
-        kegweb.onReady();
+	    kegweb.refreshDisplayUnits(defaultUseMetric);
         $("abbr.timeago").timeago();
         $(".alert").alert()
     });

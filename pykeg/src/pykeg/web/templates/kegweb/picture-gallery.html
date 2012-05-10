@@ -3,7 +3,7 @@
 {% for pic in pictures %}
 {% with pic.GetCaption as caption %}
 <li>
-  <a class="gallery-image" rel="gallery" href="{{ pic.image.url }}"
+  <a class="gallery-image" rel="gallery" href="{{ pic.resized.url }}"
     {% if caption %} title="{{caption}}" {% endif %}>
     <img class="thumbnail" src="{{ pic.thumbnail.url }}" alt="{{ caption }}" />
   </a>

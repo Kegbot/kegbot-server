@@ -5,18 +5,17 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
-Current Version (in development)
---------------------------------
+Version 0.8.5 (2012-05-13)
+--------------------------
 
 Upgrade Notes
 ^^^^^^^^^^^^^
-Twitter and Facebook support is being changed.  Any existing Twitter/Facebook
+Twitter and Facebook support has been changed.  Any existing Twitter/Facebook
 connections will be lost.
 
 **Important:** Please run the following commands to delete the old
 Twitter/Facebook support prior to upgrading::
   $ kegbot-admin.py migrate contrib.twitter zero
-  $ kegbot-admin.py migrate contrib.facebook zero
 
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
@@ -29,11 +28,15 @@ after updating::
 
 Core/General
 ^^^^^^^^^^^^
+* Django 1.4 support.
+* Foursquare, Twitter and Untappd support.
+* Kegboard has moved to a new repository: https://github.com/Kegbot/kegboard
 * Session timeout is now configurable on the Kegadmin page.
 * Improvements to error logging.
 
 Kegweb
 ^^^^^^
+* Various aesthetic improvements.
 * You can now link a Google Analytics account.
 * Taps can be created and deleted using Kegadmin.
 

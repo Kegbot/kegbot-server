@@ -121,12 +121,12 @@ class BaseStatsBuilder(StatsBuilder):
   def VolumeByDayOfweek(self):
     result = self.stats.volume_by_day_of_week
     if not self.previous:
-      # Note: uses the session's starttime, rather than the drink's. This causes
-      # late-night sessions to be reported for the day on which they were
+      # Note: uses the session's start_time, rather than the drink's. This
+      # causes late-night sessions to be reported for the day on which they were
       # started.
       volmap = {}
       for drink in self.drinks:
-        weekday = drink.session.starttime.strftime('%w')
+        weekday = drink.session.start_time.strftime('%w')
         if weekday not in volmap:
           volmap[weekday] = 0.0
         volmap[weekday] += drink.volume_ml
@@ -136,7 +136,7 @@ class BaseStatsBuilder(StatsBuilder):
           day.weekday = weekday
           day.volume_ml = volume_ml
     else:
-      drink_weekday = self.drink.session.starttime.strftime('%w')
+      drink_weekday = self.drink.session.start_time.strftime('%w')
       for message in self.stats.volume_by_day_of_week:
         if message.weekday == drink_weekday:
           message.volume_ml += self.drink.volume_ml
@@ -177,14 +177,14 @@ class BaseStatsBuilder(StatsBuilder):
     if not self.previous:
       volmap = {}
       for drink in self.drinks:
-        year = drink.starttime.year
+        year = drink.time.year
         volmap[year] = volmap.get(year, 0) + drink.volume_ml
       for year, volume_ml in volmap.iteritems():
         rec = self.stats.volume_by_year.add()
         rec.year = year
         rec.volume_ml = volume_ml
     else:
-      year = self.drink.starttime.year
+      year = self.drink.time.year
       for entry in self.stats.volume_by_year:
         if entry.year == year:
           entry.volume_ml += self.drink.volume_ml
@@ -288,7 +288,7 @@ def main():
 
   if False:
     for user in models.User.objects.all():
-      last_drink = user.drinks.valid().order_by('-starttime')
+      last_drink = user.drinks.valid().order_by('-time')
       if not last_drink:
         continue
       last_drink = last_drink[0]

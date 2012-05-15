@@ -59,7 +59,11 @@ class KegbotEnv(object):
     self._kegnet_server = kegnet.KegnetServer(name='kegnet', kb_env=self,
         addr=FLAGS.kb_core_bind_addr)
 
-    self._backend = WebBackend()
+    if local_backend:
+      from pykeg.core.backend.django import KegbotBackend
+      self._backend = KegbotBackend()
+    else:
+      self._backend = WebBackend()
 
     # Build managers
     self._tap_manager = manager.TapManager('tap-manager', self._event_hub)

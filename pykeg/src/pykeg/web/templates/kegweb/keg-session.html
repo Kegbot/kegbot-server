@@ -24,10 +24,10 @@
 
         <div class="row">
           <div class="span8">
-              {% timeago session.starttime %}<br/>
+              {% timeago session.start_time %}<br/>
               <small>
-                {{ session.starttime|date:"l, F j Y" }},
-                {{ session.starttime|date:"P" }}
+                {{ session.start_time|date:"l, F j Y" }},
+                {{ session.start_time|date:"P" }}
               </small>
           </div>
           <div class="span2">

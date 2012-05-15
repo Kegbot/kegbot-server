@@ -52,7 +52,7 @@ class Command(NoArgsCommand):
 
     pos = 0
     count = drinks.count()
-    for d in drinks.order_by('starttime'):
+    for d in drinks.order_by('time'):
       pos += 1
       progbar('calc new sessions', pos, count)
       sess = models.DrinkingSession.AssignSessionForDrink(d)

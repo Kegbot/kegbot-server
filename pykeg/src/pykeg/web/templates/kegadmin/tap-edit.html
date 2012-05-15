@@ -52,7 +52,7 @@
                   {% volume keg.remaining_volume %} remaining
                   ({{ keg.percent_full|floatformat:1 }}% full),
                 {% endif %}
-                tapped {% timeago keg.startdate %}
+                tapped {% timeago keg.start_time %}
               </small>
             </div> <!-- /span11 -->
           </div> <!-- /row -->

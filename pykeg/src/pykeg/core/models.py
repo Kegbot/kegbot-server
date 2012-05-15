@@ -156,7 +156,7 @@ class UserProfile(models.Model):
 
   def RecomputeStats(self):
     self.user.stats.all().delete()
-    last_d = self.user.drinks.valid().order_by('-starttime')
+    last_d = self.user.drinks.valid().order_by('-time')
     if last_d:
       last_d[0]._UpdateUserStats()
 
@@ -265,8 +265,8 @@ class Keg(models.Model):
     if self.status == 'online':
       end = datetime.datetime.now()
     else:
-      end = self.enddate
-    return end - self.startdate
+      end = self.end_time
+    return end - self.start_time
 
   def is_empty(self):
     return float(self.remaining_volume()) <= 0
@@ -275,13 +275,13 @@ class Keg(models.Model):
     return self.status == 'online'
 
   def previous(self):
-    q = Keg.objects.filter(site=self.site, startdate__lt=self.startdate).order_by('-startdate')
+    q = Keg.objects.filter(site=self.site, start_time__lt=self.start_time).order_by('-start_time')
     if q.count():
       return q[0]
     return None
 
   def next(self):
-    q = Keg.objects.filter(site=self.site, startdate__gt=self.startdate).order_by('startdate')
+    q = Keg.objects.filter(site=self.site, start_time__gt=self.start_time).order_by('start_time')
     if q.count():
       return q[0]
     return None
@@ -295,12 +295,12 @@ class Keg(models.Model):
 
   def RecomputeStats(self):
     self.stats.all().delete()
-    last_d = self.drinks.valid().order_by('-starttime')
+    last_d = self.drinks.valid().order_by('-start_time')
     if last_d:
       last_d[0]._UpdateKegStats()
 
   def Sessions(self):
-    chunks = SessionChunk.objects.filter(keg=self).order_by('-starttime').select_related(depth=2)
+    chunks = SessionChunk.objects.filter(keg=self).order_by('-start_time').select_related(depth=2)
     sessions = []
     sess = None
     for c in chunks:
@@ -335,8 +335,8 @@ class Keg(models.Model):
   seqn = models.PositiveIntegerField(editable=False)
   type = models.ForeignKey(bdb.BeerType)
   size = models.ForeignKey(KegSize)
-  startdate = models.DateTimeField('start date', default=datetime.datetime.now)
-  enddate = models.DateTimeField('end date', default=datetime.datetime.now)
+  start_time = models.DateTimeField(default=datetime.datetime.now)
+  end_time = models.DateTimeField(default=datetime.datetime.now)
   status = models.CharField(max_length=128, choices=(
      ('online', 'online'),
      ('offline', 'offline'),
@@ -354,18 +354,18 @@ def _keg_pre_save(sender, instance, **kwargs):
     return
 
   # Determine first drink date & set keg start date to it if earlier.
-  drinks = keg.drinks.valid().order_by('starttime')
+  drinks = keg.drinks.valid().order_by('start_time')
   if drinks:
     drink = drinks[0]
-    if drink.starttime < keg.startdate:
-      keg.startdate = drink.starttime
+    if drink.start_time < keg.start_time:
+      keg.start_time= drink.start_time
 
   # Determine last drink date & set keg end date to it if later.
-  drinks = keg.drinks.valid().order_by('-starttime')
+  drinks = keg.drinks.valid().order_by('-start_time')
   if drinks:
     drink = drinks[0]
-    if drink.starttime > keg.enddate:
-      keg.enddate = drink.starttime
+    if drink.start_time > keg.end_time:
+      keg.end_time = drink.start_time
 
 pre_save.connect(_set_seqn_pre_save, sender=Keg)
 pre_save.connect(_keg_pre_save, sender=Keg)
@@ -381,8 +381,8 @@ class Drink(models.Model):
   """ Table of drinks records """
   class Meta:
     unique_together = ('site', 'seqn')
-    get_latest_by = 'starttime'
-    ordering = ('-starttime',)
+    get_latest_by = 'time'
+    ordering = ('-time',)
 
   def GetSession(self):
     return self.session
@@ -451,7 +451,7 @@ class Drink(models.Model):
   # of `ticks`, but it may be adjusted, eg due to calibration or mis-recording.
   volume_ml = models.FloatField()
 
-  starttime = models.DateTimeField()
+  time = models.DateTimeField()
   duration = models.PositiveIntegerField(blank=True, default=0)
   user = models.ForeignKey(User, null=True, blank=True, related_name='drinks')
   keg = models.ForeignKey(Keg, null=True, blank=True, related_name='drinks')
@@ -489,9 +489,9 @@ class AuthenticationToken(models.Model):
       help_text='A human-readable alias for the token (eg "Guest Key").')
   pin = models.CharField(max_length=256, blank=True, null=True)
   user = models.ForeignKey(User, blank=True, null=True)
-  created = models.DateTimeField(auto_now_add=True)
   enabled = models.BooleanField(default=True)
-  expires = models.DateTimeField(blank=True, null=True)
+  created_time = models.DateTimeField(auto_now_add=True)
+  expire_time = models.DateTimeField(blank=True, null=True)
 
   def IsAssigned(self):
     return self.user is not None
@@ -499,9 +499,9 @@ class AuthenticationToken(models.Model):
   def IsActive(self):
     if not self.enabled:
       return False
-    if not self.expires:
+    if not self.expire_time:
       return True
-    return datetime.datetime.now() < self.expires
+    return datetime.datetime.now() < self.expire_time
 
 def _auth_token_pre_save(sender, instance, **kwargs):
   if instance.auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
@@ -513,24 +513,24 @@ pre_save.connect(_set_seqn_pre_save, sender=AuthenticationToken)
 class _AbstractChunk(models.Model):
   class Meta:
     abstract = True
-    get_latest_by = 'starttime'
-    ordering = ('-starttime',)
+    get_latest_by = 'start_time'
+    ordering = ('-start_time',)
 
-  starttime = models.DateTimeField()
-  endtime = models.DateTimeField()
+  start_time = models.DateTimeField()
+  end_time = models.DateTimeField()
   volume_ml = models.FloatField(default=0)
 
   def Duration(self):
-    return self.endtime - self.starttime
+    return self.end_time - self.start_time
 
   def _AddDrinkNoSave(self, drink):
     session_delta = drink.site.settings.GetSessionTimeoutDelta()
-    session_end = drink.starttime + session_delta
+    session_end = drink.time + session_delta
 
-    if self.starttime > drink.starttime:
-      self.starttime = drink.starttime
-    if self.endtime < session_end:
-      self.endtime = session_end
+    if self.start_time > drink.time:
+      self.start_time = drink.time
+    if self.end_time < session_end:
+      self.end_time = session_end
     self.volume_ml += drink.volume_ml
 
   def AddDrink(self, drink):
@@ -542,8 +542,8 @@ class DrinkingSession(_AbstractChunk):
   """A collection of contiguous drinks. """
   class Meta:
     unique_together = ('site', 'seqn')
-    get_latest_by = 'starttime'
-    ordering = ('-starttime',)
+    get_latest_by = 'start_time'
+    ordering = ('-start_time',)
 
   objects = managers.SessionManager()
   site = models.ForeignKey(KegbotSite, related_name='sessions')
@@ -553,13 +553,15 @@ class DrinkingSession(_AbstractChunk):
       null=True)
 
   def __str__(self):
-    return "Session #%s: %s" % (self.seqn, self.starttime)
+    return "Session #%s: %s" % (self.seqn, self.start_time)
 
   def RecomputeStats(self):
     self.stats.all().delete()
-    last_d = self.drinks.valid().order_by('-starttime')
-    if last_d:
-      last_d[0]._UpdateSessionStats()
+    try:
+      last_d = self.drinks.valid().latest()
+      last_d._UpdateSessionStats()
+    except Drink.DoesNotExist:
+      pass
 
   @models.permalink
   def get_absolute_url(self):
@@ -569,9 +571,9 @@ class DrinkingSession(_AbstractChunk):
       slug = 'session-%i' % self.seqn
     return ('kb-session',  (), {
       'kbsite_name' : self.site.url(),
-      'year' : self.starttime.year,
-      'month' : '%02i' % self.starttime.month,
-      'day' : '%02i' % self.starttime.day,
+      'year' : self.start_time.year,
+      'month' : '%02i' % self.start_time.month,
+      'day' : '%02i' % self.start_time.day,
       'seqn' : self.seqn,
       'slug' : slug})
 
@@ -623,8 +625,8 @@ class DrinkingSession(_AbstractChunk):
     session_delta = drink.site.settings.GetSessionTimeoutDelta()
 
     defaults = {
-      'starttime': drink.starttime,
-      'endtime': drink.starttime + session_delta,
+      'start_time': drink.time,
+      'end_time': drink.time + session_delta,
     }
 
     # Update or create a SessionChunk.
@@ -650,7 +652,7 @@ class DrinkingSession(_AbstractChunk):
     return self.IsActive(datetime.datetime.now())
 
   def IsActive(self, now):
-    return self.endtime > now
+    return self.end_time > now
 
   def Rebuild(self):
     self.volume_ml = 0
@@ -669,12 +671,12 @@ class DrinkingSession(_AbstractChunk):
     max_time = None
     for d in drinks:
       self.AddDrink(d)
-      if min_time is None or d.starttime < min_time:
-        min_time = d.starttime
-      if max_time is None or d.starttime > max_time:
-        max_time = d.starttime
-    self.starttime = min_time
-    self.endtime = max_time + session_delta
+      if min_time is None or d.time < min_time:
+        min_time = d.time
+      if max_time is None or d.time > max_time:
+        max_time = d.time
+    self.start_time = min_time
+    self.end_time = max_time + session_delta
     self.save()
 
   @classmethod
@@ -684,8 +686,8 @@ class DrinkingSession(_AbstractChunk):
       return drink.session
 
     # Return last session if one already exists
-    q = drink.site.sessions.all().order_by('-endtime')[:1]
-    if q and q[0].IsActive(drink.starttime):
+    q = drink.site.sessions.all().order_by('-end_time')[:1]
+    if q and q[0].IsActive(drink.time):
       session = q[0]
       session.AddDrink(drink)
       drink.session = session
@@ -693,7 +695,7 @@ class DrinkingSession(_AbstractChunk):
       return session
 
     # Create a new session
-    session = cls(starttime=drink.starttime, endtime=drink.starttime,
+    session = cls(start_time=drink.time, end_time=drink.time,
         site=drink.site)
     session.save()
     session.AddDrink(drink)
@@ -718,8 +720,8 @@ class SessionChunk(_AbstractChunk):
   """A specific user and keg contribution to a session."""
   class Meta:
     unique_together = ('session', 'user', 'keg')
-    get_latest_by = 'starttime'
-    ordering = ('-starttime',)
+    get_latest_by = 'start_time'
+    ordering = ('-start_time',)
 
   session = models.ForeignKey(DrinkingSession, related_name='chunks')
   user = models.ForeignKey(User, related_name='session_chunks', blank=True,
@@ -732,8 +734,8 @@ class UserSessionChunk(_AbstractChunk):
   """A specific user's contribution to a session (spans all kegs)."""
   class Meta:
     unique_together = ('session', 'user')
-    get_latest_by = 'starttime'
-    ordering = ('-starttime',)
+    get_latest_by = 'start_time'
+    ordering = ('-start_time',)
 
   site = models.ForeignKey(KegbotSite, related_name='user_chunks')
   session = models.ForeignKey(DrinkingSession, related_name='user_chunks')
@@ -744,15 +746,15 @@ class UserSessionChunk(_AbstractChunk):
     return self.session.GetTitle()
 
   def GetDrinks(self):
-    return self.session.drinks.filter(user=self.user).order_by('starttime')
+    return self.session.drinks.filter(user=self.user).order_by('time')
 
 
 class KegSessionChunk(_AbstractChunk):
   """A specific keg's contribution to a session (spans all users)."""
   class Meta:
     unique_together = ('session', 'keg')
-    get_latest_by = 'starttime'
-    ordering = ('-starttime',)
+    get_latest_by = 'start_time'
+    ordering = ('-start_time',)
 
   objects = managers.SessionManager()
   site = models.ForeignKey(KegbotSite, related_name='keg_chunks')
@@ -822,7 +824,7 @@ def _thermolog_post_save(sender, instance, **kwargs):
   daily_log, created = ThermoSummaryLog.objects.get_or_create(
       sensor=instance.sensor,
       period='daily',
-      date=daily_date,
+      time=daily_date,
       defaults=defaults)
 
   if not created:
@@ -860,7 +862,7 @@ class ThermoSummaryLog(models.Model):
   site = models.ForeignKey(KegbotSite, related_name='thermosummarylogs')
   seqn = models.PositiveIntegerField(editable=False)
   sensor = models.ForeignKey(ThermoSensor)
-  date = models.DateTimeField()
+  time = models.DateTimeField()
   period = models.CharField(max_length=64, choices=PERIOD_CHOICES,
       default='daily')
   num_readings = models.PositiveIntegerField()
@@ -886,7 +888,7 @@ class _StatsModel(models.Model):
     self.save()
 
   site = models.ForeignKey(KegbotSite)
-  date = models.DateTimeField(default=datetime.datetime.now)
+  time = models.DateTimeField(default=datetime.datetime.now)
   stats = fields.JSONField()
 
 
@@ -927,8 +929,8 @@ class SessionStats(_StatsModel):
 
 class SystemEvent(models.Model):
   class Meta:
-    ordering = ('-when', '-id')
-    get_latest_by = 'when'
+    ordering = ('-time', '-id')
+    get_latest_by = 'time'
 
   KINDS = (
       ('drink_poured', 'Drink poured'),
@@ -942,7 +944,7 @@ class SystemEvent(models.Model):
   seqn = models.PositiveIntegerField(editable=False)
   kind = models.CharField(max_length=255, choices=KINDS,
       help_text='Type of event.')
-  when = models.DateTimeField(help_text='Time of the event.')
+  time = models.DateTimeField(help_text='Time of the event.')
   user = models.ForeignKey(User, blank=True, null=True,
       related_name='events',
       help_text='User responsible for the event, if any.')
@@ -979,14 +981,14 @@ class SystemEvent(models.Model):
     if keg.status == 'online':
       q = keg.events.filter(kind='keg_tapped')
       if q.count() == 0:
-        e = keg.events.create(site=site, kind='keg_tapped', when=keg.startdate,
+        e = keg.events.create(site=site, kind='keg_tapped', time=keg.start_time,
             keg=keg)
         e.save()
 
     if keg.status == 'offline':
       q = keg.events.filter(kind='keg_ended')
       if q.count() == 0:
-        e = keg.events.create(site=site, kind='keg_ended', when=keg.enddate,
+        e = keg.events.create(site=site, kind='keg_ended', time=keg.end_time,
             keg=keg)
         e.save()
 
@@ -1000,7 +1002,7 @@ class SystemEvent(models.Model):
     if keg:
       q = keg.events.filter(kind='keg_tapped')
       if q.count() == 0:
-        e = keg.events.create(site=site, kind='keg_tapped', when=drink.starttime,
+        e = keg.events.create(site=site, kind='keg_tapped', time=drink.time,
             keg=keg, user=user, drink=drink, session=session)
         e.save()
 
@@ -1008,20 +1010,20 @@ class SystemEvent(models.Model):
       q = session.events.filter(kind='session_started')
       if q.count() == 0:
         e = session.events.create(site=site, kind='session_started',
-            when=session.starttime, drink=drink, user=user)
+            time=session.start_time, drink=drink, user=user)
         e.save()
 
     if user:
       q = user.events.filter(kind='session_joined', session=session)
       if q.count() == 0:
         e = user.events.create(site=site, kind='session_joined',
-            when=drink.starttime, session=session, drink=drink, user=user)
+            time=drink.time, session=session, drink=drink, user=user)
         e.save()
 
     q = drink.events.filter(kind='drink_poured')
     if q.count() == 0:
       e = drink.events.create(site=site, kind='drink_poured',
-          when=drink.starttime, drink=drink, user=user, keg=keg,
+          time=drink.time, drink=drink, user=user, keg=keg,
           session=session)
       e.save()
 
@@ -1043,7 +1045,7 @@ class Picture(models.Model):
   resized = imagespecs.resized
   thumbnail = imagespecs.thumbnail
 
-  created_date = models.DateTimeField(default=datetime.datetime.now)
+  time = models.DateTimeField(default=datetime.datetime.now)
   caption = models.TextField(blank=True, null=True,
       help_text='Caption for the picture')
   user = models.ForeignKey(User, blank=True, null=True,

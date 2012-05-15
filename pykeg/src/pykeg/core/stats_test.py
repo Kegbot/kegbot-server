@@ -63,12 +63,12 @@ class StatsTestCase(unittest.TestCase):
 
   def _getEmptyStats(self):
     s = models_pb2.Stats()
-    s.last_drink_id = "0"
+    s.last_drink_id = 0
     s.total_volume_ml = 0.0
     s.total_pours = 0
     s.average_volume_ml = 0.0
     s.greatest_volume_ml = 0.0
-    s.greatest_volume_id = "0"
+    s.greatest_volume_id = 0
     return s
 
   def testStuff(self):
@@ -86,12 +86,12 @@ class StatsTestCase(unittest.TestCase):
     drink1 = models.Drink.objects.get(seqn=1)
 
     expected = self._getEmptyStats()
-    expected.last_drink_id = "1"
+    expected.last_drink_id = 1
     expected.total_volume_ml = 100.0
     expected.total_pours = 1
     expected.average_volume_ml = 100.0
     expected.greatest_volume_ml = 100.0
-    expected.greatest_volume_id = "1"
+    expected.greatest_volume_id = 1
     expected.has_guest_pour = False
     d = expected.volume_by_day_of_week.add()
     d.weekday = "0"  # Sunday
@@ -115,12 +115,12 @@ class StatsTestCase(unittest.TestCase):
     drink2 = models.Drink.objects.get(seqn=2)
 
     # Adjust stats
-    expected.last_drink_id = "2"
+    expected.last_drink_id = 2
     expected.total_volume_ml = 300.0
     expected.total_pours = 2
     expected.average_volume_ml = 150.0
     expected.greatest_volume_ml = 200.0
-    expected.greatest_volume_id = "2"
+    expected.greatest_volume_id = 2
     d = expected.volume_by_day_of_week[0]
     d.volume_ml += 200
     u = expected.volume_by_drinker[0]

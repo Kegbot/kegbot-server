@@ -36,7 +36,7 @@ class Command(NoArgsCommand):
     pos = 0
     drinks = models.Drink.objects.valid()
     count = drinks.count()
-    for d in drinks.order_by('starttime'):
+    for d in drinks.order_by('time'):
       pos += 1
       progbar('create new events', pos, count)
       sess = models.SystemEvent.ProcessDrink(d)

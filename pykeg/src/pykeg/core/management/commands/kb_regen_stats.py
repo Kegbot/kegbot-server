@@ -40,7 +40,7 @@ class Command(NoArgsCommand):
   def handle_site(self, site):
     drinks = site.drinks.valid()
 
-    last_drinks = drinks.order_by('-starttime')
+    last_drinks = drinks.order_by('-time')
     if last_drinks:
       progbar('recalc system stats', 0, 1)
       last_drinks[0]._UpdateSystemStats()
@@ -53,7 +53,7 @@ class Command(NoArgsCommand):
     for k in kegs:
       pos += 1
       progbar('recalc keg stats', pos, count)
-      last_drinks = k.drinks.valid().order_by('-starttime')
+      last_drinks = k.drinks.valid().order_by('-time')
       if last_drinks:
         last_drinks[0]._UpdateKegStats()
     print ''
@@ -64,7 +64,7 @@ class Command(NoArgsCommand):
     for user in users:
       pos += 1
       progbar('recalc user stats', pos, count)
-      user_drinks = user.drinks.valid().filter(site=site).order_by('-starttime')
+      user_drinks = user.drinks.valid().filter(site=site).order_by('-time')
       if user_drinks:
         last = user_drinks[0]
         last._UpdateUserStats()
@@ -76,7 +76,7 @@ class Command(NoArgsCommand):
     for session in sessions:
       pos += 1
       progbar('recalc session stats', pos, count)
-      session_drinks = session.drinks.valid().filter(site=site).order_by('-starttime')
+      session_drinks = session.drinks.valid().filter(site=site).order_by('-time')
       if session_drinks:
         last = session_drinks[0]
         last._UpdateSessionStats()

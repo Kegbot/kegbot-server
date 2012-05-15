@@ -18,7 +18,6 @@ from pykeg.core import defaults
 from pykeg.core import models
 from pykeg.core import kb_common
 from pykeg.core import units
-from pykeg.proto import protolib
 
 from pykeg.beerdb import models as bdb_models
 
@@ -161,8 +160,8 @@ class KegbotTestCase(TestCase):
 
     drinks = self.test_keg.drinks.valid().order_by('id')
     self.assertEquals(len(drinks), 2)
-    self.assertEquals(protolib.ToProto(drinks[0].user), self.test_user)
-    self.assertEquals(protolib.ToProto(drinks[1].user), self.test_user_2)
+    self.assertEquals(drinks[0].user, self.test_user)
+    self.assertEquals(drinks[1].user, self.test_user_2)
 
   def testIdleFlow(self):
     meter_name = self.test_tap.meter_name

@@ -49,8 +49,8 @@ class CoreModelsTestCase(unittest.TestCase):
         site=self.site,
         type=self.beer_type,
         size=self.keg_size,
-        startdate=datetime.datetime(2000, 4, 1),
-        enddate=datetime.datetime(2000, 5, 1),
+        start_time=datetime.datetime(2000, 4, 1),
+        end_time=datetime.datetime(2000, 5, 1),
         status='online',
         description='Our first keg!',
         origcost=99.0,
@@ -139,7 +139,7 @@ class CoreModelsTestCase(unittest.TestCase):
         username=u1.username,
         pour_time=base_time+td_200m,
     )
-    drinks_u1 = u1.drinks.all().order_by('starttime')
+    drinks_u1 = u1.drinks.all().order_by('time')
 
 
     ### User 2
@@ -161,45 +161,45 @@ class CoreModelsTestCase(unittest.TestCase):
         username=u2.username,
         pour_time=base_time+td_190m,
     )
-    drinks_u2 = u2.drinks.all().order_by('starttime')
+    drinks_u2 = u2.drinks.all().order_by('time')
 
-    u1_chunks = u1.session_chunks.all().order_by('starttime')
+    u1_chunks = u1.session_chunks.all().order_by('start_time')
     self.assertEqual(len(u1_chunks), 2)
 
-    u2_chunks = u2.session_chunks.all().order_by('starttime')
+    u2_chunks = u2.session_chunks.all().order_by('start_time')
     self.assertEqual(len(u2_chunks), 2)
 
-    s1, s2 = models.DrinkingSession.objects.all().order_by('starttime')[:2]
+    s1, s2 = models.DrinkingSession.objects.all().order_by('start_time')[:2]
 
     SESSION_DELTA = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
 
     # session 1: should be 10 minutes long as created above
-    self.assertEqual(s1.starttime, drinks_u1[0].starttime)
-    self.assertEqual(s1.endtime, drinks_u1[1].starttime)
+    self.assertEqual(s1.start_time, drinks_u1[0].start_time)
+    self.assertEqual(s1.start_time, drinks_u1[1].end_time)
     self.assertEqual(s1.drinks.valid().filter(user=u1).count(), 2)
     self.assertEqual(s1.drinks.valid().filter(user=u2).count(), 1)
 
     # session 2: at time 200, 1 drink
-    self.assertEqual(s2.starttime, base_time + td_190m)
-    self.assertEqual(s2.endtime, base_time + td_200m)
+    self.assertEqual(s2.start_time, base_time + td_190m)
+    self.assertEqual(s2.end_time, base_time + td_200m)
     self.assertEqual(s2.drinks.valid().filter(user=u1).count(), 1)
     self.assertEqual(s2.drinks.valid().filter(user=u2).count(), 2)
 
     # user2 session2: drinks are added out of order to create this, ensure times
     # match
     u2_c2 = u2_chunks[1]
-    self.assertEqual(u2_c2.starttime, base_time+td_190m)
-    self.assertEqual(u2_c2.endtime, base_time+td_200m)
+    self.assertEqual(u2_c2.start_time, base_time+td_190m)
+    self.assertEqual(u2_c2.end_time, base_time+td_200m)
 
     # Now check DrinkingSessions were created correctly; there should be
     # two groups capturing all 4 sessions.
-    all_groups = models.DrinkingSession.objects.all().order_by('starttime')
+    all_groups = models.DrinkingSession.objects.all().order_by('start_time')
     self.assertEqual(len(all_groups), 2)
 
-    self.assertEqual(all_groups[0].starttime, base_time)
-    self.assertEqual(all_groups[0].endtime, base_time+td_10m)
+    self.assertEqual(all_groups[0].start_time, base_time)
+    self.assertEqual(all_groups[0].end_time, base_time+td_10m)
     self.assertEqual(all_groups[0].user_chunks.all().count(), 2)
 
-    self.assertEqual(all_groups[1].starttime, base_time+td_190m)
-    self.assertEqual(all_groups[1].endtime, base_time+td_200m)
+    self.assertEqual(all_groups[1].start_time, base_time+td_190m)
+    self.assertEqual(all_groups[1].end_time, base_time+td_200m)
     self.assertEqual(all_groups[1].user_chunks.all().count(), 2)

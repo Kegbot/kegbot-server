@@ -40,8 +40,8 @@ class KegAdmin(admin.ModelAdmin):
 admin.site.register(models.Keg, KegAdmin)
 
 class DrinkAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'user', 'keg', 'starttime')
-  list_filter = ('keg', 'status', 'starttime')
+  list_display = ('seqn', 'user', 'keg', 'time')
+  list_filter = ('keg', 'status', 'time')
   search_fields = ('seqn', 'user__username')
 admin.site.register(models.Drink, DrinkAdmin)
 
@@ -52,8 +52,8 @@ class AuthenticationTokenAdmin(admin.ModelAdmin):
 admin.site.register(models.AuthenticationToken, AuthenticationTokenAdmin)
 
 class DrinkingSessionAdmin(admin.ModelAdmin):
-  list_display = ('id', 'site', 'seqn', 'starttime', 'endtime', 'volume_ml', 'GetTitle')
-  list_filter = ('site', 'starttime')
+  list_display = ('id', 'site', 'seqn', 'start_time', 'end_time', 'volume_ml', 'GetTitle')
+  list_filter = ('site', 'start_time')
   search_fields = ('name',)
 admin.site.register(models.DrinkingSession, DrinkingSessionAdmin)
 
@@ -75,19 +75,19 @@ class ThermologAdmin(admin.ModelAdmin):
 admin.site.register(models.Thermolog, ThermologAdmin)
 
 class ThermoSummaryLogAdmin(admin.ModelAdmin):
-  list_display = ('sensor', 'date', 'min_temp', 'max_temp', 'mean_temp')
-  list_filter = ('sensor', 'date')
+  list_display = ('sensor', 'time', 'min_temp', 'max_temp', 'mean_temp')
+  list_filter = ('sensor', 'time')
 
 admin.site.register(models.ThermoSummaryLog, ThermoSummaryLogAdmin)
 
 class SystemEventAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'kind', 'when', 'user', 'drink', 'keg', 'session')
-  list_filter = ('kind', 'when')
+  list_display = ('seqn', 'kind', 'time', 'user', 'drink', 'keg', 'session')
+  list_filter = ('kind', 'time')
 admin.site.register(models.SystemEvent, SystemEventAdmin)
 
 class PictureAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'created_date', 'user', 'drink', 'keg', 'session', 'caption')
-  list_filter = ('created_date',)
+  list_display = ('seqn', 'time', 'user', 'drink', 'keg', 'session', 'caption')
+  list_filter = ('time',)
 admin.site.register(models.Picture, PictureAdmin)
 
 class SiteSettingsAdmin(admin.ModelAdmin):

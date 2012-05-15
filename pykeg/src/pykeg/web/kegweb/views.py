@@ -63,7 +63,7 @@ def index(request):
 
   recent_images = models.Picture.objects.filter(
       site=request.kbsite,
-      drink__isnull=False).order_by('-created_date')[:9]
+      drink__isnull=False).order_by('-time')[:9]
   context['recent_images'] = recent_images
 
   return render_to_response('index.html', context)

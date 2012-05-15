@@ -125,7 +125,7 @@ class KegbotBackend(backend.Backend):
       return
 
     d = models.Drink(ticks=ticks, site=self._site, keg=keg, user=user,
-        volume_ml=volume_ml, starttime=pour_time, duration=duration,
+        volume_ml=volume_ml, time=pour_time, duration=duration,
         auth_token=auth_token, shout=shout)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()

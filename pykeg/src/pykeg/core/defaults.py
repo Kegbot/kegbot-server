@@ -16,9 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-import math
-
 from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import models
 from pykeg.core import units
@@ -74,90 +71,3 @@ def set_defaults(force=False):
       volume_ml=volume_int,
     )
     ks.save()
-
-def gentestdata():
-  """ default values (contents may change with schema) """
-  sn = bdb.Brewer(name='Sierra Nevada Brewing Company',
-        country='USA',
-        origin_state='California',
-        origin_city='Chico',
-        production='commercial',
-        url='http://www.sierranevada.com/')
-  sn.save()
-
-  an = bdb.Brewer(name='Anchor Brewing Company',
-        country='USA',
-        origin_state='California',
-        origin_city='San Francisco',
-        production='commercial',
-        url='http://www.anchorsteam.com/')
-  an.save()
-
-  # beerstyle defaults
-  pale_ale = bdb.BeerStyle(name='Pale Ale')
-  pale_ale.save()
-
-  # beertype defaults
-  sn_pa = bdb.BeerType(name="Sierra Nevada Pale Ale",
-        brewer=sn,
-        style=pale_ale,
-        calories_oz=10,
-        carbs_oz=10,
-        abv=5.5)
-  sn_pa.save()
-
-  as_pa = bdb.BeerType(name="Anchor Liberty Ale",
-        brewer=an,
-        style=pale_ale,
-        calories_oz=10,
-        carbs_oz=10,
-        abv=5.0)
-  as_pa.save()
-
-  usernames = ['abe', 'bort', 'charlie']
-  users = []
-  b = backend.KegbotBackend()
-  for name in usernames:
-    users.append(b.CreateNewUser(name))
-
-  half_barrel = models.KegSize(name="half barrel", volume_ml=10000)
-  half_barrel.save()
-
-  k = models.Keg(type=as_pa, size=half_barrel, status='online',
-                 origcost=100)
-  k.save()
-
-  drink_base = datetime.datetime(2007,1,1,8,0,0)
-  drink_interval = datetime.timedelta(seconds=600)
-  drink_num = 0
-  drink_vols = []
-  for ml in (2200, 1100, 550, 715, 780):
-    drink_vols.append(units.Quantity(ml, from_units=units.UNITS.KbMeterTick))
-
-  # generate some drinks
-  times = (drink_base, drink_base + datetime.timedelta(days=1))
-
-  for drink_time in times:
-    for rounds in range(3):
-      for u in users:
-        start = drink_time + drink_num*drink_interval
-        end = start + datetime.timedelta(seconds=10)
-        vol = drink_vols[drink_num%len(drink_vols)]
-        drink = models.Drink(ticks=vol.InKbMeterTicks(),
-                             volume_ml=vol.Amount(units.RECORD_UNIT),
-                             starttime=start, user=u, keg=k, status='valid')
-        drink.save()
-        drink_num += 1
-
-  # fake thermo data
-  thermo_start = datetime.datetime.now() - datetime.timedelta(hours=24)
-  sensor_name = "thermo-0000000000000000"
-  sensor = models.ThermoSensor.objects.create(raw_name=sensor_name,
-      nice_name='Test sensor')
-  for minute in xrange(60*24):
-    temp_time = thermo_start + datetime.timedelta(minutes=minute)
-    slot = (minute + 1)/30.0
-    var = math.cos(2 * math.pi * slot)
-    temp_value = 5.0 + 2.0*var
-    record = models.Thermolog(sensor=sensor, temp=temp_value, time=temp_time)
-    record.save()

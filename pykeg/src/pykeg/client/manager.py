@@ -456,7 +456,7 @@ class DrinkManager(Manager):
       return
 
     keg_id = d.keg_id or None
-    username = d.user_id or '<None>'
+    username = d.get('user_id', None)
 
     self._logger.info('Logged drink %s username=%s keg=%s liters=%.2f ticks=%i' % (
       d.id, username, keg_id, d.volume_ml/1000.0, d.ticks))
@@ -466,10 +466,9 @@ class DrinkManager(Manager):
     created.flow_id = flow_id
     created.drink_id = d.id
     created.tap_name = tap_name
-    created.start_time = d.pour_time
-    created.end_time = d.pour_time
-    if d.user_id:
-      created.username = d.user_id
+    created.start_time = d.time
+    created.end_time = d.time
+    created.username = username
     self._PublishEvent(created)
 
 

@@ -162,7 +162,7 @@ def do_end_keg(request):
     keg = form.cleaned_data['keg']
     if keg.site == request.kbsite:
       keg.status = "offline"
-      keg.enddate = datetime.datetime.now()
+      keg.end_time = datetime.datetime.now()
       keg.save()
       if keg.current_tap:
         keg.current_tap.current_keg = None

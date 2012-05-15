@@ -57,8 +57,8 @@
        <tr>
           <th>Last Drink</th>
           <td>
-            {{ last_drink.starttime|date:"l, F j Y" }}<br>
-            <i>({% timeago last_drink.starttime%})</i>
+            {{ last_drink.time|date:"l, F j Y" }}<br>
+            <i>({% timeago last_drink.time%})</i>
           </td>
        </tr>
        {% endif %}

@@ -12,11 +12,12 @@
 {% icanhaz "systemevent_keg_ended" %}
   <script type="text/javascript">
     $(document).ready(function() {
-		setInterval(function() {
-			window.app.systemEvents.fetch({
-				add: true
-			});
-		}, 2000);
+      window.app.systemEvents.add({{initial_events|safe}});
+      setInterval(function() {
+        window.app.systemEvents.fetch({
+          add: true
+        });
+      }, 5000);
     });
   </script>
 {% endblock %}

@@ -36,6 +36,8 @@ from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect
 
 from pykeg.core import models
+from pykeg.core import kbjson
+from pykeg.proto import protolib
 
 from pykeg.web.kegweb import forms
 from pykeg.web.kegweb import models as kegweb_models
@@ -65,6 +67,10 @@ def index(request):
       site=request.kbsite,
       drink__isnull=False).order_by('-time')[:9]
   context['recent_images'] = recent_images
+
+  events = request.kbsite.events.all()[:10]
+  context['initial_events'] = kbjson.dumps([protolib.ToDict(e, full=True) for e in events],
+      indent=None)
 
   return render_to_response('index.html', context)
 

@@ -25,13 +25,11 @@ var kegweb = {};
 
 // API Endpoints.
 kegweb.API_BASE = '/api/';
-kegweb.API_GET_EVENTS = 'events/';
 kegweb.AUTOUNITS_SETTINGS = {};
 
 //
 // Kegweb functions.
 //
-
 kegweb.refreshDisplayUnits = function(useMetric) {
     var override = $.cookie("autounits_usemetric");
     if (override != null) {
@@ -72,7 +70,7 @@ $(function() {
     var SystemEvent = Backbone.Model.extend({
         initialize: function(spec) {
             var title = "Unknown event.";
-            var kind = spec.event.kind;
+            var kind = spec.kind;
             if (kind == "drink_poured") {
                 title = "poured a drink";
             } else if (kind == "session_joined") {
@@ -83,20 +81,20 @@ $(function() {
                 title = "unknown event";
             }
             var username;
-            if (spec.event.user_id) {
-                username = spec.event.user_id;
+            if (spec.user_id) {
+                username = spec.user_id;
             } else {
                 username = "a guest";
             }
             this.set({
-                kind: spec.event.kind,
+                kind: spec.kind,
                 htmlId: 'systemevent_' + this.cid,
                 eventTitle: title,
                 eventUser: username,
             })
             this.set(spec);
-			
-            this.id = spec.event.id;
+
+            this.id = spec.id;
             this.cid = this.id;
         }
     });
@@ -106,21 +104,20 @@ $(function() {
 
         url: function() {
             if (this.length == 0) {
-                return "/api/events/";
+                return kegweb.API_BASE + "events/";
             } else {
-                return "/api/events/?since=" + this.last().id;
+                return kegweb.API_BASE + "events/?since=" + this.last().id;
             }
         },
 
         comparator: function(e) {
-            var evt = e.get("event");
-            return e.get("event").id;
+            return e.id;
         },
 
         initialize: function() {
             this.lastEventId = -1;
             this.on("add", function(event) {
-                console.log("Event added: " + event);
+                console.log("Event added: id=" + event.id + " kind=" + event.get("kind"));
                 var eventId = parseInt(event.id);
                 if (eventId > this.lastEventId) {
                     this.lastEventId = eventId;
@@ -128,22 +125,23 @@ $(function() {
 
                 var kind = event.get("kind");
                 if (kind == "session_started") {
-                    var sessionId = event.get("event").session_id;
-                    if (app.drinkingSessions.get(sessionId) == null) {
-                        console.log("New session started: " + sessionId);
-                    var ds = new DrinkingSession({
-                        id: sessionId
-                    });
-                    ds.fetch();
-                    app.drinkingSessions.add(ds);
+                    var ds = new DrinkingSession(event.get("session"));
+                    if (app.drinkingSessions.get(ds.id) == null) {
+                        console.log("New session started: " + ds.id);
+                        app.drinkingSessions.add(ds);
+                        ds.fetch({
+                            success: function(session) {
+                                app.drinkingSessions.add(session);
+                            },
+                        });
                     }
                 }
             }, this);
         },
 
         parse: function(response) {
-            if ("events" in response.result) {
-                return response.result.events;
+            if ("objects" in response) {
+                return response.objects;
             } else {
                 return Array();
             }
@@ -151,21 +149,30 @@ $(function() {
     });
 
     var DrinkingSession = Backbone.Model.extend({
-        urlRoot: "/api/sessions/",
+        urlRoot: kegweb.API_BASE + "sessions/",
 
         initialize: function(spec) {
             this.id = spec.id;
             this.set(spec);
-        }
+        },
+
+        parse: function(response) {
+            if ("object" in response) {
+                return response.object;
+            } else {
+                return Array();
+            }
+        },
+
     });
 
     var DrinkingSessionList = Backbone.Collection.extend({
         model: DrinkingSession,
-        url: "/api/sessions/",
+        url: kegweb.API_BASE + "sessions/",
 
         initialize: function() {
             this.on("add", function(session) {
-                console.log("Session added: " + session.get("id"));
+                //console.log("Session added: " + session.get("id"));
             });
         },
 
@@ -174,8 +181,8 @@ $(function() {
         },
 
         parse: function(response) {
-            if ("sessions" in response.result) {
-                return response.result.sessions;
+            if ("objects" in response) {
+                return response.objects;
             } else {
                 return Array();
             }
@@ -187,7 +194,7 @@ $(function() {
     //
     var SystemEventView = Backbone.View.extend({
         render: function() {
-            var kind = this.model.get('event').kind;
+            var kind = this.model.get('kind');
             switch (kind) {
             case "keg_tapped":
                 this.setElement(ich.systemevent_keg_started(this.model.toJSON()));
@@ -238,7 +245,7 @@ $(function() {
         },
 
         render: function() {
-			console.log("Event list: render!");
+            console.log("Event list: render!");
             return this;
         }
 
@@ -254,9 +261,9 @@ $(function() {
             this.eventListView = new SystemEventListView({
                 collection: this.systemEvents
             });
-			console.log("Kegbot app initialized!");
-        }
+            console.log("Kegbot app initialized!");
+        },
     });
-	
+
     window.app = new KegwebAppModel();
 });

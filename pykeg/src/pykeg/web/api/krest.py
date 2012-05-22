@@ -26,9 +26,6 @@ import types
 import urllib2
 
 from pykeg.core import kbjson
-from pykeg.proto import api_pb2
-from pykeg.proto import models_pb2
-from pykeg.proto import protoutil
 
 import urllib2
 from urllib import urlencode
@@ -44,12 +41,12 @@ gflags.DEFINE_float('krest_timeout', 10.0,
 
 FLAGS = gflags.FLAGS
 
-_DEFAULT_URL = 'http://localhost:8001/api/'
+_DEFAULT_URL = 'http://localhost:8000/api/'
 _DEFAULT_KEY = ''
 try:
   from pykeg import settings
   if hasattr(settings, 'KEGWEB_BASE_URL'):
-    _DEFAULT_URL = '%s/api' % getattr(settings, 'KEGWEB_BASE_URL')
+    _DEFAULT_URL = '%s/api/' % getattr(settings, 'KEGWEB_BASE_URL')
   if hasattr(settings, 'KEGWEB_API_KEY'):
     _DEFAULT_KEY = settings.KEGWEB_API_KEY
 except ImportError:
@@ -90,7 +87,7 @@ class NoAuthTokenError(Error):
   """An api_key is required."""
   HTTP_CODE = 401
 
-class BadAuthTokenError(Error):
+class BadApiKeyError(Error):
   """The api_key given is invalid."""
   HTTP_CODE = 401
 
@@ -104,7 +101,7 @@ def ErrorCodeToException(code, message=None):
   cls = MAP_NAME_TO_EXCEPTION.get(code, Error)
   return cls(message)
 
-def decode_response(response_data, out_msg):
+def decode_response(response_data):
   """Decodes the string `response_data` as a JSON response.
 
   For normal responses, the return value is the Python JSON-decoded 'result'
@@ -119,18 +116,14 @@ def decode_response(response_data, out_msg):
 
   if 'error' in d:
     # Response had an error: translate to exception.
-    err = d.get('error', {})
-    code = err.get('code', 'Unknown')
+    err = d['error']
+    code = err.get('code', 500)
     message = err.get('message', None)
     e = ErrorCodeToException(code, message)
     raise e
-  elif 'result' in d:
+  elif 'object' in d or 'objects' in d:
     # Response was OK, return the result.
-    result = d.get('result')
-    if out_msg:
-      return protoutil.DictToProtoMessage(result, out_msg)
-    else:
-      return None
+    return d
   else:
     # WTF?
     raise ValueError('Invalid response from server: missing result or error')
@@ -173,7 +166,7 @@ class KrestClient:
   def SetAuthToken(self, api_key):
     self._api_key = api_key
 
-  def DoGET(self, endpoint, out_msg, params=None):
+  def DoGET(self, endpoint, params=None):
     """Issues a GET request to the endpoint, and retuns the result.
 
     Keyword arguments are passed to the endpoint as GET arguments.
@@ -185,9 +178,9 @@ class KrestClient:
     If there was an error contacting the server, or in parsing its response, a
     ServerError is raised.
     """
-    return self._FetchResponse(endpoint, out_msg, params=params)
+    return self._FetchResponse(endpoint, params=params)
 
-  def DoPOST(self, endpoint, out_msg, post_data, params=None):
+  def DoPOST(self, endpoint, post_data, params=None):
     """Issues a POST request to the endpoint, and returns the result.
 
     For normal responses, the return value is the Python JSON-decoded 'result'
@@ -197,9 +190,9 @@ class KrestClient:
     If there was an error contacting the server, or in parsing its response, a
     ServerError is raised.
     """
-    return self._FetchResponse(endpoint, out_msg, params=params, post_data=post_data)
+    return self._FetchResponse(endpoint, params=params, post_data=post_data)
 
-  def _FetchResponse(self, endpoint, out_msg, params=None, post_data=None):
+  def _FetchResponse(self, endpoint, params=None, post_data=None):
     """Issues a POST or GET request, depending on the arguments."""
     if params is None:
       params = {}
@@ -226,7 +219,7 @@ class KrestClient:
     except URLError, e:
       raise ServerError('URL Error, reason: %s' % e.reason)
 
-    return decode_response(response_data, out_msg)
+    return decode_response(response_data)
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False, shout=''):
@@ -245,7 +238,7 @@ class KrestClient:
       post_data['now'] = int(datetime.datetime.now().strftime('%s'))
     if shout:
       post_data['shout'] = shout
-    return self.DoPOST(endpoint, models_pb2.Drink(), post_data=post_data)
+    return self.DoPOST(endpoint, post_data=post_data).object
 
   def CancelDrink(self, seqn, spilled=False):
     endpoint = '/cancel-drink'
@@ -253,7 +246,7 @@ class KrestClient:
       'id': seqn,
       'spilled': spilled,
     }
-    return self.DoPOST(endpoint, models_pb2.Drink(), post_data=post_data)
+    return self.DoPOST(endpoint, post_data=post_data)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     endpoint = '/thermo-sensors/%s' % (sensor_name,)
@@ -261,35 +254,35 @@ class KrestClient:
       'temp_c': float(temperature),
     }
     # TODO(mikey): include post data
-    return self.DoPOST(endpoint, models_pb2.ThermoLog(), post_data=post_data)
+    return self.DoPOST(endpoint, post_data=post_data).object
 
   def TapStatus(self):
     """Gets the status of all taps."""
-    return self.DoGET('taps', api_pb2.TapDetailSet())
+    return self.DoGET('taps').objects
 
   def GetToken(self, auth_device, token_value):
     url = 'auth-tokens/%s.%s' % (auth_device, token_value)
     try:
-      return self.DoGET(url, models_pb2.AuthenticationToken())
+      return self.DoGET(url)
     except ServerError, e:
       raise NotFoundError(e)
 
   def LastDrinks(self):
     """Gets a list of the most recent drinks."""
-    return self.DoGET('last-drinks', api_pb2.DrinkSet())
+    return self.DoGET('last-drinks').objects
 
   def AllDrinks(self):
     """Gets a list of all drinks."""
-    return self.DoGET('drinks', api_pb2.DrinkSet())
+    return self.DoGET('drinks').objects
 
   def AllSoundEvents(self):
     """Gets a list of all drinks."""
-    return self.DoGET('sound-events', api_pb2.SoundEventSet())
+    return self.DoGET('sound-events').objects
 
 class KrestHTTPErrorProcessor(urllib2.BaseHandler):
   def _handle_error(self, request, response, code, msg, hdrs):
     data = response.read()
-    decode_response(data, None)
+    decode_response(data)
 
   http_error_401 = _handle_error
   http_error_403 = _handle_error

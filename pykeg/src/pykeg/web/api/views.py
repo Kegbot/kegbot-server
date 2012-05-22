@@ -24,8 +24,11 @@ import logging
 import sys
 import traceback
 from decimal import Decimal
+import types
 
 import raven
+
+from google.protobuf.message import Message
 
 from django.conf import settings
 from django.contrib.auth import login as auth_login
@@ -40,6 +43,7 @@ from django.template import RequestContext
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
+from django.db.models.query import QuerySet
 
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core.backend import backend
@@ -69,22 +73,22 @@ def check_authorization(request):
   try:
     key = apikey.ApiKey.FromString(keystr)
   except ValueError, e:
-    raise krest.BadAuthTokenError('Error parsing API key: %s' % e)
+    raise krest.BadApiKeyError('Error parsing API key: %s' % e)
 
   try:
     user = models.User.objects.get(pk=key.uid())
   except models.User.DoesNotExist:
-    raise krest.BadAuthTokenError('API user %s does not exist' % key.uid())
+    raise krest.BadApiKeyError('API user %s does not exist' % key.uid())
 
   if not user.is_active:
-    raise krest.BadAuthTokenError('User is inactive')
+    raise krest.BadApiKeyError('User is inactive')
 
   if not user.is_staff and not user.is_superuser:
     raise krest.PermissionDeniedError('User is not staff/superuser')
 
   user_secret = user.get_profile().api_secret
   if not user_secret or user_secret != key.secret():
-    raise krest.BadAuthTokenError('User secret does not match')
+    raise krest.BadApiKeyError('User secret does not match')
 
 def auth_required(viewfunc):
   def _check_token(request, *args, **kwargs):
@@ -133,9 +137,6 @@ def ToJsonError(e, exc_info):
   }
   return result, http_code
 
-def obj_to_dict(o):
-  return protolib.ToDict(o)
-
 def py_to_json(f):
   """Decorator that wraps an API method.
 
@@ -146,6 +147,7 @@ def py_to_json(f):
     - If an exception is thrown during the method, it is converted to a protocol
       error message.
   """
+  @never_cache
   def new_function(*args, **kwargs):
     request = args[0]
     http_code = 200
@@ -161,20 +163,46 @@ def py_to_json(f):
         except ValueError:
           pass
     try:
-      result_data = {'result' : f(*args, **kwargs)}
+      result_data = prepare_data(f(*args, **kwargs))
+      result_data['meta'] = {
+        'result': 'ok'
+      }
     except Exception, e:
       exc_info = sys.exc_info()
       if settings.DEBUG and 'deb' in request.GET:
         raise exc_info[1], None, exc_info[2]
       result_data, http_code = ToJsonError(e, exc_info)
+      result_data['meta'] = {
+        'result': 'error'
+      }
     return HttpResponse(kbjson.dumps(result_data, indent=indent),
         mimetype='application/json', status=http_code)
-  return new_function
+  return wraps(f)(new_function)
+
+def prepare_data(data, inner=False):
+  if isinstance(data, QuerySet) or type(data) == types.ListType:
+    result = [prepare_data(d, True) for d in data]
+    container = 'objects'
+  elif isinstance(data, dict):
+    result = data
+    container = 'object'
+  else:
+    result = to_dict(data)
+    container = 'object'
+
+  if inner:
+    return result
+  else:
+    return {
+      container: result
+    }
+
+def to_dict(data):
+  if not isinstance(data, Message):
+    data = protolib.ToProto(data, full=True)
+  return protoutil.ProtoMessageToDict(data)
 
 ### Helpers
-
-def _get_last_drinks(request, limit=5):
-  return request.kbsite.drinks.valid()[:limit]
 
 def _form_errors(form):
   ret = {}
@@ -188,18 +216,9 @@ def _form_errors(form):
 
 ### Endpoints
 
-def FromProto(m):
-  return protoutil.ProtoMessageToDict(m)
-
-@py_to_json
-def last_drinks(request, limit=5):
-  drinks = _get_last_drinks(request, limit)
-  return FromProto(protolib.GetDrinkSet(drinks))
-
 @py_to_json
 def all_kegs(request):
-  kegs = request.kbsite.kegs.all().order_by('-startdate')
-  return FromProto(protolib.GetKegDetailSet(kegs, full=False))
+  return request.kbsite.kegs.all().order_by('-start_time')
 
 @py_to_json
 def all_drinks(request, limit=100):
@@ -215,18 +234,12 @@ def all_drinks(request, limit=100):
   qs = qs[:limit]
   start = qs[0].seqn
   count = len(qs)
-
-  result = protolib.GetDrinkSet(qs)
-  if count < total:
-    result.paging.pos = start
-    result.paging.total = total
-    result.paging.limit = limit
-  return FromProto(result)
+  return qs
 
 @py_to_json
 def get_drink(request, drink_id):
   drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
-  return protoutil.ProtoMessageToDict(protolib.GetDrinkDetail(drink))
+  return protolib.ToProto(drink, full=True)
 
 @csrf_exempt
 @py_to_json
@@ -243,64 +256,57 @@ def add_drink_photo(request, drink_id):
   pic.session = drink.session
   pic.save()
   tasks.handle_new_picture.delay(pic.id)
-  return obj_to_dict(pic)
+  return protolib.ToProto(pic, full=True)
 
 @py_to_json
 def get_session(request, session_id):
   session = get_object_or_404(models.DrinkingSession, seqn=session_id,
       site=request.kbsite)
-  return protoutil.ProtoMessageToDict(protolib.GetSessionDetail(session))
+  return protolib.ToProto(session, full=True)
 
 @py_to_json
 def get_session_stats(request, session_id):
   session = get_object_or_404(models.DrinkingSession, seqn=session_id,
       site=request.kbsite)
-  stats = session.GetStats()
-  return FromProto(stats)
+  return session.GetStats()
 
 @py_to_json
 def get_keg(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
-  return protoutil.ProtoMessageToDict(protolib.GetKegDetail(keg, full=True))
+  return protolib.ToProto(keg, full=True)
 
 @py_to_json
 def get_keg_drinks(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
-  drinks = keg.drinks.valid()
-  return FromProto(protolib.GetDrinkSet(drinks))
+  return keg.drinks.valid()
 
 @py_to_json
 def get_keg_events(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   events = keg.events.all()
   events = apply_since(request, events)
-  return FromProto(protolib.GetSystemEventDetailSet(events))
+  return events
 
 @py_to_json
 def all_sessions(request):
-  sessions = request.kbsite.sessions.all()
-  return FromProto(protolib.GetSessionSet(sessions))
+  return request.kbsite.sessions.all()
 
 @py_to_json
-def current_sessions(request):
+def current_session(request):
   current = None
   try:
     latest = request.kbsite.sessions.latest()
     if latest.IsActiveNow():
-      current = latest
+      return latest
   except models.DrinkingSession.DoesNotExist:
-    pass
-  if current:
-    return FromProto(protolib.GetSessionDetail(current))
-  raise Http404
+    raise Http404
 
-@never_cache
 @py_to_json
 def all_events(request):
   events = request.kbsite.events.all().order_by('-seqn')
   events = apply_since(request, events)
-  events = events[:20]
-  return FromProto(protolib.GetSystemEventDetailSet(events))
+  events = events[:10]
+  return [protolib.ToProto(e, full=True) for e in events]
 
 def apply_since(request, query):
   """Restricts the query to `since` events, if given."""
@@ -316,74 +322,62 @@ def apply_since(request, query):
 @py_to_json
 @auth_required
 def all_sound_events(request):
-  events = soundserver_models.SoundEvent.objects.all()
-  return FromProto(protolib.GetSoundEventSet(events))
+  return soundserver_models.SoundEvent.objects.all()
 
 @py_to_json
 def get_keg_sessions(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   sessions = [c.session for c in keg.keg_session_chunks.all()]
-  return FromProto(protolib.GetSessionSet(sessions))
+  return sessions
 
 @py_to_json
 def get_keg_stats(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
-  stats = keg.GetStats()
-  return FromProto(stats)
+  return keg.GetStatsRecord()
 
 @py_to_json
 def get_system_stats(request):
-  stats = request.kbsite.GetStats()
-  return FromProto(stats)
+  return request.kbsite.GetStatsRecord()
 
 @py_to_json
 def all_taps(request):
-  taps = request.kbsite.taps.all().order_by('name')
-  return FromProto(protolib.GetTapDetailSet(taps))
+  return request.kbsite.taps.all().order_by('name')
 
 @py_to_json
 @auth_required
 def user_list(request):
-  users = models.User.objects.filter(is_active=True).order_by('username')
-  return FromProto(protolib.GetUserDetailSet(users, full=True))
+  return models.User.objects.filter(is_active=True).order_by('username')
 
 @py_to_json
 def get_user(request, username):
   user = get_object_or_404(models.User, username=username)
-  return FromProto(protolib.GetUserDetail(user, full=True))
+  return protolib.ToProto(user, full=True)
 
 @py_to_json
 def get_user_drinks(request, username):
   user = get_object_or_404(models.User, username=username)
-  drinks = user.drinks.valid()
-  return FromProto(protolib.GetDrinkSet(drinks))
+  return user.drinks.valid()
 
 @py_to_json
 def get_user_events(request, username):
   user = get_object_or_404(models.User, username=username)
-  return FromProto(protolib.GetSystemEventDetailSet(user.events.all()))
+  return user.events.all()
 
 @py_to_json
 def get_user_stats(request, username):
   user = get_object_or_404(models.User, username=username)
-  # TODO(mikey_) fix stats
-  stats = user.get_profile().GetStats()
-  res = {
-    'stats': FromProto(stats),
-  }
-  return res
+  return user.get_profile().GetStatsRecord()
 
 @py_to_json
 @auth_required
 def get_auth_token(request, auth_device, token_value):
   b = KegbotBackend(site=request.kbsite)
   tok = b.GetAuthToken(auth_device, token_value)
-  return FromProto(tok)
+  return tok
 
 @py_to_json
 def all_thermo_sensors(request):
-  sensors = list(request.kbsite.thermosensors.all())
-  return FromProto(protolib.GetThermoSensorSet(sensors))
+  return request.kbsite.thermosensors.all()
 
 def _get_sensor_or_404(request, sensor_name):
   try:
@@ -415,7 +409,7 @@ def _thermo_sensor_get(request, sensor_name):
     last_temp = logs[0].temp
     last_time = logs[0].time
   res = {
-    'sensor': obj_to_dict(sensor),
+    'sensor': to_dict(sensor),
     'last_temp': last_temp,
     'last_time': last_time,
   }
@@ -432,21 +426,12 @@ def _thermo_sensor_post(request, sensor_name):
   sensor, created = models.ThermoSensor.objects.get_or_create(site=request.kbsite,
       raw_name=sensor_name)
   # TODO(mikey): use form fields to compute `when`
-  return FromProto(b.LogSensorReading(sensor.raw_name, cd['temp_c']))
+  return b.LogSensorReading(sensor.raw_name, cd['temp_c'])
 
 @py_to_json
 def get_thermo_sensor_logs(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
-  logs = sensor.thermolog_set.all()[:60*2]
-  return FromProto(protolib.GetThermoLogSet(logs))
-
-@py_to_json
-def last_drink_id(request):
-  last_id = 0
-  last = _get_last_drinks(request, limit=1)
-  if last.count():
-    last_id = last[0].seqn
-  return {'id': str(last_id)}
+  return sensor.thermolog_set.all()[:60*2]
 
 @py_to_json
 def get_api_key(request):
@@ -466,7 +451,7 @@ def tap_detail(request, tap_id):
 @py_to_json
 def _tap_detail_get(request, tap_id):
   tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
-  return protoutil.ProtoMessageToDict(protolib.GetTapDetail(tap))
+  return protolib.ToProto(tap, full=True)
 
 @py_to_json
 @auth_required
@@ -496,7 +481,7 @@ def _tap_detail_post(request, tap):
       auth_token=cd.get('auth_token'),
       spilled=cd.get('spilled'),
       shout=cd.get('shout'))
-    return FromProto(res)
+    return protolib.ToProto(res, full=True)
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 
@@ -514,7 +499,7 @@ def cancel_drink(request):
   b = KegbotBackend(site=request.kbsite)
   try:
     res = b.CancelDrink(seqn=cd.get('id'), spilled=cd.get('spilled', False))
-    return FromProto(res)
+    return protolib.ToProto(res, full=True)
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 
@@ -563,7 +548,7 @@ def register(request):
         profile = u.get_profile()
         profile.mugshot = pic
         profile.save()
-      return FromProto(protolib.GetUserDetail(u, full=True))
+      return protolib.ToProto(u, full=True)
     except IntegrityError:
       user_errs = errors.get('username', [])
       user_errs.append('Username not available.')

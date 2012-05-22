@@ -93,7 +93,7 @@ def KegVolumeChart(keg):
     raise ChartError('Bad value given for keg')
   stats = keg.GetStats()
 
-  served = units.Quantity(stats.total_volume_ml)
+  served = units.Quantity(stats.get('total_volume_ml', 0))
   served_pints = to_pints(served)
   full_pints = to_pints(keg.full_volume())
   remain_pints = full_pints - served_pints
@@ -136,7 +136,7 @@ def VolumeByWeekday(stats):
     stats - a stats object containing volume_by_day_of_week
   """
   volmap = [0] * 7
-  vols = stats.volume_by_day_of_week
+  vols = stats.get('volume_by_day_of_week', [])
   if not volmap:
     raise ChartError('Daily volumes unavailable')
 
@@ -191,7 +191,7 @@ def SessionVolumes(sessions):
   return res
 
 def UsersByVolume(stats):
-  vols = stats.volume_by_drinker
+  vols = stats.get('volume_by_drinker')
   if not vols:
     raise ChartError('no data')
 

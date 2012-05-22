@@ -25,7 +25,6 @@ from . import backend
 from pykeg.core import kb_common
 from pykeg.core import models
 from pykeg.web import tasks
-from pykeg.proto import protolib
 
 class KegbotBackend(backend.Backend):
   """Django models backed Backend."""
@@ -74,13 +73,13 @@ class KegbotBackend(backend.Backend):
     p.gender = gender
     p.weight = weight
     p.save()
-    return protolib.ToProto(u)
+    return u
 
   def CreateTap(self, name, meter_name, relay_name=None, ml_per_tick=None):
     tap = models.KegTap.objects.create(site=self._site, name=name,
         meter_name=meter_name, relay_name=relay_name, ml_per_tick=ml_per_tick)
     tap.save()
-    return protolib.ToProto(tap)
+    return tap
 
   def CreateAuthToken(self, auth_device, token_value, username=None):
     token = models.AuthenticationToken.objects.create(
@@ -89,10 +88,10 @@ class KegbotBackend(backend.Backend):
       user = self._GetUserObjFromUsername(username)
       token.user = user
     token.save()
-    return protolib.ToProto(token)
+    return token
 
   def GetAllTaps(self):
-    return protolib.ToProto(list(models.KegTap.objects.all()))
+    return list(models.KegTap.objects.all())
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False,
@@ -134,7 +133,7 @@ class KegbotBackend(backend.Backend):
       event_list = [e for e in models.SystemEvent.objects.filter(drink=d).order_by('id')]
       tasks.handle_new_events.delay(self._site, event_list)
 
-    return protolib.ToProto(d)
+    return d
 
   def CancelDrink(self, seqn, spilled=False):
     try:
@@ -179,7 +178,7 @@ class KegbotBackend(backend.Backend):
       session.RecomputeStats()
 
     # TODO(mikey): recompute session.
-    return protolib.ToProto(d)
+    return d
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     if not when:
@@ -204,7 +203,7 @@ class KegbotBackend(backend.Backend):
         sensor=sensor, time=when, defaults=defaults)
     record.temp = temperature
     record.save()
-    return protolib.ToProto(record)
+    return record
 
   def GetAuthToken(self, auth_device, token_value):
     # Special case for "core.user" psuedo auth device.
@@ -215,7 +214,7 @@ class KegbotBackend(backend.Backend):
         raise backend.NoTokenError(auth_device)
       fake_token = models.AuthenticationToken(auth_device='core.user',
           token_value=token_value, seqn=0, user=user, enabled=True)
-      return protolib.ToProto(fake_token)
+      return fake_token
 
     if token_value and auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
       token_value = token_value.lower()
@@ -223,5 +222,5 @@ class KegbotBackend(backend.Backend):
         auth_device=auth_device, token_value=token_value)
     if not tok.user:
       raise backend.NoTokenError
-    return protolib.ToProto(tok)
+    return tok
 

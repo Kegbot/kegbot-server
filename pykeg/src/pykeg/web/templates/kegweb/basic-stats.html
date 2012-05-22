@@ -1,4 +1,5 @@
 {% load kegweblib %}
+{% if stats %}
 <tr>
   <th>Sessions</th>
   <td>
@@ -27,6 +28,7 @@
   </td>
 </tr>
 
+{% if stats.average_volume_ml %}
 <tr>
   <th>Average Pour</th>
   <td>
@@ -34,9 +36,12 @@
     <b>{% volume stats.average_volume_ml %}</b>.
   </td>
 </tr>
+{% endif %}
 
 <tr>
   <th>Volume by Weekday</th>
   <td>{% chart volume_by_day stats 340 100 %}</td>
 </tr>
-
+{% else %}
+No stats available.
+{% endif %}

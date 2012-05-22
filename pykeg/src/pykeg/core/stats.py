@@ -62,7 +62,7 @@ class BaseStatsBuilder(StatsBuilder):
 
   @stat('last_drink_id')
   def LastDrinkId(self):
-    self.stats.last_drink_id = str(self.drink.seqn)
+    self.stats.last_drink_id = self.drink.seqn
 
   @stat('total_volume_ml')
   def TotalVolume(self):
@@ -112,10 +112,10 @@ class BaseStatsBuilder(StatsBuilder):
       drinks = self.drinks.order_by('-volume_ml')
       if drinks.count():
         res = drinks[0].seqn
-      self.stats.greatest_volume_id = str(res)
+      self.stats.greatest_volume_id = res
     else:
       if self.drink.volume_ml > self.previous.greatest_volume_ml:
-        self.stats.greatest_volume_id = str(self.drink.seqn)
+        self.stats.greatest_volume_id = self.drink.seqn
 
   @stat('volume_by_day_of_week')
   def VolumeByDayOfweek(self):
@@ -165,7 +165,7 @@ class BaseStatsBuilder(StatsBuilder):
     if not self.previous:
       all_sessions = set()
       for drink in self.drinks:
-        all_sessions.add(str(drink.session.seqn))
+        all_sessions.add(drink.session.seqn)
       self.stats.sessions_count = len(all_sessions)
     else:
       first_drink = self.drink.session.drinks.order_by('seqn')[0]

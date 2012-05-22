@@ -79,12 +79,17 @@ class KegbotSite(models.Model):
       parts.append(self.url())
     return '/'.join(parts)
 
-  def GetStats(self):
+  def GetStatsRecord(self):
     try:
-      stats = SystemStats.objects.get(site=self).stats
+      return SystemStats.objects.get(site=self)
     except SystemStats.DoesNotExist:
-      stats = {}
-    return protoutil.DictToProtoMessage(stats, models_pb2.Stats())
+      return None
+
+  def GetStats(self):
+    record = self.GetStatsRecord()
+    if record:
+      return record.stats
+    return {}
 
 def _kegbotsite_post_save(sender, instance, **kwargs):
   """Creates a SiteSettings object if none already exists."""
@@ -147,12 +152,17 @@ class UserProfile(models.Model):
     if qs:
       return qs[0]
 
-  def GetStats(self):
+  def GetStatsRecord(self):
     try:
-      stats = UserStats.objects.get(user=self).stats
+      return UserStats.objects.get(user=self)
     except UserStats.DoesNotExist:
-      stats = {}
-    return protoutil.DictToProtoMessage(stats, models_pb2.Stats())
+      return None
+
+  def GetStats(self):
+    record = self.GetStatsRecord()
+    if record:
+      return record.stats
+    return {}
 
   def RecomputeStats(self):
     self.user.stats.all().delete()
@@ -286,12 +296,17 @@ class Keg(models.Model):
       return q[0]
     return None
 
-  def GetStats(self):
+  def GetStatsRecord(self):
     try:
-      stats = KegStats.objects.get(keg=self).stats
+      return KegStats.objects.get(keg=self)
     except KegStats.DoesNotExist:
-      stats = {}
-    return protoutil.DictToProtoMessage(stats, models_pb2.Stats())
+      return None
+
+  def GetStats(self):
+    record = self.GetStatsRecord()
+    if record:
+      return record.stats
+    return {}
 
   def RecomputeStats(self):
     self.stats.all().delete()
@@ -316,7 +331,7 @@ class Keg(models.Model):
     if not stats:
       return []
     ret = []
-    entries = stats.volume_by_drinker
+    entries = stats.get('volume_by_drinker', [])
     for entry in entries:
       username = str(entry.username)
       vol = entry.volume_ml
@@ -577,12 +592,17 @@ class DrinkingSession(_AbstractChunk):
       'seqn' : self.seqn,
       'slug' : slug})
 
-  def GetStats(self):
+  def GetStatsRecord(self):
     try:
-      stats = SessionStats.objects.get(session=self).stats
+      return SessionStats.objects.get(session=self)
     except SessionStats.DoesNotExist:
-      stats = {}
-    return protoutil.DictToProtoMessage(stats, models_pb2.Stats())
+      return None
+
+  def GetStats(self):
+    record = self.GetStatsRecord()
+    if record:
+      return record.stats
+    return {}
 
   def summarize_drinkers(self):
     def fmt(user):
@@ -929,7 +949,7 @@ class SessionStats(_StatsModel):
 
 class SystemEvent(models.Model):
   class Meta:
-    ordering = ('-time', '-id')
+    ordering = ('-id',)
     get_latest_by = 'time'
 
   KINDS = (
@@ -1042,8 +1062,11 @@ class Picture(models.Model):
       help_text='Site owning this picture')
   image = models.ImageField(upload_to=_pics_file_name,
       help_text='The image')
+
   resized = imagespecs.resized
   thumbnail = imagespecs.thumbnail
+  small_resized = imagespecs.small_resized
+  small_thumbnail = imagespecs.small_thumbnail
 
   time = models.DateTimeField(default=datetime.datetime.now)
   caption = models.TextField(blank=True, null=True,

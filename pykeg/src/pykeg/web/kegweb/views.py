@@ -76,7 +76,7 @@ def system_stats(request):
   })
 
   top_drinkers = []
-  for drinkervol in stats.volume_by_drinker:
+  for drinkervol in stats.get('volume_by_drinker', []):
     username = drinkervol.username
     vol = drinkervol.volume_ml
     try:

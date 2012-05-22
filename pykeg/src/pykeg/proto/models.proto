@@ -3,7 +3,7 @@ option java_package = "org.kegbot.proto";
 // An authentication token, which a drinker uses to authenticate to the system.
 message AuthenticationToken {
   // The unique identifier for this token.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The name of the auth device that owns this token, such as ``core.onewire``
   // or ``contrib.phidget.rfid``.
@@ -31,13 +31,15 @@ message AuthenticationToken {
   // The token's pin, if any.
   // Only available to admin users.
   optional string pin = 9;
+
+  optional User user = 10;
 }
 
 // A named beer style of beer, such as "India Pale Ale".
 message BeerStyle {
 
   // The unique identifier for this beer style.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The name of the beer style.
   required string name = 2;
@@ -120,7 +122,7 @@ message Brewer {
 message Drink {
 
   // The unique identifier for this drink.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The number of meter ticks recorded for the drink.
   required uint32 ticks = 2;
@@ -129,10 +131,10 @@ message Drink {
   required float volume_ml = 3;
 
   // The session this drink belongs to.
-  required string session_id = 4;
+  required uint32 session_id = 4;
 
   // UTC time when the drink was poured, as an ISO8061 UTC timestamp.
-  required string pour_time = 5;
+  required string time = 5;
 
   // Duration, in seconds, of the pour.
   optional uint32 duration = 6;
@@ -142,26 +144,31 @@ message Drink {
 
   // The Keg from which the drink was poured.  May be unset if the drink was
   // not associated with a keg.
-  optional string keg_id = 8;
+  optional uint32 keg_id = 8;
 
   // The User that poured the drink.  Snset if the drinker was unknown
   // (anonymous pour).
   optional string user_id = 9;
 
   // Auth token value used to pour the drink, if known.
-  optional string auth_token_id = 10;
+  optional uint32 auth_token_id = 10;
 
   // Canonical URL for this object.
   optional string url = 11;
 
   // Comment from the drinker at the time of the pour.
   optional string shout = 12;
+
+  optional User user = 13;
+  optional Keg keg = 14;
+  optional Session session = 15;
+  repeated Image images = 16;
 }
 
 // Describes an image.
 message Image {
 
-  // The URL of the original image.
+  // The default URL of this image.
   required string url = 1;
 
   // The width of the image in pixels.
@@ -171,7 +178,7 @@ message Image {
   optional uint32 height = 3;
 
   // The date the picture was created.
-  optional string created_date = 4;
+  optional string time = 4;
 
   // The caption, if any.
   optional string caption = 5;
@@ -180,36 +187,29 @@ message Image {
   optional string user_id = 6;
 
   // The keg associated with this picture, if any.
-  optional string keg_id = 7;
+  optional uint32 keg_id = 7;
 
   // The session associated with this picture, if any.
-  optional string session_id = 8;
+  optional uint32 session_id = 8;
 
   // The drink associated with this picture, if any.
-  optional string drink_id = 9;
+  optional uint32 drink_id = 9;
 
   optional string thumbnail_url = 10;
 
   optional string original_url = 11;
+
+  optional string small_resized_url = 13;
 }
 
 // A single instance of a Keg that was attached to the Kegbot.
 message Keg {
 
   // The unique identifier for this keg.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The kind of beer within the keg.
   required string type_id = 2;
-
-  // The size of the keg.
-  required string size_id = 3;
-
-  // The name of the keg size.
-  optional string size_name = 4;
-
-  // The volume of the keg size.
-  optional float size_volume_ml = 5;
 
   // Volume remaining in the keg, in milliliters.
   required float volume_ml_remain = 6;
@@ -218,12 +218,12 @@ message Keg {
   required float percent_full = 7;
 
   // UTC time when the keg was started or tapped, as an ISO8061 UTC timestamp.
-  required string started_time = 8;
+  required string start_time = 8;
 
   // Local time when the keg was completed, as an ISO8061 UTC timestamp.  This
   // should be no sooner than the time of the most recent drink.  If the keg's
   // `status` is not 'offline', this value is undefined.
-  required string finished_time = 9;
+  required string end_time = 9;
 
   // The keg's current status.  Typically either "online" or "offline".
   required string status = 10;
@@ -238,13 +238,20 @@ message Keg {
 
   // Canonical URL for this object.
   optional string url = 13;
+
+  optional BeerType type = 15;
+
+  optional uint32 size_id = 16;
+  optional KegSize size = 17;
+  optional string size_name = 18;
+  optional float size_volume_ml = 19;
 }
 
 // A common keg size.
 message KegSize {
 
   // The unique identifier for this keg size.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The name of the size ("Half Barrel", "Pony keg", ...)
   required string name = 2;
@@ -258,7 +265,7 @@ message KegSize {
 message KegTap {
 
   // The unique identifier for this tap.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The name of the tap, a free-form string ("Main tap", "Wet bar", ...)
   required string name = 2;
@@ -275,15 +282,16 @@ message KegTap {
   // A longer description of the tap.
   optional string description = 6;
 
-  // The Keg currently assigned to the tap.  May be unset if there is no keg
-  // configured.
-  optional string current_keg_id = 7;
-
   // The temperature sensor for the tap, if any.
-  optional string thermo_sensor_id = 8;
+  optional uint32 thermo_sensor_id = 8;
 
   // The last temperature log, if any.
   optional ThermoLog last_temperature = 9;
+
+  // The Keg currently assigned to the tap.  May be unset if there is no keg
+  // configured.
+  optional uint32 current_keg_id = 10;
+  optional Keg current_keg = 11;
 }
 
 // A session is a group of drinks occuring within the same time window.  Every
@@ -291,7 +299,7 @@ message KegTap {
 message Session {
 
   // The unique identifier for this session.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The time this session was started, as an ISO8061 UTC timestamp.
   required string start_time = 2;
@@ -310,48 +318,56 @@ message Session {
 
   // Canonical URL for this object.
   optional string url = 7;
+
+  // True if session is currently active.
+  optional bool is_active = 8;
+
+  optional Stats stats = 9;
 }
 
 // A log entry for a temperature sensor.
 message ThermoLog {
 
   // The unique identifier for this log entry.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The sensor id that produced this log entry.
-  required string sensor_id = 2;
+  required uint32 sensor_id = 2;
 
   // The temperature, in degrees C.
   required float temperature_c = 3;
 
   // The recording date, as an ISO8061 UTC timestamp.
-  required string record_time = 4;
+  required string time = 4;
 }
 
 // A temperature sensor configured in the system.
 message ThermoSensor {
 
   // The unique identifier for this temperature sensor.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The raw/unique name of the sensor.
   required string sensor_name = 2;
 
   // The friendly name for the sensor.
   optional string nice_name = 3;
+
+  optional float last_temp = 4;
+  optional string last_time = 5;
 }
 
 // A summarized log for a collection of temperature sensor events.
 message ThermoSummaryLog {
 
   // The unique identifier for this log.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The id of the sensor described by this summary.
-  required string sensor_id = 2;
+  required uint32 sensor_id = 2;
 
   // The start date that is covered by this log, as an ISO8061 UTC timestamp.
-  required string date = 3;
+  required string time = 3;
 
   // The number of seconds follow ``date`` that are captured by this summary.
   required string period = 4;
@@ -438,16 +454,16 @@ message UserProfile {
 message SessionChunk {
 
   // The unique identifier for this chunk.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The session id that this chunk corresponds to.
-  required string session_id = 2;
+  required uint32 session_id = 2;
 
   // The username that this chunk corresponds to.
   required string username = 3;
 
   // The keg id that this chunk corresponds to.
-  required string keg_id = 4;
+  required uint32 keg_id = 4;
 
   // The time this user joined this session, as an ISO8061 UTC timestamp.
   required string start_time = 5;
@@ -463,7 +479,7 @@ message SessionChunk {
 message SystemEvent {
 
   // The unqiue identifier for this event.
-  required string id = 1;
+  required uint32 id = 1;
 
   // The kind of the event being reported. Current values: ``drink_poured``,
   // ``session_started``, ``session_joined``, ``keg_tapped``, ``keg_ended``.
@@ -474,20 +490,26 @@ message SystemEvent {
 
   // If a drink caused this event (as in ``drink_poured``, ``session_started``,
   // and ``session_joined``), this field gives its id.
-  optional string drink_id = 4;
+  optional uint32 drink_id = 4;
 
   // If this event relates to a specific keg (as in most events), this field
   // gives its id.
-  optional string keg_id = 5;
+  optional uint32 keg_id = 5;
 
   // If this event relates to a specific session (as in ``drink_poured``,
   // ``session_started``, and ``session_joined``), this field gives its id.
-  optional string session_id = 6;
+  optional uint32 session_id = 6;
 
   // If this event relates to a specific user (as in ``drink_poured``,
   // ``session_started``, and ``session_joined`` when the user is not
   // anonymous), this field gives the user's id.
   optional string user_id = 7;
+
+  optional Image image = 8;
+  optional User user = 9;
+  optional Drink drink = 10;
+  optional Keg keg = 11;
+  optional Session session = 12;
 }
 
 // An administrator-defined sound file to play for certain pour events.
@@ -513,7 +535,7 @@ message SoundEvent {
 message Stats {
 
   // The drink these stats were computed against.
-  optional string last_drink_id = 1;
+  optional uint32 last_drink_id = 1;
 
   // Total volume of all pours captured by this instance.
   optional float total_volume_ml = 2;
@@ -528,7 +550,7 @@ message Stats {
   optional float greatest_volume_ml = 5;
 
   // Id for pour with single greatest volume.
-  optional string greatest_volume_id = 6;
+  optional uint32 greatest_volume_id = 6;
 
   // Container message for the volumes by weekday.
   message WeekdayVolume {

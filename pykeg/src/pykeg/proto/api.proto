@@ -3,7 +3,7 @@ import "models.proto";
 
 // Common
 
-message Paging {
+message Meta {
 
   // The total number of records available for this request.
   optional uint32 total = 1;
@@ -97,111 +97,4 @@ message RecordTemperatureRequest {
   // unspecified, the record_date will be the current time on the backend at the
   // time the request is processed.
   optional string record_date = 3;
-}
-
-// Responses
-
-message DrinkSet {
-  repeated Drink drinks = 1;
-  optional Paging paging = 2;
-}
-
-message KegDetailSet {
-  repeated KegDetail kegs = 1;
-  optional Paging paging = 2;
-}
-
-message SessionSet {
-  repeated Session sessions = 1;
-  optional Paging paging = 2;
-}
-
-message SystemEventSet {
-  repeated SystemEvent events = 1;
-  optional Paging paging = 2;
-}
-
-message SystemEventDetailSet {
-  repeated SystemEventDetail events = 1;
-  optional Paging paging = 2;
-}
-
-message SoundEventSet {
-  repeated SoundEvent events = 1;
-  optional Paging paging = 2;
-}
-
-message TapDetailSet {
-  repeated TapDetail taps = 1;
-  optional Paging paging = 2;
-}
-
-message ThermoSensorSet {
-  repeated ThermoSensor sensors = 1;
-  optional Paging paging = 2;
-}
-
-message ThermoLogSet {
-  repeated ThermoLog logs = 1;
-  optional Paging paging = 2;
-}
-
-message TapDetail {
-  required KegTap tap = 1;
-  optional Keg keg = 2;
-  optional BeerType beer_type = 3;
-  optional Brewer brewer = 4;
-}
-
-message DrinkDetail {
-  required Drink drink = 1;
-  optional User user = 2;
-  optional Keg keg = 3;
-  optional Session session = 4;
-  repeated Image images = 5;
-}
-
-message SessionDetail {
-  required Session session = 1;
-  optional Stats stats = 2;
-  repeated Keg kegs = 3;
-  repeated Drink drinks = 4;
-  repeated Image images = 5;
-}
-
-message KegDetail {
-  required Keg keg = 1;
-  optional BeerType type = 2;
-  optional KegSize size = 3;
-  repeated Drink drinks = 4;
-  repeated Session sessions = 5;
-  repeated Image images = 6;
-}
-
-message UserDetail {
-  required User user = 1;
-}
-
-message UserDetailSet {
-  repeated UserDetail users = 1;
-  optional Paging paging = 2;
-}
-
-message SystemEventDetail {
-  required SystemEvent event = 1;
-  optional Image image = 2;
-  optional User user = 3;
-  optional Drink drink = 4;
-  optional Keg keg = 5;
-  optional Session session = 6;
-}
-
-message ThermoSensorDetail {
-  required ThermoSensor sensor = 1;
-  optional float last_temp = 2;
-  optional string last_time = 3;
-}
-
-service KegwebApi {
-  //rpc getLastDrinks (NullRequest) returns LastDrinkResponse;
 }

@@ -72,7 +72,7 @@ def ToDict(obj, full=False):
 @converts(models.AuthenticationToken)
 def AuthTokenToProto(record, full=False):
   ret = models_pb2.AuthenticationToken()
-  ret.id = str(record.seqn)
+  ret.id = record.seqn
   ret.auth_device = record.auth_device
   ret.token_value = record.token_value
   if record.user:
@@ -80,12 +80,11 @@ def AuthTokenToProto(record, full=False):
   if record.nice_name:
     ret.nice_name = record.nice_name
   ret.created_time = datestr(record.created)
-  if full:
-    ret.enabled = record.enabled
-    if record.expires:
-      ret.expire_time = datestr(record.expires)
-    if record.pin:
-      ret.pin = record.pin
+  ret.enabled = record.enabled
+  if record.expire_time:
+    ret.expire_time = datestr(record.expire_time)
+  if record.pin:
+    ret.pin = record.pin
   return ret
 
 @converts(bdb_models.BeerImage)
@@ -112,18 +111,18 @@ def ImageToProto(record, full=False):
   #  ret.height = record.image.height
   #except IOError:
   #  pass
-  if record.created_date:
-    ret.created_date = datestr(record.created_date)
+  if record.time:
+    ret.time = datestr(record.time)
   if record.caption:
     ret.caption = record.caption
   if record.user:
     ret.user_id = record.user.username
   if record.keg:
-    ret.keg_id = str(record.keg.seqn)
+    ret.keg_id = record.keg.seqn
   if record.session:
-    ret.session_id = str(record.session.seqn)
+    ret.session_id = record.session.seqn
   if record.drink:
-    ret.drink_id = str(record.drink.seqn)
+    ret.drink_id = record.drink.seqn
   return ret
 
 @converts(bdb_models.BeerStyle)
@@ -181,48 +180,65 @@ def BrewerToProto(brewer, full=False):
 @converts(models.Drink)
 def DrinkToProto(drink, full=False):
   ret = models_pb2.Drink()
-  ret.id = str(drink.seqn)
+  ret.id = drink.seqn
   ret.url = drink.get_absolute_url()
   ret.ticks = drink.ticks
   ret.volume_ml = drink.volume_ml
-  ret.session_id = str(drink.session.seqn)
-  ret.pour_time = datestr(drink.starttime)
+  ret.session_id = drink.session.seqn
+  ret.time = datestr(drink.time)
   ret.duration = drink.duration
   ret.status = drink.status
   if drink.keg:
-    ret.keg_id = str(drink.keg.seqn)
+    ret.keg_id = drink.keg.seqn
   if drink.user:
     ret.user_id = drink.user.username
   if drink.auth_token:
     ret.auth_token_id = str(drink.auth_token.id)
   if drink.shout:
     ret.shout = drink.shout
+
+  if full:
+    if drink.user:
+      ret.user.MergeFrom(ToProto(drink.user))
+    if drink.keg:
+      ret.keg.MergeFrom(ToProto(drink.keg))
+    if drink.session:
+      ret.session.MergeFrom(ToProto(drink.session))
+    for i in drink.pictures.all():
+      ret.images.add().MergeFrom(ToProto(i))
   return ret
 
 @converts(models.Keg)
 def KegToProto(keg, full=False):
   ret = models_pb2.Keg()
-  ret.id = str(keg.seqn)
+  ret.id = keg.seqn
   ret.url = keg.get_absolute_url()
   ret.type_id = str(keg.type.id)
-  ret.size_id = str(keg.size.id)
+  ret.size_id = keg.size.id
   ret.size_name = keg.size.name
   ret.size_volume_ml = keg.size.volume_ml
   rem = float(keg.remaining_volume())
   ret.volume_ml_remain = rem
   ret.percent_full = keg.percent_full()
-  ret.started_time = datestr(keg.startdate)
-  ret.finished_time = datestr(keg.enddate)
+  ret.start_time = datestr(keg.start_time)
+  ret.end_time = datestr(keg.end_time)
   ret.status = keg.status
   if keg.description is not None:
     ret.description = keg.description
   ret.spilled_ml = keg.spilled_ml
+
+  if full:
+    if keg.type:
+      ret.type.MergeFrom(ToProto(keg.type))
+    if keg.size:
+      ret.size.MergeFrom(ToProto(keg.size))
+
   return ret
 
 @converts(models.KegSize)
 def KegSizeToProto(size, full=False):
   ret = models_pb2.KegSize()
-  ret.id = str(size.id)
+  ret.id = size.id
   ret.name = size.name
   ret.volume_ml = size.volume_ml
   return ret
@@ -230,7 +246,7 @@ def KegSizeToProto(size, full=False):
 @converts(models.KegTap)
 def KegTapToProto(tap, full=False):
   ret = models_pb2.KegTap()
-  ret.id = str(tap.seqn)
+  ret.id = tap.seqn
   ret.name = tap.name
   ret.meter_name = tap.meter_name
   ret.relay_name = tap.relay_name or ''
@@ -238,9 +254,12 @@ def KegTapToProto(tap, full=False):
   if tap.description is not None:
     ret.description = tap.description
   if tap.current_keg:
-    ret.current_keg_id = str(tap.current_keg.seqn)
+    ret.current_keg_id = tap.current_keg.seqn
+    if full:
+      ret.current_keg.MergeFrom(ToProto(tap.current_keg, full=True))
+
   if tap.temperature_sensor:
-    ret.thermo_sensor_id = str(tap.temperature_sensor.seqn)
+    ret.thermo_sensor_id = tap.temperature_sensor.seqn
     log = tap.temperature_sensor.LastLog()
     if log:
       ret.last_temperature.MergeFrom(ToProto(log))
@@ -249,28 +268,32 @@ def KegTapToProto(tap, full=False):
 @converts(models.DrinkingSession)
 def SessionToProto(record, full=False):
   ret = models_pb2.Session()
-  ret.id = str(record.seqn)
+  ret.id = record.seqn
   ret.url = record.get_absolute_url()
-  ret.start_time = datestr(record.starttime)
-  ret.end_time = datestr(record.endtime)
+  ret.start_time = datestr(record.start_time)
+  ret.end_time = datestr(record.end_time)
   ret.volume_ml = record.volume_ml
   ret.name = record.name or ''
   ret.slug = record.slug or ''
+
+  if full:
+    #ret.stats.MergeFrom(record.GetStats())
+    ret.is_active = record.IsActiveNow()
   return ret
 
 @converts(models.Thermolog)
 def ThermoLogToProto(record, full=False):
   ret = models_pb2.ThermoLog()
-  ret.id = str(record.seqn)
-  ret.sensor_id = str(record.sensor.seqn)
+  ret.id = record.seqn
+  ret.sensor_id = record.sensor.seqn
   ret.temperature_c = record.temp
-  ret.record_time = datestr(record.time)
+  ret.time = datestr(record.time)
   return ret
 
 @converts(models.ThermoSensor)
 def ThermoSensorToProto(record, full=False):
   ret = models_pb2.ThermoSensor()
-  ret.id = str(record.seqn)
+  ret.id = record.seqn
   ret.sensor_name = record.raw_name
   ret.nice_name = record.nice_name
   return ret
@@ -278,8 +301,8 @@ def ThermoSensorToProto(record, full=False):
 @converts(models.ThermoSummaryLog)
 def ThermoSummaryLogToProto(record, full=False):
   ret = models_pb2.ThermoSummaryLog()
-  ret.id = str(record.seqn)
-  ret.sensor_id = str(record.sensor.seqn)
+  ret.id = record.seqn
+  ret.sensor_id = record.sensor.seqn
   ret.date = datestr(record.date)
   ret.period = record.period
   ret.num_readings = record.num_readings
@@ -316,18 +339,6 @@ def UserProfileToProto(record, full=False):
   ret.weight = record.weight
   return ret
 
-@converts(models.SessionChunk)
-def SessionChunkToProto(record, full=False):
-  ret = models_pb2.SessionChunk()
-  ret.id = str(record.seqn)
-  ret.session_id = str(record.session.seqn)
-  ret.username = record.user.username
-  ret.keg_id = str(record.keg.seqn)
-  ret.start_time = datestr(record.starttime)
-  ret.end_time = datestr(record.endtime)
-  ret.volume_ml = record.volume_ml
-  return ret
-
 @converts(models.SystemStats)
 @converts(models.UserStats)
 @converts(models.KegStats)
@@ -342,18 +353,35 @@ def SystemStatsToProto(record, full=False):
 @converts(models.SystemEvent)
 def SystemEventToProto(record, full=False):
   ret = models_pb2.SystemEvent()
-  ret.id = str(record.seqn)
+  ret.id = record.seqn
   ret.kind = record.kind
-  ret.time = datestr(record.when)
+  ret.time = datestr(record.time)
 
   if record.drink:
-    ret.drink_id = str(record.drink.seqn)
+    ret.drink_id = record.drink.seqn
+    if full:
+      ret.drink.MergeFrom(ToProto(record.drink, full=True))
   if record.keg:
-    ret.keg_id = str(record.keg.seqn)
+    ret.keg_id = record.keg.seqn
+    if full:
+      ret.keg.MergeFrom(ToProto(record.keg, full=True))
   if record.session:
-    ret.session_id = str(record.session.seqn)
+    ret.session_id = record.session.seqn
+    if full:
+      ret.session.MergeFrom(ToProto(record.session, full=True))
   if record.user:
     ret.user_id = str(record.user.username)
+    if full:
+      ret.user.MergeFrom(ToProto(record.user, full=True))
+
+  image = None
+  if record.kind in ('drink_poured', 'session_started', 'session_joined') and record.user:
+    image = record.user.get_profile().mugshot
+  elif record.kind in ('keg_tapped', 'keg_ended'):
+    if record.keg.type and record.keg.type.image:
+      image = record.keg.type.image
+  if image:
+    ret.image.MergeFrom(ToProto(image))
 
   return ret
 
@@ -380,141 +408,5 @@ def GetDrinkDetail(drink):
     ret.session.MergeFrom(ToProto(drink.session))
   for i in drink.pictures.all():
     ret.images.add().MergeFrom(ToProto(i))
-  return ret
-
-def GetSessionDetail(session):
-  ret = api_pb2.SessionDetail()
-  ret.session.MergeFrom(ToProto(session))
-  for k in (c.keg for c in session.keg_chunks.all() if c.keg):
-    ret.kegs.add().MergeFrom(ToProto(k))
-  for d in session.drinks.all():
-    ret.drinks.add().MergeFrom(ToProto(d))
-  for i in session.pictures.all():
-    ret.images.add().MergeFrom(ToProto(i))
-  ret.stats.MergeFrom(session.GetStats())
-  return ret
-
-def GetKegDetail(keg, full=False):
-  ret = api_pb2.KegDetail()
-  ret.keg.MergeFrom(ToProto(keg))
-  if keg.type:
-    ret.type.MergeFrom(ToProto(keg.type))
-  if keg.size:
-    ret.size.MergeFrom(ToProto(keg.size))
-  if full:
-    drinks = keg.drinks.valid()
-    for d in drinks:
-      ret.drinks.add().MergeFrom(ToProto(d))
-    sessions = (c.session for c in keg.keg_session_chunks.all())
-    for s in sessions:
-      ret.sessions.add().MergeFrom(ToProto(s))
-  for i in keg.pictures.all():
-    ret.images.add().MergeFrom(ToProto(i))
-  return ret
-
-def GetSystemEventDetail(event):
-  ret = api_pb2.SystemEventDetail()
-  ret.event.MergeFrom(ToProto(event))
-  image = None
-  if event.kind in ('drink_poured', 'session_started', 'session_joined') and event.user:
-    image = event.user.get_profile().mugshot
-  elif event.kind in ('keg_tapped', 'keg_ended'):
-    if event.keg.type and event.keg.type.image:
-      image = event.keg.type.image
-  if image:
-    ret.image.MergeFrom(ToProto(image))
-
-  if event.user:
-    ret.user.MergeFrom(ToProto(event.user))
-  if event.drink:
-    ret.drink.MergeFrom(ToProto(event.drink))
-  if event.keg:
-    ret.keg.MergeFrom(ToProto(event.keg))
-  if event.session:
-    ret.session.MergeFrom(ToProto(event.session))
-
-  return ret
-
-def GetTapDetail(tap):
-  ret = api_pb2.TapDetail()
-  ret.tap.MergeFrom(ToProto(tap))
-  if tap.current_keg:
-    ret.keg.MergeFrom(ToProto(tap.current_keg))
-    if tap.current_keg.type:
-      ret.beer_type.MergeFrom(ToProto(tap.current_keg.type))
-      ret.brewer.MergeFrom(ToProto(tap.current_keg.type.brewer))
-  return ret
-
-def GetThermoSensorDetail(sensor):
-  ret = api_pb2.ThermoSensorDetail()
-  ret.sensor.MergeFrom(ToProto(sensor))
-  logs = sensor.thermolog_set.all()
-  if logs:
-    log = logs[0]
-    ret.last_temp = log.temp
-    ret.last_time = log.time
-  return ret
-
-def GetDrinkSet(drinks):
-  ret = api_pb2.DrinkSet()
-  for d in drinks:
-    ret.drinks.add().MergeFrom(ToProto(d))
-  return ret
-
-def GetKegDetailSet(kegs, full=False):
-  ret = api_pb2.KegDetailSet()
-  for k in kegs:
-    ret.kegs.add().MergeFrom(GetKegDetail(k, full=full))
-  return ret
-
-def GetUserDetail(user, full=False):
-  ret = api_pb2.UserDetail()
-  ret.user.MergeFrom(ToProto(user, full))
-  return ret
-
-def GetUserDetailSet(users, full=False):
-  ret = api_pb2.UserDetailSet()
-  for u in users:
-    ret.users.add().MergeFrom(GetUserDetail(u, full))
-  return ret
-
-def GetTapDetailSet(taps):
-  ret = api_pb2.TapDetailSet()
-  for t in taps:
-    ret.taps.add().MergeFrom(GetTapDetail(t))
-  return ret
-
-def GetSessionSet(sessions):
-  ret = api_pb2.SessionSet()
-  for s in sessions:
-    ret.sessions.add().MergeFrom(ToProto(s))
-  return ret
-
-def GetSoundEventSet(events):
-  ret = api_pb2.SoundEventSet()
-  for e in events:
-    ret.events.add().MergeFrom(ToProto(e))
-  return ret
-
-def GetSystemEventSet(events):
-  ret = api_pb2.SystemEventSet()
-  return ret
-
-def GetSystemEventDetailSet(events):
-  ret = api_pb2.SystemEventDetailSet()
-  for e in events:
-    ret.events.add().MergeFrom(GetSystemEventDetail(e))
-  return ret
-
-def GetThermoSensorSet(sensors):
-  ret = api_pb2.ThermoSensorSet()
-  for s in sensors:
-    ret.sensors.add().MergeFrom(ToProto(s))
-  return ret
-
-def GetThermoLogSet(logs):
-  ret = api_pb2.ThermoLogSet()
-  for log in logs:
-    ret.logs.add().MergeFrom(ToProto(log))
   return ret
 

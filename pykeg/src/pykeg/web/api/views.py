@@ -26,8 +26,6 @@ import traceback
 from decimal import Decimal
 import types
 
-import raven
-
 from google.protobuf.message import Message
 
 from django.conf import settings
@@ -52,10 +50,15 @@ from pykeg.core import kbjson
 from pykeg.core import models
 from pykeg.proto import protolib
 from pykeg.proto import protoutil
-from pykeg.web import tasks
 from pykeg.web.api import apikey
 from pykeg.web.api import forms
 from pykeg.web.api import krest
+
+if settings.HAVE_CELERY:
+  from pykeg.web import tasks
+
+if settings.HAVE_RAVEN:
+  import raven
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -125,7 +128,7 @@ def ToJsonError(e, exc_info):
     message = 'An internal error occurred: %s' % str(e)
     if settings.DEBUG:
       message += "\n" + "\n".join(traceback.format_exception(*exc_info))
-  if settings.DEBUG:
+  if settings.DEBUG and settings.HAVE_RAVEN:
     client = LocalRavenClient([])
     client.create_from_exception(exc_info)
     client.send()
@@ -255,7 +258,8 @@ def add_drink_photo(request, drink_id):
   pic.keg = drink.keg
   pic.session = drink.session
   pic.save()
-  tasks.handle_new_picture.delay(pic.id)
+  if settings.HAVE_CELERY:
+    tasks.handle_new_picture.delay(pic.id)
   return protolib.ToProto(pic, full=True)
 
 @py_to_json
@@ -559,18 +563,20 @@ def register(request):
 def default_handler(request):
   raise Http404, "Not an API endpoint: %s" % request.path[:100]
 
-class LocalRavenClient(raven.Client):
-  logger = logging.getLogger('kegbot.api.client.debug')
-  def send(self, **kwargs):
-    from sentry.models import GroupedMessage
-    return GroupedMessage.objects.from_kwargs(**kwargs)
+if settings.HAVE_RAVEN and settings.HAVE_SENTRY:
+  class LocalRavenClient(raven.Client):
+    logger = logging.getLogger('kegbot.api.client.debug')
+    def send(self, **kwargs):
+      from sentry.models import GroupedMessage
+      return GroupedMessage.objects.from_kwargs(**kwargs)
 
 @csrf_exempt
 @py_to_json
 @auth_required
 def debug_log(request):
-  if request.method != 'POST':
+  if request.method != 'POST' or not settings.HAVE_RAVEN or not settings.HAVE_SENTRY:
     raise Http404('Method not supported')
+
   form = forms.DebugLogForm(request.POST)
   if not form.is_valid():
     raise krest.BadRequestError(_form_errors(form))

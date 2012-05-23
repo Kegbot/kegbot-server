@@ -5,7 +5,7 @@ use_setuptools()
 
 from setuptools import setup, find_packages
 
-VERSION = '0.8.5'
+VERSION = '0.9.0'
 SHORT_DESCRIPTION = 'Kegbot kegerator controller software'
 LONG_DESCRIPTION = """This package contains Kegbot core controller and Django
 frontend package.
@@ -42,16 +42,12 @@ setup(
       'django >= 1.3',
       'django-autoslug',
       'django-bootstrap-form',
-      'django-debug-toolbar',
       'django-imagekit >= 2.0',
       'django-registration',
-      'django-sentry',
+      'django-socialregistration >= 0.5.4',
       'django_extensions',
-      'django-storages',
-      'boto',
 
       'facebook-sdk >= 0.3.0',
-      'django-socialregistration >= 0.5.4',
 
       'MySQL-python',
       'pil',
@@ -65,23 +61,37 @@ setup(
       'tweepy',
       'django-icanhaz',
       'pytz',
-      'raven',
+
       'requests',  # needed by oauth
-
-      # Celery and dependencies
-      'Celery',
-      'django-celery',
-      'django-kombu',
-
       'poster',  # needed by foursquare
       'foursquare',
 
-      # Tornado
-      'tornado',
-      'rjdj.djangotornado',
+      ### Optional modules.
+
+      # This modules 'pip install'd manually.  If you add to this list, also
+      # update pykeg.core.optional_modules with a new 'HAVE_<MODULE>' flag, as
+      # well as pykeg.settings (if needed).
+
+      ### django-debug-toolbar
+      #'django-debug-toolbar',
+
+      ### Celery
+      #'Celery',
+      #'django-celery',
+      #'django-kombu',
+
+      ### Tornado
+      #'tornado',
+      #'rjdj.djangotornado',
+
+      ### Raven
+      #'raven',
+
+      ### Sentry
+      #'sentry',
+      #'django-sentry',
     ],
     dependency_links = [
-        'https://github.com/mLewisLogic/foursquare/tarball/master#egg=foursquare',
         'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
         'https://github.com/tzangms/django-bootstrap-form/tarball/master#egg=django-bootstrap-form',
         'https://github.com/rjdj/django-tornado/tarball/master#egg=rjdj.djangotornado',

@@ -5,6 +5,13 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+Curren Version (in development)
+-------------------------------
+
+Core/General
+^^^^^^^^^^^^
+* Made several modules optional: Celery, Tornado, Sentry, and django-debug-toolbar.
+
 Version 0.8.5 (2012-05-13)
 --------------------------
 

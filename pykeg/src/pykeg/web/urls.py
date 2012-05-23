@@ -1,5 +1,3 @@
-import os.path
-
 from pykeg.core import features
 
 from django.conf import settings
@@ -19,10 +17,6 @@ try:
   USE_DJANGO_REGISTRATION = True
 except ImportError:
   USE_DJANGO_REGISTRATION = False
-
-def basedir():
-  """ Get the pwd of this module, eg for use setting absolute paths """
-  return os.path.abspath(os.path.dirname(__file__))
 
 urlpatterns = patterns('',
     ### django admin site
@@ -53,12 +47,6 @@ urlpatterns = patterns('',
 
     ### kegadmin
     (r'^(?P<kbsite_name>)kegadmin/', include('pykeg.web.kegadmin.urls')),
-
-    ### sentry
-    (r'^sentry/', include('sentry.web.urls')),
-
-    ### main kegweb urls
-    (r'^(?P<kbsite_name>)', include('pykeg.web.kegweb.urls')),
 )
 
 if features.use_facebook():
@@ -86,3 +74,13 @@ if settings.DEBUG:
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', { 'document_root': settings.MEDIA_ROOT, }),
   )
 
+### Raven
+if settings.HAVE_SENTRY:
+  urlpatterns += patterns('',
+      (r'^sentry/', include('sentry.web.urls')),
+  )
+
+### main kegweb urls
+urlpatterns += patterns('',
+  (r'^(?P<kbsite_name>)', include('pykeg.web.kegweb.urls')),
+)

@@ -1,6 +1,10 @@
 # Pykeg main settings file.
+
 # Note: YOU SHOULD NOT NEED TO EDIT THIS FILE.  Instead, see the instructions in
 # common_settings.py.example.
+
+# Grab flags for optional modules.
+from pykeg.core.optional_modules import *
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -13,7 +17,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
 
-    'debug_toolbar',
     'django_extensions',
     'bootstrapform',
     'imagekit',
@@ -30,22 +33,11 @@ INSTALLED_APPS = (
     'pykeg.web.charts',
     'pykeg.web.kegweb',
     'icanhaz',
-    'raven.contrib.django',
     'registration',
-    'sentry',
     'socialregistration',
     'socialregistration.contrib.twitter',
     'socialregistration.contrib.facebook',
     'socialregistration.contrib.foursquare',
-
-
-    # Celery and dependencies.
-    'djcelery',
-    'djkombu',
-
-    # Tornado
-    'rjdj.djangotornado',
-
     'south',
     'django_nose', # must be after south
 )
@@ -127,7 +119,6 @@ MIDDLEWARE_CLASSES = (
     'pykeg.web.middleware.SiteActiveMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -143,22 +134,71 @@ CACHES = {
 
 CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 
+INTERNAL_IPS = ('127.0.0.1',)
+
+### Celery
+if HAVE_DJCELERY and HAVE_DJKOMBU:
+  INSTALLED_APPS += (
+    'djcelery',
+    'djkombu',
+  )
+
+  import djcelery
+  djcelery.setup_loader()
+  BROKER_URL = "django://"
+
+  CELERY_QUEUES = {
+    'default' : {
+      'exchange': 'default',
+      'binding_key': 'default'
+    },
+  }
+  CELERY_DEFAULT_QUEUE = "default"
+  CELERYD_CONCURRENCY = 3
+
 ### debug_toolbar
 
-DEBUG_TOOLBAR_PANELS = (
-    'debug_toolbar.panels.version.VersionDebugPanel',
-    'debug_toolbar.panels.timer.TimerDebugPanel',
-    'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
-    'debug_toolbar.panels.headers.HeaderDebugPanel',
-    'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
-    'debug_toolbar.panels.template.TemplateDebugPanel',
-    'debug_toolbar.panels.sql.SQLDebugPanel',
-    'debug_toolbar.panels.signals.SignalDebugPanel',
-    'debug_toolbar.panels.logger.LoggingPanel',
-    #'debug_toolbar.panels.profiling.ProfilingDebugPanel',
-)
+if HAVE_DEBUG_TOOLBAR:
+  INSTALLED_APPS += (
+    'debug_toolbar',
+  )
+  MIDDLEWARE_CLASSES += (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+  )
+  DEBUG_TOOLBAR_PANELS = (
+      'debug_toolbar.panels.version.VersionDebugPanel',
+      'debug_toolbar.panels.timer.TimerDebugPanel',
+      'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
+      'debug_toolbar.panels.headers.HeaderDebugPanel',
+      'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
+      'debug_toolbar.panels.template.TemplateDebugPanel',
+      'debug_toolbar.panels.sql.SQLDebugPanel',
+      'debug_toolbar.panels.signals.SignalDebugPanel',
+      'debug_toolbar.panels.logger.LoggingPanel',
+      #'debug_toolbar.panels.profiling.ProfilingDebugPanel',
+  )
 
-INTERNAL_IPS = ('127.0.0.1',)
+### raven
+
+if HAVE_RAVEN:
+  INSTALLED_APPS += (
+    'raven.contrib.django',
+  )
+
+### sentry
+
+if HAVE_SENTRY:
+  INSTALLED_APPS += (
+    'sentry',
+  )
+
+### tornado
+
+if HAVE_DJANGOTORNADO:
+  INSTALLED_APPS += (
+    'rjdj.djangotornado',
+  )
+
 
 ### django.contrib.messages
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
@@ -170,21 +210,6 @@ ACCOUNT_ACTIVATION_DAYS = 3
 # replace with site-specific values in common_settings.py, if desired.
 FACEBOOK_API_KEY = ''
 FACEBOOK_SECRET_KEY = ''
-
-### Celery
-
-import djcelery
-djcelery.setup_loader()
-BROKER_URL = "django://"
-
-CELERY_QUEUES = {
-  'default' : {
-    'exchange': 'default',
-    'binding_key': 'default'
-  },
-}
-CELERY_DEFAULT_QUEUE = "default"
-CELERYD_CONCURRENCY = 3
 
 ### Twitter
 
@@ -215,7 +240,7 @@ except ImportError:
   Consult setup documentation.  Exiting..."""
   raise ImportError(msg)
 
-### Optional stuff
+### socialregistration (after importing common settings)
 if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:
   #INSTALLED_APPS += ('pykeg.contrib.facebook',)
   MIDDLEWARE_CLASSES += (

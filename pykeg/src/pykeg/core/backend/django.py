@@ -18,13 +18,19 @@
 
 """Django ORM implementation of backend."""
 
+from __future__ import absolute_import
+
 import datetime
 import logging
 
-from . import backend
+from django.conf import settings
 from pykeg.core import kb_common
 from pykeg.core import models
-from pykeg.web import tasks
+
+from . import backend
+
+if settings.HAVE_CELERY:
+  from pykeg.web import tasks
 
 class KegbotBackend(backend.Backend):
   """Django models backed Backend."""
@@ -131,7 +137,8 @@ class KegbotBackend(backend.Backend):
     if do_postprocess:
       d.PostProcess()
       event_list = [e for e in models.SystemEvent.objects.filter(drink=d).order_by('id')]
-      tasks.handle_new_events.delay(self._site, event_list)
+      if settings.HAVE_CELERY:
+        tasks.handle_new_events.delay(self._site, event_list)
 
     return d
 

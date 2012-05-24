@@ -21,7 +21,15 @@ pykeg/src/pykeg/web/media/mugshots
 pykeg/src/pykeg/web/media/sounds
 pykeg/static
 
+# AppEngine development files
+pykeg/src/pykeg/common_settings.py
+pykeg/src/app.yaml
+
 ### controller
 controller/kegboard/build-cli
 controller/kegboard/board/*.b\#*
 controller/kegboard/board/*.s\#*
+
+### Eclipse files
+.project
+.pydevproject

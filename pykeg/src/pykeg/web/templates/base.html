@@ -16,6 +16,8 @@
     google.load("jquery", "1");
     google.load("jqueryui", "1");
   </script>
+  
+  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
 
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alert.js"></script>
@@ -30,13 +32,7 @@
   <script type="text/javascript" src="{{ STATIC_URL }}lib/icanhaz/ICanHaz.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}lib/spin/spin.js"></script>
 
-  <script type="text/javascript" src="{{ STATIC_URL }}js/kegweb.js"></script>
-
-  {% if kbsite.url %}
-  <script>
-    kegweb.API_BASE = "/{{ kbsite.url }}/api/";
-  </script>
-  {% endif %}
+  <script type="text/javascript" src="{{ STATIC_URL }}js/kb.js"></script>
 
   <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.timeago.js"></script>
@@ -44,7 +40,14 @@
   <script type="text/javascript">
     $(document).ready(function() {
         var defaultUseMetric = {% if kbsite.settings.display_units != 'metric' %}false{% else %}true{% endif%};
-	    kegweb.refreshDisplayUnits(defaultUseMetric);
+	    {% if kbsite.url %}
+	    window.app.setApiBase("/{{ kbsite.url }}/api/");
+		{% else %}
+		window.app.setApiBase("/api/")
+	    {% endif %}
+		
+		window.app.getPageSettings().setMetric(defaultUseMetric);
+		$("span.hmeasure").autounits({metric:defaultUseMetric})
         $("abbr.timeago").timeago();
         $(".alert").alert()
     });
@@ -174,9 +177,10 @@
       <p>
         <small>
         this site is powered by <a href="http://kegbot.org/">kegbot</a>:
-        &copy; 2003-{% now "Y" %} mike wakerly<br>
+        &copy; 2003-{% now "Y" %} mike wakerly<br/>
 
-        <span id="units-selector"></span> |
+        <a href='#' onClick='window.app.get("pageSettings").toggleMetric();'>Toggle Units</a>
+		<span id="page-settings"></span> |
         charts by <a href="http://highcharts.com/" target="_blank">highcharts</a>
         </small>
       </p>

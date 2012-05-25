@@ -72,6 +72,10 @@ def index(request):
   context['initial_events'] = kbjson.dumps([protolib.ToDict(e, full=True) for e in events],
       indent=None)
 
+  sessions = request.kbsite.sessions.all().order_by('-seqn')[:10]
+  context['initial_sessions'] = kbjson.dumps([protolib.ToDict(s, full=True) for s in sessions],
+      indent=None)
+
   return render_to_response('index.html', context)
 
 @cache_page(30)

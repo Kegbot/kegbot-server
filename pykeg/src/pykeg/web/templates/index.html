@@ -12,12 +12,16 @@
 {% icanhaz "systemevent_keg_ended" %}
   <script type="text/javascript">
     $(document).ready(function() {
+
+      // Bootstrap recent drinking sessions.
+      window.app.drinkingSessions.add({{initial_sessions|safe}});
+
+      // Bootstrap recent system events.
       window.app.systemEvents.add({{initial_events|safe}});
-      setInterval(function() {
-        window.app.systemEvents.fetch({
-          add: true
-        });
-      }, 5000);
+
+      // Start polling refresh loop.
+      window.app.refresh();
+
     });
   </script>
 {% endblock %}

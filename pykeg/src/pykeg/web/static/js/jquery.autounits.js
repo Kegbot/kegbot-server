@@ -49,10 +49,6 @@
     if (!settings.metric) {
       var amt = toOunces(volume_ml);
       var units = "oz";
-      if (amt > 8) {
-        amt /= 16.0;
-        units = "pints";
-      }
 
       if (amt < 10) {
         amt = amt.toFixed(2);

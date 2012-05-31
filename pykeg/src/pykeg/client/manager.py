@@ -505,7 +505,7 @@ class ThermoManager(Manager):
     # Note: the backend may also be performing this check.
     last_record = self._name_to_last_record.get(sensor_name)
     if last_record:
-      last_time = last_record.record_time
+      last_time = last_record.time
       if last_time == now:
         self._logger.debug('Dropping excessive temp event')
         return

@@ -77,9 +77,10 @@ def AuthTokenToProto(record, full=False):
   ret.token_value = record.token_value
   if record.user:
     ret.username = str(record.user.username)
+    ret.user.MergeFrom(ToProto(record.user))
   if record.nice_name:
     ret.nice_name = record.nice_name
-  ret.created_time = datestr(record.created)
+  ret.created_time = datestr(record.created_time)
   ret.enabled = record.enabled
   if record.expire_time:
     ret.expire_time = datestr(record.expire_time)

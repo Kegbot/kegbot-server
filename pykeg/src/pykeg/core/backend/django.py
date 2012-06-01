@@ -213,21 +213,11 @@ class KegbotBackend(backend.Backend):
     return record
 
   def GetAuthToken(self, auth_device, token_value):
-    # Special case for "core.user" psuedo auth device.
-    if auth_device == 'core.user':
-      try:
-        user = models.User.objects.get(username=token_value, is_active=True)
-      except models.User.DoesNotExist:
-        raise backend.NoTokenError(auth_device)
-      fake_token = models.AuthenticationToken(auth_device='core.user',
-          token_value=token_value, seqn=0, user=user, enabled=True)
-      return fake_token
-
     if token_value and auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
       token_value = token_value.lower()
-    tok, created = models.AuthenticationToken.objects.get_or_create(site=self._site,
+    try:
+      return models.AuthenticationToken.objects.get(site=self._site,
         auth_device=auth_device, token_value=token_value)
-    if not tok.user:
+    except models.AuthenticationToken.DoesNotExist:
       raise backend.NoTokenError
-    return tok
 

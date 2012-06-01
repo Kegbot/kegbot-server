@@ -618,6 +618,10 @@ class AuthenticationManager(Manager):
       self._logger.info('Token not assigned: %s' % record)
       return
 
+    if not token.enabled:
+      self._logger.info('Token disabled: %s' % record)
+      return
+
     max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS.get(record.auth_device)
     if max_idle is None:
       max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS['default']

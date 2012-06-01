@@ -171,9 +171,9 @@ class KrestClient:
 
     Keyword arguments are passed to the endpoint as GET arguments.
 
-    For normal responses, the return value is the Python JSON-decoded 'result'
-    field of the response.  If the response is an error, a RemoteError exception
-    is raised.
+    For normal responses, the return value is the Python JSON-decoded 'object'
+    or 'objects' field of the response.  If the response is an error, a
+    RemoteError exception is raised.
 
     If there was an error contacting the server, or in parsing its response, a
     ServerError is raised.
@@ -183,9 +183,9 @@ class KrestClient:
   def DoPOST(self, endpoint, post_data, params=None):
     """Issues a POST request to the endpoint, and returns the result.
 
-    For normal responses, the return value is the Python JSON-decoded 'result'
-    field of the response.  If the response is an error, a RemoteError exception
-    is raised.
+    For normal responses, the return value is the Python JSON-decoded 'object'
+    or 'objects' field of the response.  If the response is an error, a
+    RemoteError exception is raised.
 
     If there was an error contacting the server, or in parsing its response, a
     ServerError is raised.
@@ -246,7 +246,7 @@ class KrestClient:
       'id': seqn,
       'spilled': spilled,
     }
-    return self.DoPOST(endpoint, post_data=post_data)
+    return self.DoPOST(endpoint, post_data=post_data).object
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     endpoint = '/thermo-sensors/%s' % (sensor_name,)
@@ -261,9 +261,9 @@ class KrestClient:
     return self.DoGET('taps').objects
 
   def GetToken(self, auth_device, token_value):
-    url = 'auth-tokens/%s.%s' % (auth_device, token_value)
+    url = 'auth-tokens/%s/%s' % (auth_device, token_value)
     try:
-      return self.DoGET(url)
+      return self.DoGET(url).object
     except ServerError, e:
       raise NotFoundError(e)
 

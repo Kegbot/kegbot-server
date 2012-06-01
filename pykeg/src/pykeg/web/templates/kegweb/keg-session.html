@@ -5,9 +5,11 @@
 
       <div class="kb-tapbox-header">
         <h2>{{ session.GetTitle }}</h2>
+        {% if session.GetStats.total_volume_ml %}
         <span class="label">
           {% volume session.GetStats.total_volume_ml %}
         </span>&nbsp;
+        {% endif %}
         <small>{{session.summarize_drinkers|safe}}</small>
       </div>
 

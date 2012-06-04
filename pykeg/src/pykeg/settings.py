@@ -6,6 +6,15 @@
 # Grab flags for optional modules.
 from pykeg.core.optional_modules import *
 
+import os
+import logging
+if (os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine') or os.getenv('SETTINGS_MODE') == 'prod'):
+  logging.info("Running in AppEngine")
+  APPENGINE = True
+else:
+  logging.info("Running stand alone [%s]", os.getenv('SERVER_SOFTWARE', ''))
+  APPENGINE = False
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',

@@ -369,18 +369,18 @@ def _keg_pre_save(sender, instance, **kwargs):
     return
 
   # Determine first drink date & set keg start date to it if earlier.
-  drinks = keg.drinks.valid().order_by('start_time')
+  drinks = keg.drinks.valid().order_by('time')
   if drinks:
     drink = drinks[0]
-    if drink.start_time < keg.start_time:
-      keg.start_time= drink.start_time
+    if drink.time < keg.start_time:
+      keg.start_time = drink.time
 
   # Determine last drink date & set keg end date to it if later.
-  drinks = keg.drinks.valid().order_by('-start_time')
+  drinks = keg.drinks.valid().order_by('-time')
   if drinks:
     drink = drinks[0]
-    if drink.start_time > keg.end_time:
-      keg.end_time = drink.start_time
+    if drink.time > keg.end_time:
+      keg.end_time = drink.time
 
 pre_save.connect(_set_seqn_pre_save, sender=Keg)
 pre_save.connect(_keg_pre_save, sender=Keg)

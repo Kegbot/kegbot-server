@@ -1,5 +1,11 @@
-application: kegbot-emaple-appengine
-version: 1-1-alpha
+# Example appengine configuration for Kegbot.
+
+# Change application name to match your app engine application.
+application: example
+version: auto
+
+# You should not need to make changes beyond this point.
+
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -15,6 +21,6 @@ handlers:
 - url: /favicon\.ico
   static_files: pykeg/web/static/images/favicon.ico
   upload: pykeg/web/static/images/favicon\.ico
-  
+
 - url: /.*
   script: pykeg.web.wsgi_app.app

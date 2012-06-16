@@ -4,12 +4,12 @@
 Kegboard Serial Protocol Reference
 ==================================
 
-About this document
-===================
+About
+=====
 
 This document describes the protocol implemented in the Kegboard firmware.  The
-protocol is a simple serial protocol for exchanging data and commands with a
-controller board.
+protocol is a simple serial protocol for exchanging data and commands between a
+host computer and the controller board.
 
 .. note::
   Most users don't need to be too familiar with the Kegboard protocol.  This
@@ -269,26 +269,6 @@ valves.
 | 0x02    | output_reading  | output_t | Status of the output.                 |
 +---------+-----------------+----------+---------------------------------------+
 
-.. _onewire-presence-message:
-
-``onewire_presence`` message (0x13)
------------------------------------
-
-.. note::
-  This message has been *deprecated*. It is no longer issued by kegboard, and
-  has been replaced by :ref:`auth-token-message`.
-
-When a 1-wire device is detected on the presence bus, this message is generated
-and sent.
-
-+---------+-----------------+----------+---------------------------------------+
-| Tag ID  | Name            | Type     | Description                           |
-+=========+=================+==========+=======================================+
-| 0x01    | device_id       | uint64   | ID of 1-wire device now present.      |
-+---------+-----------------+----------+---------------------------------------+
-| 0x02    | status          | uint8    | 1 if present, 0 if removed.           |
-+---------+-----------------+----------+---------------------------------------+
-
 
 .. _auth-token-message:
 
@@ -297,12 +277,9 @@ and sent.
 
 When an authentication token is attached or removed from the kegboard, this
 messages is sent.  The ``device_name`` field gives the name of the kegboard
-peripheral producing the message; this will be `onewire` for iButtons.  The
-``token`` field gives the raw, big-endian byte value of the token.
-
-.. todo::
-  Document update frequency and describe how to change it (it is the main loop
-  update interval.)
+peripheral producing the message; this will be `onewire` for iButtons and
+``rfid`` for RFIDs.  The ``token`` field gives the raw, big-endian byte value of
+the token.
 
 +---------+-----------------+----------+---------------------------------------+
 | Tag ID  | Name            | Type     | Description                           |
@@ -314,32 +291,6 @@ peripheral producing the message; this will be `onewire` for iButtons.  The
 | 0x03    | status          | uint8    | 1 if present, 0 if removed.           |
 +---------+-----------------+----------+---------------------------------------+
 
-
-
-.. _last-event-message:
-
-``last_events`` message (0x20)
-------------------------------
-
-Kegboard has a flow "event recall" feature, which stores a limited amount of
-information about recent flows in the microcontroller's RAM.
-
-
-.. todo:: Write this section.
-
-
-.. _watchdog-alarm-message:
-
-``watchdog_alarm`` message (0x30)
----------------------------------
-
-This message indicates the status of the host-controller watchdog.
-
-+---------+-----------------+----------+---------------------------------------+
-| Tag ID  | Name            | Type     | Description                           |
-+=========+=================+==========+=======================================+
-| 0x01    | watchdog_status | uint_16  | Nonzer if watchdog is firing.         |
-+---------+-----------------+----------+---------------------------------------+
 
 Command Definitions
 ===================
@@ -358,31 +309,6 @@ protocol.
 
 There is no payload.
 
-.. _get-configuration-command:
-
-``get_configuration`` command (0x82)
-------------------------------------
-
-This command is sent to the board to request a
-:ref:`board-configuration-message` from the board.
-
-There is no payload.
-
-.. _set-configuration-command:
-
-``set_configuration`` command (0x83)
-------------------------------------
-
-This command sets persistent configuration values on the board. The payload is
-identical to the :ref:`board-configuration-message`.
-
-The configuration command is not acknowleged. Instead, the host should issue a
-:ref:`get-configuration-command`, and inspect the resulting
-:ref:`board-configuration-message`.
-
-Note that the current kegboard implementation requires a manual reset for any of
-the values to take effect.
-
 ``set_output`` command (0x84)
 ------------------------------------
 
@@ -396,33 +322,6 @@ This command is sent to the board to enable or disable a device output.
 | 0x02    | output_mode     | output_t | Mode to set the output.               |
 +---------+-----------------+----------+---------------------------------------+
 
-.. _get-events-command:
-
-``get_events`` command (0x86)
------------------------------
-
-.. todo:: Write this section.
-
-.. _clear-events-command:
-
-``clear_events`` command (0x87)
--------------------------------
-
-.. todo:: Write this section.
-
-.. _pause-command:
-
-``pause`` command (0x88)
-------------------------
-
-.. todo:: Write this section.
-
-.. _resume-command:
-
-``resume`` command (0x89)
--------------------------
-
-.. todo:: Write this section.
 
 
 Protocol Revision History

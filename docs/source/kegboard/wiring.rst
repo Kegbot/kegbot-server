@@ -6,7 +6,7 @@ Wiring Up a Kegboard
 
 .. _pin-connections:
 
-Pin Connections
+Kegboard Pinout
 ===============
 
 The following table describes the pins available on the Arduino board, and their

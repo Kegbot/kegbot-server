@@ -1,10 +1,10 @@
 .. _database-install:
 
-Installing the database
-=======================
+Install the Database
+====================
 
 Kegbot relies on a database system to store all data, including keg and drink
-information.  This chapter covers installing an initializing a database for use
+information.  This chapter covers installing and initializing a database for use
 by Kegbot.
 
 At the moment, Kegbot can support either `MySQL <http://www.mysql.org/>`_ or
@@ -25,7 +25,7 @@ Install SQLite
 Since SQLite operates on a flat file database, it is considerably simpler to set
 up.  Be sure you have the necessary libraries and command-line tools::
 
-  % sudo apt-get install python-sqlite
+  $ sudo apt-get install python-sqlite
 
 Using MySQL
 -----------
@@ -34,18 +34,18 @@ Follow this section if you prefer to use MySQL as the Kegbot database.
 
 .. note::
   This section is not intended to be a complete guide to installing and
-  maintaining a MySQL server. Generally, there's not much to it, but if you're
-  not already familiar with MySQL (or if you encounter problems), we suggest you
-  consult the official documentation for your Linux distro and/or MySQL.
+  maintaining a MySQL server. If you're not already familiar with MySQL (or if
+  you encounter problems), we suggest you consult the official documentation for
+  your Linux distribution and/or MySQL.
 
 
 Installing MySQL
 ^^^^^^^^^^^^^^^^
 
-If you do not already have a MySQL daemon running on your system, you will need
-to install it. The following should work on (Debian/Ubuntu)::
+If you do not already have a MySQL daemon running on your system, you need to
+install it. The following command should work on Debian/Ubuntu::
 
-	% sudo apt-get install mysql-server
+	$ sudo apt-get install mysql-server
 
 Once MySQL is installed, confirm it is running by logging in as the 'root' MySQL
 user::
@@ -54,10 +54,11 @@ user::
 	Enter password: 
 
 When prompted for the password, enter the password of the ``root`` MySQL user.
-If you don't know what this is, or don't remember setting a password, just hit
-enter. Depending on your installation, a password may not be required.
+Depending on your installation, a password may not be required.
+If you don't know what this is, or don't remember setting a password, just hit,
+or run the command without the ``-p`` option.
 
-You should then see the MySQL welcome message and shell::
+You should see the MySQL welcome message and shell::
 
 	Welcome to the MySQL monitor.  Commands end with ; or \g.
 	Your MySQL connection id is 211
@@ -71,23 +72,23 @@ Your MySQL system seems to be working. Exit the shell::
 
 	mysql> exit
 	Bye
-	%
+	$
 
 
 Creating the Kegbot database
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You now need to create a database within MySQL for Kegbot to use.  We will
-create a new database, named ``kegbot``, with the following command::
+You now need to create a database within MySQL for Kegbot to use.
+Create a new database named ``kegbot`` with the following command::
 
-	% mysqladmin -u root -p create kegbot
+	$ mysqladmin -u root -p create kegbot
 	Enter password: 
-	%
+	$
 
 That's it; unless you see an error message, the command was successful. Next,
 verify that the database was created by trying to use it in a MySQL shell::
 
-	% mysql -u root -p
+	$ mysql -u root -p
 	Enter password: 
 	Welcome to the MySQL monitor.  Commands end with ; or \g.
 	Your MySQL connection id is 218
@@ -124,7 +125,7 @@ You will need this password in the next chapter.
 
 Test your new user account::
 
-	% mysql -u kegbot -p kegbot
+	$ mysql -u kegbot -p kegbot
 	Enter password:    <---- use password just created
 	Reading table information for completion of table and column names
 	You can turn off this feature to get a quicker startup with -A

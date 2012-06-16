@@ -3,7 +3,7 @@
 Kegboard Guide
 ==============
 
-This document describes how to build, use, and hack on Kegboard, an
+This document describes how to build, use, and hack on Kegboard, our
 Arduino-based beer keg controller.
 
 Contents:

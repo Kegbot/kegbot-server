@@ -1,7 +1,7 @@
 .. _configure-kegbot:
 
-Setup & Configure Kegbot
-========================
+Configure Kegbot Server
+=======================
 
 In this section, you will point your new Kegbot installation to its database.
 
@@ -11,26 +11,25 @@ Create the settings file
 Pykeg needs a little bit of static configuration before it works.  At the
 moment, Pykeg uses a `Django Settings file
 <http://docs.djangoproject.com/en/dev/topics/settings/>`_ for all of its
-configuration.  Mostly, you just need to tell Pykeg what kind of database to
+configuration.  Mostly, you just need to tell Kegbot what kind of database to
 use.
 
-The kegbot core applications (`kegbot-admin.py`, `kegbot_core.py`, and so on)
-will search for a settings file in two locations:
+Kegbot will search for a settings file in two locations:
 
-* ``~/.kegbot/common_settings.py``
-* ``/etc/kegbot/common_settings.py``
+* ``~/.kegbot/local_settings.py``
+* ``/etc/kegbot/local_settings.py``
 
 You can use either location, but in these instructions we'll use `~/.kegbot/`.
 Follow these steps to create and edit that file.
 
 #. Create a new directory in your homedir to store kegbot settings::
 
-	% mkdir ~/.kegbot
+	$ mkdir ~/.kegbot
 
 #. Copy the example settings file (from the ``pykeg/`` directory) into your new
    local directory::
 
-	% cp common_settings.py.example ~/.kegbot/common_settings.py
+	$ cp local_settings.py.example ~/.kegbot/local_settings.py
 
 Next, you need to edit the settings for your database.
 
@@ -39,7 +38,7 @@ Configure Kegbot for MySQL
 
 Follow this section if you will be using MySQL.
 
-Open the file ``~/.kegbot/common_settings.py`` in your favorite text editor.
+Open the file ``~/.kegbot/local_settings.py`` in your favorite text editor.
 Look for the section labeled "Database Configuration", and edit it to have the
 following lines to the file::
 
@@ -65,7 +64,7 @@ database file. In this example, we assume the database will be stored at
 ``/home/kegbot/kegbot.sqlite``, though you can use any other location on the
 filesystem.
 
-Open the file ``~/.kegbot/common_settings.py`` in your favorite text editor.
+Open the file ``~/.kegbot/local_settings.py`` in your favorite text editor.
 Look for the section labeled "Database Configuration", and edit it to have the
 following lines to the file::
 
@@ -81,15 +80,14 @@ Save the settings file.
 
 .. _populate-databases:
 
-Populate Databases
+Populate databases
 ------------------
 
-Now that the database is ready, you must install the various kegbot tables and
-defaults::
+Run Kegbot's setup tool to load the database with various defaults::
 
-  % kegbot-admin.py kb_setup
+  $ kegbot-admin.py kb_setup
 
 And for the most important part, create your admin account!::
 
-  % kegbot-admin.py createsuperuser
+  $ kegbot-admin.py createsuperuser
 

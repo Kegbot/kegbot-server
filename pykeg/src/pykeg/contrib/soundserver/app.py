@@ -151,7 +151,7 @@ class SoundClient(kegnet.SimpleKegnetClient):
     if not parts.scheme.startswith('http'):
       self._logger.error('URL for event does not start with http ("%s")' %
           sound_url)
-      self._logger.error('Be sure MEDIA_URL in common_settings.py gives an '
+      self._logger.error('Be sure MEDIA_URL in local_settings.py gives an '
                          ' absolute url.')
       return
 

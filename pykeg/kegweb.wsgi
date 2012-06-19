@@ -37,7 +37,7 @@ import os, site, sys
 # path), leave it blank.
 VIRTUAL_ENV = '/path/to/virtualenv/kb'
 
-# The common_settings.py config needs to be on the PATH as well. By default,
+# The local_settings.py config needs to be on the PATH as well. By default,
 # kegbot looks in # $HOME/.kegbot and /etc/kegbot.  Only change this if you are
 # doing something different.
 EXTRA_PATHS = [
@@ -55,7 +55,7 @@ if VIRTUAL_ENV:
   PACKAGES = os.path.join(VIRTUAL_ENV, 'lib', PYTHON_NAME, 'site-packages')
   site.addsitedir(PACKAGES)
 
-# Add the kegbot common_settings.py locations to the path.
+# Add the kegbot local_settings.py locations to the path.
 for path in EXTRA_PATHS:
   sys.path.append(path)
 

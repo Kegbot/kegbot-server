@@ -56,7 +56,7 @@ def _ExtendSysPath():
   for dir in SEARCH_DIRS:
     paths.append(dir)
     if _DEBUG:
-      test_settings = os.path.join(dir, 'common_settings.py')
+      test_settings = os.path.join(dir, 'local_settings.py')
       if os.path.exists(test_settings):
         _Debug('%s exists' % test_settings)
       else:
@@ -83,11 +83,11 @@ def _FixAll():
   _SetDjangoSettingsEnv()
 
   try:
-    import common_settings
-    common_dir = os.path.dirname(common_settings.__file__)
-    _Debug('common_settings loaded from dir: %s' % common_dir)
+    import local_settings
+    common_dir = os.path.dirname(local_settings.__file__)
+    _Debug('local_settings loaded from dir: %s' % common_dir)
   except ImportError:
-    _Warning('Warning: common_settings could not be imported')
+    _Warning('Warning: local_settings could not be imported')
 
 if __name__ == '__main__' or os.environ.get('DEBUG_IMPORT_HACKS'):
   # When run as a program, or DEBUG_IMPORT_HACKS is set: print debug info

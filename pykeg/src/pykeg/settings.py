@@ -1,7 +1,7 @@
 # Pykeg main settings file.
 
 # Note: YOU SHOULD NOT NEED TO EDIT THIS FILE.  Instead, see the instructions in
-# common_settings.py.example.
+# local_settings.py.example.
 
 # Grab flags for optional modules.
 from pykeg.core.optional_modules import *
@@ -72,6 +72,11 @@ TEMPLATE_DIRS = (
 )
 
 SITE_ID = 1
+
+# Language code for this installation. All choices can be found here:
+# http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
+# http://blogs.law.harvard.edu/tech/stories/storyReader$15
+LANGUAGE_CODE = 'en-us'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
@@ -216,7 +221,7 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 ACCOUNT_ACTIVATION_DAYS = 3
 
 # Bogus default values (to prevent djangofb from choking if unavailable);
-# replace with site-specific values in common_settings.py, if desired.
+# replace with site-specific values in local_settings.py, if desired.
 FACEBOOK_API_KEY = ''
 FACEBOOK_SECRET_KEY = ''
 
@@ -241,13 +246,17 @@ SOUTH_TESTS_MIGRATE = False
 ICANHAZ_APP_DIRNAMES = ['static/jstemplates', 'jstemplates']
 
 try:
-  import common_settings
-  from common_settings import *
+  from local_settings import *
 except ImportError:
-  msg = """ Error: Could not find common_settings.py
-  Most likely, this means kegbot has not been configured properly.
-  Consult setup documentation.  Exiting..."""
-  raise ImportError(msg)
+  try:
+    from common_settings import *
+    import warnings
+    warnings.warn('common_settings.py should be renamed to local_settings.py')
+  except ImportError:
+    msg = """ Error: Could not find local_settings.py
+    Most likely, this means Kegbot has not been configured properly.
+    Consult setup documentation.  Exiting..."""
+    raise ImportError(msg)
 
 ### socialregistration (after importing common settings)
 if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:

@@ -51,7 +51,7 @@ class UserUntappdLinkAdminForm(ModelForm):
     self.password_hash = md5(cleaned_data['password']).hexdigest()
     
     if settings.UNTAPPD_API_KEY == None:
-      raise ValidationError('Untappd API key is not set. Please add your UNTAPPD_API_KEY to your common_settings.py file.')
+      raise ValidationError('Untappd API key is not set. Please add your UNTAPPD_API_KEY to your local_settings.py file.')
     
     req = urllib2.Request("http://api.untappd.com/v3/user?key=" + settings.UNTAPPD_API_KEY)
     

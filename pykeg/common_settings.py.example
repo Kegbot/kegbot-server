@@ -1,6 +1,6 @@
 # Local settings for kegbot.
-# Edit settings, then copy this file to /etc/kegbot/common_settings.py or
-# ~/.kegbot/common_settings.py
+# Edit settings, then copy this file to /etc/kegbot/local_settings.py or
+# ~/.kegbot/local_settings.py
 
 ### Database configuration
 
@@ -21,20 +21,28 @@ DATABASES = {
   },
 }
 
+### General
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = 'p7jep28p$+7kb8n=qr+1!i80&5d&!2q_lruhs-%rs(urq4)f*j'
+
+# Disable DEBUG mode when serving external traffic.
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+ADMINS = (
+    # ('Your Name', 'your_email@domain.com'),
+)
+
+MANAGERS = ADMINS
+
 ### Timezone and language
 
 # Local time zone for this installation. All choices can be found here:
 # http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
 TIME_ZONE = 'America/Los_Angeles'
 
-# Language code for this installation. All choices can be found here:
-# http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
-# http://blogs.law.harvard.edu/tech/stories/storyReader$15
-LANGUAGE_CODE = 'en-us'
-
-SITE_ID = 1
-
-### Media
+### Media and Static Files
 
 # Absolute path to the directory where uploaded media (profile pictures, etc)
 # should go.
@@ -44,32 +52,33 @@ MEDIA_ROOT = 'media/'
 # name given in MEDIA_ROOT does not affect this.
 MEDIA_URL = '/media/'
 
-### Other stuff
+# A directory where non-media static files will be stored. You should create
+# this directory, and use 'kegbot-admin.py collectstatic' to fill it.
+STATIC_ROOT = '/path/to/static'
+
+### Facebook
 
 # Want to use Facebook Connect for registration/login? You will need to set
 # these values up to the correct strings.
 FACEBOOK_API_KEY = None
 FACEBOOK_SECRET_KEY = None
 
+### Twitter
+
+TWITTER_CONSUMER_KEY = ''
+TWITTER_CONSUMER_SECRET_KEY =''
+
+### Foursquare
+
+FOURSQUARE_CLIENT_ID = ''
+FOURSQUARE_CLIENT_SECRET = ''
+FOURSQUARE_REQUEST_PERMISSIONS = ''
+
+### Untappd
+
 # You'll need an API key from Untappd to enable Untappd features.
 UNTAPPD_API_KEY = ''
 GMT_OFFSET = '-8'
-
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'p7jep28p$+7kb8n=qr+1!i80&5d&!2q_lruhs-%rs(urq4)f*j'
-
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-
-ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
-)
-
-TEMPLATE_DIRS = (
-    '/path/to/kegbot/pykeg/templates',
-)
-
-MANAGERS = ADMINS
 
 ### django-storages
 ### Uncomment to use AWS as a backend for static/media files.

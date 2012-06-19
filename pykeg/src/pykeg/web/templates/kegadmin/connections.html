@@ -1,6 +1,6 @@
 {% extends "kegadmin/base.html" %}
 {% load kegweblib %}
-{% load bootstrap %}
+{% load crispy_forms_tags %}
 
 {% block title %}Kegbot Admin: Connections{% endblock %}
 {% block pagetitle %}Kegbot Admin: Connections{% endblock %}
@@ -63,7 +63,7 @@
     <div class="well">
       <form action="" method="POST">
       {% csrf_token %}
-      {{ foursquare_settings_form|bootstrap }}
+      {{ foursquare_settings_form|crispy }}
       <p>
         <button type="submit" class="btn btn-success small"
             name="foursquare-settings-submit">

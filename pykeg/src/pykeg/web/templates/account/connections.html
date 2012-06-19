@@ -1,7 +1,7 @@
 {% extends "account/base.html" %}
 {% load kegweblib %}
 {% load foursquare %}
-{% load bootstrap %}
+{% load crispy_forms_tags %}
 
 {% block title %}Account: Connections{% endblock %}
 {% block pagetitle %}Connections{% endblock %}
@@ -24,7 +24,7 @@
       <form method="post" action="{% url update-twitter-settings %}"
           style="display:inline;">
       {% csrf_token %}
-      {{ twitter_settings_form|bootstrap }}
+      {{ twitter_settings_form|crispy }}
       <button type="submit" class="btn btn-success btn-small" name="link">
         <i class="icon-ok icon-white"></i> Update Settings</button>
       </button>
@@ -69,7 +69,7 @@
       <form method="post" action="{% url update-foursquare-settings %}"
           style="display:inline;">
       {% csrf_token %}
-      {{ foursquare_settings_form|bootstrap }}
+      {{ foursquare_settings_form|crispy }}
       <button type="submit" class="btn btn-success btn-small" name="link">
         <i class="icon-repeat icon-white"></i> Update Settings</button>
       </button>

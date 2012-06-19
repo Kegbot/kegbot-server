@@ -1,6 +1,6 @@
 {% extends "kegadmin/base.html" %}
 {% load kegweblib %}
-{% load bootstrap %}
+{% load crispy_forms_tags %}
 
 {% block pagetitle %}Kegbot Admin{% endblock %}
 
@@ -9,7 +9,7 @@
 
 <div class="well">
   <form action="" method="POST">{% csrf_token %}
-    {{ settings_form|bootstrap }}
+    {{ settings_form|crispy }}
     <div class="actions">
       <button type="submit" class="btn btn-primary">Update Settings</button>
     </div>

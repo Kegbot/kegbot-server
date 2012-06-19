@@ -40,14 +40,14 @@
   <script type="text/javascript">
     $(document).ready(function() {
         var defaultUseMetric = {% if kbsite.settings.display_units != 'metric' %}false{% else %}true{% endif%};
-	    {% if kbsite.url %}
-	    window.app.setApiBase("/{{ kbsite.url }}/api/");
-		{% else %}
-		window.app.setApiBase("/api/")
-	    {% endif %}
-		
-		window.app.getPageSettings().setMetric(defaultUseMetric);
-		$("span.hmeasure").autounits({metric:defaultUseMetric})
+        {% if kbsite.url %}
+        window.app.setApiBase("/{{ kbsite.url }}/api/");
+        {% else %}
+        window.app.setApiBase("/api/")
+        {% endif %}
+
+        window.app.getPageSettings().setMetric(defaultUseMetric);
+        $("span.hmeasure").autounits({metric:defaultUseMetric})
         $("abbr.timeago").timeago();
         $(".alert").alert()
     });
@@ -180,7 +180,7 @@
         &copy; 2003-{% now "Y" %} mike wakerly<br/>
 
         <a href='#' onClick='window.app.get("pageSettings").toggleMetric();'>Toggle Units</a>
-		<span id="page-settings"></span> |
+        <span id="page-settings"></span> |
         charts by <a href="http://highcharts.com/" target="_blank">highcharts</a>
         </small>
       </p>

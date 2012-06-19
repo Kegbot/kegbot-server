@@ -1,5 +1,5 @@
 {% extends "account/base.html" %}
-{% load bootstrap %}
+{% load crispy_forms_tags %}
 
 {% block pagetitle %}Your Account{% endblock %}
 
@@ -10,7 +10,7 @@
   <div class="span11">
     <div class="well">
       <form action="" method="POST">{% csrf_token %}
-        {{ profile_form|bootstrap }}
+        {{ profile_form|crispy }}
         <div class="actions">
           <button type="submit" class="btn btn-primary">Update Profile</button>
         </div>

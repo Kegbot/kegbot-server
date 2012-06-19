@@ -1,6 +1,6 @@
 {% extends "account/base.html" %}
 {% load kegweblib %}
-{% load bootstrap %}
+{% load crispy_forms_tags %}
 
 {% block pagetitle %}Account: Mugshot{% endblock %}
 
@@ -17,7 +17,7 @@
             {% mugshot_box user 100 %}
           </div>
         </div>
-        {{ mugshot_form|bootstrap }}
+        {{ mugshot_form|crispy }}
         <div class="actions">
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>

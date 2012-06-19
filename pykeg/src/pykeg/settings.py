@@ -26,8 +26,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
 
+    'crispy_forms',
     'django_extensions',
-    'bootstrapform',
     'imagekit',
     'pykeg.beerdb',
     'pykeg.connections',
@@ -234,6 +234,7 @@ TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
 TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 
 ### Foursquare
+
 FOURSQUARE_CLIENT_ID = ''
 FOURSQUARE_CLIENT_SECRET = ''
 FOURSQUARE_REQUEST_PERMISSIONS = ''

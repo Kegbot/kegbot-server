@@ -19,7 +19,6 @@ LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 REQUIRED = [
   'django >= 1.3',
   'django-autoslug',
-  'django-bootstrap-form',
   'django-imagekit >= 2.0',
   'django-registration',
   'django-socialregistration >= 0.5.4',
@@ -39,6 +38,7 @@ REQUIRED = [
   'tweepy',
   'django-icanhaz',
   'pytz',
+  'django-crispy-forms',
 
   'requests', # needed by oauth
   'poster', # needed by foursquare
@@ -108,7 +108,6 @@ def setup_package():
       install_requires = DEPENDENCIES,
       dependency_links = [
           'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
-          'https://github.com/tzangms/django-bootstrap-form/tarball/master#egg=django-bootstrap-form',
           'https://github.com/rjdj/django-tornado/tarball/master#egg=rjdj.djangotornado',
       ],
       include_package_data = True,

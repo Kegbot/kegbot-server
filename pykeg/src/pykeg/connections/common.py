@@ -21,4 +21,4 @@ import datetime
 MAX_TASK_AGE = datetime.timedelta(hours=1)
 
 def event_is_stale(event):
-  return (event.when + MAX_TASK_AGE) <= datetime.datetime.now()
+  return (event.time + MAX_TASK_AGE) <= datetime.datetime.now()

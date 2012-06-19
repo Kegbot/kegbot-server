@@ -192,12 +192,58 @@ if HAVE_DEBUG_TOOLBAR:
       #'debug_toolbar.panels.profiling.ProfilingDebugPanel',
   )
 
+### logging
+
+LOGGING = {
+  'version': 1,
+  'disable_existing_loggers': True,
+  'root': {
+    'level': 'WARNING',
+    'handlers': ['console'],  # replaced with sentry later, if available.
+  },
+  'formatters': {
+    'verbose': {
+      'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+    },
+  },
+  'handlers': {
+    'console': {
+      'level': 'DEBUG',
+      'class': 'logging.StreamHandler',
+      'formatter': 'verbose'
+    }
+  },
+  'loggers': {
+    'django.db.backends': {
+      'level': 'ERROR',
+      'handlers': ['console'],
+      'propagate': False,
+    },
+    'raven': {
+      'level': 'DEBUG',
+      'handlers': ['console'],
+      'propagate': False,
+    },
+    'sentry.errors': {
+      'level': 'DEBUG',
+      'handlers': ['console'],
+      'propagate': False,
+    },
+  },
+}
+
 ### raven
 
 if HAVE_RAVEN:
   INSTALLED_APPS += (
     'raven.contrib.django',
   )
+
+  LOGGING['root']['handlers'] = ['sentry']
+  LOGGING['handlers']['sentry'] = {
+    'level': 'ERROR',
+    'class': 'raven.contrib.django.handlers.SentryHandler',
+  }
 
 ### sentry
 

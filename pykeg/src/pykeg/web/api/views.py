@@ -129,9 +129,8 @@ def ToJsonError(e, exc_info):
     if settings.DEBUG:
       message += "\n" + "\n".join(traceback.format_exception(*exc_info))
   if settings.DEBUG and settings.HAVE_RAVEN:
-    client = LocalRavenClient([])
-    client.create_from_exception(exc_info)
-    client.send()
+    from raven.contrib.django.models import client
+    client.captureException()
   result = {
     'error' : {
       'code' : code,

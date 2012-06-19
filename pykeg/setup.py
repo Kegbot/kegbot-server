@@ -68,7 +68,6 @@ OPTIONAL = [
 
   ### Sentry
   'sentry',
-  'django-sentry',
 ]
 
 DEPENDENCIES = REQUIRED

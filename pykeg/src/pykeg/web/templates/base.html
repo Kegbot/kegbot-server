@@ -50,6 +50,13 @@
         $("span.hmeasure").autounits({metric:defaultUseMetric})
         $("abbr.timeago").timeago();
         $(".alert").alert()
+        $(".clickable").each(function() {
+          var href = $(this).attr("data-href");
+          $(this).click(function() {
+            window.location = href;
+            return false;
+          });
+        });
     });
   </script>
 
@@ -90,7 +97,7 @@
 <body>
   <div class="navbar navbar-fixed-top">
    <div class="navbar-inner">
-    <div class="container-fluid">
+    <div class="container">
       {% spaceless %}
       {% if kbsite %}
       <a class="brand" href="{% url kb-home kbsite.url %}">
@@ -143,15 +150,9 @@
     </div>
   </div> <!-- /.navbar -->
 
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span2">
-        <div class="sidebar">
-          {% block sidebar %}&nbsp;{% endblock %}
-        </div>
-      </div> <!-- /span2 -->
-
-      <div class="span10">
+  <div class="container">
+    <div class="row">
+      <div class="span12">
         {% block header-margin %}
         <div class="page-header">
           <h1>{% block pagetitle %}{% endblock %}</h1>
@@ -171,8 +172,9 @@
         {% block content %}{% endblock %}
         {% block extra-content %}{% endblock %}
         </div>
-      </div> <!-- /span10 -->
-    </div> <!-- /row-fluid -->
+      </div> <!-- /span9 -->
+
+    </div> <!-- /row -->
     <footer>
       <p>
         <small>
@@ -185,6 +187,6 @@
         </small>
       </p>
     </footer>
-  </div> <!-- /container-fluid -->
+  </div> <!-- /container -->
 </body>
 

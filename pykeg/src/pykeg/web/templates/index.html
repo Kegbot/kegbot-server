@@ -27,7 +27,6 @@
 {% endblock %}
 
 {% block col-1 %}
-  <h2>On Tap</h2>
   {% for tap in taps %}
     {% if tap.current_keg %}
       {% with tap.current_keg as keg %}
@@ -38,7 +37,6 @@
 
   {% if current_session %}
     <p>
-      <h2>Now Drinking</h2>
       {% with current_session as session %}
         {% include "kegweb/keg-session.html" %}
       {% endwith %}

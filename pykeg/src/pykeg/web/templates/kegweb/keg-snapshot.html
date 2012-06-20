@@ -1,63 +1,42 @@
 {% load kegweblib %}
 {% with keg.current_tap as tap %}
-    <div class="kb-tapbox">
-      <div class="kb-tapbox-header">
-        <h3>{% if tap %}{{ tap.name }}: {% endif %} {{ keg.type.name }}</h3>
-      </div>
-
-      <div class="kb-tapbox-content">
-        <div class="row">
-          <div class="span4">
-            <div class="kb-tapbox-left">
-              {% include "kegweb/keg-image.html" %}
-            </div>
-          </div>
-          <div class="span7">
-            <div class="badge">
-              <div class="badge-header">
-                Total Poured
-              </div>
-              <div class="badge-content">
-                {% volume keg.served_volume %}
-                {% if keg.is_empty %}
-                  (empty!)
-                {% else %}
-                  ({% volume keg.remaining_volume %} remain)
-                {% endif %}
-                {% chart keg_volume keg 300 50 %}
-              </div>
-            </div>
-
-            <div class="badge">
-              {% if tap %}
-              {% if tap.temperature_sensor %}
-              <div class="badge-header">
-                Temperature
-              </div>
-              <div class="badge-content">
-                {{ tap.Temperature.TempC|floatformat:1}}&deg;C /
-                {{ tap.Temperature.TempF|floatformat:1}}&deg;F
-                {% chart sensor tap.temperature_sensor 300 50 %}
-              </div>
-              {% endif %}
-              {% endif %}
-            </div>
-          </div>
-        </div>
-        <div class="kb-tapbox-footer">
-          <div class="row">
-            <div class="span8">
-              {{ keg.size.name }}<br/>
-              <small>tapped {% timeago keg.start_time %}</small>
-            </div>
-            <div class="span3">
-              <div style="padding-right: 10px;">
-                <a class="btn small info"
-                href="{% url kb-keg kbsite.url keg.seqn %}">Full Details &raquo;</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+<div class="kb-tapbox clickable" id="keg-snapshot-{{keg.seqn}}"
+    data-href="{% url kb-keg kbsite.url keg.seqn %}">
+  <div class="row-fluid">
+    <div class="span2">
+      {% if keg.type.GetImage %}
+        <img class="tap-snapshot-image" src="{{ keg.type.GetImage.resized.url }}">
+      {% else %}
+        <img class="tap-snapshot-image" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
+      {% endif %}
     </div>
+
+    <div class="span10">
+      <h2>{{ keg.type.name }} {% if tap %}<small>{{ tap.name }}</small>{% endif %}</h2>
+
+      <ul class="badge-list">
+        <li>
+          <h2>{% volume keg.served_volume %}</h2>
+          <small>Poured</small>
+        </li>
+        <li>
+          <h2>{% volume keg.remaining_volume %}</h2>
+          <small>Remaining</small>
+        </li>
+
+      {% if tap %}
+      {% if tap.temperature_sensor %}
+        <li>
+          <h2>{{ tap.Temperature.TempC|floatformat:1}} &deg;C</h2>
+          <small>Temperature</small>
+        </li>
+      {% endif %}
+      {% endif %}
+      </ul>
+
+    </div>
+  </div> <!-- /row-fluid -->
+
+</div>
+
 {% endwith %}

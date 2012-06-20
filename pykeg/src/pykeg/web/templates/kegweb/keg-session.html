@@ -1,46 +1,23 @@
 {% load kegweblib %}
-<div class="row">
-  <div class="span10">
-    <div class="kb-tapbox">
+<div class="session-snapshot clickable" id="session-snapshot-{{session.seqn}}"
+    data-href="{{session.get_absolute_url}}">
+  <h2>
+    {{ session.GetTitle }}
+    <small>{% timeago session.start_time %}</small>
+  </h2>
 
-      <div class="kb-tapbox-header">
-        <h2>{{ session.GetTitle }}</h2>
-        {% if session.GetStats.total_volume_ml %}
-        <span class="label">
-          {% volume session.GetStats.total_volume_ml %}
-        </span>&nbsp;
-        {% endif %}
-        <small>{{session.summarize_drinkers|safe}}</small>
-      </div>
+  {% if session.GetStats.total_volume_ml %}
+  <span class="label">
+    {% volume session.GetStats.total_volume_ml %}
+  </span>&nbsp;
+  {% endif %}
 
-      <div class="kb-tapbox-content">
-        {% for chunk in session.UserChunksByVolume %}
-          {% if chunk.user %}
-          <div class="kb-session-box-icon">
-            {% mugshot_box chunk.user 48 %}
-          </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-      <div class="kb-tapbox-footer">
-
-        <div class="row">
-          <div class="span8">
-              {% timeago session.start_time %}<br/>
-              <small>
-                {{ session.start_time|date:"l, F j Y" }},
-                {{ session.start_time|date:"P" }}
-              </small>
-          </div>
-          <div class="span2">
-            <div style="padding-right: 10px;">
-              <a class="btn small info"
-              href="{{ session.get_absolute_url }}">Details &raquo;</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div> <!-- kb-tapbox -->
-  </div> <!-- span10 -->
-</div> <!-- row -->
+  <small>{{session.summarize_drinkers|safe}}</small>
+  <ul class="avatar-list">
+    {% for chunk in session.UserChunksByVolume %}
+      {% if chunk.user %}
+        <li>{% mugshot_box chunk.user 64 %}</li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</div>

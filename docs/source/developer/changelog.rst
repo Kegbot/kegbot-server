@@ -5,12 +5,36 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
-Curren Version (in development)
--------------------------------
+Version 0.9.0 (2012-06-21)
+--------------------------
+
+Upgrade Notes
+^^^^^^^^^^^^^
+
+*Note:* Due to changes in the Kegbot core, you must run the following commands
+after updating::
+  
+  $ kegbot-admin.py migrate
+  $ kegbot-admin.py kb_regen_stats
+
+*Note:* The file ``common_settings.py`` has been renamed to
+``local_settings.py``.  The old name is still supported, but will produce a
+warning.  Please move it.
+
+*Note:* If you are updating from git, please remove the "bootstrap" entry from
+``.git/config``, and ``rm -rf pykeg/web/static/bootstrap`` prior to running
+``git pull``.
 
 Core/General
 ^^^^^^^^^^^^
 * Made several modules optional: Celery, Tornado, Sentry, and django-debug-toolbar.
+* API and database column name changes.
+
+Kegweb
+^^^^^^
+* Improvements to AJAX auto-refresh.
+* Kegweb's JavaScript is now written in CoffeScript.
+* Some visual changes.
 
 Version 0.8.5 (2012-05-13)
 --------------------------

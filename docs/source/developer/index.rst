@@ -1,4 +1,4 @@
-.. _developer-notes:
+.. _developer:
 
 Developer Notes
 ===============

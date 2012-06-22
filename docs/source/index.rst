@@ -14,6 +14,7 @@ Contents:
   server-guide/index
   kegboard/index
   api/index
+  pykeg-guide/index
   developer/index
 
 

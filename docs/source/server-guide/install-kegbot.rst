@@ -16,8 +16,10 @@ On Mac OS X, we recommend using MacPorts to install the tools::
   $ sudo port install python27 py27-virtualenv py27-pil py27-pip
 
 
-Run ``virtualenv``
-------------------
+.. _run-virtualenv:
+
+Using virtualenv
+----------------
 
 The ``virtualenv`` tool creates a directory where Kegbot Server and all of its
 Python dependencies will be stored.  It makes it easier to install and run

@@ -1,4 +1,4 @@
-.. _user-guide:
+.. _server-guide:
 
 Kegbot Server Guide
 ===================

@@ -74,20 +74,20 @@ def _create_or_update_tap(tap, request):
       messages.success(request, 'Tap "%s" was updated.' % new_tap.name)
     else:
       messages.success(request, 'Tap "%s" was created.' % new_tap.name)
-    form = forms.TapForm(site=request.kbsite)
-  else:
-    messages.error(request, 'The tap form had errors, please correct them.')
-  return form
+    return True, form
+  messages.error(request, 'The tap form had errors, please correct them.')
+  return False, form
 
 @staff_member_required
 def tap_list(request):
   context = RequestContext(request)
 
   # Create a new tap if needed.
+  context['create_tap_form'] = forms.TapForm(site=request.kbsite)
   if request.method == 'POST' and 'new-tap-submit' in request.POST:
-    context['create_tap_form'] = _create_or_update_tap(None, request)
-  else:
-    context['create_tap_form'] = forms.TapForm(site=request.kbsite)
+    success, form = _create_or_update_tap(None, request)
+    if not success:
+      context['create_tap_form'] = form
 
   for tap in request.kbsite.taps.all():
     submit_name = 'tap-%s-delete' % tap.seqn
@@ -106,11 +106,13 @@ def tap_list(request):
     # Demux multiple forms using submit button name.
     submit_name = "%s-submit" % prefix
     if request.method == 'POST' and submit_name in request.POST:
-      edit_form = _create_or_update_tap(tap, request)
-    else:
-      edit_form = forms.TapForm(site=request.kbsite, instance=tap,
+      success, form = _create_or_update_tap(tap, request)
+      if not success:
+        tinfo['edit_form'] = form
+
+    if 'edit_form' not in tinfo:
+      tinfo['edit_form'] = forms.TapForm(site=request.kbsite, instance=tap,
           prefix=prefix, initial={'ml_per_tick': (str(tap.ml_per_tick), str(tap.ml_per_tick))})
-    tinfo['edit_form'] = edit_form
 
     if tap.current_keg and tap.current_keg.is_active():
       tinfo['end_form'] = forms.KegHiddenSelectForm(initial={'keg':tap.current_keg})

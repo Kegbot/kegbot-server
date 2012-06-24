@@ -4361,6 +4361,40 @@ div#content {
   color: #333333;
   margin-bottom: 8px;
 }
+.arrow_box {
+  position: relative;
+  background: #ebebeb;
+  border: 3px solid #9fabc2;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.arrow_box:after,
+.arrow_box:before {
+  right: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.arrow_box:after {
+  border-right-color: #ebebeb;
+  border-width: 20px;
+  top: 50%;
+  margin-top: -20px;
+}
+.arrow_box:before {
+  border-right-color: #9fabc2;
+  border-width: 24px;
+  top: 50%;
+  margin-top: -24px;
+}
 /* @end */
 /* @group Charts */
 .kb-chartbox-error {

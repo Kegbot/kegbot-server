@@ -7,9 +7,11 @@
       <tr>
         <td>{% mugshot_box user 128 %}</td>
         <td>
-          <h3>{{ user.username }}</h3>
-          <span class="label">{{ rank|ordinal }}</span>
-          {% volume volume_ml %}
+          <div class="arrow_box" style="margin-left: 15px;">
+            <h3>{{ user.username }}</h3>
+            <span class="label">{{ rank|ordinal }}</span>
+            {% volume volume_ml %}
+          </div>
         </td>
       </tr>
     {% endwith %}

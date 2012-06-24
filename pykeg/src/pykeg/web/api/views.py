@@ -64,12 +64,10 @@ _LOGGER = logging.getLogger(__name__)
 
 ### Decorators
 
-def check_authorization(request):
-  # Admin/staff users are always authorized.
-  if request.user.is_staff or request.user.is_superuser:
-    return True
-
-  keystr = request.REQUEST.get('api_key')
+def check_api_key(request):
+  keystr = request.META.get('HTTP_X_KEGBOT_API_KEY')
+  if not keystr:
+    keystr = request.REQUEST.get('api_key')
   if not keystr:
     raise krest.NoAuthTokenError('The parameter "api_key" is required')
 
@@ -94,10 +92,10 @@ def check_authorization(request):
     raise krest.BadApiKeyError('User secret does not match')
 
 def auth_required(viewfunc):
-  def _check_token(request, *args, **kwargs):
-    check_authorization(request)
-    return viewfunc(request, *args, **kwargs)
-  return wraps(viewfunc)(_check_token)
+  # Set the auth_required flag, validated by
+  # pykeg.web.middleware.ApiKeyMiddleware
+  viewfunc.kb_api_key_required = True
+  return viewfunc
 
 def staff_required(viewfunc):
   def _check_token(request, *args, **kwargs):

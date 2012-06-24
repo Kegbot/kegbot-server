@@ -61,6 +61,7 @@ class SiteSettingsForm(forms.ModelForm):
     fields = (
         'title',
         'description',
+        'privacy',
         'display_units',
         'event_web_hook',
         'session_timeout_minutes',

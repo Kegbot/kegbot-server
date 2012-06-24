@@ -96,6 +96,14 @@ def _kegbotsite_post_save(sender, instance, **kwargs):
   settings, _ = SiteSettings.objects.get_or_create(site=instance)
 post_save.connect(_kegbotsite_post_save, sender=KegbotSite)
 
+PRIVACY_CHOICES = (
+  ('public', 'Public: Browsing does not require login'),
+  ('members', 'Members only: Must log in to browse'),
+  ('staff', 'Staff only: Only logged-in staff accounts may browse'),
+)
+
+DEFAULT_PRIVACY = 'public'
+
 class SiteSettings(models.Model):
   DISPLAY_UNITS_CHOICES = (
     ('metric', 'Metric (mL, L)'),
@@ -122,6 +130,9 @@ class SiteSettings(models.Model):
       help_text='Maximum time in minutes that a session may be idle (no pours) '
           'before it is considered to be finished.  '
           'Recommended value is %s.' % kb_common.DRINK_SESSION_TIME_MINUTES)
+  privacy = models.CharField(max_length='63', choices=PRIVACY_CHOICES,
+      default=DEFAULT_PRIVACY,
+      help_text='Whole-system setting for system privacy.')
 
   class Meta:
     verbose_name_plural = "site settings"

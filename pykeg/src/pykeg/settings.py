@@ -131,6 +131,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'pykeg.web.middleware.KegbotSiteMiddleware',
     'pykeg.web.middleware.SiteActiveMiddleware',
+    'pykeg.web.middleware.ApiKeyMiddleware',
+    'pykeg.web.middleware.PrivacyMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
 )

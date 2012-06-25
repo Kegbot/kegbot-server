@@ -3,16 +3,19 @@
     data-href="{{session.get_absolute_url}}">
   <h2>
     {{ session.GetTitle }}
-    <small>{% timeago session.start_time %}</small>
   </h2>
 
   {% if session.GetStats.total_volume_ml %}
-  <span class="label">
-    {% volume session.GetStats.total_volume_ml %}
-  </span>&nbsp;
+  <span class="label">{% volume session.GetStats.total_volume_ml %}</span>
   {% endif %}
 
-  <small>{{session.summarize_drinkers|safe}}</small>
+  <span class="smalltext">
+    &middot;
+    <span style="text-transform: uppercase;">{% timeago session.start_time %}</span>
+    &middot;
+    {{session.summarize_drinkers|safe}}
+  </span>
+
   <ul class="avatar-list">
     {% for chunk in session.UserChunksByVolume %}
       {% if chunk.user %}

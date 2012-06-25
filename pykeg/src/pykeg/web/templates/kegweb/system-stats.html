@@ -6,33 +6,10 @@
 
 {% block col-1 %}
 <h2>Summary</h2>
-<ul class="badge-list">
-  <li>
-    <h2>{% volume stats.total_volume_ml %}</h2>
-    <small>Served</small>
-  </li>
-  <li>
-    <h2>{{ stats.registered_drinkers|length }}</h2>
-    <small>Drinkers</small>
-  </li>
-  <li>
-    <h2>{{ stats.sessions_count }}</h2>
-    <small>Sessions</small>
-  </li>
-</ul>
 
 <table class="table table-condensed">
   <tbody>
-    <tr>
-      <th>Total Drinkers</th>
-      <td>
-        This Kegbot has served at least
-        <b>{{ stats.registered_drinkers|length }}</b> unique drinkers.
-      </td>
-    </tr>
-
     {% include "kegweb/basic-stats.html" %}
-
   </tbody>
 </table>
 {% endblock col-1 %}

@@ -3,7 +3,7 @@
 <div class="kb-tapbox clickable" id="keg-snapshot-{{keg.seqn}}"
     data-href="{% url kb-keg kbsite.url keg.seqn %}">
   <div class="row-fluid">
-    <div class="span2">
+    <div class="span3">
       {% if keg.type.GetImage %}
         <img class="tap-snapshot-image" src="{{ keg.type.GetImage.resized.url }}">
       {% else %}
@@ -11,7 +11,7 @@
       {% endif %}
     </div>
 
-    <div class="span10">
+    <div class="span9">
       <h2>{{ keg.type.name }} {% if tap %}<small>{{ tap.name }}</small>{% endif %}</h2>
 
       <ul class="badge-list">
@@ -20,7 +20,11 @@
           <small>Poured</small>
         </li>
         <li>
+          {% if keg.remaining_volume > 0 %}
           <h2>{% volume keg.remaining_volume %}</h2>
+          {% else %}
+          <h2>{% volume 0 %}</h2>
+          {% endif %}
           <small>Remaining</small>
         </li>
 

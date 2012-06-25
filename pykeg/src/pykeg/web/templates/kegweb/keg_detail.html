@@ -33,15 +33,13 @@
 
 
 {% block col-1 %}
-<h2>{{keg.type.name}}</h2>
-<span class="label">{{keg.type.brewer}}</span>
-<p/>
-
-{% if keg.description %}
-<blockquote>
-  <p>{{ keg.description}}</p>
-</blockquote>
+<h2>
+  {{keg.type.name}}
+</h2>
+{% if keg.type.brewer %}
+<h6>{{keg.type.brewer}}</h6>
 {% endif %}
+<p/>
 
 <table class="table table-condensed">
   <tbody>
@@ -67,17 +65,6 @@
 
     {% include "kegweb/basic-stats.html" %}
 
-    <tr>
-      <th>Total Poured</th>
-      <td>
-        {% volume keg.served_volume %}
-        {% if not keg.is_empty %}
-          ({% volume keg.remaining_volume %} remain)
-        {% endif %}<br/>
-        {% chart keg_volume keg 340 60 %}
-      </td>
-    </tr>
-
     {% with keg.current_tap as tap %}
     {% if tap and tap.temperature_sensor %}
     <tr>
@@ -101,8 +88,14 @@
   </tbody>
 </table>
 
+{% if keg.description %}
+<blockquote>
+  <p>{{ keg.description}}</p>
+</blockquote>
+{% endif %}
+<hr/>
+
 {% if sessions %}
-<h2>All Sessions</h2>
 {% for session in sessions %}
   {% include "kegweb/keg-session.html" %}
 {% endfor %}

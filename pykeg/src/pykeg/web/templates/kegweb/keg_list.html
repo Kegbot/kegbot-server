@@ -4,15 +4,12 @@
 {% block pagetitle %}keg list{% endblock %}
 
 {% block content %}
-<div class="row-fluid">
-  <div class="span10">
-    {% for keg in keg_list %}
-      <div class="row">
-        <div class="span8">
-          {% include "kegweb/keg-snapshot.html" %}
-        </div>
-      </div>
-    {% endfor %}
+
+{% for keg in keg_list %}
+  <div class="row">
+    <div class="span10">
+      {% include "kegweb/keg-snapshot.html" %}
+    </div>
   </div>
-</div>
+{% endfor %}
 {% endblock %}

@@ -4299,6 +4299,7 @@ div#content {
 .avatar-list {
   *zoom: 1;
   margin-left: 0;
+  margin-bottom: 0;
   list-style: none;
 }
 .avatar-list:before,
@@ -4349,7 +4350,7 @@ div#content {
 }
 .session-snapshot {
   border-bottom: 1px solid #eeeeee;
-  margin-bottom: 16px;
+  padding: 8px;
 }
 .clickable {
   cursor: pointer;
@@ -4360,6 +4361,12 @@ div#content {
 .kb-keg-description {
   color: #333333;
   margin-bottom: 8px;
+}
+.smalltext {
+  font-size: 11px;
+  color: #999999;
+  font-family: inherit;
+  font-weight: bold;
 }
 .arrow_box {
   position: relative;

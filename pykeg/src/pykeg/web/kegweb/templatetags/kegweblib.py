@@ -27,6 +27,7 @@ from django.core.urlresolvers import reverse
 from django import template
 from django.template import Library
 from django.template import Node
+from django.template import VariableDoesNotExist
 from django.template import TemplateSyntaxError
 from django.template import Variable
 from django.utils.safestring import mark_safe
@@ -147,9 +148,12 @@ class VolumeNode(Node):
 
   def render(self, context):
     tv = Variable(self._volume_varname)
-    num = tv.resolve(context)
+    try:
+      num = float(tv.resolve(context))
+    except (VariableDoesNotExist, ValueError):
+      num = 'unknown'
     unit = 'mL'
-    title = '%s %s' % (float(num), unit)
+    title = '%s %s' % (num, unit)
     return VolumeNode.TEMPLATE % vars()
 
 

@@ -9,7 +9,23 @@ Install dependencies
 
 On Ubuntu or Debian, use ``apt-get`` to install Kegbot's major dependencies::
 
-  $ sudo apt-get install 
+  $ sudo apt-get install \
+    build-essential \
+    git-core \
+    libjpeg-dev \
+    libmysqlclient-dev \
+    libsqlite3 \
+    libsqlite3-dev \
+    memcached \
+    mysql-client \
+    mysql-server \
+    python-dev \
+    python-imaging \
+    python-mysqldb \
+    python-pip \
+    python-virtualenv \
+    virtualenvwrapper
+
 
 On Mac OS X, we recommend using MacPorts to install the tools::
 

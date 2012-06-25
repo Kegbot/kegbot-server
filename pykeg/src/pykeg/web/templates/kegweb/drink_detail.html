@@ -27,7 +27,9 @@
         <th>When</th>
         <td>
            {% timeago drink.time %}
-           (took {{drink.PourDuration.seconds}} second{{drink.PourDuration.seconds|pluralize}} to pour)
+           {% if drink.duration %}
+           (took {{drink.duration}} second{{drink.duration|pluralize}} to pour)
+           {% endif %}
         </td>
       </tr>
 

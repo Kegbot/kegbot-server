@@ -13,7 +13,7 @@ MIN_SESSION_VOLUME_DISPLAY_ML = 177  # 6 ounces
 
 # Maximum time between consecutive drinks to be considered in the same 'session'
 # (see UserDrinkingSession table)
-DRINK_SESSION_TIME_MINUTES = 90
+DRINK_SESSION_TIME_MINUTES = 3 * 60
 
 # The maximum difference between consecutive meter readings that is considered
 # valid.

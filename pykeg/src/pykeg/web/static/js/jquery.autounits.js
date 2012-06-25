@@ -52,8 +52,12 @@
 
       if (amt < 10) {
         amt = amt.toFixed(2);
-      } else {
+      } else if (amt < 128) {
         amt = amt.toFixed(1);
+      } else {
+        amt = amt / 16.0;
+        amt = amt.toFixed(0);
+        units = "pints";
       }
 
       return amt + " " + units;
@@ -61,8 +65,10 @@
       var liters = volume_ml / 1000.0;
       if (liters < 0.5) {
         liters = liters.toFixed(2);
-      } else {
+      } else if (liters < 100) {
         liters = liters.toFixed(1);
+      } else {
+        liters = liters.toFixed(0);
       }
 
       return liters + " L";

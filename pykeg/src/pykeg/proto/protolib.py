@@ -345,11 +345,7 @@ def UserProfileToProto(record, full=False):
 @converts(models.KegStats)
 @converts(models.SessionStats)
 def SystemStatsToProto(record, full=False):
-  stats = record.stats
-  ret = models_pb2.Stats()
-  for k, v  in stats.iteritems():
-    setattr(ret, k, v)
-  return ret
+  return protoutil.DictToProtoMessage(record.stats, models_pb2.Stats())
 
 @converts(models.SystemEvent)
 def SystemEventToProto(record, full=False):

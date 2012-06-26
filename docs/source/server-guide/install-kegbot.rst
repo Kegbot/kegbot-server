@@ -35,7 +35,7 @@ On Mac OS X, we recommend using MacPorts to install the tools::
   Create a Kegbot Home directory in your user home.::
 
   $ mkdir $HOME/kegbot
-  $ export KEGBOT_HOME=/$HOME/kegbot
+  $ export KEGBOT_HOME=$HOME/kegbot
 
 .. _run-virtualenv:
 

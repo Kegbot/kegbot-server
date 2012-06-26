@@ -16,7 +16,7 @@ DATABASES = {
   'example_mysql' : {
     'NAME' : 'kegbot',
     'ENGINE' : 'django.db.backends.mysql',
-    'USER' : 'kegbot_user',
+    'USER' : 'kegbot',
     'PASSWORD': 'kegbot_password',
   },
 }

@@ -14,7 +14,7 @@ On Ubuntu or Debian, use ``apt-get`` to install Kegbot's major dependencies::
     git-core \
     libjpeg-dev \
     libmysqlclient-dev \
-    libsqlite3 \
+    libsqlite3-0 \
     libsqlite3-dev \
     memcached \
     mysql-client \

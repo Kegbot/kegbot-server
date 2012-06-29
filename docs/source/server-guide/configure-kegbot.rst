@@ -51,7 +51,7 @@ following lines to the file::
     },
   }
 
-Replace the text `your-password` with the actual password you used (in
+Replace the text `your-password` with the actual password you used in(
 :ref:`create-mysql-user`).
 
 Save the settings file.

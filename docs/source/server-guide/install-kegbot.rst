@@ -31,12 +31,6 @@ On Mac OS X, we recommend using MacPorts to install the tools::
 
   $ sudo port install python27 py27-virtualenv py27-pil py27-pip
 
-.. tip::
-  Create a Kegbot Home directory in your user home.::
-
-  $ mkdir $HOME/kegbot
-  $ export KEGBOT_HOME=$HOME/kegbot
-
 .. _run-virtualenv:
 
 Using virtualenv

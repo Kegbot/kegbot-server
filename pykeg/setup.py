@@ -26,7 +26,7 @@ REQUIRED = [
 
   'facebook-sdk >= 0.3.0',
 
-  'MySQL-python',
+  #'MySQL-python',
   'pil',
   'protobuf >= 2.4.1',
   'pylcdui >= 0.5.5',

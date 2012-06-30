@@ -39,6 +39,15 @@ class Command(NoArgsCommand):
       d.save()
     print ''
 
+    pics = models.Picture.objects.all()
+    pos = 0
+    for p in pics:
+      pos += 1
+      progbar('clear image sessions', pos, count)
+      p.session = None
+      p.save()
+    print ''
+
     print 'deleting old sessions..',
     try:
       cursor = connection.cursor()
@@ -56,6 +65,17 @@ class Command(NoArgsCommand):
       pos += 1
       progbar('calc new sessions', pos, count)
       sess = models.DrinkingSession.AssignSessionForDrink(d)
+    print ''
+
+    pics = models.Picture.objects.all()
+    count = pics.count()
+    pos = 0
+    for p in pics:
+      pos += 1
+      progbar('set image sessions', pos, count)
+      if p.drink:
+        p.session = p.drink.session
+        p.save()
     print ''
 
     print 'done!'

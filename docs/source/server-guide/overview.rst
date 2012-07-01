@@ -3,7 +3,7 @@
 Kegbot Server Overview
 ======================
 
-Kegbot Server the web service behind Kegbot.  It serves as both a frontend for
+Kegbot Server is the web service behind Kegbot.  It serves as both a frontend for
 visual navigaton of drinking activity, as well as the backend for all Kegbot
 data.
 

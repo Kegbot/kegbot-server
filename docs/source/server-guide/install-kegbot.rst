@@ -14,7 +14,7 @@ On Ubuntu or Debian, use ``apt-get`` to install Kegbot's major dependencies::
     git-core \
     libjpeg-dev \
     libmysqlclient-dev \
-    libsqlite3 \
+    libsqlite3-0 \
     libsqlite3-dev \
     memcached \
     mysql-client \
@@ -31,7 +31,6 @@ On Mac OS X, we recommend using MacPorts to install the tools::
 
   $ sudo port install python27 py27-virtualenv py27-pil py27-pip
 
-
 .. _run-virtualenv:
 
 Using virtualenv
@@ -44,16 +43,17 @@ with your system's Python modules.
 
 The first time you set up Kegbot, you will need to create a new virtualenv
 "home" for Kegbot Server.  Any filesystem location is fine.  To create it, give
-the directory name as the only argument::
+the directory name as the only argument.  The example below creates the Kegbot
+virtualenv directory in your user's home directory::
 
   $ virtualenv ~/kb
   New python executable in /Users/mike/kb/bin/python
   Installing setuptools............done.
   Installing pip...............done.
 
-Now that the virtualenv home has been created (at ``~/kb/``), there's one step
-to remember.  Each time you want to use the home (either install to it, or run
-Kegbot from it), you need to activate it for the current shell::
+Now that the virtualenv home has been created (at ``~/kb/``), there's one step 
+to remember.  Each time you want to use the virtualenv home (either install 
+Kegbot to it, or run Kegbot from it), you need to activate it for the current shell::
 
   $ source ~/kb/bin/activate
   (kb) $

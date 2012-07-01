@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# kegweb.wsgi -- WSGI config for kegbot
+# kegweb.wsgi -- WSGI config for kegbot on OS X 10.6 by c. niggel
 
 import os, site, sys
 
@@ -35,7 +35,8 @@ import os, site, sys
 # If you are using a virtualenv, set the path to its base directory here.  If
 # not (kegbot and all its dependencies are installed in the default Python
 # path), leave it blank.
-VIRTUAL_ENV = '/path/to/virtualenv/kb'
+#VIRTUAL_ENV = '/path/to/virtualenv/kb'
+VIRTUAL_ENV = '/Library/Python/2.6/site-packages/kegbot-0.9.0-py2.6.egg/pykeg'
 
 # The local_settings.py config needs to be on the PATH as well. By default,
 # kegbot looks in # $HOME/.kegbot and /etc/kegbot.  Only change this if you are
@@ -68,6 +69,7 @@ sys.path[:0] = _sys_path_prepend
 # Import django (which must be done after any path adjustments), and start the
 # handler.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pykeg.settings')
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
+import django.core.handlers.wsgi
+application = django.core.handlers.wsgi.WSGIHandler()
 
+#eof

@@ -1,21 +1,21 @@
 <div class="kb-event-box">
-  {{#image}}
+  {{#eventImage}}
   <div class="kb-event-box-image">
     {{#user}}
     <a href="{{ user.url }}">
     {{/user}}
-      <img src="{{image.thumbnail_url}}" style="width: 48px; height: 48px;">
+      <img src="{{eventImage}}" style="width: 48px; height: 48px;">
     {{#user}}
     </a>
     {{/user}}
   </div>
-  {{/image}}
+  {{/eventImage}}
   <div class="kb-event-box-details">
     {{#user}}
-    <b><a href="{{user.url}}">{{ user.username }}</a></b>
+    <b><a href="{{user.url}}">{{ eventUser }}</a></b>
     {{/user}}
     {{^user}}
-    <b>a guest</b>
+    <b>{{ eventUser }}</b>
     {{/user}}
     poured
     <a href="{{ drink.url }}">

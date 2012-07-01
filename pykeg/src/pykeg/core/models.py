@@ -130,9 +130,18 @@ class SiteSettings(models.Model):
       help_text='Maximum time in minutes that a session may be idle (no pours) '
           'before it is considered to be finished.  '
           'Recommended value is %s.' % kb_common.DRINK_SESSION_TIME_MINUTES)
-  privacy = models.CharField(max_length='63', choices=PRIVACY_CHOICES,
+  privacy = models.CharField(max_length=63, choices=PRIVACY_CHOICES,
       default=DEFAULT_PRIVACY,
       help_text='Whole-system setting for system privacy.')
+  guest_name = models.CharField(max_length=63, default='guest',
+      help_text='Name to be shown in various places for unauthenticated pours.')
+  guest_image = models.ForeignKey('Picture', blank=True, null=True,
+      related_name='guest_images',
+      help_text='Profile picture to be shown for unauthenticated pours.')
+  default_user = models.ForeignKey(User, blank=True, null=True,
+      help_text='Default user to set as owner for unauthenticated drinks. '
+          'When set, the "guest" user will not be used. This is mostly '
+          'useful for closed / single user systems.')
 
   class Meta:
     verbose_name_plural = "site settings"

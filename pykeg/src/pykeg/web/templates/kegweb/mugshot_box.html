@@ -15,7 +15,11 @@
 {% if user and profile.mugshot %}
       src="{{ profile.mugshot.thumbnail.url }}"
 {% else %}
+  {% if guest_info.image %}
+      src="{{ guest_info.image.thumbnail.url }}"
+  {% else %}
       src="{{STATIC_URL}}images/unknown-drinker.png"
+  {% endif %}
 {% endif %}
     />
   </a>

@@ -113,6 +113,8 @@ class KegbotBackend(backend.Backend):
     user = None
     if username:
       user = self._GetUserObjFromUsername(username)
+    elif self._site.settings.default_user:
+      user = self._site.settings.default_user
 
     if not pour_time:
       pour_time = datetime.datetime.now()

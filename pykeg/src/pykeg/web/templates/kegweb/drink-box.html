@@ -5,7 +5,7 @@
   </div>
   <div class="kb-drink-box-details">
     <div class="kb-drink-box-details-headline">
-      {% if drink.user %}<a href="{% url kb-drinker kbsite.url drink.user.username %}">{{drink.user.username}}</a> {% else %} guest{% endif %} poured
+      {% if drink.user %}<a href="{% url kb-drinker kbsite.url drink.user.username %}">{{drink.user.username}}</a> {% else %} {{guest_info.name}}{% endif %} poured
       {% volume drink.volume_ml %}
     </div>
     <div class="kb-event-box-info">

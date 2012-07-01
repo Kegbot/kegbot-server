@@ -66,6 +66,9 @@ class SiteSettingsForm(forms.ModelForm):
         'event_web_hook',
         'session_timeout_minutes',
         'google_analytics_id',
+        'guest_name',
+        'guest_image',
+        'default_user',
     )
 
 #BeerTypeFormSet = inlineformset_factory(models.Brewer, models.BeerType)

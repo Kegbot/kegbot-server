@@ -7,95 +7,86 @@
 
 {% block col-1 %}
 
-<div class="row">
-  <div class="span8">
-    <h2>Summary</h2>
+<h2>Summary</h2>
 
-    <table class="table table-condensed">
-      <tbody>
-        <tr>
-          <th>When</th>
-          <td>
-            {{session.start_time}}
-          </td>
-        </tr>
+<table class="table table-condensed">
+  <tbody>
+    <tr>
+      <th>When</th>
+      <td>
+        {{session.start_time}}
+      </td>
+    </tr>
 
-        {% with session.keg_chunks.all as keg_chunks %}
-        <tr>
-          <th>Keg{{keg_chunks.count|pluralize}}</th>
-          <td>
-            {% for chunk in keg_chunks %}
-              {% if chunk.keg %}
-                <a href="{% url kb-keg kbsite.url chunk.keg.seqn %}">Keg #{{ chunk.keg.seqn }} ({{ chunk.keg.type }})</a><br>
-              {% endif %}
-            {% endfor %}
-          </td>
-        </tr>
-        {% endwith %}
-
-        <tr>
-          <th>Drink Count</th>
-          <td>
-            {{ session.drinks.valid.count }} pours,
-            {% volume session.volume_ml %}
-          </td>
-        </tr>
-
-        <tr>
-          <th>Registered Drinkers</th>
-          <td>
-            {{ stats.registered_drinkers|length }}
-            drinker{{ stats.registered_drinkers|length|pluralize }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    {% comment %}
-    {% for chunk in session.UserChunksByVolume %}
-      {% if chunk.user %}
-      <div class="kb-drink-box-mugshot">
-        {% with chunk.user as drinker %}
-          {% mugshot_box drinker 96 %}
-        {% endwith %}
-      </div>
-      {% endif %}
-    {% endfor %}
-    {% endcomment %}
-
-    <h2>Drinkers by Volume</h2>
-    <table class="condensed-table">
-      <tbody>
-        {% for chunk in session.UserChunksByVolume %}
-        <tr>
-          <td>
-            <div class="kb-drink-box-mugshot">
-              {% with chunk.user as drinker %}
-                {% mugshot_box drinker 96 %}
-              {% endwith %}
-             <span class="label">{{ forloop.counter|ordinal }}</span>
-              {% if chunk.user %}{{ chunk.user }}{% else %}anonymous{% endif %}
-            </div>
-          </td>
-          <td>
-            {% chart user_session_chunks chunk 350 100 %}
-          </td>
-        </tr>
+    {% with session.keg_chunks.all as keg_chunks %}
+    <tr>
+      <th>Keg{{keg_chunks.count|pluralize}}</th>
+      <td>
+        {% for chunk in keg_chunks %}
+          {% if chunk.keg %}
+            <a href="{% url kb-keg kbsite.url chunk.keg.seqn %}">Keg #{{ chunk.keg.seqn }} ({{ chunk.keg.type }})</a><br>
+          {% endif %}
         {% endfor %}
-      </tbody>
-    </table>
+      </td>
+    </tr>
+    {% endwith %}
 
+    <tr>
+      <th>Drink Count</th>
+      <td>
+        {{ session.drinks.valid.count }} pours,
+        {% volume session.volume_ml %}
+      </td>
+    </tr>
+
+    <tr>
+      <th>Registered Drinkers</th>
+      <td>
+        {{ stats.registered_drinkers|length }}
+        drinker{{ stats.registered_drinkers|length|pluralize }}
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+{% comment %}
+{% for chunk in session.UserChunksByVolume %}
+  {% if chunk.user %}
+  <div class="kb-drink-box-mugshot">
+    {% with chunk.user as drinker %}
+      {% mugshot_box drinker 96 %}
+    {% endwith %}
   </div>
-</div>
+  {% endif %}
+{% endfor %}
+{% endcomment %}
+
+<h2>Drinkers by Volume</h2>
+<table class="condensed-table">
+  <tbody>
+    {% for chunk in session.UserChunksByVolume %}
+    <tr>
+      <td>
+        <div class="kb-drink-box-mugshot">
+          {% with chunk.user as drinker %}
+            {% mugshot_box drinker 96 %}
+          {% endwith %}
+         <span class="label">{{ forloop.counter|ordinal }}</span>
+          {% if chunk.user %}{{ chunk.user }}{% else %}{{guest_info.name}}{% endif %}
+        </div>
+      </td>
+      <td>
+        {% chart user_session_chunks chunk 350 100 %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
 {% with session.pictures.all as pictures %}
 {% if pictures.count %}
-<div class="row">
-  <div class="span8">
-    <h2>Beer Goggles!</h2>
-    {% include "kegweb/picture-gallery.html" %}
-  </div>
-</div>
+<h2>Beer Goggles!</h2>
+{% include "kegweb/picture-gallery.html" %}
 {% endif %}
 {% endwith %}
 

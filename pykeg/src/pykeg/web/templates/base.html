@@ -47,6 +47,8 @@
         {% endif %}
 
         window.app.getPageSettings().setMetric(defaultUseMetric);
+        window.app.getPageSettings().setGuestInfo("{{kbsite.settings.guest_name}}",
+            "{% if kbsite.settings.guest_picture %}{{kbsite.settings.guest_picture.thumbnail_url}}{% else %}{{STATIC_URL}}images/unknown-drinker.png{% endif %}");
         $("span.hmeasure").autounits({metric:defaultUseMetric})
         $("abbr.timeago").timeago();
         $(".alert").alert()

@@ -38,16 +38,23 @@ SystemEvent = Backbone.Model.extend
             when "session_started" then title = "started a new session"
             else title = "unknown event"
 
-        if spec.user_id then username = spec.user_id else username = "a guest"
+        if spec.user_id then username = spec.user_id else username = window.app.pageSettings.get("guestName")
 
         @id = spec.id
         @cid = this.id
+        
+        eventImage = null
+        if spec.image
+            eventImage = spec.image.thumbnail_url
+        else if not spec.user
+            eventImage = window.app.pageSettings.get("guestImageUrl")
 
         @set
             kind: kind
             htmlId: "systemevent_" + this.cid
             eventTitle: title
             eventUser: username
+            eventImage: eventImage
         @set spec
 
         return @
@@ -168,7 +175,7 @@ DrinkingSessionList = Backbone.Collection.extend
 
 PageSettings = Backbone.Model.extend
     initialize: (spec) ->
-        @set metric:false
+        @set metric:false, guestName:"guest", guestImageUrl:null
         @on("change:metric", (model) ->
             useMetric = @get("metric")
             $("span.hmeasure").autounits(metric:useMetric)
@@ -179,6 +186,9 @@ PageSettings = Backbone.Model.extend
 
     toggleMetric: ->
         @set metric:(not @get "metric")
+
+    setGuestInfo: (name, imageUrl) ->
+        @set guestName:name, guestImageUrl:imageUrl
 
 
 PageSettingsView = Backbone.View.extend

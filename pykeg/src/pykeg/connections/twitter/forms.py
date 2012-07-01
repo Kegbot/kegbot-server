@@ -27,5 +27,11 @@ class TwitterSettingsForm(forms.ModelForm):
     model = models.TwitterSettings
     fields = ('enabled', 'post_session_joined', 'post_drink_poured')
 
+class SiteTwitterSettingsForm(forms.ModelForm):
+  class Meta:
+    model = models.SiteTwitterSettings
+    fields = ('enabled', 'post_session_joined', 'post_drink_poured',
+        'post_unauthenticated', 'post_unlinked')
+
 class UnlinkTwitterForm(forms.Form):
   pass

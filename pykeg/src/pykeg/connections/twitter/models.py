@@ -50,6 +50,13 @@ class SiteTwitterProfile(models.Model):
 
 class SiteTwitterSettings(_SettingsMixin):
   profile = models.OneToOneField(SiteTwitterProfile, related_name='settings')
+  post_unauthenticated = models.BooleanField(default=True,
+      help_text='Whether to generate tweets for unauthenticated '
+          '(guest) pours.')
+  post_unlinked = models.BooleanField(default=True,
+      help_text='Whether to generate tweets for authenticated pours '
+          'with no linked Twitter account.  The tweet will include the '
+          'Kegbot username of the user.')
 
 ### User-specific
 from socialregistration import signals as sr_signals

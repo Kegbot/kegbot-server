@@ -93,13 +93,22 @@ def do_system_tweet(event, kbvars):
     print 'No system twitter profile, skipping system tweet'
     return
 
-  name = 'Someone'
   user = event.user
   if user:
-    name = user.username
     user_profile = util.get_user_profile(user)
     if user_profile:
       name = '@%s' % (user_profile.settings.twitter_name,)
+    elif not system_profile.settings.post_unlinked:
+      print 'Tweets for unlinked users are disabled'
+      return
+    else:
+      name = user.username
+  elif not system_profile.settings.post_unauthenticated:
+    print 'Tweets for anonymous pours are disabled.'
+    return
+  else:
+    name = 'Someone'
+
   kbvars['name'] = name
 
   system_api = util.get_api(system_profile.oauth_token,

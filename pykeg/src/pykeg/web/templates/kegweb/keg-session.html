@@ -1,9 +1,9 @@
 {% load kegweblib %}
 <div class="session-snapshot clickable" id="session-snapshot-{{session.seqn}}"
     data-href="{{session.get_absolute_url}}">
-  <h2>
+  <h3>
     {{ session.GetTitle }}
-  </h2>
+  </h3>
 
   {% if session.GetStats.total_volume_ml %}
   <span class="label">{% volume session.GetStats.total_volume_ml %}</span>

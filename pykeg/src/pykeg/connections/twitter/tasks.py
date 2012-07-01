@@ -20,6 +20,7 @@
 
 from pykeg.core import kbjson
 from pykeg.core import util
+from pykeg.connections import common
 
 from urllib import urlencode
 import urllib2
@@ -27,23 +28,25 @@ import logging
 import tweepy
 from django.contrib.sites.models import Site
 
-from celery.decorators import task
+from celery.task import task
+
+logger = common.get_logger(__name__)
+
+from django.conf import settings
 
 from . import util
 
 @task
 def tweet_event(event):
-  if should_tweet(event):
-    do_tweet(event)
-    return True
-  return False
-
-def should_tweet(event):
+  if common.is_stale(event.time):
+    logger.info('Event is stale, ignoring: %s' % str(event))
+    return
   if event.kind not in ('session_joined', 'drink_poured'):
-    print 'Event not tweetable: %s' % event
-    return False
-
-  return True
+    logger.info('Event is not tweetable: %s' % event.kind)
+    return
+  kbvars = _get_vars(event)
+  do_user_tweet(event, kbvars)
+  do_system_tweet(event, kbvars)
 
 def add_hashtag(tweet):
   if len(tweet) <= (140 - len(util.HASHTAG) - 1):
@@ -81,16 +84,12 @@ def _get_vars(event):
   }
   return kbvars
 
-def do_tweet(event):
-  kbvars = _get_vars(event)
-  do_user_tweet(event, kbvars)
-  do_system_tweet(event, kbvars)
 
 def do_system_tweet(event, kbvars):
   """Sends a tweet using the system's account (if any)."""
   system_profile = util.get_site_profile(event.site)
   if not system_profile:
-    print 'No system twitter profile, skipping system tweet'
+    logger.info('No system twitter profile, skipping system tweet')
     return
 
   user = event.user
@@ -99,12 +98,12 @@ def do_system_tweet(event, kbvars):
     if user_profile:
       name = '@%s' % (user_profile.settings.twitter_name,)
     elif not system_profile.settings.post_unlinked:
-      print 'Tweets for unlinked users are disabled'
+      logger.info('Tweets for unlinked users are disabled')
       return
     else:
       name = user.username
   elif not system_profile.settings.post_unauthenticated:
-    print 'Tweets for anonymous pours are disabled.'
+    logger.info('Tweets for anonymous pours are disabled.')
     return
   else:
     name = 'Someone'
@@ -122,33 +121,34 @@ def do_system_tweet(event, kbvars):
 
   if tweet:
     tweet = add_hashtag(tweet)
-    print 'Sending system tweet: %s' % tweet
+    logger.info('Sending system tweet: %s' % tweet)
     try:
       ret = system_api.update_status(tweet)
     except tweepy.TweepError, e:
-      print e
+      logger.error('Error posting tweet: %s' % str(e))
 
 def do_user_tweet(event, kbvars):
   """Sends a tweet using the user's account (if any)."""
   user = event.user
   if not user:
+    logger.info('No user for this event, no user tweet possible: %s' % str(event))
     return
 
   profile = util.get_user_profile(user)
   if not profile or not profile.settings.enabled:
-    print 'User has disabled Twitter'
+    logger.info('User has disabled Twitter: %s' % user)
     return
 
   kind = event.kind
   tweet = None
   if kind == 'drink_poured':
     if not profile.settings.post_drink_poured:
-      print 'User has disabled drink pour tweets: %s' % event.user
+      logger.info('User has disabled drink pour tweets: %s' % event.user)
       return
     tweet = util.DEFAULT_USER_SESSION_JOINED_TEMPLATE % kbvars
   elif kind == 'session_joined':
     if not profile.settings.post_session_joined:
-      print 'User has disabled session-join tweets: %s' % event.user
+      logger.info('User has disabled session-join tweets: %s' % event.user)
       return
     tweet = util.DEFAULT_USER_DRINK_POURED_TEMPLATE % kbvars
 
@@ -157,8 +157,8 @@ def do_user_tweet(event, kbvars):
 
   if tweet:
     tweet = add_hashtag(tweet)
-    print 'Sending user tweet: %s' % tweet
+    logger.info('Sending user tweet: %s' % tweet)
     try:
       ret = user_api.update_status(tweet)
     except tweepy.TweepError, e:
-      print e
+      logger.error('Error posting tweet: %s' % str(e))

@@ -20,5 +20,14 @@ import datetime
 
 MAX_TASK_AGE = datetime.timedelta(hours=1)
 
-def event_is_stale(event):
-  return (event.time + MAX_TASK_AGE) <= datetime.datetime.now()
+def is_stale(time):
+  return (time + MAX_TASK_AGE) <= datetime.datetime.now()
+
+def get_logger(name):
+  try:
+    from celery.utils.log import get_task_logger
+    logger = get_task_logger(name)
+  except ImportError:
+    import logging
+    logger = logging.getLogger(name)
+  return logger

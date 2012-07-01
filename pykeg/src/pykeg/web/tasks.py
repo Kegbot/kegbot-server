@@ -55,5 +55,5 @@ def handle_new_events(site, event_list):
   return True
 
 @task
-def handle_new_picture(picture):
-  connection_tasks.handle_new_picture.delay(picture)
+def handle_new_picture(picture_id):
+  connection_tasks.handle_new_picture.delay(picture_id)

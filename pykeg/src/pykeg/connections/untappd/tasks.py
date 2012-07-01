@@ -17,6 +17,7 @@
 """Celery tasks for Untappd."""
 
 from pykeg.core import models as core_models
+from pykeg.connections import common
 from pykeg.connections.foursquare import models as foursquare_models
 from django.contrib.sites.models import Site
 from . import models
@@ -26,7 +27,9 @@ from urllib import urlencode
 import urllib2
 import base64
 
-from celery.decorators import task
+from celery.task import task
+
+logger = common.get_logger(__name__)
 
 # Available template vars:
 #   name         : user name, or @twitter_name if known
@@ -41,16 +44,10 @@ DEFAULT_CHECKIN_TEMPLATE = "Automatic checkin courtesy of %(kb_name)s! %(drink_u
 
 @task
 def checkin_event(event):
-  if should_checkin(event):
-    do_checkin(event)
-    return True
-  return False
-
-def should_checkin(event):
-  if event.kind not in ('drink_poured'):
-    print 'Event not checkin-able: %s' % event
-    return False
-  return True
+  if event.kind not in ('drink_poured',):
+    logger.info('Event not suitable for checkin: %s' % event.kind)
+    return
+  do_checkin(event)
 
 def _get_vars(event):
   base_url = 'http://%s/%s' % (Site.objects.get_current().domain, event.site.url())
@@ -87,17 +84,17 @@ def do_checkin(event):
   drink = event.drink
 
   beerid = drink.keg.type.untappd_beer_id
-  
+
   if beerid == None:
-    print 'Untappd beer id is not specified for this beer.'
+    logger.info('Untappd beer id is not specified for this beer.')
     return
 
   ounces = drink.Volume().InOunces()
-  
+
   min_ounces = 2.0
-  
+
   if ounces < min_ounces:
-    print 'Drink too small to care about; no untappd checkin for you!'
+    logger.info('Drink too small to care about; no untappd checkin for you!')
     return
 
   if event.user:
@@ -105,14 +102,14 @@ def do_checkin(event):
       db_user = core_models.User.objects.get(username=event.user.username)
       profile = db_user.get_profile()
     except (core_models.User.DoesNotExist, core_models.UserProfile.DoesNotExist):
-      print 'Profile for user %s does not exist' % drink.user
+      logger.info('Profile for user %s does not exist' % drink.user)
       return
     try:
       untappd_link = models.UserUntappdLink.objects.get(user_profile=profile)
 
     except models.UserUntappdLink.DoesNotExist:
       # Untappd name unknown
-      print 'User %s has not enabled untappd link.' % drink.user
+      logger.info('User %s has not enabled untappd link.' % drink.user)
       return
 
   try:
@@ -144,4 +141,5 @@ def do_checkin(event):
 
   response = urllib2.urlopen(req)
 
-  print response.read()
+  response = response.read()
+  logger.info('Response: %s' % str(response))

@@ -20,6 +20,7 @@
 
 import datetime
 
+from pykeg.connections import common
 from pykeg.core import kbjson
 from pykeg.core import util
 from pykeg.core import models as core_models
@@ -28,35 +29,47 @@ from . import models
 
 import foursquare
 
-from celery.decorators import task
+from celery.task import task
+
+logger = common.get_logger(__name__)
 
 MAX_CHECKIN_AGE = datetime.timedelta(minutes=30)
 
 @task
 def checkin_event(event):
   if event.kind != 'session_joined' or not event.user:
-    print 'Event not tweetable: %s' % event
+    logger.info('Event not useful for foursquare checkin: %s' % event.kind)
     return False
-  print get_or_create_fresh_checkin(event.site, event.user)
+  elif common.is_stale(event.time):
+    logger.info('Event is stale, ignoring: %s' % str(event))
+    return False
+
+  site = event.site
+  user = event.user
+
+  client = _build_client(site, user)
+  if not client:
+    logger.info('foursquare client not available for site/user.')
+    return
+
+  result = get_or_create_fresh_checkin(site, user, client)
+  logger.debug('Result: %s' % str(result))
   return True
 
 def _build_client(site, user):
   try:
     site_settings = models.SiteFoursquareSettings.objects.get(site=site)
   except models.SiteFoursquareSettings.DoesNotExist:
-    print 'No foursquare settings for site'
     return None
 
   user = user
   try:
     user_profile = sr_foursquare_models.FoursquareProfile.objects.get(user=user)
   except sr_foursquare_models.FoursquareProfile.DoesNotExist:
-    print 'No foursquare profile for user: %s' % user
     return None
 
   s = user_profile.settings
   if not s.enabled or not s.checkin_session_joined:
-    print 'User has disabled foursquare.'
     return None
 
   client = foursquare.Foursquare(access_token=user_profile.access_token.access_token)
@@ -68,39 +81,41 @@ def handle_new_picture(picture_id):
   site = picture.site
   user = picture.user
   if not site or not user:
-    print 'no site/user'
+    logger.info('Picture does not have a site/user, ignoring.')
     return
-  checkin = get_or_create_fresh_checkin(site, user)
-  if not checkin:
-    print 'no checkin'
-  client = _build_client(site, user)
-  print 'uploading photo!'
-  print client.photos.add(photo_data=picture.image.read(),
-      params={'checkinId': checkin.get('id','') })
+  elif common.is_stale(picture.time):
+    logger.info('Picture is stale, ignoring.')
+    return
 
-
-def get_or_create_fresh_checkin(site, user):
   client = _build_client(site, user)
   if not client:
+    logger.info('foursquare client not available for site/user.')
     return
 
+  checkin = get_or_create_fresh_checkin(site, user, client)
+  if not checkin:
+    logger.info('Cannot find a checkin for this user, ignoring picture.')
+    return
+
+  logger.info('Uploading photo to foursquare.')
+  result = client.photos.add(photo_data=picture.image.read(),
+      params={'checkinId': checkin.get('id','') })
+  logger.info('Upload complete, result: %s' % str(result))
+
+def get_or_create_fresh_checkin(site, user, client):
   site_settings = models.SiteFoursquareSettings.objects.get(site=site)
   last_checkin = _get_last_checkin(client)
   if last_checkin:
     venue = last_checkin.get('venue', {}).get('id', '')
-    print 'last checkin venue = ', venue
     if venue == site_settings.venue_id:
       when = datetime.datetime.fromtimestamp(int(last_checkin.get('createdAt', 0)))
-      print 'last checkin time = ', when
       if (when + MAX_CHECKIN_AGE) > datetime.datetime.now():
-        print 'checkin still valid'
         return last_checkin
 
   return client.checkins.add(params={'venueId': site_settings.venue_id}).get('checkin')
 
 def _get_last_checkin(client):
   result = client.users.checkins(params={'limit': 1})
-  print '_get_last_checkin: ', result
   items = result.get('checkins', {}).get('items', [])
   if items:
     return items[0]

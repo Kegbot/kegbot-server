@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import common
-
 from pykeg.connections.foursquare import tasks as foursquare_tasks
 from pykeg.connections.twitter import tasks as twitter_tasks
 from pykeg.connections.untappd import tasks as untappd_tasks
@@ -25,13 +23,10 @@ from celery.decorators import task
 
 @task
 def handle_new_event(event):
-  if common.event_is_stale(event):
-    print 'Event is stale, not posting to connections.'
-    return
-  twitter_tasks.tweet_event.delay(event)
-  foursquare_tasks.checkin_event.delay(event)
-  untappd_tasks.checkin_event.delay(event)
+  twitter_tasks.tweet_event(event)
+  foursquare_tasks.checkin_event(event)
+  untappd_tasks.checkin_event(event)
 
 @task
-def handle_new_picture(picture):
-  foursquare_tasks.handle_new_picture(picture)
+def handle_new_picture(picture_id):
+  foursquare_tasks.handle_new_picture(picture_id)

@@ -6,7 +6,7 @@ import datetime
 import kbjson
 import unittest
 
-from pykeg.core import util
+from kegbot.util import util
 
 SAMPLE_INPUT = """
 {

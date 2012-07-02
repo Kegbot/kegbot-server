@@ -16,9 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from kegbot.util import units
+
 from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import models
-from pykeg.core import units
 
 from pykeg.beerdb import models as bdb
 

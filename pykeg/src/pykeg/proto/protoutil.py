@@ -20,7 +20,7 @@
 
 import datetime
 
-from pykeg.core import util
+from kegbot.util import util
 
 try:
   from django.conf import settings

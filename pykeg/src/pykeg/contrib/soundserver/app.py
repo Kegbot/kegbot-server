@@ -30,10 +30,11 @@ import urlparse
 import gflags
 import mad
 
+from kegbot.util import app
+from kegbot.util import units
+from kegbot.util import util
+
 from pykeg.client.net import kegnet
-from pykeg.core import kb_app
-from pykeg.core import units
-from pykeg.core import util
 from pykeg.web.api import krest
 
 FLAGS = gflags.FLAGS
@@ -46,12 +47,12 @@ OUNCE_TRIGGER_THRESHOLDS = (32, 24, 16, 12, 8, 1, 0)
 CREDIT_TRIGGER_THRESHOLDS = (100, 20, 10, 5, 1)
 
 
-class SoundServerApp(kb_app.App):
+class SoundServerApp(app.App):
   def __init__(self, name='sound_server'):
-    kb_app.App.__init__(self, name)
+    app.App.__init__(self, name)
 
   def _Setup(self):
-    kb_app.App._Setup(self)
+    app.App._Setup(self)
 
     sound_thread = SoundThread('sound-playback')
     self._AddAppThread(sound_thread)

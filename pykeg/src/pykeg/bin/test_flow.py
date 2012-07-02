@@ -26,9 +26,10 @@ import gflags
 import math
 import time
 
-from pykeg.core import kb_app
+from kegbot.util import app
+from kegbot.util import util
+
 from pykeg.core import kb_common
-from pykeg.core import util
 from pykeg.client.net import kegnet
 
 FLAGS = gflags.FLAGS
@@ -71,9 +72,9 @@ class SmoothFlow:
       yield reading
 
 
-class FakeKegboardApp(kb_app.App):
+class FakeKegboardApp(app.App):
   def _Setup(self):
-    kb_app.App._Setup(self)
+    app.App._Setup(self)
     self._asyncore_thread = util.AsyncoreThread('asyncore')
     self._AddAppThread(self._asyncore_thread)
 

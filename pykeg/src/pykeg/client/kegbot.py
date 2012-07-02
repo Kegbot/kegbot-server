@@ -36,12 +36,13 @@ warnings.simplefilter("ignore", DeprecationWarning)
 
 import gflags
 
+from kegbot.util import app
+
 from . import kbevent
 from . import kb_threads
 from . import manager
 from .net import kegnet
 from pykeg.core.backend.web import WebBackend
-from pykeg.core import kb_app
 from pykeg.web.api import krest
 
 FLAGS = gflags.FLAGS
@@ -127,9 +128,9 @@ class KegbotEnv(object):
     return self._threads
 
 
-class KegbotCoreApp(kb_app.App):
+class KegbotCoreApp(app.App):
   def __init__(self, name='core', local_backend=False):
-    kb_app.App.__init__(self, name)
+    app.App.__init__(self, name)
     self._logger.info('Kegbot is starting up.')
     self._env = KegbotEnv(local_backend=local_backend)
 
@@ -150,7 +151,7 @@ class KegbotCoreApp(kb_app.App):
         return
 
   def _Setup(self):
-    kb_app.App._Setup(self)
+    app.App._Setup(self)
 
     self._logger.info('Querying backend liveness.')
     try:

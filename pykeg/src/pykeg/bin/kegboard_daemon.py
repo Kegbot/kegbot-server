@@ -44,9 +44,10 @@ import os
 import time
 
 from pykeg.core import importhacks
-from pykeg.core import kb_app
+from kegbot.util import app
+from kegbot.util import util
+
 from pykeg.core import kb_common
-from pykeg.core import util
 from pykeg.client.net import kegnet
 from pykeg.hw.kegboard import kegboard
 
@@ -93,12 +94,12 @@ class KegboardKegnetClient(kegnet.SimpleKegnetClient):
     message.SetValue('output_mode', output_mode)
     self._reader.WriteMessage(message)
 
-class KegboardManagerApp(kb_app.App):
+class KegboardManagerApp(app.App):
   def __init__(self, name='core'):
-    kb_app.App.__init__(self, name)
+    app.App.__init__(self, name)
 
   def _Setup(self):
-    kb_app.App._Setup(self)
+    app.App._Setup(self)
 
     serial_fd = serial.Serial(FLAGS.kegboard_device, FLAGS.kegboard_speed)
     reader = kegboard.KegboardReader(serial_fd)

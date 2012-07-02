@@ -18,8 +18,9 @@
 
 """Celery tasks for Twitter."""
 
+from kegbot.util import util
+
 from pykeg.core import kbjson
-from pykeg.core import util
 from pykeg.connections import common
 
 from urllib import urlencode

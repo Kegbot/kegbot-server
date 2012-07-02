@@ -1,5 +1,3 @@
-from pykeg.core import util
-
 ### Drink-related constants
 
 # Don't record teeny drinks
@@ -72,15 +70,6 @@ THERMO_RECORD_DELTA_SECONDS = 60
 
 # Default port for JSON server
 JSON_SERVER_PORT_DEFAULT = 9100
-
-### Enums
-
-KB_DEVICE_TYPE = util.Enum(*(
-  'DEVICE_TYPE_UNKNOWN',
-  'DEVICE_TYPE_FLOW_DEV',
-  'DEVICE_TYPE_RELAY',
-  'DEVICE_TYPE_THERMO',
-))
 
 ### Exceptions
 

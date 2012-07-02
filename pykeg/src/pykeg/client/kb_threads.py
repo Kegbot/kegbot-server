@@ -5,10 +5,11 @@ import time
 
 import gflags
 
+from kegbot.util import util
+
 from . import kbevent
 from .net import kegnet
 from pykeg.core import kb_common
-from pykeg.core import util
 
 FLAGS = gflags.FLAGS
 

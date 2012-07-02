@@ -35,8 +35,8 @@ import signal
 import sys
 import time
 
-from pykeg.core import kb_app
-from pykeg.core import util
+from kegbot.util import app
+from kegbot.util import util
 
 FLAGS = gflags.FLAGS
 
@@ -122,9 +122,9 @@ def _GetConfigParser():
   config.read(FLAGS.master_config)
   return config
 
-class KegbotMasterApp(kb_app.App):
+class KegbotMasterApp(app.App):
   def _Setup(self):
-    kb_app.App._Setup(self)
+    app.App._Setup(self)
     _ExtendPath()
     self._config = _GetConfigParser()
     self._commands = {}

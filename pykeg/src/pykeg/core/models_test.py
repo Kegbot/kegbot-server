@@ -6,7 +6,8 @@ import unittest
 from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import kb_common
 from pykeg.core import models
-from pykeg.core import units
+
+from kegbot.util import units
 
 from pykeg.beerdb import models as bdb_models
 

@@ -32,9 +32,10 @@ from django.template import TemplateSyntaxError
 from django.template import Variable
 from django.utils.safestring import mark_safe
 
+from kegbot.util import units
+
 from pykeg.core import kbjson
 from pykeg.core import models
-from pykeg.core import units
 from pykeg.web.charts import charts
 
 register = Library()

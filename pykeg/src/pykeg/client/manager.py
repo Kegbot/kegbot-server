@@ -27,8 +27,9 @@ import logging
 from . import flow_meter
 from . import kbevent
 
+from kegbot.util import util
+
 from pykeg.core import kb_common
-from pykeg.core import util
 from pykeg.core.backend import backend
 
 

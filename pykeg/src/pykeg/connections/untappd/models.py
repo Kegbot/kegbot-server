@@ -22,7 +22,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from pykeg.core import models as core_models
-from pykeg.core import units
 
 class UserUntappdLink(models.Model):
   """Maps a user to a particular Untappd account."""

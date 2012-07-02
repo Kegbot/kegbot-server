@@ -20,9 +20,9 @@
 
 import datetime
 
+from kegbot.util import util
 from pykeg.connections import common
 from pykeg.core import kbjson
-from pykeg.core import util
 from pykeg.core import models as core_models
 from socialregistration.contrib.foursquare import models as sr_foursquare_models
 from . import models

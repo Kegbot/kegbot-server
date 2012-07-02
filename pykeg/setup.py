@@ -17,6 +17,8 @@ VERSION = '0.9.0'
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 REQUIRED = [
+  'kegbot-pyutils >= 0.1.2',
+
   'django >= 1.3',
   'django-autoslug',
   'django-imagekit >= 2.0',

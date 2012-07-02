@@ -32,7 +32,7 @@ try:
 except ImportError:
   TIME_ZONE = 'America/Los_Angeles'
 
-from pykeg.core import util
+from kegbot.util import util
 
 try:
   import json

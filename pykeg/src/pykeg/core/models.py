@@ -36,8 +36,9 @@ from pykeg.core import fields
 from pykeg.core import imagespecs
 from pykeg.core import managers
 from pykeg.core import stats
-from pykeg.core import units
-from pykeg.core import util
+
+from kegbot.util import units
+from kegbot.util import util
 
 from pykeg.proto import models_pb2
 from pykeg.proto import protoutil

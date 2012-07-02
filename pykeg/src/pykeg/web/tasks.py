@@ -18,8 +18,9 @@
 
 """Celery tasks for the Kegbot core."""
 
+from kegbot.util import util
+
 from pykeg.core import kbjson
-from pykeg.core import util
 from pykeg.proto import protolib
 
 from pykeg.connections import tasks as connection_tasks
@@ -35,7 +36,7 @@ def post_webhook_event(hook_url, event_list):
   post_data = urlencode({'payload': post_data})
   opener = urllib2.build_opener()
   opener.addheaders = [
-    ('User-agent', 'Kegbot/%s' % util.kegbot_version()),
+    ('User-agent', 'Kegbot/%s' % util.get_version('kegbot')),
   ]
   try:
     opener.open(hook_url, data=post_data, timeout=5)

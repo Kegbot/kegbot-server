@@ -1,10 +1,10 @@
 # -*- coding: latin-1 -*-
 
+from kegbot.util import units
+
 from south.db import db
 from django.db import models
 from pykeg.core.models import *
-
-from pykeg.core import units
 
 UNITS = units.UNITS
 

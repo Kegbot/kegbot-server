@@ -27,7 +27,7 @@ import string
 
 import gflags
 
-from pykeg.core import util
+from kegbot.util import util
 from pykeg.hw.kegboard import crc16
 
 _DEVICES = glob.glob('/dev/ttyUSB*') + glob.glob('/dev/cu.usbserial*')

@@ -22,13 +22,15 @@ This module implements a very simple inter-process event passing system
 (EventHub), and corresponding message class (Event).
 """
 
+from __future__ import absolute_import
+
 import logging
 import Queue
 
 import gflags
 
+from kegbot.util import util
 from pykeg.core import kbjson
-from pykeg.core import util
 
 FLAGS = gflags.FLAGS
 

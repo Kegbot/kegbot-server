@@ -28,12 +28,12 @@ import gflags
 import serial
 import time
 
-from pykeg.core import kb_app
+from kegbot.util import app
 from pykeg.hw.kegboard import kegboard
 
 FLAGS = gflags.FLAGS
 
-class KegboardMonitorApp(kb_app.App):
+class KegboardMonitorApp(app.App):
 
   def _SetupSerial(self):
     self._logger.info('Setting up serial port...')

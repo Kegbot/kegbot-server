@@ -18,8 +18,9 @@
 
 import datetime
 
+from kegbot.util import units
+
 from pykeg.core import models
-from pykeg.core import units
 
 def to_pints(volume):
   return float(units.Quantity(volume).InPints())

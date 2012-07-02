@@ -27,9 +27,10 @@ import Queue
 import sys
 import time
 
-from pykeg.core import kb_app
-from pykeg.core import units
-from pykeg.core import util
+from kegbot.util import app
+from kegbot.util import units
+from kegbot.util import util
+
 from pykeg.client.net import kegnet
 
 from pykeg.web.api.krest import KrestClient
@@ -242,12 +243,12 @@ class KegUi:
     return self._lcdui.MainLoop()
 
 
-class LcdDaemonApp(kb_app.App):
+class LcdDaemonApp(app.App):
   def __init__(self, name='lcd_daemon'):
-    kb_app.App.__init__(self, name)
+    app.App.__init__(self, name)
 
   def _Setup(self):
-    kb_app.App._Setup(self)
+    app.App._Setup(self)
     kb_lcdui = KegUi()
     self._AddAppThread(LcdUiThread('kb-lcdui', kb_lcdui))
     self._AddAppThread(KegnetMonitorThread('kegnet-monitor', kb_lcdui))

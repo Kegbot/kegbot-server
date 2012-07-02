@@ -30,9 +30,10 @@ import time
 from Phidgets.Devices import RFID
 from Phidgets.PhidgetException import PhidgetException
 
-from pykeg.core import kb_app
+from kegbot.util import app
+from kegbot.util import util
+
 from pykeg.core import kb_common
-from pykeg.core import util
 from pykeg.client.net import kegnet
 
 
@@ -100,10 +101,10 @@ class RfidEventHandler:
         kb_common.AUTH_MODULE_CONTRIB_PHIDGET_RFID, strval)
 
 
-class RfidAuthenticationApp(kb_app.App):
+class RfidAuthenticationApp(app.App):
 
   def _Setup(self):
-    kb_app.App._Setup(self)
+    app.App._Setup(self)
 
     self._logger.info('Setting up kegnet client ...')
     self._client = kegnet.KegnetClient()

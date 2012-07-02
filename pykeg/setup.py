@@ -18,6 +18,7 @@ SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 REQUIRED = [
   'kegbot-pyutils >= 0.1.2',
+  'kegbot-kegboard >= 1.0.0',
 
   'django >= 1.3',
   'django-autoslug',
@@ -97,8 +98,6 @@ def setup_package():
       scripts = [
         'distribute_setup.py',
         'src/pykeg/bin/kegboard_daemon.py',
-        'src/pykeg/bin/kegboard_monitor.py',
-        'src/pykeg/bin/kegboard-tester.py',
         'src/pykeg/bin/kegbot-admin.py',
         'src/pykeg/bin/kegbot_core.py',
         'src/pykeg/bin/kegbot_master.py',

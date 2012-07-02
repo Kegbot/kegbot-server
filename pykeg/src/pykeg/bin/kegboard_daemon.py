@@ -47,9 +47,10 @@ from pykeg.core import importhacks
 from kegbot.util import app
 from kegbot.util import util
 
+from kegbot.kegboard import kegboard
+
 from pykeg.core import kb_common
 from pykeg.client.net import kegnet
-from pykeg.hw.kegboard import kegboard
 
 FLAGS = gflags.FLAGS
 

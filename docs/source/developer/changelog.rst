@@ -5,6 +5,28 @@ Changelog
 
 This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
+.. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
+
+Version 0.9.1 (2012-07-04)
+--------------------------
+
+Core/General
+^^^^^^^^^^^^
+* Kegboard-specific code has been moved to the Kegboard git repository; it is
+  installed automatically as a dependency: https://github.com/Kegbot/kegboard
+* Some other code has moved to a new package, also automatically installed as a
+  dependency: https://github.com/Kegbot/kegbot-pyutils
+
+Kegweb
+^^^^^^
+* Site-wide privacy can now be set in the admin console (public, members only,
+  closed).
+* A default drinker can be specified for automatic authentication (instead of
+  crediting the guest account); useful for single user systems.
+* The guest account name and image can be adjusted.
+* Fixed a bug which caused the tap form to be cleared after editing.
+* Several aesthetic improvements.
+
 Version 0.9.0 (2012-06-21)
 --------------------------
 
@@ -46,6 +68,7 @@ connections will be lost.
 
 **Important:** Please run the following commands to delete the old
 Twitter/Facebook support prior to upgrading::
+  
   $ kegbot-admin.py migrate contrib.twitter zero
 
 *Note:* Due to changes in the Kegbot core, you must run the following commands

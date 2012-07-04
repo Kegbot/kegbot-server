@@ -13,7 +13,7 @@ DOCLINES = __doc__.split('\n')
 # Change this to True to include optional dependencies
 USE_OPTIONAL = False
 
-VERSION = '0.9.0'
+VERSION = '0.9.1'
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 REQUIRED = [
@@ -62,10 +62,6 @@ OPTIONAL = [
   'django-celery',
   'django-kombu',
 
-  ### Tornado
-  'tornado',
-  'rjdj.djangotornado',
-
   ### Raven
   'raven',
 
@@ -104,11 +100,11 @@ def setup_package():
         'src/pykeg/bin/lcd_daemon.py',
         'src/pykeg/bin/rfid_daemon.py',
         'src/pykeg/bin/sound_server.py',
+        'src/pykeg/bin/test_flow.py',
       ],
       install_requires = DEPENDENCIES,
       dependency_links = [
           'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
-          'https://github.com/rjdj/django-tornado/tarball/master#egg=rjdj.djangotornado',
       ],
       include_package_data = True,
       entry_points = {

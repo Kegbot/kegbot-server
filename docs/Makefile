@@ -75,4 +75,4 @@ linkcheck:
 	      "or in build/linkcheck/output.txt."
 
 sync: html
-	rsync -av --checksum --delete-after -e ssh build/html/ hoho:/data/www/kegbot.org/htdocs/docs/
+	rsync -av --checksum --delete-after -e ssh build/html/ kegbot@planetkb:www/kegbot.org/docs/

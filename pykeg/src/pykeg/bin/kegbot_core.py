@@ -19,9 +19,9 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from pykeg.core import importhacks
-from pykeg.client import kegbot
+from pykeg.client import kegbot_app
 
-__doc__ = kegbot.__doc__
+__doc__ = kegbot_app.__doc__
 
 if __name__ == '__main__':
-  kegbot.KegbotCoreApp.BuildAndRun()
+  kegbot_app.KegbotCoreApp.BuildAndRun()

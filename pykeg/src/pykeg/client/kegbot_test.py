@@ -8,7 +8,7 @@ import time
 import logging
 import socket
 import unittest
-import kegbot
+import pykeg.client import kegbot_app
 
 from django.test import TestCase
 
@@ -51,7 +51,7 @@ class KegbotTestCase(TestCase):
         name='Test Tap', meter_name='test_meter_name',
         ml_per_tick=(1000.0/2200.0), current_keg=self.test_keg)
 
-    self.kegbot = kegbot.KegbotCoreApp(local_backend=True)
+    self.kegbot = kegbot_app.KegbotCoreApp(local_backend=True)
     self.env = self.kegbot._env
     self.backend = self.env.GetBackend()
 

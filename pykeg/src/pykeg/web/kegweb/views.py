@@ -35,8 +35,9 @@ from django.views.generic.simple import redirect_to
 from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect
 
+from kegbot.util import kbjson
+
 from pykeg.core import models
-from pykeg.core import kbjson
 from pykeg.proto import protolib
 
 from pykeg.web.kegweb import forms

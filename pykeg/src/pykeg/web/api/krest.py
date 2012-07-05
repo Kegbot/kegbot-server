@@ -25,7 +25,7 @@ import sys
 import types
 import urllib2
 
-from pykeg.core import kbjson
+from kegbot.util import kbjson
 
 import urllib2
 from urllib import urlencode

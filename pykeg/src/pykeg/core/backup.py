@@ -20,7 +20,8 @@
 
 import sys
 
-from pykeg.core import kbjson
+from kegbot.util import kbjson
+
 from pykeg.core import models
 from pykeg.proto import protolib
 

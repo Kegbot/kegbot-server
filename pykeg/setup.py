@@ -17,7 +17,7 @@ VERSION = '0.9.1'
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 REQUIRED = [
-  'kegbot-pyutils >= 0.1.2',
+  'kegbot-pyutils >= 0.1.4',
   'kegbot-kegboard >= 1.0.0',
 
   'django >= 1.3',

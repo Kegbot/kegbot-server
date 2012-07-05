@@ -29,8 +29,8 @@ import Queue
 
 import gflags
 
+from kegbot.util import kbjson
 from kegbot.util import util
-from pykeg.core import kbjson
 
 FLAGS = gflags.FLAGS
 

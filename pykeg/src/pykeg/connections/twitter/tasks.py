@@ -19,8 +19,8 @@
 """Celery tasks for Twitter."""
 
 from kegbot.util import util
+from kegbot.util import kbjson
 
-from pykeg.core import kbjson
 from pykeg.connections import common
 
 from urllib import urlencode
@@ -34,8 +34,6 @@ from celery.task import task
 logger = common.get_logger(__name__)
 
 from django.conf import settings
-
-from . import util
 
 @task
 def tweet_event(event):

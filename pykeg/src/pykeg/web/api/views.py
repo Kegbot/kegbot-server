@@ -43,10 +43,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.db.models.query import QuerySet
 
+from kegbot.util import kbjson
+
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core.backend import backend
 from pykeg.core.backend.django import KegbotBackend
-from pykeg.core import kbjson
 from pykeg.core import models
 from pykeg.proto import protolib
 from pykeg.proto import protoutil

@@ -19,8 +19,8 @@
 """Celery tasks for the Kegbot core."""
 
 from kegbot.util import util
+from kegbot.util import kbjson
 
-from pykeg.core import kbjson
 from pykeg.proto import protolib
 
 from pykeg.connections import tasks as connection_tasks

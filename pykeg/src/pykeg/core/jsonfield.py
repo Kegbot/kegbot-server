@@ -38,8 +38,8 @@ more information.
      extra = json.JSONField()
 """
 
+from kegbot.util import kbjson
 from django.db import models
-from pykeg.core import kbjson
 
 class JSONDict(dict):
   """

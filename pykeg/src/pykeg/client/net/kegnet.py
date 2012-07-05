@@ -36,10 +36,10 @@ import time
 
 import gflags
 
+from kegbot.util import kbjson
 from kegbot.util import util
 
 from .. import kbevent
-from pykeg.core import kbjson
 from pykeg.core import kb_common
 
 FLAGS = gflags.FLAGS

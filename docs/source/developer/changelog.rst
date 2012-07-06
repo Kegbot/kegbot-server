@@ -7,18 +7,31 @@ This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.2 (2012-07-05)
+--------------------------
+
+**Security**
+
+* A regression first introduced in v0.9.0 caused the API's api_key check to fail
+  on some requests.  It has been fixed.
+
+**General**
+
+* The standalone Kegbot Core has been removed and now lives in its own
+  repository: https://github.com/Kegbot/kegbot-pycore
+
 Version 0.9.1 (2012-07-04)
 --------------------------
 
-Core/General
-^^^^^^^^^^^^
+**General**
+
 * Kegboard-specific code has been moved to the Kegboard git repository; it is
   installed automatically as a dependency: https://github.com/Kegbot/kegboard
 * Some other code has moved to a new package, also automatically installed as a
   dependency: https://github.com/Kegbot/kegbot-pyutils
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Site-wide privacy can now be set in the admin console (public, members only,
   closed).
 * A default drinker can be specified for automatic authentication (instead of
@@ -30,8 +43,7 @@ Kegweb
 Version 0.9.0 (2012-06-21)
 --------------------------
 
-Upgrade Notes
-^^^^^^^^^^^^^
+**Upgrade Notes**
 
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
@@ -47,13 +59,13 @@ warning.  Please move it.
 ``.git/config``, and ``rm -rf pykeg/web/static/bootstrap`` prior to running
 ``git pull``.
 
-Core/General
-^^^^^^^^^^^^
+**Core/General**
+
 * Made several modules optional: Celery, Tornado, Sentry, and django-debug-toolbar.
 * API and database column name changes.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Improvements to AJAX auto-refresh.
 * Kegweb's JavaScript is now written in CoffeScript.
 * Some visual changes.
@@ -61,8 +73,8 @@ Kegweb
 Version 0.8.5 (2012-05-13)
 --------------------------
 
-Upgrade Notes
-^^^^^^^^^^^^^
+**Upgrade Notes**
+
 Twitter and Facebook support has been changed.  Any existing Twitter/Facebook
 connections will be lost.
 
@@ -80,16 +92,16 @@ after updating::
   
   $ kegbot-admin.py celeryd --loglevel=INFO
 
-Core/General
-^^^^^^^^^^^^
+**Core/General**
+
 * Django 1.4 support.
 * Foursquare, Twitter and Untappd support.
 * Kegboard has moved to a new repository: https://github.com/Kegbot/kegboard
 * Session timeout is now configurable on the Kegadmin page.
 * Improvements to error logging.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Various aesthetic improvements.
 * You can now link a Google Analytics account.
 * Taps can be created and deleted using Kegadmin.
@@ -97,14 +109,14 @@ Kegweb
 Version 0.8.4 (2011-12-30)
 --------------------------
 
-Core/General
-^^^^^^^^^^^^
+**Core/General**
+
 * Several improvements to stats handling.
 * ``kegbot_core`` local backend is officially deprecated.
 * Web hook support: post event details to an arbitrary URL after a pour.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Major improvements to the Kegweb look-and-feel.
 * Added Bootstrap and rewrote kegweb css in lesscss.
 * Units can now be displayed in metric.
@@ -114,8 +126,8 @@ Kegweb
 Version 0.8.3 (2011-08-09)
 --------------------------
 
-Core/General
-^^^^^^^^^^^^
+**Core/General**
+
 * Fix a temperature recording bug that appeared in v0.8.2.
 
 Version 0.8.2 (2011-08-05)
@@ -126,24 +138,24 @@ after updating::
   $ kegbot-admin.py migrate
   $ kegbot-admin.py createcachetable cache
 
-Core/General
-^^^^^^^^^^^^
+**Core/General**
+
 * Pictures can be attached to drinks.
 * Better support for ID-12 RFID tokens.
 
-API
-^^^
+**API**
+
 * Added an endpoint for session statis.
 * Fixed ABV return value.
 * Return more detail on the kegs list endpoint.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Added support for displaying measurements in metric units.
 * Updated to use django staticfiles module.
 
-Kegboard
-^^^^^^^^
+**Kegboard**
+
 * Added support for magstrip readers.
 
 Version 0.8.1 (2011-06-13)
@@ -152,17 +164,17 @@ Version 0.8.1 (2011-06-13)
 to regenerate it.  Log in and click the "regenerate api key" button on your
 account page.
 
-API
-^^^
+**API**
+
 * Fixed incorrect API key generation affecting some users.
 
-Kegboard
-^^^^^^^^
+**Kegboard**
+
 * Updated to firmware version 9, expanding support for ``set_output`` and adding
   support for ID-12 RFID readers.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Added "regenerate API key" button.
 
 
@@ -175,8 +187,8 @@ after updating::
   $ kegbot-admin.py migrate
   $ kegbot-admin.py kb_regen_events
 
-Core/General
-^^^^^^^^^^^^
+**Core/General**
+
 * Support for per-tap relay control (solenoid valve control for authenticated
   users.)
 * ``kegbot_core.py`` now uses the RESTful web API backend interface by default.
@@ -195,8 +207,8 @@ Core/General
   to you, you are normal..)
 * Django 1.3 is now supported.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * The account page for a logged-in admin now displays the API key for that user.
 * Various CSS changes and aesthetic tweaks.
 * System events are shown on the Kegweb main page.
@@ -212,8 +224,8 @@ Kegweb
   locally.
 * Beer type images rendering has been cleaned up.
 
-API
-^^^
+**API**
+
 * API keys are now calculated differently.  As a result, previously-used
   API keys are invalid.  To determine your API key, visit ``/account/`` while
   logged in as an admin user.
@@ -233,15 +245,15 @@ after updating::
 *Note:* If you have installed using ``./setup.py develop``, you will need to
 issue that command again; new versions of some dependencies are required.
 
-Core/General
-^^^^^^^^^^^^
+**Core/General**
+
 * Added SystemStats table.
 * Now requires the ``pytz`` module; use ``pip install pytz`` to install.
 * System, keg, session, and drinker statistics are now recalculated quickly
   after every pour.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Added slightly more info to the "all-time stats" page.
 * Used cached stats on the "all-time stats" page, making it more responsive.
 * Fixed the AJAX auto-update of the drink list on the homepage.
@@ -261,8 +273,8 @@ Version 0.7.7 (2010-11-28)
 *Note:* This is a quick patch release to v0.7.6.  See changelog for v0.7.6 for
 major changes.
 
-Core/General
-^^^^^^^^^^^^
+**Core/General**
+
 * Fixes a bug discovered with stats generation in v0.7.6.
 
 
@@ -279,8 +291,8 @@ after updating to this version::
   $ kegbot-admin.py kb_regen_stats
   $ kegbot-admin.py kb_regen_events
 
-Core/General
-^^^^^^^^^^^^
+**Core/General**
+
 * Improved token handling, resolving multiple bugs related to token timeouts and
   multi-tap authentication.
 * Added SessionStats table.  Statistics are now continuously computed for
@@ -290,8 +302,8 @@ Core/General
   whenever an ID is present.
 * LCD daemon improvements.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Sessions can now be assigned a title, and have descriptive permalinks.
 * Sessions are now prominently featured on Kegweb pages.  Various improvements
   to session display.
@@ -300,8 +312,8 @@ Kegweb
 * Various bugfixes to the web API.
 * Added an example WSGI configuration file.
 
-Kegboard
-^^^^^^^^
+**Kegboard**
+
 * Improved stability in kegboard_daemon when malformed or unknown messages are
   received.
 * Added the :ref:`auth-token-message` type to the serial protocol.
@@ -322,8 +334,8 @@ existing users will need to issue the following command after updating::
 *Note:* If you have installed using ``./setup.py develop``, you will need to
 issue that command again; new versions of some dependencies are required.
 
-Core / General
-^^^^^^^^^^^^^^
+**Core / General**
+
 * Fixed a race condition which could cause the kegbot core to crash due to an
   erroneous watchdog error.
 * Fixed a crash in ``kegbot_admin.py kb_regen_stats`` that would occur when
@@ -331,8 +343,8 @@ Core / General
   have a beer..)
 * Fixed issue #50 (do not record drinks below minimum volume threshold.)
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Updated to use ``django-socialregistration`` version 0.4.2, and the official
   ``facebook-python-sdk`` package.  Removed mirror of pyfacebook.
 * The number of recent pours shown on the main page is now configurable.  See
@@ -342,16 +354,16 @@ Kegweb
 Version 0.7.4 (2010-09-08)
 --------------------------
 
-Core / General
-^^^^^^^^^^^^^^
+**Core / General**
+
 * Backend: extensive under-the-hood changes to support multiple sites in a
   single backend instance.  This isn't yet used by anything.
 * Fixed issue with pykeg.core migration 0031.
 * Improvements to session record keeping.
 * Added new SystemEvent table.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Improved keg detail page, with better-looking sessions.
 
 
@@ -366,8 +378,8 @@ sessions need to be regenerated::
   $ kegbot_admin.py kb_regen_sessions
   $ kegbot_admin.py kb_regen_stats
 
-Core / General
-^^^^^^^^^^^^^^
+**Core / General**
+
 * Fixed issue authentication tokens for consecutive pours not being reported
   correctly.
 * Improved stats reporting; fixed drinker breakdown graph on keg detail page.
@@ -377,22 +389,22 @@ Core / General
 * Schema change: Guest pours are now represented by a ``null`` user (rather than
   a specific guest account) in the database.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Fixed issue causing kegweb to break when used without proper Facebook
   credentials.
 * Improvements to the currently undocumented kegweb API.
 
-Kegboard
-^^^^^^^^
+**Kegboard**
+
 * Update KegShield schematics to include Arduino and Arduino Mega shield
   designs.
 
 Version 0.7.2 (2010-06-29)
 --------------------------
 
-Core / General
-^^^^^^^^^^^^^^
+**Core / General**
+
 * Django v1.2 is now **required**.
 * Added new dependency on ``django_nose`` for running unittests; ``make test``
   works once again to run unittests
@@ -401,14 +413,14 @@ Core / General
 * Miscellaneous packaging fixes, which should make installation with ``pip`` work
   a bit better.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Fix for bug #48: Facebook connect login broken.
 * Fixed/update CSRF detection on forms for Django 1.2.
 * Bugfixes for the Kegweb REST ('krest') API.
 
-Twitter
-^^^^^^^
+**Twitter**
+
 * Moved Twitter add-on out of the core and into a new daemon,
   ``kegbot_twitter``, similar to Facebook app ``fb_publisher``.
 
@@ -416,14 +428,14 @@ Twitter
 Version 0.7.1 (2010-06-04)
 --------------------------
 
-Core / General
-^^^^^^^^^^^^^^
+**Core / General**
+
 * Added missing dependencies to `setup.py`.
 * Removed a few locally-mirrored dependencies.
 * Added protobuf source mirror to `setup.py`.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Reorganized account settings views.
 * Add password reset forms.
 
@@ -432,8 +444,8 @@ Version 0.7.0 (2010-05-23)
 
 Initial numbered release! (Changes are since hg revision 500:525e06329039).
 
-Core / General
-^^^^^^^^^^^^^^
+**Core / General**
+
 * Vastly improved authentication device support.
 * New network protocol for Kegbot status and control (kegnet).
 * Temperatures are once again recorded. Temperature sensors can be associated
@@ -450,8 +462,8 @@ Core / General
 * Added Facebook publisher add-on.
 * Packaging improvements; `setup.py install` works.
 
-Kegboard
-^^^^^^^^
+**Kegboard**
+
 * Bumped firmware version to v5.
 * Fixed packet CRCs.
 * Added support for OneWire presence detect/authentication device.
@@ -461,16 +473,16 @@ Kegboard
 * Added experimental support for serial LCDs.
 * Added schematic files for Kegboard Arduino shield.
 
-Kegweb
-^^^^^^
+**Kegweb**
+
 * Design refresh; new HTML/CSS and many more graphs and stats.
 * Added keg administration tab.
 * Added experimental support for Facebook connect.
 * Fixed broken relative time display.
 * Fixed bug on submitting new user registration.
 
-Docs
-^^^^
+**Docs**
+
 * Improved documentation.
 * Added changelog :)
 

@@ -17,7 +17,6 @@
 from django.contrib import admin
 from . import models
 from django.conf import settings
-import pykeg.core.importhacks
 from django.forms import ModelForm, PasswordInput, CharField
 from django.core.exceptions import ValidationError
 from hashlib import md5

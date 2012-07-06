@@ -18,7 +18,6 @@ SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 REQUIRED = [
   'kegbot-pyutils >= 0.1.4',
-  'kegbot-kegboard >= 1.0.0',
   'kegbot-api >= 0.1.2',
 
   'django >= 1.3',
@@ -94,14 +93,7 @@ def setup_package():
       },
       scripts = [
         'distribute_setup.py',
-        'src/pykeg/bin/kegboard_daemon.py',
-        'src/pykeg/bin/kegbot-admin.py',
-        'src/pykeg/bin/kegbot_core.py',
-        'src/pykeg/bin/kegbot_master.py',
-        'src/pykeg/bin/lcd_daemon.py',
-        'src/pykeg/bin/rfid_daemon.py',
-        'src/pykeg/bin/sound_server.py',
-        'src/pykeg/bin/test_flow.py',
+        'bin/kegbot-admin.py',
       ],
       install_requires = DEPENDENCIES,
       dependency_links = [

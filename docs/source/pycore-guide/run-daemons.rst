@@ -8,14 +8,10 @@ Although it doesn't need to be running on the same machine, you need to have a
 Kegbot Server set up for reporting drinks.  After all, Kegbot Core needs
 something to talk to.  Refer to :ref:`server-guide` if necessary.
 
-All Pykeg programs are installed when you install Kegbot Server, but you may
-need to adjust your terminal in order to use them.  Refer to
-:ref:`run-virtualenv` if necessary.
-
 Common Options
 --------------
 
-Each Pykeg program supports some common flags on the command line, in
+Each Kegbot program supports some common flags on the command line, in
 particular:
 
 **--help**
@@ -47,7 +43,7 @@ There are two important parameters that should be provided to Kegbot Core:
 Armed with the correct values for these, give it a try.  Open up a new terminal
 and run the program::
 
-  (kb) $ kegbot_core.py --api_url=http://localhost:8000/api/ --api_key=100000012345678
+  (pycore) $ kegbot_core.py --api_url=http://localhost:8000/api/ --api_key=100000012345678
   2012-06-21 23:06:34,705 INFO     (main) Kegbot is starting up.
   2012-06-21 23:06:34,710 INFO     (main) Querying backend liveness.
   2012-06-21 23:06:34,938 INFO     (main) Backend appears to be alive.
@@ -78,7 +74,7 @@ Specify it with **--kegboard_device**.
 
 Open a second terminal and run the daemon in the foreground::
 
-  (kb) $ kegboard_daemon.py --kegboard_device=/dev/cu.usbmodemfd131
+  (pycore) $ kegboard_daemon.py --kegboard_device=/dev/cu.usbmodemfd131
   2012-06-21 23:10:37,881 INFO     (main) Starting all service threads.
   2012-06-21 23:10:37,881 INFO     (main) starting thread "kegnet"
   2012-06-21 23:10:37,881 INFO     (kegnet) Connecting to localhost:9805
@@ -106,7 +102,7 @@ be reported to the Kegbot Core and start the flow processing logic.
 Run Extras
 ----------
 
-There are a few extra accessory programs shipping with Pykeg.
+There are a few extra accessory programs shipping with Pycore.
 
 **kegboard-tester.py**
   A standalone program that tests toggles the relays on a Kegboard in a loop.
@@ -137,9 +133,9 @@ Consult the *--help* documentation for information about these programs.
 Run in background
 -----------------
 
-So far we've covered running the Pykeg applications in the foreground.  But once
-you've got your system all setup, you'll probably want your Linux box to run all
-the daemons automatically.
+So far we've covered running the Pycore applications in the foreground.  But
+once you've got your system all setup, you'll probably want your Linux box to
+run all the daemons automatically.
 
 Kegbot isn't much different than other Linux daemons in this regard, so you have
 a number of options.

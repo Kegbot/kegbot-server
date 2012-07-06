@@ -1,18 +1,18 @@
-Pykeg Overview
-==============
+Pycore Overview
+===============
 
 Architecture
 ------------
 
-.. figure:: _static/pykeg-architecture.png
+.. figure:: _static/pycore-architecture.png
 
-Pykeg consists of a single master program, **Kegbot Core**, and a collection of
+Pycore consists of a single master program, **Kegbot Core**, and a collection of
 accessory programs which talk to it.
 
 Kegbot Core
 ^^^^^^^^^^^
 
-Kegbot Core (``kegbot_core.py``) is the central dispatcher of a Pykeg system.
+Kegbot Core (``kegbot_core.py``) is the central dispatcher of a Pycore system.
 It is the interface between the various accessory programs and the Kegbot
 Server.
 

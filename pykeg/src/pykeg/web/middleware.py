@@ -79,21 +79,13 @@ class SiteActiveMiddleware:
 
     return HttpResponse('Site temporarily unavailable', status=503)
 
-class ApiKeyMiddleware:
-  def process_view(self, request, view_func, view_args, view_kwargs):
-    if not view_func.__module__.startswith('pykeg.web.api'):
-      return None
-    if getattr(view_func, 'kb_api_key_required', False):
-      check_api_key(request)
-      request.kb_api_authenticated = True
-
 class PrivacyMiddleware:
   def process_view(self, request, view_func, view_args, view_kwargs):
     if not hasattr(request, 'kbsite'):
       return None
     elif _path_allowed(request.path, request.kbsite):
       return None
-    elif getattr(request, 'kb_api_key_authenticated', False):
+    elif getattr(request, 'kb_api_authenticated', False):
       # This is an auth-required kb api view; no need to check privacy since API
       # keys are given staff-level access.
       return None

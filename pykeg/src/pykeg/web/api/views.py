@@ -65,6 +65,23 @@ _LOGGER = logging.getLogger(__name__)
 
 ### Decorators
 
+def wrap_exception(f):
+  def new_function(*args, **kwargs):
+    try:
+      return f(*args, **kwargs)
+    except Exception, e:
+      exc_info = sys.exc_info()
+      request = args[0]
+      if settings.DEBUG and 'deb' in request.GET:
+        raise exc_info[1], None, exc_info[2]
+      result_data, http_code = ToJsonError(e, exc_info)
+      result_data['meta'] = {
+        'result': 'error'
+      }
+      return HttpResponse(kbjson.dumps(result_data, indent=2),
+          mimetype='application/json', status=http_code)
+  return wraps(f)(new_function)
+
 def check_api_key(request):
   keystr = request.META.get('HTTP_X_KEGBOT_API_KEY')
   if not keystr:
@@ -92,11 +109,18 @@ def check_api_key(request):
   if not user_secret or user_secret != key.secret():
     raise kbapi.BadApiKeyError('User secret does not match')
 
+  request.kb_api_authenticated = True
+
 def auth_required(viewfunc):
   # Set the auth_required flag, validated by
   # pykeg.web.middleware.ApiKeyMiddleware
   viewfunc.kb_api_key_required = True
-  return viewfunc
+  def new_function(*args, **kwargs):
+    request = args[0]
+    if not getattr(request, 'kb_api_authenticated', False):
+      check_api_key(request)
+    return viewfunc(*args, **kwargs)
+  return wraps(viewfunc)(new_function)
 
 def staff_required(viewfunc):
   def _check_token(request, *args, **kwargs):
@@ -149,6 +173,7 @@ def py_to_json(f):
       error message.
   """
   @never_cache
+  @wrap_exception
   def new_function(*args, **kwargs):
     request = args[0]
     http_code = 200
@@ -163,19 +188,10 @@ def py_to_json(f):
             indent = indent_val
         except ValueError:
           pass
-    try:
-      result_data = prepare_data(f(*args, **kwargs))
-      result_data['meta'] = {
-        'result': 'ok'
-      }
-    except Exception, e:
-      exc_info = sys.exc_info()
-      if settings.DEBUG and 'deb' in request.GET:
-        raise exc_info[1], None, exc_info[2]
-      result_data, http_code = ToJsonError(e, exc_info)
-      result_data['meta'] = {
-        'result': 'error'
-      }
+    result_data = prepare_data(f(*args, **kwargs))
+    result_data['meta'] = {
+      'result': 'ok'
+    }
     return HttpResponse(kbjson.dumps(result_data, indent=indent),
         mimetype='application/json', status=http_code)
   return wraps(f)(new_function)

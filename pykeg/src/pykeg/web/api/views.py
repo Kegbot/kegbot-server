@@ -43,6 +43,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.db.models.query import QuerySet
 
+from kegbot.api import kbapi
+from kegbot.api import protoutil
 from kegbot.util import kbjson
 
 from pykeg.contrib.soundserver import models as soundserver_models
@@ -50,10 +52,8 @@ from pykeg.core.backend import backend
 from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import models
 from pykeg.proto import protolib
-from pykeg.proto import protoutil
 from pykeg.web.api import apikey
 from pykeg.web.api import forms
-from pykeg.web.api import krest
 
 if settings.HAVE_CELERY:
   from pykeg.web import tasks
@@ -70,27 +70,27 @@ def check_api_key(request):
   if not keystr:
     keystr = request.REQUEST.get('api_key')
   if not keystr:
-    raise krest.NoAuthTokenError('The parameter "api_key" is required')
+    raise kbapi.NoAuthTokenError('The parameter "api_key" is required')
 
   try:
     key = apikey.ApiKey.FromString(keystr)
   except ValueError, e:
-    raise krest.BadApiKeyError('Error parsing API key: %s' % e)
+    raise kbapi.BadApiKeyError('Error parsing API key: %s' % e)
 
   try:
     user = models.User.objects.get(pk=key.uid())
   except models.User.DoesNotExist:
-    raise krest.BadApiKeyError('API user %s does not exist' % key.uid())
+    raise kbapi.BadApiKeyError('API user %s does not exist' % key.uid())
 
   if not user.is_active:
-    raise krest.BadApiKeyError('User is inactive')
+    raise kbapi.BadApiKeyError('User is inactive')
 
   if not user.is_staff and not user.is_superuser:
-    raise krest.PermissionDeniedError('User is not staff/superuser')
+    raise kbapi.PermissionDeniedError('User is not staff/superuser')
 
   user_secret = user.get_profile().api_secret
   if not user_secret or user_secret != key.secret():
-    raise krest.BadApiKeyError('User secret does not match')
+    raise kbapi.BadApiKeyError('User secret does not match')
 
 def auth_required(viewfunc):
   # Set the auth_required flag, validated by
@@ -102,22 +102,22 @@ def staff_required(viewfunc):
   def _check_token(request, *args, **kwargs):
     if not request.user or (not request.user.is_staff and not \
         request.user.is_superuser):
-      raise krest.PermissionDeniedError, "Logged-in staff user required"
+      raise kbapi.PermissionDeniedError, "Logged-in staff user required"
     return viewfunc(request, *args, **kwargs)
   return wraps(viewfunc)(_check_token)
 
 def ToJsonError(e, exc_info):
   """Converts an exception to an API error response."""
-  # Wrap some common exception types into Krest types
+  # Wrap some common exception types into kbapi types
   if isinstance(e, Http404):
-    e = krest.NotFoundError(e.message)
+    e = kbapi.NotFoundError(e.message)
   elif isinstance(e, ValueError):
-    e = krest.BadRequestError(str(e))
+    e = kbapi.BadRequestError(str(e))
   elif isinstance(e, backend.NoTokenError):
-    e = krest.NotFoundError(e.message)
+    e = kbapi.NotFoundError(e.message)
 
   # Now determine the response based on the exception type.
-  if isinstance(e, krest.Error):
+  if isinstance(e, kbapi.Error):
     code = e.__class__.__name__
     http_code = e.HTTP_CODE
     message = e.Message()
@@ -422,7 +422,7 @@ def _thermo_sensor_get(request, sensor_name):
 def _thermo_sensor_post(request, sensor_name):
   form = forms.ThermoPostForm(request.POST)
   if not form.is_valid():
-    raise krest.BadRequestError, _form_errors(form)
+    raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
   b = KegbotBackend(site=request.kbsite)
   sensor, created = models.ThermoSensor.objects.get_or_create(site=request.kbsite,
@@ -460,7 +460,7 @@ def _tap_detail_get(request, tap_id):
 def _tap_detail_post(request, tap):
   form = forms.DrinkPostForm(request.POST)
   if not form.is_valid():
-    raise krest.BadRequestError, _form_errors(form)
+    raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
   if cd.get('pour_time') and cd.get('now'):
     pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))
@@ -485,25 +485,25 @@ def _tap_detail_post(request, tap):
       shout=cd.get('shout'))
     return protolib.ToProto(res, full=True)
   except backend.BackendError, e:
-    raise krest.ServerError(str(e))
+    raise kbapi.ServerError(str(e))
 
 @csrf_exempt
 @py_to_json
 @auth_required
 def cancel_drink(request):
   #if request.method != 'POST':
-  #  raise krest.BadRequestError, 'Method not supported at this endpoint'
+  #  raise kbapi.BadRequestError, 'Method not supported at this endpoint'
   #form = forms.DrinkCancelForm(request.POST)
   form = forms.CancelDrinkForm(request.GET)
   if not form.is_valid():
-    raise krest.BadRequestError, _form_errors(form)
+    raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
   b = KegbotBackend(site=request.kbsite)
   try:
     res = b.CancelDrink(seqn=cd.get('id'), spilled=cd.get('spilled', False))
     return protolib.ToProto(res, full=True)
   except backend.BackendError, e:
-    raise krest.ServerError(str(e))
+    raise kbapi.ServerError(str(e))
 
 @csrf_exempt
 @py_to_json
@@ -516,8 +516,8 @@ def login(request):
         request.session.delete_test_cookie()
       return {'result': 'ok'}
     else:
-      raise krest.PermissionDeniedError('Login failed.')
-  raise krest.BadRequestError('POST required.')
+      raise kbapi.PermissionDeniedError('Login failed.')
+  raise kbapi.BadRequestError('POST required.')
 
 @py_to_json
 def logout(request):
@@ -529,7 +529,7 @@ def logout(request):
 @auth_required
 def register(request):
   if not request.POST:
-    raise krest.BadRequestError('POST required.')
+    raise kbapi.BadRequestError('POST required.')
   form = forms.RegisterForm(request.POST)
   errors = {}
   if not form.is_valid():
@@ -555,7 +555,7 @@ def register(request):
       user_errs = errors.get('username', [])
       user_errs.append('Username not available.')
       errors['username'] = user_errs
-  raise krest.BadRequestError(errors)
+  raise kbapi.BadRequestError(errors)
 
 @py_to_json
 def default_handler(request):
@@ -577,7 +577,7 @@ def debug_log(request):
 
   form = forms.DebugLogForm(request.POST)
   if not form.is_valid():
-    raise krest.BadRequestError(_form_errors(form))
+    raise kbapi.BadRequestError(_form_errors(form))
   client = LocalRavenClient([])
   message = form.cleaned_data['message']
   ident = client.get_ident(client.create_from_text(message))

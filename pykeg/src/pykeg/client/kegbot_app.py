@@ -36,6 +36,7 @@ warnings.simplefilter("ignore", DeprecationWarning)
 
 import gflags
 
+from kegbot.api import kbapi
 from kegbot.util import app
 
 from . import kbevent
@@ -43,7 +44,6 @@ from . import kb_threads
 from . import manager
 from .net import kegnet
 from pykeg.core.backend.web import WebBackend
-from pykeg.web.api import krest
 
 FLAGS = gflags.FLAGS
 
@@ -162,7 +162,7 @@ class KegbotCoreApp(app.App):
       if FLAGS.web_backend:
         self._logger.error('Is --api_url correct? (current=%s)' % FLAGS.api_url)
       sys.exit(1)
-    except krest.ServerError, e:
+    except kbapi.ServerError, e:
       self._logger.error('Kegbot API backend returned a server error: %s' % e)
       self._logger.error('Is --api_url correct? (current=%s)' % FLAGS.api_url)
       sys.exit(1)

@@ -19,6 +19,7 @@ LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 REQUIRED = [
   'kegbot-pyutils >= 0.1.4',
   'kegbot-kegboard >= 1.0.0',
+  'kegbot-api >= 0.1.2',
 
   'django >= 1.3',
   'django-autoslug',

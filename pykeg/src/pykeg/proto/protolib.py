@@ -22,14 +22,14 @@ import pytz
 
 from django.conf import settings
 
+from kegbot.api import api_pb2
+from kegbot.api import models_pb2
+from kegbot.api import protoutil
 from kegbot.util import util
 
 from pykeg.beerdb import models as bdb_models
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import models
-from pykeg.proto import api_pb2
-from pykeg.proto import models_pb2
-from pykeg.proto import protoutil
 
 _CONVERSION_MAP = {}
 

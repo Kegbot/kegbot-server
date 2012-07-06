@@ -23,7 +23,7 @@ import inspect
 import itertools
 import logging
 
-from pykeg.proto import models_pb2
+from kegbot.api import models_pb2
 
 STAT_MAP = {}
 

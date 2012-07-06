@@ -20,11 +20,12 @@ import datetime
 
 from django.utils import unittest
 
+from kegbot.api import models_pb2
+from kegbot.api.protoutil import ProtoMessageToDict
+
 from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import models
 from pykeg.core import stats
-from pykeg.proto import models_pb2
-from pykeg.proto.protoutil import ProtoMessageToDict
 
 class StatsTestCase(unittest.TestCase):
   def setUp(self):

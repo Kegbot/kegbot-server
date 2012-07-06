@@ -24,12 +24,12 @@ import socket
 from . import backend
 
 from pykeg.core import kb_common
-from pykeg.web.api import krest
+from pykeg.web.api import kbapi
 
 class WebBackend(backend.Backend):
   def __init__(self, api_url=None, api_key=None):
     self._logger = logging.getLogger('api-backend')
-    self._client = krest.KrestClient(api_url=api_url, api_key=api_key)
+    self._client = kbapi.Client(api_url=api_url, api_key=api_key)
 
   def CreateNewUser(self, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
       weight=kb_common.DEFAULT_NEW_USER_WEIGHT):
@@ -60,10 +60,10 @@ class WebBackend(backend.Backend):
 
     try:
       return self._client.LogSensorReading(sensor_name, temperature, when)
-    except krest.NotFoundError:
+    except kbapi.NotFoundError:
       self._logger.warning('No sensor on backend named "%s"' % (sensor_name,))
       return None
-    except krest.ServerError:
+    except kbapi.ServerError:
       self._logger.warning('Server error recording temperature; dropping reading.')
       return None
     except socket.error:
@@ -73,7 +73,7 @@ class WebBackend(backend.Backend):
   def GetAuthToken(self, auth_device, token_value):
     try:
       return self._client.GetToken(auth_device, token_value)
-    except krest.NotFoundError:
+    except kbapi.NotFoundError:
       raise backend.NoTokenError
     except socket.error:
       self._logger.warning('Socket error fetching token; ignoring.')

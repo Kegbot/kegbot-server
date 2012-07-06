@@ -30,12 +30,12 @@ import urlparse
 import gflags
 import mad
 
+from kegbot.api import kbapi
 from kegbot.util import app
 from kegbot.util import units
 from kegbot.util import util
 
 from pykeg.client.net import kegnet
-from pykeg.web.api import krest
 
 FLAGS = gflags.FLAGS
 
@@ -121,7 +121,7 @@ class SoundClient(kegnet.SimpleKegnetClient):
 
   def LoadEvents(self):
     self._logger.info('Loading events')
-    api_client = krest.KrestClient()
+    api_client = kbapi.Client()
     all_events = api_client.AllSoundEvents()
     for event in all_events['events']:
       self.LoadSoundEvent(event)

@@ -27,13 +27,12 @@ import Queue
 import sys
 import time
 
+from kegbot.api import kbapi
 from kegbot.util import app
 from kegbot.util import units
 from kegbot.util import util
 
 from pykeg.client.net import kegnet
-
-from pykeg.web.api.krest import KrestClient
 
 try:
   from django.conf import settings
@@ -270,7 +269,7 @@ class KrestUpdaterThread(util.KegbotThread):
   def __init__(self, name, ui):
     util.KegbotThread.__init__(self, name)
     self._lcdui = ui
-    self._client = KrestClient()
+    self._client = kbapi.Client()
 
   def ThreadMain(self):
     self._logger.info('Starting main loop.')

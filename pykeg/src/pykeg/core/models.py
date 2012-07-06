@@ -40,8 +40,8 @@ from pykeg.core import stats
 from kegbot.util import units
 from kegbot.util import util
 
-from pykeg.proto import models_pb2
-from pykeg.proto import protoutil
+from kegbot.api import models_pb2
+from kegbot.api import protoutil
 
 from pykeg.web.api.apikey import ApiKey
 

@@ -51,8 +51,8 @@ following lines to the file::
     },
   }
 
-Replace the text `your-password` with the actual password you used in(
-:ref:`create-mysql-user`).
+Replace the text `your-password` with the actual password you used in
+:ref:`create-mysql-user`.
 
 Save the settings file.
 
@@ -84,14 +84,40 @@ Configure Kegbot Media and Static File Directories
 
 Follow this section for all Kegbot Server installations.
 
+Two important settings should be configured: the *media* and *static files*
+directories.
+
+**MEDIA_ROOT, MEDIA_URL**
+  These variables control where Kegbot stores uploaded media: pictures added
+  during account registration or pours, for example.
+
+**STATIC_ROOT, STATIC_URL**
+  These variables control where Kegbot's static media is stored, such as
+  built-in style sheets and images shown on the web page.
+
+Although they sound similar, static and media files are different, and so you
+need to create independent directories for them.
+
+On your filesystem, create two new directories: one called ``static`` and one
+called ``media``. These directories do not need to be in your git client -- just
+somewhere safe where they won't be clobbered.
+
 Open the file ``~/.kegbot/local_settings.py`` in your favorite text editor.
 Look for the section labeled "Media and Static Files", and edit the MEDIA_ROOT
-and STATIC_ROOT directory locations.::
+and STATIC_ROOT directory locations to point to the new directories::
 
-MEDIA_ROOT = '/path/to/media/'
-STATIC_ROOT = '/path/to/static'
+  STATIC_ROOT = '/path/to/static/'
+  STATIC_URL = 'http://localhost:8000/static/'
+
+  MEDIA_ROOT = '/path/to/media/'
+  MEDIA_URL = 'http://localhost:8000/media/'
 
 Save the settings file.
+
+.. note::
+  Be sure to use an absolute URL for *MEDIA_URL* and *STATIC_URL*. If your
+  hostname changes or you move your Kegbot to another address, you will need to
+  update these settings for static files and media to display properly.
 
 .. _populate-databases:
 

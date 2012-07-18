@@ -72,13 +72,28 @@ Depending on your hardware, it may be necessary to reset the board using the
 reset pushbutton when starting the upload.
 
 
-Testing the board
+Test the Kegboard
 =================
 
-Kegboard includes a built-in "selftest" feature. This mode is useful if you'd
-like to test your board without hooking it up to a flowmeter. Perhaps you don't
-yet have a meter, or don't want to waste precious beer testing it.
+The Pycore package includes two programs to monitor and test the Kegboard.  See
+:ref:`pycore-guide` for install instructions.
 
-To test your board, connect pin 12 to one of the flowmeter inputs. Pin 12
-generates a steady stream of pulses, similar to what a real flowmeter would do.
+Both command-line programs support various flags; see **--help**.
 
+kegboard-monitor.py
+-------------------
+
+This program monitors the serial port given with the command line flag
+**--kegboard_device**, printing any Kegboard packets it sees.
+
+kegboard-tester.py
+------------------
+
+This program cycles through each relay on the Kegboard, opening and closing it.
+
+Test pin
+--------
+
+To simulate a flow meter, you can connect Pin 12 to either of the two flow meter
+pins with a short jumper wire.  This pin continuously outputs a slow stream of
+pulses, much like a flow meter would do.

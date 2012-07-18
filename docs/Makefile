@@ -153,5 +153,5 @@ doctest:
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
 sync: json
-	rsync -av --checksum --delete-after -e ssh build/html/ kegbot@planetkb:www/kegbot.org/docs/
+	rsync -av --checksum --delete-after -e ssh build/ kegbot@planetkb:www/kegbot.org/docs/
 

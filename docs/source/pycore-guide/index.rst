@@ -1,4 +1,4 @@
-.. _pycore_guide:
+.. _pycore-guide:
 
 ============
 Pycore Guide

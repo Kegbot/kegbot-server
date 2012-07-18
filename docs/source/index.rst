@@ -39,10 +39,3 @@ other Kegbot resources:
 **Kegbot on IRC**
   Kegbot developers and users hang out on freenode in the channel #kegbot.
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

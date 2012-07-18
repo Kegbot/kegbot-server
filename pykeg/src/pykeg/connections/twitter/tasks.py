@@ -144,12 +144,12 @@ def do_user_tweet(event, kbvars):
     if not profile.settings.post_drink_poured:
       logger.info('User has disabled drink pour tweets: %s' % event.user)
       return
-    tweet = util.DEFAULT_USER_SESSION_JOINED_TEMPLATE % kbvars
+    tweet = util.DEFAULT_USER_DRINK_POURED_TEMPLATE % kbvars
   elif kind == 'session_joined':
     if not profile.settings.post_session_joined:
       logger.info('User has disabled session-join tweets: %s' % event.user)
       return
-    tweet = util.DEFAULT_USER_DRINK_POURED_TEMPLATE % kbvars
+    tweet = util.DEFAULT_USER_SESSION_JOINED_TEMPLATE % kbvars
 
   user_api = util.get_api(profile.access_token.oauth_token,
       profile.access_token.oauth_token_secret)

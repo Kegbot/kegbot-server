@@ -393,6 +393,34 @@ def get_auth_token(request, auth_device, token_value):
   tok = b.GetAuthToken(auth_device, token_value)
   return tok
 
+@csrf_exempt
+@py_to_json
+@auth_required
+def assign_auth_token(request, auth_device, token_value):
+  if not request.POST:
+    raise kbapi.BadRequestError('POST required.')
+
+  form = forms.AssignTokenForm(request.POST)
+  if not form.is_valid():
+    errors = _form_errors(form)
+    raise kbapi.BadRequestError(errors)
+
+  b = KegbotBackend(site=request.kbsite)
+  username = form.cleaned_data['username']
+  try:
+    tok = b.GetAuthToken(auth_device, token_value)
+    user = b._GetUserObjFromUsername(username)
+    if not user:
+      raise kbapi.BadRequestError("User does not exist")
+    if tok.user != user:
+      if tok.user:
+        raise kbapi.BadRequestError("Token is already bound to a user")
+      tok.user = user
+      tok.save()
+    return tok
+  except backend.NoTokenError:
+    return b.CreateAuthToken(auth_device, token_value, username=username)
+
 @py_to_json
 def all_thermo_sensors(request):
   return request.kbsite.thermosensors.all()

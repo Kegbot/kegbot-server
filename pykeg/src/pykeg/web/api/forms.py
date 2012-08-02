@@ -61,3 +61,7 @@ class RegisterForm(forms.Form):
   email = forms.EmailField()
   password = forms.CharField()
   photo = forms.ImageField(required=False)
+
+class AssignTokenForm(forms.Form):
+  username = forms.CharField()
+

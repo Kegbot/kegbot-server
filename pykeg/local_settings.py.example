@@ -46,7 +46,7 @@ TIME_ZONE = 'America/Los_Angeles'
 
 # Absolute path to the directory where uploaded media (profile pictures, etc)
 # should go.
-MEDIA_ROOT = 'media/'
+MEDIA_ROOT = '/path/to/media/'
 
 # URL of the directory above. The default is '/media/'. Note that the directory
 # name given in MEDIA_ROOT does not affect this.
@@ -54,7 +54,11 @@ MEDIA_URL = '/media/'
 
 # A directory where non-media static files will be stored. You should create
 # this directory, and use 'kegbot-admin.py collectstatic' to fill it.
-STATIC_ROOT = '/path/to/static'
+STATIC_ROOT = '/path/to/static/'
+
+# URL of the directory above. The default is '/static/'. Note that the directory
+# name given in STATIC_ROOT does not affect this.
+STATIC_URL = '/static/'
 
 ### Facebook
 

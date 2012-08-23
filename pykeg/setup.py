@@ -36,7 +36,6 @@ REQUIRED = [
   'pysqlite>=2.0.3',
   'python-gflags >= 1.8',
   'South >= 0.7.3',
-  'Sphinx',
   'django_nose',
   'tweepy',
   'django-icanhaz',

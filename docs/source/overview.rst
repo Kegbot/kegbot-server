@@ -34,9 +34,9 @@ case, these are the main features:
   statistics and user accounts, gets stored in a database (MySQL, or any other
   database supported by Django).
 * **JSON API:** You can build your own frontend or other client interface using
-  the :ref:`Kegbot API <api>`.  Drinks, tap status, user information, and almost
-  every other interesting object in Kegbot is exposed this way.  The same API is
-  used for recording drinks.
+  the `Kegbot API <http://kegbot.org/docs/api/>`_.  Drinks, tap status, user
+  information, and almost every other interesting object in Kegbot is exposed
+  this way.  The same API is used for recording drinks.
 * **Web Hooks:** The server can notify an arbitrary URL whenever there
   is activity such as a pour or new keg. You can bridge Kegbot to external
   services this way.

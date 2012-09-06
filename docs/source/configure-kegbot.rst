@@ -112,12 +112,30 @@ and STATIC_ROOT directory locations to point to the new directories::
   MEDIA_ROOT = '/path/to/media/'
   MEDIA_URL = 'http://localhost:8000/media/'
 
-Save the settings file.
+.. warning::
+  **Never** place other content in ``STATIC_ROOT``, and always be sure it is set
+  to a directory that Kegbot can completely overwrite.  For more information,
+  see `Django's documentation for managing static files
+  <https://docs.djangoproject.com/en/dev/howto/static-files/>`_.
 
 .. note::
   Be sure to use an absolute URL for *MEDIA_URL* and *STATIC_URL*. If your
   hostname changes or you move your Kegbot to another address, you will need to
   update these settings for static files and media to display properly.
+
+Save the settings file.
+
+Synchronize static files
+------------------------
+
+The ``STATIC_ROOT`` directory that you just specified is where Kegbot will
+store all of its static files: style sheets, images, and other content that can
+be served directly by a web server.
+
+Now, you need to fill this directory with all of Kegbot's static content.
+Run the following command to copy all static files to ``STATIC_ROOT``::
+
+  $ kegbot-admin.py collectstatic
 
 .. _populate-databases:
 

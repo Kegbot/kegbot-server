@@ -16,6 +16,7 @@ Contents:
    install-kegbot
    configure-kegbot
    run-server
+   extras
    configure-apache
    upgrade-kegbot
    changelog

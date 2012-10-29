@@ -7,6 +7,13 @@ This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+
+**Kegweb**
+
+* Uploaded images are now converted to JPEG instead of PNG.
+
 Version 0.9.2 (2012-07-05)
 --------------------------
 

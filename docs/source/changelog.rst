@@ -3,16 +3,17 @@
 Changelog
 =========
 
-This changelog covers all Kegbot components (pykeg, kegweb, kegboard, docs).
-
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.3 (2012-11-02)
+--------------------------
 
-**Kegweb**
+**General**
 
-* Uploaded images are now converted to JPEG instead of PNG.
+* Uploaded images are converted to JPEG instead of PNG.
+* Account registration links are more prominent.
+* Site settings allow you to enable/disable web registration and e-mail
+  confirmation.
 
 Version 0.9.2 (2012-07-05)
 --------------------------

@@ -23,11 +23,14 @@
 from django.http import Http404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
 from django.views.decorators.http import require_POST
 from django.views.generic.simple import redirect_to
+from django.contrib.auth.views import password_change as password_change_orig
+from django.contrib.auth.views import password_change_done as password_change_done_orig
 
 from socialregistration.contrib.foursquare import models as sr_foursquare_models
 from socialregistration.contrib.twitter import models as sr_twitter_models
@@ -148,3 +151,11 @@ def update_foursquare_settings(request):
     messages.success(request, 'Foursquare settings were successfully updated.')
   # TODO(mikey): HttpResponseRedirect
   return redirect_to(request, url='/account')
+
+def password_change(request, *args, **kwargs):
+  kwargs['template_name'] = 'account/password_change.html'
+  kwargs['post_change_redirect'] = reverse('password_change_done')
+  return password_change_orig(request, *args, **kwargs)
+
+def password_change_done(request):
+  return password_change_done_orig(request, 'account/password_change_done.html')

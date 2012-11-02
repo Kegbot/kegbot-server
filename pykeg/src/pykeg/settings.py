@@ -267,6 +267,9 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 ### django-registration
 ACCOUNT_ACTIVATION_DAYS = 3
 
+### E-mail
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+
 # Bogus default values (to prevent djangofb from choking if unavailable);
 # replace with site-specific values in local_settings.py, if desired.
 FACEBOOK_API_KEY = ''

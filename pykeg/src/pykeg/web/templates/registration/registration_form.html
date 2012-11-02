@@ -1,22 +1,17 @@
 {% extends "base.html" %}
 {% load kegweblib %}
+{% load crispy_forms_tags %}
 
 {% block title %}registration{% endblock %}
+{% block pagetitle %}New Drinker{% endblock %}
 
 {% block content %}
-<div class="kb-contentbox-head">
-   register
-</div>
-<div class="kb-contentbox">
-  <form action="/accounts/register/" method="POST"> {% csrf_token %}
-    <table class="kb-form">
-      {{ form.as_table }}
-      <tr>
-        <td colspan="2">
-          <input type="submit" value="register!" />
-        </td>
-      </tr>
-    </table>
+<div class="well">
+  <form action="/accounts/register/" method="POST">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-success small"
+        name="tweet-form-submit">Register</button>
   </form>
 </div>
 

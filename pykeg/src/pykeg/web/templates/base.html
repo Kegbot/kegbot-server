@@ -97,28 +97,28 @@
 </head>
 
 <body>
-  <div class="navbar navbar-fixed-top">
-   <div class="navbar-inner">
-    <div class="container">
-      {% spaceless %}
-      {% if kbsite %}
-      <a class="brand" href="{% url kb-home kbsite.url %}">
-      {% else %}
-      <a class="brand" href="/">
-      {% endif %}
-
-      {% if kbsite.settings.title %}
-        {{kbsite.settings.title}}
-      {% else %}
-        kegbot beer device
-      {% endif %}
-      </a>{% endspaceless %}
-      <ul class="nav">
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        {% spaceless %}
         {% if kbsite %}
-        {% navitem kb-kegs "Kegs" %}
-        {% navitem kb-stats "Stats" %}
-        {% if user.is_authenticated %}{% navitem kb-account-main "Account" %}{% endif %}
-        {% if user.is_staff %}
+        <a class="brand" href="{% url kb-home kbsite.url %}">
+        {% else %}
+        <a class="brand" href="/">
+        {% endif %}
+        {% if kbsite.settings.title %}
+          {{kbsite.settings.title}}
+        {% else %}
+          kegbot beer device
+        {% endif %}
+        </a>{% endspaceless %}
+
+        <ul class="nav">
+          {% if kbsite %}
+          {% navitem kb-kegs "Kegs" %}
+          {% navitem kb-stats "Stats" %}
+          {% if user.is_authenticated %}{% navitem kb-account-main "Account" %}{% endif %}
+          {% if user.is_staff %}
           <li class="dropdown">
             <a  href="#" class="dropdown-toggle" data-toggle="dropdown">Admin
               <b class="caret"></b>
@@ -127,27 +127,43 @@
               {% include "kegadmin/nav-items.html" %}
             </ul>
           </li>
+          {% endif %}
+          {% endif %}
+        </ul>
+
+        {% if not user.is_authenticated %}
+        <ul class="nav pull-right">
+          {% if kbsite.settings.registration_allowed %}
+          <li><a href="{% url registration_register %}"><i class="icon-edit icon-white"></i> New Drinker</a></li>
+          {% endif %}
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user icon-white"></i> Sign In <b class="caret"></b></a>
+            <ul class="dropdown-menu" style="padding: 15px;">
+              <form action="/accounts/login/" method="POST">
+                {% csrf_token %}
+                {% with login_form as form %}
+                  {% for hidden in form.hidden_fields %}
+                  {{ hidden }}
+                  {% endfor %}
+                {% endwith %}
+                <input class="span2" name="username" type="text" placeholder="Username" >
+                <input class="span2" name="password" type="password" placeholder="Password">
+                <button class="btn" type="submit">Log In <i class="icon-ok"></i></button>
+              </form>
+            </ul>
+          </li>
+        </ul>
+        {% else %}
+        <ul class="nav pull-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user icon-white"></i> {{ user.username}} <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="{% url django.contrib.auth.views.logout %}">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
         {% endif %}
-        {% endif %}
-      </ul>
-      {% if not user.is_authenticated %}
-      <form action="/accounts/login/" class="navbar-search pull-right" method="POST">
-      {% csrf_token %}
-      {% with login_form as form %}
-        {% for hidden in form.hidden_fields %}
-        {{ hidden }}
-        {% endfor %}
-      {% endwith %}
-        <input class="search-query" name="username" type="text" placeholder="Username" >
-        <input class="search-query" name="password" type="password" placeholder="Password">
-        <button class="btn" type="submit"><i class="icon-ok"></i></button>
-      </form>
-      {% else %}
-        <p class="navbar-text pull-right">
-          Logged in as <strong>{{ user.username }}</strong>.
-          (<a href="{% url django.contrib.auth.views.logout %}">logout</a>)
-        </p>
-      {% endif %}
+
       </div>
     </div>
   </div> <!-- /.navbar -->

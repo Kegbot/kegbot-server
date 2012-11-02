@@ -1,7 +1,9 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
+{% load crispy_forms_tags %}
 
-{% block title %}login{% endblock %}
+{% block title %}Log In to {{kbsite.name}}{% endblock %}
+{% block pagetitle %}Log In{% endblock %}
 
 {% block kb-extrajs %}
    {% if USE_FACEBOOK %}
@@ -10,31 +12,17 @@
 {% endblock %}
 
 {% block col-1 %}
-<div class="kb-contentbox-head">
-   account
-</div>
-<div class="kb-contentbox">
-
-  <form action="" method="POST">{% csrf_token %}
-
-    <table class="kb-form">
-    {{ form.as_table }}
-    <tr>
-      <td colspan="2">
-        <input type="submit" value="login" />
-      </td>
-    </tr>
-    </table>
-
-  </form>
-
-  <p>
-    <span style="font-size:0.8em;">
-      (did you <a href="/accounts/password/reset/">forget your username or
-      password?</a>)
-    </span>
-  </p>
-</div>
+<div class="well">
+  <form action="" method="POST">
+  {% csrf_token %}
+  {{ form|crispy }}
+  <button type="submit" class="btn btn-success small"
+      name="tweet-form-submit">Log In</button>
+<p>
+  <span style="font-size:0.8em;">
+    (did you <a href="{% url password-reset %}">forget your username or password?</a>)
+  </span>
+</p>
 
 {% endblock col-1 %}
 

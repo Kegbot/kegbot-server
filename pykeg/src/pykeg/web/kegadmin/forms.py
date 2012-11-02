@@ -69,6 +69,8 @@ class SiteSettingsForm(forms.ModelForm):
         'guest_name',
         'guest_image',
         'default_user',
+        'registration_allowed',
+        'registration_confirmation',
     )
 
 #BeerTypeFormSet = inlineformset_factory(models.Brewer, models.BeerType)

@@ -29,9 +29,11 @@ urlpatterns = patterns('',
     (r'^(?P<kbsite_name>)api/', include('pykeg.web.api.urls')),
 
     ### account
-    (r'^account/', include('pykeg.web.account.urls')),
-    (r'^accounts/password/reset/$', password_reset, {'template_name':
-     'registration/password_reset.html'}),
+    (r'^(?P<kbsite_name>)account/', include('pykeg.web.account.urls')),
+
+    (r'^accounts/', include('pykeg.web.registration.urls')),
+    url(r'^accounts/password/reset/$', password_reset, {'template_name':
+     'registration/password_reset.html'}, name="password-reset"),
     (r'^accounts/password/reset/done/$', password_reset_done, {'template_name':
      'registration/password_reset_done.html'}),
     (r'^accounts/password/reset/confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', password_reset_confirm, {'template_name':

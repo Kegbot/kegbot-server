@@ -143,6 +143,10 @@ class SiteSettings(models.Model):
       help_text='Default user to set as owner for unauthenticated drinks. '
           'When set, the "guest" user will not be used. This is mostly '
           'useful for closed / single user systems.')
+  registration_allowed = models.BooleanField(default=True,
+      help_text='Whether to allow new user registration.')
+  registration_confirmation = models.BooleanField(default=False,
+      help_text='Whether registration requires e-mail confirmation.')
 
   class Meta:
     verbose_name_plural = "site settings"

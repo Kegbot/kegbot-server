@@ -920,8 +920,11 @@ class _StatsModel(models.Model):
 
   def Update(self, drink, force=False):
     previous = None
-    if not force and self.stats:
-      previous = protoutil.DictToProtoMessage(self.stats, models_pb2.Stats())
+    try:
+      if not force and self.stats:
+        previous = protoutil.DictToProtoMessage(self.stats, models_pb2.Stats())
+    except TypeError, e:
+      pass
     builder = self.STATS_BUILDER(drink, previous)
     self.stats = protoutil.ProtoMessageToDict(builder.Build())
     self.save()

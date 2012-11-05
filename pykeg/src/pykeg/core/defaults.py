@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+import uuid
+
 from kegbot.util import units
 
 from pykeg.core.backend.django import KegbotBackend
@@ -39,18 +41,16 @@ def set_defaults(force=False):
   secondary_tap = models.KegTap(site=site, name='Second Tap', meter_name='kegboard.flow1')
   secondary_tap.save()
 
-  b = KegbotBackend()
-
   # brewer defaults
-  unk_brewer = bdb.Brewer(name='Unknown Brewer')
+  unk_brewer = bdb.Brewer(name='Unknown Brewer', id=uuid.uuid4())
   unk_brewer.save()
 
   # beerstyle defaults
-  unk_style = bdb.BeerStyle(name='Unknown Style')
+  unk_style = bdb.BeerStyle(name='Unknown Style', id=uuid.uuid4())
   unk_style.save()
 
   # beertype defaults
-  unk_type = bdb.BeerType(name="Unknown Beer", brewer=unk_brewer, style=unk_style)
+  unk_type = bdb.BeerType(name="Unknown Beer", id=uuid.uuid4(), brewer=unk_brewer, style=unk_style)
   unk_type.save()
 
   # KegSize defaults - from http://en.wikipedia.org/wiki/Keg#Size

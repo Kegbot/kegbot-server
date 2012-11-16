@@ -1,5 +1,4 @@
 include README.txt
 include LICENSE.txt
-include common_settings.py.example
-include kegbot_master.cfg.example
+include local_settings.py.example
 recursive-include src/pykeg *.html *.css *.js *.png

@@ -18,13 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Clone of django-admin.py, with pykeg import hacks."""
-
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-from pykeg.core import importhacks
+import os
 from django.core import management
 
 if __name__ == "__main__":
+  os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pykeg.settings")
   management.execute_from_command_line()

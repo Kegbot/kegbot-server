@@ -27,24 +27,23 @@ REQUIRED = [
   'django-socialregistration >= 0.5.4',
   'django_extensions',
 
-  'facebook-sdk >= 0.3.0',
-
   'MySQL-python',
+  'South >= 0.7.3',
+  'django-crispy-forms',
+  'django-icanhaz',
+  'django_nose',
+  'facebook-sdk >= 0.3.0',
+  'foursquare',
+  'gunicorn >= 0.16.1',
   'pil',
+  'poster', # needed by foursquare
   'protobuf >= 2.4.1',
   'pylcdui >= 0.5.5',
   'pysqlite>=2.0.3',
   'python-gflags >= 1.8',
-  'South >= 0.7.3',
-  'django_nose',
-  'tweepy',
-  'django-icanhaz',
   'pytz',
-  'django-crispy-forms',
-
   'requests', # needed by oauth
-  'poster', # needed by foursquare
-  'foursquare',
+  'tweepy',
 ]
 
 OPTIONAL = [

@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'pykeg.web.account',
     'pykeg.web.charts',
     'pykeg.web.kegweb',
+    'gunicorn',
     'icanhaz',
     'registration',
     'socialregistration',
@@ -141,10 +142,10 @@ AUTHENTICATION_BACKENDS = (
 )
 
 CACHES = {
-    #'default': {
-    #    'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-    #    'LOCATION': 'cache',
-    #}
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'cache',
+    }
 }
 
 CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True

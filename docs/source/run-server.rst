@@ -27,7 +27,7 @@ overview page for your new Kegbot.
 
 Kegbot Server is 100% functional when running under this development server, but
 for better performance you'll want to run Kegbot with a "real" HTTP server.
-When you're ready, see :ref:`configure-apache` for instructions.
+When you're ready, see :ref:`production-setup` for instructions.
 
 Log in and configure Kegbot
 ---------------------------

@@ -17,6 +17,6 @@ Contents:
    configure-kegbot
    run-server
    extras
-   configure-apache
+   production-server
    upgrade-kegbot
    changelog

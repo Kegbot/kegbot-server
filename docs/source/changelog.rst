@@ -5,6 +5,16 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.4 (2012-11-20)
+--------------------------
+
+**General**
+
+* Fixed `bug 86 <https://github.com/Kegbot/kegbot/issues/86>`_ ("brewer matching
+  query does not exist")
+* Gunicorn is now included as a dependency.
+* Scripts and instructions for using with Gunicorn, Nginx, and supervisord.
+
 Version 0.9.3 (2012-11-02)
 --------------------------
 

@@ -31,6 +31,7 @@ Upgrade procedure
 
 3. Run any necessary database migrations::
 
+    (kb) $ kegbot-admin.py syncdb
     (kb) $ kegbot-admin.py migrate
 
 4. Regenerate statistics, in case new or updated stats are available::

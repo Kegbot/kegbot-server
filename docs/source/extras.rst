@@ -16,6 +16,8 @@ non-webserver process to run them in the background.  Kegbot uses `Celery
 To install Celery and related dependencies::
 
   (kb) $ pip install Celery django-celery django-kombu
+  (kb) $ kegbot-admin.py syncdb
+  (kb) $ kegbot-admin.py migrate
 
 Once Celery is installed, you can try running it in the foreground::
 

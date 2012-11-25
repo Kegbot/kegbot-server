@@ -35,7 +35,7 @@ REQUIRED = [
   'facebook-sdk >= 0.3.0',
   'foursquare',
   'gunicorn >= 0.16.1',
-  'pil',
+  'pillow',
   'poster', # needed by foursquare
   'protobuf >= 2.4.1',
   'pylcdui >= 0.5.5',

@@ -203,23 +203,31 @@ LOGGING = {
     'level': 'WARNING',
     'handlers': ['console'],  # replaced with sentry later, if available.
   },
-  'formatters': {
-    'verbose': {
-      'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+  'filters': {
+    'require_debug_true': {
+      '()': 'pykeg.core.logger.RequireDebugTrue',
     },
   },
   'handlers': {
     'console': {
       'level': 'DEBUG',
+      'filters': ['require_debug_true'],
       'class': 'logging.StreamHandler',
-      'formatter': 'verbose'
-    }
+    },
+    'null': {
+      'class': 'django.utils.log.NullHandler',
+    },
+    'cache': {
+      'level': 'ERROR',
+      'class': 'pykeg.core.logger.CacheHandler',
+    },
   },
   'loggers': {
-    'django.db.backends': {
-      'level': 'ERROR',
-      'handlers': ['console'],
-      'propagate': False,
+    'django': {
+      'handlers': ['console', 'cache'],
+    },
+    'pykeg': {
+      'handlers': ['console', 'cache'],
     },
     'raven': {
       'level': 'DEBUG',

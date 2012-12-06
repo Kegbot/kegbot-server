@@ -34,6 +34,7 @@ from django.forms import widgets
 from django.views.decorators.http import require_POST
 
 from pykeg.core import backup
+from pykeg.core import logger
 from pykeg.core import models
 from pykeg.connections.foursquare import forms as foursquare_forms
 from pykeg.connections.foursquare import models as foursquare_models
@@ -221,10 +222,6 @@ def create_tap(request):
   form = forms.ChangeKegForm()
 
 @staff_member_required
-def edit_keg(request, keg_id):
-  context = RequestContext(request)
-
-@staff_member_required
 def backup_restore(request):
   context = RequestContext(request)
   return render_to_response('kegadmin/backup-restore.html', context)
@@ -252,3 +249,10 @@ def generate_backup(request):
   response['Content-Disposition'] = 'attachment; filename=%s' % filename
   output_fp.close()
   return response
+
+@staff_member_required
+def logs(request):
+  context = RequestContext(request)
+  context['errors'] = logger.get_cached_logs()
+  return render_to_response('kegadmin/logs.html', context)
+

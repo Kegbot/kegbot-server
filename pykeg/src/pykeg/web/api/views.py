@@ -74,6 +74,15 @@ def wrap_exception(f):
       request = args[0]
       if settings.DEBUG and 'deb' in request.GET:
         raise exc_info[1], None, exc_info[2]
+
+      _LOGGER.error('%s: %s' % (e.__class__.__name__, e),
+          exc_info=exc_info,
+          extra={
+            'status_code': 500,
+            'request': request,
+          }
+      )
+
       result_data, http_code = ToJsonError(e, exc_info)
       result_data['meta'] = {
         'result': 'error'

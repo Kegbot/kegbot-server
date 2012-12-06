@@ -1,0 +1,31 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block pagetitle %}Kegbot Admin: Logs{% endblock %}
+
+{% block kegadmin-main %}
+<h2>Errors</h2>
+<div class="row">
+  <div class="span12">
+    <p>Recent server errors are shown below.</p>
+
+{% for error in errors %}
+    <h4>
+      {{ error.summary }}
+      <small>{{ error.when }}</small>
+    </h4>
+    {% if error.request_path %}
+    <code>{{ error.method }} {{ error.request_path }}</code>
+    {% if error.username %}
+    ({{ error.username }})
+    {% endif %}
+    {% endif %}
+    <pre>
+{{ error.exc_text }}
+    </pre>
+{% endfor %}
+
+  </div>
+</div>
+{% endblock %}

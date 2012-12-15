@@ -23,7 +23,6 @@ from functools import wraps
 import logging
 import sys
 import traceback
-from decimal import Decimal
 import types
 
 from google.protobuf.message import Message
@@ -37,8 +36,6 @@ from django.db.utils import IntegrityError
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.template import RequestContext
-from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.db.models.query import QuerySet
@@ -249,7 +246,6 @@ def all_kegs(request):
 @py_to_json
 def all_drinks(request, limit=100):
   qs = request.kbsite.drinks.valid()
-  total = len(qs)
   if 'start' in request.GET:
     try:
       start = int(request.GET['start'])
@@ -259,7 +255,6 @@ def all_drinks(request, limit=100):
   qs = qs.order_by('-seqn')
   qs = qs[:limit]
   start = qs[0].seqn
-  count = len(qs)
   return qs
 
 @py_to_json
@@ -320,7 +315,6 @@ def all_sessions(request):
 
 @py_to_json
 def current_session(request):
-  current = None
   try:
     latest = request.kbsite.sessions.latest()
     if latest.IsActiveNow():

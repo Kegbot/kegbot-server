@@ -19,21 +19,15 @@
 """Celery tasks for Twitter."""
 
 from kegbot.util import util
-from kegbot.util import kbjson
 
 from pykeg.connections import common
 
-from urllib import urlencode
-import urllib2
-import logging
 import tweepy
 from django.contrib.sites.models import Site
 
 from celery.task import task
 
 logger = common.get_logger(__name__)
-
-from django.conf import settings
 
 @task
 def tweet_event(event):
@@ -122,7 +116,7 @@ def do_system_tweet(event, kbvars):
     tweet = add_hashtag(tweet)
     logger.info('Sending system tweet: %s' % tweet)
     try:
-      ret = system_api.update_status(tweet)
+      system_api.update_status(tweet)
     except tweepy.TweepError, e:
       logger.error('Error posting tweet: %s' % str(e))
 
@@ -158,6 +152,6 @@ def do_user_tweet(event, kbvars):
     tweet = add_hashtag(tweet)
     logger.info('Sending user tweet: %s' % tweet)
     try:
-      ret = user_api.update_status(tweet)
+      user_api.update_status(tweet)
     except tweepy.TweepError, e:
       logger.error('Error posting tweet: %s' % str(e))

@@ -19,18 +19,14 @@
 """Kegweb API client."""
 
 import datetime
-import functools
-import socket
 import sys
-import types
-import urllib2
-
-from kegbot.util import kbjson
-
 import urllib2
 from urllib import urlencode
 from urllib2 import HTTPError
 from urllib2 import URLError
+
+
+from kegbot.util import kbjson
 
 import gflags
 

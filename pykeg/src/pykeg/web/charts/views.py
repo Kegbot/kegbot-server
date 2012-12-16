@@ -21,48 +21,48 @@
 from django.shortcuts import get_object_or_404
 
 from pykeg.core import models
-from pykeg.web.api.views import py_to_json
+from pykeg.web.api.views import api_view
 from pykeg.web.charts import charts
 
-@py_to_json
+@api_view
 def temperature_sensor_history(request, nice_name):
   sensor = get_object_or_404(models.ThermoSensor, nice_name=nice_name,
       site=request.kbsite)
   return charts.TemperatureSensorChart(sensor)
 
-@py_to_json
+@api_view
 def keg_volume(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return charts.KegVolumeChart(keg)
 
-@py_to_json
+@api_view
 def keg_usage_weekdays(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return charts.KegUsageByWeekday(keg)
 
-@py_to_json
+@api_view
 def keg_users_by_volume(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return charts.UsersByVolume(keg)
 
-@py_to_json
+@api_view
 def user_usage_weekdays(request, username):
   user = get_object_or_404(models.User, username=username)
   return charts.UserSessionsByWeekday(user)
 
-@py_to_json
+@api_view
 def user_usage_sessions(request, username):
   user = get_object_or_404(models.User, username=username)
   sessions = user.user_session_chunks.all()
   return charts.SessionVolumes(sessions)
 
-@py_to_json
+@api_view
 def user_session_chunks(request, chunk_id):
   chunk = get_object_or_404(models.UserSessionChunk, site=request.kbsite,
       seqn=chunk_id)
   return charts.UserSessionChunks(chunk)
 
-@py_to_json
+@api_view
 def session_users_by_volume(request, session_id):
   session = get_object_or_404(models.DrinkingSession,
       site=request.kbsite, seqn=session_id)

@@ -130,9 +130,13 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+
+    'pykeg.web.api.middleware.WrapExceptionMiddleware',
     'pykeg.web.middleware.KegbotSiteMiddleware',
     'pykeg.web.middleware.SiteActiveMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',
+    'pykeg.web.api.middleware.CheckAccessMiddleware',
+
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
 )

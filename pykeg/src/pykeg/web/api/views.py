@@ -34,7 +34,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.db.utils import IntegrityError
 
 from django.http import Http404
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
@@ -51,6 +50,7 @@ from pykeg.core import models
 from pykeg.proto import protolib
 from pykeg.web.api import apikey
 from pykeg.web.api import forms
+from pykeg.web.api import util
 
 if settings.HAVE_CELERY:
   from pykeg.web import tasks
@@ -62,113 +62,11 @@ _LOGGER = logging.getLogger(__name__)
 
 ### Decorators
 
-def wrap_exception(f):
-  def new_function(*args, **kwargs):
-    try:
-      return f(*args, **kwargs)
-    except Exception, e:
-      exc_info = sys.exc_info()
-      request = args[0]
-      if settings.DEBUG and 'deb' in request.GET:
-        raise exc_info[1], None, exc_info[2]
-
-      _LOGGER.error('%s: %s' % (e.__class__.__name__, e),
-          exc_info=exc_info,
-          extra={
-            'status_code': 500,
-            'request': request,
-          }
-      )
-
-      result_data, http_code = ToJsonError(e, exc_info)
-      result_data['meta'] = {
-        'result': 'error'
-      }
-      return HttpResponse(kbjson.dumps(result_data, indent=2),
-          mimetype='application/json', status=http_code)
-  return wraps(f)(new_function)
-
-def check_api_key(request):
-  keystr = request.META.get('HTTP_X_KEGBOT_API_KEY')
-  if not keystr:
-    keystr = request.REQUEST.get('api_key')
-  if not keystr:
-    raise kbapi.NoAuthTokenError('The parameter "api_key" is required')
-
-  try:
-    key = apikey.ApiKey.FromString(keystr)
-  except ValueError, e:
-    raise kbapi.BadApiKeyError('Error parsing API key: %s' % e)
-
-  try:
-    user = models.User.objects.get(pk=key.uid())
-  except models.User.DoesNotExist:
-    raise kbapi.BadApiKeyError('API user %s does not exist' % key.uid())
-
-  if not user.is_active:
-    raise kbapi.BadApiKeyError('User is inactive')
-
-  if not user.is_staff and not user.is_superuser:
-    raise kbapi.PermissionDeniedError('User is not staff/superuser')
-
-  user_secret = user.get_profile().api_secret
-  if not user_secret or user_secret != key.secret():
-    raise kbapi.BadApiKeyError('User secret does not match')
-
-  request.kb_api_authenticated = True
-
 def auth_required(viewfunc):
-  # Set the auth_required flag, validated by
-  # pykeg.web.middleware.ApiKeyMiddleware
-  viewfunc.kb_api_key_required = True
-  def new_function(*args, **kwargs):
-    request = args[0]
-    if not getattr(request, 'kb_api_authenticated', False):
-      check_api_key(request)
-    return viewfunc(*args, **kwargs)
-  return wraps(viewfunc)(new_function)
+  util.set_view_requires_authentication(viewfunc)
+  return viewfunc
 
-def staff_required(viewfunc):
-  def _check_token(request, *args, **kwargs):
-    if not request.user or (not request.user.is_staff and not \
-        request.user.is_superuser):
-      raise kbapi.PermissionDeniedError, "Logged-in staff user required"
-    return viewfunc(request, *args, **kwargs)
-  return wraps(viewfunc)(_check_token)
-
-def ToJsonError(e, exc_info):
-  """Converts an exception to an API error response."""
-  # Wrap some common exception types into kbapi types
-  if isinstance(e, Http404):
-    e = kbapi.NotFoundError(e.message)
-  elif isinstance(e, ValueError):
-    e = kbapi.BadRequestError(str(e))
-  elif isinstance(e, backend.NoTokenError):
-    e = kbapi.NotFoundError(e.message)
-
-  # Now determine the response based on the exception type.
-  if isinstance(e, kbapi.Error):
-    code = e.__class__.__name__
-    http_code = e.HTTP_CODE
-    message = e.Message()
-  else:
-    code = 'ServerError'
-    http_code = 500
-    message = 'An internal error occurred: %s' % str(e)
-    if settings.DEBUG:
-      message += "\n" + "\n".join(traceback.format_exception(*exc_info))
-  if settings.DEBUG and settings.HAVE_RAVEN:
-    from raven.contrib.django.models import client
-    client.captureException()
-  result = {
-    'error' : {
-      'code' : code,
-      'message' : message
-    }
-  }
-  return result, http_code
-
-def py_to_json(f):
+def api_view(f):
   """Decorator that wraps an API method.
 
   The decorator transforms the method in a few ways:
@@ -178,28 +76,16 @@ def py_to_json(f):
     - If an exception is thrown during the method, it is converted to a protocol
       error message.
   """
+  util.set_is_api_view(f)
   @never_cache
-  @wrap_exception
   def new_function(*args, **kwargs):
     request = args[0]
     http_code = 200
-    indent = 2
-    if 'indent' in request.GET:
-      if request.GET['indent'] == '':
-        indent = None
-      else:
-        try:
-          indent_val = int(request.GET['indent'])
-          if indent_val >= 0 and indent_val <= 8:
-            indent = indent_val
-        except ValueError:
-          pass
     result_data = prepare_data(f(*args, **kwargs))
     result_data['meta'] = {
       'result': 'ok'
     }
-    return HttpResponse(kbjson.dumps(result_data, indent=indent),
-        mimetype='application/json', status=http_code)
+    return util.build_response(result_data, http_code)
   return wraps(f)(new_function)
 
 def prepare_data(data, inner=False):
@@ -239,11 +125,11 @@ def _form_errors(form):
 
 ### Endpoints
 
-@py_to_json
+@api_view
 def all_kegs(request):
   return request.kbsite.kegs.all().order_by('-start_time')
 
-@py_to_json
+@api_view
 def all_drinks(request, limit=100):
   qs = request.kbsite.drinks.valid()
   if 'start' in request.GET:
@@ -257,13 +143,13 @@ def all_drinks(request, limit=100):
   start = qs[0].seqn
   return qs
 
-@py_to_json
+@api_view
 def get_drink(request, drink_id):
   drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
   return protolib.ToProto(drink, full=True)
 
 @csrf_exempt
-@py_to_json
+@api_view
 @auth_required
 def add_drink_photo(request, drink_id):
   if request.method != 'POST':
@@ -280,40 +166,40 @@ def add_drink_photo(request, drink_id):
     tasks.handle_new_picture.delay(pic.id)
   return protolib.ToProto(pic, full=True)
 
-@py_to_json
+@api_view
 def get_session(request, session_id):
   session = get_object_or_404(models.DrinkingSession, seqn=session_id,
       site=request.kbsite)
   return protolib.ToProto(session, full=True)
 
-@py_to_json
+@api_view
 def get_session_stats(request, session_id):
   session = get_object_or_404(models.DrinkingSession, seqn=session_id,
       site=request.kbsite)
   return session.GetStats()
 
-@py_to_json
+@api_view
 def get_keg(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return protolib.ToProto(keg, full=True)
 
-@py_to_json
+@api_view
 def get_keg_drinks(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return keg.drinks.valid()
 
-@py_to_json
+@api_view
 def get_keg_events(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   events = keg.events.all()
   events = apply_since(request, events)
   return events
 
-@py_to_json
+@api_view
 def all_sessions(request):
   return request.kbsite.sessions.all()
 
-@py_to_json
+@api_view
 def current_session(request):
   try:
     latest = request.kbsite.sessions.latest()
@@ -322,7 +208,7 @@ def current_session(request):
   except models.DrinkingSession.DoesNotExist:
     raise Http404
 
-@py_to_json
+@api_view
 def all_events(request):
   events = request.kbsite.events.all().order_by('-seqn')
   events = apply_since(request, events)
@@ -340,56 +226,56 @@ def apply_since(request, query):
       pass
   return query
 
-@py_to_json
+@api_view
 @auth_required
 def all_sound_events(request):
   return soundserver_models.SoundEvent.objects.all()
 
-@py_to_json
+@api_view
 def get_keg_sessions(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   sessions = [c.session for c in keg.keg_session_chunks.all()]
   return sessions
 
-@py_to_json
+@api_view
 def get_keg_stats(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return keg.GetStatsRecord()
 
-@py_to_json
+@api_view
 def get_system_stats(request):
   return request.kbsite.GetStatsRecord()
 
-@py_to_json
+@api_view
 def all_taps(request):
   return request.kbsite.taps.all().order_by('name')
 
-@py_to_json
+@api_view
 @auth_required
 def user_list(request):
   return models.User.objects.filter(is_active=True).order_by('username')
 
-@py_to_json
+@api_view
 def get_user(request, username):
   user = get_object_or_404(models.User, username=username)
   return protolib.ToProto(user, full=True)
 
-@py_to_json
+@api_view
 def get_user_drinks(request, username):
   user = get_object_or_404(models.User, username=username)
   return user.drinks.valid()
 
-@py_to_json
+@api_view
 def get_user_events(request, username):
   user = get_object_or_404(models.User, username=username)
   return user.events.all()
 
-@py_to_json
+@api_view
 def get_user_stats(request, username):
   user = get_object_or_404(models.User, username=username)
   return user.get_profile().GetStatsRecord()
 
-@py_to_json
+@api_view
 @auth_required
 def get_auth_token(request, auth_device, token_value):
   b = KegbotBackend(site=request.kbsite)
@@ -397,7 +283,7 @@ def get_auth_token(request, auth_device, token_value):
   return tok
 
 @csrf_exempt
-@py_to_json
+@api_view
 @auth_required
 def assign_auth_token(request, auth_device, token_value):
   if not request.POST:
@@ -424,7 +310,7 @@ def assign_auth_token(request, auth_device, token_value):
   except backend.NoTokenError:
     return b.CreateAuthToken(auth_device, token_value, username=username)
 
-@py_to_json
+@api_view
 def all_thermo_sensors(request):
   return request.kbsite.thermosensors.all()
 
@@ -447,7 +333,7 @@ def get_thermo_sensor(request, sensor_name):
   else:
     return _thermo_sensor_get(request, sensor_name)
 
-@py_to_json
+@api_view
 def _thermo_sensor_get(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
   logs = sensor.thermolog_set.all()
@@ -464,7 +350,7 @@ def _thermo_sensor_get(request, sensor_name):
   }
   return res
 
-@py_to_json
+@api_view
 @auth_required
 def _thermo_sensor_post(request, sensor_name):
   form = forms.ThermoPostForm(request.POST)
@@ -477,12 +363,12 @@ def _thermo_sensor_post(request, sensor_name):
   # TODO(mikey): use form fields to compute `when`
   return b.LogSensorReading(sensor.raw_name, cd['temp_c'])
 
-@py_to_json
+@api_view
 def get_thermo_sensor_logs(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
   return sensor.thermolog_set.all()[:60*2]
 
-@py_to_json
+@api_view
 def get_api_key(request):
   user = request.user
   api_key = ''
@@ -497,12 +383,12 @@ def tap_detail(request, tap_id):
   else:
     return _tap_detail_get(request, tap_id)
 
-@py_to_json
+@api_view
 def _tap_detail_get(request, tap_id):
   tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
   return protolib.ToProto(tap, full=True)
 
-@py_to_json
+@api_view
 @auth_required
 def _tap_detail_post(request, tap):
   form = forms.DrinkPostForm(request.POST)
@@ -535,7 +421,7 @@ def _tap_detail_post(request, tap):
     raise kbapi.ServerError(str(e))
 
 @csrf_exempt
-@py_to_json
+@api_view
 @auth_required
 def cancel_drink(request):
   #if request.method != 'POST':
@@ -553,7 +439,7 @@ def cancel_drink(request):
     raise kbapi.ServerError(str(e))
 
 @csrf_exempt
-@py_to_json
+@api_view
 def login(request):
   if request.POST:
     form = AuthenticationForm(data=request.POST)
@@ -566,13 +452,13 @@ def login(request):
       raise kbapi.PermissionDeniedError('Login failed.')
   raise kbapi.BadRequestError('POST required.')
 
-@py_to_json
+@api_view
 def logout(request):
   auth_logout(request)
   return {'result': 'ok'}
 
 @csrf_exempt
-@py_to_json
+@api_view
 @auth_required
 def register(request):
   if not request.POST:
@@ -604,7 +490,7 @@ def register(request):
       errors['username'] = user_errs
   raise kbapi.BadRequestError(errors)
 
-@py_to_json
+@api_view
 def default_handler(request):
   raise Http404, "Not an API endpoint: %s" % request.path[:100]
 
@@ -616,7 +502,7 @@ if settings.HAVE_RAVEN and settings.HAVE_SENTRY:
       return GroupedMessage.objects.from_kwargs(**kwargs)
 
 @csrf_exempt
-@py_to_json
+@api_view
 @auth_required
 def debug_log(request):
   if request.method != 'POST' or not settings.HAVE_RAVEN or not settings.HAVE_SENTRY:

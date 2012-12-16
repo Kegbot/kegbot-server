@@ -1,4 +1,4 @@
-# Copyright 2011 Mike Wakerly <opensource@hoho.com>
+# Copyright 2012 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -17,7 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from pykeg.core import models
-from pykeg.web.api.views import check_api_key
+from pykeg.web.api import util as apiutil
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -28,6 +28,7 @@ from django.template import RequestContext
 
 ALLOWED_PATHS = (
     '/api/login/',
+    '/api/get-api-key/',
     '/accounts/login/',
     '/admin/',
     '/media/',
@@ -58,6 +59,7 @@ class KegbotSiteMiddleware:
       pass
     return None
 
+
 class SiteActiveMiddleware:
   """Middleware which throws 503s when KegbotSite.is_active is false."""
   def process_view(self, request, view_func, view_args, view_kwargs):
@@ -79,13 +81,15 @@ class SiteActiveMiddleware:
 
     return HttpResponse('Site temporarily unavailable', status=503)
 
+
 class PrivacyMiddleware:
+  """Enforces site privacy settings."""
   def process_view(self, request, view_func, view_args, view_kwargs):
     if not hasattr(request, 'kbsite'):
       return None
     elif _path_allowed(request.path, request.kbsite):
       return None
-    elif getattr(request, 'kb_api_authenticated', False):
+    elif apiutil.request_is_authenticated(request):
       # This is an auth-required kb api view; no need to check privacy since API
       # keys are given staff-level access.
       return None
@@ -95,17 +99,21 @@ class PrivacyMiddleware:
       return None
 
     # If non-public, apply the API key check.
-    if view_func.__module__.startswith('pykeg.web.api'):
-      check_api_key(request)
+    if apiutil.is_api_view(view_func):
+      try:
+        apiutil.check_api_key(request)
+        return
+      except Exception, e:
+        return apiutil.wrap_exception(request, e)
 
     if privacy == 'staff' and not request.user.is_staff:
       return SimpleTemplateResponse('kegweb/staff_only.html',
-          context=RequestContext(request), status=503)
+          context=RequestContext(request), status=401)
     elif privacy == 'members':
       if not request.user.is_authenticated or not request.user.is_active:
         return SimpleTemplateResponse('kegweb/members_only.html',
-            context=RequestContext(request), status=503)
+            context=RequestContext(request), status=401)
       return None
 
-    return HttpResponse('Server misconfigured, unknown privacy setting:%s' % privacy, status=503)
+    return HttpResponse('Server misconfigured, unknown privacy setting:%s' % privacy, status=500)
 

@@ -5,18 +5,25 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.6 (2012-12-30)
+--------------------------
+
+* Fixed a bug breaking Twitter checkins.
+
 Version 0.9.5 (2012-12-30)
 --------------------------
 
-**General**
+* A new admin tab shows recent server error logs.
+* Pillow is now used instead of PIL.
+
+Version 0.9.5 (2012-12-30)
+--------------------------
 
 * A new admin tab shows recent server error logs.
 * Pillow is now used instead of PIL.
 
 Version 0.9.4 (2012-11-20)
 --------------------------
-
-**General**
 
 * Fixed `bug 86 <https://github.com/Kegbot/kegbot/issues/86>`_ ("brewer matching
   query does not exist")
@@ -25,8 +32,6 @@ Version 0.9.4 (2012-11-20)
 
 Version 0.9.3 (2012-11-02)
 --------------------------
-
-**General**
 
 * Uploaded images are converted to JPEG instead of PNG.
 * Account registration links are more prominent.

@@ -5,6 +5,14 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.5 (2012-12-30)
+--------------------------
+
+**General**
+
+* A new admin tab shows recent server error logs.
+* Pillow is now used instead of PIL.
+
 Version 0.9.4 (2012-11-20)
 --------------------------
 

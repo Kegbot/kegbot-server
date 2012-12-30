@@ -325,7 +325,6 @@ except ImportError:
 
 ### socialregistration (after importing common settings)
 if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:
-  #INSTALLED_APPS += ('pykeg.contrib.facebook',)
   MIDDLEWARE_CLASSES += (
     'socialregistration.middleware.FacebookMiddleware',
   )

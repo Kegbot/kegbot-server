@@ -18,8 +18,7 @@
 
 """Celery tasks for Twitter."""
 
-from kegbot.util import util
-
+from . import util
 from pykeg.connections import common
 
 import tweepy

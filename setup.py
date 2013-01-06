@@ -57,12 +57,8 @@ def setup_package():
       author = 'mike wakerly',
       author_email = 'opensource@hoho.com',
       url = 'http://kegbot.org/',
-      packages = find_packages('src'),
-      package_dir = {
-        '' : 'src',
-      },
+      packages = find_packages(''),
       scripts = [
-        'distribute_setup.py',
         'bin/kegbot-admin.py',
       ],
       install_requires = DEPENDENCIES,

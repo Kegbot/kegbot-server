@@ -131,6 +131,12 @@ class SetupStep(object):
     """
     ctx[self.__class__] = self.value
 
+  def apply(self, ctx):
+    pass
+
+  def save(self, ctx):
+    pass
+
   def add_to_settings(self, ctx, outfd):
     pass
 
@@ -192,6 +198,28 @@ class ConfigurationSetupStep(SetupStep):
 
   def apply(self, ctx):
     pass
+
+### Main Steps
+
+class RequiredLibraries(SetupStep):
+  def validate(self, ctx):
+    try:
+        from PIL import Image, ImageColor, ImageChops, ImageEnhance, ImageFile, \
+                ImageFilter, ImageDraw, ImageStat
+    except ImportError:
+        try:
+            import Image
+            import ImageColor
+            import ImageChops
+            import ImageEnhance
+            import ImageFile
+            import ImageFilter
+            import ImageDraw
+            import ImageStat
+        except ImportError:
+            raise FatalError('Could not locate Python Imaging Library, '
+                'please install it ("pip install pillow" or "apt-get install python-imaging")')
+
 
 class SettingsPath(ConfigurationSetupStep):
   """Select the settings file location.
@@ -325,6 +353,7 @@ class ConfigureDatabase(ConfigurationSetupStep):
 
 
 STEPS = [
+    RequiredLibraries(),
     SettingsPath(),
     KegbotDataRoot(),
     DatabaseChoice(),
@@ -424,7 +453,7 @@ class SetupApp(app.App):
     print 'Done!'
     print ''
     print 'You may now run the dev server:'
-    print '  kegbot-admin.py runserver'
+    print 'kegbot-admin.py runserver 0.0.0.0:8000'
 
   def run_command(self, s):
     print 'Running command: %s' % s

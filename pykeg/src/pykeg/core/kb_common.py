@@ -1,3 +1,9 @@
+# Where to look for local_settings.py
+LOCAL_SETTINGS_SEARCH_DIRS = (
+    '~/.kegbot/',
+    '/etc/kegbot/',
+)
+
 ### Drink-related constants
 
 # Don't record teeny drinks

@@ -10,13 +10,10 @@ kegerator.  For more information and documentation, see http://kegbot.org/
 
 DOCLINES = __doc__.split('\n')
 
-# Change this to True to include optional dependencies
-USE_OPTIONAL = False
-
 VERSION = '0.9.6'
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
-REQUIRED = [
+DEPENDENCIES = [
   'kegbot-pyutils >= 0.1.4',
   'kegbot-api >= 0.1.2',
 
@@ -27,7 +24,10 @@ REQUIRED = [
   'django-socialregistration >= 0.5.4',
   'django_extensions',
 
-  'MySQL-python',
+  'Celery',
+  'django-celery',
+  'django-kombu',
+
   'South >= 0.7.3',
   'django-crispy-forms',
   'django-icanhaz',
@@ -35,42 +35,14 @@ REQUIRED = [
   'facebook-sdk >= 0.3.0',
   'foursquare',
   'gunicorn >= 0.16.1',
-  'pillow',
   'poster', # needed by foursquare
   'protobuf >= 2.4.1',
   'pylcdui >= 0.5.5',
-  'pysqlite>=2.0.3',
   'python-gflags >= 1.8',
   'pytz',
   'requests', # needed by oauth
   'tweepy',
 ]
-
-OPTIONAL = [
-  ### Optional modules.
-  # This modules 'pip install'd manually.  If you add to this list, also
-  # update pykeg.core.optional_modules with a new 'HAVE_<MODULE>' flag, as
-  # well as pykeg.settings (if needed).
-
-  ### django-debug-toolbar
-  'django-debug-toolbar',
-
-  ### Celery
-  'Celery',
-  'django-celery',
-  'django-kombu',
-
-  ### Raven
-  'raven',
-
-  ### Sentry
-  'sentry',
-]
-
-DEPENDENCIES = REQUIRED
-if USE_OPTIONAL:
-  DEPENDENCIES += OPTIONAL
-
 
 def setup_package():
   from distribute_setup import use_setuptools
@@ -101,7 +73,6 @@ def setup_package():
       entry_points = {
         'console_scripts': ['instance=django.core.management:execute_manager'],
       },
-
   )
 
 if __name__ == '__main__':

@@ -25,8 +25,6 @@ import sys
 import traceback
 import types
 
-from google.protobuf.message import Message
-
 from django.conf import settings
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -107,8 +105,6 @@ def prepare_data(data, inner=False):
     }
 
 def to_dict(data):
-  if not isinstance(data, Message):
-    data = protolib.ToProto(data, full=True)
   return protoutil.ProtoMessageToDict(data)
 
 ### Helpers

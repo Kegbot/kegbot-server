@@ -15,7 +15,7 @@ SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 DEPENDENCIES = [
   'kegbot-pyutils >= 0.1.4',
-  'kegbot-api >= 0.1.2',
+  'kegbot-api >= 0.1.5',
 
   'django >= 1.3',
   'django-autoslug',
@@ -36,7 +36,6 @@ DEPENDENCIES = [
   'foursquare',
   'gunicorn >= 0.16.1',
   'poster', # needed by foursquare
-  'protobuf >= 2.4.1',
   'pylcdui >= 0.5.5',
   'python-gflags >= 1.8',
   'pytz',

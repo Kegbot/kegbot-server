@@ -329,5 +329,5 @@ if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:
 
 if TWITTER_CONSUMER_KEY and TWITTER_CONSUMER_SECRET_KEY:
   AUTHENTICATION_BACKENDS += (
-    'socialregistration.auth.TwitterAuth',
+    'socialregistration.contrib.twitter.auth.TwitterAuth',
   )

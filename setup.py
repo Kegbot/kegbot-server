@@ -15,7 +15,7 @@ SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 DEPENDENCIES = [
   'kegbot-pyutils >= 0.1.4',
-  'kegbot-api >= 0.1.5',
+  'kegbot-api == 0.1.2',
 
   'django >= 1.3',
   'django-autoslug',

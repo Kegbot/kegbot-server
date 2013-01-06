@@ -7,6 +7,19 @@ Kegbot Server is the web service behind Kegbot.  It serves as both a frontend fo
 visual navigaton of drinking activity, as well as the backend for all Kegbot
 data.
 
+Quick Install
+-------------
+
+Ultra-quick install instructions for the experienced and impatient::
+  
+  $ virtualenv ~/kb                 # create a new home for kegbot
+  $ . ~/kb/bin/activate             # step into it
+  (kb) $ pip install kegbot         # install the latest kegbot release
+  (kb) $ setup-kegbot.py            # interactive configuration tool
+  (kb) $ kegbot-admin.py runserver  # run the dev web server
+  Development server is running at http://127.0.0.1:8000/
+
+
 Features
 --------
 

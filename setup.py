@@ -44,7 +44,6 @@ DEPENDENCIES = [
 ]
 
 def setup_package():
-
   setup(
       name = 'kegbot',
       version = VERSION,
@@ -56,6 +55,7 @@ def setup_package():
       packages = find_packages(),
       scripts = [
         'bin/kegbot-admin.py',
+        'bin/setup-kegbot.py',
       ],
       install_requires = DEPENDENCIES,
       include_package_data = True,

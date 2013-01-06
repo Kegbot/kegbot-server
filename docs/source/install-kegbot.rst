@@ -1,8 +1,10 @@
 .. _kegbot-install:
 
-Install Kegbot Server
-=====================
+Install the Kegbot Server Package
+=================================
 
+In the previous section, you installed a database program that Kegbot will use
+for data storage.  It is now time to install the Kegbot Server program.
 
 Install dependencies
 --------------------
@@ -33,8 +35,8 @@ On Mac OS X, we recommend using MacPorts to install the tools::
 
 .. _run-virtualenv:
 
-Using virtualenv
-----------------
+Create a virtualenv
+-------------------
 
 The ``virtualenv`` tool creates a directory where Kegbot Server and all of its
 Python dependencies will be stored.  It makes it easier to install and run

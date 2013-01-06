@@ -14,7 +14,7 @@ is not a high performance web server, but works well during testing.
 
 Launch the web server with the following command::
 
-  $ kegbot-admin.py runserver
+  (kb) $ kegbot-admin.py runserver
   Validating models...
 
   0 errors found
@@ -50,3 +50,10 @@ machine.  To allow external computers to reach this server, specify the bind
 address when running it::
 
   $ kegbot-admin.py runserver 0.0.0.0:8000
+
+Next steps
+----------
+
+Congratulations!  Your Kegbot Server should be basically functional: ready to
+accept new user registrations and drink reports.  In the next chapters, we'll go
+over tweaking your setup for a long-running production environment.

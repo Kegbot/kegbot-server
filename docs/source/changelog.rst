@@ -5,16 +5,15 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+
+* New tool: ``setup-kegbot.py``, to assist with first-time setup.
+
 Version 0.9.6 (2012-12-30)
 --------------------------
 
 * Fixed a bug breaking Twitter checkins.
-
-Version 0.9.5 (2012-12-30)
---------------------------
-
-* A new admin tab shows recent server error logs.
-* Pillow is now used instead of PIL.
 
 Version 0.9.5 (2012-12-30)
 --------------------------

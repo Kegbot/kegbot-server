@@ -2,6 +2,10 @@
 # Edit settings, then copy this file to /etc/kegbot/local_settings.py or
 # ~/.kegbot/local_settings.py
 
+# Disable DEBUG mode when serving external traffic.
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
 ### Database configuration
 
 # Database settings.  Edit so that one is named 'default'.
@@ -25,16 +29,6 @@ DATABASES = {
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'p7jep28p$+7kb8n=qr+1!i80&5d&!2q_lruhs-%rs(urq4)f*j'
-
-# Disable DEBUG mode when serving external traffic.
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-
-ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
-)
-
-MANAGERS = ADMINS
 
 ### Timezone and language
 
@@ -83,13 +77,3 @@ FOURSQUARE_REQUEST_PERMISSIONS = ''
 # You'll need an API key from Untappd to enable Untappd features.
 UNTAPPD_API_KEY = ''
 GMT_OFFSET = '-8'
-
-### django-storages
-### Uncomment to use AWS as a backend for static/media files.
-#AWS_ACCESS_KEY_ID = 'xxx'
-#AWS_SECRET_ACCESS_KEY = 'yyy'
-#AWS_STORAGE_BUCKET_NAME = 'kegbot'
-#AWS_QUERYSTRING_AUTH = False
-#AWS_S3_SECURE_URLS = False
-#DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-#STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """Kegbot kegerator controller software
 
 This package contains Kegbot core controller and Django
@@ -8,9 +9,11 @@ Kegbot is a hardware and software system to record and monitor access to a beer
 kegerator.  For more information and documentation, see http://kegbot.org/
 """
 
+from setuptools import setup, find_packages
+
 DOCLINES = __doc__.split('\n')
 
-VERSION = '0.9.6'
+VERSION = '0.9.7-pre'
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 DEPENDENCIES = [
@@ -45,9 +48,6 @@ DEPENDENCIES = [
 ]
 
 def setup_package():
-  from distribute_setup import use_setuptools
-  use_setuptools()
-  from setuptools import setup, find_packages
 
   setup(
       name = 'kegbot',
@@ -62,9 +62,6 @@ def setup_package():
         'bin/kegbot-admin.py',
       ],
       install_requires = DEPENDENCIES,
-      dependency_links = [
-          'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
-      ],
       include_package_data = True,
       entry_points = {
         'console_scripts': ['instance=django.core.management:execute_manager'],

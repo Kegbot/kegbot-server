@@ -7,7 +7,7 @@ kegerator.  For more information and documentation, see http://kegbot.org/
 """
 
 from setuptools import setup, find_packages
-from pykeg import __version__ as version
+from pykeg import __version__ as VERSION
 
 DOCLINES = __doc__.split('\n')
 

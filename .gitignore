@@ -2,34 +2,15 @@
 *.DS_Store
 *.pyc
 *.egg
+*.egg-info
 
 ### docs
 docs/build
 
 ### pykeg
-pykeg/build
-pykeg/dist
-pykeg/distribute*gz
-pykeg/kegbot.log
-pykeg/media
-pykeg/setup.log
-pykeg/sounds
-pykeg/src/kegbot.egg-info
-pykeg/src/pykeg/web/media/beerdb
-pykeg/src/pykeg/web/media/cache
-pykeg/src/pykeg/web/media/mugshots
-pykeg/src/pykeg/web/media/sounds
-pykeg/static
+build
+dist
 
-# AppEngine development files
-pykeg/src/pykeg/common_settings.py
-pykeg/src/app.yaml
-
-### controller
-controller/kegboard/build-cli
-controller/kegboard/board/*.b\#*
-controller/kegboard/board/*.s\#*
-
-### Eclipse files
-.project
-.pydevproject
+# Developer testing.
+media/
+static/

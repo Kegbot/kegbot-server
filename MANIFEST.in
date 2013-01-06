@@ -1,4 +1,4 @@
-include README.txt
+include README.md
 include LICENSE.txt
-include local_settings.py.example
-recursive-include src/pykeg *.html *.css *.js *.png
+recursive-include pykeg *.html *.css *.js *.png
+recursive-include deploy *

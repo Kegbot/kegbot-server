@@ -1,19 +1,16 @@
 #!/usr/bin/env python
 
-"""Kegbot kegerator controller software
-
-This package contains Kegbot core controller and Django
-frontend package.
+"""Kegbot Beer Kegerator Server package.
 
 Kegbot is a hardware and software system to record and monitor access to a beer
 kegerator.  For more information and documentation, see http://kegbot.org/
 """
 
 from setuptools import setup, find_packages
+from pykeg import __version__ as version
 
 DOCLINES = __doc__.split('\n')
 
-VERSION = '0.9.7-pre'
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 DEPENDENCIES = [

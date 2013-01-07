@@ -64,6 +64,9 @@ class KegbotSite(models.Model):
       help_text='A short single-word name for this site, eg "default" or "sfo"')
   is_active = models.BooleanField(default=True,
       help_text='On/off switch for this site.')
+  is_setup = models.BooleanField(default=True,
+      help_text='True if the site has completed setup.',
+      editable=False)
 
   def __str__(self):
     return self.name

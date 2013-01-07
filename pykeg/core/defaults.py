@@ -33,7 +33,7 @@ def set_defaults(force=False):
   if not force and db_is_installed():
     raise RuntimeError, "Database is already installed."
 
-  site = models.KegbotSite.objects.create(name='default')
+  site = models.KegbotSite.objects.create(name='default', is_setup=False)
 
   # KegTap defaults
   main_tap = models.KegTap(site=site, name='Main Tap', meter_name='kegboard.flow0')

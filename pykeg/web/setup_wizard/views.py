@@ -87,7 +87,7 @@ def finish(request):
   if request.method == 'POST':
     request.kbsite.is_setup = True
     request.kbsite.save()
-    messages.success(request, 'Tip: Install a new Keg in Admin: Taps</em>"')
+    messages.success(request, 'Tip: Install a new Keg in Admin: Taps')
     result_url = reverse('kb-home', args=[request.kbsite.url()])
     return redirect_to(request, result_url)
   return render_to_response('setup_wizard/finish.html', context)

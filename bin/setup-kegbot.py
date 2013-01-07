@@ -32,6 +32,7 @@ import gflags
 import getpass
 import pprint
 import subprocess
+from random import choice
 
 import pytz
 from kegbot.util import app
@@ -261,6 +262,10 @@ class SettingsPath(ConfigurationSetupStep):
         os.makedirs(dirname)
       except OSError, e:
         raise FatalError("Couldn't create settings dir '%s': %s" % (dirname, e))
+
+  def add_to_settings(self, ctx, outfd):
+    secret_key = ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+    outfd.write('SECRET_KEY = "%s"\n' % secret_key)
 
 
 class KegbotDataRoot(ConfigurationSetupStep):
@@ -538,20 +543,20 @@ class SetupApp(app.App):
     self.run_command('kegbot-admin.py kb_set_defaults --force')
 
     if FLAGS.interactive:
-      self.run_command('kegbot-admin.py collectstatic', allow_fail=True)
-      self.run_command('kegbot-admin.py createsuperuser', allow_fail=True)
+      try:
+        self.run_command('kegbot-admin.py collectstatic')
+      except FatalError, e:
+        print 'WARNING: Collecting static files failed: %s' % e
+        print ''
+        print 'Try again with "kegbot-admin.py collectstatic"'
     else:
       self.run_command('kegbot-admin.py collectstatic --noinput')
-      print ''
-      print 'Running non-interactively, not creating super user account.'
-      print 'To finish, run: '
-      print '  kegbot-admin.py createsuperuser'
 
     print ''
     print 'Done!'
     print ''
     print 'You may now run the dev server:'
-    print 'kegbot-admin.py runserver 0.0.0.0:8000'
+    print 'kegbot-admin.py runserver'
 
   def run_command(self, s, allow_fail=False):
     print 'Running command: %s' % s

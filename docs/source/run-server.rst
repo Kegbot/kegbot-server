@@ -22,18 +22,20 @@ Launch the web server with the following command::
   Development server is running at http://127.0.0.1:8000/
   Quit the server with CONTROL-C.
 
-Now try it out!  Navigate to http://localhost:8000/ . You should see the
-overview page for your new Kegbot.
+Now try it out!  Navigate to http://localhost:8000/ .
+
+The first time you start Kegbot, you will be prompted to finish installation by
+running the Setup Wizard.  Follow the on-screen prompts to create your admin
+account and finish installation.
 
 Kegbot Server is 100% functional when running under this development server, but
 for better performance you'll want to run Kegbot with a "real" HTTP server.
 When you're ready, see :ref:`production-setup` for instructions.
 
-Log in and configure Kegbot
----------------------------
+Configure Kegbot
+----------------
 
-Once your server is up and running, log in with the super user account you
-just created.  This account has access to an additional tab in the
+The admin account you just created has access to an additional tab in the
 navigation bar: "Admin".
 
 Head over to "Taps".  Taps define what beer is currently available in the

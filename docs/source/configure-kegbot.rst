@@ -24,8 +24,7 @@ The program ``setup-kegbot.py`` will help you:
 
 * Configure Kegbot for the database you selected in the previous step;
 * Create Kegbot's Media and Static Files directories;
-* Install defaults into your new database;
-* Create your new Kegbot site's master admin account.
+* Install defaults into your new database.
 
 Run the setup wizard::
 

@@ -1,0 +1,26 @@
+{% extends "setup_wizard/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="jumbotron">
+
+<h2>Kegbot Setup: Woot!</h2>
+<p class="lead">
+  You're done! Press <em>Finish</em> below to finish setup and activate the
+  your brand spankin' new Kegbot site.
+</p>
+
+<p>
+  Now would also be a good time to set <code>DEBUG = False</code> in your
+  <code>local_settings.py</code>.
+</p>
+
+<p/>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" class="btn btn-large btn-success" value="Finish!"/>
+</form>
+
+
+{% endblock content %}

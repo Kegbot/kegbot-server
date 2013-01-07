@@ -1,0 +1,74 @@
+{% extends "skel.html" %}
+
+{% block css %}
+{{ block.super }}
+<style type="text/css">
+  body {
+    padding-top: 20px;
+    padding-bottom: 40px;
+  }
+
+  /* Custom container */
+  .container-narrow {
+    margin: 0 auto;
+    max-width: 700px;
+  }
+  .container-narrow > hr {
+    margin: 30px 0;
+  }
+
+  .jumbotron {
+    margin: 60px 0;
+    text-align: center;
+  }
+  .jumbotron h1 {
+    font-size: 72px;
+    line-height: 1;
+  }
+  .jumbotron .btn {
+    font-size: 21px;
+    padding: 14px 24px;
+  }
+
+  .marketing {
+    margin: 60px 0;
+  }
+  .marketing p + h4 {
+    margin-top: 28px;
+  }
+</style>
+
+{% endblock css %}
+
+{% block body %}
+<div class="container-narrow">
+
+<div class="masthead">
+  {% comment %}
+  <ul class="nav nav-pills pull-right">
+    <li class="active"><a href="#">Home</a></li>
+    <li><a href="#">About</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <h3 class="muted">Kegbot</h3>
+  {% endcomment %}
+</div>
+
+<hr>
+
+{% block messages %}
+{% for message in messages %}
+  <div class="alert alert-{{message.tags}}">
+    <a class="close" data-dismiss="alert" href="#">×</a>
+    <p>
+      {{message}}
+    </p>
+  </div>
+{% endfor %}
+{% endblock messages %}
+
+{% block content %}
+{% endblock %}
+
+</div> <!-- /container-narrow -->
+{% endblock body %}

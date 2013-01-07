@@ -44,6 +44,9 @@ urlpatterns = patterns('',
     ### socialregistration
     (r'^sr/', include('socialregistration.urls', namespace='socialregistration')),
 
+    ### setup
+    (r'^(?P<kbsite_name>)setup/', include('pykeg.web.setup_wizard.urls')),
+
     ### charts
     (r'^(?P<kbsite_name>)charts/', include('pykeg.web.charts.urls')),
 

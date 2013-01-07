@@ -1,0 +1,22 @@
+{% extends "setup_wizard/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="jumbotron">
+
+<h2>Kegbot Setup: General Settings</h2>
+<p class="lead">
+  Adjust the default site settings below.
+</>
+<p class="muted">
+  Don't worry, you can change all settings later, too.
+</p>
+</div>
+
+<div class="row-fluid">
+  <div class="span12">
+    {% crispy form %}
+  </div>
+</div>
+
+{% endblock content %}

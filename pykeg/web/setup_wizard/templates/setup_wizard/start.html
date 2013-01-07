@@ -1,0 +1,16 @@
+{% extends "setup_wizard/base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+
+<h2>Kegbot Setup: Welcome</h2>
+<p class="lead">
+  Just a few more things before you can get started.
+</p>
+<a class="btn btn-large btn-success" href="{% url setup_site_settings kbsite.url %}">
+  Continue
+</a>
+
+</div>
+
+{% endblock content %}

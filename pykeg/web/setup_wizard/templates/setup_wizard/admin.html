@@ -1,0 +1,19 @@
+{% extends "setup_wizard/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="jumbotron">
+
+<h2>Kegbot Setup: Create Admin User</h2>
+<p class="lead">
+  That's you!
+</>
+</div>
+
+<div class="row-fluid">
+  <div class="span12">
+    {% crispy form %}
+  </div>
+</div>
+
+{% endblock content %}

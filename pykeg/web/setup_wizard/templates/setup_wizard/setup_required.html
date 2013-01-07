@@ -1,0 +1,26 @@
+{% extends "setup_wizard/base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+
+{% if DEBUG %}
+<h2>Setup Required</h2>
+<p class="lead">
+  This Kegbot is not set up.  Click to enter the setup wizard.
+</p>
+<a class="btn btn-large btn-success" href="{% url setup_wizard_start kbsite.url %}">
+  Start Setup
+</a>
+{% else %}
+<h2>Kegbot Offline</h2>
+<p class="lead">
+  This Kegbot is not set up.
+</p>
+<p class="muted">
+  Hint: Set <code>DEBUG = True</code> in local settings and try again.
+</p>
+{% endif %}
+
+</div>
+
+{% endblock content %}

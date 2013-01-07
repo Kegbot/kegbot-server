@@ -32,6 +32,7 @@ INSTALLED_APPS = (
     'pykeg.web.account',
     'pykeg.web.charts',
     'pykeg.web.kegweb',
+    'pykeg.web.setup_wizard',
     'gunicorn',
     'icanhaz',
     'registration',
@@ -60,7 +61,6 @@ ROOT_URLCONF = 'pykeg.web.urls'
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates".
     # Always use forward slashes, even on Windows.
-    "web/templates",
 )
 
 SITE_ID = 1
@@ -102,6 +102,7 @@ ADMIN_MEDIA_PREFIX = '/static/admin/'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.eggs.Loader',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

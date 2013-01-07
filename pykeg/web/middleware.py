@@ -19,8 +19,10 @@
 from pykeg.core import models
 from pykeg.web.api import util as apiutil
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
+from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import SimpleTemplateResponse
@@ -32,6 +34,7 @@ ALLOWED_PATHS = (
     '/accounts/login/',
     '/admin/',
     '/media/',
+    '/setup/',
 )
 
 def _path_allowed(path, kbsite):
@@ -44,6 +47,9 @@ def _path_allowed(path, kbsite):
 
 
 class KegbotSiteMiddleware:
+  ALLOWED_VIEW_MODULE_PREFIXES = (
+      'pykeg.web.setup_wizard.',
+  )
   def process_view(self, request, view_func, view_args, view_kwargs):
     """Removes kbsite_name from kwargs if present, and attaches the
     corresponding KegbotSite instance to the request as the "kbsite" attribute.
@@ -53,10 +59,22 @@ class KegbotSiteMiddleware:
     kbsite_name = view_kwargs.pop('kbsite_name', None)
     if not kbsite_name:
       kbsite_name = 'default'
+    request.kbsite_name = kbsite_name
     try:
       request.kbsite = models.KegbotSite.objects.get(name=kbsite_name)
     except models.KegbotSite.DoesNotExist:
-      pass
+      request.kbsite = None
+
+    if not request.kbsite.is_setup:
+      module = view_func.__module__
+      allowed = False
+      for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
+        if module.startswith(prefix):
+          allowed = True
+          break
+      if not allowed:
+        return SimpleTemplateResponse('setup_wizard/setup_required.html',
+            context=RequestContext(request), status=403)
     return None
 
 

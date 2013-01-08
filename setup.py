@@ -15,7 +15,7 @@ SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 DEPENDENCIES = [
   'kegbot-pyutils >= 0.1.4',
-  'kegbot-api == 0.1.2',
+  'kegbot-api >= 0.1.2',
 
   'django >= 1.3',
   'django-autoslug',
@@ -37,6 +37,7 @@ DEPENDENCIES = [
   'gunicorn >= 0.16.1',
   'poster', # needed by foursquare
   'pylcdui >= 0.5.5',
+  'protobuf >= 2.4.1',
   'python-gflags >= 1.8',
   'pytz',
   'requests', # needed by oauth
@@ -58,6 +59,9 @@ def setup_package():
         'bin/setup-kegbot.py',
       ],
       install_requires = DEPENDENCIES,
+      dependency_links = [
+          'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
+      ],
       include_package_data = True,
       entry_points = {
         'console_scripts': ['instance=django.core.management:execute_manager'],

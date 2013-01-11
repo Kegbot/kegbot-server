@@ -59,8 +59,7 @@ STATICFILES_FINDERS = (
 ROOT_URLCONF = 'pykeg.web.urls'
 
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates".
-    # Always use forward slashes, even on Windows.
+    'web/templates',
 )
 
 SITE_ID = 1

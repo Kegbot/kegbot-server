@@ -5,10 +5,14 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.7 (2013-01-10)
+--------------------------
+
+.. note::
+  This update requires a schema migration. See :ref:`upgrading-kegbot`.
 
 * New tool: ``setup-kegbot.py``, to assist with first-time setup.
+* New web-based setup wizard, for finishing first-time setup.
 
 Version 0.9.6 (2012-12-30)
 --------------------------

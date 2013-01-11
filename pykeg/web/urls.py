@@ -1,3 +1,22 @@
+# Copyright 2013 Mike Wakerly <opensource@hoho.com>
+#
+# This file is part of the Pykeg package of the Kegbot project.
+# For more information on Pykeg or Kegbot, see http://kegbot.org/
+#
+# Pykeg is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# Pykeg is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import
 from pykeg.core import features
 
 from django.conf import settings
@@ -11,26 +30,20 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 admin.autodiscover()
 
-try:
-  from registration.views import register
-  from pykeg.web.kegweb.forms import KegbotRegistrationForm
-  USE_DJANGO_REGISTRATION = True
-except ImportError:
-  USE_DJANGO_REGISTRATION = False
+from registration.views import register
+from pykeg.web.kegweb.forms import KegbotRegistrationForm
 
 urlpatterns = patterns('',
     ### django admin site
     (r'^admin/', include(admin.site.urls)),
 
-    (r'^favicon.ico$', 'django.views.generic.simple.redirect_to',
-      {'url': '/site_media/images/favicon.ico'}),
-
-    ### RESTful api
+    ### api
     (r'^(?P<kbsite_name>)api/', include('pykeg.web.api.urls')),
 
-    ### account
+    ### kegbot account
     (r'^account/', include('pykeg.web.account.urls')),
 
+    ### auth account
     (r'^accounts/', include('pykeg.web.registration.urls')),
     url(r'^accounts/password/reset/$', password_reset, {'template_name':
      'registration/password_reset.html'}, name="password-reset"),
@@ -40,6 +53,13 @@ urlpatterns = patterns('',
      'registration/password_reset_confirm.html'}),
     (r'^accounts/password/reset/complete/$', password_reset_complete, {'template_name':
      'registration/password_reset_complete.html'}),
+
+    ### django-registration
+    url(r'^(?P<kbsite_name>)accounts/register/$', register,
+      {'form_class': KegbotRegistrationForm},
+      name='registration_register',
+    ),
+    (r'^accounts/', include('registration.urls')),
 
     ### socialregistration
     (r'^sr/', include('socialregistration.urls', namespace='socialregistration')),
@@ -60,26 +80,15 @@ if features.use_facebook():
       (r'^(?P<kbsite_name>)fb/', include('pykeg.web.contrib.facebook.urls')),
   )
 
-### accounts and registration
-# uses the stock django-registration views, except we need to override the
-# registration class for acocunt/register
-if USE_DJANGO_REGISTRATION:
-  from django.contrib.auth import views as auth_views
-  urlpatterns += patterns('',
-    url(r'^(?P<kbsite_name>)accounts/register/$', register,
-      {'form_class':KegbotRegistrationForm},
-      name='registration_register',
-    ),
-   (r'^accounts/', include('registration.urls')),
-  )
-
 if settings.DEBUG:
   urlpatterns += staticfiles_urlpatterns()
   urlpatterns += patterns('',
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', { 'document_root': settings.MEDIA_ROOT, }),
+    url(r'^favicon.ico$', 'django.views.generic.simple.redirect_to',
+      {'url': '/site_media/images/favicon.ico'}),
   )
 
-### Raven
+### sentry
 if settings.HAVE_SENTRY:
   urlpatterns += patterns('',
       (r'^sentry/', include('sentry.web.urls')),

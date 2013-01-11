@@ -30,7 +30,7 @@ class KegbotBackend:
     return get_real_backend(request).get_form_class(request)
 
   def post_registration_redirect(self, request, user):
-    return get_real_backend(request).post_registration_redirect(request, user)
+    return ('/account/', (), {})
 
   def post_activation_redirect(self, request, user):
     return get_real_backend(request).post_activation_redirect(request, user)

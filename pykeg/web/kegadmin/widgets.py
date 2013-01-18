@@ -41,7 +41,7 @@ class ChoiceWithOtherField(forms.MultiValueField):
   def __init__(self, *args, **kwargs):
     fields = [
         forms.ChoiceField(widget=forms.RadioSelect(renderer=ChoiceWithOtherRenderer), *args, **kwargs),
-        forms.FloatField(required=False, min_value=0.000001, max_value=1.0)
+        forms.FloatField(required=False, min_value=0.000001)
     ]
     widget = ChoiceWithOtherWidget(choices=kwargs['choices'])
     kwargs.pop('choices')

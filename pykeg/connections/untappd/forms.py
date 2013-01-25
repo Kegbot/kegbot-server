@@ -16,8 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from django import forms
 
-from django.contrib import admin
-from models import UntappdProfile
+from . import models
 
-admin.site.register(UntappdProfile)
+class UnlinkUntappdForm(forms.Form):
+  pass
+

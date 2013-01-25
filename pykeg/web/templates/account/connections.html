@@ -1,6 +1,7 @@
 {% extends "account/base.html" %}
 {% load kegweblib %}
 {% load foursquare %}
+{% load untappd %}
 {% load crispy_forms_tags %}
 
 {% block title %}Account: Connections{% endblock %}
@@ -55,6 +56,31 @@
         <i class="icon-share-alt icon-white"></i> Link Account</button>
       </button>
       </form>
+      {% endif %}
+    </div> <!-- /well -->
+  </div> <!-- /span11 -->
+</div> <!-- /row -->
+
+<div class="row">
+  <div class="span11">
+    <h2>Untappd</h2>
+    <div class="well">
+      {% if untappd_profile %}
+      <p>
+        Current account: <strong><a target="_blank"
+          href="http://untappd.com/user/{{untappd_profile.untappd}}">{{untappd_profile.untappd}}</a></strong>
+      </p>
+      <form method="post"
+          style="display:inline;"
+          action="{% url remove-untappd %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-small" name="remove">
+        <i class="icon-remove icon-white"></i> Remove Account</button>
+      </button>
+      </form>
+
+      {% else %}
+        {% untappd_button %}
       {% endif %}
     </div> <!-- /well -->
   </div> <!-- /span11 -->

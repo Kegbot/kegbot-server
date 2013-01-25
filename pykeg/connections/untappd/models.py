@@ -1,4 +1,4 @@
-# Copyright 2009 Mike Wakerly <opensource@hoho.com>
+# Copyright 2012 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -16,15 +16,39 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import random
 
-from django.db import models
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
+from django.db import models
+from socialregistration.signals import connect
 
-from pykeg.core import models as core_models
+class UntappdProfile(models.Model):
+    user = models.ForeignKey(User, unique=True)
+    site = models.ForeignKey(Site, default=Site.objects.get_current)
+    untappd = models.CharField(max_length=255)
 
-class UserUntappdLink(models.Model):
-  """Maps a user to a particular Untappd account."""
-  user_profile = models.OneToOneField(core_models.UserProfile, primary_key=True)
-  untappd_name = models.CharField(max_length=256)
-  untappd_password_hash = models.CharField(max_length=128)
+    def __unicode__(self):
+        try:
+            return u'%s: %s' % (self.user, self.untappd)
+        except User.DoesNotExist:
+            return u'None'
+
+    def authenticate(self):
+        return authenticate(untappd=self.untappd)
+
+class UntappdAccessToken(models.Model):
+    profile = models.OneToOneField(UntappdProfile, related_name='access_token')
+    access_token = models.CharField(max_length=255)
+    
+def save_untappd_token(sender, user, profile, client, **kwargs):
+    try:
+        UntappdAccessToken.objects.get(profile=profile).delete()
+    except UntappdAccessToken.DoesNotExist:
+        pass
+    
+    UntappdAccessToken.objects.create(access_token=client.get_access_token(),
+        profile=profile)
+
+connect.connect(save_untappd_token, sender=UntappdProfile,
+    dispatch_uid='pykeg_connect_untappd_token')

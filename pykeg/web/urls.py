@@ -80,6 +80,11 @@ if features.use_facebook():
       (r'^(?P<kbsite_name>)fb/', include('pykeg.web.contrib.facebook.urls')),
   )
 
+# if features.use_untappd():
+if 'pykeg.connections.untappd' in settings.INSTALLED_APPS:
+  urlpatterns = urlpatterns + patterns('', url(r'^untappd/', include('pykeg.connections.untappd.urls', 
+            namespace='untappd')))
+
 if settings.DEBUG:
   urlpatterns += staticfiles_urlpatterns()
   urlpatterns += patterns('',

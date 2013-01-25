@@ -8,18 +8,20 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'UserUntappdLink'
-        db.create_table('untappd_useruntappdlink', (
-            ('user_profile', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.UserProfile'], unique=True, primary_key=True)),
-            ('untappd_name', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('untappd_password_hash', self.gf('django.db.models.fields.CharField')(max_length=128)),
-        ))
-        db.send_create_signal('untappd', ['UserUntappdLink'])
+        # Deleting field 'UserUntappdLink.untappd_password_hash'
+        db.delete_column('untappd_useruntappdlink', 'untappd_password_hash')
+
+        # Adding field 'UserUntappdLink.untappd_auth_token'
+        db.add_column('untappd_useruntappdlink', 'untappd_auth_token',
+                      self.gf('django.db.models.fields.CharField')(max_length=256))
 
 
     def backwards(self, orm):
-        # Deleting model 'UserUntappdLink'
-        db.delete_table('untappd_useruntappdlink')
+
+        # User chose to not deal with backwards NULL issues for 'UserUntappdLink.untappd_password_hash'
+        raise RuntimeError("Cannot reverse this migration. 'UserUntappdLink.untappd_password_hash' and its values cannot be restored.")
+        # Deleting field 'UserUntappdLink.untappd_auth_token'
+        db.delete_column('untappd_useruntappdlink', 'untappd_auth_token')
 
 
     models = {
@@ -179,7 +181,7 @@ class Migration(SchemaMigration):
         },
         'core.userprofile': {
             'Meta': {'object_name': 'UserProfile'},
-            'api_secret': ('django.db.models.fields.CharField', [], {'default': "'6c7214ec895cdd1324b7e8e3a3357948'", 'max_length': '256', 'null': 'True', 'blank': 'True'}),
+            'api_secret': ('django.db.models.fields.CharField', [], {'default': "'5684df827baac52cb5046ccc89dfdf17'", 'max_length': '256', 'null': 'True', 'blank': 'True'}),
             'gender': ('django.db.models.fields.CharField', [], {'max_length': '8'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'mugshot': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.Picture']", 'null': 'True', 'blank': 'True'}),
@@ -188,8 +190,8 @@ class Migration(SchemaMigration):
         },
         'untappd.useruntappdlink': {
             'Meta': {'object_name': 'UserUntappdLink'},
+            'untappd_auth_token': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
             'untappd_name': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            'untappd_password_hash': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'user_profile': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.UserProfile']", 'unique': 'True', 'primary_key': 'True'})
         }
     }

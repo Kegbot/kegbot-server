@@ -17,7 +17,14 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from django.contrib import admin
-from models import UntappdProfile
+from django.conf import settings
+from socialregistration.compat.urls import *
+from views import UntappdRedirect, \
+    UntappdCallback, UntappdSetup
 
-admin.site.register(UntappdProfile)
+ 
+urlpatterns = patterns('',
+    url('^redirect/$', UntappdRedirect.as_view(), name='redirect'),
+    url('^callback/$', UntappdCallback.as_view(), name='callback'),
+    url('^setup/$', UntappdSetup.as_view(), name='setup'),
+)

@@ -4,6 +4,15 @@
 {% block title %}Keg Admin{% endblock %}
 
 {% block content %}
+{% if DEBUG %}
+<div class="alert">
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+  <strong>Warning!</strong> Kegbot Server is running in debug mode.  For
+  performance and security reasons, you should set <code>DEBUG = False</code>
+  in <code>local_settings.py</code>.
+</div>
+{% endif %}
+
 <div class="row">
   <div class="span2">
     <ul class="nav nav-pills nav-stacked" data-pills="pills">

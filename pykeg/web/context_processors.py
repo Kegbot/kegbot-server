@@ -1,5 +1,6 @@
 from django.conf import settings
 
+import pykeg
 from pykeg.core import features
 from pykeg.core import models
 from pykeg.web.kegweb.forms import LoginForm
@@ -29,6 +30,7 @@ def kbsite(request):
 
   ret = {
     'DEBUG': settings.DEBUG,
+    'VERSION': pykeg.__version__,
     'kbsite': getattr(request, 'kbsite', None),
     'request_path': request.path,
     'login_form': LoginForm(initial={'next_page': request.path}),

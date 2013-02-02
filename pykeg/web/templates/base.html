@@ -149,7 +149,8 @@
     <footer>
       <p>
         <small>
-        this site is powered by <a href="http://kegbot.org/">kegbot</a>:
+          Powered by
+          <a href="http://kegbot.org/">Kegbot</a>{% if user.is_staff %}, version {{ VERSION }}{% endif %}.
         &copy; 2003-{% now "Y" %} mike wakerly<br/>
 
         <a href='#' onClick='window.app.get("pageSettings").toggleMetric();'>Toggle Units</a>

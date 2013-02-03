@@ -29,19 +29,10 @@ Upgrade procedure
 
     (kb) $ ./setup.py develop
 
-3. Run any necessary database migrations::
+3. Run the upgradescript 
 
-    (kb) $ kegbot-admin.py syncdb
-    (kb) $ kegbot-admin.py migrate
+    (kb) $ kegbot-admin.py kb_upgrade
 
-4. Regenerate statistics, in case new or updated stats are available::
-
-    (kb) $ kegbot-admin.py kb_regen_stats
-
-5. Synchronize static files::
-
-    (kb) $ kegbot-admin.py collectstatic
-
-6. Restart the Kegbot web server.
+4. Restart the Kegbot web server.
 
 

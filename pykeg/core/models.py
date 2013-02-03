@@ -250,7 +250,9 @@ class KegTap(models.Model):
   relay_name = models.CharField(max_length=128, blank=True, null=True,
       help_text='If a relay is attached to this tap, give its '
       'name here. Example: kegboard.relay0')
-  ml_per_tick = models.FloatField(default=(1000.0/2200.0))
+  ml_per_tick = models.FloatField(default=(1000.0/2200.0),
+      help_text='mL per flow meter tick.  Common values: 0.166666666667 '
+      '(SwissFlow), 0.454545454545 (Vision 2000)')
   description = models.TextField(blank=True, null=True)
   current_keg = models.OneToOneField('Keg', blank=True, null=True,
       related_name='current_tap')

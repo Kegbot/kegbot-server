@@ -66,11 +66,6 @@ def _create_or_update_tap(tap, request):
   if form.is_valid():
     new_tap = form.save(commit=False)
     new_tap.site = request.kbsite
-    val = form.cleaned_data['ml_per_tick']
-    ml = val[0]
-    if ml == '0':
-      ml = val[1]
-    new_tap.ml_per_tick = float(ml)
     new_tap.save()
     if tap:
       messages.success(request, 'Tap "%s" was updated.' % new_tap.name)
@@ -113,8 +108,7 @@ def tap_list(request):
         tinfo['edit_form'] = form
 
     if 'edit_form' not in tinfo:
-      tinfo['edit_form'] = forms.TapForm(site=request.kbsite, instance=tap,
-          prefix=prefix, initial={'ml_per_tick': (str(tap.ml_per_tick), str(tap.ml_per_tick))})
+      tinfo['edit_form'] = forms.TapForm(site=request.kbsite, instance=tap, prefix=prefix)
 
     if tap.current_keg and tap.current_keg.is_active():
       tinfo['end_form'] = forms.KegHiddenSelectForm(initial={'keg':tap.current_keg})

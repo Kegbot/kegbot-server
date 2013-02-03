@@ -3,8 +3,6 @@ from django import forms
 from pykeg.core import models
 from pykeg.beerdb import models as bdb
 
-from pykeg.web.kegadmin import widgets as ka_widgets
-
 ALL_TAPS = models.KegTap.objects.all()
 ALL_SIZES = models.KegSize.objects.all()
 ALL_BEER_TYPES = bdb.BeerType.objects.all().order_by('name')
@@ -38,16 +36,7 @@ class TapForm(forms.ModelForm):
   class Meta:
     model = models.KegTap
     fields = ('name', 'meter_name', 'relay_name', 'description',
-        'temperature_sensor')
-
-  ml_per_tick = ka_widgets.ChoiceWithOtherField(
-      label='Meter type',
-      choices=(
-        (1/2.2, 'Vision 2000 Meter (%s mL/tick)' % (1/2.2) ),
-        (1/6.0, 'SwissFlow Meter (%s mL/tick)' % (1/6.0) ),
-        (0, 'Other (specify in mL/tick):'),
-      ),
-  )
+        'temperature_sensor', 'ml_per_tick')
 
   def __init__(self, *args, **kwargs):
     site = kwargs.pop('site', None)

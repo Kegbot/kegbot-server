@@ -1,0 +1,21 @@
+{% extends "setup_wizard/base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+
+<h2>Upgrade Required</h2>
+<p class="lead">
+  This Kegbot needs to be upgraded.
+</p>
+<p class="muted">
+  Hint: Run <code>kegbot-admin.py kb_upgrade</code> (see <a
+    href="http://kegbot.org/docs/server/upgrade-kegbot/">docs</a>).
+</p>
+
+<p class="muted">
+Kegbot version {{ VERSION }}
+({% if current_epoch %}{{ current_epoch }}/{% endif %}{{ EPOCH }}).
+</p>
+</div>
+
+{% endblock content %}

@@ -31,6 +31,8 @@ from django.contrib.auth.models import User
 
 from autoslug import AutoSlugField
 
+from pykeg import EPOCH
+
 from pykeg.core import kb_common
 from pykeg.core import fields
 from pykeg.core import imagespecs
@@ -66,6 +68,9 @@ class KegbotSite(models.Model):
       help_text='On/off switch for this site.')
   is_setup = models.BooleanField(default=True,
       help_text='True if the site has completed setup.',
+      editable=False)
+  epoch = models.PositiveIntegerField(default=EPOCH,
+      help_text='Database epoch number.',
       editable=False)
 
   def __str__(self):

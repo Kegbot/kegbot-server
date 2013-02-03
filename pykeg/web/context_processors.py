@@ -30,6 +30,7 @@ def kbsite(request):
 
   ret = {
     'DEBUG': settings.DEBUG,
+    'EPOCH': pykeg.EPOCH,
     'VERSION': pykeg.__version__,
     'kbsite': getattr(request, 'kbsite', None),
     'request_path': request.path,

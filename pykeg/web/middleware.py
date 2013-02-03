@@ -16,9 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from pykeg import EPOCH
+
 from pykeg.core import models
 from pykeg.web.api import util as apiutil
 
+from django.db import DatabaseError
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -60,10 +63,15 @@ class KegbotSiteMiddleware:
     if not kbsite_name:
       kbsite_name = 'default'
     request.kbsite_name = kbsite_name
+
     try:
-      request.kbsite = models.KegbotSite.objects.get(name=kbsite_name)
-    except models.KegbotSite.DoesNotExist:
-      request.kbsite = None
+      try:
+        request.kbsite = models.KegbotSite.objects.get(name=kbsite_name)
+      except models.KegbotSite.DoesNotExist:
+        request.kbsite = None
+    except DatabaseError:
+      # Assume site is set up but KegbotSite table is inconsistent.
+      return self._upgrade_required(request)
 
     if not request.kbsite.is_setup:
       module = view_func.__module__
@@ -75,7 +83,18 @@ class KegbotSiteMiddleware:
       if not allowed:
         return SimpleTemplateResponse('setup_wizard/setup_required.html',
             context=RequestContext(request), status=403)
+
+    if request.kbsite.epoch < EPOCH:
+      return self._upgrade_required(request, current=request.kbsite.epoch)
+
     return None
+
+  def _upgrade_required(self, request, current=None):
+    context = RequestContext(request)
+    if current is not None:
+      context['current_epoch'] = current
+    return SimpleTemplateResponse('setup_wizard/upgrade_required.html',
+        context=context, status=403)
 
 
 class SiteActiveMiddleware:

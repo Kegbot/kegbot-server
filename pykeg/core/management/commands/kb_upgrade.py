@@ -19,6 +19,8 @@
 from optparse import make_option
 import sys
 
+from pykeg import EPOCH
+
 from django.core.management.base import NoArgsCommand
 from django.core.management.base import CommandError
 from django.contrib.auth.management.commands import createsuperuser
@@ -43,3 +45,8 @@ class Command(NoArgsCommand):
     run(migrate.Command(), args=['-v', '0'])
     run(kb_regen_stats.Command())
     run(collectstatic.Command())
+
+    from pykeg.core import models
+    for site in models.KegbotSite.objects.all():
+      site.epoch = EPOCH
+      site.save()

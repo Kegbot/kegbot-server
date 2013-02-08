@@ -24,7 +24,7 @@ class DrinkPostForm(forms.Form):
   """Form to handle posts to /tap/<tap_id>/"""
   ticks = forms.IntegerField()
   volume_ml = forms.FloatField(required=False)
-  username = forms.CharField(required=False)
+  username = forms.RegexField(required=False, max_length=30, regex=r"^[\w-]+$")
   pour_time = forms.IntegerField(required=False)
   now = forms.IntegerField(required=False)
   duration = forms.IntegerField(required=False)
@@ -57,11 +57,11 @@ class DebugLogForm(forms.Form):
   client_name = forms.CharField(required=False)
 
 class RegisterForm(forms.Form):
-  username = forms.CharField(max_length=32)
+  username = forms.RegexField(max_length=30, regex=r"^[\w-]+$")
   email = forms.EmailField()
   password = forms.CharField()
   photo = forms.ImageField(required=False)
 
 class AssignTokenForm(forms.Form):
-  username = forms.CharField()
+  username = forms.RegexField(max_length=30, regex=r"^[\w-]+$")
 

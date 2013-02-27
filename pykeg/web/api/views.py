@@ -415,7 +415,8 @@ def _tap_detail_post(request, tap):
       duration=duration,
       auth_token=cd.get('auth_token'),
       spilled=cd.get('spilled'),
-      shout=cd.get('shout'))
+      shout=cd.get('shout'),
+      tick_time_series=cd.get('tick_time_series'))
     return protolib.ToProto(res, full=True)
   except backend.BackendError, e:
     raise kbapi.ServerError(str(e))

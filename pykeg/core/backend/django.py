@@ -26,6 +26,7 @@ import logging
 from django.conf import settings
 from pykeg.core import kb_common
 from pykeg.core import models
+from pykeg.core import time_series
 
 from . import backend
 
@@ -101,7 +102,7 @@ class KegbotBackend(backend.Backend):
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False,
-      shout='', do_postprocess=True):
+      shout='', tick_time_series='', do_postprocess=True):
 
     tap = self._GetTapFromName(tap_name)
     if not tap:
@@ -131,11 +132,21 @@ class KegbotBackend(backend.Backend):
       keg.save()
       return
 
+    if tick_time_series:
+      try:
+        # Validate the time series by parsing it; canonicalize it by generating
+        # it again.  If malformed, just junk it; it's non-essential information.
+        tick_time_series = time_series.to_string(time_series.from_string(tick_time_series))
+      except ValueError, e:
+        self._logger.warning('Time series invalid, ignoring. Error was: %s' % e)
+        tick_time_series = ''
+
     d = models.Drink(ticks=ticks, site=self._site, keg=keg, user=user,
         volume_ml=volume_ml, time=pour_time, duration=duration,
-        auth_token=auth_token, shout=shout)
+        auth_token=auth_token, shout=shout, tick_time_series=tick_time_series)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
+
     if do_postprocess:
       d.PostProcess()
       event_list = [e for e in models.SystemEvent.objects.filter(drink=d).order_by('id')]

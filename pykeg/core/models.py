@@ -489,7 +489,7 @@ class Drink(models.Model):
 
   # Ticks records the actual meter reading, which is never changed once
   # recorded.
-  ticks = models.PositiveIntegerField()
+  ticks = models.PositiveIntegerField(editable=False)
 
   # Volume is the actual volume of the drink.  Its initial value is a function
   # of `ticks`, but it may be adjusted, eg due to calibration or mis-recording.
@@ -509,6 +509,8 @@ class Drink(models.Model):
   auth_token = models.CharField(max_length=256, blank=True, null=True)
   shout = models.TextField(blank=True, null=True,
       help_text='Comment from the drinker at the time of the pour.')
+  tick_time_series = models.TextField(blank=True, null=True, editable=False,
+      help_text='Tick update sequence that generated this drink')
 
 pre_save.connect(_set_seqn_pre_save, sender=Drink)
 

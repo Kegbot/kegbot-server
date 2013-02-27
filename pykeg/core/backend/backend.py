@@ -52,7 +52,7 @@ class Backend:
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, auth_token=None, spilled=False,
-      shout=''):
+      shout='', tick_time_series=''):
     """Records a new drink with the given parameters."""
     raise NotImplementedError
 

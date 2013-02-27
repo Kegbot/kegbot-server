@@ -198,6 +198,8 @@ def DrinkToProto(drink, full=False):
     ret.auth_token_id = str(drink.auth_token.id)
   if drink.shout:
     ret.shout = drink.shout
+  if drink.tick_time_series:
+    ret.tick_time_series = drink.tick_time_series
 
   if full:
     if drink.user:

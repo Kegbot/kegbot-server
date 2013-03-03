@@ -13,7 +13,7 @@
       <h4>Link Twitter Account</h4>
       <p>
         <form method="post"
-          action="{% url site_twitter_redirect kbsite_name=kbsite.url %}">
+          action="{% url "site_twitter_redirect" kbsite_name=kbsite.url %}">
         {% csrf_token %}
         {% if twitter_profile.is_enabled %}
         <button type="submit" class="btn btn-info btn-small" name="link">

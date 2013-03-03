@@ -8,7 +8,7 @@
 <p class="lead">
   This Kegbot is not set up.  Click to enter the setup wizard.
 </p>
-<a class="btn btn-large btn-success" href="{% url setup_wizard_start kbsite.url %}">
+<a class="btn btn-large btn-success" href="{% url "setup_wizard_start" kbsite.url %}">
   Start Setup
 </a>
 {% else %}

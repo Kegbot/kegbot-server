@@ -3,7 +3,7 @@
 {% with user.get_profile as profile %}
 
 {% if user %}
-  <a href="{% url kb-drinker kbsite.url user.username %}">
+  <a href="{% url "kb-drinker" kbsite.url user.username %}">
 {% endif %}
 
   <img

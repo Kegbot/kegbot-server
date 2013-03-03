@@ -53,7 +53,7 @@
       <div class="container">
         {% spaceless %}
         {% if kbsite %}
-        <a class="brand" href="{% url kb-home kbsite.url %}">
+        <a class="brand" href="{% url "kb-home" kbsite.url %}">
         {% else %}
         <a class="brand" href="/">
         {% endif %}
@@ -85,7 +85,7 @@
         {% if not user.is_authenticated %}
         <ul class="nav pull-right">
           {% if kbsite.settings.registration_allowed %}
-          <li><a href="{% url registration_register %}"><i class="icon-edit icon-white"></i> New Drinker</a></li>
+          <li><a href="{% url "registration_register" %}"><i class="icon-edit icon-white"></i> New Drinker</a></li>
           {% endif %}
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user icon-white"></i> Sign In <b class="caret"></b></a>
@@ -109,7 +109,7 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user icon-white"></i> {{ user.username}} <b class="caret"></b></a>
             <ul class="dropdown-menu">
-              <li><a href="{% url django.contrib.auth.views.logout %}">Logout</a></li>
+              <li><a href="{% url "django.contrib.auth.views.logout" %}">Logout</a></li>
             </ul>
           </li>
         </ul>

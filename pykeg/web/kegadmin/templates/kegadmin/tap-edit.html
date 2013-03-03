@@ -28,7 +28,7 @@
               {% comment %}
               <p>
                 <!-- TODO: get rid of form -->
-                <form method="GET" action="{% url kegadmin-edit-keg kbsite.url keg.seqn %}">
+                <form method="GET" action="{% url "kegadmin-edit-keg" kbsite.url keg.seqn %}">
                 <button type="submit" class="btn small fill-parent-width">
                   Edit Keg
                 </button>
@@ -36,7 +36,7 @@
               </p>
               {% endcomment %}
               <p>
-                <form action="{% url kegadmin-do-end-keg kbsite.url %}" method="POST">
+                <form action="{% url "kegadmin-do-end-keg" kbsite.url %}" method="POST">
                   {% csrf_token %}
                   {{ tapinfo.end_form|crispy }}
                   <button type="submit" class="btn btn-danger small fill-parent-width">End Keg</button>
@@ -62,7 +62,7 @@
             <small>Time for a beer run?</small>
           </h4>
 
-          <form action="{% url kegadmin-edit-tap kbsite.url tap.seqn %}" method="POST" class="form-stacked">
+          <form action="{% url "kegadmin-edit-tap" kbsite.url tap.seqn %}" method="POST" class="form-stacked">
               {% csrf_token %}
               {{ tapinfo.keg_form|crispy }}
               <div class="actions">
@@ -110,7 +110,7 @@
                 </th>
                 <td>
                   <h4>Last Pour</h4>
-                  <a href="{% url kb-drink kbsite.url drink.seqn %}"
+                  <a href="{% url "kb-drink" kbsite.url drink.seqn %}"
                     target="_new">Drink {{ drink.seqn }}</a> by {{ drink.user }}
                 </td>
               </tr>

@@ -22,7 +22,7 @@
     <script>
 
     function permissionsDone(result) {
-      $.post("{% url fb-update-perms %}", {"perms_result" : result});
+      $.post("{% url "fb-update-perms" %}", {"perms_result" : result});
     }
 
     function requestPermissions() {

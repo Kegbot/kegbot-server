@@ -174,9 +174,10 @@ def do_end_keg(request):
       keg.status = "offline"
       keg.end_time = datetime.datetime.now()
       keg.save()
-      if keg.current_tap:
-        keg.current_tap.current_keg = None
-        keg.current_tap.save()
+      tap = keg.current_tap
+      if tap:
+        tap.current_keg = None
+        tap.save()
       messages.success(request, 'The keg was deactivated.')
   return redirect('kegadmin-taps', request.kbsite.url())
 

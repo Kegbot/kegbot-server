@@ -25,10 +25,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
+from django.shortcuts import redirect
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
 from django.views.decorators.http import require_POST
-from django.views.generic.simple import redirect_to
 from django.contrib.auth.views import password_change as password_change_orig
 from django.contrib.auth.views import password_change_done as password_change_done_orig
 
@@ -108,7 +108,7 @@ def regenerate_api_key(request):
     profile = request.user.get_profile()
     profile.api_secret = apikey.ApiKey.NewSecret()
     profile.save()
-  return redirect_to(request, url='/account')
+  return redirect('kb-account-main')
 
 @login_required
 @require_POST
@@ -116,8 +116,7 @@ def remove_twitter(request):
   form = twitter_forms.UnlinkTwitterForm(request.POST)
   if form.is_valid():
     sr_twitter_models.TwitterProfile.objects.filter(user=request.user).delete()
-  # TODO(mikey): HttpResponseRedirect
-  return redirect_to(request, url='/account')
+  return redirect('kb-account-main')
 
 @login_required
 @require_POST
@@ -128,8 +127,7 @@ def update_twitter_settings(request):
   if form.is_valid():
     form.save()
     messages.success(request, 'Twitter settings were successfully updated.')
-  # TODO(mikey): HttpResponseRedirect
-  return redirect_to(request, url='/account')
+  return redirect('kb-account-main')
 
 @login_required
 @require_POST
@@ -137,8 +135,7 @@ def remove_foursquare(request):
   form = foursquare_forms.UnlinkFoursquareForm(request.POST)
   if form.is_valid():
     sr_foursquare_models.FoursquareProfile.objects.filter(user=request.user).delete()
-  # TODO(mikey): HttpResponseRedirect
-  return redirect_to(request, url='/account')
+  return redirect('kb-account-main')
 
 @login_required
 @require_POST
@@ -149,8 +146,7 @@ def update_foursquare_settings(request):
   if form.is_valid():
     form.save()
     messages.success(request, 'Foursquare settings were successfully updated.')
-  # TODO(mikey): HttpResponseRedirect
-  return redirect_to(request, url='/account')
+  return redirect('kb-account-main')
 
 def password_change(request, *args, **kwargs):
   kwargs['template_name'] = 'account/password_change.html'

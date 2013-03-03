@@ -31,7 +31,6 @@ from django.template import RequestContext
 from django.views.decorators.cache import cache_page
 from django.views.generic.list_detail import object_detail
 from django.views.generic.list_detail import object_list
-from django.views.generic.simple import redirect_to
 from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect
 
@@ -130,13 +129,6 @@ def user_detail(request, username):
       'stats': stats,
       'drinker': user})
   return render_to_response('kegweb/drinker_detail.html', context)
-
-def user_detail_by_id(request, user_id):
-  try:
-    user = models.User.objects.get(pk=user_id)
-  except models.User.DoesNotExist:
-    raise Http404
-  return redirect_to(request, url='/drinker/'+user.username)
 
 def keg_list(request):
   all_kegs = request.kbsite.kegs.all().order_by('-id')

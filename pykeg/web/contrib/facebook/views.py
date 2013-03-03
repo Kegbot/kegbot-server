@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.views.generic.simple import redirect_to
 
 from pykeg.contrib.facebook import fbutil
 from pykeg.contrib.facebook import models

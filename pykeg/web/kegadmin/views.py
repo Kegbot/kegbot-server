@@ -27,9 +27,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.views.generic.simple import redirect_to
 from django.forms import widgets
 from django.views.decorators.http import require_POST
 
@@ -178,8 +178,7 @@ def do_end_keg(request):
         keg.current_tap.current_keg = None
         keg.current_tap.save()
       messages.success(request, 'The keg was deactivated.')
-  result_url = reverse('kegadmin-taps', args=[request.kbsite.url()])
-  return redirect_to(request, result_url)
+  return redirect('kegadmin-taps', request.kbsite.url())
 
 @staff_member_required
 @require_POST
@@ -206,9 +205,7 @@ def edit_tap(request, tap_id):
     tap.save()
     messages.success(request, 'The new keg was activated. Bottoms up!')
     form = forms.ChangeKegForm()
-
-  result_url = reverse('kegadmin-taps', args=[request.kbsite.url()])
-  return redirect_to(request, result_url)
+  return redirect('kegadmin-taps', request.kbsite.url())
 
 @staff_member_required
 def create_tap(request):

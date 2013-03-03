@@ -23,10 +23,10 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.core.urlresolvers import reverse
 from django.http import Http404
+from django.shortcuts import redirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import never_cache
-from django.views.generic.simple import redirect_to
 
 from .forms import AdminUserForm
 from .forms import MiniSiteSettingsForm
@@ -57,8 +57,7 @@ def site_settings(request):
     if form.is_valid():
       form.save()
       messages.success(request, 'Settings saved!')
-      result_url = reverse('setup_admin', args=[request.kbsite.url()])
-      return redirect_to(request, result_url)
+      return redirect('setup_admin', request.kbsite.url())
   context['form'] = form
   return render_to_response('setup_wizard/site_settings.html', context)
 
@@ -75,8 +74,7 @@ def admin(request):
           password=form.cleaned_data.get('password'))
       if user:
         login(request, user)
-      result_url = reverse('setup_finish', args=[request.kbsite.url()])
-      return redirect_to(request, result_url)
+      return redirect('setup_finish', request.kbsite.url())
   context['form'] = form
   return render_to_response('setup_wizard/admin.html', context)
 
@@ -88,6 +86,5 @@ def finish(request):
     request.kbsite.is_setup = True
     request.kbsite.save()
     messages.success(request, 'Tip: Install a new Keg in Admin: Taps')
-    result_url = reverse('kb-home', args=[request.kbsite.url()])
-    return redirect_to(request, result_url)
+    return redirect('kb-home', request.kbsite.url())
   return render_to_response('setup_wizard/finish.html', context)

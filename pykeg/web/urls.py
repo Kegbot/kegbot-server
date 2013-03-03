@@ -84,8 +84,6 @@ if settings.DEBUG:
   urlpatterns += staticfiles_urlpatterns()
   urlpatterns += patterns('',
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', { 'document_root': settings.MEDIA_ROOT, }),
-    url(r'^favicon.ico$', 'django.views.generic.simple.redirect_to',
-      {'url': '/site_media/images/favicon.ico'}),
   )
 
 ### sentry

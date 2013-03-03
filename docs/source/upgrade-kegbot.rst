@@ -29,7 +29,7 @@ Upgrade procedure
 
     (kb) $ ./setup.py develop
 
-3. Run the upgradescript 
+3. Run the upgrade script::
 
     (kb) $ kegbot-admin.py kb_upgrade
 

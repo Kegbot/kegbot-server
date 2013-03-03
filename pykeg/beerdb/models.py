@@ -74,7 +74,7 @@ class Brewer(BeerDBModel):
       help_text='City of origin, if known')
   production = models.CharField(max_length=128, choices=PRODUCTION_CHOICES,
       default='commercial')
-  url = models.URLField(verify_exists=False, default='', blank=True, null=True,
+  url = models.URLField(default='', blank=True, null=True,
       help_text='Brewer\'s home page')
   description = models.TextField(default='', blank=True, null=True,
       help_text='A short description of the brewer')

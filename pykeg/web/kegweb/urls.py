@@ -1,5 +1,7 @@
 from django.conf.urls.defaults import *
 
+from . import views
+
 urlpatterns = patterns('pykeg.web.kegweb.views',
       ### main page
       url(r'^$', 'index', name='kb-home'),
@@ -11,11 +13,10 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
       url(r'^stats/$', 'system_stats', name='kb-stats'),
 
       ### keg related
-      url(r'^kegs/$', 'keg_list', name='kb-kegs'),
+      url(r'^kegs/$', views.KegListView.as_view(), name='kb-kegs'),
       url(r'^kegs/(?P<keg_id>\d+)', 'keg_detail', name='kb-keg'),
 
       ### drinkers
-      url(r'^drinkers/$', 'user_list', name='kb-drinkers'),
       url(r'^drinkers/(?P<username>[\w@.+-_]+)/$', 'user_detail', name='kb-drinker'),
 
       ### drink related

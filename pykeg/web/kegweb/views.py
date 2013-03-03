@@ -29,10 +29,9 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import cache_page
-from django.views.generic.list_detail import object_detail
-from django.views.generic.list_detail import object_list
 from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect
+from django.views.generic.list import ListView
 
 from kegbot.util import kbjson
 
@@ -103,13 +102,6 @@ def system_stats(request):
 
 ### object lists and detail (generic views)
 
-def user_list(request):
-  user_list = models.User.objects.all()
-  return object_list(request,
-      queryset=user_list,
-      template_object_name='drinker',
-      template_name='kegweb/drinker_list.html')
-
 def user_detail(request, username):
   user = get_object_or_404(models.User, username=username)
   try:
@@ -130,12 +122,13 @@ def user_detail(request, username):
       'drinker': user})
   return render_to_response('kegweb/drinker_detail.html', context)
 
-def keg_list(request):
-  all_kegs = request.kbsite.kegs.all().order_by('-id')
-  return object_list(request,
-      queryset=all_kegs,
-      template_object_name='keg',
-      template_name='kegweb/keg_list.html')
+class KegListView(ListView):
+  model = models.Keg
+  template_name = 'kegweb/keg_list.html'
+  context_object_name = 'kegs'
+
+  def get_queryset(self):
+    return self.request.kbsite.kegs.all().order_by('-id')
 
 @cache_page(30)
 def keg_detail(request, keg_id):

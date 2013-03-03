@@ -17,11 +17,11 @@ DEPENDENCIES = [
   'kegbot-pyutils >= 0.1.4',
   'kegbot-api >= 0.1.7',
 
-  'django >= 1.3',
+  'django >= 1.4',
   'django-autoslug',
   'django-imagekit >= 2.0',
   'django-registration',
-  'django-socialregistration >= 0.5.4',
+  'django-socialregistration >= 0.5.10',
   'django_extensions',
 
   'Celery',

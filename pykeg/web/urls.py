@@ -59,7 +59,7 @@ urlpatterns = patterns('',
       {'form_class': KegbotRegistrationForm},
       name='registration_register',
     ),
-    (r'^accounts/', include('registration.urls')),
+    (r'^accounts/', include('pykeg.web.registration.urls')),
 
     ### socialregistration
     (r'^sr/', include('socialregistration.urls', namespace='socialregistration')),

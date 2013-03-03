@@ -155,31 +155,6 @@ def drink_detail(request, drink_id):
   context = RequestContext(request, {'drink': drink})
   return render_to_response('kegweb/drink_detail.html', context)
 
-### auth
-
-def webauth(request):
-  context = {}
-  return render_to_response('kegweb/webauth.html', context)
-
-@login_required
-def claim_token(request):
-  if request.method == 'POST':
-    form = forms.ClaimTokenForm(request.POST)
-
-    if form.is_valid():
-      user = form.cleaned_data['user']
-      token = form.cleaned_data['token']
-      # TODO(mikey): non-superusers should only be able to claim tokens for
-      # their own account.
-      token.user = user
-      token.save()
-  else:
-    form = forms.ClaimTokenForm()
-
-  context = RequestContext(request)
-  context['form'] = form
-  return render_to_response('kegweb/claim_token.html', context)
-
 def session_detail(request, year, month, day, seqn, slug):
   session = get_object_or_404(models.DrinkingSession, site=request.kbsite, seqn=seqn)
   context = RequestContext(request, {

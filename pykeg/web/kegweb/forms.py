@@ -1,5 +1,4 @@
 from django import forms
-from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 
 from registration.models import RegistrationProfile
@@ -50,13 +49,6 @@ class UserProfileForm(forms.ModelForm):
 class MugshotForm(forms.Form):
   new_mugshot = forms.ImageField(required=True)
 
-
-UNASSIGNED_TOKEN_QS = models.AuthenticationToken.objects.filter(user=None)
-NEW_USERS = models.User.objects.all().order_by('-date_joined')
-
-class ClaimTokenForm(forms.Form):
-  token = forms.ModelChoiceField(queryset=UNASSIGNED_TOKEN_QS)
-  user = forms.ModelChoiceField(queryset=NEW_USERS)
 
 class RegenerateApiKeyForm(forms.Form):
   pass

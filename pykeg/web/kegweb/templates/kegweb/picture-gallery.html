@@ -1,9 +1,9 @@
 <ul class="thumbnails">
 
-{% for pic in pictures %}
+{% for pic in gallery_pictures %}
 {% with pic.GetCaption as caption %}
-<li>
-  <a class="gallery-image" rel="gallery" href="{{ pic.resized.url }}"
+<li class="{{thumb_size}}">
+<a class="gallery-image" rel="gallery-{{ gallery_id}}" href="{{ pic.resized.url }}"
     {% if caption %} title="{{caption}}" {% endif %}>
     <img class="thumbnail" src="{{ pic.thumbnail.url }}" alt="{{ caption }}" />
   </a>

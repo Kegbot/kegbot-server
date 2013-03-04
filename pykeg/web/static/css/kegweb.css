@@ -5086,6 +5086,12 @@ div#content {
   text-transform: uppercase;
   text-weight: bold;
 }
+.badge-list .badge-small h2 {
+  margin: 0px;
+  text-shadow: none;
+  font-size: 22.75px;
+  line-height: 31.5px;
+}
 .avatar-list {
   *zoom: 1;
   margin-left: 0;

@@ -27,6 +27,7 @@
 {% endblock %}
 
 {% block col-1 %}
+
   {% for tap in taps %}
     {% if tap.current_keg %}
       {% with tap.current_keg as keg %}
@@ -35,22 +36,15 @@
     {% endif %}
   {% endfor %}
 
-  {% if current_session %}
-    <p>
-      {% with current_session as session %}
-        {% include "kegweb/keg-session.html" %}
-      {% endwith %}
-    </p>
+  {% if sessions %}
+  {% for session in sessions %}
+    {% include "kegweb/keg-session.html" %}
+  {% endfor %}
+  <p>
+    See <a href="{% url "kb-sessions" kbsite.url %}">all sessions</a>.
+  </p>
   {% endif %}
 
-  {% with recent_images as pictures %}
-  {% if pictures.count %}
-  <h2>Recent Pictures</h2>
-    <div class="well">
-    {% include "kegweb/picture-gallery.html" %}
-    </div>
-  {% endif %}
-  {% endwith %}
 {% endblock col-1 %}
 
 {% block col-2 %}
@@ -59,5 +53,4 @@
   <div id="kb-system-events">
   </div>
 </div>
-
 {% endblock col-2 %}

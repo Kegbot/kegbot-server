@@ -601,6 +601,21 @@ class DrinkingSession(_AbstractChunk):
   def __str__(self):
     return "Session #%s: %s" % (self.seqn, self.start_time)
 
+  def HighlightPicture(self):
+    pictures = self.pictures.all().order_by('-time')
+    if pictures:
+      return pictures[0]
+    chunks = self.user_chunks.filter(user__ne=None).order_by('-volume_ml')
+    if chunks:
+      mugshot = chunks[0].user.get_profile().mugshot
+      return mugshot
+
+  def OtherPictures(self):
+    pictures = self.pictures.all().order_by('-time')
+    if pictures:
+      return pictures[1:]
+    return []
+
   def RecomputeStats(self):
     self.stats.all().delete()
     try:

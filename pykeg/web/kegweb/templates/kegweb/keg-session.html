@@ -1,26 +1,53 @@
 {% load kegweblib %}
-<div class="session-snapshot clickable" id="session-snapshot-{{session.seqn}}"
+
+<div class="row clickable" id="session-snapshot-{{session.seqn}}"
     data-href="{{session.get_absolute_url}}">
-  <h3>
-    {{ session.GetTitle }}
-  </h3>
+<div class="span8">
 
-  {% if session.GetStats.total_volume_ml %}
-  <span class="label">{% volume session.GetStats.total_volume_ml %}</span>
-  {% endif %}
+<h3>{{ session.GetTitle }}</h3>
 
-  <span class="smalltext">
-    &middot;
-    <span style="text-transform: uppercase;">{% timeago session.start_time %}</span>
-    &middot;
-    {{session.summarize_drinkers|safe}}
-  </span>
+{% with session.GetStats as stats %}
 
-  <ul class="avatar-list">
-    {% for chunk in session.UserChunksByVolume %}
-      {% if chunk.user %}
-        <li>{% mugshot_box chunk.user 64 %}</li>
-      {% endif %}
-    {% endfor %}
-  </ul>
+{% with session.OtherPictures as pictures %}
+{% if pictures %}
+<div class="row-fluid">
+  <div class="span3 offset1">
+    {% gallery session.HighlightPicture "span12" gallery_id=session.seqn %}
+  </div>
+  <div class="span8">
+    <div class="row-fluid">
+      <div class="span12">
+        {% include "kegweb/session-badges.html" %}
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="span12">
+        {% gallery pictures|slice:":5" "span2" gallery_id=session.seqn %}
+      </div>
+    </div>
+  </div>
 </div>
+{% else %}
+<div class="row-fluid">
+  <div class="span11 offset1">
+    {% include "kegweb/session-badges.html" %}
+  </div>
+</div>
+{% endif %}
+{% endwith %}
+
+<div class="row-fluid">
+  <div class="span11 offset1">
+    <p>
+      <i class="icon-time"></i>
+      <a href="{{ session.get_absolute_url }}">{{ session.start_time|date:"M j Y, P" }}</a>
+      &middot;
+      <i class="icon-user"></i> {{ session.summarize_drinkers|safe }}
+    </p>
+  </div>
+</div>
+
+</div> <!-- /outer span -->
+</div> <!-- /outer row -->
+
+{% endwith %} <!-- getstats -->

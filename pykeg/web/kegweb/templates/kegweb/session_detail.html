@@ -86,7 +86,9 @@
 {% with session.pictures.all as pictures %}
 {% if pictures.count %}
 <h2>Beer Goggles!</h2>
-{% include "kegweb/picture-gallery.html" %}
+<div class="row">
+{% gallery pictures "span2" gallery_id=session.seqn %}
+</div>
 {% endif %}
 {% endwith %}
 

@@ -25,7 +25,9 @@
         $(".alert").alert()
         $(".clickable").each(function() {
           var href = $(this).attr("data-href");
-          $(this).click(function() {
+          $(this).click(function(e) {
+            var node = e.target.nodeName.toLowerCase();
+            if (node == 'a' || node == 'img') return;
             window.location = href;
             return false;
           });

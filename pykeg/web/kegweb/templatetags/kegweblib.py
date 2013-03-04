@@ -30,6 +30,7 @@ from django.template import Node
 from django.template import VariableDoesNotExist
 from django.template import TemplateSyntaxError
 from django.template import Variable
+from django.template.defaultfilters import pluralize
 from django.utils.safestring import mark_safe
 
 from kegbot.util import kbjson
@@ -50,6 +51,30 @@ def mugshot_box(context, user, boxsize=0):
 @register.inclusion_tag('kegweb/page_block.html')
 def render_page(page):
   return {'page' : page}
+
+@register.inclusion_tag('kegweb/picture-gallery.html', takes_context=True)
+def gallery(context, picture_or_pictures, thumb_size='span2', gallery_id=''):
+  c = copy.copy(context)
+  if not hasattr(picture_or_pictures, '__iter__'):
+    c['gallery_pictures'] = [picture_or_pictures]
+  else:
+    c['gallery_pictures'] = picture_or_pictures
+  c['thumb_size'] = thumb_size
+  c['gallery_id'] = gallery_id
+  return c
+
+@register.inclusion_tag('kegweb/badge.html')
+def badge(amount, caption, style='', is_volume=False, do_pluralize=False):
+  if is_volume:
+    amount = mark_safe(VolumeNode.format(amount, 'mL'))
+  if do_pluralize:
+    caption += pluralize(amount)
+  return {
+      'badge_amount': amount,
+      'badge_caption': caption,
+      'badge_style': style,
+  }
+
 
 ### navitem
 
@@ -139,8 +164,8 @@ def volumetag(parser, token):
 class VolumeNode(Node):
   TEMPLATE = """
     <span class="hmeasure" title="%(title)s">
-      <span class="num">%(num)s</span>
-      <span class="unit">%(unit)s</span>
+      <span class="num">%(amount)s</span>
+      <span class="unit">%(units)s</span>
     </span>""".strip()
 
   def __init__(self, volume_varname, extra_args):
@@ -154,8 +179,12 @@ class VolumeNode(Node):
     except (VariableDoesNotExist, ValueError):
       num = 'unknown'
     unit = 'mL'
-    title = '%s %s' % (num, unit)
-    return VolumeNode.TEMPLATE % vars()
+    return self.format(num, unit)
+
+  @classmethod
+  def format(cls, amount, units):
+    title = '%s %s' % (amount, units)
+    return cls.TEMPLATE % vars()
 
 
 ### chart

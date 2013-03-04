@@ -1,0 +1,9 @@
+{% load kegweblib %}
+<ul class="badge-list">
+{% if stats.total_volume_ml %}
+{% badge stats.total_pours "Pour" do_pluralize=True style="badge-small" %}
+{% badge stats.total_volume_ml "Poured" is_volume=True style="badge-small" %}
+{% badge stats.average_volume_ml "Avg Pour" is_volume=True style="badge-small" %}
+{% endif %}
+</ul>
+

@@ -59,23 +59,12 @@ def index(request):
   context['page_node'] = page
   context['taps'] = request.kbsite.taps.all()
 
-  try:
-    session = request.kbsite.sessions.latest()
-    if session.IsActiveNow():
-      context['current_session'] = session
-  except models.DrinkingSession.DoesNotExist:
-    pass
-
-  recent_images = models.Picture.objects.filter(
-      site=request.kbsite,
-      drink__isnull=False).order_by('-time')[:9]
-  context['recent_images'] = recent_images
-
   events = request.kbsite.events.all()[:10]
   context['initial_events'] = kbjson.dumps([protolib.ToDict(e, full=True) for e in events],
       indent=None)
 
   sessions = request.kbsite.sessions.all().order_by('-seqn')[:10]
+  context['sessions'] = sessions
   context['initial_sessions'] = kbjson.dumps([protolib.ToDict(s, full=True) for s in sessions],
       indent=None)
 

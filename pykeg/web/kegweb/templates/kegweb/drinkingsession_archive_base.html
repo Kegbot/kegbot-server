@@ -11,12 +11,17 @@
     {% include "kegweb/keg-session.html" %}
 {% endfor %}
 </div>
+
+{% block session-right-hide %}
 <div class="span4">
   <div class="well">
+  <h4>All Sessions</h4>
   {% block session-right %}
   {% endblock %}
   </div>
 </div>
+{% endblock %}
+
 </div>
 
 {% if is_paginated %}

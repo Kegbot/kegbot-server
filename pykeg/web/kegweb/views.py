@@ -130,6 +130,7 @@ class KegListView(ListView):
   model = models.Keg
   template_name = 'kegweb/keg_list.html'
   context_object_name = 'kegs'
+  paginate_by = 10
 
   def get_queryset(self):
     return self.request.kbsite.kegs.all().order_by('-id')

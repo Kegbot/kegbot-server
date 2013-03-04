@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load kegweblib %}
+{% block title %}Sessions{% endblock %}
+{% block pagetitle %}Sessions{% endblock %}
+
+{% block content %}
+
+<div class="row">
+<div class="span8">
+{% for session in sessions %}
+    {% include "kegweb/keg-session.html" %}
+{% endfor %}
+</div>
+<div class="span4">
+  <div class="well">
+  {% block session-right %}
+  {% endblock %}
+  </div>
+</div>
+</div>
+
+{% if is_paginated %}
+<div class="pagination">
+  <span class="page-links">
+    {% if page_obj.has_previous %}
+        <a href="{% url "kb-sessions" kbsite.url %}?page={{ page_obj.previous_page_number }}">previous</a>
+    {% endif %}
+    <span class="page-current">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+    </span>
+    {% if page_obj.has_next %}
+        <a href="{% url "kb-sessions" kbsite.url %}?page={{ page_obj.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+</div>
+{% endif %}
+
+
+{% endblock %}

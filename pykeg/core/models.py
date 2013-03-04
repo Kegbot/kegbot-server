@@ -615,11 +615,12 @@ class DrinkingSession(_AbstractChunk):
       slug = self.slug
     else:
       slug = 'session-%i' % self.seqn
-    return ('kb-session',  (), {
+
+    return ('kb-session-detail', (), {
       'kbsite_name' : self.site.url(),
       'year' : self.start_time.year,
-      'month' : '%02i' % self.start_time.month,
-      'day' : '%02i' % self.start_time.day,
+      'month' : self.start_time.month,
+      'day' : self.start_time.day,
       'seqn' : self.seqn,
       'slug' : slug})
 

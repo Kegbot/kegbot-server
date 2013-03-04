@@ -5,6 +5,12 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+
+* "Sessions" tab added to top navbar.
+* Can drill down into sessions by year, month, and day.
+
 Version 0.9.7 (2013-01-10)
 --------------------------
 

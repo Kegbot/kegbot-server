@@ -1,0 +1,31 @@
+{% extends "kegweb/drinkingsession_archive_base.html" %}
+
+{% block title %}{{block.super}}: {{month|date:"F Y"}}{% endblock %}
+{% block pagetitle %}{{block.super}}: {{month|date:"F Y"}}{% endblock %}
+
+
+{% block session-right %}
+<h4>{{month}} Sessions</h4>
+<ul>
+  <li>
+    <a href="{% url "kb-sessions" kbsite.url %}">All Sessions</a>
+    <ul>
+      <li>
+        <a href="{% url "kb-sessions-year" kbsite.url month.year %}">{{month|date:"Y"}}</a>
+        <ul>
+          <li>
+            <a href="{% url "kb-sessions-month" kbsite.url month.year month.month %}"><b>{{month|date:"F"}}</b></a>
+            <ul>
+              {% for d in date_list %}
+              <li>
+                <a href="{% url "kb-sessions-day" kbsite.url d.year d.month d.day %}">{{ d|date:"F d" }}</a>
+              </li>
+              {% endfor %}
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+{% endblock %}

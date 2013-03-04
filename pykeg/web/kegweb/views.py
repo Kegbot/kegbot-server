@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright 2008 Mike Wakerly <opensource@hoho.com>
 #
@@ -31,6 +30,11 @@ from django.template import RequestContext
 from django.views.decorators.cache import cache_page
 from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect
+from django.views.generic.dates import ArchiveIndexView
+from django.views.generic.dates import DateDetailView
+from django.views.generic.dates import DayArchiveView
+from django.views.generic.dates import MonthArchiveView
+from django.views.generic.dates import YearArchiveView
 from django.views.generic.list import ListView
 
 from kegbot.util import kbjson
@@ -163,4 +167,90 @@ def session_detail(request, year, month, day, seqn, slug):
   })
   return render_to_response('kegweb/session_detail.html', context)
 
+
+class SessionArchiveIndexView(ArchiveIndexView):
+  model = models.DrinkingSession
+  date_field = 'start_time'
+  template_name = 'kegweb/drinkingsession_archive.html'
+  context_object_name = 'sessions'
+  paginate_by = 20
+
+  def get_queryset(self):
+    return self.request.kbsite.sessions.all()
+
+
+class SessionYearArchiveView(YearArchiveView):
+  model = models.DrinkingSession
+  date_field = 'start_time'
+  template_name = 'kegweb/drinkingsession_archive_year.html'
+  make_object_list = True
+  context_object_name = 'sessions'
+  paginate_by = 20
+
+  def get_queryset(self):
+    return self.request.kbsite.sessions.all()
+
+
+class SessionMonthArchiveView(MonthArchiveView):
+  model = models.DrinkingSession
+  date_field = 'start_time'
+  template_name = 'kegweb/drinkingsession_archive_month.html'
+  make_object_list = True
+  context_object_name = 'sessions'
+  paginate_by = 20
+
+  def get_queryset(self):
+    return self.request.kbsite.sessions.all()
+
+
+class SessionDayArchiveView(DayArchiveView):
+  model = models.DrinkingSession
+  date_field = 'start_time'
+  template_name = 'kegweb/drinkingsession_archive_day.html'
+  make_object_list = True
+  context_object_name = 'sessions'
+  paginate_by = 20
+
+  def get_queryset(self):
+    return self.request.kbsite.sessions.all()
+
+
+class SessionDateDetailView(DateDetailView):
+  model = models.DrinkingSession
+  date_field = 'start_time'
+  slug_field = 'slug'
+  pk_url_kwarg = 'seqn'
+  template_name = 'kegweb/session_detail.html'
+  context_object_name = 'session'
+
+  def get_queryset(self):
+    return self.request.kbsite.sessions.all()
+
+  def get_object(self, queryset=None):
+    """Clone of SingleObjectMixin method, using `seqn` rather than `pk`."""
+    if queryset is None:
+      queryset = self.get_queryset()
+
+    seqn = self.kwargs.get(self.pk_url_kwarg, None)
+    slug = self.kwargs.get(self.slug_url_kwarg, None)
+    if seqn is not None:
+      queryset = queryset.filter(seqn=seqn)
+    elif slug is not None:
+      slug_field = self.get_slug_field()
+      queryset = queryset.filter(**{slug_field: slug})
+    else:
+      raise AttributeError("Generic detail view %s must be called with "
+                           "either an object pk or a slug." % self.__class__.__name__)
+    try:
+      obj = queryset.get()
+    except ObjectDoesNotExist:
+      raise Http404(_("No %(verbose_name)s found matching the query") %
+                    {'verbose_name': queryset.model._meta.verbose_name})
+    return obj
+
+  def get_context_data(self, **kwargs):
+    """Adds `stats` to the context."""
+    ret = super(SessionDateDetailView, self).get_context_data(**kwargs)
+    ret['stats'] = ret[self.context_object_name].GetStats()
+    return ret
 

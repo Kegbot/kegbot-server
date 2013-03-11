@@ -1,7 +1,8 @@
 {% extends "account/base.html" %}
 {% load crispy_forms_tags %}
 
-{% block pagetitle %}Your Account{% endblock %}
+{% block title %}Account Settings | {{ block.super }}{% endblock %}
+{% block pagetitle %}Account Settings{% endblock %}
 
 {% block kb-account-main %}
 <h2>Hello, {{user.username}}!</h2>

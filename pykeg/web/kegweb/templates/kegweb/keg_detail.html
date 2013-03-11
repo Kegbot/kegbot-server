@@ -1,13 +1,8 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
 
-{% block title %}
-  keg {{ keg.seqn }} detail
-{% endblock %}
-
-{% block pagetitle %}
-  keg {{ keg.seqn }} detail
-{% endblock %}
+{% block title %}Keg {{ keg.seqn }} | {{ block.super }}{% endblock %}
+{% block pagetitle %}Keg {{ keg.seqn }}{% endblock %}
 
 {% block sidebar %}
   <div class="well">

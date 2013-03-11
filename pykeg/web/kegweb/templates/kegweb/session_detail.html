@@ -2,8 +2,8 @@
 {% load kegweblib %}
 {% load humanize %}
 
-{% block title %}session detail: {{ session.GetTitle}}{% endblock %}
-{% block pagetitle %}{{ session.GetTitle}}{% endblock %}
+{% block title %}{{ session.GetTitle }} | {{ block.super}}{% endblock %}
+{% block pagetitle %}{{ session.GetTitle }}{% endblock %}
 
 {% block col-1 %}
 

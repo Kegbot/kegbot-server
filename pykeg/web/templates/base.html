@@ -3,7 +3,7 @@
 {% load humanize %}
 {% if USE_FACEBOOK %}{% load facebook %}{% endif %}
 
-{% block title %}Default Page{% endblock %}
+{% block title %}{% if kbsite.settings.title %}{{ kbsite.settings.title }}{% else %}Kegbot{% endif %}{% endblock %}
 
 {% block js %}
 {{ block.super }}

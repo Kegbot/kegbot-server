@@ -1,5 +1,8 @@
 {% extends "kegweb/drinkingsession_archive_base.html" %}
 
+{% block title %}Sessions | {{ block.super }}{% endblock %}
+{% block pagetitle %}Sessions{% endblock %}
+
 {% block session-right %}
 <ul>
   {% for d in date_list %}

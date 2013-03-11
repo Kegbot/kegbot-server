@@ -1,8 +1,7 @@
 {% extends "kegweb/drinkingsession_archive_base.html" %}
 
-{% block title %}{{block.super}}: {{month|date:"F Y"}}{% endblock %}
-{% block pagetitle %}{{block.super}}: {{month|date:"F Y"}}{% endblock %}
-
+{% block title %}Sessions: {{month|date:"F Y"}} | {{ block.super }}{% endblock %}
+{% block pagetitle %}Sessions: {{month|date:"F Y"}}{% endblock %}
 
 {% block session-right %}
 <ul>

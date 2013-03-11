@@ -1,7 +1,7 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
 
-{% block title %}Drinker Details: {{ drinker.username }}{% endblock %}
+{% block title %}Drinker Details: {{ drinker.username }} | {{ block.super }}{% endblock %}
 {% block pagetitle %}Drinker Details: {{ drinker.username }}{% endblock %}
 
 {% block sidebar %}

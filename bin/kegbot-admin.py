@@ -19,7 +19,13 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 from django.core import management
+
+if sys.version_info < (2, 7):
+  sys.stderr.write('Error: Kegbot needs Python 2.7 or newer.\n\n'
+      'Current version: %s\n' % sys.version)
+  sys.exit(1)
 
 if __name__ == "__main__":
   os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pykeg.settings")

@@ -17,7 +17,7 @@ DEPENDENCIES = [
   'kegbot-pyutils >= 0.1.4',
   'kegbot-api >= 0.1.7',
 
-  'django >= 1.4',
+  'Django >= 1.5,<1.6',
   'django-autoslug',
   'django-imagekit >= 2.0',
   'django-registration',

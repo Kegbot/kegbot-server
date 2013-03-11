@@ -8,8 +8,9 @@ Changelog
 Current Version (in development)
 --------------------------------
 
-* "Sessions" tab added to top navbar.
-* Can drill down into sessions by year, month, and day.
+* Python 2.7 and Django 1.5 are now required.
+* Sessions are now exposed in the top navbar, and are listed by year, month, and
+  day.
 
 Version 0.9.7 (2013-01-10)
 --------------------------

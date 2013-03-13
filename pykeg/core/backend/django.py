@@ -223,6 +223,7 @@ class KegbotBackend(backend.Backend):
         sensor=sensor, time=when, defaults=defaults)
     record.temp = temperature
     record.save()
+    record.UpdateSummaryLog()
     return record
 
   def GetAuthToken(self, auth_device, token_value):

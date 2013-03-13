@@ -965,45 +965,44 @@ class Thermolog(models.Model):
   def TempF(self):
     return util.CtoF(self.temp)
 
-def _thermolog_post_save(sender, instance, **kwargs):
-  daily_date = datetime.datetime(year=instance.time.year,
-      month=instance.time.month,
-      day=instance.time.day)
-  defaults = {
-      'site': instance.site,
-      'num_readings': 1,
-      'min_temp': instance.temp,
-      'max_temp': instance.temp,
-      'mean_temp': instance.temp,
-  }
-  daily_log, created = ThermoSummaryLog.objects.get_or_create(
-      sensor=instance.sensor,
-      period='daily',
-      time=daily_date,
-      defaults=defaults)
+  def UpdateSummaryLog(self):
+    daily_date = datetime.datetime(year=self.time.year,
+        month=self.time.month,
+        day=self.time.day)
+    defaults = {
+        'site': self.site,
+        'num_readings': 1,
+        'min_temp': self.temp,
+        'max_temp': self.temp,
+        'mean_temp': self.temp,
+    }
+    daily_log, created = ThermoSummaryLog.objects.get_or_create(
+        sensor=self.sensor,
+        period='daily',
+        time=daily_date,
+        defaults=defaults)
 
-  if not created:
-    new_mean = daily_log.num_readings * daily_log.mean_temp + instance.temp
-    new_mean /= daily_log.num_readings + 1
-    daily_log.mean_temp = new_mean
+    if not created:
+      new_mean = daily_log.num_readings * daily_log.mean_temp + self.temp
+      new_mean /= daily_log.num_readings + 1
+      daily_log.mean_temp = new_mean
 
-    daily_log.num_readings += 1
+      daily_log.num_readings += 1
 
-    if instance.temp > daily_log.max_temp:
-      daily_log.max_temp = instance.temp
-    if instance.temp < daily_log.min_temp:
-      daily_log.min_temp = instance.temp
+      if self.temp > daily_log.max_temp:
+        daily_log.max_temp = self.temp
+      if self.temp < daily_log.min_temp:
+        daily_log.min_temp = self.temp
 
-  daily_log.save()
+    daily_log.save()
 
-  # Keep at least the most recent 24 hours, dropping any older entries.
-  now = datetime.datetime.now()
-  keep_time = now - datetime.timedelta(hours=24)
-  old_entries = Thermolog.objects.filter(site=instance.site, time__lt=keep_time)
-  old_entries.delete()
+    # Keep at least the most recent 24 hours, dropping any older entries.
+    now = datetime.datetime.now()
+    keep_time = now - datetime.timedelta(hours=24)
+    old_entries = Thermolog.objects.filter(site=self.site, time__lt=keep_time)
+    old_entries.delete()
 
 pre_save.connect(_set_seqn_pre_save, sender=Thermolog)
-post_save.connect(_thermolog_post_save, sender=Thermolog)
 
 
 class ThermoSummaryLog(models.Model):

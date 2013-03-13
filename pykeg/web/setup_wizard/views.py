@@ -28,7 +28,10 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import never_cache
 
+from pykeg.core import defaults
+
 from .forms import AdminUserForm
+from .forms import CreateOrImportForm
 from .forms import MiniSiteSettingsForm
 
 def setup_view(f):
@@ -49,6 +52,26 @@ def start(request):
 
 @setup_view
 @never_cache
+def create_or_import(request):
+  context = RequestContext(request)
+  form = CreateOrImportForm(initial={'mode': 'create'})
+  if request.method == 'POST':
+    form = CreateOrImportForm(request.POST)
+    if form.is_valid():
+      if form.cleaned_data['mode'] == 'create':
+        try:
+          defaults.set_defaults()
+          messages.success(request, 'Started new site!')
+        except defaults.AlreadyInstalledError:
+          messages.warning(request, 'Site already installed, proceeding.')
+        return redirect('setup_site_settings')
+      else:
+        messages.error(request, 'Sorry, imports are not yet supported.')
+  context['form'] = form
+  return render_to_response('setup_wizard/create_or_import.html', context)
+
+@setup_view
+@never_cache
 def site_settings(request):
   context = RequestContext(request)
   form = MiniSiteSettingsForm(instance=request.kbsite.settings)
@@ -57,7 +80,7 @@ def site_settings(request):
     if form.is_valid():
       form.save()
       messages.success(request, 'Settings saved!')
-      return redirect('setup_admin', request.kbsite.url())
+      return redirect('setup_admin')
   context['form'] = form
   return render_to_response('setup_wizard/site_settings.html', context)
 
@@ -74,7 +97,7 @@ def admin(request):
           password=form.cleaned_data.get('password'))
       if user:
         login(request, user)
-      return redirect('setup_finish', request.kbsite.url())
+      return redirect('setup_finish')
   context['form'] = form
   return render_to_response('setup_wizard/admin.html', context)
 
@@ -86,5 +109,5 @@ def finish(request):
     request.kbsite.is_setup = True
     request.kbsite.save()
     messages.success(request, 'Tip: Install a new Keg in Admin: Taps')
-    return redirect('kb-home', request.kbsite.url())
+    return redirect('kegadmin-main', '')
   return render_to_response('setup_wizard/finish.html', context)

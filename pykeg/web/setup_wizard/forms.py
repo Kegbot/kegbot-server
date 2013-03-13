@@ -23,6 +23,25 @@ from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
 from pykeg.core import models
 
+class CreateOrImportForm(forms.Form):
+  CHOICES = (
+      ('create', 'Create New System'),
+      ('import', 'Import From Backup'),
+  )
+  mode = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
+  import_file  = forms.FileField(required=False)
+
+  helper = FormHelper()
+  helper.form_class = 'setup-form span8 offset2'
+  helper.layout = Layout(
+      Field('mode', css_class='input-xlarge'),
+      Field('import_file', css_class='input-xlarge'),
+      FormActions(
+          Submit('save_changes', 'Continue', css_class="btn-primary"),
+      )
+  )
+
+
 class MiniSiteSettingsForm(forms.ModelForm):
   class Meta:
     model = models.SiteSettings
@@ -33,15 +52,19 @@ class MiniSiteSettingsForm(forms.ModelForm):
         'registration_allowed',
         'registration_confirmation',
     )
+    widgets = {
+        'privacy': forms.RadioSelect(),
+        'display_units': forms.RadioSelect(),
+    }
 
   helper = FormHelper()
-  helper.form_class = 'form-horizontal'
+  helper.form_class = 'setup-form span8 offset2'
   helper.layout = Layout(
-      Field('title', css_class='input-xlarge'),
-      'privacy',
-      'display_units',
-      'registration_allowed',
-      'registration_confirmation',
+      Field('title', css_class='span12'),
+      Field('privacy', css_class='span12'),
+      Field('display_units', css_class='span12'),
+      Field('registration_allowed'),
+      Field('registration_confirmation'),
       FormActions(
           Submit('save_changes', 'Continue', css_class="btn-primary"),
       )
@@ -61,12 +84,12 @@ class AdminUserForm(forms.Form):
       help_text='In case you lose your password.')
 
   helper = FormHelper()
-  helper.form_class = 'form-horizontal'
+  helper.form_class = 'setup-form span8 offset2'
   helper.layout = Layout(
-      Field('username', css_class='input-xlarge'),
-      'email',
-      'password',
-      'confirm_password',
+      Field('username', css_class='span12'),
+      Field('email', css_class='span12'),
+      Field('password', css_class='span12'),
+      Field('confirm_password', css_class='span12'),
       FormActions(
           Submit('save_changes', 'Continue', css_class="btn-primary"),
       )

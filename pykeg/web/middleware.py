@@ -64,32 +64,36 @@ class KegbotSiteMiddleware:
       kbsite_name = 'default'
     request.kbsite_name = kbsite_name
 
+    epoch = None
+    need_setup = False
+    need_upgrade = False
+
     try:
-      try:
-        request.kbsite = models.KegbotSite.objects.get(name=kbsite_name)
-      except models.KegbotSite.DoesNotExist:
-        request.kbsite = None
-    except DatabaseError:
-      # Assume site is set up but KegbotSite table is inconsistent.
-      return self._upgrade_required(request)
+      request.kbsite = models.KegbotSite.objects.get(name=kbsite_name)
+      epoch = request.kbsite.epoch
+    except (models.KegbotSite.DoesNotExist, DatabaseError):
+      request.kbsite = None
 
-    if not request.kbsite.is_setup:
-      module = view_func.__module__
-      allowed = False
-      for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
-        if module.startswith(prefix):
-          allowed = True
-          break
-      if not allowed:
-        return SimpleTemplateResponse('setup_wizard/setup_required.html',
-            context=RequestContext(request), status=403)
+    if not request.kbsite or not request.kbsite.is_setup:
+      need_setup = True
+    elif not epoch or epoch < EPOCH:
+      need_upgrade = True
 
-    if request.kbsite.epoch < EPOCH:
-      return self._upgrade_required(request, current=request.kbsite.epoch)
+    for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
+      if view_func.__module__.startswith(prefix):
+        return None
 
+    if need_setup:
+      return self._setup_required(request)
+    elif need_upgrade:
+      return self._upgrade_required(request, current_epoch=epoch)
     return None
 
-  def _upgrade_required(self, request, current=None):
+  def _setup_required(self, request):
+    return SimpleTemplateResponse('setup_wizard/setup_required.html',
+        context=RequestContext(request), status=403)
+
+  def _upgrade_required(self, request, current_epoch=None):
     context = RequestContext(request)
     if current is not None:
       context['current_epoch'] = current
@@ -100,7 +104,7 @@ class KegbotSiteMiddleware:
 class SiteActiveMiddleware:
   """Middleware which throws 503s when KegbotSite.is_active is false."""
   def process_view(self, request, view_func, view_args, view_kwargs):
-    if not hasattr(request, 'kbsite'):
+    if not hasattr(request, 'kbsite') or not request.kbsite:
       return None
     kbsite = request.kbsite
 

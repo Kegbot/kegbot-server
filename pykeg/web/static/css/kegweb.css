@@ -5309,5 +5309,26 @@ div#content {
 .kb-admin-subnav-tap {
   margin-bottom: 10px;
 }
+.setup-form .control-group {
+  margin-bottom: 32px;
+}
+.setup-form .control-group label.control-label {
+  font-size: 26px;
+  height: 200%;
+}
+.setup-form .control-group label.checkbox {
+  font-size: 26px;
+  height: 36px;
+}
+.setup-form .control-group .requiredField {
+  text-weight: bold;
+}
+.setup-form .control-group .asteriskField {
+  display: none;
+}
+.setup-form .help-block {
+  font-size: 15.6px;
+  color: #555555;
+}
 /* @end */
 /* vim sw=2 ts=2 noet */

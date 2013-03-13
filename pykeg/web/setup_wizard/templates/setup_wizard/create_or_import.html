@@ -4,14 +4,16 @@
 {% block content %}
 <div class="jumbotron">
 
-<h2>Kegbot Setup: Create Admin User</h2>
+<h2>Kegbot Setup: Create or Import System</h2>
 <p class="lead">
-  That's you!
+  Are we starting from scratch or importing an existing site?
 </>
 </div>
 
 <div class="row-fluid">
+  <div class="span12">
     {% crispy form %}
+  </div>
 </div>
 
 {% endblock content %}

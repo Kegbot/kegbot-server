@@ -319,6 +319,31 @@ div#content {
   margin-bottom: 10px;
 }
 
+.setup-form {
+  .control-group {
+    margin-bottom: 32px;
+
+    label.control-label {
+        font-size: @baseFontSize * 2.0;
+        height:200%;
+    }
+    label.checkbox {
+        font-size: @baseFontSize * 2.0;
+        height: @baseLineHeight * 2.0;
+    }
+    .requiredField {
+      text-weight: bold;
+    }
+    .asteriskField {
+      display: none;
+    }
+  }
+  .help-block {
+    font-size: @baseFontSize * 1.2;
+    color: @gray;
+  }
+}
+
 /* @end */
 
 /* vim sw=2 ts=2 noet */

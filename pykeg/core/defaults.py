@@ -24,12 +24,15 @@ from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import models
 
 def db_is_installed():
-  return models.KegbotSite.objects.all() > 0
+  return len(models.KegbotSite.objects.all()) > 0
+
+class AlreadyInstalledError(Exception):
+  """Thrown when database is already installed."""
 
 def set_defaults(force=False):
   """ default values (contents may change with schema) """
   if not force and db_is_installed():
-    raise RuntimeError, "Database is already installed."
+    raise AlreadyInstalledError("Database is already installed.")
 
   site = models.KegbotSite.objects.create(name='default', is_setup=False)
 

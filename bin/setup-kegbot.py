@@ -567,7 +567,6 @@ class SetupApp(app.App):
 
     self.run_command('kegbot-admin.py syncdb --all --noinput -v 0')
     self.run_command('kegbot-admin.py migrate --all --fake --noinput -v 0')
-    self.run_command('kegbot-admin.py kb_set_defaults --force')
 
     if FLAGS.interactive:
       try:

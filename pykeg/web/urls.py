@@ -67,9 +67,6 @@ urlpatterns = patterns('',
     ### setup
     (r'^setup/', include('pykeg.web.setup_wizard.urls')),
 
-    ### charts
-    (r'^(?P<kbsite_name>)charts/', include('pykeg.web.charts.urls')),
-
     ### kegadmin
     (r'^(?P<kbsite_name>)kegadmin/', include('pykeg.web.kegadmin.urls')),
 )

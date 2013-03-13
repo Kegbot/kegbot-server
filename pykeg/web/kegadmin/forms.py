@@ -59,6 +59,7 @@ class SiteSettingsForm(forms.ModelForm):
         'default_user',
         'registration_allowed',
         'registration_confirmation',
+        'allowed_hosts',
     )
 
 #BeerTypeFormSet = inlineformset_factory(models.Brewer, models.BeerType)

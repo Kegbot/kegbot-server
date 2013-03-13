@@ -155,6 +155,9 @@ class SiteSettings(models.Model):
   registration_confirmation = models.BooleanField(default=False,
       help_text='Whether registration requires e-mail confirmation.')
 
+  allowed_hosts = models.TextField(blank=True, null=True, default='',
+      help_text='List of allowed hostnames. If blank, validation is disabled.')
+
   class Meta:
     verbose_name_plural = "site settings"
 

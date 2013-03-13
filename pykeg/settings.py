@@ -100,6 +100,10 @@ STATIC_URL = '/static/'
 # Examples: "http://foo.com/static/admin/", "/static/admin/".
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
+# Disable Django's built in host checker.
+# see pykeg.web.middleware.HttpHostMiddleware
+ALLOWED_HOSTS = ['*']
+
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -131,6 +135,7 @@ MIDDLEWARE_CLASSES = (
 
     'pykeg.web.api.middleware.WrapExceptionMiddleware',
     'pykeg.web.middleware.KegbotSiteMiddleware',
+    'pykeg.web.middleware.HttpHostMiddleware',
     'pykeg.web.middleware.SiteActiveMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',
     'pykeg.web.api.middleware.CheckAccessMiddleware',

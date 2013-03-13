@@ -23,6 +23,7 @@ from pykeg.web.api import util as apiutil
 
 from django.db import DatabaseError
 from django.conf import settings
+from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.http import Http404
@@ -53,40 +54,37 @@ class KegbotSiteMiddleware:
   ALLOWED_VIEW_MODULE_PREFIXES = (
       'pykeg.web.setup_wizard.',
   )
-  def process_view(self, request, view_func, view_args, view_kwargs):
-    """Removes kbsite_name from kwargs if present, and attaches the
-    corresponding KegbotSite instance to the request as the "kbsite" attribute.
-
-    If kbsite_name is None, the default site is selected.
-    """
-    kbsite_name = view_kwargs.pop('kbsite_name', None)
-    if not kbsite_name:
-      kbsite_name = 'default'
+  def process_request(self, request):
+    kbsite_name = 'default'
     request.kbsite_name = kbsite_name
 
     epoch = None
-    need_setup = False
-    need_upgrade = False
+    request.need_setup = False
+    request.need_upgrade = False
 
     try:
       request.kbsite = models.KegbotSite.objects.get(name=kbsite_name)
       epoch = request.kbsite.epoch
-    except (models.KegbotSite.DoesNotExist, DatabaseError):
+    except (models.KegbotSite.DoesNotExist, DatabaseError), e:
       request.kbsite = None
 
     if not request.kbsite or not request.kbsite.is_setup:
-      need_setup = True
+      request.need_setup = True
     elif not epoch or epoch < EPOCH:
-      need_upgrade = True
+      request.need_upgrade = True
 
+    return None
+
+  def process_view(self, request, view_func, view_args, view_kwargs):
     for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
       if view_func.__module__.startswith(prefix):
         return None
 
-    if need_setup:
+    if request.need_setup:
       return self._setup_required(request)
-    elif need_upgrade:
+    elif request.need_upgrade:
       return self._upgrade_required(request, current_epoch=epoch)
+
     return None
 
   def _setup_required(self, request):
@@ -104,6 +102,7 @@ class KegbotSiteMiddleware:
 class SiteActiveMiddleware:
   """Middleware which throws 503s when KegbotSite.is_active is false."""
   def process_view(self, request, view_func, view_args, view_kwargs):
+    view_kwargs.pop('kbsite_name', None)  # TODO(mikey): remove entirely
     if not hasattr(request, 'kbsite') or not request.kbsite:
       return None
     kbsite = request.kbsite
@@ -121,6 +120,53 @@ class SiteActiveMiddleware:
       return None
 
     return HttpResponse('Site temporarily unavailable', status=503)
+
+class HttpHostMiddleware:
+  """Middleware which checks a dynamic version of settings.ALLOWED_HOSTS."""
+  def process_request(self, request):
+    if not getattr(request, 'kbsite', None):
+      return None
+
+    host = request.get_host()
+    host_patterns = request.kbsite.settings.allowed_hosts.strip().split()
+    valid = HttpHostMiddleware.validate_host(host, host_patterns)
+
+    if not valid:
+      message =  "Invalid HTTP_HOST header (you may need to change Kegbot's ALLOWED_HOSTS setting): %s" % host
+      if request.user.is_superuser or request.user.is_staff:
+        messages.warning(request, message)
+      else:
+        raise SuspiciousOperation(message)
+
+  @classmethod
+  def validate_host(cls, host, allowed_hosts):
+    """Clone of django.http.request.validate_host.
+
+    Local differences: treats an empty `allowed_hosts` list as a pass.
+    """
+    # Validate only the domain part.
+    if not allowed_hosts:
+      return True
+
+    if host[-1] == ']':
+        # It's an IPv6 address without a port.
+        domain = host
+    else:
+        domain = host.rsplit(':', 1)[0]
+
+    for pattern in allowed_hosts:
+      pattern = pattern.lower()
+      match = (
+          pattern == '*' or
+          pattern.startswith('.') and (
+              domain.endswith(pattern) or domain == pattern[1:]
+              ) or
+          pattern == domain
+          )
+      if match:
+          return True
+
+    return False
 
 
 class PrivacyMiddleware:

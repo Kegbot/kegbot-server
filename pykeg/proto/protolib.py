@@ -101,7 +101,7 @@ def BeerImageToProto(record, full=False):
   return ret
 
 @converts(models.Picture)
-def ImageToProto(record, full=False):
+def PictureToProto(record, full=False):
   ret = models_pb2.Image()
   ret.url = record.resized.url
   ret.original_url = record.image.url
@@ -113,6 +113,11 @@ def ImageToProto(record, full=False):
   #  ret.height = record.image.height
   #except IOError:
   #  pass
+  return ret
+
+@converts(models.PourPicture)
+def PourPictureToProto(record, full=False):
+  ret = PictureToProto(record.picture)
   if record.time:
     ret.time = datestr(record.time)
   if record.caption:

@@ -37,6 +37,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
+from django.db import transaction
 from django.db.models.query import QuerySet
 
 from kegbot.api import kbapi
@@ -155,16 +156,16 @@ def add_drink_photo(request, drink_id):
   if request.method != 'POST':
     raise Http404('Method not supported')
   drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
-  pic = models.Picture.objects.create(site=request.kbsite)
-  pic.image = request.FILES['photo']
-  pic.drink = drink
-  pic.user = drink.user
-  pic.keg = drink.keg
-  pic.session = drink.session
-  pic.save()
+  pic = models.Picture.objects.create(site=request.kbsite,
+      image=request.FILES['photo'])
+  pour_pic = models.PourPicture.objects.create(picture_id=pic.id,
+      drink=drink,
+      user=drink.user,
+      keg=drink.keg,
+      session=drink.session)
   if settings.HAVE_CELERY:
-    tasks.handle_new_picture.delay(pic.id)
-  return protolib.ToProto(pic, full=True)
+    tasks.handle_new_picture.delay(pour_pic.id)
+  return protolib.ToProto(pour_pic, full=True)
 
 @api_view
 def get_session(request, session_id):

@@ -87,9 +87,14 @@ class SystemEventAdmin(admin.ModelAdmin):
 admin.site.register(models.SystemEvent, SystemEventAdmin)
 
 class PictureAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'time', 'user', 'drink', 'keg', 'session', 'caption')
+  list_display = ('seqn', 'time')
   list_filter = ('time',)
 admin.site.register(models.Picture, PictureAdmin)
+
+class PourPictureAdmin(admin.ModelAdmin):
+  list_display = ('id', 'time', 'user', 'drink', 'keg', 'session', 'caption')
+  list_filter = ('time',)
+admin.site.register(models.PourPicture, PourPictureAdmin)
 
 class SiteSettingsAdmin(admin.ModelAdmin):
   list_display = ('site', 'title', 'description')

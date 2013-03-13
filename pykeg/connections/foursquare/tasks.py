@@ -75,7 +75,7 @@ def _build_client(site, user):
 
 @task
 def handle_new_picture(picture_id):
-  picture = core_models.Picture.objects.get(id=picture_id)
+  picture = core_models.PourPicture.objects.get(id=picture_id)
   site = picture.site
   user = picture.user
   if not site or not user:
@@ -96,7 +96,7 @@ def handle_new_picture(picture_id):
     return
 
   logger.info('Uploading photo to foursquare.')
-  result = client.photos.add(photo_data=picture.image.read(),
+  result = client.photos.add(photo_data=picture.picture.image.read(),
       params={'checkinId': checkin.get('id','') })
   logger.info('Upload complete, result: %s' % str(result))
 

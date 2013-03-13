@@ -1123,14 +1123,14 @@ class Picture(models.Model):
       help_text='Caption for the picture')
   user = models.ForeignKey(User, blank=True, null=True,
       help_text='User this picture is associated with, if any')
-  keg = models.ForeignKey(Keg, blank=True, null=True, related_name='pictures',
+  keg = models.ForeignKey(Keg, blank=True, null=True, related_name='deprecated_pictures',
       help_text='Keg this picture is associated with, if any')
   session = models.ForeignKey(DrinkingSession, blank=True, null=True,
       on_delete=models.SET_NULL,
-      related_name='pictures',
+      related_name='deprecated_pictures',
       help_text='Session this picture is associated with, if any')
   drink = models.ForeignKey(Drink, blank=True, null=True,
-      related_name='pictures',
+      related_name='deprecated_pictures',
       help_text='Drink this picture is associated with, if any')
 
   def GetCaption(self):
@@ -1145,4 +1145,22 @@ class Picture(models.Model):
       return ''
 
 pre_save.connect(_set_seqn_pre_save, sender=Picture)
+
+class PourPicture(models.Model):
+  '''Stores additional metadata about a picture taken during a pour.'''
+  picture = models.ForeignKey('Picture')
+  drink = models.ForeignKey(Drink, blank=True, null=True,
+      related_name='pictures',
+      help_text='Drink this picture is associated with, if any')
+  time = models.DateTimeField(default=datetime.datetime.now)
+  caption = models.TextField(blank=True, null=True,
+      help_text='Caption for the picture')
+  user = models.ForeignKey(User, blank=True, null=True,
+      help_text='User this picture is associated with, if any')
+  keg = models.ForeignKey(Keg, blank=True, null=True, related_name='pictures',
+      help_text='Keg this picture is associated with, if any')
+  session = models.ForeignKey(DrinkingSession, blank=True, null=True,
+      on_delete=models.SET_NULL,
+      related_name='pictures',
+      help_text='Session this picture is associated with, if any')
 

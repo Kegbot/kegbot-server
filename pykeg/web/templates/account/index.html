@@ -29,7 +29,7 @@
       Use this API key to access the kegbot web service. Ssh! Keep it secret!
     </p>
 
-    <pre>{{ user.get_profile.GetApiKey.Encode }}</pre>
+    <pre>{{ user.get_profile.GetApiKey }}</pre>
 
     <form action="regenerate-api-key/" method="POST">
     {% csrf_token %}

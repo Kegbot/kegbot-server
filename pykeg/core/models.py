@@ -46,8 +46,6 @@ from kegbot.util import util
 from kegbot.api import models_pb2
 from kegbot.api import protoutil
 
-from pykeg.web.api.apikey import ApiKey
-
 """Django models definition for the kegbot database."""
 
 def _set_seqn_pre_save(sender, instance, **kwargs):
@@ -206,7 +204,9 @@ class UserProfile(models.Model):
       last_d[0]._UpdateUserStats()
 
   def GetApiKey(self):
-    return ApiKey(self.user.id, self.api_secret)
+    api_key, new = ApiKey.objects.get_or_create(user=self.user,
+        defaults={'key': ApiKey.generate_key()})
+    return api_key.key
 
   @models.permalink
   def get_absolute_url(self):
@@ -216,14 +216,6 @@ class UserProfile(models.Model):
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
   weight = models.FloatField()
   mugshot = models.ForeignKey('Picture', blank=True, null=True)
-  api_secret = models.CharField(max_length=256, blank=True, null=True,
-      default=ApiKey.NewSecret)
-
-def _user_profile_pre_save(sender, instance, **kwargs):
-  if not instance.api_secret:
-    instance.api_secret = ApiKey.NewSecret()
-  # TODO(mikey): validate secret (length, hex chars) here too.
-pre_save.connect(_user_profile_pre_save, sender=UserProfile)
 
 def _user_post_save(sender, instance, **kwargs):
   defaults = {
@@ -233,6 +225,25 @@ def _user_post_save(sender, instance, **kwargs):
   profile, new = UserProfile.objects.get_or_create(user=instance,
       defaults=defaults)
 post_save.connect(_user_post_save, sender=User)
+
+
+class ApiKey(models.Model):
+  user = models.OneToOneField(User)
+  key = models.CharField(max_length=127, editable=False, unique=True)
+  active = models.BooleanField(default=True)
+
+  def is_active(self):
+    """Returns true if both the key and the key's user are active."""
+    return self.active and self.user.is_active
+
+  def regenerate(self):
+    self.key = self.generate_key()
+    self.save()
+
+  @classmethod
+  def generate_key(cls):
+    '''Returns a new random key.'''
+    return '%032x' % random.randint(0, 2**128 - 1)
 
 
 class BeerDBModel(models.Model):

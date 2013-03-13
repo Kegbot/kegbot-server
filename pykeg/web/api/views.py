@@ -374,7 +374,7 @@ def get_api_key(request):
   user = request.user
   api_key = ''
   if user and (user.is_staff or user.is_superuser):
-    api_key = str(user.get_profile().GetApiKey())
+    api_key = user.get_profile().GetApiKey()
   return {'api_key': api_key}
 
 @csrf_exempt

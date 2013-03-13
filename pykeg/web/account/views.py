@@ -105,9 +105,9 @@ def edit_mugshot(request):
 def regenerate_api_key(request):
   form = forms.RegenerateApiKeyForm(request.POST)
   if form.is_valid():
-    profile = request.user.get_profile()
-    profile.api_secret = apikey.ApiKey.NewSecret()
-    profile.save()
+    key, is_new = models.ApiKey.objects.get_or_create(user=request.user)
+    key.regenerate()
+    key.save()
   return redirect('kb-account-main')
 
 @login_required

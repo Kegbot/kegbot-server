@@ -72,24 +72,16 @@ def check_api_key(request):
     raise kbapi.NoAuthTokenError('The parameter "api_key" is required')
 
   try:
-    key = apikey.ApiKey.FromString(keystr)
-  except ValueError, e:
-    raise kbapi.BadApiKeyError('Error parsing API key: %s' % e)
+    api_key = models.ApiKey.objects.get(key=keystr)
+  except models.ApiKey.DoesNotExist:
+    raise kbapi.BadApiKeyError('API key does not exist')
 
-  try:
-    user = models.User.objects.get(pk=key.uid())
-  except models.User.DoesNotExist:
-    raise kbapi.BadApiKeyError('API user %s does not exist' % key.uid())
+  if not api_key.is_active():
+    raise kbapi.BadApiKeyError('Key and/or user is inactive')
 
-  if not user.is_active:
-    raise kbapi.BadApiKeyError('User is inactive')
-
-  if not user.is_staff and not user.is_superuser:
+  # TODO: remove me.
+  if not api_key.user.is_staff and not api_key.user.is_superuser:
     raise kbapi.PermissionDeniedError('User is not staff/superuser')
-
-  user_secret = user.get_profile().api_secret
-  if not user_secret or user_secret != key.secret():
-    raise kbapi.BadApiKeyError('User secret does not match')
 
   setattr(request, ATTR_API_AUTHENTICATED, True)
 

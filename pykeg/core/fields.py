@@ -275,4 +275,4 @@ else:
             [],
             {},
         ),
-    ], ["^django_extensions\.db\.fields\.json\.JSONField"])
+    ], ["^django_extensions\.db\.fields\.json\.JSONField", "pykeg.core.jsonfield.JSONField"])

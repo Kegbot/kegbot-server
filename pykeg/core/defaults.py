@@ -23,8 +23,6 @@ from kegbot.util import units
 from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import models
 
-from pykeg.beerdb import models as bdb
-
 def db_is_installed():
   return models.KegbotSite.objects.all() > 0
 
@@ -42,15 +40,15 @@ def set_defaults(force=False):
   secondary_tap.save()
 
   # brewer defaults
-  unk_brewer = bdb.Brewer(name='Unknown Brewer', id=uuid.uuid4())
+  unk_brewer = models.Brewer(name='Unknown Brewer')
   unk_brewer.save()
 
   # beerstyle defaults
-  unk_style = bdb.BeerStyle(name='Unknown Style', id=uuid.uuid4())
+  unk_style = models.BeerStyle(name='Unknown Style')
   unk_style.save()
 
   # beertype defaults
-  unk_type = bdb.BeerType(name="Unknown Beer", id=uuid.uuid4(), brewer=unk_brewer, style=unk_style)
+  unk_type = models.BeerType(name="Unknown Beer", brewer=unk_brewer, style=unk_style)
   unk_type.save()
 
   # KegSize defaults - from http://en.wikipedia.org/wiki/Keg#Size

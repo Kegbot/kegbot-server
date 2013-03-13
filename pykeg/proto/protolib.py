@@ -27,7 +27,6 @@ from kegbot.api import models_pb2
 from kegbot.api import protoutil
 from kegbot.util import util
 
-from pykeg.beerdb import models as bdb_models
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import models
 
@@ -89,17 +88,6 @@ def AuthTokenToProto(record, full=False):
     ret.pin = record.pin
   return ret
 
-@converts(bdb_models.BeerImage)
-def BeerImageToProto(record, full=False):
-  ret = models_pb2.Image()
-  ret.url = record.image.url
-  try:
-    ret.width = record.image.width
-    ret.height = record.image.height
-  except IOError:
-    pass
-  return ret
-
 @converts(models.Picture)
 def PictureToProto(record, full=False):
   ret = models_pb2.Image()
@@ -132,14 +120,14 @@ def PourPictureToProto(record, full=False):
     ret.drink_id = record.drink.seqn
   return ret
 
-@converts(bdb_models.BeerStyle)
+@converts(models.BeerStyle)
 def BeerStyleToProto(style, full=False):
   ret = models_pb2.BeerStyle()
   ret.id = str(style.id)
   ret.name = style.name
   return ret
 
-@converts(bdb_models.BeerType)
+@converts(models.BeerType)
 def BeerTypeToProto(beertype, full=False):
   ret = models_pb2.BeerType()
   ret.id = str(beertype.id)
@@ -163,7 +151,7 @@ def BeerTypeToProto(beertype, full=False):
     ret.image.MergeFrom(ToProto(beertype.image))
   return ret
 
-@converts(bdb_models.Brewer)
+@converts(models.Brewer)
 def BrewerToProto(brewer, full=False):
   ret = models_pb2.Brewer()
   ret.id = str(brewer.id)

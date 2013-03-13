@@ -47,8 +47,6 @@ from kegbot.api import protoutil
 
 from pykeg.web.api.apikey import ApiKey
 
-from pykeg.beerdb import models as bdb
-
 """Django models definition for the kegbot database."""
 
 def _set_seqn_pre_save(sender, instance, **kwargs):

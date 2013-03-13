@@ -9,14 +9,12 @@ from pykeg.core import models
 
 from kegbot.util import units
 
-from pykeg.beerdb import models as bdb_models
-
 class CoreModelsTestCase(unittest.TestCase):
   def setUp(self):
     models.KegbotSite.objects.filter(name='default').delete()
     self.site, created = models.KegbotSite.objects.get_or_create(name='default')
     self.backend = KegbotBackend(site=self.site)
-    self.brewer = bdb_models.Brewer.objects.create(
+    self.brewer = models.Brewer.objects.create(
         name='Moonshine Beers',
         country='USA',
         origin_state='Anystate',
@@ -26,11 +24,11 @@ class CoreModelsTestCase(unittest.TestCase):
         description='Pretty bad beers.',
     )
 
-    self.beer_style = bdb_models.BeerStyle.objects.create(
+    self.beer_style = models.BeerStyle.objects.create(
         name='Porter',
     )
 
-    self.beer_type = bdb_models.BeerType.objects.create(
+    self.beer_type = models.BeerType.objects.create(
         name='Moonshine Porter',
         brewer=self.brewer,
         style=self.beer_style,

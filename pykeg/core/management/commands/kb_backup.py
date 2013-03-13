@@ -54,7 +54,7 @@ class Command(BaseCommand):
   help = """Kegbot dump/restore tool. WARNING: Experimental."""
   args = '<none>'
 
-  def handle(self, **options):
+  def handle(self, *args, **options):
     if not options['site']:
       raise CommandError('Must give --site')
 

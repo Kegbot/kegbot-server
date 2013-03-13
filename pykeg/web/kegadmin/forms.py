@@ -1,11 +1,10 @@
 from django import forms
 
 from pykeg.core import models
-from pykeg.beerdb import models as bdb
 
 ALL_TAPS = models.KegTap.objects.all()
 ALL_SIZES = models.KegSize.objects.all()
-ALL_BEER_TYPES = bdb.BeerType.objects.all().order_by('name')
+ALL_BEER_TYPES = models.BeerType.objects.all().order_by('name')
 ALL_KEGS = models.Keg.objects.all()
 
 class GeneralSettingsForm(forms.Form):

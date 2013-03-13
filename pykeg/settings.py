@@ -20,7 +20,6 @@ INSTALLED_APPS = (
     'crispy_forms',
     'django_extensions',
     'imagekit',
-    'pykeg.beerdb',
     'pykeg.connections',
     'pykeg.connections.foursquare',
     'pykeg.connections.twitter',

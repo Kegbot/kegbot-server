@@ -25,8 +25,6 @@ from kegbot.util import kbjson
 from pykeg.core import models
 from pykeg.proto import protolib
 
-from pykeg.beerdb import models as bdb_models
-
 def _no_log(msg):
   pass
 
@@ -49,9 +47,9 @@ def dump(output_fp, kbsite, indent=None, log_cb=_no_log):
   """
   res = {}
   items = (
-      ('bdb_brewers', bdb_models.Brewer.objects.all()),
-      ('bdb_styles', bdb_models.BeerStyle.objects.all()),
-      ('bdb_beertypes', bdb_models.BeerType.objects.all()),
+      ('brewers', models.Brewer.objects.all()),
+      ('styles', models.BeerStyle.objects.all()),
+      ('beertypes', models.BeerType.objects.all()),
       ('thermosensors', kbsite.thermosensors.all().order_by('id')),
       ('kegs', kbsite.kegs.all().order_by('id')),
       ('taps', kbsite.taps.all().order_by('id')),
@@ -81,11 +79,11 @@ def restore(input_fp, kbsite, log_cb=_no_log):
   data = kbjson.loads(input_fp.read())
 
   brewer_map = {}
-  for rec in data.get('bdb_brewers', []):
+  for rec in data.get('brewers', []):
     try:
-      brewer = bdb_models.Brewer.objects.get(id=rec.id)
-    except bdb_models.Brewer.DoesNotExist:
-      brewer = bdb_models.Brewer(id=rec.id)
+      brewer = models.Brewer.objects.get(id=rec.id)
+    except models.Brewer.DoesNotExist:
+      brewer = models.Brewer(id=rec.id)
     brewer.name = rec.name
     brewer.country = rec.get('country')
     brewer.origin_state = rec.get('origin_state')
@@ -98,22 +96,22 @@ def restore(input_fp, kbsite, log_cb=_no_log):
     brewer_map[rec.id] = brewer
 
   style_map = {}
-  for rec in data.get('bdb_styles', []):
+  for rec in data.get('styles', []):
     try:
-      style = bdb_models.BeerStyle.objects.get(id=rec.id)
-    except bdb_models.BeerStyle.DoesNotExist:
-      style = bdb_models.BeerStyle(id=rec.id)
+      style = models.BeerStyle.objects.get(id=rec.id)
+    except models.BeerStyle.DoesNotExist:
+      style = models.BeerStyle(id=rec.id)
     style.name = rec.name
     style.save()
     _log(style)
     style_map[rec.id] = style
 
   type_map = {}
-  for rec in data.get('bdb_beertypes', []):
+  for rec in data.get('beertypes', []):
     try:
-      btype = bdb_models.BeerType.objects.get(id=rec.id)
-    except bdb_models.BeerType.DoesNotExist:
-      btype = bdb_models.BeerType(id=rec.id)
+      btype = models.BeerType.objects.get(id=rec.id)
+    except models.BeerType.DoesNotExist:
+      btype = models.BeerType(id=rec.id)
     btype.name = rec.name
     btype.brewer = brewer_map[rec.brewer_id]
     btype.style = style_map[rec.style_id]

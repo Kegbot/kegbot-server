@@ -1,11 +1,33 @@
+# Copyright 2013 Mike Wakerly <opensource@hoho.com>
+#
+# This file is part of the Pykeg package of the Kegbot project.
+# For more information on Pykeg or Kegbot, see http://kegbot.org/
+#
+# Pykeg is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# Pykeg is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+
 """Unittests for pykeg.core.models"""
 
 import datetime
 import unittest
 
+from django.conf import settings
+from django.utils import timezone
+
 from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import kb_common
 from pykeg.core import models
+from pykeg.core.testutils import make_datetime
 
 from kegbot.util import units
 
@@ -48,8 +70,8 @@ class CoreModelsTestCase(unittest.TestCase):
         site=self.site,
         type=self.beer_type,
         size=self.keg_size,
-        start_time=datetime.datetime(2000, 4, 1),
-        end_time=datetime.datetime(2000, 5, 1),
+        start_time=make_datetime(2000, 4, 1),
+        end_time=make_datetime(2000, 5, 1),
         status='online',
         description='Our first keg!',
         origcost=99.0,
@@ -108,7 +130,7 @@ class CoreModelsTestCase(unittest.TestCase):
     vol = units.Quantity(1200)
 
     drinks = {}
-    base_time = datetime.datetime(2009,1,1,1,0,0)
+    base_time = make_datetime(2009,1,1,1,0,0)
 
     ticks = volume = vol.InKbMeterTicks()
 

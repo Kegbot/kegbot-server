@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-
 from django.utils import unittest
 
 from kegbot.api import models_pb2
@@ -26,6 +24,7 @@ from kegbot.api.protoutil import ProtoMessageToDict
 from pykeg.core.backend.django import KegbotBackend
 from pykeg.core import models
 from pykeg.core import stats
+from pykeg.core.testutils import make_datetime
 
 class StatsTestCase(unittest.TestCase):
   def setUp(self):
@@ -80,7 +79,7 @@ class StatsTestCase(unittest.TestCase):
     self.assertEquals(empty_stats, system_stats_d0)
 
     # Record a new drink and verify stats.
-    pour_time = datetime.datetime(2011, 05, 01, 12, 00)
+    pour_time = make_datetime(2011, 05, 01, 12, 00)
     self.backend.RecordDrink('kegboard.flow0', ticks=100,
         volume_ml=100, username='user1', pour_time=pour_time,
         do_postprocess=False)

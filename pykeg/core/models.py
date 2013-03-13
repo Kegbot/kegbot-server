@@ -28,6 +28,7 @@ from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from autoslug import AutoSlugField
 
@@ -234,12 +235,12 @@ post_save.connect(_user_post_save, sender=User)
 class BeerDBModel(models.Model):
   class Meta:
     abstract = True
-  added = models.DateTimeField(default=datetime.datetime.now, editable=False)
+  added = models.DateTimeField(default=timezone.now, editable=False)
   edited = models.DateTimeField(editable=False)
   beerdb_id = models.CharField(blank=True, null=True, max_length=128)
 
   def save(self, *args, **kwargs):
-    self.edited = datetime.datetime.now()
+    self.edited = timezone.now()
     super(BeerDBModel, self).save(*args, **kwargs)
 
 
@@ -396,7 +397,7 @@ class Keg(models.Model):
 
   def keg_age(self):
     if self.status == 'online':
-      end = datetime.datetime.now()
+      end = timezone.now()
     else:
       end = self.end_time
     return end - self.start_time
@@ -473,8 +474,8 @@ class Keg(models.Model):
   seqn = models.PositiveIntegerField(editable=False)
   type = models.ForeignKey('BeerType')
   size = models.ForeignKey(KegSize)
-  start_time = models.DateTimeField(default=datetime.datetime.now)
-  end_time = models.DateTimeField(default=datetime.datetime.now)
+  start_time = models.DateTimeField(default=timezone.now)
+  end_time = models.DateTimeField(default=timezone.now)
   status = models.CharField(max_length=128, choices=(
      ('online', 'online'),
      ('offline', 'offline'),
@@ -635,7 +636,7 @@ class AuthenticationToken(models.Model):
       return False
     if not self.expire_time:
       return True
-    return datetime.datetime.now() < self.expire_time
+    return timezone.now() < self.expire_time
 
 def _auth_token_pre_save(sender, instance, **kwargs):
   if instance.auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
@@ -804,7 +805,7 @@ class DrinkingSession(_AbstractChunk):
     return chunks
 
   def IsActiveNow(self):
-    return self.IsActive(datetime.datetime.now())
+    return self.IsActive(timezone.now())
 
   def IsActive(self, now):
     return self.end_time > now
@@ -968,7 +969,8 @@ class Thermolog(models.Model):
   def UpdateSummaryLog(self):
     daily_date = datetime.datetime(year=self.time.year,
         month=self.time.month,
-        day=self.time.day)
+        day=self.time.day,
+        tzinfo=self.time.tzinfo)
     defaults = {
         'site': self.site,
         'num_readings': 1,
@@ -997,7 +999,7 @@ class Thermolog(models.Model):
     daily_log.save()
 
     # Keep at least the most recent 24 hours, dropping any older entries.
-    now = datetime.datetime.now()
+    now = timezone.now()
     keep_time = now - datetime.timedelta(hours=24)
     old_entries = Thermolog.objects.filter(site=self.site, time__lt=keep_time)
     old_entries.delete()
@@ -1045,7 +1047,7 @@ class _StatsModel(models.Model):
     self.save()
 
   site = models.ForeignKey(KegbotSite)
-  time = models.DateTimeField(default=datetime.datetime.now)
+  time = models.DateTimeField(default=timezone.now)
   stats = fields.JSONField()
 
 
@@ -1204,7 +1206,7 @@ class Picture(models.Model):
   small_resized = imagespecs.small_resized
   small_thumbnail = imagespecs.small_thumbnail
 
-  time = models.DateTimeField(default=datetime.datetime.now)
+  time = models.DateTimeField(default=timezone.now)
 
 pre_save.connect(_set_seqn_pre_save, sender=Picture)
 
@@ -1214,7 +1216,7 @@ class PourPicture(models.Model):
   drink = models.ForeignKey(Drink, blank=True, null=True,
       related_name='pictures',
       help_text='Drink this picture is associated with, if any')
-  time = models.DateTimeField(default=datetime.datetime.now)
+  time = models.DateTimeField(default=timezone.now)
   caption = models.TextField(blank=True, null=True,
       help_text='Caption for the picture')
   user = models.ForeignKey(User, blank=True, null=True,

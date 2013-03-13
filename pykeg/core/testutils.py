@@ -1,4 +1,4 @@
-# Copyright 2012 Mike Wakerly <opensource@hoho.com>
+# Copyright 2013 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -16,19 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Utilities for use in tests."""
+
 import datetime
+
+from django.conf import settings
 from django.utils import timezone
 
-MAX_TASK_AGE = datetime.timedelta(hours=1)
-
-def is_stale(time):
-  return (time + MAX_TASK_AGE) <= timezone.now()
-
-def get_logger(name):
-  try:
-    from celery.utils.log import get_task_logger
-    logger = get_task_logger(name)
-  except ImportError:
-    import logging
-    logger = logging.getLogger(name)
-  return logger
+def make_datetime(*args):
+  if settings.USE_TZ:
+    return datetime.datetime(*args, tzinfo=timezone.utc)
+  else:
+    return datetime.datetime(*args)

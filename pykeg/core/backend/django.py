@@ -20,10 +20,10 @@
 
 from __future__ import absolute_import
 
-import datetime
 import logging
 
 from django.conf import settings
+from django.utils import timezone
 from pykeg.core import kb_common
 from pykeg.core import models
 from pykeg.core import time_series
@@ -118,7 +118,7 @@ class KegbotBackend(backend.Backend):
       user = self._site.settings.default_user
 
     if not pour_time:
-      pour_time = datetime.datetime.now()
+      pour_time = timezone.now()
 
     keg = None
     if tap.current_keg and tap.current_keg.status == 'online':
@@ -202,7 +202,7 @@ class KegbotBackend(backend.Backend):
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     if not when:
-      when = datetime.datetime.now()
+      when = timezone.now()
 
     # The maximum resolution of ThermoSensor records is 1 minute.  Round the
     # time down to the nearest minute; if a record already exists for this time,

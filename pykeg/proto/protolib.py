@@ -40,6 +40,8 @@ def converts(kind):
   return decorate
 
 def datestr(dt):
+  if settings.USE_TZ:
+    return dt.isoformat()
   try:
     # Convert from local to UTC.
     # TODO(mikey): handle incoming datetimes with tzinfo.

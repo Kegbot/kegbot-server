@@ -21,6 +21,7 @@ from django.core.management.base import CommandError
 
 import datetime
 
+from django.utils import timezone
 from pykeg.core import models
 
 
@@ -32,7 +33,7 @@ class Command(BaseCommand):
     if len(args) != 0:
       raise CommandError('No arguments required')
 
-    now = datetime.datetime.now()
+    now = timezone.now()
 
     # keep at least the most recent 24 hours
     keep_time = now - datetime.timedelta(hours=24)

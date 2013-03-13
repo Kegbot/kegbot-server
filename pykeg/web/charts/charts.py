@@ -18,6 +18,7 @@
 
 import datetime
 
+from django.utils import timezone
 from kegbot.util import units
 
 from pykeg.core import models
@@ -40,7 +41,7 @@ def TemperatureSensorChart(sensor):
     raise ChartError('Bad sensor given')
 
   hours = 6
-  now = datetime.datetime.now()
+  now = timezone.now()
   start = now - (datetime.timedelta(hours=hours))
   start = start - (datetime.timedelta(seconds=start.second))
 

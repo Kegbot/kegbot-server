@@ -19,7 +19,6 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import cStringIO
-import datetime
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -32,6 +31,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.forms import widgets
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 
 from pykeg.core import backup
 from pykeg.core import logger
@@ -172,7 +172,7 @@ def do_end_keg(request):
     keg = form.cleaned_data['keg']
     if keg.site == request.kbsite:
       keg.status = "offline"
-      keg.end_time = datetime.datetime.now()
+      keg.end_time = timezone.now()
       keg.save()
       tap = keg.current_tap
       if tap:
@@ -230,7 +230,7 @@ def generate_backup(request):
     fmt = 'minjson'
 
   kbsite = request.kbsite
-  datestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+  datestr = timezone.now().strftime('%Y%m%d-%H%M%S')
   filename = 'kegbot-%s.%s.%s.txt' % (kbsite.name, datestr, fmt)
 
   output_fp = cStringIO.StringIO()

@@ -73,6 +73,9 @@ LANGUAGE_CODE = 'en-us'
 # http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
 TIME_ZONE = 'America/Los_Angeles'
 
+# Enable Django 1.4+ timezone support.  Do not disable this.
+USE_TZ = True
+
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
 MEDIA_ROOT = ''

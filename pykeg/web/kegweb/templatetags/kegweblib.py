@@ -139,7 +139,7 @@ class TimeagoNode(Node):
     ts = tv.resolve(context)
 
     # Try to set time zone information.
-    if settings.TIME_ZONE:
+    if settings.TIME_ZONE and not settings.USE_TZ:
       try:
         tz = pytz.timezone(settings.TIME_ZONE)
         ts = tz.localize(ts)

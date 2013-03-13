@@ -1119,30 +1119,6 @@ class Picture(models.Model):
   small_thumbnail = imagespecs.small_thumbnail
 
   time = models.DateTimeField(default=datetime.datetime.now)
-  caption = models.TextField(blank=True, null=True,
-      help_text='Caption for the picture')
-  user = models.ForeignKey(User, blank=True, null=True,
-      help_text='User this picture is associated with, if any')
-  keg = models.ForeignKey(Keg, blank=True, null=True, related_name='deprecated_pictures',
-      help_text='Keg this picture is associated with, if any')
-  session = models.ForeignKey(DrinkingSession, blank=True, null=True,
-      on_delete=models.SET_NULL,
-      related_name='deprecated_pictures',
-      help_text='Session this picture is associated with, if any')
-  drink = models.ForeignKey(Drink, blank=True, null=True,
-      related_name='deprecated_pictures',
-      help_text='Drink this picture is associated with, if any')
-
-  def GetCaption(self):
-    if self.caption:
-      return self.caption
-    elif self.drink:
-      if self.user:
-        return '%s pouring drink %s' % (self.user.username, self.drink.seqn)
-      else:
-        return 'An unknown drinker pouring drink %s' % (self.drink.seqn,)
-    else:
-      return ''
 
 pre_save.connect(_set_seqn_pre_save, sender=Picture)
 
@@ -1163,4 +1139,15 @@ class PourPicture(models.Model):
       on_delete=models.SET_NULL,
       related_name='pictures',
       help_text='Session this picture is associated with, if any')
+
+  def GetCaption(self):
+    if self.caption:
+      return self.caption
+    elif self.drink:
+      if self.user:
+        return '%s pouring drink %s' % (self.user.username, self.drink.seqn)
+      else:
+        return 'An unknown drinker pouring drink %s' % (self.drink.seqn,)
+    else:
+      return ''
 

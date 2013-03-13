@@ -473,8 +473,7 @@ class Keg(models.Model):
 
   site = models.ForeignKey(KegbotSite, related_name='kegs')
   seqn = models.PositiveIntegerField(editable=False)
-  type = models.ForeignKey(bdb.BeerType)
-  beer_type = models.ForeignKey('BeerType', blank=True, null=True)
+  type = models.ForeignKey('BeerType')
   size = models.ForeignKey(KegSize)
   start_time = models.DateTimeField(default=datetime.datetime.now)
   end_time = models.DateTimeField(default=datetime.datetime.now)

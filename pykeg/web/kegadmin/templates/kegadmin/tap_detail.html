@@ -1,0 +1,22 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Edit Tap: {{ tap.name }} | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Edit Tap: {{ tap.name }}{% endblock %}
+
+{% block kegadmin-main %}
+{% if current_keg %}
+  <h2>Current Keg</h2>
+  {% with current_keg as keg %}
+  {% include "kegweb/keg-snapshot.html" %}
+  {% endwith %}
+  {% crispy end_keg_form %}
+{% else %}
+  <h2>Empty Tap, Activate Keg</h2>
+  {% crispy activate_keg_form %}
+{% endif %}
+
+<h2>Tap Settings</h2>
+{% crispy tap_settings_form %}
+{% endblock %}

@@ -24,6 +24,7 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
@@ -32,6 +33,8 @@ from django.template import RequestContext
 from django.forms import widgets
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+
+from kegbot.util import kbjson
 
 from pykeg.core import backup
 from pykeg.core import logger
@@ -78,45 +81,93 @@ def _create_or_update_tap(tap, request):
 @staff_member_required
 def tap_list(request):
   context = RequestContext(request)
+  context['taps'] = request.kbsite.taps.all()
+  return render_to_response('kegadmin/tap_list.html', context)
 
-  # Create a new tap if needed.
-  context['create_tap_form'] = forms.TapForm(site=request.kbsite)
-  if request.method == 'POST' and 'new-tap-submit' in request.POST:
-    success, form = _create_or_update_tap(None, request)
-    if not success:
-      context['create_tap_form'] = form
+@staff_member_required
+def tap_detail(request, tap_id):
+  tap = get_object_or_404(models.KegTap, site=request.kbsite, seqn=tap_id)
 
-  for tap in request.kbsite.taps.all():
-    submit_name = 'tap-%s-delete' % tap.seqn
-    if request.method == 'POST' and submit_name in request.POST:
-      tap_name = tap.name
-      tap.delete()
-      messages.success(request, 'Tap "%s" was deleted.' % tap_name)
+  activate_keg_form = forms.ChangeKegForm()
+  tap_settings_form = forms.TapForm(instance=tap)
 
-  # Build/process forms for all taps.
-  taps = [{'tap': tap} for tap in request.kbsite.taps.all()]
-  for tinfo in taps:
-    tap = tinfo['tap']
-    prefix = 'tap-%s' % tap.seqn
-    tinfo['prefix'] = prefix
+  if request.method == 'POST':
+    if 'submit_change_keg_form' in request.POST:
+      activate_keg_form = forms.ChangeKegForm(request.POST)
+      if activate_keg_form.is_valid():
+        current = tap.current_keg
+        if current and current.status != 'offline':
+          current.status = 'offline'
+          current.save()
+        cd = activate_keg_form.cleaned_data
+        new_keg = models.Keg()
+        new_keg.site = request.kbsite
+        new_keg.size = cd['keg_size']
+        new_keg.description = cd['description']
+        new_keg.status = 'online'
 
-    # Demux multiple forms using submit button name.
-    submit_name = "%s-submit" % prefix
-    if request.method == 'POST' and submit_name in request.POST:
-      success, form = _create_or_update_tap(tap, request)
-      if not success:
-        tinfo['edit_form'] = form
+        beer_type = None
+        brewer = None
+        style = None
+        if cd['beer_id']:
+          beer_type = models.BeerType.objects.get(id=int(cd['beer_id']))
+        if cd['brewer_id']:
+          brewer = models.Brewer.objects.get(id=int(cd['brewer_id']))
+        if cd['style_id']:
+          style = models.BeerStyle.objects.get(id=int(cd['style_id']))
 
-    if 'edit_form' not in tinfo:
-      tinfo['edit_form'] = forms.TapForm(site=request.kbsite, instance=tap, prefix=prefix)
+        if not style or style.name != cd['style_name']:
+          style, new = models.BeerStyle.objects.get_or_create(name=cd['style_name'])
+        if not brewer or brewer.name != cd['brewer_name']:
+          brewer, new = models.Brewer.objects.get_or_create(name=cd['brewer_name'])
+        if not beer_type or \
+            beer_type.name != cd['beer_name'] or \
+            beer_type.brewer.name != brewer.name or \
+            beer_type.style.name != style.name:
+          beer_type = models.BeerType.objects.create(
+            name=cd['beer_name'],
+            brewer=brewer,
+            style=style)
 
-    if tap.current_keg and tap.current_keg.is_active():
-      tinfo['end_form'] = forms.KegHiddenSelectForm(initial={'keg':tap.current_keg})
+        new_keg.type = beer_type
+        new_keg.save()
+
+        tap.current_keg = new_keg
+        tap.save()
+        messages.success(request, 'The new keg was activated. Bottoms up!')
+        activate_keg_form = forms.ChangeKegForm()
+      else:
+        print activate_keg_form.errors
+    
+    elif 'submit_tap_form' in request.POST:
+      tap_settings_form = forms.TapForm(request.POST, instance=tap)
+      if tap_settings_form.is_valid():
+        tap_settings_form.save()
+        messages.success(request, 'Tap settings saved.')
+        tap_settings_form = forms.TapForm(instance=tap)
+
+    elif 'submit_end_keg_form' in request.POST:
+      end_keg_form = forms.EndKegForm(request.POST)
+      if end_keg_form.is_valid():
+        tap.current_keg = None
+        tap.save()
+        keg = end_keg_form.cleaned_data['keg']
+        keg.status = 'offline'
+        keg.save()
+        messages.success(request, 'Keg %s was ended.' % keg.seqn)
+
     else:
-      tinfo['keg_form'] = forms.ChangeKegForm()
+      messages.warning(request, 'No form data was found. Bug?')
 
-  context['all_taps'] = taps
-  return render_to_response('kegadmin/tap-edit.html', context)
+  end_keg_form = forms.EndKegForm(initial={'keg':tap.current_keg})
+
+  context = RequestContext(request)
+  context['tap'] = tap
+  context['current_keg'] = tap.current_keg
+  context['activate_keg_form'] = activate_keg_form
+  context['end_keg_form'] = end_keg_form
+  context['tap_settings_form'] = tap_settings_form
+  return render_to_response('kegadmin/tap_detail.html', context)
 
 @staff_member_required
 def connections(request):
@@ -165,53 +216,25 @@ def connections(request):
   return render_to_response('kegadmin/connections.html', context)
 
 @staff_member_required
-@require_POST
-def do_end_keg(request):
-  form = forms.KegHiddenSelectForm(request.POST)
-  if form.is_valid():
-    keg = form.cleaned_data['keg']
-    if keg.site == request.kbsite:
-      keg.status = "offline"
-      keg.end_time = timezone.now()
-      keg.save()
-      tap = keg.current_tap
-      if tap:
-        tap.current_keg = None
-        tap.save()
-      messages.success(request, 'The keg was deactivated.')
-  return redirect('kegadmin-taps', request.kbsite.url())
-
-@staff_member_required
-@require_POST
-def edit_tap(request, tap_id):
+def autocomplete_beer_type(request):
   context = RequestContext(request)
-  tap = get_object_or_404(models.KegTap, site=request.kbsite, seqn=tap_id)
-  form = forms.ChangeKegForm()
-
-  form = forms.ChangeKegForm(request.POST)
-  if form.is_valid():
-    current = tap.current_keg
-    if current and current.status != 'offline':
-      current.status = 'offline'
-      current.save()
-    new_keg = models.Keg()
-    new_keg.site = request.kbsite
-    new_keg.type = form.cleaned_data['beer_type']
-    new_keg.size = form.cleaned_data['keg_size']
-    new_keg.status = 'online'
-    if form.cleaned_data['description']:
-      new_keg.description = form.cleaned_data['description']
-    new_keg.save()
-    tap.current_keg = new_keg
-    tap.save()
-    messages.success(request, 'The new keg was activated. Bottoms up!')
-    form = forms.ChangeKegForm()
-  return redirect('kegadmin-taps', request.kbsite.url())
-
-@staff_member_required
-def create_tap(request):
-  context = RequestContext(request)
-  form = forms.ChangeKegForm()
+  search = request.GET.get('q')
+  if search:
+    types = models.BeerType.objects.filter(Q(name__icontains=search) | Q(brewer__name__icontains=search))
+  else:
+    types = models.BeerType.objects.all()
+  values = []
+  for beer in types:
+    values.append({
+      'name': beer.name,
+      'id': beer.id,
+      'brewer_name': beer.brewer.name,
+      'brewer_id': beer.brewer.id,
+      'style_name': beer.style.name,
+      'style_id': beer.style.id,
+  })
+  return HttpResponse(kbjson.dumps(values, indent=None),
+    mimetype='application/json', status=200)
 
 @staff_member_required
 def backup_restore(request):

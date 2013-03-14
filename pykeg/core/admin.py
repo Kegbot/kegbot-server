@@ -96,6 +96,18 @@ class PourPictureAdmin(admin.ModelAdmin):
   list_filter = ('time',)
 admin.site.register(models.PourPicture, PourPictureAdmin)
 
-class SiteSettingsAdmin(admin.ModelAdmin):
-  list_display = ('site', 'title', 'description')
-admin.site.register(models.SiteSettings, SiteSettingsAdmin)
+
+class BeerTypeInline(admin.TabularInline):
+  model = models.BeerType
+
+class BrewerAdmin(admin.ModelAdmin):
+  inlines = [
+      BeerTypeInline,
+  ]
+
+admin.site.register(models.Brewer, BrewerAdmin)
+admin.site.register(models.BeerStyle)
+
+class BeerTypeAdmin(admin.ModelAdmin):
+  list_display = ('name', 'brewer', 'style')
+admin.site.register(models.BeerType, BeerTypeAdmin)

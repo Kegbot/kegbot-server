@@ -20,6 +20,7 @@ from django.conf import settings
 from django.http import HttpResponse
 
 from . import util
+
 import logging
 import sys
 
@@ -91,6 +92,7 @@ class ApiResponseMiddleware:
       data['meta'] = {
         'result': 'ok'
       }
-      response = util.build_response(data, 200)
+    callback = request.GET.get('callback')
+    response = util.build_response(data, 200, callback=callback)
     response['Cache-Control'] = 'max-age=0'
     return response

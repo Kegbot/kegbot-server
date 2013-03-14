@@ -30,7 +30,8 @@ from kegbot.api import kbapi
 from kegbot.util import kbjson
 from pykeg.core import models
 from pykeg.core.backend import backend
-from . import apikey
+
+from . import validate_jsonp
 
 import logging
 import sys
@@ -91,11 +92,13 @@ def to_json_error(e, exc_info):
     result['error']['traceback'] = "".join(traceback.format_exception(*exc_info))
   return result, http_code
 
-def build_response(result_data, response_code=200):
+def build_response(result_data, response_code=200, callback=None):
   """Builds an HTTP response for JSON data."""
   indent = 2
-  return HttpResponse(kbjson.dumps(result_data, indent=indent),
-      mimetype='application/json', status=response_code)
+  json_str = kbjson.dumps(result_data, indent=indent)
+  if callback and validate_jsonp.is_valid_jsonp_callback_value(callback):
+    json_str = '%s(%s);' % (callback, json_str)
+  return HttpResponse(json_str, mimetype='application/json', status=response_code)
 
 
 def prepare_data(data, inner=False):

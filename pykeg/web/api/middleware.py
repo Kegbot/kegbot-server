@@ -92,7 +92,7 @@ class ApiResponseMiddleware:
       data['meta'] = {
         'result': 'ok'
       }
-    callback = request.GET.get('callback')
-    response = util.build_response(data, 200, callback=callback)
+      callback = request.GET.get('callback')
+      response = util.build_response(data, 200, callback=callback)
     response['Cache-Control'] = 'max-age=0'
     return response

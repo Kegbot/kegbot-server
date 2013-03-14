@@ -21,6 +21,10 @@
 from django.conf import settings
 from django.http import Http404
 from django.http import HttpResponse
+from django.db.models.query import QuerySet
+from pykeg.proto import protolib
+from kegbot.api import protoutil
+from google.protobuf.message import Message
 
 from kegbot.api import kbapi
 from kegbot.util import kbjson
@@ -31,37 +35,12 @@ from . import apikey
 import logging
 import sys
 import traceback
+import types
 
 LOGGER = logging.getLogger(__name__)
 
-ATTR_API_VIEW = 'api_view'
-ATTR_API_REQUEST = 'api_request'
-ATTR_API_AUTHENTICATED = 'api_authenticated'
-ATTR_API_AUTH_REQUIRED = 'api_auth_required'
-
-def is_api_view(view):
-  return getattr(view, ATTR_API_VIEW, False)
-
-def set_is_api_view(view):
-  setattr(view, ATTR_API_VIEW, True)
-
 def is_api_request(request):
-  return getattr(request, ATTR_API_REQUEST, False)
-
-def set_is_api_request(request):
-  setattr(request, ATTR_API_REQUEST, True)
-
-def request_is_authenticated(request):
-  return getattr(request, ATTR_API_AUTHENTICATED, False)
-
-def set_request_is_authenticated(request):
-  setattr(request, ATTR_API_AUTHENTICATED, True)
-
-def view_requires_authentication(view):
-  return getattr(view, ATTR_API_AUTH_REQUIRED, False)
-
-def set_view_requires_authentication(view):
-  setattr(view, ATTR_API_AUTH_REQUIRED, True)
+  return request.path.startswith('/api')
 
 def check_api_key(request):
   """Check a request for an API key."""
@@ -83,9 +62,6 @@ def check_api_key(request):
   if not api_key.user.is_staff and not api_key.user.is_superuser:
     raise kbapi.PermissionDeniedError('User is not staff/superuser')
 
-  setattr(request, ATTR_API_AUTHENTICATED, True)
-
-
 def to_json_error(e, exc_info):
   """Converts an exception to an API error response."""
   # Wrap some common exception types into kbapi types
@@ -105,14 +81,14 @@ def to_json_error(e, exc_info):
     code = 'ServerError'
     http_code = 500
     message = 'An internal error occurred: %s' % str(e)
-    if settings.DEBUG:
-      message += "\n" + "\n".join(traceback.format_exception(*exc_info))
   result = {
     'error' : {
       'code' : code,
       'message' : message
     }
   }
+  if settings.DEBUG:
+    result['error']['traceback'] = "".join(traceback.format_exception(*exc_info))
   return result, http_code
 
 def build_response(result_data, response_code=200):
@@ -120,6 +96,30 @@ def build_response(result_data, response_code=200):
   indent = 2
   return HttpResponse(kbjson.dumps(result_data, indent=indent),
       mimetype='application/json', status=response_code)
+
+
+def prepare_data(data, inner=False):
+  if isinstance(data, QuerySet) or type(data) == types.ListType:
+    result = [prepare_data(d, True) for d in data]
+    container = 'objects'
+  elif isinstance(data, dict):
+    result = data
+    container = 'object'
+  else:
+    result = to_dict(data)
+    container = 'object'
+
+  if inner:
+    return result
+  else:
+    return {
+      container: result
+    }
+
+def to_dict(data):
+  if not isinstance(data, Message):
+    data = protolib.ToProto(data, full=True)
+  return protoutil.ProtoMessageToDict(data)
 
 def wrap_exception(request, exception):
   """Returns a HttpResponse with the exception in JSON form."""

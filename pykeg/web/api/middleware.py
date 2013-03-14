@@ -17,6 +17,8 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
+from django.http import HttpResponse
+
 from . import util
 import logging
 import sys
@@ -50,26 +52,45 @@ def wrap_exception(request, exception):
   return util.build_response(result_data, response_code=http_code)
 
 
-class WrapExceptionMiddleware:
-  """Translates responses and exceptions to JSON."""
-  def process_view(self, request, view_func, view_args, view_kwargs):
-    if util.is_api_view(view_func):
-      util.set_is_api_request(request)
-
-  def process_exception(self, request, exception):
-    if not util.is_api_request(request):
+class ApiRequestMiddleware:
+  def process_request(self, request):
+    request.is_kb_api_request = util.is_api_request(request)
+    if not request.is_kb_api_request:
+      # Not an API request. Skip me.
       return None
-    return wrap_exception(request, exception)
-
-
-class CheckAccessMiddleware:
-  def process_view(self, request, view_func, view_args, view_kwargs):
-    if not util.is_api_view(view_func):
+    elif request.kbsite.settings.privacy == 'public':
+      # API request, but public site privacy.  Views will check access as needed.
       return None
-
-    if not util.request_is_authenticated(request):
-      if util.view_requires_authentication(view_func):
+    elif request.path in ('/api/login/', '/api/get-api-key/'):
+      # API request to whitelisted path.
+      return None
+    else:
+      # API request to non-whitelisted path, in non-public site privacy mode.
+      # Demand API key.
+      if request.user.is_authenticated:
+        return None
+      elif request.kbsite.settings.privacy == 'staff' and request.user.is_staff:
+        return None
+      else:
         try:
           util.check_api_key(request)
         except Exception, e:
           return wrap_exception(request, e)
+
+
+class ApiResponseMiddleware:
+  def process_exception(self, request, exception):
+    """Wraps exceptions for API requests."""
+    if util.is_api_request(request):
+      return wrap_exception(request, exception)
+    return None
+
+  def process_response(self, request, response):
+    if not isinstance(response, HttpResponse):
+      data = util.prepare_data(response)
+      data['meta'] = {
+        'result': 'ok'
+      }
+      response = util.build_response(data, 200)
+    response['Cache-Control'] = 'max-age=0'
+    return response

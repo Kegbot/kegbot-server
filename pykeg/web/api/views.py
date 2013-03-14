@@ -25,8 +25,6 @@ import sys
 import traceback
 import types
 
-from google.protobuf.message import Message
-
 from django.conf import settings
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -41,7 +39,6 @@ from django.db import transaction
 from django.db.models.query import QuerySet
 
 from kegbot.api import kbapi
-from kegbot.api import protoutil
 from kegbot.util import kbjson
 
 from pykeg.contrib.soundserver import models as soundserver_models
@@ -64,53 +61,12 @@ _LOGGER = logging.getLogger(__name__)
 ### Decorators
 
 def auth_required(viewfunc):
-  util.set_view_requires_authentication(viewfunc)
-  return viewfunc
-
-def api_view(f):
-  """Decorator that wraps an API method.
-
-  The decorator transforms the method in a few ways:
-    - The raw return value from the method is converted to a serialized JSON
-      result.
-    - The result is wrapped in an outer dict, and set as the value 'result'
-    - If an exception is thrown during the method, it is converted to a protocol
-      error message.
-  """
-  util.set_is_api_view(f)
-  @never_cache
+  """Checks for a valid API key before serving the decorated view."""
   def new_function(*args, **kwargs):
     request = args[0]
-    http_code = 200
-    result_data = prepare_data(f(*args, **kwargs))
-    result_data['meta'] = {
-      'result': 'ok'
-    }
-    return util.build_response(result_data, http_code)
-  return wraps(f)(new_function)
-
-def prepare_data(data, inner=False):
-  if isinstance(data, QuerySet) or type(data) == types.ListType:
-    result = [prepare_data(d, True) for d in data]
-    container = 'objects'
-  elif isinstance(data, dict):
-    result = data
-    container = 'object'
-  else:
-    result = to_dict(data)
-    container = 'object'
-
-  if inner:
-    return result
-  else:
-    return {
-      container: result
-    }
-
-def to_dict(data):
-  if not isinstance(data, Message):
-    data = protolib.ToProto(data, full=True)
-  return protoutil.ProtoMessageToDict(data)
+    util.check_api_key(request)
+    return viewfunc(*args, **kwargs)
+  return wraps(viewfunc)(new_function)
 
 ### Helpers
 
@@ -126,11 +82,9 @@ def _form_errors(form):
 
 ### Endpoints
 
-@api_view
 def all_kegs(request):
   return request.kbsite.kegs.all().order_by('-start_time')
 
-@api_view
 def all_drinks(request, limit=100):
   qs = request.kbsite.drinks.valid()
   if 'start' in request.GET:
@@ -144,13 +98,11 @@ def all_drinks(request, limit=100):
   start = qs[0].seqn
   return qs
 
-@api_view
 def get_drink(request, drink_id):
   drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
   return protolib.ToProto(drink, full=True)
 
 @csrf_exempt
-@api_view
 @auth_required
 def add_drink_photo(request, drink_id):
   if request.method != 'POST':
@@ -167,40 +119,33 @@ def add_drink_photo(request, drink_id):
     tasks.handle_new_picture.delay(pour_pic.id)
   return protolib.ToProto(pour_pic, full=True)
 
-@api_view
 def get_session(request, session_id):
   session = get_object_or_404(models.DrinkingSession, seqn=session_id,
       site=request.kbsite)
   return protolib.ToProto(session, full=True)
 
-@api_view
 def get_session_stats(request, session_id):
   session = get_object_or_404(models.DrinkingSession, seqn=session_id,
       site=request.kbsite)
   return session.GetStats()
 
-@api_view
 def get_keg(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return protolib.ToProto(keg, full=True)
 
-@api_view
 def get_keg_drinks(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return keg.drinks.valid()
 
-@api_view
 def get_keg_events(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   events = keg.events.all()
   events = apply_since(request, events)
   return events
 
-@api_view
 def all_sessions(request):
   return request.kbsite.sessions.all()
 
-@api_view
 def current_session(request):
   try:
     latest = request.kbsite.sessions.latest()
@@ -209,7 +154,6 @@ def current_session(request):
   except models.DrinkingSession.DoesNotExist:
     raise Http404
 
-@api_view
 def all_events(request):
   events = request.kbsite.events.all().order_by('-seqn')
   events = apply_since(request, events)
@@ -227,56 +171,45 @@ def apply_since(request, query):
       pass
   return query
 
-@api_view
 @auth_required
 def all_sound_events(request):
   return soundserver_models.SoundEvent.objects.all()
 
-@api_view
 def get_keg_sessions(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   sessions = [c.session for c in keg.keg_session_chunks.all()]
   return sessions
 
-@api_view
 def get_keg_stats(request, keg_id):
   keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
   return keg.GetStatsRecord()
 
-@api_view
 def get_system_stats(request):
   return request.kbsite.GetStatsRecord()
 
-@api_view
 def all_taps(request):
   return request.kbsite.taps.all().order_by('name')
 
-@api_view
 @auth_required
 def user_list(request):
   return models.User.objects.filter(is_active=True).order_by('username')
 
-@api_view
 def get_user(request, username):
   user = get_object_or_404(models.User, username=username)
   return protolib.ToProto(user, full=True)
 
-@api_view
 def get_user_drinks(request, username):
   user = get_object_or_404(models.User, username=username)
   return user.drinks.valid()
 
-@api_view
 def get_user_events(request, username):
   user = get_object_or_404(models.User, username=username)
   return user.events.all()
 
-@api_view
 def get_user_stats(request, username):
   user = get_object_or_404(models.User, username=username)
   return user.get_profile().GetStatsRecord()
 
-@api_view
 @auth_required
 def get_auth_token(request, auth_device, token_value):
   b = KegbotBackend(site=request.kbsite)
@@ -284,7 +217,6 @@ def get_auth_token(request, auth_device, token_value):
   return tok
 
 @csrf_exempt
-@api_view
 @auth_required
 def assign_auth_token(request, auth_device, token_value):
   if not request.POST:
@@ -311,7 +243,6 @@ def assign_auth_token(request, auth_device, token_value):
   except backend.NoTokenError:
     return b.CreateAuthToken(auth_device, token_value, username=username)
 
-@api_view
 def all_thermo_sensors(request):
   return request.kbsite.thermosensors.all()
 
@@ -334,7 +265,6 @@ def get_thermo_sensor(request, sensor_name):
   else:
     return _thermo_sensor_get(request, sensor_name)
 
-@api_view
 def _thermo_sensor_get(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
   logs = sensor.thermolog_set.all()
@@ -351,7 +281,6 @@ def _thermo_sensor_get(request, sensor_name):
   }
   return res
 
-@api_view
 @auth_required
 def _thermo_sensor_post(request, sensor_name):
   form = forms.ThermoPostForm(request.POST)
@@ -364,12 +293,10 @@ def _thermo_sensor_post(request, sensor_name):
   # TODO(mikey): use form fields to compute `when`
   return b.LogSensorReading(sensor.raw_name, cd['temp_c'])
 
-@api_view
 def get_thermo_sensor_logs(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
   return sensor.thermolog_set.all()[:60*2]
 
-@api_view
 def get_api_key(request):
   user = request.user
   api_key = ''
@@ -384,12 +311,10 @@ def tap_detail(request, tap_id):
   else:
     return _tap_detail_get(request, tap_id)
 
-@api_view
 def _tap_detail_get(request, tap_id):
   tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
   return protolib.ToProto(tap, full=True)
 
-@api_view
 @auth_required
 def _tap_detail_post(request, tap):
   form = forms.DrinkPostForm(request.POST)
@@ -423,7 +348,6 @@ def _tap_detail_post(request, tap):
     raise kbapi.ServerError(str(e))
 
 @csrf_exempt
-@api_view
 @auth_required
 def cancel_drink(request):
   #if request.method != 'POST':
@@ -441,7 +365,6 @@ def cancel_drink(request):
     raise kbapi.ServerError(str(e))
 
 @csrf_exempt
-@api_view
 def login(request):
   if request.POST:
     form = AuthenticationForm(data=request.POST)
@@ -454,13 +377,11 @@ def login(request):
       raise kbapi.PermissionDeniedError('Login failed.')
   raise kbapi.BadRequestError('POST required.')
 
-@api_view
 def logout(request):
   auth_logout(request)
   return {'result': 'ok'}
 
 @csrf_exempt
-@api_view
 @auth_required
 def register(request):
   if not request.POST:
@@ -492,7 +413,6 @@ def register(request):
       errors['username'] = user_errs
   raise kbapi.BadRequestError(errors)
 
-@api_view
 def default_handler(request):
   raise Http404, "Not an API endpoint: %s" % request.path[:100]
 
@@ -500,11 +420,9 @@ if settings.HAVE_RAVEN and settings.HAVE_SENTRY:
   class LocalRavenClient(raven.Client):
     logger = logging.getLogger('kegbot.api.client.debug')
     def send(self, **kwargs):
-      from sentry.models import GroupedMessage
       return GroupedMessage.objects.from_kwargs(**kwargs)
 
 @csrf_exempt
-@api_view
 @auth_required
 def debug_log(request):
   if request.method != 'POST' or not settings.HAVE_RAVEN or not settings.HAVE_SENTRY:

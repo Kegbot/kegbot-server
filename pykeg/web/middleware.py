@@ -19,7 +19,6 @@
 from pykeg import EPOCH
 
 from pykeg.core import models
-from pykeg.web.api import util as apiutil
 
 from django.db import DatabaseError
 from django.conf import settings
@@ -32,6 +31,7 @@ from django.shortcuts import get_object_or_404
 from django.template.response import SimpleTemplateResponse
 from django.template import RequestContext
 
+# TODO(mikey): rename me
 ALLOWED_PATHS = (
     '/api/login/',
     '/api/get-api-key/',
@@ -170,28 +170,23 @@ class HttpHostMiddleware:
 
 
 class PrivacyMiddleware:
-  """Enforces site privacy settings."""
+  """Enforces site privacy settings.
+
+  Must be installed after ApiRequestMiddleware (in request order) to
+  access is_kb_api_request attribute.
+  """
   def process_view(self, request, view_func, view_args, view_kwargs):
     if not hasattr(request, 'kbsite'):
       return None
     elif _path_allowed(request.path, request.kbsite):
       return None
-    elif apiutil.request_is_authenticated(request):
-      # This is an auth-required kb api view; no need to check privacy since API
-      # keys are given staff-level access.
+    elif request.is_kb_api_request:
+      # api.middleware will enforce access requirements.
       return None
 
     privacy = request.kbsite.settings.privacy
     if privacy == 'public':
       return None
-
-    # If non-public, apply the API key check.
-    if apiutil.is_api_view(view_func):
-      try:
-        apiutil.check_api_key(request)
-        return
-      except Exception, e:
-        return apiutil.wrap_exception(request, e)
 
     if privacy == 'staff' and not request.user.is_staff:
       return SimpleTemplateResponse('kegweb/staff_only.html',

@@ -133,15 +133,19 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
 
-    'pykeg.web.api.middleware.WrapExceptionMiddleware',
     'pykeg.web.middleware.KegbotSiteMiddleware',
     'pykeg.web.middleware.HttpHostMiddleware',
     'pykeg.web.middleware.SiteActiveMiddleware',
+    'pykeg.web.api.middleware.ApiRequestMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',
-    'pykeg.web.api.middleware.CheckAccessMiddleware',
 
     'django.middleware.doc.XViewMiddleware',
+
+    # Cache middleware should be last, except for ApiResponseMiddleWare,
+    # which needs to be after it (in request order) so that it can
+    # update the Cache-Control header before it (in reponse order).
     'django.middleware.cache.FetchFromCacheMiddleware',
+    'pykeg.web.api.middleware.ApiResponseMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (

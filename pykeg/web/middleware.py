@@ -128,7 +128,11 @@ class HttpHostMiddleware:
       return None
 
     host = request.get_host()
-    host_patterns = request.kbsite.settings.allowed_hosts.strip().split()
+    allowed_hosts_str = request.kbsite.settings.allowed_hosts
+    if allowed_hosts_str:
+      host_patterns = allowed_hosts_str.strip().split()
+    else:
+      host_patterns = []
     valid = HttpHostMiddleware.validate_host(host, host_patterns)
 
     if not valid:

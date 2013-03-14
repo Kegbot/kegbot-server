@@ -10,7 +10,3 @@ docs/build
 ### pykeg
 build
 dist
-
-# Developer testing.
-media/
-static/

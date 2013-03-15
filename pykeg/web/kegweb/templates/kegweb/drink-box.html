@@ -5,12 +5,12 @@
   </div>
   <div class="kb-drink-box-details">
     <div class="kb-drink-box-details-headline">
-      {% if drink.user %}<a href="{% url "kb-drinker" kbsite.url drink.user.username %}">{{drink.user.username}}</a> {% else %} {{guest_info.name}}{% endif %} poured
+      {% if drink.user %}<a href="{% url "kb-drinker" drink.user.username %}">{{drink.user.username}}</a> {% else %} {{guest_info.name}}{% endif %} poured
       {% volume drink.volume_ml %}
     </div>
     <div class="kb-event-box-info">
-      <a href="{% url "kb-drink" kbsite.url drink.id %}">drink {{drink.id}}</a>
-      {% if drink.keg %} from <a href="{% url "kb-keg" kbsite.url drink.keg.id %}">{{drink.keg.type.name}}</a>{% endif %}
+      <a href="{% url "kb-drink" drink.id %}">drink {{drink.id}}</a>
+      {% if drink.keg %} from <a href="{% url "kb-keg" drink.keg.id %}">{{drink.keg.type.name}}</a>{% endif %}
     </div>
   </div>
   <div class="kb-event-box-dateline">

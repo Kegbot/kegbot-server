@@ -1,7 +1,7 @@
 {% load kegweblib %}
 {% with keg.current_tap as tap %}
 <div class="kb-tapbox clickable" id="keg-snapshot-{{keg.id}}"
-    data-href="{% url "kb-keg" kbsite.url keg.id %}">
+    data-href="{% url "kb-keg" keg.id %}">
   <div class="row-fluid">
     <div class="span3">
       {% if keg.type.GetImage %}

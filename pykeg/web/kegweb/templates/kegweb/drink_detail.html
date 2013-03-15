@@ -37,7 +37,7 @@
       <tr>
         <th>Keg</th>
         <td>
-          <a href="{% url "kb-keg" kbsite.url drink.keg.id %}">{{drink.keg.type.name}}</a>
+          <a href="{% url "kb-keg" drink.keg.id %}">{{drink.keg.type.name}}</a>
         </td>
       </tr>
       {% endif %}

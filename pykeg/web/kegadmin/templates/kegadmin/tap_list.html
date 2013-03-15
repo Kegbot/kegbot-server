@@ -12,7 +12,7 @@
 {% for tap in taps %}
 <div class="row">
   <div class="span11 offset1">
-    <p class="lead"><a href="{% url "kegadmin-edit-tap" kbsite.url tap.id %}">{{ tap.name }}</a></p>
+    <p class="lead"><a href="{% url "kegadmin-edit-tap" tap.id %}">{{ tap.name }}</a></p>
   </div>
 </div>
 {% endfor %}

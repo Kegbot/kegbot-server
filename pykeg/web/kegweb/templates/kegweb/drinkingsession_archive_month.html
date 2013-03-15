@@ -6,17 +6,17 @@
 {% block session-right %}
 <ul>
   <li>
-    <a href="{% url "kb-sessions" kbsite.url %}">All Sessions</a>
+    <a href="{% url "kb-sessions" %}">All Sessions</a>
     <ul>
       <li>
-        <a href="{% url "kb-sessions-year" kbsite.url month.year %}">{{month|date:"Y"}}</a>
+        <a href="{% url "kb-sessions-year" month.year %}">{{month|date:"Y"}}</a>
         <ul>
           <li>
-            <a href="{% url "kb-sessions-month" kbsite.url month.year month.month %}"><b>{{month|date:"F"}}</b></a>
+            <a href="{% url "kb-sessions-month" month.year month.month %}"><b>{{month|date:"F"}}</b></a>
             <ul>
               {% for d in date_list %}
               <li>
-                <a href="{% url "kb-sessions-day" kbsite.url d.year d.month d.day %}">{{ d|date:"F d" }}</a>
+                <a href="{% url "kb-sessions-day" d.year d.month d.day %}">{{ d|date:"F d" }}</a>
               </li>
               {% endfor %}
             </ul>

@@ -38,7 +38,7 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
 
     ### api
-    (r'^(?P<kbsite_name>)api/', include('pykeg.web.api.urls')),
+    (r'^api/', include('pykeg.web.api.urls')),
 
     ### kegbot account
     (r'^account/', include('pykeg.web.account.urls')),
@@ -55,7 +55,7 @@ urlpatterns = patterns('',
      'registration/password_reset_complete.html'}),
 
     ### django-registration
-    url(r'^(?P<kbsite_name>)accounts/register/$', register,
+    url(r'^accounts/register/$', register,
       {'form_class': KegbotRegistrationForm},
       name='registration_register',
     ),
@@ -68,13 +68,13 @@ urlpatterns = patterns('',
     (r'^setup/', include('pykeg.web.setup_wizard.urls')),
 
     ### kegadmin
-    (r'^(?P<kbsite_name>)kegadmin/', include('pykeg.web.kegadmin.urls')),
+    (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 )
 
 if features.use_facebook():
   urlpatterns += patterns('',
       ### facebook kegweb stuff
-      (r'^(?P<kbsite_name>)fb/', include('pykeg.web.contrib.facebook.urls')),
+      (r'^fb/', include('pykeg.web.contrib.facebook.urls')),
   )
 
 if settings.DEBUG:
@@ -91,5 +91,5 @@ if settings.HAVE_SENTRY:
 
 ### main kegweb urls
 urlpatterns += patterns('',
-  (r'^(?P<kbsite_name>)', include('pykeg.web.kegweb.urls')),
+  (r'^', include('pykeg.web.kegweb.urls')),
 )

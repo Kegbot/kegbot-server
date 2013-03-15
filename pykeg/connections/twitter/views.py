@@ -20,10 +20,12 @@
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from socialregistration.clients.oauth import OAuthError
 from socialregistration.contrib.twitter.client import Twitter
 from django.contrib.admin.views.decorators import staff_member_required
+
+from pykeg.core.models import SiteSettings
 
 from . import models
 
@@ -33,18 +35,6 @@ class TwitterClient(Twitter):
   def get_callback_url(self):
     return self.callback_url
 
-def _base_url(request):
-  """Returns the base absolute URL for this request."""
-  host = request.META['HTTP_HOST']
-  return 'http://' + host
-
-def _site_url(request, url_name):
-  """Shortcut for getting the kbsite-prfixed named URL."""
-  kwargs = {
-    'kbsite_name': request.kbsite.url(),
-  }
-  return _base_url(request) + reverse(url_name, kwargs=kwargs)
-
 def _site_twitter_session_key(request):
   """Returns a site-specific session key."""
   return 'site_twitter_%s' % (request.kbsite.id,)
@@ -53,21 +43,19 @@ def _site_twitter_session_key(request):
 def site_twitter_redirect(request):
   if request.POST.get('remove') is not None:
     request.kbsite.twitter_profile.delete()
-    url = _site_url(request, 'kegadmin-connections')
     messages.success(request, 'Removed Twitter account.')
-    return HttpResponseRedirect(url)
+    return redirect('kegadmin-connections')
 
   client = TwitterClient()
-  url = _site_url(request, 'site_twitter_callback')
+  url = SiteTwitterSettings.get().reverse_full('site_twitter_callback')
   client.set_callback_url(url)
   request.session[_site_twitter_session_key(request)] = client
 
   try:
-    return HttpResponseRedirect(client.get_redirect_url())
+    return redirect(client.get_redirect_url())
   except OAuthError, error:
-    url = _site_url(request, 'kegadmin-connections')
     messages.error(request, 'Error: %s' % str(error))
-    return HttpResponseRedirect(url)
+    return redirect('kegadmin-connections')
 
 @staff_member_required
 def site_twitter_callback(request):
@@ -95,5 +83,4 @@ def site_twitter_callback(request):
     profile.save()
     messages.success(request, 'Successfully linked to @%s' % user_info['screen_name'])
 
-  url = _site_url(request, 'kegadmin-connections')
-  return HttpResponseRedirect(url)
+  return redirect('kegadmin-connections')

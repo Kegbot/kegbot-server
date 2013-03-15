@@ -7,7 +7,7 @@
 <ul>
   {% for d in date_list %}
   <li>
-    <a href="{% url "kb-sessions-year" kbsite.url d.year %}">{{d.year}}</a>
+    <a href="{% url "kb-sessions-year" d.year %}">{{d.year}}</a>
   </li>
   {% endfor %}
 </ul>

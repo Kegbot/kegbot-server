@@ -42,8 +42,6 @@ ALLOWED_PATHS = (
 )
 
 def _path_allowed(path, kbsite):
-  if kbsite:
-    path = path.lstrip(kbsite.url())
   for p in ALLOWED_PATHS:
     if path.startswith(p):
       return True
@@ -55,15 +53,12 @@ class KegbotSiteMiddleware:
       'pykeg.web.setup_wizard.',
   )
   def process_request(self, request):
-    kbsite_name = 'default'
-    request.kbsite_name = kbsite_name
-
     epoch = None
     request.need_setup = False
     request.need_upgrade = False
 
     try:
-      request.kbsite = models.KegbotSite.objects.get(name=kbsite_name)
+      request.kbsite = models.KegbotSite.objects.get(name='default')
       epoch = request.kbsite.epoch
     except (models.KegbotSite.DoesNotExist, DatabaseError), e:
       request.kbsite = None
@@ -102,7 +97,6 @@ class KegbotSiteMiddleware:
 class SiteActiveMiddleware:
   """Middleware which throws 503s when KegbotSite.is_active is false."""
   def process_view(self, request, view_func, view_args, view_kwargs):
-    view_kwargs.pop('kbsite_name', None)  # TODO(mikey): remove entirely
     if not hasattr(request, 'kbsite') or not request.kbsite:
       return None
     kbsite = request.kbsite

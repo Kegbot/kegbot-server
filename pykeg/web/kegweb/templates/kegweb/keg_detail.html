@@ -12,13 +12,13 @@
   {% if next or previous %}
   <div style="font-size: 0.8em; text-align:center; margin-bottom:16px;">
     {% if previous %}
-      <a href="{% url "kb-keg" kbsite.url previous.id %}">&laquo; previous keg</a>
+      <a href="{% url "kb-keg" previous.id %}">&laquo; previous keg</a>
     {% endif %}
     {% if next and previous %}
     &mdash;
     {% endif %}
     {% if next %}
-      <a href="{% url "kb-keg" kbsite.url next.id %}">next keg &raquo;</a>
+      <a href="{% url "kb-keg" next.id %}">next keg &raquo;</a>
     {% endif %}
   </div>
   {% endif %}

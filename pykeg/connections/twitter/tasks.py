@@ -23,6 +23,7 @@ from pykeg.connections import common
 
 import tweepy
 from django.contrib.sites.models import Site
+from pykeg.core.models import SiteSettings
 
 from celery.task import task
 
@@ -46,7 +47,7 @@ def add_hashtag(tweet):
   return tweet
 
 def _get_vars(event):
-  base_url = 'http://%s/%s' % (Site.objects.get_current().domain, event.site.url())
+  base_url = SiteSettings.get().base_url()
   name = ''
   if event.user:
     name = event.user.username

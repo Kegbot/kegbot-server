@@ -49,8 +49,8 @@ from kegbot.api import protoutil
 """Django models definition for the kegbot database."""
 
 class KegbotSite(models.Model):
-  name = models.CharField(max_length=64, unique=True,
-      help_text='A short single-word name for this site, eg "default" or "sfo"')
+  name = models.CharField(max_length=64, unique=True, default='default',
+      editable=False)
   is_active = models.BooleanField(default=True,
       help_text='On/off switch for this site.')
   is_setup = models.BooleanField(default=True,
@@ -63,17 +63,8 @@ class KegbotSite(models.Model):
   def __str__(self):
     return self.name
 
-  def url(self):
-    if self.name == 'default':
-      return ''
-    return self.name
-
   def full_url(self):
-    domain = Site.objects.get_current().domain
-    parts = ['http://%s' % domain]
-    if self.url():
-      parts.append(self.url())
-    return '/'.join(parts)
+    return 'http://%s' % Site.objects.get_current().domain
 
   def GetStatsRecord(self):
     try:
@@ -152,6 +143,19 @@ class SiteSettings(models.Model):
   def GetSessionTimeoutDelta(self):
     return datetime.timedelta(minutes=self.session_timeout_minutes)
 
+  def base_url(self):
+    return 'http://%s' % (Site.objects.get_current(),)
+
+  def reverse_full(self, *args, **kwargs):
+    """Calls reverse, and returns a full URL (includes base_url())."""
+    return '%s%s' % (self.base_url(), reverse(*args, **kwargs))
+
+  @classmethod
+  def get(cls):
+    """Gets the default site settings."""
+    return models.SiteSettings.objects.get_or_create(name='default')[0]
+
+
 class UserProfile(models.Model):
   """Extra per-User information."""
   GENDER_CHOICES = (
@@ -200,7 +204,7 @@ class UserProfile(models.Model):
 
   @models.permalink
   def get_absolute_url(self):
-    return ('kb-drinker', ('', self.user.username))
+    return ('kb-drinker', (self.user.username,))
 
   user = models.OneToOneField(User)
   gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
@@ -371,7 +375,7 @@ class Keg(models.Model):
   """ Record for each installed Keg. """
   @models.permalink
   def get_absolute_url(self):
-    return ('kb-keg', (self.site.url(), str(self.id)))
+    return ('kb-keg', (str(self.id),))
 
   def full_volume(self):
     return self.size.volume_ml
@@ -521,13 +525,10 @@ class Drink(models.Model):
 
   @models.permalink
   def get_absolute_url(self):
-    return ('kb-drink', (self.site.url(), str(self.id)))
+    return ('kb-drink', (str(self.id),))
 
   def ShortUrl(self):
-    parts = [self.site.full_url()]
-    parts.append('d')
-    parts.append(str(self.id))
-    return '/'.join(parts)
+    return '%s%s' % (self.site.full_url(), reverse('kb-drink-short', args=(str(self.id),)))
 
   def Volume(self):
     return units.Quantity(self.volume_ml)
@@ -711,7 +712,6 @@ class DrinkingSession(_AbstractChunk):
       slug = 'session-%i' % self.id
 
     return ('kb-session-detail', (), {
-      'kbsite_name' : self.site.url(),
       'year' : self.start_time.year,
       'month' : self.start_time.month,
       'day' : self.start_time.day,

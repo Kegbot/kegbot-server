@@ -42,7 +42,7 @@
   <script type="text/javascript">
       $(document).ready(function() {
         var labels, mapped;
-        var beer_complete_url = "{% url "kegadmin-autocomplete-beer" kbsite.url %}";
+        var beer_complete_url = "{% url "kegadmin-autocomplete-beer" %}";
 
         $('.beer-select').each(function() {
           var beer_name = $(this).find('input[name=beer_name]');

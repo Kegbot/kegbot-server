@@ -11,11 +11,7 @@
   <script type="text/javascript">
     $(document).ready(function() {
         var defaultUseMetric = {% if kbsite.settings.display_units != 'metric' %}false{% else %}true{% endif%};
-        {% if kbsite.url %}
-        window.app.setApiBase("/{{ kbsite.url }}/api/");
-        {% else %}
         window.app.setApiBase("/api/")
-        {% endif %}
 
         window.app.getPageSettings().setMetric(defaultUseMetric);
         window.app.getPageSettings().setGuestInfo("{{kbsite.settings.guest_name}}",
@@ -55,7 +51,7 @@
       <div class="container">
         {% spaceless %}
         {% if kbsite %}
-        <a class="brand" href="{% url "kb-home" kbsite.url %}">
+        <a class="brand" href="{% url "kb-home" %}">
         {% else %}
         <a class="brand" href="/">
         {% endif %}

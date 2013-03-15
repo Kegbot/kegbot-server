@@ -13,6 +13,13 @@ class Migration(DataMigration):
 
         migrated = {}
         site = orm['core.KegbotSite'].objects.get(name='default')
+
+        q = orm['core.Picture'].objects.filter(site=None).order_by('-seqn')
+        if q:
+          seqn = q[0].seqn + 1
+        else:
+          seqn = 1
+
         print '  ~ migrating beer brewers'
         for prev in bdb_brewer.objects.all().order_by('added'):
           brewer = orm.Brewer()
@@ -26,7 +33,12 @@ class Migration(DataMigration):
           brewer.url = prev.url
           brewer.description = prev.description
           if prev.image:
-            brewer.image = prev.image.image
+            print prev.image.image.name
+            picture = orm['core.Picture'].objects.create(
+                image=prev.image.image.name, seqn=seqn)
+            seqn += 1
+            picture.save()
+            brewer.image = picture
           brewer.save()
           migrated[prev] = brewer
 
@@ -40,7 +52,6 @@ class Migration(DataMigration):
           migrated[prev] = style
 
         print '  ~ migrating beer types'
-        from django.core.files.storage import default_storage
 
         q = orm['core.Picture'].objects.filter(site=None).order_by('-seqn')
         if q:

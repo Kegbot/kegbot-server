@@ -1,5 +1,5 @@
 /**
- * @license Highcharts JS v2.2.0 (2012-02-16)
+ * @license Highcharts JS v2.3.5 (2012-12-19)
  * Prototype adapter
  *
  * @author Michael Nelson, Torstein Hønsi.
@@ -100,6 +100,19 @@ return {
 			});
 		}
 	},
+	
+	/**
+	 * Run a general method on the framework, following jQuery syntax
+	 * @param {Object} el The HTML element
+	 * @param {String} method Which method to run on the wrapped element
+	 */
+	adapterRun: function (el, method) {
+		
+		// This currently works for getting inner width and height. If adding
+		// more methods later, we need a conditional implementation for each.
+		return parseInt($(el).getStyle(method), 10);
+		
+	},
 
 	/**
 	 * Downloads a script and executes a callback when done.
@@ -146,6 +159,7 @@ return {
 		options = options || {};
 		options.delay = 0;
 		options.duration = (options.duration || 500) / 1000;
+		options.afterFinish = options.complete;
 
 		// animate wrappers and DOM elements
 		if (hasEffect) {
@@ -155,8 +169,13 @@ return {
 				fx = new Effect.HighchartsTransition($(el), key, params[key], options);
 			}
 		} else {
-			for (key in params) {
-				el.attr(key, params[key]);
+			if (el.attr) { // #409 without effects
+				for (key in params) {
+					el.attr(key, params[key]);
+				}
+			}
+			if (options.complete) {
+				options.complete();
 			}
 		}
 
@@ -180,6 +199,10 @@ return {
 	// um.. each
 	each: function (arr, fn) {
 		$A(arr).each(fn);
+	},
+	
+	inArray: function (item, arr) {
+		return arr.indexOf(item);
 	},
 
 	/**
@@ -222,6 +245,10 @@ return {
 			HighchartsAdapter._extend(el);
 			el._highcharts_stop_observing(event, handler);
 		}
+	},
+	
+	washMouseEvent: function (e) {
+		return e;
 	},
 
 	// um, grep

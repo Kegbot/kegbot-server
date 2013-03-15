@@ -1,5 +1,5 @@
 /**
- * @license Highcharts JS v2.2.0 (2012-02-16)
+ * @license Highcharts JS v2.3.5 (2012-12-19)
  * MooTools adapter
  *
  * (c) 2010-2011 Torstein Hønsi
@@ -68,6 +68,20 @@ win.HighchartsAdapter = {
 		};
 		/*jslint unparam: false*/
 	},
+	
+	/**
+	 * Run a general method on the framework, following jQuery syntax
+	 * @param {Object} el The HTML element
+	 * @param {String} method Which method to run on the wrapped element
+	 */
+	adapterRun: function (el, method) {
+		
+		// This currently works for getting inner width and height. If adding
+		// more methods later, we need a conditional implementation for each.
+		if (method === 'width' || method === 'height') {
+			return parseInt($(el).getStyle(method), 10);
+		}
+	},
 
 	/**
 	 * Downloads a script and executes a callback when done.
@@ -102,7 +116,7 @@ win.HighchartsAdapter = {
 			el.getStyle = el.attr;
 			el.setStyle = function () { // property value is given as array in Moo - break it down
 				var args = arguments;
-				el.attr.call(el, args[0], args[1][0]);
+				this.attr.call(this, args[0], args[1][0]);
 			};
 			// dirty hack to trick Moo into handling el as an element wrapper
 			el.$family = function () { return true; };
@@ -167,6 +181,13 @@ win.HighchartsAdapter = {
 	 */
 	grep: function (arr, fn) {
 		return arr.filter(fn);
+	},
+	
+	/**
+	 * Return the index of an item in an array, or -1 if not matched
+	 */
+	inArray: function (item, arr, from) {
+		return arr.indexOf(item, from);
 	},
 
 	/**
@@ -244,19 +265,21 @@ win.HighchartsAdapter = {
 			// el.removeEvents below apperantly calls this method again. Do not quite understand why, so for now just bail out.
 			return;
 		}
-		win.HighchartsAdapter.extendWithEvents(el);
-		if (type) {
-			if (type === 'unload') { // Moo self destructs before custom unload events
-				type = 'beforeunload';
-			}
-
-			if (fn) {
-				el.removeEvent(type, fn);
+		
+		if (el.addEvent) { // If el doesn't have an addEvent method, there are no events to remove
+			if (type) {
+				if (type === 'unload') { // Moo self destructs before custom unload events
+					type = 'beforeunload';
+				}
+	
+				if (fn) {
+					el.removeEvent(type, fn);
+				} else if (el.removeEvents) { // #958
+					el.removeEvents(type);
+				}
 			} else {
-				el.removeEvents(type);
+				el.removeEvents();
 			}
-		} else {
-			el.removeEvents();
 		}
 	},
 
@@ -283,6 +306,13 @@ win.HighchartsAdapter = {
 		if (defaultFunction) {
 			defaultFunction(event);
 		}
+	},
+	
+	/**
+	 * Set back e.pageX and e.pageY that MooTools has abstracted away
+	 */
+	washMouseEvent: function (e) {
+		return e.event || e;
 	},
 
 	/**

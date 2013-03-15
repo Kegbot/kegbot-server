@@ -4,8 +4,6 @@ from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
-from pykeg.web.api import apikey
-
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
@@ -14,7 +12,7 @@ class Migration(SchemaMigration):
         db.add_column('core_userprofile', 'api_secret', self.gf('django.db.models.fields.CharField')(default='', max_length=256, null=True, blank=True), keep_default=False)
         if not db.dry_run:
           for profile in orm.UserProfile.objects.all():
-            profile.api_secret = apikey.ApiKey.NewSecret()
+            profile.api_secret = 'deadbeef'
             profile.save()
 
 

@@ -37,7 +37,6 @@ from socialregistration.contrib.twitter import models as sr_twitter_models
 
 from pykeg.core import models
 from pykeg.web.kegweb import forms
-from pykeg.web.api import apikey
 from pykeg.connections.foursquare import forms as foursquare_forms
 from pykeg.connections.twitter import forms as twitter_forms
 

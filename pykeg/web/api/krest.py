@@ -236,10 +236,10 @@ class KrestClient:
       post_data['shout'] = shout
     return self.DoPOST(endpoint, post_data=post_data).object
 
-  def CancelDrink(self, seqn, spilled=False):
+  def CancelDrink(self, drink_id, spilled=False):
     endpoint = '/cancel-drink'
     post_data = {
-      'id': seqn,
+      'id': drink_id,
       'spilled': spilled,
     }
     return self.DoPOST(endpoint, post_data=post_data).object

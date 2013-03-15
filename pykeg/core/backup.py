@@ -125,7 +125,7 @@ def restore(input_fp, kbsite, log_cb=_no_log):
 
   kbsite.thermosensors.all().delete()
   for rec in data.get('thermosensors', []):
-    sensor = models.ThermoSensor(site=kbsite, seqn=int(rec.id))
+    sensor = models.ThermoSensor(site=kbsite, id=int(rec.id))
     sensor.raw_name = rec.sensor_name
     sensor.nice_name = rec.nice_name
     sensor.save()
@@ -133,7 +133,7 @@ def restore(input_fp, kbsite, log_cb=_no_log):
 
   kbsite.kegs.all().delete()
   for rec in data['kegs']:
-    keg = models.Keg(site=kbsite, seqn=int(rec.id))
+    keg = models.Keg(site=kbsite, id=int(rec.id))
     keg.type = type_map[rec.type_id]
     keg.startdate = rec.started_time
     keg.enddate = rec.finished_time
@@ -151,23 +151,23 @@ def restore(input_fp, kbsite, log_cb=_no_log):
 
   kbsite.taps.all().delete()
   for rec in data['taps']:
-    tap = models.KegTap(site=kbsite, seqn=int(rec.id))
+    tap = models.KegTap(site=kbsite, id=int(rec.id))
     tap.name = rec.name
     tap.meter_name = rec.meter_name
     tap.ml_per_tick = rec.ml_per_tick
     tap.description = rec.get('description')
     keg_id = int(rec.get('current_keg_id', 0))
     if keg_id:
-      tap.current_keg = models.Keg.objects.get(site=kbsite, seqn=keg_id)
+      tap.current_keg = models.Keg.objects.get(site=kbsite, id=keg_id)
     thermo_id = int(rec.get('thermo_sensor_id', 0))
     if thermo_id:
-      tap.temperature_sensor = models.ThermoSensor.objects.get(site=kbsite, seqn=thermo_id)
+      tap.temperature_sensor = models.ThermoSensor.objects.get(site=kbsite, id=thermo_id)
     tap.save()
     _log(tap)
 
   kbsite.sessions.all().delete()
   for rec in data.get('sessions', []):
-    session = models.DrinkingSession(site=kbsite, seqn=int(rec.id))
+    session = models.DrinkingSession(site=kbsite, id=int(rec.id))
     session.starttime = rec.start_time
     session.endtime = rec.end_time
     session.volume_ml = rec.volume_ml
@@ -177,8 +177,8 @@ def restore(input_fp, kbsite, log_cb=_no_log):
     _log(session)
 
   for rec in data.get('thermologs', []):
-    log = models.Thermolog(site=kbsite, seqn=int(rec.id))
-    log.sensor = models.ThermoSensor.objects.get(site=kbsite, seqn=int(rec.sensor_id))
+    log = models.Thermolog(site=kbsite, id=int(rec.id))
+    log.sensor = models.ThermoSensor.objects.get(site=kbsite, id=int(rec.sensor_id))
     log.temp = rec.temperature_c
     log.time = rec.record_time
     log.save()
@@ -186,10 +186,10 @@ def restore(input_fp, kbsite, log_cb=_no_log):
 
   kbsite.thermosummarylogs.all().delete()
   for rec in data.get('thermosummarylogs', []):
-    log = models.ThermoSummaryLog(site=kbsite, seqn=int(rec.sensor_id))
+    log = models.ThermoSummaryLog(site=kbsite, id=int(rec.sensor_id))
     log.site = kbsite
-    log.seqn = rec.id
-    log.sensor = models.ThermoSensor.objects.get(site=kbsite, seqn=int(rec.sensor_id))
+    log.id = rec.id
+    log.sensor = models.ThermoSensor.objects.get(site=kbsite, id=int(rec.sensor_id))
     log.date = rec.date
     log.period = rec.period
     log.num_readings = rec.num_readings
@@ -252,7 +252,7 @@ def restore(input_fp, kbsite, log_cb=_no_log):
 
   kbsite.tokens.all().delete()
   for rec in data.get('tokens', []):
-    token = models.AuthenticationToken(site=kbsite, seqn=int(rec.id))
+    token = models.AuthenticationToken(site=kbsite, id=int(rec.id))
     token.auth_device = rec.auth_device
     token.token_value = rec.token_value
     username = rec.get('username')
@@ -266,16 +266,16 @@ def restore(input_fp, kbsite, log_cb=_no_log):
 
   kbsite.drinks.all().delete()
   for rec in data.get('drinks', []):
-    drink = models.Drink(site=kbsite, seqn=int(rec.id))
+    drink = models.Drink(site=kbsite, id=int(rec.id))
     drink.ticks = rec.ticks
     drink.volume_ml = rec.volume_ml
-    drink.session = models.DrinkingSession.objects.get(site=kbsite, seqn=int(rec.session_id))
+    drink.session = models.DrinkingSession.objects.get(site=kbsite, id=int(rec.session_id))
     drink.starttime = rec.pour_time
     drink.duration = rec.get('duration')
     drink.status = rec.status
     keg_id = int(rec.get('keg_id', 0))
     if keg_id:
-      drink.keg = models.Keg.objects.get(site=kbsite, seqn=keg_id)
+      drink.keg = models.Keg.objects.get(site=kbsite, id=keg_id)
     username = rec.get('user_id')
     if username:
       drink.user = user_map[username]

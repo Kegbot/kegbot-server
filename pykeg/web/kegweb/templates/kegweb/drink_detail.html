@@ -1,8 +1,8 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
 
-{% block title %}Drink {{ drink.seqn }} by {{ drink.user.username }} | {{ block.super }}{% endblock %}
-{% block pagetitle %}Drink {{ drink.seqn }} by {{ drink.user.username }}{% endblock %}
+{% block title %}Drink {{ drink.id }} by {{ drink.user.username }} | {{ block.super }}{% endblock %}
+{% block pagetitle %}Drink {{ drink.id }} by {{ drink.user.username }}{% endblock %}
 
 {% if drink.user %}
 {% block sidebar %}
@@ -37,7 +37,7 @@
       <tr>
         <th>Keg</th>
         <td>
-          <a href="{% url "kb-keg" kbsite.url drink.keg.seqn %}">{{drink.keg.type.name}}</a>
+          <a href="{% url "kb-keg" kbsite.url drink.keg.id %}">{{drink.keg.type.name}}</a>
         </td>
       </tr>
       {% endif %}

@@ -61,7 +61,7 @@ def kegadmin_main(request):
 
 def _create_or_update_tap(tap, request):
   if tap:
-    prefix = 'tap-%s' % (tap.seqn,)
+    prefix = 'tap-%s' % (tap.id,)
   else:
     prefix = None
   form = forms.TapForm(request.POST, site=request.kbsite, instance=tap,
@@ -86,7 +86,7 @@ def tap_list(request):
 
 @staff_member_required
 def tap_detail(request, tap_id):
-  tap = get_object_or_404(models.KegTap, site=request.kbsite, seqn=tap_id)
+  tap = get_object_or_404(models.KegTap, site=request.kbsite, id=tap_id)
 
   activate_keg_form = forms.ChangeKegForm()
   tap_settings_form = forms.TapForm(instance=tap)
@@ -154,7 +154,7 @@ def tap_detail(request, tap_id):
         keg = end_keg_form.cleaned_data['keg']
         keg.status = 'offline'
         keg.save()
-        messages.success(request, 'Keg %s was ended.' % keg.seqn)
+        messages.success(request, 'Keg %s was ended.' % keg.id)
 
     else:
       messages.warning(request, 'No form data was found. Bug?')

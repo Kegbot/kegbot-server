@@ -37,13 +37,13 @@ class KegTapAdmin(admin.ModelAdmin):
 admin.site.register(models.KegTap, KegTapAdmin)
 
 class KegAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'type')
+  list_display = ('id', 'type')
 admin.site.register(models.Keg, KegAdmin)
 
 class DrinkAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'user', 'keg', 'time')
+  list_display = ('id', 'user', 'keg', 'time')
   list_filter = ('keg', 'status', 'time')
-  search_fields = ('seqn', 'user__username')
+  search_fields = ('id', 'user__username')
 admin.site.register(models.Drink, DrinkAdmin)
 
 class AuthenticationTokenAdmin(admin.ModelAdmin):
@@ -53,7 +53,7 @@ class AuthenticationTokenAdmin(admin.ModelAdmin):
 admin.site.register(models.AuthenticationToken, AuthenticationTokenAdmin)
 
 class DrinkingSessionAdmin(admin.ModelAdmin):
-  list_display = ('id', 'site', 'seqn', 'start_time', 'end_time', 'volume_ml', 'GetTitle')
+  list_display = ('id', 'site', 'start_time', 'end_time', 'volume_ml', 'GetTitle')
   list_filter = ('site', 'start_time')
   search_fields = ('name',)
 admin.site.register(models.DrinkingSession, DrinkingSessionAdmin)
@@ -82,12 +82,12 @@ class ThermoSummaryLogAdmin(admin.ModelAdmin):
 admin.site.register(models.ThermoSummaryLog, ThermoSummaryLogAdmin)
 
 class SystemEventAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'kind', 'time', 'user', 'drink', 'keg', 'session')
+  list_display = ('id', 'kind', 'time', 'user', 'drink', 'keg', 'session')
   list_filter = ('kind', 'time')
 admin.site.register(models.SystemEvent, SystemEventAdmin)
 
 class PictureAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'time')
+  list_display = ('id', 'time')
   list_filter = ('time',)
 admin.site.register(models.Picture, PictureAdmin)
 
@@ -95,7 +95,6 @@ class PourPictureAdmin(admin.ModelAdmin):
   list_display = ('id', 'time', 'user', 'drink', 'keg', 'session', 'caption')
   list_filter = ('time',)
 admin.site.register(models.PourPicture, PourPictureAdmin)
-
 
 class BeerTypeInline(admin.TabularInline):
   model = models.BeerType

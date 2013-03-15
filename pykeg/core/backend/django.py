@@ -155,9 +155,9 @@ class KegbotBackend(backend.Backend):
 
     return d
 
-  def CancelDrink(self, seqn, spilled=False):
+  def CancelDrink(self, drink_id, spilled=False):
     try:
-      d = self._site.drinks.get(seqn=seqn)
+      d = self._site.drinks.get(id=drink_id)
     except models.Drink.DoesNotExist:
       return
 
@@ -184,7 +184,7 @@ class KegbotBackend(backend.Backend):
 
     # Regenerate new statistics, based on the most recent drink
     # post-cancellation.
-    last_qs = self._site.drinks.valid().order_by('-seqn')
+    last_qs = self._site.drinks.valid().order_by('-id')
     if last_qs:
       last_drink = last_qs[0]
       last_drink._UpdateSystemStats()

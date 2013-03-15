@@ -1,6 +1,6 @@
 {% load kegweblib %}
 
-<div class="row clickable" id="session-snapshot-{{session.seqn}}"
+<div class="row clickable" id="session-snapshot-{{session.id}}"
     data-href="{{session.get_absolute_url}}">
 <div class="span8">
 
@@ -12,7 +12,7 @@
 {% if pictures %}
 <div class="row-fluid">
   <div class="span3 offset1">
-    {% gallery session.HighlightPicture "span12" gallery_id=session.seqn %}
+    {% gallery session.HighlightPicture "span12" gallery_id=session.id %}
   </div>
   <div class="span8">
     <div class="row-fluid">
@@ -22,7 +22,7 @@
     </div>
     <div class="row-fluid">
       <div class="span12">
-        {% gallery pictures|slice:":5" "span2" gallery_id=session.seqn %}
+        {% gallery pictures|slice:":5" "span2" gallery_id=session.id %}
       </div>
     </div>
   </div>

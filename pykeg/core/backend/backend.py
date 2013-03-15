@@ -56,7 +56,7 @@ class Backend:
     """Records a new drink with the given parameters."""
     raise NotImplementedError
 
-  def CancelDrink(self, seqn, spilled=False):
+  def CancelDrink(self, drink_id, spilled=False):
     """Cancels the given drink.
 
     If `spilled` is False, the drink will be canceled as if it never occurred.

@@ -90,16 +90,16 @@ def all_drinks(request, limit=100):
   if 'start' in request.GET:
     try:
       start = int(request.GET['start'])
-      qs = qs.filter(seqn__lte=start)
+      qs = qs.filter(id__lte=start)
     except ValueError:
       pass
-  qs = qs.order_by('-seqn')
+  qs = qs.order_by('-id')
   qs = qs[:limit]
-  start = qs[0].seqn
+  start = qs[0].id
   return qs
 
 def get_drink(request, drink_id):
-  drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
+  drink = get_object_or_404(models.Drink, id=drink_id, site=request.kbsite)
   return protolib.ToProto(drink, full=True)
 
 @csrf_exempt
@@ -107,7 +107,7 @@ def get_drink(request, drink_id):
 def add_drink_photo(request, drink_id):
   if request.method != 'POST':
     raise Http404('Method not supported')
-  drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
+  drink = get_object_or_404(models.Drink, id=drink_id, site=request.kbsite)
   pic = models.Picture.objects.create(site=request.kbsite,
       image=request.FILES['photo'])
   pour_pic = models.PourPicture.objects.create(picture_id=pic.id,
@@ -120,25 +120,25 @@ def add_drink_photo(request, drink_id):
   return protolib.ToProto(pour_pic, full=True)
 
 def get_session(request, session_id):
-  session = get_object_or_404(models.DrinkingSession, seqn=session_id,
+  session = get_object_or_404(models.DrinkingSession, id=session_id,
       site=request.kbsite)
   return protolib.ToProto(session, full=True)
 
 def get_session_stats(request, session_id):
-  session = get_object_or_404(models.DrinkingSession, seqn=session_id,
+  session = get_object_or_404(models.DrinkingSession, id=session_id,
       site=request.kbsite)
   return session.GetStats()
 
 def get_keg(request, keg_id):
-  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
   return protolib.ToProto(keg, full=True)
 
 def get_keg_drinks(request, keg_id):
-  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
   return keg.drinks.valid()
 
 def get_keg_events(request, keg_id):
-  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
   events = keg.events.all()
   events = apply_since(request, events)
   return events
@@ -155,7 +155,7 @@ def current_session(request):
     raise Http404
 
 def all_events(request):
-  events = request.kbsite.events.all().order_by('-seqn')
+  events = request.kbsite.events.all().order_by('-id')
   events = apply_since(request, events)
   events = events[:10]
   return [protolib.ToProto(e, full=True) for e in events]
@@ -166,7 +166,7 @@ def apply_since(request, query):
   if since_str:
     try:
       since = int(since_str)
-      return query.filter(seqn__gt=since)
+      return query.filter(id__gt=since)
     except (ValueError, TypeError):
       pass
   return query
@@ -176,12 +176,12 @@ def all_sound_events(request):
   return soundserver_models.SoundEvent.objects.all()
 
 def get_keg_sessions(request, keg_id):
-  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
   sessions = [c.session for c in keg.keg_session_chunks.all()]
   return sessions
 
 def get_keg_stats(request, keg_id):
-  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
   return keg.GetStatsRecord()
 
 def get_system_stats(request):
@@ -359,7 +359,7 @@ def cancel_drink(request):
   cd = form.cleaned_data
   b = KegbotBackend(site=request.kbsite)
   try:
-    res = b.CancelDrink(seqn=cd.get('id'), spilled=cd.get('spilled', False))
+    res = b.CancelDrink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
     return protolib.ToProto(res, full=True)
   except backend.BackendError, e:
     raise kbapi.ServerError(str(e))

@@ -63,7 +63,7 @@ def index(request):
   context['initial_events'] = kbjson.dumps([protolib.ToDict(e, full=True) for e in events],
       indent=None)
 
-  sessions = request.kbsite.sessions.all().order_by('-seqn')[:10]
+  sessions = request.kbsite.sessions.all().order_by('-id')[:10]
   context['sessions'] = sessions
   context['initial_sessions'] = kbjson.dumps([protolib.ToDict(s, full=True) for s in sessions],
       indent=None)
@@ -126,7 +126,7 @@ class KegListView(ListView):
 
 @cache_page(30)
 def keg_detail(request, keg_id):
-  keg = get_object_or_404(models.Keg, site=request.kbsite, seqn=keg_id)
+  keg = get_object_or_404(models.Keg, site=request.kbsite, id=keg_id)
   sessions = keg.Sessions()
   context = RequestContext(request, {
     'keg': keg,
@@ -140,17 +140,17 @@ def short_drink_detail(request, drink_id):
 
 def short_session_detail(request, session_id):
   session = get_object_or_404(models.DrinkingSession, site=request.kbsite,
-      seqn=session_id)
+      id=session_id)
   url = session.get_absolute_url()
   return HttpResponseRedirect(url)
 
 def drink_detail(request, drink_id):
-  drink = get_object_or_404(models.Drink, site=request.kbsite, seqn=drink_id)
+  drink = get_object_or_404(models.Drink, site=request.kbsite, id=drink_id)
   context = RequestContext(request, {'drink': drink})
   return render_to_response('kegweb/drink_detail.html', context)
 
-def session_detail(request, year, month, day, seqn, slug):
-  session = get_object_or_404(models.DrinkingSession, site=request.kbsite, seqn=seqn)
+def session_detail(request, year, month, day, id, slug):
+  session = get_object_or_404(models.DrinkingSession, site=request.kbsite, id=id)
   context = RequestContext(request, {
     'session': session,
     'stats': session.GetStats(),
@@ -209,34 +209,11 @@ class SessionDateDetailView(DateDetailView):
   model = models.DrinkingSession
   date_field = 'start_time'
   slug_field = 'slug'
-  pk_url_kwarg = 'seqn'
   template_name = 'kegweb/session_detail.html'
   context_object_name = 'session'
 
   def get_queryset(self):
     return self.request.kbsite.sessions.all()
-
-  def get_object(self, queryset=None):
-    """Clone of SingleObjectMixin method, using `seqn` rather than `pk`."""
-    if queryset is None:
-      queryset = self.get_queryset()
-
-    seqn = self.kwargs.get(self.pk_url_kwarg, None)
-    slug = self.kwargs.get(self.slug_url_kwarg, None)
-    if seqn is not None:
-      queryset = queryset.filter(seqn=seqn)
-    elif slug is not None:
-      slug_field = self.get_slug_field()
-      queryset = queryset.filter(**{slug_field: slug})
-    else:
-      raise AttributeError("Generic detail view %s must be called with "
-                           "either an object pk or a slug." % self.__class__.__name__)
-    try:
-      obj = queryset.get()
-    except ObjectDoesNotExist:
-      raise Http404(_("No %(verbose_name)s found matching the query") %
-                    {'verbose_name': queryset.model._meta.verbose_name})
-    return obj
 
   def get_context_data(self, **kwargs):
     """Adds `stats` to the context."""

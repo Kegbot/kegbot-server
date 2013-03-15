@@ -9,8 +9,8 @@
       {% volume drink.volume_ml %}
     </div>
     <div class="kb-event-box-info">
-      <a href="{% url "kb-drink" kbsite.url drink.seqn %}">drink {{drink.seqn}}</a>
-      {% if drink.keg %} from <a href="{% url "kb-keg" kbsite.url drink.keg.seqn %}">{{drink.keg.type.name}}</a>{% endif %}
+      <a href="{% url "kb-drink" kbsite.url drink.id %}">drink {{drink.id}}</a>
+      {% if drink.keg %} from <a href="{% url "kb-keg" kbsite.url drink.keg.id %}">{{drink.keg.type.name}}</a>{% endif %}
     </div>
   </div>
   <div class="kb-event-box-dateline">

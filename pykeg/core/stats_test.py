@@ -83,7 +83,7 @@ class StatsTestCase(unittest.TestCase):
     self.backend.RecordDrink('kegboard.flow0', ticks=100,
         volume_ml=100, username='user1', pour_time=pour_time,
         do_postprocess=False)
-    drink1 = models.Drink.objects.get(seqn=1)
+    drink1 = models.Drink.objects.get(id=1)
 
     expected = self._getEmptyStats()
     expected.last_drink_id = 1
@@ -112,7 +112,7 @@ class StatsTestCase(unittest.TestCase):
     self.backend.RecordDrink('kegboard.flow0', ticks=200,
         volume_ml=200, username='user1', pour_time=pour_time,
         do_postprocess=False)
-    drink2 = models.Drink.objects.get(seqn=2)
+    drink2 = models.Drink.objects.get(id=2)
 
     # Adjust stats
     expected.last_drink_id = 2

@@ -62,7 +62,7 @@ class BaseStatsBuilder(StatsBuilder):
 
   @stat('last_drink_id')
   def LastDrinkId(self):
-    self.stats.last_drink_id = self.drink.seqn
+    self.stats.last_drink_id = self.drink.id
 
   @stat('total_volume_ml')
   def TotalVolume(self):
@@ -111,11 +111,11 @@ class BaseStatsBuilder(StatsBuilder):
       res = 0
       drinks = self.drinks.order_by('-volume_ml')
       if drinks.count():
-        res = drinks[0].seqn
+        res = drinks[0].id
       self.stats.greatest_volume_id = res
     else:
       if self.drink.volume_ml > self.previous.greatest_volume_ml:
-        self.stats.greatest_volume_id = self.drink.seqn
+        self.stats.greatest_volume_id = self.drink.id
 
   @stat('volume_by_day_of_week')
   def VolumeByDayOfweek(self):
@@ -165,11 +165,11 @@ class BaseStatsBuilder(StatsBuilder):
     if not self.previous:
       all_sessions = set()
       for drink in self.drinks:
-        all_sessions.add(drink.session.seqn)
+        all_sessions.add(drink.session.id)
       self.stats.sessions_count = len(all_sessions)
     else:
-      first_drink = self.drink.session.drinks.order_by('seqn')[0]
-      if self.drink.seqn == first_drink.seqn:
+      first_drink = self.drink.session.drinks.order_by('id')[0]
+      if self.drink.id == first_drink.id:
         self.stats.sessions_count += 1
 
   @stat('volume_by_year')
@@ -241,8 +241,8 @@ class SystemStatsBuilder(BaseStatsBuilder):
   REVISION = 5
 
   def _AllDrinks(self):
-    qs = self.drink.site.drinks.valid().filter(seqn__lte=self.drink.seqn)
-    qs = qs.order_by('seqn')
+    qs = self.drink.site.drinks.valid().filter(id__lte=self.drink.id)
+    qs = qs.order_by('id')
     return qs
 
 
@@ -278,7 +278,7 @@ class SessionStatsBuilder(SystemStatsBuilder):
 
 def main():
   from pykeg.core import models
-  last_drink = models.Drink.objects.valid().order_by('-seqn')[0]
+  last_drink = models.Drink.objects.valid().order_by('-id')[0]
   builder = KegStatsBuilder(last_drink)
 
   print "building..."

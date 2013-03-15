@@ -48,8 +48,8 @@ class WebBackend(backend.Backend):
         duration=duration, auth_token=auth_token, spilled=spilled,
         shout=shout)
 
-  def CancelDrink(self, seqn, spilled=False):
-    return self._client.CancelDrink(seqn, spilled)
+  def CancelDrink(self, drink_id, spilled=False):
+    return self._client.CancelDrink(drink_id, spilled)
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
     # If the temperature is out of bounds, reject it.

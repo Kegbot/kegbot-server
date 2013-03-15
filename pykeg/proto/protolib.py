@@ -74,7 +74,7 @@ def ToDict(obj, full=False):
 @converts(models.AuthenticationToken)
 def AuthTokenToProto(record, full=False):
   ret = models_pb2.AuthenticationToken()
-  ret.id = record.seqn
+  ret.id = record.id
   ret.auth_device = record.auth_device
   ret.token_value = record.token_value
   if record.user:
@@ -115,11 +115,11 @@ def PourPictureToProto(record, full=False):
   if record.user:
     ret.user_id = record.user.username
   if record.keg:
-    ret.keg_id = record.keg.seqn
+    ret.keg_id = record.keg.id
   if record.session:
-    ret.session_id = record.session.seqn
+    ret.session_id = record.session.id
   if record.drink:
-    ret.drink_id = record.drink.seqn
+    ret.drink_id = record.drink.id
   return ret
 
 @converts(models.BeerStyle)
@@ -177,16 +177,16 @@ def BrewerToProto(brewer, full=False):
 @converts(models.Drink)
 def DrinkToProto(drink, full=False):
   ret = models_pb2.Drink()
-  ret.id = drink.seqn
+  ret.id = drink.id
   ret.url = drink.get_absolute_url()
   ret.ticks = drink.ticks
   ret.volume_ml = drink.volume_ml
-  ret.session_id = drink.session.seqn
+  ret.session_id = drink.session.id
   ret.time = datestr(drink.time)
   ret.duration = drink.duration
   ret.status = drink.status
   if drink.keg:
-    ret.keg_id = drink.keg.seqn
+    ret.keg_id = drink.keg.id
   if drink.user:
     ret.user_id = drink.user.username
   if drink.auth_token:
@@ -210,7 +210,7 @@ def DrinkToProto(drink, full=False):
 @converts(models.Keg)
 def KegToProto(keg, full=False):
   ret = models_pb2.Keg()
-  ret.id = keg.seqn
+  ret.id = keg.id
   ret.url = keg.get_absolute_url()
   ret.type_id = str(keg.type.id)
   ret.size_id = keg.size.id
@@ -245,7 +245,7 @@ def KegSizeToProto(size, full=False):
 @converts(models.KegTap)
 def KegTapToProto(tap, full=False):
   ret = models_pb2.KegTap()
-  ret.id = tap.seqn
+  ret.id = tap.id
   ret.name = tap.name
   ret.meter_name = tap.meter_name
   ret.relay_name = tap.relay_name or ''
@@ -253,12 +253,12 @@ def KegTapToProto(tap, full=False):
   if tap.description is not None:
     ret.description = tap.description
   if tap.current_keg:
-    ret.current_keg_id = tap.current_keg.seqn
+    ret.current_keg_id = tap.current_keg.id
     if full:
       ret.current_keg.MergeFrom(ToProto(tap.current_keg, full=True))
 
   if tap.temperature_sensor:
-    ret.thermo_sensor_id = tap.temperature_sensor.seqn
+    ret.thermo_sensor_id = tap.temperature_sensor.id
     log = tap.temperature_sensor.LastLog()
     if log:
       ret.last_temperature.MergeFrom(ToProto(log))
@@ -267,7 +267,7 @@ def KegTapToProto(tap, full=False):
 @converts(models.DrinkingSession)
 def SessionToProto(record, full=False):
   ret = models_pb2.Session()
-  ret.id = record.seqn
+  ret.id = record.id
   ret.url = record.get_absolute_url()
   ret.start_time = datestr(record.start_time)
   ret.end_time = datestr(record.end_time)
@@ -283,8 +283,8 @@ def SessionToProto(record, full=False):
 @converts(models.Thermolog)
 def ThermoLogToProto(record, full=False):
   ret = models_pb2.ThermoLog()
-  ret.id = record.seqn
-  ret.sensor_id = record.sensor.seqn
+  ret.id = record.id
+  ret.sensor_id = record.sensor.id
   ret.temperature_c = record.temp
   ret.time = datestr(record.time)
   return ret
@@ -292,7 +292,7 @@ def ThermoLogToProto(record, full=False):
 @converts(models.ThermoSensor)
 def ThermoSensorToProto(record, full=False):
   ret = models_pb2.ThermoSensor()
-  ret.id = record.seqn
+  ret.id = record.id
   ret.sensor_name = record.raw_name
   ret.nice_name = record.nice_name
   return ret
@@ -300,8 +300,8 @@ def ThermoSensorToProto(record, full=False):
 @converts(models.ThermoSummaryLog)
 def ThermoSummaryLogToProto(record, full=False):
   ret = models_pb2.ThermoSummaryLog()
-  ret.id = record.seqn
-  ret.sensor_id = record.sensor.seqn
+  ret.id = record.id
+  ret.sensor_id = record.sensor.id
   ret.date = datestr(record.date)
   ret.period = record.period
   ret.num_readings = record.num_readings
@@ -348,20 +348,20 @@ def SystemStatsToProto(record, full=False):
 @converts(models.SystemEvent)
 def SystemEventToProto(record, full=False):
   ret = models_pb2.SystemEvent()
-  ret.id = record.seqn
+  ret.id = record.id
   ret.kind = record.kind
   ret.time = datestr(record.time)
 
   if record.drink:
-    ret.drink_id = record.drink.seqn
+    ret.drink_id = record.drink.id
     if full:
       ret.drink.MergeFrom(ToProto(record.drink, full=True))
   if record.keg:
-    ret.keg_id = record.keg.seqn
+    ret.keg_id = record.keg.id
     if full:
       ret.keg.MergeFrom(ToProto(record.keg, full=True))
   if record.session:
-    ret.session_id = record.session.seqn
+    ret.session_id = record.session.id
     if full:
       ret.session.MergeFrom(ToProto(record.session, full=True))
   if record.user:

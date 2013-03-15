@@ -251,7 +251,7 @@ def UserSessionChunks(user_chunk):
   totals = {}
   for drink in drinks:
     if drink.keg:
-      label = 'keg %i' % drink.keg.seqn
+      label = 'keg %i' % drink.keg.id
     else:
       label = 'unknown keg'
     totals[label] = totals.get(label, 0) + to_pints(drink.volume_ml)

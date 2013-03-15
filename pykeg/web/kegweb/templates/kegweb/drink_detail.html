@@ -1,68 +1,72 @@
-{% extends "page-twocol.html" %}
+{% extends "base.html" %}
 {% load kegweblib %}
 
 {% block title %}Drink {{ drink.id }} by {{ drink.user.username }} | {{ block.super }}{% endblock %}
 {% block pagetitle %}Drink {{ drink.id }} by {{ drink.user.username }}{% endblock %}
 
-{% if drink.user %}
-{% block sidebar %}
-  <div class="well">
-    {% mugshot_box drink.user %}
-  </div>
-{% endblock sidebar %}
-{% endif %}
+{% block content %}
+<div class="row-fluid">
 
-{% block col-1 %}
-<div class="row">
-  <div class="span8">
-    <h2>Summary</h2>
-    <table class="condensed-table">
-    <tbody>
-      <tr>
-        <th>Size</th>
-        <td>{% volume drink.volume_ml %}</td>
-      </tr>
+<div class="span6">
 
-      <tr>
-        <th>When</th>
-        <td>
-           {% timeago drink.time %}
-           {% if drink.duration %}
-           (took {{drink.duration}} second{{drink.duration|pluralize}} to pour)
-           {% endif %}
-        </td>
-      </tr>
-
-      {% if drink.keg %}
-      <tr>
-        <th>Keg</th>
-        <td>
-          <a href="{% url "kb-keg" drink.keg.id %}">{{drink.keg.type.name}}</a>
-        </td>
-      </tr>
+<table class="table table-striped">
+<tbody>
+  <tr>
+    <th>Size</th>
+    <td>
+      {% volume drink.volume_ml %}
+      {% if drink.duration %}
+      <span class="muted">
+       (took {{drink.duration}} second{{drink.duration|pluralize}} to pour)
+      </span>
       {% endif %}
+    </td>
+  </tr>
 
-      </tbody>
-    </table>
-  </div>
+  <tr>
+    <th>When</th>
+    <td>
+       {% timeago drink.time %}
+    </td>
+  </tr>
+
+  {% if drink.keg %}
+  <tr>
+    <th>Keg</th>
+    <td>
+      <a href="{% url "kb-keg" drink.keg.id %}">{{drink.keg.type.name}}</a>
+    </td>
+  </tr>
+  {% endif %}
+
+  <tr>
+    <th>Session</th>
+    <td>
+       <a href="{{ drink.session.get_absolute_url }}">{{ drink.session.name }}</a>
+       <span class="muted">({{ drink.session.summarize_drinkers|safe }})</span>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Permalink</th>
+    <td>
+       <a href="{{ drink.ShortUrl }}">{{ drink.ShortUrl }}</a>
+    </td>
+  </tr>
+
+  </tbody>
+</table>
 </div>
 
-<div class="row">
-  <div class="span8">
-  <h2>This Session</h2>
-  {% with drink.session as session %}
-    {% include "kegweb/keg-session.html" %}
-  {% endwith %}
-  </div>
-</div>
-
-{% endblock col-1 %}
-
-{% block col-2 %}
 {% with drink.pictures.all as pictures %}
 {% if pictures.count %}
-<h2>Beer Goggles!</h2>
-{% include "kegweb/picture-gallery.html" %}
+<div class="span6">
+  <img src="{{pictures.0.picture.resized.url}}">
+</div>
 {% endif %}
 {% endwith %}
-{% endblock col-2 %}
+
+
+</div> <!-- /row-fluid -->
+
+{% endblock content %}

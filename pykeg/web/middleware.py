@@ -78,7 +78,7 @@ class KegbotSiteMiddleware:
     if request.need_setup:
       return self._setup_required(request)
     elif request.need_upgrade:
-      return self._upgrade_required(request, current_epoch=epoch)
+      return self._upgrade_required(request)
 
     return None
 
@@ -88,8 +88,7 @@ class KegbotSiteMiddleware:
 
   def _upgrade_required(self, request, current_epoch=None):
     context = RequestContext(request)
-    if current is not None:
-      context['current_epoch'] = current
+    context['current_epoch'] = current_epoch
     return SimpleTemplateResponse('setup_wizard/upgrade_required.html',
         context=context, status=403)
 

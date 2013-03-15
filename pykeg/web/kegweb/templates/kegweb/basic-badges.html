@@ -1,0 +1,27 @@
+{% load kegweblib %}
+{% if stats %}
+<ul class="badge-list">
+  <li>
+    <h2>{% volume stats.total_volume_ml %}</h2>
+    <small>Poured</small>
+  </li>
+  {% if keg %}
+  <li>
+    {% if keg.remaining_volume > 0 %}
+    <h2>{% volume keg.remaining_volume %}</h2>
+    {% else %}
+    <h2>{% volume 0 %}</h2>
+    {% endif %}
+    <small>Remaining</small>
+  </li>
+  {% endif %}
+  <li>
+    <h2>{{ stats.registered_drinkers|length }}</h2>
+    <small>Drinkers</small>
+  </li>
+  <li>
+    <h2>{{ stats.sessions_count }}</h2>
+    <small>Sessions</small>
+  </li>
+</ul>
+{% endif %}

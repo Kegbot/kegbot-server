@@ -30,29 +30,30 @@
 {% block col-1 %}
 <h2>
   {{keg.type.name}}
+  {% if keg.type.brewer %}
+  <small>{{keg.type.brewer}}</small>
+  {% endif %}
 </h2>
-{% if keg.type.brewer %}
-<h6>{{keg.type.brewer}}</h6>
-{% endif %}
-<p/>
 
-<table class="table table-condensed">
+{% include "kegweb/basic-badges.html" %}
+
+<table class="table table-hover">
   <tbody>
     <tr>
       <th>Status</th>
       <td>
         {% ifequal keg.status "online" %}
-        this keg is <b>online</b>, and is {{ keg.keg_age.days }}
+        Keg is <b>online</b>, and is {{ keg.keg_age.days }}
         day{{keg.keg_age.days|pluralize}} old.
-        <br/>
-        it is
+        <span class="muted">
         {% if keg.is_empty %}
-          <i>empty</i>.
+          (<i>empty</i>)
         {% else %}
-          <i>{{ keg.percent_full|floatformat:2 }}% full</i>.
+          ({{ keg.percent_full|floatformat:2 }}% full</i>)
         {% endif %}
+        </span>
         {% else %}
-        this keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
+        Keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
         day{{keg.keg_age.days|pluralize}}.
         {% endifequal %}
       </td>

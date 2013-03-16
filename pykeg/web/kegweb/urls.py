@@ -33,7 +33,7 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
       url(r'^sessions/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$',
           views.SessionDayArchiveView.as_view(month_format='%m'),
           name='kb-sessions-day'),
-      url(r'^sessions/(?P<year>\d+)/(?P<month>\d+)/(?P<day>\d+)/(?P<id>\d+)/(?P<slug>[-\w]+)?$',
+      url(r'^sessions/(?P<year>\d+)/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$',
           views.SessionDateDetailView.as_view(month_format='%m'),
           name='kb-session-detail'),
 

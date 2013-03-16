@@ -208,7 +208,6 @@ class SessionDayArchiveView(DayArchiveView):
 class SessionDateDetailView(DateDetailView):
   model = models.DrinkingSession
   date_field = 'start_time'
-  slug_field = 'slug'
   template_name = 'kegweb/session_detail.html'
   context_object_name = 'session'
 

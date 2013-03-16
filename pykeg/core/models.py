@@ -676,7 +676,7 @@ class DrinkingSession(_AbstractChunk):
   site = models.ForeignKey(KegbotSite, related_name='sessions')
   name = models.CharField(max_length=256, blank=True, null=True)
   slug = AutoSlugField(populate_from='name', unique_with='site', blank=True,
-      null=True)
+      null=True, always_update=True)
 
   def __str__(self):
     return "Session #%s: %s" % (self.id, self.start_time)
@@ -706,17 +706,14 @@ class DrinkingSession(_AbstractChunk):
 
   @models.permalink
   def get_absolute_url(self):
-    if self.slug:
-      slug = self.slug
-    else:
-      slug = 'session-%i' % self.id
-
+    dt = self.start_time
+    if settings.USE_TZ:
+      dt = timezone.localtime(dt)
     return ('kb-session-detail', (), {
-      'year' : self.start_time.year,
-      'month' : self.start_time.month,
-      'day' : self.start_time.day,
-      'id' : self.id,
-      'slug' : slug})
+      'year' : dt.year,
+      'month' : dt.month,
+      'day' : dt.day,
+      'pk' : self.pk})
 
   def GetStatsRecord(self):
     try:
@@ -764,7 +761,11 @@ class DrinkingSession(_AbstractChunk):
     if self.name:
       return self.name
     else:
-      return 'Session %i' % (self.id,)
+      if self.id:
+        return 'Session %s' % (self.id,)
+      else:
+        # Not yet saved.
+        return 'New Session'
 
   def AddDrink(self, drink):
     super(DrinkingSession, self).AddDrink(drink)
@@ -848,17 +849,6 @@ class DrinkingSession(_AbstractChunk):
     drink.session = session
     drink.save()
     return session
-
-def _drinking_session_pre_save(sender, instance, **kwargs):
-  session = instance
-  if not session.name:
-    session.name = 'Session %i' % session.id
-
-  # NOTE(mikey): Clear the slug so that updates cause it to be recomputed by
-  # AutoSlugField.  This could be spurious; is there a better way?
-  session.slug = ''
-
-pre_save.connect(_drinking_session_pre_save, sender=DrinkingSession)
 
 
 class SessionChunk(_AbstractChunk):
@@ -1093,18 +1083,18 @@ class SystemEvent(models.Model):
     if self.kind == 'drink_poured':
       ret = 'Drink %i poured' % self.drink.id
     elif self.kind == 'session_started':
-      ret = 'Session %i started by drink %i' % (self.session.id,
+      ret = 'Session %s started by drink %s' % (self.session.id,
           self.drink.id)
     elif self.kind == 'session_joined':
-      ret = 'Session %i joined by %s (drink %i)' % (self.session.id,
+      ret = 'Session %s joined by %s (drink %s)' % (self.session.id,
           self.user.username, self.drink.id)
     elif self.kind == 'keg_tapped':
-      ret = 'Keg %i tapped' % self.keg.id
+      ret = 'Keg %s tapped' % self.keg.id
     elif self.kind == 'keg_ended':
-      ret = 'Keg %i ended' % self.keg.id
+      ret = 'Keg %s ended' % self.keg.id
     else:
       ret = 'Unknown event type (%s)' % self.kind
-    return 'Event %i: %s' % (self.id, ret)
+    return 'Event %s: %s' % (self.id, ret)
 
   @classmethod
   def ProcessKeg(cls, keg):

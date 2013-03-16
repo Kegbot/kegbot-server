@@ -20,12 +20,11 @@ from pykeg.core import models as core_models
 from pykeg.connections import common
 from pykeg.connections.foursquare import models as foursquare_models
 from django.contrib.sites.models import Site
-from . import models
+from pykeg.connections.untappd import models
 from django.conf import settings
 
 from urllib import urlencode
 import urllib2
-import base64
 
 from celery.task import task
 
@@ -100,14 +99,14 @@ def do_checkin(event):
   if event.user:
     try:
       db_user = core_models.User.objects.get(username=event.user.username)
-      profile = db_user.get_profile()
-    except (core_models.User.DoesNotExist, core_models.UserProfile.DoesNotExist):
+    except (core_models.User.DoesNotExist):
       logger.info('Profile for user %s does not exist' % drink.user)
       return
     try:
-      untappd_link = models.UserUntappdLink.objects.get(user_profile=profile)
+      user_profile = models.UntappdProfile.objects.get(user=db_user)
+      access_token = user_profile.access_token.access_token 
 
-    except models.UserUntappdLink.DoesNotExist:
+    except (models.UntappdProfile.DoesNotExist):
       # Untappd name unknown
       logger.info('User %s has not enabled untappd link.' % drink.user)
       return
@@ -127,17 +126,17 @@ def do_checkin(event):
     'bid': beerid,
     'gmt_offset': settings.GMT_OFFSET,
     'shout': shout,
+    'access_token': access_token,
+    'client_id': settings.UNTAPPD_CLIENT_ID,
+    'client_secret': settings.UNTAPPD_CLIENT_SECRET,
+    'timezone': settings.TIME_ZONE
   }
 
   if venue_id:
     params['foursquare_id'] = venue_id
 
   params = urlencode(params)
-  req = urllib2.Request("http://api.untappd.com/v3/checkin?key=" + settings.UNTAPPD_API_KEY, params)
-
-  base64string = base64.encodestring('%s:%s' % (untappd_link.untappd_name, untappd_link.untappd_password_hash))[:-1]
-  authheader =  "Basic %s" % base64string
-  req.add_header("Authorization", authheader)
+  req = urllib2.Request("http://api.untappd.com/v4/checkin/add?" + params, params)
 
   response = urllib2.urlopen(req)
 

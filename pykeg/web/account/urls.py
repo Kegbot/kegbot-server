@@ -3,6 +3,8 @@ from django.conf.urls.defaults import *
 from pykeg.core import features
 from pykeg.web.account.views import password_change
 from pykeg.web.account.views import password_change_done
+from pykeg.web.account.views import remove_untappd
+
 
 urlpatterns = patterns('pykeg.web.account.views',
     url(r'^$', 'account_main', name='kb-account-main'),
@@ -20,4 +22,9 @@ urlpatterns = patterns('pykeg.web.account.views',
 if features.use_facebook():
   urlpatterns += patterns('',
       url(r'fb-settings/$', 'pykeg.web.contrib.facebook.views.account_settings', name='fb-account-settings'),
+  )
+
+if features.use_untappd():
+  urlpatterns += patterns('',
+      url(r'^remove-untappd/$', remove_untappd, name='remove-untappd'),
   )

@@ -17,7 +17,27 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from django.contrib import admin
+from django.core.urlresolvers import reverse
+from client import Untappd
 from models import UntappdProfile
+from forms import UnlinkUntappdForm
+from socialregistration.views import OAuthRedirect, OAuthCallback, SetupCallback
 
-admin.site.register(UntappdProfile)
+class UntappdRedirect(OAuthRedirect):
+    client = Untappd
+    template_name = 'connections/untappd/untappd.html'
+
+class UntappdCallback(OAuthCallback):
+    client = Untappd
+    template_name = 'connections/untappd/untappd.html'
+    
+    def get_redirect(self):
+        return reverse('untappd:setup')
+
+class UntappdSetup(SetupCallback):
+    client = Untappd
+    profile = UntappdProfile
+    template_name = 'connections/untappd/untappd.html'
+    
+    def get_lookup_kwargs(self, request, client):
+        return {'untappd': client.get_user_info()['user_name']}

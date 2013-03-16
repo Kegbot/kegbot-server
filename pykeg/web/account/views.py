@@ -34,11 +34,13 @@ from django.contrib.auth.views import password_change_done as password_change_do
 
 from socialregistration.contrib.foursquare import models as sr_foursquare_models
 from socialregistration.contrib.twitter import models as sr_twitter_models
+from pykeg.connections.untappd import models as untappd_models
 
 from pykeg.core import models
 from pykeg.web.kegweb import forms
 from pykeg.connections.foursquare import forms as foursquare_forms
 from pykeg.connections.twitter import forms as twitter_forms
+from pykeg.connections.untappd import forms as untappd_forms
 
 @login_required
 def account_main(request):
@@ -78,6 +80,13 @@ def connections(request):
   context['foursquare_settings_form'] = foursquare_forms.FoursquareSettingsForm()
   if foursquare_profile:
     context['foursquare_settings_form'] = foursquare_forms.FoursquareSettingsForm(instance=foursquare_profile.settings)
+
+  untappd_profile = None
+  try:
+    untappd_profile = untappd_models.UntappdProfile.objects.get(user=user)
+  except untappd_models.UntappdProfile.DoesNotExist:
+    pass
+  context['untappd_profile'] = untappd_profile
 
   return render_to_response('account/connections.html', context)
 
@@ -135,6 +144,15 @@ def remove_foursquare(request):
   if form.is_valid():
     sr_foursquare_models.FoursquareProfile.objects.filter(user=request.user).delete()
   return redirect('kb-account-main')
+
+@login_required
+@require_POST
+def remove_untappd(request):
+  form = untappd_forms.UnlinkUntappdForm(request.POST)
+  if form.is_valid():
+    untappd_models.UntappdProfile.objects.get(user=request.user).delete()
+  # TODO(mikey): HttpResponseRedirect
+  return redirect_to(request, url='/account/connection/')
 
 @login_required
 @require_POST

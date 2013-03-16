@@ -109,5 +109,5 @@ def finish(request):
     request.kbsite.is_setup = True
     request.kbsite.save()
     messages.success(request, 'Tip: Install a new Keg in Admin: Taps')
-    return redirect('kegadmin-main', '')
+    return redirect('kegadmin-main')
   return render_to_response('setup_wizard/finish.html', context)

@@ -113,6 +113,27 @@ class SiteSettingsForm(forms.ModelForm):
         'allowed_hosts',
     )
 
+  helper = FormHelper()
+  helper.form_class = 'form-horizontal'
+  helper.layout = Layout(
+      Field('title', css_class='input-xlarge'),
+      Field('description', css_class='input-xlarge'),
+      Field('privacy', css_class='input-xlarge'),
+      Field('display_units', css_class='input-xlarge'),
+      Field('event_web_hook', css_class='input-xlarge'),
+      Field('session_timeout_minutes'),
+      Field('google_analytics_id'),
+      Field('guest_name'),
+      Field('guest_image'),
+      Field('default_user'),
+      Field('registration_allowed', css_class='input-xlarge'),
+      Field('registration_confirmation', css_class='input-xlarge'),
+      Field('allowed_hosts'),
+      FormActions(
+          Submit('submit', 'Save Settings', css_class='btn-primary'),
+      )
+  )
+
 #BeerTypeFormSet = inlineformset_factory(models.Brewer, models.BeerType)
 
 class TweetForm(forms.Form):

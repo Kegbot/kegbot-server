@@ -2,19 +2,9 @@
 {% load kegweblib %}
 {% load crispy_forms_tags %}
 
-{% block title %}Kegbot Admin | {{ block.super }}{% endblock %}
-{% block pagetitle %}Kegbot Admin{% endblock %}
+{% block title %}Kegbot Admin: General Settings | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: General Settings{% endblock %}
 
 {% block kegadmin-main %}
-<h2>General Settings</h2>
-
-<div class="well">
-  <form action="" method="POST">{% csrf_token %}
-    {{ settings_form|crispy }}
-    <div class="actions">
-      <button type="submit" class="btn btn-primary">Update Settings</button>
-    </div>
-  </form>
-</div>
-
+{% crispy settings_form %}
 {% endblock %}

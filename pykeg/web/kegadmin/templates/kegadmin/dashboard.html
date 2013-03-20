@@ -1,0 +1,21 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin{% endblock %}
+
+{% block kegadmin-main %}
+{% if DEBUG %}
+<div class="alert alert-error">
+	<h4>Warning!</h4>
+	 Kegbot Server is running in DBEUG mode.  For
+	 performance and security reasons, you should disable DEBUG mode by
+	 setting <code>DEBUG = False</code> in <code>local_settings.py</code>.
+</div>
+{% else %}
+
+<p>This page momentarily left blank.</p>
+
+{% endif %}
+{% endblock %}

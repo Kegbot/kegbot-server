@@ -51,8 +51,11 @@ class EndKegForm(forms.Form):
   helper.form_class = 'form-horizontal beer-select'
   helper.layout = Layout(
       Field('keg', type='hidden'),
-      Submit('submit_end_keg_form', 'End Keg', css_class='btn-danger'),
+      FormActions(
+        Submit('submit_end_keg_form', 'End Keg', css_class='btn-danger'),
+      )
   )
+
 
 class TapForm(forms.ModelForm):
   class Meta:
@@ -77,6 +80,16 @@ class TapForm(forms.ModelForm):
       Field('description', css_class='input-xlarge'),
       FormActions(
           Submit('submit_tap_form', 'Save Settings', css_class='btn-success'),
+      )
+  )
+
+
+class DeleteTapForm(forms.Form):
+  helper = FormHelper()
+  helper.form_class = 'form-horizontal'
+  helper.layout = Layout(
+      FormActions(
+          Submit('submit_delete_tap_form', 'Delete Tap', css_class='btn-danger'),
       )
   )
 

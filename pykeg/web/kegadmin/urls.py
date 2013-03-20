@@ -2,8 +2,10 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('pykeg.web.kegadmin.views',
     ### main page
-    url(r'^$', 'kegadmin_main', name='kegadmin-main'),
+    url(r'^$', 'dashboard', name='kegadmin-dashboard'),
+    url(r'^settings/$', 'general_settings', name='kegadmin-main'),
     url(r'^taps/$', 'tap_list', name='kegadmin-taps'),
+    url(r'^taps/create/$', 'add_tap', name='kegadmin-add-tap'),
     url(r'^taps/(?P<tap_id>\d+)/$', 'tap_detail', name='kegadmin-edit-tap'),
     url(r'^backup-restore/$', 'backup_restore', name='kegadmin-backup-restore'),
     url(r'^backup-restore/dump/$', 'generate_backup', name='kegadmin-get-backup'),

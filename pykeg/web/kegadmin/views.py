@@ -48,7 +48,12 @@ from pykeg.connections.twitter import util as twitter_util
 from pykeg.web.kegadmin import forms
 
 @staff_member_required
-def kegadmin_main(request):
+def dashboard(request):
+  context = RequestContext(request)
+  return render_to_response('kegadmin/dashboard.html', context)
+
+@staff_member_required
+def general_settings(request):
   context = RequestContext(request)
   form = forms.SiteSettingsForm(instance=request.kbsite.settings)
   if request.method == 'POST':
@@ -59,30 +64,26 @@ def kegadmin_main(request):
   context['settings_form'] = form
   return render_to_response('kegadmin/index.html', context)
 
-def _create_or_update_tap(tap, request):
-  if tap:
-    prefix = 'tap-%s' % (tap.id,)
-  else:
-    prefix = None
-  form = forms.TapForm(request.POST, site=request.kbsite, instance=tap,
-      prefix=prefix)
-  if form.is_valid():
-    new_tap = form.save(commit=False)
-    new_tap.site = request.kbsite
-    new_tap.save()
-    if tap:
-      messages.success(request, 'Tap "%s" was updated.' % new_tap.name)
-    else:
-      messages.success(request, 'Tap "%s" was created.' % new_tap.name)
-    return True, form
-  messages.error(request, 'The tap form had errors, please correct them.')
-  return False, form
-
 @staff_member_required
 def tap_list(request):
   context = RequestContext(request)
   context['taps'] = request.kbsite.taps.all()
   return render_to_response('kegadmin/tap_list.html', context)
+
+@staff_member_required
+def add_tap(request):
+  context = RequestContext(request)
+  form = forms.TapForm(site=request.kbsite)
+  if request.method == 'POST':
+    form = forms.TapForm(request.POST, site=request.kbsite)
+    if form.is_valid():
+      new_tap = form.save(commit=False)
+      new_tap.site = request.kbsite
+      new_tap.save()
+      messages.success(request, 'Tap created.')
+      return redirect('kegadmin-taps')
+  context['form'] = form
+  return render_to_response('kegadmin/add_tap.html', context)
 
 @staff_member_required
 def tap_detail(request, tap_id):
@@ -135,9 +136,7 @@ def tap_detail(request, tap_id):
         tap.current_keg = new_keg
         tap.save()
         messages.success(request, 'The new keg was activated. Bottoms up!')
-        activate_keg_form = forms.ChangeKegForm()
-      else:
-        print activate_keg_form.errors
+        return redirect('kegadmin-taps')
     
     elif 'submit_tap_form' in request.POST:
       tap_settings_form = forms.TapForm(request.POST, instance=tap)
@@ -145,6 +144,16 @@ def tap_detail(request, tap_id):
         tap_settings_form.save()
         messages.success(request, 'Tap settings saved.')
         tap_settings_form = forms.TapForm(instance=tap)
+
+    elif 'submit_delete_tap_form' in request.POST:
+      delete_form = forms.DeleteTapForm(request.POST)
+      if delete_form.is_valid():
+        if tap.current_keg:
+          tap.current_keg.status = 'offline'
+          tap.current_keg.save()
+        tap.delete()
+        messages.success(request, 'Tap deleted.')
+        return redirect('kegadmin-taps')
 
     elif 'submit_end_keg_form' in request.POST:
       end_keg_form = forms.EndKegForm(request.POST)
@@ -167,6 +176,7 @@ def tap_detail(request, tap_id):
   context['activate_keg_form'] = activate_keg_form
   context['end_keg_form'] = end_keg_form
   context['tap_settings_form'] = tap_settings_form
+  context['delete_tap_form'] = forms.DeleteTapForm()
   return render_to_response('kegadmin/tap_detail.html', context)
 
 @staff_member_required

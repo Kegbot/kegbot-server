@@ -2,14 +2,6 @@
 {% load kegweblib %}
 
 {% block content %}
-{% if DEBUG %}
-<div class="alert">
-  <button type="button" class="close" data-dismiss="alert">&times;</button>
-  <strong>Warning!</strong> Kegbot Server is running in debug mode.  For
-  performance and security reasons, you should set <code>DEBUG = False</code>
-  in <code>local_settings.py</code>.
-</div>
-{% endif %}
 
 <div class="row-fluid">
   <div class="span2">
@@ -18,7 +10,7 @@
     </ul>
   </div>
 
-  <div class="span8">
+  <div class="span10">
     {% block kegadmin-main %}{% endblock %}
   </div>
 </div>

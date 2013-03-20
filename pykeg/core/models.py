@@ -1168,6 +1168,9 @@ class Picture(models.Model):
 
   time = models.DateTimeField(default=timezone.now)
 
+  def __str__(self):
+    return 'Picture: %s' % self.image
+
 
 class PourPicture(models.Model):
   '''Stores additional metadata about a picture taken during a pour.'''

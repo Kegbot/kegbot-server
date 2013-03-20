@@ -153,7 +153,8 @@ class SiteSettings(models.Model):
   @classmethod
   def get(cls):
     """Gets the default site settings."""
-    return models.SiteSettings.objects.get_or_create(name='default')[0]
+    site = KegbotSite.objects.get(name='default')
+    return site.settings
 
 
 class UserProfile(models.Model):

@@ -20,12 +20,13 @@ from pykeg.core import models as core_models
 from pykeg.connections import common
 from pykeg.connections.foursquare import models as foursquare_models
 from django.contrib.sites.models import Site
-from . import models
+from pykeg.connections.untappd import models
+
 from django.conf import settings
+from django.utils import timezone
 
 from urllib import urlencode
 import urllib2
-import base64
 
 from celery.task import task
 
@@ -50,7 +51,7 @@ def checkin_event(event):
   do_checkin(event)
 
 def _get_vars(event):
-  base_url = 'http://%s/%s' % (Site.objects.get_current().domain, event.site.url())
+  base_url = core_models.SiteSettings.get().base_url()
   name = ''
   if event.user:
     name = event.user.username
@@ -97,20 +98,25 @@ def do_checkin(event):
     logger.info('Drink too small to care about; no untappd checkin for you!')
     return
 
+  access_token = None
   if event.user:
     try:
       db_user = core_models.User.objects.get(username=event.user.username)
-      profile = db_user.get_profile()
-    except (core_models.User.DoesNotExist, core_models.UserProfile.DoesNotExist):
+    except (core_models.User.DoesNotExist):
       logger.info('Profile for user %s does not exist' % drink.user)
       return
-    try:
-      untappd_link = models.UserUntappdLink.objects.get(user_profile=profile)
 
-    except models.UserUntappdLink.DoesNotExist:
+    try:
+      user_profile = models.UntappdProfile.objects.get(user=db_user)
+      access_token = user_profile.access_token.access_token
+    except (models.UntappdProfile.DoesNotExist):
       # Untappd name unknown
       logger.info('User %s has not enabled untappd link.' % drink.user)
       return
+
+  if not access_token:
+    logger.info('No access token for user %s.' % drink.user)
+    return
 
   try:
     site_4sq_settings = foursquare_models.SiteFoursquareSettings.objects.get(site=event.site)
@@ -123,21 +129,24 @@ def do_checkin(event):
 
   shout = DEFAULT_CHECKIN_TEMPLATE % kbvars
 
+  gmt_offset = timezone.localtime(timezone.now()).utcoffset()
+  gmt_offset_hours = (gmt_offset.days * 86400 + gmt_offset.seconds) / 3600
+
   params = {
     'bid': beerid,
-    'gmt_offset': settings.GMT_OFFSET,
+    'gmt_offset': gmt_offset_hours,
     'shout': shout,
+    'access_token': access_token,
+    'client_id': settings.UNTAPPD_CLIENT_ID,
+    'client_secret': settings.UNTAPPD_CLIENT_SECRET,
+    'timezone': settings.TIME_ZONE
   }
 
   if venue_id:
     params['foursquare_id'] = venue_id
 
   params = urlencode(params)
-  req = urllib2.Request("http://api.untappd.com/v3/checkin?key=" + settings.UNTAPPD_API_KEY, params)
-
-  base64string = base64.encodestring('%s:%s' % (untappd_link.untappd_name, untappd_link.untappd_password_hash))[:-1]
-  authheader =  "Basic %s" % base64string
-  req.add_header("Authorization", authheader)
+  req = urllib2.Request("http://api.untappd.com/v4/checkin/add?" + params, params)
 
   response = urllib2.urlopen(req)
 

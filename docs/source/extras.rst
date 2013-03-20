@@ -21,7 +21,7 @@ To install Celery and related dependencies::
 
 Once Celery is installed, you can try running it in the foreground::
 
-  (kb) $ kegbot-admin.py celeryd -E -v2
+  (kb) $ kegbot-admin.py celeryd -E -v2 -l info
 
 You should see the Celery welcome banner and some verbose log output.  When a
 drink is poured, you should see Celery log some output a few seconds after the

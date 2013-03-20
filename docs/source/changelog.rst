@@ -11,6 +11,12 @@ Current Version (in development)
 * Python 2.7 and Django 1.5 are now required.
 * Sessions are now exposed in the top navbar, and are listed by year, month, and
   day.
+* Untappd API v4 is supported (thanks pmppk).
+
+*Note:* If you are upgrading from an older version of Kegbot, run the following
+command before ``kb_upgrade``::
+  
+  $ kegbot-admin.py migrate untappd --fake 0001
 
 Version 0.9.7 (2013-01-10)
 --------------------------

@@ -5,17 +5,48 @@
 {% block title %}Kegbot Admin | {{ block.super }}{% endblock %}
 {% block pagetitle %}Kegbot Admin{% endblock %}
 
+{% block kb-extrajs %}
+<script type="text/javascript">
+var myApp = angular.module('myApp',['ngSanitize']);
+
+function NewsController($scope, $http) {
+	$scope.fetch = function() {
+		$http({
+			method: 'JSONP',
+			url: 'https://kegbot.org/checkin/news/?id={{ SERIAL_NUMBER }}&version={{ VERSION }}&callback=JSON_CALLBACK'
+		}).success(function(data, status) {
+			var length = data.length;
+			for (var i=0; i < length; i++) {
+				data[i].date = new Date(data[i].date);
+			}
+			$scope.newsitems = data;
+		}).error(function(data, status) {
+		});
+	};
+	$scope.fetch();
+}
+</script>
+{% endblock kb-extrajs %}
+
+{% block bodyattrs %}ng-app="myApp"{% endblock %}
+
 {% block kegadmin-main %}
 {% if DEBUG %}
 <div class="alert alert-error">
 	<h4>Warning!</h4>
-	 Kegbot Server is running in DBEUG mode.  For
+	 Kegbot Server is running in DEBUG mode.  For
 	 performance and security reasons, you should disable DEBUG mode by
 	 setting <code>DEBUG = False</code> in <code>local_settings.py</code>.
 </div>
 {% else %}
 
-<p>This page momentarily left blank.</p>
-
 {% endif %}
+{% verbatim %}
+<div ng-controller="NewsController">
+	<div ng-repeat="news in newsitems" class="alert alert-info">
+		<h4>{{ news.title }} <small>{{ news.date | date:'yyyy-MM-dd' }}</small></h4>
+		<p ng-bind-html="news.body"></p>
+	</div>
+</div>
+{% endverbatim %}
 {% endblock %}

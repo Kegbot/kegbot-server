@@ -39,6 +39,7 @@ from pykeg.core import fields
 from pykeg.core import imagespecs
 from pykeg.core import managers
 from pykeg.core import stats
+from pykeg.core.util import make_serial
 
 from kegbot.util import units
 from kegbot.util import util
@@ -59,6 +60,9 @@ class KegbotSite(models.Model):
   epoch = models.PositiveIntegerField(default=EPOCH,
       help_text='Database epoch number.',
       editable=False)
+  serial_number = models.TextField(max_length=128, editable=False,
+      blank=True, default='',
+      help_text='A unique id for this system.')
 
   def __str__(self):
     return self.name
@@ -77,6 +81,11 @@ class KegbotSite(models.Model):
     if record:
       return record.stats
     return {}
+
+def _kegbotsite_pre_save(sender, instance, **kwargs):
+  if not instance.serial_number:
+    instance.serial_number = make_serial()
+pre_save.connect(_kegbotsite_pre_save, sender=KegbotSite)
 
 def _kegbotsite_post_save(sender, instance, **kwargs):
   """Creates a SiteSettings object if none already exists."""

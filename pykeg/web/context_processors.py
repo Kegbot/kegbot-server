@@ -26,14 +26,18 @@ def kbsite(request):
     'name': 'guest',
     'image': None,
   }
+
+  serial = ''
   if kbsite:
     guest_info['name'] = kbsite.settings.guest_name
     guest_info['image'] = kbsite.settings.guest_image
+    serial = kbsite.serial_number
 
   ret = {
     'DEBUG': settings.DEBUG,
     'EPOCH': pykeg.EPOCH,
     'VERSION': pykeg.__version__,
+    'SERIAL_NUMBER': serial,
     'kbsite': getattr(request, 'kbsite', None),
     'request_path': request.path,
     'login_form': LoginForm(initial={'next_page': request.path}),

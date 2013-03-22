@@ -42,7 +42,7 @@
   <tr>
     <th>Session</th>
     <td>
-       <a href="{{ drink.session.get_absolute_url }}">{{ drink.session.name }}</a>
+       <a href="{{ drink.session.get_absolute_url }}">{{ drink.session.GetTitle }}</a>
        <span class="muted">({{ drink.session.summarize_drinkers|safe }})</span>
     </td>
   </tr>

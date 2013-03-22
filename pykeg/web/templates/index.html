@@ -9,6 +9,21 @@
 {% icanhaz "systemevent_keg_started" %}
 {% icanhaz "systemevent_keg_ended" %}
   <script type="text/javascript">
+    angular.module('Kegweb', []).
+      filter('volume', function() {
+          return function(input) {
+            var ret = '<span class="hmeasure" title="' + input + ' mL">\n';
+            ret += '  <span class="num">' + input + '</span>\n';
+            ret += '  <span class="unit">mL</span>\n';
+            ret += '</span>\n';
+            return ret;
+          }
+      });
+
+    function TapListController($scope) {
+      $scope.taps = {{initial_taps|safe}};
+    }
+
     $(document).ready(function() {
 
       // Bootstrap recent drinking sessions.
@@ -26,22 +41,57 @@
 
 {% block col-1 %}
 
-  {% for tap in taps %}
-    {% if tap.current_keg %}
-      {% with tap.current_keg as keg %}
-        {% include "kegweb/keg-snapshot.html" %}
-      {% endwith %}
-    {% endif %}
-  {% endfor %}
+{% verbatim %}
+<div ng-controller="TapListController">
 
-  {% if sessions %}
-  {% for session in sessions %}
-    {% include "kegweb/keg-session.html" %}
-  {% endfor %}
-  <p>
-    See <a href="{% url "kb-sessions" %}">all sessions</a>.
-  </p>
-  {% endif %}
+  <div ng-repeat="tap in taps">
+    <div class="kb-tapbox clickable" id="keg-snapshot-{{ tap.id }}"
+        data-href="{{tap.current_keg.url}}">
+      <div class="row-fluid">
+        <div class="span3">
+            <img class="tap-snapshot-image" ng-src="{{ tap.current_keg.type.image.url }}">
+           <!-- <img class="tap-snapshot-image" src="{{ STATIC_URL }}images/kegbot-unknown-square.png"> -->
+        </div>
+
+        <div class="span9">
+          <h2>
+            {{ tap.current_keg.type.name }}
+            <small>{{ tap.name }}</small>
+          </h2>
+
+          <ul class="badge-list">
+            <li>
+            <h2 ng-bind-html-unsafe="tap.current_keg.size_volume_ml -
+              tap.current_keg.volume_ml_remain | volume"></h2>
+              <small>Poured</small>
+            </li>
+            <li>
+              <h2 ng-bind-html-unsafe="tap.current_keg.volume_ml_remain | volume"></h2>
+              <small>Remaining</small>
+            </li>
+
+            <li>
+              <h2>{{ tap.last_temperature.temperature_c || "?" }} &deg;C</h2>
+              <small>Temperature</small>
+            </li>
+          </ul>
+
+        </div>
+      </div> <!-- /row-fluid -->
+
+    </div>
+  </div> <!-- /ng-repeat -->
+</div>
+{% endverbatim %}
+
+{% if sessions %}
+{% for session in sessions %}
+  {% include "kegweb/keg-session.html" %}
+{% endfor %}
+<p>
+  See <a href="{% url "kb-sessions" %}">all sessions</a>.
+</p>
+{% endif %}
 
 {% endblock col-1 %}
 

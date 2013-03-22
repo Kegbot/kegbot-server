@@ -68,6 +68,9 @@ def index(request):
   context['initial_sessions'] = kbjson.dumps([protolib.ToDict(s, full=True) for s in sessions],
       indent=None)
 
+  taps = request.kbsite.taps.filter(current_keg__isnull=False)
+  context['initial_taps'] = kbjson.dumps([protolib.ToDict(t, full=True) for t in taps], indent=None)
+
   return render_to_response('index.html', context)
 
 @cache_page(30)

@@ -9,16 +9,11 @@
 {% icanhaz "systemevent_keg_started" %}
 {% icanhaz "systemevent_keg_ended" %}
   <script type="text/javascript">
-    angular.module('Kegweb', []).
-      filter('volume', function() {
-          return function(input) {
-            var ret = '<span class="hmeasure" title="' + input + ' mL">\n';
-            ret += '  <span class="num">' + input + '</span>\n';
-            ret += '  <span class="unit">mL</span>\n';
-            ret += '</span>\n';
-            return ret;
-          }
-      });
+    var kbapp = angular.module('KegwebApp', ['ngSanitize', 'ngResource', 'kbNgFilters']);
+
+    kbapp.controller('TapListController', function($scope) {
+      $scope.taps = {{ initial_taps|safe }};
+    });
 
     function TapListController($scope) {
       $scope.taps = {{initial_taps|safe}};
@@ -38,19 +33,22 @@
     });
   </script>
 {% endblock %}
+{% block bodyattrs %}ng-app="KegwebApp"{% endblock %}
 
 {% block col-1 %}
 
 {% verbatim %}
-<div ng-controller="TapListController">
+<div ng-controller="TapListController" class="ng-cloak">
 
   <div ng-repeat="tap in taps">
     <div class="kb-tapbox clickable" id="keg-snapshot-{{ tap.id }}"
         data-href="{{tap.current_keg.url}}">
       <div class="row-fluid">
         <div class="span3">
-            <img class="tap-snapshot-image" ng-src="{{ tap.current_keg.type.image.url }}">
-           <!-- <img class="tap-snapshot-image" src="{{ STATIC_URL }}images/kegbot-unknown-square.png"> -->
+            <img ng-show="tap.current_keg.type.image.url"
+                class="tap-snapshot-image" ng-src="{{ tap.current_keg.type.image.url }}">
+            <img ng-hide="tap.current_keg.type.image.url"
+                class="tap-snapshot-image" {% endverbatim %}ng-src="{{ STATIC_URL }}images/kegbot-unknown-square.png"{% verbatim %}>
         </div>
 
         <div class="span9">
@@ -61,17 +59,17 @@
 
           <ul class="badge-list">
             <li>
-            <h2 ng-bind-html-unsafe="tap.current_keg.size_volume_ml -
+            <h2 ng-bind-html="tap.current_keg.size_volume_ml -
               tap.current_keg.volume_ml_remain | volume"></h2>
               <small>Poured</small>
             </li>
             <li>
-              <h2 ng-bind-html-unsafe="tap.current_keg.volume_ml_remain | volume"></h2>
+              <h2 ng-bind-html="tap.current_keg.volume_ml_remain | volume"></h2>
               <small>Remaining</small>
             </li>
 
-            <li>
-              <h2>{{ tap.last_temperature.temperature_c || "?" }} &deg;C</h2>
+            <li ng-show="tap.last_temperature.temperature_c">
+              <h2>{{ tap.last_temperature.temperature_c }} &deg;C</h2>
               <small>Temperature</small>
             </li>
           </ul>

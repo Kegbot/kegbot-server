@@ -297,19 +297,6 @@ def ThermoSensorToProto(record, full=False):
   ret.nice_name = record.nice_name
   return ret
 
-@converts(models.ThermoSummaryLog)
-def ThermoSummaryLogToProto(record, full=False):
-  ret = models_pb2.ThermoSummaryLog()
-  ret.id = record.id
-  ret.sensor_id = record.sensor.id
-  ret.date = datestr(record.date)
-  ret.period = record.period
-  ret.num_readings = record.num_readings
-  ret.min_temp = record.min_temp
-  ret.max_temp = record.max_temp
-  ret.mean_temp = record.mean_temp
-  return ret
-
 @converts(models.User)
 def UserToProto(user, full=False):
   ret = models_pb2.User()

@@ -55,7 +55,6 @@ def dump(output_fp, kbsite, indent=None, log_cb=_no_log):
       ('taps', kbsite.taps.all().order_by('id')),
       ('sessions', kbsite.sessions.all().order_by('id')),
       ('thermologs', kbsite.thermologs.all().order_by('-id')[:60*24]),
-      ('thermosummarylogs', kbsite.thermosummarylogs.all().order_by('id')),
       ('users', models.User.objects.all().order_by('id')),
       ('profiles', models.UserProfile.objects.all().order_by('id')),
       ('drinks', kbsite.drinks.valid().order_by('id')),
@@ -181,21 +180,6 @@ def restore(input_fp, kbsite, log_cb=_no_log):
     log.sensor = models.ThermoSensor.objects.get(site=kbsite, id=int(rec.sensor_id))
     log.temp = rec.temperature_c
     log.time = rec.record_time
-    log.save()
-    _log(log)
-
-  kbsite.thermosummarylogs.all().delete()
-  for rec in data.get('thermosummarylogs', []):
-    log = models.ThermoSummaryLog(site=kbsite, id=int(rec.sensor_id))
-    log.site = kbsite
-    log.id = rec.id
-    log.sensor = models.ThermoSensor.objects.get(site=kbsite, id=int(rec.sensor_id))
-    log.date = rec.date
-    log.period = rec.period
-    log.num_readings = rec.num_readings
-    log.min_temp = rec.min_temp
-    log.max_temp = rec.max_temp
-    log.mean_temp = rec.mean_temp
     log.save()
     _log(log)
 

@@ -201,8 +201,9 @@ class KegbotBackend(backend.Backend):
     return d
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
+    now = timezone.now()
     if not when:
-      when = timezone.now()
+      when = now
 
     # The maximum resolution of ThermoSensor records is 1 minute.  Round the
     # time down to the nearest minute; if a record already exists for this time,
@@ -223,7 +224,12 @@ class KegbotBackend(backend.Backend):
         sensor=sensor, time=when, defaults=defaults)
     record.temp = temperature
     record.save()
-    record.UpdateSummaryLog()
+
+    # Delete old entries.
+    keep_time = now - datetime.timedelta(hours=24)
+    old_entries = Thermolog.objects.filter(site=self._site, time__lt=keep_time)
+    old_entries.delete()
+
     return record
 
   def GetAuthToken(self, auth_device, token_value):

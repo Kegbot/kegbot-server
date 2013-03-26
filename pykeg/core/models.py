@@ -92,19 +92,17 @@ def _kegbotsite_post_save(sender, instance, **kwargs):
   settings, _ = SiteSettings.objects.get_or_create(site=instance)
 post_save.connect(_kegbotsite_post_save, sender=KegbotSite)
 
-PRIVACY_CHOICES = (
-  ('public', 'Public: Browsing does not require login'),
-  ('members', 'Members only: Must log in to browse'),
-  ('staff', 'Staff only: Only logged-in staff accounts may browse'),
-)
-
-DEFAULT_PRIVACY = 'public'
-
 class SiteSettings(models.Model):
   DISPLAY_UNITS_CHOICES = (
     ('metric', 'Metric (mL, L)'),
     ('imperial', 'Imperial (oz, pint)'),
   )
+  PRIVACY_CHOICES = (
+    ('public', 'Public: Browsing does not require login'),
+    ('members', 'Members only: Must log in to browse'),
+    ('staff', 'Staff only: Only logged-in staff accounts may browse'),
+  )
+  DEFAULT_PRIVACY = 'public'
 
   site = models.OneToOneField(KegbotSite, related_name='settings')
   display_units = models.CharField(max_length=64, choices=DISPLAY_UNITS_CHOICES,
@@ -123,7 +121,7 @@ class SiteSettings(models.Model):
       'Example: UA-XXXX-y')
   session_timeout_minutes = models.PositiveIntegerField(
       default=kb_common.DRINK_SESSION_TIME_MINUTES,
-      help_text='Maximum time in minutes that a session may be idle (no pours) '
+      help_text='Maximum time, in minutes, that a session may be idle (no pours) '
           'before it is considered to be finished.  '
           'Recommended value is %s.' % kb_common.DRINK_SESSION_TIME_MINUTES)
   privacy = models.CharField(max_length=63, choices=PRIVACY_CHOICES,
@@ -946,60 +944,6 @@ class Thermolog(models.Model):
 
   def TempF(self):
     return util.CtoF(self.temp)
-
-  def UpdateSummaryLog(self):
-    daily_date = datetime.datetime(year=self.time.year,
-        month=self.time.month,
-        day=self.time.day,
-        tzinfo=self.time.tzinfo)
-    defaults = {
-        'site': self.site,
-        'num_readings': 1,
-        'min_temp': self.temp,
-        'max_temp': self.temp,
-        'mean_temp': self.temp,
-    }
-    daily_log, created = ThermoSummaryLog.objects.get_or_create(
-        sensor=self.sensor,
-        period='daily',
-        time=daily_date,
-        defaults=defaults)
-
-    if not created:
-      new_mean = daily_log.num_readings * daily_log.mean_temp + self.temp
-      new_mean /= daily_log.num_readings + 1
-      daily_log.mean_temp = new_mean
-
-      daily_log.num_readings += 1
-
-      if self.temp > daily_log.max_temp:
-        daily_log.max_temp = self.temp
-      if self.temp < daily_log.min_temp:
-        daily_log.min_temp = self.temp
-
-    daily_log.save()
-
-    # Keep at least the most recent 24 hours, dropping any older entries.
-    now = timezone.now()
-    keep_time = now - datetime.timedelta(hours=24)
-    old_entries = Thermolog.objects.filter(site=self.site, time__lt=keep_time)
-    old_entries.delete()
-
-
-class ThermoSummaryLog(models.Model):
-  """A summarized temperature sensor log."""
-  PERIOD_CHOICES = (
-    ('daily', 'daily'),
-  )
-  site = models.ForeignKey(KegbotSite, related_name='thermosummarylogs')
-  sensor = models.ForeignKey(ThermoSensor)
-  time = models.DateTimeField()
-  period = models.CharField(max_length=64, choices=PERIOD_CHOICES,
-      default='daily')
-  num_readings = models.PositiveIntegerField()
-  min_temp = models.FloatField()
-  max_temp = models.FloatField()
-  mean_temp = models.FloatField()
 
 
 class _StatsModel(models.Model):

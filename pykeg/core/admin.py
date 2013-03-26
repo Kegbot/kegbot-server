@@ -75,12 +75,6 @@ class ThermologAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Thermolog, ThermologAdmin)
 
-class ThermoSummaryLogAdmin(admin.ModelAdmin):
-  list_display = ('sensor', 'time', 'min_temp', 'max_temp', 'mean_temp')
-  list_filter = ('sensor', 'time')
-
-admin.site.register(models.ThermoSummaryLog, ThermoSummaryLogAdmin)
-
 class SystemEventAdmin(admin.ModelAdmin):
   list_display = ('id', 'kind', 'time', 'user', 'drink', 'keg', 'session')
   list_filter = ('kind', 'time')

@@ -15,31 +15,24 @@
   {% endblock %}
 
   {% block js %}
-  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-  <script type="text/javascript">
-    google.load("jquery", "1");
-    google.load("jqueryui", "1");
-  </script>
-
   <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.9.1.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.timeago.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.autounits.js"></script>
+
   <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
-  <script src="{{ STATIC_URL }}angular/angular.min.js"></script>
-  <script src="{{ STATIC_URL }}angular/angular-sanitize.min.js"></script>
-  <script src="{{ STATIC_URL }}angular/angular-resource.min.js"></script>
-  <script src="{{ STATIC_URL }}js/kegweb-angular-filters.js"></script>
+
+  <script type="text/javascript" src="{{ STATIC_URL }}angular/angular.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}angular/angular-sanitize.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}angular/angular-resource.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/kegweb-angular-filters.js"></script>
 
   <script type="text/javascript" src="{{ STATIC_URL }}lib/underscore/underscore.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}lib/backbone/backbone.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}lib/mustache/mustache.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}lib/icanhaz/ICanHaz.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}lib/spin/spin.js"></script>
 
   <script type="text/javascript" src="{{ STATIC_URL }}js/kb.js"></script>
-
-  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.timeago.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.autounits.js"></script>
-
   <script type="text/javascript" src="{{ STATIC_URL }}highcharts/js/highcharts.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}fancybox/jquery.fancybox.pack.js"></script>
 

@@ -20,7 +20,9 @@ from __future__ import absolute_import
 from pykeg.core import features
 
 from django.conf import settings
-from django.conf.urls.defaults import *
+from django.conf.urls import include
+from django.conf.urls import patterns
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.views import password_reset
 from django.contrib.auth.views import password_reset_complete

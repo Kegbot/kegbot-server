@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.conf.urls.defaults import *
+from django.conf.urls import patterns
+from django.conf.urls import url
 
 if settings.DEBUG:
   urlpatterns = patterns('pykeg.web.setup_wizard.views',

@@ -1,4 +1,6 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import include
+from django.conf.urls import patterns
+from django.conf.urls import url
 from django.views.generic import TemplateView
 
 from registration.views import activate

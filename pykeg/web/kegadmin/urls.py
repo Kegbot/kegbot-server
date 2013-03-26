@@ -1,4 +1,6 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import include
+from django.conf.urls import patterns
+from django.conf.urls import url
 
 urlpatterns = patterns('pykeg.web.kegadmin.views',
     ### main page

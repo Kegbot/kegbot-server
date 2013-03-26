@@ -1,4 +1,5 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import patterns
+from django.conf.urls import url
 
 from pykeg.core import features
 from pykeg.web.account.views import password_change

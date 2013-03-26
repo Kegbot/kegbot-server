@@ -24,10 +24,10 @@ import unittest
 from django.conf import settings
 from django.utils import timezone
 
-from pykeg.core.backend.django import KegbotBackend
-from pykeg.core import kb_common
-from pykeg.core import models
-from pykeg.core.testutils import make_datetime
+from . import backend
+from . import kb_common
+from . import models
+from .testutils import make_datetime
 
 from kegbot.util import units
 
@@ -35,7 +35,7 @@ class CoreModelsTestCase(unittest.TestCase):
   def setUp(self):
     models.KegbotSite.objects.filter(name='default').delete()
     self.site, created = models.KegbotSite.objects.get_or_create(name='default')
-    self.backend = KegbotBackend(site=self.site)
+    self.backend = backend.KegbotBackend(site=self.site)
     self.brewer = models.Brewer.objects.create(
         name='Moonshine Beers',
         country='USA',

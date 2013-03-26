@@ -1,4 +1,4 @@
-# Copyright 2010 Mike Wakerly <opensource@hoho.com>
+# Copyright 2013 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Django ORM implementation of backend."""
+"""High-level interface to Django backend."""
 
 from __future__ import absolute_import
 
@@ -24,17 +24,21 @@ import logging
 
 from django.conf import settings
 from django.utils import timezone
-from pykeg.core import kb_common
-from pykeg.core import models
-from pykeg.core import time_series
-
-from . import backend
+from . import kb_common
+from . import models
+from . import time_series
 
 if settings.HAVE_CELERY:
   from pykeg.web import tasks
 
-class KegbotBackend(backend.Backend):
-  """Django models backed Backend."""
+class BackendError(Exception):
+  """Base backend error exception."""
+
+class NoTokenError(BackendError):
+  """Token given is unknown."""
+
+class KegbotBackend:
+  """Django Backend."""
 
   def __init__(self, sitename='default', site=None):
     self._logger = logging.getLogger('backend')

@@ -20,8 +20,7 @@ import uuid
 
 from kegbot.util import units
 
-from pykeg.core.backend.django import KegbotBackend
-from pykeg.core import models
+from . import models
 
 def db_is_installed():
   return len(models.KegbotSite.objects.all()) > 0

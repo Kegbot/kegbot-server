@@ -42,8 +42,7 @@ from kegbot.api import kbapi
 from kegbot.util import kbjson
 
 from pykeg.contrib.soundserver import models as soundserver_models
-from pykeg.core.backend import backend
-from pykeg.core.backend.django import KegbotBackend
+from pykeg.core import backend
 from pykeg.core import models
 from pykeg.proto import protolib
 from pykeg.web.api import forms
@@ -211,7 +210,7 @@ def get_user_stats(request, username):
 
 @auth_required
 def get_auth_token(request, auth_device, token_value):
-  b = KegbotBackend(site=request.kbsite)
+  b = backend.KegbotBackend(site=request.kbsite)
   tok = b.GetAuthToken(auth_device, token_value)
   return tok
 
@@ -226,7 +225,7 @@ def assign_auth_token(request, auth_device, token_value):
     errors = _form_errors(form)
     raise kbapi.BadRequestError(errors)
 
-  b = KegbotBackend(site=request.kbsite)
+  b = backend.KegbotBackend(site=request.kbsite)
   username = form.cleaned_data['username']
   try:
     tok = b.GetAuthToken(auth_device, token_value)
@@ -286,7 +285,7 @@ def _thermo_sensor_post(request, sensor_name):
   if not form.is_valid():
     raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
-  b = KegbotBackend(site=request.kbsite)
+  b = backend.KegbotBackend(site=request.kbsite)
   sensor, created = models.ThermoSensor.objects.get_or_create(site=request.kbsite,
       raw_name=sensor_name)
   # TODO(mikey): use form fields to compute `when`
@@ -330,7 +329,7 @@ def _tap_detail_post(request, tap):
   duration = cd.get('duration')
   if duration is None:
     duration = 0
-  b = KegbotBackend(site=request.kbsite)
+  b = backend.KegbotBackend(site=request.kbsite)
   try:
     res = b.RecordDrink(tap_name=tap,
       ticks=cd['ticks'],
@@ -356,7 +355,7 @@ def cancel_drink(request):
   if not form.is_valid():
     raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
-  b = KegbotBackend(site=request.kbsite)
+  b = backend.KegbotBackend(site=request.kbsite)
   try:
     res = b.CancelDrink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
     return protolib.ToProto(res, full=True)

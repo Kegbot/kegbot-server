@@ -21,15 +21,15 @@ from django.utils import unittest
 from kegbot.api import models_pb2
 from kegbot.api.protoutil import ProtoMessageToDict
 
-from pykeg.core.backend.django import KegbotBackend
-from pykeg.core import models
-from pykeg.core import stats
-from pykeg.core.testutils import make_datetime
+from . import backend
+from . import models
+from . import stats
+from .testutils import make_datetime
 
 class StatsTestCase(unittest.TestCase):
   def setUp(self):
     self.site, created = models.KegbotSite.objects.get_or_create(name='default')
-    self.backend = KegbotBackend(site=self.site)
+    self.backend = backend.KegbotBackend(site=self.site)
 
     test_usernames = ('user1', 'user2', 'user3')
     self.users = [self.backend.CreateNewUser(name) for name in test_usernames]

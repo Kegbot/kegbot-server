@@ -15,7 +15,7 @@ def get_real_backend(request):
   else:
     return _SIMPLE
 
-class KegbotBackend:
+class KegbotRegistrationBackend:
   """Kegbot-aware backend which delegates to default backends."""
   def register(self, request, **kwargs):
     return get_real_backend(request).register(request, **kwargs)

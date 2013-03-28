@@ -120,7 +120,7 @@
           {% block breadcrumbs %}{% endblock %}
           {% block messages %}
           {% for message in messages %}
-            <div class="alert {{message.tags}}">
+            <div class="alert {% for tag in message.tags.split %}alert-{{tag}} {% endfor %}">
               <a class="close" data-dismiss="alert" href="#">×</a>
               <p>
                 {{message}}

@@ -18,6 +18,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'crispy_forms',
+    'bootstrap-pagination',
     'django_extensions',
     'imagekit',
     'pykeg.connections',

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load kegweblib %}
+{% load bootstrap_pagination %}
 
 {% block content %}
 <div class="row">
@@ -21,21 +22,10 @@
 
 </div>
 
-{% if is_paginated %}
-<div class="pagination">
-  <span class="page-links">
-    {% if page_obj.has_previous %}
-        <a href="{% url "kb-sessions" %}?page={{ page_obj.previous_page_number }}">previous</a>
-    {% endif %}
-    <span class="page-current">
-        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-    </span>
-    {% if page_obj.has_next %}
-        <a href="{% url "kb-sessions" %}?page={{ page_obj.next_page_number }}">next</a>
-    {% endif %}
-  </span>
+<div class="row">
+<div class="span8">
+{% bootstrap_paginate page_obj range=10 %}
 </div>
-{% endif %}
-
+</div>
 
 {% endblock %}

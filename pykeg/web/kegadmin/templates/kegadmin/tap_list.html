@@ -7,7 +7,7 @@
 
 {% block kegadmin-main %}
 
-<table class="table table-hover">
+<table class="table table-hover table-bordered">
 <thead>
 	<tr>
 		<th>Tap</th>
@@ -34,7 +34,7 @@
 </tr>
 {% endfor %}
 <tr class="info">
-	<td colspan="3">
+	<td colspan="3" style="text-align:right;">
 		<a class="btn btn-small btn-success"
 			href="{% url 'kegadmin-add-tap' %}"><i class="icon-plus icon-white"></i> Add Tap</a>
 	</td>

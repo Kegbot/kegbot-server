@@ -1,0 +1,54 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+{% load bootstrap_pagination %}
+
+{% block title %}Kegbot Admin: Users | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Users{% endblock %}
+
+{% block kegadmin-main %}
+
+<div class="form-actions">
+    <form class="user-select" action="" method="POST">{% csrf_token %}
+        <div class="input-append">
+            <input class="span4" type="text" name="username" placeholder="Name or e-mail" />
+            <input type="submit" name="submit" value="Edit user" class="btn"/>
+        </div>
+    </form>
+</div>
+
+<table class="table table-hover table-bordered">
+<thead>
+    <tr>
+        <th>User</th>
+        <th>Date Joined</th>
+        <th>Status</th>
+    </tr>
+</thead>
+<tbody>
+{% for user in users %}
+<tr>
+    <td>
+        <div class="form-horizontal">
+            <a class="btn btn-small btn-primary" href="{% url "kegadmin-edit-user" user.id %}">Edit</a>&nbsp;&nbsp;
+            <span>{{ user.username }}</span>
+    </td>
+    <td>{{ user.date_joined }}</td>
+    <td>
+        {% if user.is_active %}<span class="label label-success">Active</span>{% else %}<span class="label">Disabled</span>{% endif %}
+        {% if user.is_staff %}<span class="label label-warning">Staff</span>{% endif %}
+        {% if user.is_superuser %}<span class="label label-important">Superuser</span>{% endif %}
+    </td>
+</tr>
+{% endfor %}
+<tr class="info">
+    <td colspan="3" style="text-align:right;">
+        <a class="btn btn-small btn-success"
+            href="{% url 'kegadmin-add-user' %}"><i class="icon-plus icon-white"></i> Add User</a>
+    </td>
+</tr>
+</tbody>
+</table>
+{% bootstrap_paginate users %}
+
+{% endblock %}

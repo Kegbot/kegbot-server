@@ -1,0 +1,56 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Edit User: {{ user.username }} | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Edit User: {{ user.username }}{% endblock %}
+
+{% block kegadmin-main %}
+
+<div class="row-fluid">
+
+<div class="span3">
+    {% mugshot_box user %}
+    <p>
+    <form action="" method="POST">{% csrf_token %}
+
+    {% if user.is_active %}
+    <button class="btn btn-large btn-block disabled">Enabled</button>
+        <input type="submit" name="submit_disable"
+            class="btn btn-large btn-block btn-danger" value="Disable"/>
+    {% else %}
+    <input type="submit" name="submit_enable"
+        class="btn btn-large btn-block btn-success" value="Enable"/>
+    <button class="btn btn-large btn-block disabled">Disabled</button>
+    {% endif %}
+
+    </form>
+    </p>
+</div>
+
+<div class="span9">
+
+<table class="table table-bordered">
+<tbody>
+<tr>
+    <th>Name</th>
+    <td>{{ user.username }} <span class="muted">(#{{user.id }})</span></td>
+</tr>
+<tr>
+    <th>E-Mail</th>
+    <td>{{ user.email }}</td>
+</tr>
+<tr>
+    <th>Date Joined</th>
+    <td>{{ user.date_joined }}</td>
+</tr>
+<tr>
+    <th>Last Login</th>
+    <td>{{ user.last_login }}</td>
+</tr>
+
+</table>
+</div>
+
+</div>
+{% endblock %}

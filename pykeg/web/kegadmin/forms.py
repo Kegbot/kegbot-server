@@ -1,6 +1,6 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field, Hidden
+from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field, Hidden, Div
 from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
 from pykeg.core import models
@@ -138,3 +138,29 @@ class SiteSettingsForm(forms.ModelForm):
 
 class TweetForm(forms.Form):
   tweet = forms.CharField(max_length=140, required=True)
+
+class FindUserForm(forms.Form):
+  username = forms.CharField()
+
+class UserForm(forms.ModelForm):
+  class Meta:
+    model = models.User
+    fields = (
+        'username',
+        'email',
+        'password',
+        'is_staff',
+    )
+
+  helper = FormHelper()
+  helper.form_class = 'form-horizontal'
+  helper.layout = Layout(
+      Field('username', css_class='input-xlarge'),
+      Field('email', css_class='input-xlarge'),
+      'password',
+      'is_staff',
+      FormActions(
+          Submit('submit', 'Save', css_class='btn-primary'),
+      )
+  )
+

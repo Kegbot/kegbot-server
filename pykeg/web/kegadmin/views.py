@@ -19,6 +19,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import cStringIO
+import datetime
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -33,6 +34,7 @@ from django.template import RequestContext
 from django.forms import widgets
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from kegbot.util import kbjson
 
@@ -50,6 +52,11 @@ from pykeg.web.kegadmin import forms
 @staff_member_required
 def dashboard(request):
   context = RequestContext(request)
+  recent_time = timezone.now() - datetime.timedelta(days=30)
+  active_users = models.User.objects.filter(is_active=True)
+  new_users = models.User.objects.filter(date_joined__gte=recent_time)
+  context['num_users'] = len(active_users)
+  context['num_new_users'] = len(new_users)
   return render_to_response('kegadmin/dashboard.html', context)
 
 @staff_member_required
@@ -180,6 +187,78 @@ def tap_detail(request, tap_id):
   return render_to_response('kegadmin/tap_detail.html', context)
 
 @staff_member_required
+def user_list(request):
+  context = RequestContext(request)
+
+  if request.method == 'POST':
+    form = forms.FindUserForm(request.POST)
+    if form.is_valid():
+      username = form.cleaned_data.get('username')
+      try:
+        user = models.User.objects.get(username=username)
+        return redirect('kegadmin-edit-user', user.id)
+      except models.User.DoesNotExist:
+        messages.error(request, 'User "%s" does not exist.' % username)
+
+  users = models.User.objects.all().order_by('-id')
+  paginator = Paginator(users, 25)
+
+  page = request.GET.get('page')
+  try:
+    users = paginator.page(page)
+  except PageNotAnInteger:
+    users = paginator.page(1)
+  except EmptyPage:
+    users = paginator.page(paginator.num_pages)
+
+  context['users'] = users
+  return render_to_response('kegadmin/user_list.html', context)
+
+@staff_member_required
+def add_user(request):
+  context = RequestContext(request)
+  form = forms.UserForm()
+  if request.method == 'POST':
+    form = forms.UserForm(request.POST)
+    if form.is_valid():
+      instance = form.save(commit=False)
+      instance.set_password(form.cleaned_data.get('password'))
+      instance.save()
+      messages.success(request, 'User "%s" created.' % instance.username)
+      return redirect('kegadmin-user-list')
+  context['form'] = form
+  return render_to_response('kegadmin/add_user.html', context)
+
+@staff_member_required
+def user_detail(request, user_id):
+  user = get_object_or_404(models.User, id=user_id)
+
+  if request.method == 'POST':
+    if 'submit_enable' in request.POST:
+      if user.is_active:
+        messages.error(request, 'User is already enabled.')
+      else:
+        user.is_active = True
+        user.save()
+        messages.success(request, 'User %s was enabled.' % user.username)
+
+    elif 'submit_disable' in request.POST:
+      if not user.is_active:
+        messages.error(request, 'User is already disabled.')
+      else:
+        user.is_active = False
+        user.save()
+        messages.success(request, 'User %s was disabled.' % user.username)
+
+  context = RequestContext(request)
+  context['user'] = user
+  context['profile'] = user.get_profile()
+  context['stats'] = context['profile'].GetStats()
+
+  return render_to_response('kegadmin/user_detail.html', context)
+
+
+@staff_member_required
 def connections(request):
   context = RequestContext(request)
   kbsite = request.kbsite
@@ -233,6 +312,7 @@ def autocomplete_beer_type(request):
     types = models.BeerType.objects.filter(Q(name__icontains=search) | Q(brewer__name__icontains=search))
   else:
     types = models.BeerType.objects.all()
+  types = types[:10]  # autocomplete widget limited to 10
   values = []
   for beer in types:
     values.append({
@@ -242,6 +322,26 @@ def autocomplete_beer_type(request):
       'brewer_id': beer.brewer.id,
       'style_name': beer.style.name,
       'style_id': beer.style.id,
+  })
+  return HttpResponse(kbjson.dumps(values, indent=None),
+    mimetype='application/json', status=200)
+
+@staff_member_required
+def autocomplete_user(request):
+  context = RequestContext(request)
+  search = request.GET.get('q')
+  if search:
+    users = models.User.objects.filter(Q(username__icontains=search) | Q(email__icontains=search))
+  else:
+    users = models.User.objects.all()
+  users = users[:10]  # autocomplete widget limited to 10
+  values = []
+  for user in users:
+    values.append({
+      'username': user.username,
+      'id': user.id,
+      'email': user.email,
+      'is_active': user.is_active,
   })
   return HttpResponse(kbjson.dumps(values, indent=None),
     mimetype='application/json', status=200)

@@ -1,6 +1,48 @@
 {% extends "base.html" %}
 {% load kegweblib %}
 
+{% block kb-extrajs %}
+<script type="text/javascript">
+  $(document).ready(function() {
+    var labels, mapped;
+    var beer_complete_url = "{% url "kegadmin-autocomplete-beer" %}";
+    $('.beer-select').each(function() {
+      var beer_name = $(this).find('input[name=beer_name]');
+      var brewer_name = $(this).find('input[name=brewer_name]');
+      var style_name = $(this).find('input[name=style_name]');
+      var beer_id = $(this).find('input[name=beer_id]');
+      var brewer_id = $(this).find('input[name=brewer_id]');
+      var style_id = $(this).find('input[name=style_id]');
+
+      beer_name.typeahead({
+        source: function (query, process) {
+          $.get(beer_complete_url, { q: query }, function (data) {
+            labels = []
+            mapped = {}
+
+            $.each(data, function (i, item) {
+              var name = item.name + " (" + item.brewer_name + ")";
+              mapped[name] = item;
+              labels.push(name);
+            })
+
+            process(labels);
+          })
+        },
+        updater: function (item) {
+            brewer_name.val(mapped[item].brewer_name);
+            style_name.val(mapped[item].style_name);
+            beer_id.val(mapped[item].id);
+            brewer_id.val(mapped[item].brewer_id);
+            style_id.val(mapped[item].style_id);
+            return mapped[item].name;
+        },
+      });
+    });
+  });
+</script>
+{% endblock %}
+
 {% block content %}
 
 <div class="row-fluid">

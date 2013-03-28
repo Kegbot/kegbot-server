@@ -30,6 +30,7 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.db.utils import IntegrityError
+from django.utils import timezone
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -321,9 +322,9 @@ def _tap_detail_post(request, tap):
   cd = form.cleaned_data
   if cd.get('pour_time') and cd.get('now'):
     pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))
-    now = datetime.datetime.fromtimestamp(cd.get('now'))
-    skew = datetime.datetime.now() - now
-    pour_time += skew
+    pour_now = datetime.datetime.fromtimestamp(cd.get('now'))
+    pour_time_ago = pour_now - pour_time
+    pour_time = timezone.now() - pour_time_ago
   else:
     pour_time = None
   duration = cd.get('duration')

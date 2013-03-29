@@ -48,10 +48,6 @@ def mugshot_box(context, user, boxsize=0):
   c['boxsize'] = boxsize
   return c
 
-@register.inclusion_tag('kegweb/page_block.html')
-def render_page(page):
-  return {'page' : page}
-
 @register.inclusion_tag('kegweb/picture-gallery.html', takes_context=True)
 def gallery(context, picture_or_pictures, thumb_size='span2', gallery_id=''):
   c = copy.copy(context)
@@ -366,33 +362,3 @@ def volume(text, fmt='pints'):
   else:
     raise TemplateSyntaxError, 'Unknown volume format: %s' % fmt
   return float(res)
-
-@register.filter
-def bac_format(text):
-  try:
-    f = float(text)
-  except ValueError:
-    return ''
-  BAC_MAX = 0.16
-  STEPS = 32
-  colors = ['#%02x0000' % (x*8,) for x in range(STEPS)]
-  bacval = min(max(0, f), BAC_MAX)
-  colorstep = BAC_MAX/float(STEPS)
-  color = colors[min(STEPS-1, int(bacval/colorstep))]
-  ret = '<font color="%s">%.3f</font>' % (color, f)
-  if f > 0.08:
-    ret = '<b>%s</b>' % ret
-  return mark_safe(ret)
-
-@register.filter
-def datetime_js(val):
-  if not isinstance(val, datetime.datetime):
-    return "new Date(1970,0,1)"
-  vals = map(str, (
-      val.year,
-      val.month - 1,
-      val.day,
-      val.hour,
-      val.minute,
-      val.second))
-  return "new Date(%s)" % (",".join(vals))

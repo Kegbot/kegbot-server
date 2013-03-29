@@ -59,6 +59,9 @@ def check_api_key(request):
   if not api_key.is_active():
     raise kbapi.BadApiKeyError('Key and/or user is inactive')
 
+  if not api_key.user or not api_key.user.is_active:
+    raise kbapi.PermissionDeniedError('User is disabled or does not exist.')
+
   # TODO: remove me.
   if not api_key.user.is_staff and not api_key.user.is_superuser:
     raise kbapi.PermissionDeniedError('User is not staff/superuser')

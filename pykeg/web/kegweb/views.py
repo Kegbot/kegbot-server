@@ -99,7 +99,7 @@ def system_stats(request):
 ### object lists and detail (generic views)
 
 def user_detail(request, username):
-  user = get_object_or_404(models.User, username=username)
+  user = get_object_or_404(models.User, username=username, is_active=True)
   try:
     stats = models.UserStats.objects.get(site=request.kbsite, user=user).stats
   except models.UserStats.DoesNotExist:

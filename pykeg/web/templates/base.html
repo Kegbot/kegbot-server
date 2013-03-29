@@ -10,7 +10,7 @@
 
   <script type="text/javascript">
     $(document).ready(function() {
-        var defaultUseMetric = {% if kbsite.settings.display_units != 'metric' %}false{% else %}true{% endif%};
+        var defaultUseMetric = {% if kbsite.settings.volume_display_units != 'metric' %}false{% else %}true{% endif%};
         window.app.setApiBase("/api/")
 
         window.app.getPageSettings().setMetric(defaultUseMetric);

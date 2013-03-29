@@ -31,7 +31,11 @@
       {% if tap %}
       {% if tap.temperature_sensor %}
         <li>
+          {% if kbsite.settings.temperature_display_units == "f" %}
+          <h2>{{ tap.Temperature.TempF|floatformat:1}} &deg;F</h2>
+          {% else %}
           <h2>{{ tap.Temperature.TempC|floatformat:1}} &deg;C</h2>
+          {% endif %}
           <small>Temperature</small>
         </li>
       {% endif %}

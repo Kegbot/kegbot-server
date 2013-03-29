@@ -93,9 +93,13 @@ def _kegbotsite_post_save(sender, instance, **kwargs):
 post_save.connect(_kegbotsite_post_save, sender=KegbotSite)
 
 class SiteSettings(models.Model):
-  DISPLAY_UNITS_CHOICES = (
+  VOLUME_DISPLAY_UNITS_CHOICES = (
     ('metric', 'Metric (mL, L)'),
     ('imperial', 'Imperial (oz, pint)'),
+  )
+  TEMPERATURE_DISPLAY_UNITS_CHOICES = (
+    ('f', 'Fahrenheit'),
+    ('c', 'Celsius'),
   )
   PRIVACY_CHOICES = (
     ('public', 'Public: Browsing does not require login'),
@@ -105,9 +109,12 @@ class SiteSettings(models.Model):
   DEFAULT_PRIVACY = 'public'
 
   site = models.OneToOneField(KegbotSite, related_name='settings')
-  display_units = models.CharField(max_length=64, choices=DISPLAY_UNITS_CHOICES,
-      default='imperial',
-      help_text='Default unit system to use when displaying volumetric data.')
+  volume_display_units = models.CharField(max_length=64,
+      choices=VOLUME_DISPLAY_UNITS_CHOICES, default='imperial',
+      help_text='Unit system to use when displaying volumetric data.')
+  temperature_display_units = models.CharField(max_length=64,
+      choices=TEMPERATURE_DISPLAY_UNITS_CHOICES, default='f',
+      help_text='Unit system to use when displaying temperature data.')
   title = models.CharField(max_length=64, blank=True, null=True,
       help_text='The title of this site. Example: "Kegbot San Francisco"')
   description = models.TextField(blank=True, null=True,
@@ -915,7 +922,9 @@ class ThermoSensor(models.Model):
   nice_name = models.CharField(max_length=128)
 
   def __str__(self):
-    return '%s (%s) ' % (self.nice_name, self.raw_name)
+    if self.nice_name:
+      return '%s (%s)' % (self.nice_name, self.raw_name)
+    return self.raw_name
 
   def LastLog(self):
     try:

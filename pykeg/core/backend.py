@@ -20,6 +20,7 @@
 
 from __future__ import absolute_import
 
+import datetime
 import logging
 
 from django.conf import settings
@@ -231,7 +232,7 @@ class KegbotBackend:
 
     # Delete old entries.
     keep_time = now - datetime.timedelta(hours=24)
-    old_entries = Thermolog.objects.filter(site=self._site, time__lt=keep_time)
+    old_entries = models.Thermolog.objects.filter(site=self._site, time__lt=keep_time)
     old_entries.delete()
 
     return record

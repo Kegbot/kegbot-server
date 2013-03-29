@@ -11,6 +11,15 @@
   <script type="text/javascript">
     var kbapp = angular.module('KegwebApp', ['ngSanitize', 'ngResource', 'kbNgFilters']);
 
+    kbapp.filter('temperature', function() {
+      return function (input) {
+        if ('c' == '{{ kbsite.settings.temperature_display_units }}') {
+          return input + "&deg; C";
+        }
+        return input * 1.8000 + 32 + "&deg; F";
+      }
+    });
+
     kbapp.controller('TapListController', function($scope) {
       $scope.taps = {{ initial_taps|safe }};
     });
@@ -69,7 +78,7 @@
             </li>
 
             <li ng-show="tap.last_temperature.temperature_c">
-              <h2>{{ tap.last_temperature.temperature_c }} &deg;C</h2>
+              <h2 ng-bind-html="tap.last_temperature.temperature_c|temperature"></h2>
               <small>Temperature</small>
             </li>
           </ul>

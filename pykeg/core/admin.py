@@ -59,8 +59,8 @@ class DrinkingSessionAdmin(admin.ModelAdmin):
 admin.site.register(models.DrinkingSession, DrinkingSessionAdmin)
 
 class ThermoSensorAdmin(admin.ModelAdmin):
-  list_display = ('nice_name', 'raw_name')
-
+  list_display = ('raw_name', 'nice_name')
+  search_fields = list_display
 admin.site.register(models.ThermoSensor, ThermoSensorAdmin)
 
 def thermolog_deg_c(obj):

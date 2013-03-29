@@ -48,13 +48,15 @@ class MiniSiteSettingsForm(forms.ModelForm):
     fields = (
         'title',
         'privacy',
-        'display_units',
+        'volume_display_units',
+        'temperature_display_units',
         'registration_allowed',
         'registration_confirmation',
     )
     widgets = {
         'privacy': forms.RadioSelect(),
-        'display_units': forms.RadioSelect(),
+        'volume_display_units': forms.RadioSelect(),
+        'temperature_display_units': forms.RadioSelect(),
     }
 
   helper = FormHelper()
@@ -62,7 +64,8 @@ class MiniSiteSettingsForm(forms.ModelForm):
   helper.layout = Layout(
       Field('title', css_class='span12'),
       Field('privacy', css_class='span12'),
-      Field('display_units', css_class='span12'),
+      Field('volume_display_units', css_class='span12'),
+      Field('temperature_display_units', css_class='span12'),
       Field('registration_allowed'),
       Field('registration_confirmation'),
       FormActions(

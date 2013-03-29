@@ -97,7 +97,7 @@ def tap_detail(request, tap_id):
   tap = get_object_or_404(models.KegTap, site=request.kbsite, id=tap_id)
 
   activate_keg_form = forms.ChangeKegForm()
-  tap_settings_form = forms.TapForm(instance=tap)
+  tap_settings_form = forms.TapForm(instance=tap, site=request.kbsite)
 
   if request.method == 'POST':
     if 'submit_change_keg_form' in request.POST:
@@ -146,11 +146,11 @@ def tap_detail(request, tap_id):
         return redirect('kegadmin-taps')
     
     elif 'submit_tap_form' in request.POST:
-      tap_settings_form = forms.TapForm(request.POST, instance=tap)
+      tap_settings_form = forms.TapForm(request.POST, instance=tap, site=request.kbsite)
       if tap_settings_form.is_valid():
         tap_settings_form.save()
         messages.success(request, 'Tap settings saved.')
-        tap_settings_form = forms.TapForm(instance=tap)
+        tap_settings_form = forms.TapForm(instance=tap, site=request.kbsite)
 
     elif 'submit_delete_tap_form' in request.POST:
       delete_form = forms.DeleteTapForm(request.POST)

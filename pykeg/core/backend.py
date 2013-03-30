@@ -111,7 +111,7 @@ class KegbotBackend:
 
     tap = self._GetTapFromName(tap_name)
     if not tap:
-      raise backend.BackendError("Tap unknown")
+      raise BackendError("Tap unknown")
 
     if volume_ml is None:
       volume_ml = float(ticks) * tap.ml_per_tick
@@ -244,5 +244,5 @@ class KegbotBackend:
       return models.AuthenticationToken.objects.get(site=self._site,
         auth_device=auth_device, token_value=token_value)
     except models.AuthenticationToken.DoesNotExist:
-      raise backend.NoTokenError
+      raise NoTokenError
 

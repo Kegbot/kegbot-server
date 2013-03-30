@@ -4,8 +4,21 @@ This is the main code repository for the Kegbot Server package.
 (Or it might be a fork.  The official repository lives here:
 https://github.com/Kegbot/kegbot).
 
+## Quick start
 
-## Documentation
+Super quick start instructions:
+
+```
+$ mkvirtualenv kb
+(kb) $ pip install kegbot
+(kb) $ setup-kegbot.py
+(kb) $ kegbot-admin.py runserver
+Development server is running at http://localhost:8000/
+```
+
+For much more detail, see the complete [Kegbot Server documentation](http://kegbot.org/docs/server/).
+
+## Documentation and Help
 
 Please see our main website, http://kegbot.org/, for
 [documentation](http://kegbot.org/docs), the

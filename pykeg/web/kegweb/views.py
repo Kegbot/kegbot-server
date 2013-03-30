@@ -43,7 +43,6 @@ from pykeg.core import models
 from pykeg.proto import protolib
 
 from pykeg.web.kegweb import forms
-from pykeg.web.kegweb import models as kegweb_models
 from pykeg.web.kegweb import signals
 
 ### main views
@@ -51,12 +50,7 @@ from pykeg.web.kegweb import signals
 @cache_page(30)
 def index(request):
   context = RequestContext(request)
-  try:
-    page = kegweb_models.Page.objects.get(name__exact='MainPage',
-                                          status__exact='published')
-  except kegweb_models.Page.DoesNotExist:
-    page = None
-  context['page_node'] = page
+
   context['taps'] = request.kbsite.taps.all()
 
   events = request.kbsite.events.all()[:10]

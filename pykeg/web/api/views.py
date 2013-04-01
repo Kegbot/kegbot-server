@@ -338,7 +338,6 @@ def _tap_detail_post(request, tap):
       username=cd.get('username'),
       pour_time=pour_time,
       duration=duration,
-      auth_token=cd.get('auth_token'),
       spilled=cd.get('spilled'),
       shout=cd.get('shout'),
       tick_time_series=cd.get('tick_time_series'))

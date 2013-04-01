@@ -28,7 +28,6 @@ class DrinkPostForm(forms.Form):
   pour_time = forms.IntegerField(required=False)
   now = forms.IntegerField(required=False)
   duration = forms.IntegerField(required=False)
-  auth_token = forms.CharField(required=False)
   spilled = forms.BooleanField(required=False)
   shout = forms.CharField(required=False)
   tick_time_series = forms.CharField(required=False)

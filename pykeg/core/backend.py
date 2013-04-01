@@ -99,7 +99,7 @@ class KegbotBackend:
     return list(models.KegTap.objects.all())
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=0, auth_token=None, spilled=False,
+      pour_time=None, duration=0, spilled=False,
       shout='', tick_time_series='', do_postprocess=True):
 
     tap = self._GetTapFromName(tap_name)
@@ -141,7 +141,7 @@ class KegbotBackend:
 
     d = models.Drink(ticks=ticks, site=self._site, keg=keg, user=user,
         volume_ml=volume_ml, time=pour_time, duration=duration,
-        auth_token=auth_token, shout=shout, tick_time_series=tick_time_series)
+        shout=shout, tick_time_series=tick_time_series)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
 

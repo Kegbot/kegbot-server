@@ -229,8 +229,6 @@ def restore(input_fp, kbsite, log_cb=_no_log):
       print 'Warning: profile for non-existant user: %s' % rec.username
       continue
     profile, created = models.UserProfile.objects.get_or_create(user=user)
-    profile.gender = rec.gender
-    profile.weight = rec.weight
     profile.save()
     _log(profile)
 

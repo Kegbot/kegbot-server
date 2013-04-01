@@ -44,16 +44,8 @@ from pykeg.connections.untappd import forms as untappd_forms
 
 @login_required
 def account_main(request):
-  user = request.user
   context = RequestContext(request)
-  form = forms.UserProfileForm(instance=user.get_profile())
-  if request.method == 'POST':
-    orig_profile = request.user.get_profile()
-    form = forms.UserProfileForm(request.POST, instance=orig_profile)
-    if form.is_valid():
-      new_profile = form.save()
-  context['user'] = user
-  context['profile_form'] = form
+  context['user'] = request.user
   return render_to_response('account/index.html', context)
 
 @login_required

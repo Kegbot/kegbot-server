@@ -7,19 +7,6 @@
 {% block kb-account-main %}
 <h2>Hello, {{user.username}}!</h2>
 
-<div class="row">
-  <div class="span11">
-    <div class="well">
-      <form action="" method="POST">{% csrf_token %}
-        {{ profile_form|crispy }}
-        <div class="actions">
-          <button type="submit" class="btn btn-primary">Update Profile</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
 {% if user.is_staff or user.is_superuser %}
 <h2>API Access</h2>
 <div class="row">

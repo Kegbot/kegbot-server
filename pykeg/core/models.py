@@ -173,10 +173,6 @@ class SiteSettings(models.Model):
 
 class UserProfile(models.Model):
   """Extra per-User information."""
-  GENDER_CHOICES = (
-    ('male', 'male'),
-    ('female', 'female'),
-  )
   def __str__(self):
     return "profile for %s" % (self.user,)
 
@@ -222,17 +218,10 @@ class UserProfile(models.Model):
     return ('kb-drinker', (self.user.username,))
 
   user = models.OneToOneField(User)
-  gender = models.CharField(max_length=8, choices=GENDER_CHOICES)
-  weight = models.FloatField()
   mugshot = models.ForeignKey('Picture', blank=True, null=True)
 
 def _user_post_save(sender, instance, **kwargs):
-  defaults = {
-    'weight': kb_common.DEFAULT_NEW_USER_WEIGHT,
-    'gender': kb_common.DEFAULT_NEW_USER_GENDER,
-  }
-  profile, new = UserProfile.objects.get_or_create(user=instance,
-      defaults=defaults)
+  profile, new = UserProfile.objects.get_or_create(user=instance)
 post_save.connect(_user_post_save, sender=User)
 
 

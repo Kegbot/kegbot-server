@@ -29,9 +29,6 @@ THERMO_SENSOR_RANGE = (-20.0, 80.0)
 # Address the kegnet server should bind to.
 KB_CORE_DEFAULT_ADDR = 'localhost:9805'
 
-DEFAULT_NEW_USER_WEIGHT = 140
-DEFAULT_NEW_USER_GENDER = 'male'
-
 # String name for all taps
 ALIAS_ALL_TAPS = '__all_taps__'
 

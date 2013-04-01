@@ -77,15 +77,8 @@ class KegbotBackend:
     except models.User.DoesNotExist:
       return None
 
-  def CreateNewUser(self, username, gender=kb_common.DEFAULT_NEW_USER_GENDER,
-      weight=kb_common.DEFAULT_NEW_USER_WEIGHT):
-    u = models.User(username=username)
-    u.save()
-    p = u.get_profile()
-    p.gender = gender
-    p.weight = weight
-    p.save()
-    return u
+  def CreateNewUser(self, username):
+    return models.User.objects.create(username=username)
 
   def CreateTap(self, name, meter_name, relay_name=None, ml_per_tick=None):
     tap = models.KegTap.objects.create(site=self._site, name=name,

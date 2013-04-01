@@ -9,22 +9,8 @@ from pykeg.core import models
 class LoginForm(AuthenticationForm):
   next_page = forms.CharField(required=False, widget=forms.HiddenInput)
 
-class KegbotRegistrationForm(RegistrationForm):
-  WEIGHT_CHOICES = (
-      (100, 'less than 100'),
-      (120, '100-130'),
-      (150, '131-170'),
-      (180, '171+'),
-  )
-  GENDER_CHOICES = (
-      ('male', 'Male'),
-      ('female', 'Female'),
-  )
-  gender = forms.ChoiceField(choices=GENDER_CHOICES,
-      help_text='Used for BAC estimation.')
-  weight = forms.ChoiceField(choices=WEIGHT_CHOICES,
-      help_text='Used for BAC estimation, kept private. You can lie.')
 
+class KegbotRegistrationForm(RegistrationForm):
   def save(self, profile_callback=None):
     new_user = RegistrationProfile.objects.create_inactive_user(username=self.cleaned_data['username'],
                                                                 password=self.cleaned_data['password1'],
@@ -33,17 +19,7 @@ class KegbotRegistrationForm(RegistrationForm):
                                                                 profile_callback=profile_callback)
     new_user.is_active = True
     new_user.save()
-    new_profile, is_new = models.UserProfile.objects.get_or_create(user=new_user)
-    new_profile.gender = self.cleaned_data['gender']
-    new_profile.weight = self.cleaned_data['weight']
-    new_profile.save()
     return new_user
-
-
-class UserProfileForm(forms.ModelForm):
-  class Meta:
-    model = models.UserProfile
-    fields = ('gender', 'weight')
 
 
 class MugshotForm(forms.Form):

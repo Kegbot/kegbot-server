@@ -319,8 +319,6 @@ def UserToProto(user, full=False):
 def UserProfileToProto(record, full=False):
   ret = models_pb2.UserProfile()
   ret.username = record.user.username
-  ret.gender = record.gender
-  ret.weight = record.weight
   return ret
 
 @converts(models.SystemStats)

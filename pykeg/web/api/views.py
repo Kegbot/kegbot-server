@@ -36,6 +36,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods
 from django.db import transaction
 from django.db.models.query import QuerySet
 
@@ -141,6 +142,17 @@ def get_keg_events(request, keg_id):
   events = keg.events.all()
   events = apply_since(request, events)
   return events
+
+def get_keg_sizes(request):
+  return models.KegSize.objects.all()
+
+@require_http_methods(["POST"])
+@auth_required
+@csrf_exempt
+def end_keg(request, keg_id):
+  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
+  keg.end_keg()
+  return protolib.ToProto(keg, full=True)
 
 def all_sessions(request):
   return request.kbsite.sessions.all()

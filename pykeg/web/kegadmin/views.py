@@ -104,9 +104,8 @@ def tap_detail(request, tap_id):
       activate_keg_form = forms.ChangeKegForm(request.POST)
       if activate_keg_form.is_valid():
         current = tap.current_keg
-        if current and current.status != 'offline':
-          current.status = 'offline'
-          current.save()
+        if current:
+          current.end_keg()
         cd = activate_keg_form.cleaned_data
         new_keg = models.Keg()
         new_keg.site = request.kbsite

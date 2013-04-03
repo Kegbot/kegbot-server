@@ -402,6 +402,15 @@ class Keg(models.Model):
     result = max(min(result, 100), 0)
     return result
 
+  def end_keg(self):
+    if self.current_tap:
+      tap = self.current_tap
+      tap.current_keg = None
+      tap.save()
+    if self.status != 'offline':
+      self.status = 'offline'
+      self.save()
+
   def keg_age(self):
     if self.status == 'online':
       end = timezone.now()

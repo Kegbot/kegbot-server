@@ -14,9 +14,9 @@
     kbapp.filter('temperature', function() {
       return function (input) {
         if ('c' == '{{ kbsite.settings.temperature_display_units }}') {
-          return input + "&deg; C";
+          return input.toFixed(1) + "&deg; C";
         }
-        return input * 1.8000 + 32 + "&deg; F";
+        return (input * 1.8000 + 32).toFixed(1) + "&deg; F";
       }
     });
 

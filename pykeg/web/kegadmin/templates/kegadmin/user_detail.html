@@ -30,6 +30,8 @@
 
 <div class="span9">
 
+<h2>Account Details</h2>
+
 <table class="table table-bordered">
 <tbody>
 <tr>
@@ -50,7 +52,37 @@
 </tr>
 
 </table>
+
+{% if tokens %}
+<h2>Authentication Tokens</h2>
+
+<table class="table table-bordered table-hover">
+<tbody>
+<tr>
+    <th>Token</th>
+    <th>Status</th>
+</tr>
+{% for token in tokens %}
+<tr>
+    <td>
+        <a href="{% url "kegadmin-edit-token" token.id %}">
+        {% if token.auth_device == "core.rfid" %}
+        RFID
+        {% elif token.auth_device == "core.onewire" %}
+        OneWire
+        {% else %}
+        {{ token.auth_device }}
+        {% endif %}
+        {{ token.token_value }}
+        </a>
+    </td>
+    <td>{{ token.enabled }}</td>
+{% endfor %}
+</table>
 </div>
+{% endif %}
+</div>
+
 
 </div>
 {% endblock %}

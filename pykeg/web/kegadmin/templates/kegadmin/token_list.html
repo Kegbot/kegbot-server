@@ -1,0 +1,45 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+{% load bootstrap_pagination %}
+
+{% block title %}Kegbot Admin: Users | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Users{% endblock %}
+
+{% block kegadmin-main %}
+
+<table class="table table-hover table-bordered">
+<thead>
+    <tr>
+        <th>Token</th>
+        <th>Alias</th>
+        <th>User</th>
+        <th>Status</th>
+    </tr>
+</thead>
+<tbody>
+{% for token in tokens %}
+<tr>
+    <td>
+        <div class="form-horizontal">
+            <a class="btn btn-small btn-primary" href="{% url "kegadmin-edit-token" token.id %}">Edit</a>&nbsp;&nbsp;
+            <span>{{ token.get_auth_device }} {{ token.token_value }}</span>
+    </td>
+    <td>{% if token.nice_name %}{{ token.nice_name }}{% endif %}</td>
+    <td>{{ token.user }}</td>
+    <td>
+        {% if token.enabled %}<span class="label label-success">Active</span>{% else %}<span class="label">Disabled</span>{% endif %}
+    </td>
+</tr>
+{% endfor %}
+<tr class="info">
+    <td colspan="4" style="text-align:right;">
+        <a class="btn btn-small btn-success"
+            href="{% url 'kegadmin-add-token' %}"><i class="icon-plus icon-white"></i> Add Token</a>
+    </td>
+</tr>
+</tbody>
+</table>
+{% bootstrap_paginate tokens %}
+
+{% endblock %}

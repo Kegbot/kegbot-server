@@ -1,0 +1,16 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Edit Token | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Edit Token {% endblock %}
+
+{% block kegadmin-main %}
+
+<h2>Edit Token</h2>
+
+<h4>{{ token.token_value }} <small>({{ token.auth_device }})</small></h4>
+    
+{% crispy form %}
+
+{% endblock %}

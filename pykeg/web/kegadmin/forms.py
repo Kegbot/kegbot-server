@@ -209,3 +209,71 @@ class UserForm(forms.ModelForm):
       )
   )
 
+class TokenForm(forms.ModelForm):
+  class Meta:
+    model = models.AuthenticationToken
+    fields = (
+        'nice_name',
+        'enabled',
+    )
+  username = forms.CharField(required=False)
+
+  helper = FormHelper()
+  helper.form_class = 'form-horizontal user-select'
+  helper.layout = Layout(
+      Field('username', css_class='input-xlarge'),
+      Field('nice_name', css_class='input-xlarge'),
+      'enabled',
+      FormActions(
+          Submit('submit', 'Save', css_class='btn-primary'),
+      )
+  )
+
+  def clean_username(self):
+    username = self.cleaned_data['username']
+    if username == '':
+      self.cleaned_data['user'] = None
+      return
+    try:
+      self.cleaned_data['user'] = models.User.objects.get(username=username)
+    except models.User.DoesNotExist:
+      raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
+    return username
+
+
+class AddTokenForm(forms.ModelForm):
+  class Meta:
+    model = models.AuthenticationToken
+    fields = (
+        'auth_device',
+        'token_value',
+        'enabled',
+    )
+  username = forms.CharField(required=False)
+
+  helper = FormHelper()
+  helper.form_class = 'form-horizontal user-select'
+  helper.layout = Layout(
+      Field('username', css_class='input-xlarge'),
+      Field('auth_device', css_class='input-xlarge'),
+      Field('token_value', css_class='input-xlarge'),
+      'enabled',
+      FormActions(
+          Submit('submit', 'Save', css_class='btn-primary'),
+      )
+  )
+
+  def clean_username(self):
+    username = self.cleaned_data['username']
+    if username == '':
+      self.cleaned_data['user'] = None
+      return
+    try:
+      self.cleaned_data['user'] = models.User.objects.get(username=username)
+    except models.User.DoesNotExist:
+      raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
+    return username
+
+
+
+

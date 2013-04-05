@@ -187,7 +187,7 @@ def add_user(request):
       instance.set_password(form.cleaned_data.get('password'))
       instance.save()
       messages.success(request, 'User "%s" created.' % instance.username)
-      return redirect('kegadmin-user-list')
+      return redirect('kegadmin-users')
   context['form'] = form
   return render_to_response('kegadmin/add_user.html', context)
 
@@ -217,7 +217,65 @@ def user_detail(request, user_id):
   context['profile'] = user.get_profile()
   context['stats'] = context['profile'].GetStats()
 
+  context['tokens'] = user.tokens.all().order_by('created_time')
+
   return render_to_response('kegadmin/user_detail.html', context)
+
+@staff_member_required
+def token_list(request):
+  context = RequestContext(request)
+  tokens = models.AuthenticationToken.objects.all().order_by('-created_time')
+  paginator = Paginator(tokens, 25)
+
+  page = request.GET.get('page')
+  try:
+    tokens = paginator.page(page)
+  except PageNotAnInteger:
+    tokens = paginator.page(1)
+  except EmptyPage:
+    tokens = paginator.page(paginator.num_pages)
+
+  context['tokens'] = tokens
+  return render_to_response('kegadmin/token_list.html', context)
+
+
+@staff_member_required
+def token_detail(request, token_id):
+  token = get_object_or_404(models.AuthenticationToken, id=token_id)
+
+  username = ''
+  if token.user:
+    username = token.user.username
+
+  form = forms.TokenForm(instance=token, initial={'username': username})
+  if request.method == 'POST':
+    form = forms.TokenForm(request.POST, instance=token)
+    if form.is_valid():
+      instance = form.save(commit=False)
+      instance.user = form.cleaned_data['user']
+      instance.save()
+      messages.success(request, 'Token updated.')
+
+  context = RequestContext(request)
+  context['token'] = token
+  context['form'] = form
+  return render_to_response('kegadmin/token_detail.html', context)
+
+@staff_member_required
+def add_token(request):
+  context = RequestContext(request)
+  form = forms.AddTokenForm()
+  if request.method == 'POST':
+    form = forms.AddTokenForm(request.POST)
+    if form.is_valid():
+      instance = form.save(commit=False)
+      instance.user = form.cleaned_data['user']
+      instance.site = request.kbsite
+      instance.save()
+      messages.success(request, 'Token created.')
+      return redirect('kegadmin-tokens')
+  context['form'] = form
+  return render_to_response('kegadmin/add_token.html', context)
 
 
 @staff_member_required
@@ -304,6 +362,28 @@ def autocomplete_user(request):
       'id': user.id,
       'email': user.email,
       'is_active': user.is_active,
+  })
+  return HttpResponse(kbjson.dumps(values, indent=None),
+    mimetype='application/json', status=200)
+
+@staff_member_required
+def autocomplete_token(request):
+  context = RequestContext(request)
+  search = request.GET.get('q')
+  if search:
+    tokens = models.AuthenticationToken.objects.filter(
+        Q(token_value__icontains=search) | Q(nice_name__icontains=search))
+  else:
+    tokens = models.AuthenticationToken.objects.all()
+  tokens = tokens[:10]  # autocomplete widget limited to 10
+  values = []
+  for token in tokens:
+    values.append({
+      'username': token.user.username,
+      'id': token.id,
+      'auth_device': token.auth_device,
+      'token_value': token.token_value,
+      'enabled': token.enabled,
   })
   return HttpResponse(kbjson.dumps(values, indent=None),
     mimetype='application/json', status=200)

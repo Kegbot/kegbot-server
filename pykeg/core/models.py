@@ -616,11 +616,15 @@ class AuthenticationToken(models.Model):
     unique_together = ('auth_device', 'token_value')
 
   def __str__(self):
-    ret = "%s: %s" % (self.auth_device, self.token_value)
-    if self.user is not None:
-      ret = "%s (%s)" % (ret, self.user.username)
+    auth_device = self.auth_device
+    if auth_device == 'core.rfid':
+      auth_device = 'RFID'
+    elif auth_device == 'core.onewire':
+      auth_device = 'OneWire'
+
+    ret = "%s %s" % (auth_device, self.token_value)
     if self.nice_name:
-      ret = "[%s] %s" % (self.nice_name, ret)
+      ret += " (%s)" % self.nice_name
     return ret
 
   site = models.ForeignKey(KegbotSite, related_name='tokens')
@@ -629,10 +633,19 @@ class AuthenticationToken(models.Model):
   nice_name = models.CharField(max_length=256, blank=True, null=True,
       help_text='A human-readable alias for the token (eg "Guest Key").')
   pin = models.CharField(max_length=256, blank=True, null=True)
-  user = models.ForeignKey(User, blank=True, null=True)
+  user = models.ForeignKey(User, blank=True, null=True,
+      related_name='tokens')
   enabled = models.BooleanField(default=True)
   created_time = models.DateTimeField(auto_now_add=True)
   expire_time = models.DateTimeField(blank=True, null=True)
+
+  def get_auth_device(self):
+    auth_device = self.auth_device
+    if auth_device == 'core.rfid':
+      auth_device = 'RFID'
+    elif auth_device == 'core.onewire':
+      auth_device = 'OneWire'
+    return auth_device
 
   def IsAssigned(self):
     return self.user is not None

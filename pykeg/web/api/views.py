@@ -49,6 +49,7 @@ from pykeg.core import models
 from pykeg.proto import protolib
 from pykeg.web.api import forms
 from pykeg.web.api import util
+from pykeg.web.kegadmin.forms import ChangeKegForm
 
 if settings.HAVE_CELERY:
   from pykeg.web import tasks
@@ -353,6 +354,17 @@ def tap_spill(request, tap_id):
   if form.is_valid():
     tap.current_keg.spilled_ml += form.cleaned_data['volume_ml']
     tap.current_keg.save()
+  else:
+    raise kbapi.BadRequestError, _form_errors(form)
+  return protolib.ToProto(tap, full=True)
+
+@csrf_exempt
+@auth_required
+def tap_activate(request, tap_id):
+  tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  form = ChangeKegForm(request.POST)
+  if form.is_valid():
+    form.save(tap)
   else:
     raise kbapi.BadRequestError, _form_errors(form)
   return protolib.ToProto(tap, full=True)

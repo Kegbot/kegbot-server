@@ -48,6 +48,9 @@ class CreateKegTapForm(forms.ModelForm):
     model = models.KegTap
     fields = ('name', 'meter_name', 'relay_name', 'ml_per_tick', 'description')
 
+class CalibrateTapForm(forms.Form):
+  ml_per_tick = forms.FloatField()
+
 class PhotoForm(forms.Form):
   photo = forms.ImageField()
   time = forms.CharField(required=False)

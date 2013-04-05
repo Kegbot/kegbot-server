@@ -317,13 +317,30 @@ def get_api_key(request):
 
 @csrf_exempt
 def tap_detail(request, tap_id):
-  if request.method == 'POST':
-    return _tap_detail_post(request, tap_id)
-  else:
-    return _tap_detail_get(request, tap_id)
-
-def _tap_detail_get(request, tap_id):
   tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  if request.method == 'POST':
+    return _tap_detail_post(request, tap)
+  elif request.method == 'GET':
+    return _tap_detail_get(request, tap)
+  else:
+   raise kbapi.BadRequestError('Method not supported')
+
+def _tap_detail_get(request, tap):
+  return protolib.ToProto(tap, full=True)
+
+@csrf_exempt
+@auth_required
+def tap_calibrate(request, tap_id):
+  # TODO(mikey): This would make more semantic sense as PATCH /taps/tap-name/,
+  # but Django's support for non-POST verbs is poor (specifically wrt request
+  # body/form handling).
+  tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  form = forms.CalibrateTapForm(request.POST)
+  if form.is_valid():
+    tap.ml_per_tick = form.cleaned_data['ml_per_tick']
+    tap.save()
+  else:
+    raise kbapi.BadRequestError, _form_errors(form)
   return protolib.ToProto(tap, full=True)
 
 @auth_required
@@ -344,7 +361,7 @@ def _tap_detail_post(request, tap):
     duration = 0
   b = backend.KegbotBackend(site=request.kbsite)
   try:
-    res = b.RecordDrink(tap_name=tap,
+    res = b.RecordDrink(tap_name=tap.meter_name,
       ticks=cd['ticks'],
       volume_ml=cd.get('volume_ml'),
       username=cd.get('username'),

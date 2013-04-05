@@ -39,7 +39,7 @@ class Command(NoArgsCommand):
       d.save()
     print ''
 
-    pics = models.Picture.objects.all()
+    pics = models.PourPicture.objects.all()
     pos = 0
     for p in pics:
       pos += 1
@@ -67,7 +67,7 @@ class Command(NoArgsCommand):
       sess = models.DrinkingSession.AssignSessionForDrink(d)
     print ''
 
-    pics = models.Picture.objects.all()
+    pics = models.PourPicture.objects.all()
     count = pics.count()
     pos = 0
     for p in pics:

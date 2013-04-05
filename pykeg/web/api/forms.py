@@ -28,7 +28,6 @@ class DrinkPostForm(forms.Form):
   pour_time = forms.IntegerField(required=False)
   now = forms.IntegerField(required=False)
   duration = forms.IntegerField(required=False)
-  spilled = forms.BooleanField(required=False)
   shout = forms.CharField(required=False)
   tick_time_series = forms.CharField(required=False)
 
@@ -50,6 +49,9 @@ class CreateKegTapForm(forms.ModelForm):
 
 class CalibrateTapForm(forms.Form):
   ml_per_tick = forms.FloatField()
+
+class TapSpillForm(forms.Form):
+  volume_ml = forms.FloatField()
 
 class PhotoForm(forms.Form):
   photo = forms.ImageField()

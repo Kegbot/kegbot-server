@@ -343,6 +343,20 @@ def tap_calibrate(request, tap_id):
     raise kbapi.BadRequestError, _form_errors(form)
   return protolib.ToProto(tap, full=True)
 
+@csrf_exempt
+@auth_required
+def tap_spill(request, tap_id):
+  tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  if not tap.current_keg:
+    raise kbapi.BadRequestError('No keg on tap.')
+  form = forms.TapSpillForm(request.POST)
+  if form.is_valid():
+    tap.current_keg.spilled_ml += form.cleaned_data['volume_ml']
+    tap.current_keg.save()
+  else:
+    raise kbapi.BadRequestError, _form_errors(form)
+  return protolib.ToProto(tap, full=True)
+
 @auth_required
 def _tap_detail_post(request, tap):
   form = forms.DrinkPostForm(request.POST)
@@ -367,7 +381,6 @@ def _tap_detail_post(request, tap):
       username=cd.get('username'),
       pour_time=pour_time,
       duration=duration,
-      spilled=cd.get('spilled'),
       shout=cd.get('shout'),
       tick_time_series=cd.get('tick_time_series'))
     return protolib.ToProto(res, full=True)

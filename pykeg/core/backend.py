@@ -99,8 +99,8 @@ class KegbotBackend:
     return list(models.KegTap.objects.all())
 
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=0, spilled=False,
-      shout='', tick_time_series='', do_postprocess=True):
+      pour_time=None, duration=0, shout='', tick_time_series='',
+      do_postprocess=True):
 
     tap = self._GetTapFromName(tap_name)
     if not tap:
@@ -121,14 +121,6 @@ class KegbotBackend:
     keg = None
     if tap.current_keg and tap.current_keg.status == 'online':
       keg = tap.current_keg
-
-    if spilled:
-      if not keg:
-        self._logger.warning('Got spilled pour for tap missing keg; ignoring')
-        return
-      keg.spilled_ml += volume_ml
-      keg.save()
-      return
 
     if tick_time_series:
       try:

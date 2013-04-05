@@ -103,44 +103,7 @@ def tap_detail(request, tap_id):
     if 'submit_change_keg_form' in request.POST:
       activate_keg_form = forms.ChangeKegForm(request.POST)
       if activate_keg_form.is_valid():
-        current = tap.current_keg
-        if current:
-          current.end_keg()
-        cd = activate_keg_form.cleaned_data
-        new_keg = models.Keg()
-        new_keg.site = request.kbsite
-        new_keg.size = cd['keg_size']
-        new_keg.description = cd['description']
-        new_keg.status = 'online'
-
-        beer_type = None
-        brewer = None
-        style = None
-        if cd['beer_id']:
-          beer_type = models.BeerType.objects.get(id=int(cd['beer_id']))
-        if cd['brewer_id']:
-          brewer = models.Brewer.objects.get(id=int(cd['brewer_id']))
-        if cd['style_id']:
-          style = models.BeerStyle.objects.get(id=int(cd['style_id']))
-
-        if not style or style.name != cd['style_name']:
-          style, new = models.BeerStyle.objects.get_or_create(name=cd['style_name'])
-        if not brewer or brewer.name != cd['brewer_name']:
-          brewer, new = models.Brewer.objects.get_or_create(name=cd['brewer_name'])
-        if not beer_type or \
-            beer_type.name != cd['beer_name'] or \
-            beer_type.brewer.name != brewer.name or \
-            beer_type.style.name != style.name:
-          beer_type = models.BeerType.objects.create(
-            name=cd['beer_name'],
-            brewer=brewer,
-            style=style)
-
-        new_keg.type = beer_type
-        new_keg.save()
-
-        tap.current_keg = new_keg
-        tap.save()
+        activate_keg_form.save(tap)
         messages.success(request, 'The new keg was activated. Bottoms up!')
         return redirect('kegadmin-taps')
     

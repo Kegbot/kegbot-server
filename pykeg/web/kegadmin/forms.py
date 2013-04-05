@@ -44,6 +44,49 @@ class ChangeKegForm(forms.Form):
       )
   )
 
+  def save(self, tap):
+    if not self.is_valid():
+      raise ValueError('Form is not valid.')
+    current = tap.current_keg
+    if current:
+      current.end_keg()
+    cd = self.cleaned_data
+    new_keg = models.Keg()
+    new_keg.site = tap.site
+    new_keg.size = cd['keg_size']
+    new_keg.description = cd['description']
+    new_keg.status = 'online'
+
+    beer_type = None
+    brewer = None
+    style = None
+    if cd['beer_id']:
+      beer_type = models.BeerType.objects.get(id=int(cd['beer_id']))
+    if cd['brewer_id']:
+      brewer = models.Brewer.objects.get(id=int(cd['brewer_id']))
+    if cd['style_id']:
+      style = models.BeerStyle.objects.get(id=int(cd['style_id']))
+
+    if not style or style.name != cd['style_name']:
+      style, new = models.BeerStyle.objects.get_or_create(name=cd['style_name'])
+    if not brewer or brewer.name != cd['brewer_name']:
+      brewer, new = models.Brewer.objects.get_or_create(name=cd['brewer_name'])
+    if not beer_type or \
+        beer_type.name != cd['beer_name'] or \
+        beer_type.brewer.name != brewer.name or \
+        beer_type.style.name != style.name:
+      beer_type = models.BeerType.objects.create(
+        name=cd['beer_name'],
+        brewer=brewer,
+        style=style)
+
+    new_keg.type = beer_type
+    new_keg.save()
+
+    tap.current_keg = new_keg
+    tap.save()
+
+
 class EndKegForm(forms.Form):
   keg = forms.ModelChoiceField(queryset=ALL_KEGS, widget=forms.HiddenInput)
 

@@ -409,7 +409,7 @@ def register(request):
       u.save()
       u.set_password(form.cleaned_data['password'])
       if 'photo' in request.FILES:
-        pic = models.Picture.objects.create(user=u)
+        pic = models.Picture.objects.create()
         photo = request.FILES['photo']
         pic.image.save(photo.name, photo)
         pic.save()

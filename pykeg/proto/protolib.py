@@ -271,7 +271,6 @@ def SessionToProto(record, full=False):
   ret.end_time = datestr(record.end_time)
   ret.volume_ml = record.volume_ml
   ret.name = record.name or ''
-  ret.slug = record.slug or ''
 
   if full:
     #ret.stats.MergeFrom(record.GetStats())

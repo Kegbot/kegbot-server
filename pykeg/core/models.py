@@ -30,8 +30,6 @@ from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from autoslug import AutoSlugField
-
 from pykeg import EPOCH
 
 from pykeg.core import kb_common
@@ -700,8 +698,6 @@ class DrinkingSession(_AbstractChunk):
   objects = managers.SessionManager()
   site = models.ForeignKey(KegbotSite, related_name='sessions')
   name = models.CharField(max_length=256, blank=True, null=True)
-  slug = AutoSlugField(populate_from='name', unique_with='site', blank=True,
-      null=True, always_update=True)
 
   def __str__(self):
     return "Session #%s: %s" % (self.id, self.start_time)

@@ -40,6 +40,7 @@ class Command(NoArgsCommand):
     print ''
 
     pics = models.PourPicture.objects.all()
+    count = pics.count()
     pos = 0
     for p in pics:
       pos += 1

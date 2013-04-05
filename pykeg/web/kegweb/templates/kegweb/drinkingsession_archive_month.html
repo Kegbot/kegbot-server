@@ -1,4 +1,5 @@
 {% extends "kegweb/drinkingsession_archive_base.html" %}
+{% load tz %}
 
 {% block title %}Sessions: {{month|date:"F Y"}} | {{ block.super }}{% endblock %}
 {% block pagetitle %}Sessions: {{month|date:"F Y"}}{% endblock %}
@@ -16,7 +17,7 @@
             <ul>
               {% for d in date_list %}
               <li>
-                <a href="{% url "kb-sessions-day" d.year d.month d.day %}">{{ d|date:"F d" }}</a>
+                <a href="{% url "kb-sessions-day" d.year d.month d.day %}">{{ d|utc|date:"F d" }}</a>
               </li>
               {% endfor %}
             </ul>

@@ -11,7 +11,10 @@ Current Version (in development)
 * Python 2.7 and Django 1.5 are now required.
 * Sessions are now exposed in the top navbar, and are listed by year, month, and
   day.
+* Miscellaneous visual improvements.
 * Untappd API v4 is supported (thanks pmppk).
+* Many enhancements to the admin dashboard.
+* API support for starting and ending kegs.
 
 .. note::
   If you are upgrading from an older version of Kegbot, run the following
@@ -20,9 +23,14 @@ Current Version (in development)
     $ kegbot-admin.py migrate untappd --fake 0001
 
 .. note::
+  If you are upgrading from an older version of Kegbot, run the following
+  command before ``kb_upgrade``::
+    
+    $ kegbot-admin.py kb_migrate_times
+
+.. note::
   If you are running from source and experience errors, delete all stale
   ``.pyc`` files: ``cd pykeg/ && rm -rf "*.pyc"``
-
 
 
 Version 0.9.7 (2013-01-10)

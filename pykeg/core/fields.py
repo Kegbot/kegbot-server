@@ -1,8 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext as _
 
-from pykeg.core.jsonfield import JSONField
-
 ### CountryField
 # Source: http://www.djangosnippets.org/snippets/1281/
 
@@ -269,10 +267,3 @@ else:
         ),
     ], ["^pykeg\.core\.fields\.CountryField"])
 
-    add_introspection_rules([
-        (
-            [JSONField],
-            [],
-            {},
-        ),
-    ], ["^django_extensions\.db\.fields\.json\.JSONField", "pykeg.core.jsonfield.JSONField"])

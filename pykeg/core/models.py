@@ -35,6 +35,7 @@ from pykeg import EPOCH
 from pykeg.core import kb_common
 from pykeg.core import fields
 from pykeg.core import imagespecs
+from pykeg.core import jsonfield
 from pykeg.core import managers
 from pykeg.core import stats
 from pykeg.core.util import make_serial
@@ -980,7 +981,7 @@ class _StatsModel(models.Model):
 
   site = models.ForeignKey(KegbotSite)
   time = models.DateTimeField(default=timezone.now)
-  stats = fields.JSONField()
+  stats = jsonfield.JSONField()
 
 
 class SystemStats(_StatsModel):

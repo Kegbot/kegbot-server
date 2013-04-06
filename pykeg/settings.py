@@ -19,7 +19,6 @@ INSTALLED_APPS = (
 
     'crispy_forms',
     'bootstrap-pagination',
-    'django_extensions',
     'imagekit',
     'pykeg.connections',
     'pykeg.connections.foursquare',

@@ -21,7 +21,6 @@ DEPENDENCIES = [
   'django-imagekit >= 2.0',
   'django-registration',
   'django-socialregistration >= 0.5.10',
-  'django_extensions',
   'django-bootstrap-pagination',
 
   'Celery',
@@ -35,12 +34,12 @@ DEPENDENCIES = [
   'facebook-sdk >= 0.3.0',
   'foursquare',
   'gunicorn >= 0.16.1',
-  'poster', # needed by foursquare
-  'pylcdui >= 0.5.5',
+  'mysql-python',
+  'pillow',
   'protobuf >= 2.4.1',
   'python-gflags >= 1.8',
+  'python-memcached',
   'pytz',
-  'requests', # needed by oauth
   'tweepy',
 ]
 

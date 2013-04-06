@@ -125,7 +125,7 @@ this section.
 
 #. Step in to the new tree and run the setup command::
 
-	(kb) $ cd kegbot/pykeg
+	(kb) $ cd kegbot/
 	(kb) $ ./setup.py develop
 
 The command may take a few minutes as it downloads and installs everything.

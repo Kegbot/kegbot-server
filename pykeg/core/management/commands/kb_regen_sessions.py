@@ -51,11 +51,12 @@ class Command(NoArgsCommand):
 
     print 'deleting old sessions..',
     try:
-      cursor = connection.cursor()
-      for table in ('core_drinkingsession', 'core_kegsessionchunk',
-        'core_usersessionchunk', 'core_sessionchunk'):
-        cursor.execute('TRUNCATE TABLE `%s`' % table)
-      print 'truncate successful'
+      with connection.constraint_checks_disabled():
+        cursor = connection.cursor()
+        for table in ('core_drinkingsession', 'core_kegsessionchunk',
+          'core_usersessionchunk', 'core_sessionchunk'):
+          cursor.execute('TRUNCATE TABLE `%s`' % table)
+        print 'truncate successful'
     except Exception, e:
       models.DrinkingSession.objects.all().delete()
       print 'orm delete successful'

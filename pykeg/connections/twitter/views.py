@@ -47,7 +47,7 @@ def site_twitter_redirect(request):
     return redirect('kegadmin-connections')
 
   client = TwitterClient()
-  url = SiteTwitterSettings.get().reverse_full('site_twitter_callback')
+  url = request.kbsite.settings.reverse_full('site_twitter_callback')
   client.set_callback_url(url)
   request.session[_site_twitter_session_key(request)] = client
 

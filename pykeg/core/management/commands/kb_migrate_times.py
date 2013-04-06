@@ -132,7 +132,8 @@ def do_migrate(drinks):
   pictures = []
   for drink in drinks:
     migrate(drink, ['time'], errors)
-    kegs.add(drink.keg)
+    if drink.keg:
+      kegs.add(drink.keg)
     sessions.add(drink.session)
     for p in drink.pictures.all().order_by('id'):
       pictures.append(p)

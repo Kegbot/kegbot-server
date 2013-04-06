@@ -5,8 +5,8 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.8 (2013-04-06)
+--------------------------
 
 * Python 2.7 and Django 1.5 are now required.
 * Sessions are now exposed in the top navbar, and are listed by year, month, and

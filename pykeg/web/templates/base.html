@@ -64,7 +64,7 @@
 
         <ul class="nav">
           {% if kbsite %}
-          {% navitem kb-sessions "Sessions" %}
+          {% if HAVE_SESSIONS %}{% navitem kb-sessions "Sessions" %}{% endif %}
           {% navitem kb-kegs "Kegs" %}
           {% navitem kb-stats "Stats" %}
           {% if user.is_authenticated %}{% navitem kb-account-main "Account" %}{% endif %}

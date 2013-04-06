@@ -65,6 +65,9 @@ def index(request):
   taps = request.kbsite.taps.filter(current_keg__isnull=False)
   context['initial_taps'] = kbjson.dumps([protolib.ToDict(t, full=True) for t in taps], indent=None)
 
+  context['have_events'] = len(events) > 0
+  context['have_taps'] = len(taps) > 0
+
   return render_to_response('index.html', context)
 
 @cache_page(30)

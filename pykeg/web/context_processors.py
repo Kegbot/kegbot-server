@@ -32,6 +32,7 @@ def kbsite(request):
     guest_info['name'] = kbsite.settings.guest_name
     guest_info['image'] = kbsite.settings.guest_image
     serial = kbsite.serial_number
+    have_sessions = kbsite.sessions.all().count() > 0
 
   ret = {
     'DEBUG': settings.DEBUG,
@@ -41,6 +42,7 @@ def kbsite(request):
     'kbsite': getattr(request, 'kbsite', None),
     'request_path': request.path,
     'login_form': LoginForm(initial={'next_page': request.path}),
+    'HAVE_SESSIONS': have_sessions,
     'GOOGLE_ANALYTICS_ID': analytics_id,
     'guest_info': guest_info,
   }

@@ -46,6 +46,7 @@
 
 {% block col-1 %}
 
+{% if have_taps %}
 {% verbatim %}
 <div ng-controller="TapListController" class="ng-cloak">
 
@@ -90,6 +91,19 @@
   </div> <!-- /ng-repeat -->
 </div>
 {% endverbatim %}
+{% else %}
+
+<div class="alert alert-info">
+  <h2>No Kegs on Tap</h2>
+  <p>
+    It might be time for a beer run.
+    {% if user.is_staff %}
+    (Want to <a href="{% url "kegadmin-taps" %}">tap a keg</a>?)
+    {% endif %}
+  </p>
+</div>
+
+{% endif %}
 
 {% if sessions %}
 {% for session in sessions %}
@@ -103,9 +117,18 @@
 {% endblock col-1 %}
 
 {% block col-2 %}
+{% if have_events %}
 <div class="kb-contentbox">
   <h2>Recent Activity</h2>
   <div id="kb-system-events">
   </div>
 </div>
+{% else %}
+<div class="alert">
+  <h2>No Activity</h2>
+  <p>
+    Everything feels so fresh.
+  </p>
+</div>
+{% endif %}
 {% endblock col-2 %}

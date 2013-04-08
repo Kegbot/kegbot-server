@@ -24,7 +24,7 @@ Version 0.9.8 (2013-04-06)
 
 .. note::
   If you are upgrading from an older version of Kegbot, run the following
-  command before ``kb_upgrade``::
+  command after ``kb_upgrade``::
     
     $ kegbot-admin.py kb_migrate_times
 

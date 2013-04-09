@@ -18,32 +18,27 @@ def enabled_features(request):
 
 def kbsite(request):
   kbsite = getattr(request, 'kbsite', None)
-  analytics_id = None
-  if kbsite:
-    analytics_id = kbsite.settings.google_analytics_id
-
-  guest_info = {
-    'name': 'guest',
-    'image': None,
-  }
-
-  serial = ''
-  if kbsite:
-    guest_info['name'] = kbsite.settings.guest_name
-    guest_info['image'] = kbsite.settings.guest_image
-    serial = kbsite.serial_number
-    have_sessions = kbsite.sessions.all().count() > 0
 
   ret = {
     'DEBUG': settings.DEBUG,
     'EPOCH': pykeg.EPOCH,
     'VERSION': pykeg.__version__,
-    'SERIAL_NUMBER': serial,
-    'kbsite': getattr(request, 'kbsite', None),
+    'HAVE_SESSIONS': False,
+    'GOOGLE_ANALYTICS_ID': None,
+    'kbsite': kbsite,
     'request_path': request.path,
     'login_form': LoginForm(initial={'next_page': request.path}),
-    'HAVE_SESSIONS': have_sessions,
-    'GOOGLE_ANALYTICS_ID': analytics_id,
-    'guest_info': guest_info,
+    'guest_info': {
+      'name': 'guest',
+      'image': None,
+    },
   }
+
+  if kbsite:
+    ret['guest_info']['name'] = kbsite.settings.guest_name
+    ret['guest_info']['image'] = kbsite.settings.guest_image
+    ret['SERIAL_NUMBER'] = kbsite.serial_number
+    ret['HAVE_SESSIONS'] = kbsite.sessions.all().count() > 0
+    ret['GOOGLE_ANALYTICS_ID'] = kbsite.settings.google_analytics_id
+
   return ret

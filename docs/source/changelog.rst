@@ -18,20 +18,9 @@ Version 0.9.8 (2013-04-06)
 
 .. note::
   If you are upgrading from an older version of Kegbot, run the following
-  command before ``kb_upgrade``::
-    
-    $ kegbot-admin.py migrate untappd --fake 0001
-
-.. note::
-  If you are upgrading from an older version of Kegbot, run the following
   command after ``kb_upgrade``::
     
     $ kegbot-admin.py kb_migrate_times
-
-.. note::
-  If you are running from source and experience errors, delete all stale
-  ``.pyc`` files: ``cd pykeg/ && rm -rf "*.pyc"``
-
 
 Version 0.9.7 (2013-01-10)
 --------------------------

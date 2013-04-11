@@ -448,8 +448,8 @@ def register(request):
       u = models.User()
       u.username = username
       u.email = form.cleaned_data['email']
-      u.save()
       u.set_password(form.cleaned_data['password'])
+      u.save()
       if 'photo' in request.FILES:
         pic = models.Picture.objects.create()
         photo = request.FILES['photo']

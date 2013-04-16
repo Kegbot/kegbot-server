@@ -46,7 +46,7 @@ from pykeg.connections.untappd import forms as untappd_forms
 def account_main(request):
   context = RequestContext(request)
   context['user'] = request.user
-  return render_to_response('account/index.html', context)
+  return render_to_response('account/index.html', context_instance=context)
 
 @login_required
 def connections(request):
@@ -80,7 +80,7 @@ def connections(request):
     pass
   context['untappd_profile'] = untappd_profile
 
-  return render_to_response('account/connections.html', context)
+  return render_to_response('account/connections.html', context_instance=context)
 
 @login_required
 def edit_mugshot(request):
@@ -98,7 +98,7 @@ def edit_mugshot(request):
       profile = request.user.get_profile()
       profile.mugshot = pic
       profile.save()
-  return render_to_response('account/mugshot.html', context)
+  return render_to_response('account/mugshot.html', context_instance=context)
 
 @login_required
 @require_POST

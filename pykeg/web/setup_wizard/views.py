@@ -39,8 +39,7 @@ def setup_view(f):
   def new_function(*args, **kwargs):
     request = args[0]
     if request.kbsite and request.kbsite.is_setup:
-      if not request.user.is_active or not request.user.is_admin:
-        raise Http404('Admin user is required to modify existing site.')
+      raise Http404('Site is already setup, wizard disabled.')
     return f(*args, **kwargs)
   return wraps(f)(new_function)
 
@@ -48,7 +47,7 @@ def setup_view(f):
 @never_cache
 def start(request):
   context = RequestContext(request)
-  return render_to_response('setup_wizard/start.html', context)
+  return render_to_response('setup_wizard/start.html', context_instance=context)
 
 @setup_view
 @never_cache
@@ -68,7 +67,8 @@ def create_or_import(request):
       else:
         messages.error(request, 'Sorry, imports are not yet supported.')
   context['form'] = form
-  return render_to_response('setup_wizard/create_or_import.html', context)
+  print ' '.join(str(type(d)) for d in context.dicts)
+  return render_to_response('setup_wizard/create_or_import.html', context_instance=context)
 
 @setup_view
 @never_cache
@@ -82,7 +82,7 @@ def site_settings(request):
       messages.success(request, 'Settings saved!')
       return redirect('setup_admin')
   context['form'] = form
-  return render_to_response('setup_wizard/site_settings.html', context)
+  return render_to_response('setup_wizard/site_settings.html', context_instance=context)
 
 @setup_view
 @never_cache
@@ -99,7 +99,7 @@ def admin(request):
         login(request, user)
       return redirect('setup_finish')
   context['form'] = form
-  return render_to_response('setup_wizard/admin.html', context)
+  return render_to_response('setup_wizard/admin.html', context_instance=context)
 
 @setup_view
 @never_cache
@@ -110,4 +110,4 @@ def finish(request):
     request.kbsite.save()
     messages.success(request, 'Tip: Install a new Keg in Admin: Taps')
     return redirect('kegadmin-main')
-  return render_to_response('setup_wizard/finish.html', context)
+  return render_to_response('setup_wizard/finish.html', context_instance=context)

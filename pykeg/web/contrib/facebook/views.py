@@ -22,7 +22,7 @@ def account_settings(request):
   context = RequestContext(request)
   profile = fbutil.profile_for_user(request.user)
   if not profile:
-    return render_to_response('contrib/facebook/link.html', context)
+    return render_to_response('contrib/facebook/link.html', context_instance=context)
 
   settings = profile.settings.all()[0]
   form = forms.FacebookSettingsForm(instance=settings)
@@ -36,7 +36,7 @@ def account_settings(request):
       settings.profile = profile
       settings.save()
   context['settings_form'] = form
-  return render_to_response('contrib/facebook/settings.html', context)
+  return render_to_response('contrib/facebook/settings.html', context_instance=context)
 
 @login_required
 def status_update(request):
@@ -45,4 +45,4 @@ def status_update(request):
     if form.is_valid():
       fbutil.stream_publish(request.user, message=form.cleaned_data['message'])
   context = {'form': forms.WallPostForm()}
-  return render_to_response('contrib/facebook/status-update.html', context)
+  return render_to_response('contrib/facebook/status-update.html', context_instance=context)

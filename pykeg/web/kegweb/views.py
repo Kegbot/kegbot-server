@@ -68,7 +68,7 @@ def index(request):
   context['have_events'] = len(events) > 0
   context['have_taps'] = len(taps) > 0
 
-  return render_to_response('index.html', context)
+  return render_to_response('index.html', context_instance=context)
 
 @cache_page(30)
 def system_stats(request):
@@ -90,7 +90,7 @@ def system_stats(request):
 
   context['top_drinkers'] = top_drinkers[:10]
 
-  return render_to_response('kegweb/system-stats.html', context)
+  return render_to_response('kegweb/system-stats.html', context_instance=context)
 
 
 ### object lists and detail (generic views)
@@ -113,7 +113,7 @@ def user_detail(request, username):
       'chunks': chunks,
       'stats': stats,
       'drinker': user})
-  return render_to_response('kegweb/drinker_detail.html', context)
+  return render_to_response('kegweb/drinker_detail.html', context_instance=context)
 
 class KegListView(ListView):
   model = models.Keg
@@ -132,7 +132,7 @@ def keg_detail(request, keg_id):
     'keg': keg,
     'stats': keg.GetStats(),
     'sessions': sessions})
-  return render_to_response('kegweb/keg_detail.html', context)
+  return render_to_response('kegweb/keg_detail.html', context_instance=context)
 
 def short_drink_detail(request, drink_id):
   url = request.kbsite.full_url() + '/drinks/' + str(drink_id)
@@ -147,7 +147,7 @@ def short_session_detail(request, session_id):
 def drink_detail(request, drink_id):
   drink = get_object_or_404(models.Drink, site=request.kbsite, id=drink_id)
   context = RequestContext(request, {'drink': drink})
-  return render_to_response('kegweb/drink_detail.html', context)
+  return render_to_response('kegweb/drink_detail.html', context_instance=context)
 
 def session_detail(request, year, month, day, id, slug):
   session = get_object_or_404(models.DrinkingSession, site=request.kbsite, id=id)
@@ -155,7 +155,7 @@ def session_detail(request, year, month, day, id, slug):
     'session': session,
     'stats': session.GetStats(),
   })
-  return render_to_response('kegweb/session_detail.html', context)
+  return render_to_response('kegweb/session_detail.html', context_instance=context)
 
 
 class SessionArchiveIndexView(ArchiveIndexView):

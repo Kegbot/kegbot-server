@@ -57,7 +57,7 @@ def dashboard(request):
   new_users = models.User.objects.filter(date_joined__gte=recent_time)
   context['num_users'] = len(active_users)
   context['num_new_users'] = len(new_users)
-  return render_to_response('kegadmin/dashboard.html', context)
+  return render_to_response('kegadmin/dashboard.html', context_instance=context)
 
 @staff_member_required
 def general_settings(request):
@@ -69,13 +69,13 @@ def general_settings(request):
       form.save()
       messages.success(request, 'Site settings were successfully updated.')
   context['settings_form'] = form
-  return render_to_response('kegadmin/index.html', context)
+  return render_to_response('kegadmin/index.html', context_instance=context)
 
 @staff_member_required
 def tap_list(request):
   context = RequestContext(request)
   context['taps'] = request.kbsite.taps.all()
-  return render_to_response('kegadmin/tap_list.html', context)
+  return render_to_response('kegadmin/tap_list.html', context_instance=context)
 
 @staff_member_required
 def add_tap(request):
@@ -90,7 +90,7 @@ def add_tap(request):
       messages.success(request, 'Tap created.')
       return redirect('kegadmin-taps')
   context['form'] = form
-  return render_to_response('kegadmin/add_tap.html', context)
+  return render_to_response('kegadmin/add_tap.html', context_instance=context)
 
 @staff_member_required
 def tap_detail(request, tap_id):
@@ -146,7 +146,7 @@ def tap_detail(request, tap_id):
   context['end_keg_form'] = end_keg_form
   context['tap_settings_form'] = tap_settings_form
   context['delete_tap_form'] = forms.DeleteTapForm()
-  return render_to_response('kegadmin/tap_detail.html', context)
+  return render_to_response('kegadmin/tap_detail.html', context_instance=context)
 
 @staff_member_required
 def user_list(request):
@@ -174,7 +174,7 @@ def user_list(request):
     users = paginator.page(paginator.num_pages)
 
   context['users'] = users
-  return render_to_response('kegadmin/user_list.html', context)
+  return render_to_response('kegadmin/user_list.html', context_instance=context)
 
 @staff_member_required
 def add_user(request):
@@ -189,7 +189,7 @@ def add_user(request):
       messages.success(request, 'User "%s" created.' % instance.username)
       return redirect('kegadmin-users')
   context['form'] = form
-  return render_to_response('kegadmin/add_user.html', context)
+  return render_to_response('kegadmin/add_user.html', context_instance=context)
 
 @staff_member_required
 def user_detail(request, user_id):
@@ -219,7 +219,7 @@ def user_detail(request, user_id):
 
   context['tokens'] = user.tokens.all().order_by('created_time')
 
-  return render_to_response('kegadmin/user_detail.html', context)
+  return render_to_response('kegadmin/user_detail.html', context_instance=context)
 
 @staff_member_required
 def token_list(request):
@@ -236,7 +236,7 @@ def token_list(request):
     tokens = paginator.page(paginator.num_pages)
 
   context['tokens'] = tokens
-  return render_to_response('kegadmin/token_list.html', context)
+  return render_to_response('kegadmin/token_list.html', context_instance=context)
 
 
 @staff_member_required
@@ -259,7 +259,7 @@ def token_detail(request, token_id):
   context = RequestContext(request)
   context['token'] = token
   context['form'] = form
-  return render_to_response('kegadmin/token_detail.html', context)
+  return render_to_response('kegadmin/token_detail.html', context_instance=context)
 
 @staff_member_required
 def add_token(request):
@@ -275,7 +275,7 @@ def add_token(request):
       messages.success(request, 'Token created.')
       return redirect('kegadmin-tokens')
   context['form'] = form
-  return render_to_response('kegadmin/add_token.html', context)
+  return render_to_response('kegadmin/add_token.html', context_instance=context)
 
 
 @staff_member_required
@@ -322,7 +322,7 @@ def connections(request):
   context['twitter_profile'] = twitter_profile
   context['tweet_form'] = tweet_form
   context['foursquare_settings_form'] = foursquare_form
-  return render_to_response('kegadmin/connections.html', context)
+  return render_to_response('kegadmin/connections.html', context_instance=context)
 
 @staff_member_required
 def autocomplete_beer_type(request):
@@ -391,7 +391,7 @@ def autocomplete_token(request):
 @staff_member_required
 def backup_restore(request):
   context = RequestContext(request)
-  return render_to_response('kegadmin/backup-restore.html', context)
+  return render_to_response('kegadmin/backup-restore.html', context_instance=context)
 
 @staff_member_required
 def generate_backup(request):
@@ -421,5 +421,5 @@ def generate_backup(request):
 def logs(request):
   context = RequestContext(request)
   context['errors'] = logger.get_cached_logs()
-  return render_to_response('kegadmin/logs.html', context)
+  return render_to_response('kegadmin/logs.html', context_instance=context)
 

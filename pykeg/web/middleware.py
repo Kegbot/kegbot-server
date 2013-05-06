@@ -182,12 +182,14 @@ class PrivacyMiddleware:
       return None
 
     privacy = request.kbsite.settings.privacy
+
     if privacy == 'public':
       return None
-
-    if privacy == 'staff' and not request.user.is_staff:
-      return SimpleTemplateResponse('kegweb/staff_only.html',
-          context=RequestContext(request), status=401)
+    elif privacy == 'staff'
+      if not request.user.is_staff:
+        return SimpleTemplateResponse('kegweb/staff_only.html',
+            context=RequestContext(request), status=401)
+      return None
     elif privacy == 'members':
       if not request.user.is_authenticated or not request.user.is_active:
         return SimpleTemplateResponse('kegweb/members_only.html',

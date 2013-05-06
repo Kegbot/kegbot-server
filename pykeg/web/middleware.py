@@ -185,7 +185,7 @@ class PrivacyMiddleware:
 
     if privacy == 'public':
       return None
-    elif privacy == 'staff'
+    elif privacy == 'staff':
       if not request.user.is_staff:
         return SimpleTemplateResponse('kegweb/staff_only.html',
             context=RequestContext(request), status=401)

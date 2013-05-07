@@ -369,7 +369,7 @@ def SoundEventToProto(record, full=False):
   ret.event_predicate = record.event_predicate
   ret.sound_url = record.soundfile.sound.url
   if record.user:
-    ret.user = record.user
+    ret.user = record.user.username
   return ret
 
 # Composite messages

@@ -61,19 +61,19 @@ gflags.DEFINE_string('data_root', '~/kegbot-data',
     'Data root for Kegbot.')
 
 gflags.DEFINE_string('db_type', 'sqlite',
-    'One of: mysql, sqlite.')
+    'One of: mysql, sqlite, postgres.')
 
-gflags.DEFINE_string('mysql_user', 'root',
-    'MySQL username.  Ignored if using sqlite.')
+gflags.DEFINE_string('db_user', 'root',
+    'MySQL/Postgres username.  Ignored if using sqlite.')
 
-gflags.DEFINE_string('mysql_password', '',
-    'MySQL password.  Ignored if using sqlite.')
+gflags.DEFINE_string('db_password', '',
+    'MySQL/Postgres password.  Ignored if using sqlite.')
 
-gflags.DEFINE_string('mysql_database', 'kegbot',
-    'MySQL database name.  Ignored if using sqlite.')
+gflags.DEFINE_string('db_database', 'kegbot',
+    'MySQL/Postgres database name.  Ignored if using sqlite.')
 
 gflags.DEFINE_string('sqlite_filename', 'kegbot.sqlite',
-    'File name for the Kegbot sqlite database within `data_root`.  Ignored if using MySQL.')
+    'File name for the Kegbot sqlite database within `data_root`.  Ignored if not using SQLite.')
 
 gflags.DEFINE_string('timezone', 'America/Los_Angeles',
     'Default time zone.')
@@ -402,25 +402,25 @@ class Memcached(ConfigurationSetupStep):
 class ConfigureDatabase(ConfigurationSetupStep):
   """Select database for Kegbot Server backend.
 
-  Currently only sqlite and MySQL are supported by the setup wizard.
+  Currently only MySQL, Postgres, and sqlite are supported by the setup wizard.
   """
   def get_from_flag(self, ctx):
     self.choice = FLAGS.db_type
     if self.choice == 'sqlite':
       return FLAGS.sqlite_filename
     else:
-      return (FLAGS.mysql_user, FLAGS.mysql_password, FLAGS.mysql_database)
+      return (FLAGS.db_user, FLAGS.db_password, FLAGS.db_database)
 
   def get_from_prompt(self, ctx):
     self.choice = self.do_prompt('Database type',
-        choices=('sqlite', 'mysql'), default=FLAGS.db_type)
+        choices=('sqlite', 'mysql', 'postgres'), default=FLAGS.db_type)
 
     if self.choice == 'sqlite':
       root = ctx['KEGBOT_ROOT']
       return self.do_prompt('SQLite database filename to create in %s' % root,
           default=FLAGS.sqlite_filename)
     else:
-      user = self.do_prompt('MySQL user')
+      user = self.do_prompt('Database user')
       password = getpass.getpass()
       database = self.do_prompt('Database name', default='kegbot')
       return (user, password, database)
@@ -435,9 +435,9 @@ class ConfigureDatabase(ConfigurationSetupStep):
     else:
       user, password, database = self.value
       if user == '':
-        raise ValueError('Must give a MySQL username')
+        raise ValueError('Must give a database username')
       elif database == '':
-        raise ValueError('Must give a MySQL database name')
+        raise ValueError('Must give a database name')
 
     if self.choice == 'sqlite':
       cfg = {
@@ -450,15 +450,17 @@ class ConfigureDatabase(ConfigurationSetupStep):
       user, password, database = self.value
       cfg = {
         'default': {
-          'ENGINE': 'django.db.backends.mysql',
           'NAME': database,
           'USER': user,
           'PASSWORD': password,
-          'OPTIONS': {
-            'init_command': 'SET storage_engine=INNODB',
-          }
+          'HOST': '',
         }
       }
+      if self.choice == 'mysql':
+        cfg['default']['ENGINE'] = 'django.db.backends.mysql'
+        cfg['default']['OPTIONS'] = { 'init_command': 'SET storage_engine=INNODB' }
+      else:
+        cfg['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
 
     ctx['DATABASES'] = cfg
 

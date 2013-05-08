@@ -119,6 +119,7 @@ class SiteSettings(models.Model):
   description = models.TextField(blank=True, null=True,
       help_text='Description of this site')
   background_image = models.ForeignKey('Picture', blank=True, null=True,
+      on_delete=models.SET_NULL,
       help_text='Background for this site.')
   event_web_hook = models.URLField(blank=True, null=True,
       help_text='Web hook URL for newly-generated events.')
@@ -136,7 +137,7 @@ class SiteSettings(models.Model):
   guest_name = models.CharField(max_length=63, default='guest',
       help_text='Name to be shown in various places for unauthenticated pours.')
   guest_image = models.ForeignKey('Picture', blank=True, null=True,
-      related_name='guest_images',
+      related_name='guest_images', on_delete=models.SET_NULL,
       help_text='Profile picture to be shown for unauthenticated pours.')
   default_user = models.ForeignKey(User, blank=True, null=True,
       help_text='Default user to set as owner for unauthenticated drinks. '
@@ -217,7 +218,8 @@ class UserProfile(models.Model):
     return ('kb-drinker', (self.user.username,))
 
   user = models.OneToOneField(User)
-  mugshot = models.ForeignKey('Picture', blank=True, null=True)
+  mugshot = models.ForeignKey('Picture', blank=True, null=True,
+    on_delete=models.SET_NULL)
 
 def _user_post_save(sender, instance, **kwargs):
   profile, new = UserProfile.objects.get_or_create(user=instance)
@@ -279,7 +281,7 @@ class Brewer(BeerDBModel):
   description = models.TextField(default='', blank=True, null=True,
       help_text='A short description of the brewer')
   image = models.ForeignKey('Picture', blank=True, null=True,
-      related_name='beer_brewers')
+      related_name='beer_brewers', on_delete=models.SET_NULL)
 
   def __str__(self):
     return self.name
@@ -317,7 +319,7 @@ class BeerType(BeerDBModel):
       help_text='Specific/final gravity of the beer, if known')
 
   image = models.ForeignKey('Picture', blank=True, null=True,
-      related_name='beer_types')
+      related_name='beer_types', on_delete=models.SET_NULL)
 
   untappd_beer_id = models.IntegerField(blank=True, null=True,
       help_text='Untappd.com beer id for this beer, if known')
@@ -361,7 +363,8 @@ class KegTap(models.Model):
   current_keg = models.OneToOneField('Keg', blank=True, null=True,
       related_name='current_tap')
   max_tick_delta = models.PositiveIntegerField(default=100)
-  temperature_sensor = models.ForeignKey('ThermoSensor', blank=True, null=True)
+  temperature_sensor = models.ForeignKey('ThermoSensor', blank=True, null=True,
+      on_delete=models.SET_NULL)
 
   def __str__(self):
     return "%s: %s" % (self.meter_name, self.name)
@@ -486,8 +489,8 @@ class Keg(models.Model):
     return "Keg #%s - %s" % (self.id, self.type)
 
   site = models.ForeignKey(KegbotSite, related_name='kegs')
-  type = models.ForeignKey('BeerType')
-  size = models.ForeignKey(KegSize)
+  type = models.ForeignKey('BeerType', on_delete=models.PROTECT)
+  size = models.ForeignKey(KegSize, on_delete=models.PROTECT)
   start_time = models.DateTimeField(default=timezone.now)
   end_time = models.DateTimeField(default=timezone.now)
   status = models.CharField(max_length=128, choices=(
@@ -595,14 +598,16 @@ class Drink(models.Model):
   time = models.DateTimeField()
   duration = models.PositiveIntegerField(blank=True, default=0)
   user = models.ForeignKey(User, null=True, blank=True, related_name='drinks')
-  keg = models.ForeignKey(Keg, null=True, blank=True, related_name='drinks')
+  keg = models.ForeignKey(Keg, null=True, blank=True, related_name='drinks',
+      on_delete=models.PROTECT)
   status = models.CharField(max_length=128, choices = (
      ('valid', 'valid'),
      ('invalid', 'invalid'),
      ('deleted', 'deleted'),
      ), default = 'valid')
   session = models.ForeignKey('DrinkingSession',
-      related_name='drinks', null=True, blank=True, editable=False)
+      related_name='drinks', null=True, blank=True, editable=False,
+      on_delete=models.PROTECT)
   shout = models.TextField(blank=True, null=True,
       help_text='Comment from the drinker at the time of the pour.')
   tick_time_series = models.TextField(blank=True, null=True, editable=False,
@@ -884,7 +889,7 @@ class SessionChunk(_AbstractChunk):
   user = models.ForeignKey(User, related_name='session_chunks', blank=True,
       null=True)
   keg = models.ForeignKey(Keg, related_name='session_chunks', blank=True,
-      null=True)
+      null=True, on_delete=models.PROTECT)
 
 
 class UserSessionChunk(_AbstractChunk):
@@ -1153,6 +1158,7 @@ class PourPicture(models.Model):
   user = models.ForeignKey(User, blank=True, null=True,
       help_text='User this picture is associated with, if any')
   keg = models.ForeignKey(Keg, blank=True, null=True, related_name='pictures',
+      on_delete=models.SET_NULL,
       help_text='Keg this picture is associated with, if any')
   session = models.ForeignKey(DrinkingSession, blank=True, null=True,
       on_delete=models.SET_NULL,

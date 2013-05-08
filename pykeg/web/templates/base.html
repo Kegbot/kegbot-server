@@ -112,32 +112,28 @@
   </div> <!-- /.navbar -->
 
   <div class="container">
-    <div class="row">
-      <div class="span12">
-        {% block header-margin %}
-        <div class="page-header">
-          <h1>{% block pagetitle %}{% endblock %}</h1>
-          {% block breadcrumbs %}{% endblock %}
-          {% block messages %}
-          {% for message in messages %}
-            <div class="alert {% for tag in message.tags.split %}alert-{{tag}} {% endfor %}">
-              <a class="close" data-dismiss="alert" href="#">×</a>
-              <p>
-                {{message}}
-              </p>
-            </div>
-          {% endfor %}
-          {% endblock messages %}
+    {% block header-margin %}
+    <div class="page-header">
+      <h1>{% block pagetitle %}{% endblock %}</h1>
+      {% block breadcrumbs %}{% endblock %}
+      {% block messages %}
+      {% for message in messages %}
+        <div class="alert {% for tag in message.tags.split %}alert-{{tag}} {% endfor %}">
+          <a class="close" data-dismiss="alert" href="#">×</a>
+          <p>
+            {{message}}
+          </p>
         </div>
-        {% endblock %}
+      {% endfor %}
+      {% endblock messages %}
+    </div>
+    {% endblock %}
 
-        <div id="content">
-        {% block content %}{% endblock %}
-        {% block extra-content %}{% endblock %}
-        </div>
-      </div> <!-- /span9 -->
+    <div id="content">
+    {% block content %}{% endblock %}
+    {% block extra-content %}{% endblock %}
+    </div>
 
-    </div> <!-- /row -->
     <footer>
       <p>
         <small>

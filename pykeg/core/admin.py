@@ -53,8 +53,8 @@ class AuthenticationTokenAdmin(admin.ModelAdmin):
 admin.site.register(models.AuthenticationToken, AuthenticationTokenAdmin)
 
 class DrinkingSessionAdmin(admin.ModelAdmin):
-  list_display = ('id', 'site', 'start_time', 'end_time', 'volume_ml', 'GetTitle')
-  list_filter = ('site', 'start_time')
+  list_display = ('id', 'start_time', 'end_time', 'volume_ml', 'GetTitle')
+  list_filter = ('start_time',)
   search_fields = ('name',)
 admin.site.register(models.DrinkingSession, DrinkingSessionAdmin)
 

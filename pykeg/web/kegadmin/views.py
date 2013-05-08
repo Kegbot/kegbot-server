@@ -62,9 +62,10 @@ def dashboard(request):
 @staff_member_required
 def general_settings(request):
   context = RequestContext(request)
-  form = forms.SiteSettingsForm(instance=request.kbsite.settings)
+  settings = models.SiteSettings.get()
+  form = forms.SiteSettingsForm(instance=settings)
   if request.method == 'POST':
-    form = forms.SiteSettingsForm(request.POST, instance=request.kbsite.settings)
+    form = forms.SiteSettingsForm(request.POST, instance=settings)
     if form.is_valid():
       form.save()
       messages.success(request, 'Site settings were successfully updated.')
@@ -74,7 +75,7 @@ def general_settings(request):
 @staff_member_required
 def tap_list(request):
   context = RequestContext(request)
-  context['taps'] = request.kbsite.taps.all()
+  context['taps'] = models.KegTap.objects.all()
   return render_to_response('kegadmin/tap_list.html', context_instance=context)
 
 @staff_member_required
@@ -94,7 +95,7 @@ def add_tap(request):
 
 @staff_member_required
 def tap_detail(request, tap_id):
-  tap = get_object_or_404(models.KegTap, site=request.kbsite, id=tap_id)
+  tap = get_object_or_404(models.KegTap, id=tap_id)
 
   activate_keg_form = forms.ChangeKegForm()
   tap_settings_form = forms.TapForm(instance=tap, site=request.kbsite)
@@ -284,7 +285,7 @@ def connections(request):
   kbsite = request.kbsite
 
   try:
-    twitter_profile = request.kbsite.twitter_profile
+    twitter_profile = models.KegbotSite.get().twitter_profile
   except twitter_models.SiteTwitterProfile.DoesNotExist:
     twitter_profile = None
 

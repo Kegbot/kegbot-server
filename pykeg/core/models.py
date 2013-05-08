@@ -53,7 +53,7 @@ class KegbotSite(models.Model):
       editable=False)
   is_active = models.BooleanField(default=True,
       help_text='On/off switch for this site.')
-  is_setup = models.BooleanField(default=True,
+  is_setup = models.BooleanField(default=False,
       help_text='True if the site has completed setup.',
       editable=False)
   epoch = models.PositiveIntegerField(default=EPOCH,
@@ -66,12 +66,18 @@ class KegbotSite(models.Model):
   def __str__(self):
     return self.name
 
+  @classmethod
+  def get(cls):
+    """Gets the default site settings."""
+    return KegbotSite.objects.get_or_create(name='default',
+        defaults={'is_setup': False})[0]
+
   def full_url(self):
     return 'http://%s' % Site.objects.get_current().domain
 
   def GetStatsRecord(self):
     try:
-      return SystemStats.objects.get(site=self)
+      return SystemStats.objects.get()
     except SystemStats.DoesNotExist:
       return None
 
@@ -167,8 +173,7 @@ class SiteSettings(models.Model):
   @classmethod
   def get(cls):
     """Gets the default site settings."""
-    site = KegbotSite.objects.get(name='default')
-    return site.settings
+    return KegbotSite.get().settings
 
 
 class UserProfile(models.Model):
@@ -347,7 +352,6 @@ class KegSize(models.Model):
 
 class KegTap(models.Model):
   """A physical tap of beer."""
-  site = models.ForeignKey(KegbotSite, related_name='taps')
   name = models.CharField(max_length=128,
       help_text='The display name for this tap. Example: Main Tap.')
   meter_name = models.CharField(max_length=128,
@@ -427,13 +431,13 @@ class Keg(models.Model):
     return self.status == 'online'
 
   def previous(self):
-    q = Keg.objects.filter(site=self.site, start_time__lt=self.start_time).order_by('-start_time')
+    q = Keg.objects.filter(start_time__lt=self.start_time).order_by('-start_time')
     if q.count():
       return q[0]
     return None
 
   def next(self):
-    q = Keg.objects.filter(site=self.site, start_time__gt=self.start_time).order_by('start_time')
+    q = Keg.objects.filter(start_time__gt=self.start_time).order_by('start_time')
     if q.count():
       return q[0]
     return None
@@ -488,7 +492,6 @@ class Keg(models.Model):
   def __str__(self):
     return "Keg #%s - %s" % (self.id, self.type)
 
-  site = models.ForeignKey(KegbotSite, related_name='kegs')
   type = models.ForeignKey('BeerType', on_delete=models.PROTECT)
   size = models.ForeignKey(KegSize, on_delete=models.PROTECT)
   start_time = models.DateTimeField(default=timezone.now)
@@ -543,7 +546,7 @@ class Drink(models.Model):
     return ('kb-drink', (str(self.id),))
 
   def ShortUrl(self):
-    return '%s%s' % (self.site.full_url(), reverse('kb-drink-short', args=(str(self.id),)))
+    return '%s%s' % (KegbotSite.get().full_url(), reverse('kb-drink-short', args=(str(self.id),)))
 
   def Volume(self):
     return units.Quantity(self.volume_ml)
@@ -555,25 +558,28 @@ class Drink(models.Model):
     return self.keg.type.calories_oz * ounces
 
   def __str__(self):
-    return "Drink %s:%i by %s" % (self.site.name, self.id, self.user)
+    return "Drink %i by %s" % (self.id, self.user)
 
   def _UpdateSystemStats(self):
-    stats, created = SystemStats.objects.get_or_create(site=self.site)
+    try:
+      stats = SystemStats.objects.get()
+    except SystemStats.DoesNotExist:
+      stats = SystemStats.objects.create()
     stats.Update(self)
 
   def _UpdateUserStats(self):
     if self.user:
-      stats, created = UserStats.objects.get_or_create(user=self.user, site=self.site)
+      stats, created = UserStats.objects.get_or_create(user=self.user)
       stats.Update(self)
 
   def _UpdateKegStats(self):
     if self.keg:
-      stats, created = KegStats.objects.get_or_create(keg=self.keg, site=self.site)
+      stats, created = KegStats.objects.get_or_create(keg=self.keg)
       stats.Update(self)
 
   def _UpdateSessionStats(self):
     if self.session:
-      stats, created = SessionStats.objects.get_or_create(session=self.session, site=self.site)
+      stats, created = SessionStats.objects.get_or_create(session=self.session)
       stats.Update(self)
 
   def PostProcess(self):
@@ -584,8 +590,6 @@ class Drink(models.Model):
     SystemEvent.ProcessDrink(self)
 
   objects = managers.DrinkManager()
-
-  site = models.ForeignKey(KegbotSite, related_name='drinks')
 
   # Ticks records the actual meter reading, which is never changed once
   # recorded.
@@ -631,7 +635,6 @@ class AuthenticationToken(models.Model):
       ret += " (%s)" % self.nice_name
     return ret
 
-  site = models.ForeignKey(KegbotSite, related_name='tokens')
   auth_device = models.CharField(max_length=64)
   token_value = models.CharField(max_length=128)
   nice_name = models.CharField(max_length=256, blank=True, null=True,
@@ -681,7 +684,7 @@ class _AbstractChunk(models.Model):
     return self.end_time - self.start_time
 
   def _AddDrinkNoSave(self, drink):
-    session_delta = drink.site.settings.GetSessionTimeoutDelta()
+    session_delta = SiteSettings.get().GetSessionTimeoutDelta()
     session_end = drink.time + session_delta
 
     if self.start_time > drink.time:
@@ -702,7 +705,6 @@ class DrinkingSession(_AbstractChunk):
     ordering = ('-start_time',)
 
   objects = managers.SessionManager()
-  site = models.ForeignKey(KegbotSite, related_name='sessions')
   name = models.CharField(max_length=256, blank=True, null=True)
 
   def __str__(self):
@@ -796,7 +798,7 @@ class DrinkingSession(_AbstractChunk):
 
   def AddDrink(self, drink):
     super(DrinkingSession, self).AddDrink(drink)
-    session_delta = drink.site.settings.GetSessionTimeoutDelta()
+    session_delta = SiteSettings.get().GetSessionTimeoutDelta()
 
     defaults = {
       'start_time': drink.time,
@@ -810,12 +812,12 @@ class DrinkingSession(_AbstractChunk):
 
     # Update or create a UserSessionChunk.
     chunk, created = UserSessionChunk.objects.get_or_create(session=self,
-        site=drink.site, user=drink.user, defaults=defaults)
+        user=drink.user, defaults=defaults)
     chunk.AddDrink(drink)
 
     # Update or create a KegSessionChunk.
     chunk, created = KegSessionChunk.objects.get_or_create(session=self,
-        site=drink.site, keg=drink.keg, defaults=defaults)
+        keg=drink.keg, defaults=defaults)
     chunk.AddDrink(drink)
 
   def UserChunksByVolume(self):
@@ -840,7 +842,7 @@ class DrinkingSession(_AbstractChunk):
       # remain a placeholder.
       return
 
-    session_delta = self.site.settings.GetSessionTimeoutDelta()
+    session_delta = SiteSettings.get().GetSessionTimeoutDelta()
     min_time = None
     max_time = None
     for d in drinks:
@@ -860,7 +862,7 @@ class DrinkingSession(_AbstractChunk):
       return drink.session
 
     # Return last session if one already exists
-    q = drink.site.sessions.all().order_by('-end_time')[:1]
+    q = DrinkingSession.objects.all().order_by('-end_time')[:1]
     if q and q[0].IsActive(drink.time):
       session = q[0]
       session.AddDrink(drink)
@@ -869,8 +871,7 @@ class DrinkingSession(_AbstractChunk):
       return session
 
     # Create a new session
-    session = cls(start_time=drink.time, end_time=drink.time,
-        site=drink.site)
+    session = cls(start_time=drink.time, end_time=drink.time)
     session.save()
     session.AddDrink(drink)
     drink.session = session
@@ -899,7 +900,6 @@ class UserSessionChunk(_AbstractChunk):
     get_latest_by = 'start_time'
     ordering = ('-start_time',)
 
-  site = models.ForeignKey(KegbotSite, related_name='user_chunks')
   session = models.ForeignKey(DrinkingSession, related_name='user_chunks')
   user = models.ForeignKey(User, related_name='user_session_chunks', blank=True,
       null=True)
@@ -919,7 +919,6 @@ class KegSessionChunk(_AbstractChunk):
     ordering = ('-start_time',)
 
   objects = managers.SessionManager()
-  site = models.ForeignKey(KegbotSite, related_name='keg_chunks')
   session = models.ForeignKey(DrinkingSession, related_name='keg_chunks')
   keg = models.ForeignKey(Keg, related_name='keg_session_chunks', blank=True,
       null=True)
@@ -929,7 +928,6 @@ class KegSessionChunk(_AbstractChunk):
 
 
 class ThermoSensor(models.Model):
-  site = models.ForeignKey(KegbotSite, related_name='thermosensors')
   raw_name = models.CharField(max_length=256)
   nice_name = models.CharField(max_length=128)
 
@@ -951,7 +949,6 @@ class Thermolog(models.Model):
     get_latest_by = 'time'
     ordering = ('-time',)
 
-  site = models.ForeignKey(KegbotSite, related_name='thermologs')
   sensor = models.ForeignKey(ThermoSensor)
   temp = models.FloatField()
   time = models.DateTimeField()
@@ -980,11 +977,11 @@ class _StatsModel(models.Model):
         previous = protoutil.DictToProtoMessage(self.stats, models_pb2.Stats())
     except TypeError, e:
       pass
-    builder = self.STATS_BUILDER(drink, previous)
+    builder = self.STATS_BUILDER(drink=drink, previous=previous,
+        drink_qs=Drink.objects.valid())
     self.stats = protoutil.ProtoMessageToDict(builder.Build())
     self.save()
 
-  site = models.ForeignKey(KegbotSite)
   time = models.DateTimeField(default=timezone.now)
   stats = jsonfield.JSONField()
 
@@ -992,15 +989,11 @@ class _StatsModel(models.Model):
 class SystemStats(_StatsModel):
   STATS_BUILDER = stats.SystemStatsBuilder
 
-  def __str__(self):
-    return 'SystemStats for %s' % self.site
-
 
 class UserStats(_StatsModel):
-  class Meta:
-    unique_together = ('site', 'user')
   STATS_BUILDER = stats.DrinkerStatsBuilder
-  user = models.ForeignKey(User, blank=True, null=True, related_name='stats')
+  user = models.ForeignKey(User, blank=True, null=True, unique=True,
+      related_name='stats')
 
   def __str__(self):
     return 'UserStats for %s' % self.user
@@ -1037,7 +1030,6 @@ class SystemEvent(models.Model):
       ('keg_ended', 'Keg ended'),
   )
 
-  site = models.ForeignKey(KegbotSite, related_name='events')
   kind = models.CharField(max_length=255, choices=KINDS,
       help_text='Type of event.')
   time = models.DateTimeField(help_text='Time of the event.')
@@ -1073,52 +1065,48 @@ class SystemEvent(models.Model):
 
   @classmethod
   def ProcessKeg(cls, keg):
-    site = keg.site
     if keg.status == 'online':
       q = keg.events.filter(kind='keg_tapped')
       if q.count() == 0:
-        e = keg.events.create(site=site, kind='keg_tapped', time=keg.start_time,
-            keg=keg)
+        e = keg.events.create(kind='keg_tapped', time=keg.start_time, keg=keg)
         e.save()
 
     if keg.status == 'offline':
       q = keg.events.filter(kind='keg_ended')
       if q.count() == 0:
-        e = keg.events.create(site=site, kind='keg_ended', time=keg.end_time,
-            keg=keg)
+        e = keg.events.create(kind='keg_ended', time=keg.end_time, keg=keg)
         e.save()
 
   @classmethod
   def ProcessDrink(cls, drink):
     keg = drink.keg
     session = drink.session
-    site = drink.site
     user = drink.user
 
     if keg:
       q = keg.events.filter(kind='keg_tapped')
       if q.count() == 0:
-        e = keg.events.create(site=site, kind='keg_tapped', time=drink.time,
+        e = keg.events.create(kind='keg_tapped', time=drink.time,
             keg=keg, user=user, drink=drink, session=session)
         e.save()
 
     if session:
       q = session.events.filter(kind='session_started')
       if q.count() == 0:
-        e = session.events.create(site=site, kind='session_started',
+        e = session.events.create(kind='session_started',
             time=session.start_time, drink=drink, user=user)
         e.save()
 
     if user:
       q = user.events.filter(kind='session_joined', session=session)
       if q.count() == 0:
-        e = user.events.create(site=site, kind='session_joined',
+        e = user.events.create(kind='session_joined',
             time=drink.time, session=session, drink=drink, user=user)
         e.save()
 
     q = drink.events.filter(kind='drink_poured')
     if q.count() == 0:
-      e = drink.events.create(site=site, kind='drink_poured',
+      e = drink.events.create(kind='drink_poured',
           time=drink.time, drink=drink, user=user, keg=keg,
           session=session)
       e.save()
@@ -1130,9 +1118,6 @@ def _pics_file_name(instance, filename):
   return os.path.join('pics', new_filename)
 
 class Picture(models.Model):
-  site = models.ForeignKey(KegbotSite, related_name='pictures',
-      blank=True, null=True,
-      help_text='Site owning this picture')
   image = models.ImageField(upload_to=_pics_file_name,
       help_text='The image')
   resized = imagespecs.resized

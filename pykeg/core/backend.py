@@ -41,16 +41,12 @@ class NoTokenError(BackendError):
 class KegbotBackend:
   """Django Backend."""
 
-  def __init__(self, sitename='default', site=None):
+  def __init__(self):
     self._logger = logging.getLogger('backend')
-    if site:
-      self._site = site
-    else:
-      self._site = models.KegbotSite.objects.get(name=sitename)
 
   def _GetTapFromName(self, tap_name):
     try:
-      return models.KegTap.objects.get(site=self._site, meter_name=tap_name)
+      return models.KegTap.objects.get(meter_name=tap_name)
     except models.KegTap.DoesNotExist:
       return None
 
@@ -62,10 +58,10 @@ class KegbotBackend:
 
   def _GetSensorFromName(self, name, autocreate=True):
     try:
-      return models.ThermoSensor.objects.get(site=self._site, raw_name=name)
+      return models.ThermoSensor.objects.get(raw_name=name)
     except models.ThermoSensor.DoesNotExist:
       if autocreate:
-        sensor = models.ThermoSensor(site=self._site, raw_name=name, nice_name=name)
+        sensor = models.ThermoSensor(raw_name=name, nice_name=name)
         sensor.save()
         return sensor
       else:
@@ -81,14 +77,14 @@ class KegbotBackend:
     return models.User.objects.create(username=username)
 
   def CreateTap(self, name, meter_name, relay_name=None, ml_per_tick=None):
-    tap = models.KegTap.objects.create(site=self._site, name=name,
+    tap = models.KegTap.objects.create(name=name,
         meter_name=meter_name, relay_name=relay_name, ml_per_tick=ml_per_tick)
     tap.save()
     return tap
 
   def CreateAuthToken(self, auth_device, token_value, username=None):
     token = models.AuthenticationToken.objects.create(
-        site=self._site, auth_device=auth_device, token_value=token_value)
+        auth_device=auth_device, token_value=token_value)
     if username:
       user = self._GetUserObjFromUsername(username)
       token.user = user
@@ -112,8 +108,8 @@ class KegbotBackend:
     user = None
     if username:
       user = self._GetUserObjFromUsername(username)
-    elif self._site.settings.default_user:
-      user = self._site.settings.default_user
+    else:
+      user = models.SiteSettings.get().default_user
 
     if not pour_time:
       pour_time = timezone.now()
@@ -131,7 +127,7 @@ class KegbotBackend:
         self._logger.warning('Time series invalid, ignoring. Error was: %s' % e)
         tick_time_series = ''
 
-    d = models.Drink(ticks=ticks, site=self._site, keg=keg, user=user,
+    d = models.Drink(ticks=ticks, keg=keg, user=user,
         volume_ml=volume_ml, time=pour_time, duration=duration,
         shout=shout, tick_time_series=tick_time_series)
     models.DrinkingSession.AssignSessionForDrink(d)
@@ -141,13 +137,13 @@ class KegbotBackend:
       d.PostProcess()
       event_list = [e for e in models.SystemEvent.objects.filter(drink=d).order_by('id')]
       if settings.HAVE_CELERY:
-        tasks.handle_new_events.delay(self._site, event_list)
+        tasks.handle_new_events.delay(event_list)
 
     return d
 
   def CancelDrink(self, drink_id, spilled=False):
     try:
-      d = self._site.drinks.get(id=drink_id)
+      d = models.Drink.objects.get(id=drink_id)
     except models.Drink.DoesNotExist:
       return
 
@@ -164,17 +160,17 @@ class KegbotBackend:
     d.save()
 
     # Invalidate all statistics.
-    models.SystemStats.objects.filter(site=self._site).delete()
-    models.KegStats.objects.filter(site=self._site, keg=d.keg).delete()
-    models.UserStats.objects.filter(site=self._site, user=d.user).delete()
-    models.SessionStats.objects.filter(site=self._site, session=d.session).delete()
+    models.SystemStats.objects.all().delete()
+    models.KegStats.objects.filter(keg=d.keg).delete()
+    models.UserStats.objects.filter(user=d.user).delete()
+    models.SessionStats.objects.filter(session=d.session).delete()
 
     # Delete any SystemEvents for this drink.
-    models.SystemEvent.objects.filter(site=self._site, drink=d).delete()
+    models.SystemEvent.objects.filter(drink=d).delete()
 
     # Regenerate new statistics, based on the most recent drink
     # post-cancellation.
-    last_qs = self._site.drinks.valid().order_by('-id')
+    last_qs = models.Drink.objects.valid().order_by('-id')
     if last_qs:
       last_drink = last_qs[0]
       last_drink._UpdateSystemStats()
@@ -210,14 +206,14 @@ class KegbotBackend:
     defaults = {
         'temp': temperature,
     }
-    record, created = models.Thermolog.objects.get_or_create(site=self._site,
-        sensor=sensor, time=when, defaults=defaults)
+    record, created = models.Thermolog.objects.get_or_create(sensor=sensor,
+      time=when, defaults=defaults)
     record.temp = temperature
     record.save()
 
     # Delete old entries.
     keep_time = now - datetime.timedelta(hours=24)
-    old_entries = models.Thermolog.objects.filter(site=self._site, time__lt=keep_time)
+    old_entries = models.Thermolog.objects.filter(time__lt=keep_time)
     old_entries.delete()
 
     return record
@@ -226,8 +222,8 @@ class KegbotBackend:
     if token_value and auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
       token_value = token_value.lower()
     try:
-      return models.AuthenticationToken.objects.get(site=self._site,
-        auth_device=auth_device, token_value=token_value)
+      return models.AuthenticationToken.objects.get(auth_device=auth_device,
+          token_value=token_value)
     except models.AuthenticationToken.DoesNotExist:
       raise NoTokenError
 

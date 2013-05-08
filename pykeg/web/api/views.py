@@ -84,10 +84,10 @@ def _form_errors(form):
 ### Endpoints
 
 def all_kegs(request):
-  return request.kbsite.kegs.all().order_by('-start_time')
+  return models.Keg.objects.all().order_by('-start_time')
 
 def all_drinks(request, limit=100):
-  qs = request.kbsite.drinks.valid()
+  qs = models.Drink.objects.all()
   if 'start' in request.GET:
     try:
       start = int(request.GET['start'])
@@ -100,7 +100,7 @@ def all_drinks(request, limit=100):
   return qs
 
 def get_drink(request, drink_id):
-  drink = get_object_or_404(models.Drink, id=drink_id, site=request.kbsite)
+  drink = get_object_or_404(models.Drink, id=drink_id)
   return protolib.ToProto(drink, full=True)
 
 @csrf_exempt
@@ -108,9 +108,8 @@ def get_drink(request, drink_id):
 def add_drink_photo(request, drink_id):
   if request.method != 'POST':
     raise Http404('Method not supported')
-  drink = get_object_or_404(models.Drink, id=drink_id, site=request.kbsite)
-  pic = models.Picture.objects.create(site=request.kbsite,
-      image=request.FILES['photo'])
+  drink = get_object_or_404(models.Drink, id=drink_id)
+  pic = models.Picture.objects.create(image=request.FILES['photo'])
   pour_pic = models.PourPicture.objects.create(picture_id=pic.id,
       drink=drink,
       user=drink.user,
@@ -121,25 +120,23 @@ def add_drink_photo(request, drink_id):
   return protolib.ToProto(pour_pic, full=True)
 
 def get_session(request, session_id):
-  session = get_object_or_404(models.DrinkingSession, id=session_id,
-      site=request.kbsite)
+  session = get_object_or_404(models.DrinkingSession, id=session_id)
   return protolib.ToProto(session, full=True)
 
 def get_session_stats(request, session_id):
-  session = get_object_or_404(models.DrinkingSession, id=session_id,
-      site=request.kbsite)
+  session = get_object_or_404(models.DrinkingSession, id=session_id)
   return session.GetStats()
 
 def get_keg(request, keg_id):
-  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id)
   return protolib.ToProto(keg, full=True)
 
 def get_keg_drinks(request, keg_id):
-  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id)
   return keg.drinks.valid()
 
 def get_keg_events(request, keg_id):
-  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id)
   events = keg.events.all()
   events = apply_since(request, events)
   return events
@@ -151,23 +148,23 @@ def get_keg_sizes(request):
 @auth_required
 @csrf_exempt
 def end_keg(request, keg_id):
-  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id)
   keg.end_keg()
   return protolib.ToProto(keg, full=True)
 
 def all_sessions(request):
-  return request.kbsite.sessions.all()
+  return models.DrinkingSession.objects.all()
 
 def current_session(request):
   try:
-    latest = request.kbsite.sessions.latest()
+    latest = models.DrinkingSession.objects.latest()
     if latest.IsActiveNow():
       return latest
   except models.DrinkingSession.DoesNotExist:
     raise Http404
 
 def all_events(request):
-  events = request.kbsite.events.all().order_by('-id')
+  events = models.SystemEvent.objects.all().order_by('-id')
   events = apply_since(request, events)
   events = events[:10]
   return [protolib.ToProto(e, full=True) for e in events]
@@ -188,19 +185,19 @@ def all_sound_events(request):
   return soundserver_models.SoundEvent.objects.all()
 
 def get_keg_sessions(request, keg_id):
-  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id)
   sessions = [c.session for c in keg.keg_session_chunks.all()]
   return sessions
 
 def get_keg_stats(request, keg_id):
-  keg = get_object_or_404(models.Keg, id=keg_id, site=request.kbsite)
+  keg = get_object_or_404(models.Keg, id=keg_id)
   return keg.GetStatsRecord()
 
 def get_system_stats(request):
-  return request.kbsite.GetStatsRecord()
+  return models.KegbotSite.get().GetStatsRecord()
 
 def all_taps(request):
-  return request.kbsite.taps.all().order_by('name')
+  return models.KegTap.objects.all().order_by('name')
 
 @auth_required
 def user_list(request):
@@ -224,7 +221,7 @@ def get_user_stats(request, username):
 
 @auth_required
 def get_auth_token(request, auth_device, token_value):
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = backend.KegbotBackend()
   tok = b.GetAuthToken(auth_device, token_value)
   return tok
 
@@ -239,7 +236,7 @@ def assign_auth_token(request, auth_device, token_value):
     errors = _form_errors(form)
     raise kbapi.BadRequestError(errors)
 
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = backend.KegbotBackend()
   username = form.cleaned_data['username']
   try:
     tok = b.GetAuthToken(auth_device, token_value)
@@ -256,16 +253,14 @@ def assign_auth_token(request, auth_device, token_value):
     return b.CreateAuthToken(auth_device, token_value, username=username)
 
 def all_thermo_sensors(request):
-  return request.kbsite.thermosensors.all()
+  return models.ThermoSensor.objects.all()
 
 def _get_sensor_or_404(request, sensor_name):
   try:
-    sensor = models.ThermoSensor.objects.get(site=request.kbsite,
-        raw_name=sensor_name)
+    sensor = models.ThermoSensor.objects.get(raw_name=sensor_name)
   except models.ThermoSensor.DoesNotExist:
     try:
-      sensor = models.ThermoSensor.objects.get(site=request.kbsite,
-          nice_name=sensor_name)
+      sensor = models.ThermoSensor.objects.get(nice_name=sensor_name)
     except models.ThermoSensor.DoesNotExist:
       raise Http404
   return sensor
@@ -299,9 +294,8 @@ def _thermo_sensor_post(request, sensor_name):
   if not form.is_valid():
     raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
-  b = backend.KegbotBackend(site=request.kbsite)
-  sensor, created = models.ThermoSensor.objects.get_or_create(site=request.kbsite,
-      raw_name=sensor_name)
+  b = backend.KegbotBackend()
+  sensor, created = models.ThermoSensor.objects.get_or_create(raw_name=sensor_name)
   # TODO(mikey): use form fields to compute `when`
   return b.LogSensorReading(sensor.raw_name, cd['temp_c'])
 
@@ -318,7 +312,7 @@ def get_api_key(request):
 
 @csrf_exempt
 def tap_detail(request, tap_id):
-  tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  tap = get_object_or_404(models.KegTap, meter_name=tap_id)
   if request.method == 'POST':
     return _tap_detail_post(request, tap)
   elif request.method == 'GET':
@@ -335,7 +329,7 @@ def tap_calibrate(request, tap_id):
   # TODO(mikey): This would make more semantic sense as PATCH /taps/tap-name/,
   # but Django's support for non-POST verbs is poor (specifically wrt request
   # body/form handling).
-  tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  tap = get_object_or_404(models.KegTap, meter_name=tap_id)
   form = forms.CalibrateTapForm(request.POST)
   if form.is_valid():
     tap.ml_per_tick = form.cleaned_data['ml_per_tick']
@@ -347,7 +341,7 @@ def tap_calibrate(request, tap_id):
 @csrf_exempt
 @auth_required
 def tap_spill(request, tap_id):
-  tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  tap = get_object_or_404(models.KegTap, meter_name=tap_id)
   if not tap.current_keg:
     raise kbapi.BadRequestError('No keg on tap.')
   form = forms.TapSpillForm(request.POST)
@@ -361,7 +355,7 @@ def tap_spill(request, tap_id):
 @csrf_exempt
 @auth_required
 def tap_activate(request, tap_id):
-  tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  tap = get_object_or_404(models.KegTap, meter_name=tap_id)
   form = ChangeKegForm(request.POST)
   if form.is_valid():
     form.save(tap)
@@ -385,7 +379,7 @@ def _tap_detail_post(request, tap):
   duration = cd.get('duration')
   if duration is None:
     duration = 0
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = backend.KegbotBackend()
   try:
     res = b.RecordDrink(tap_name=tap.meter_name,
       ticks=cd['ticks'],
@@ -409,7 +403,7 @@ def cancel_drink(request):
   if not form.is_valid():
     raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = backend.KegbotBackend()
   try:
     res = b.CancelDrink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
     return protolib.ToProto(res, full=True)

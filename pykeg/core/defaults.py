@@ -33,12 +33,12 @@ def set_defaults(force=False):
   if not force and db_is_installed():
     raise AlreadyInstalledError("Database is already installed.")
 
-  site = models.KegbotSite.objects.create(name='default', is_setup=False)
+  site = models.KegbotSite.get()
 
   # KegTap defaults
-  main_tap = models.KegTap(site=site, name='Main Tap', meter_name='kegboard.flow0')
+  main_tap = models.KegTap(name='Main Tap', meter_name='kegboard.flow0')
   main_tap.save()
-  secondary_tap = models.KegTap(site=site, name='Second Tap', meter_name='kegboard.flow1')
+  secondary_tap = models.KegTap(name='Second Tap', meter_name='kegboard.flow1')
   secondary_tap.save()
 
   # brewer defaults

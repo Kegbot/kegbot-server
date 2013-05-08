@@ -34,8 +34,9 @@ def stat(statname):
   return decorate
 
 class StatsBuilder:
-  def __init__(self, drink, previous=None):
+  def __init__(self, drink, drink_qs, previous=None):
     self.drink = drink
+    self.drink_qs = drink_qs
     self.previous = previous
     self.STAT_MAP = {}
     for name, fn in inspect.getmembers(self, inspect.ismethod):
@@ -43,7 +44,7 @@ class StatsBuilder:
         self.STAT_MAP[fn.statname] = fn
 
   def _AllDrinks(self):
-    return []
+    return self.drink_qs
 
   def Build(self):
     self.stats = models_pb2.Stats()
@@ -241,7 +242,7 @@ class SystemStatsBuilder(BaseStatsBuilder):
   REVISION = 5
 
   def _AllDrinks(self):
-    qs = self.drink.site.drinks.valid().filter(id__lte=self.drink.id)
+    qs = self.drink_qs.filter(id__lte=self.drink.id)
     qs = qs.order_by('id')
     return qs
 

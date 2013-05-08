@@ -38,7 +38,7 @@ def kbsite(request):
     ret['guest_info']['name'] = kbsite.settings.guest_name
     ret['guest_info']['image'] = kbsite.settings.guest_image
     ret['SERIAL_NUMBER'] = kbsite.serial_number
-    ret['HAVE_SESSIONS'] = kbsite.sessions.all().count() > 0
+    ret['HAVE_SESSIONS'] = models.DrinkingSession.objects.all().count() > 0
     ret['GOOGLE_ANALYTICS_ID'] = kbsite.settings.google_analytics_id
 
   return ret

@@ -21,6 +21,7 @@
 from kegbot.util import util
 from kegbot.util import kbjson
 
+from pykeg.core import models
 from pykeg.proto import protolib
 
 from pykeg.connections import tasks as connection_tasks
@@ -45,8 +46,8 @@ def post_webhook_event(hook_url, event_list):
     return False
 
 @task
-def handle_new_events(site, event_list):
-  hook_url = site.settings.event_web_hook
+def handle_new_events(event_list):
+  hook_url = models.SiteSettings.get().event_web_hook
   if hook_url:
     post_webhook_event.delay(hook_url, event_list)
 

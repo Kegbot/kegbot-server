@@ -28,7 +28,6 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import cache_page
-from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect
 from django.views.generic.dates import ArchiveIndexView
 from django.views.generic.dates import DateDetailView
@@ -51,18 +50,18 @@ from pykeg.web.kegweb import signals
 def index(request):
   context = RequestContext(request)
 
-  context['taps'] = request.kbsite.taps.all()
+  context['taps'] = models.KegTap.objects.all()
 
-  events = request.kbsite.events.all()[:10]
+  events = models.SystemEvent.objects.all()[:10]
   context['initial_events'] = kbjson.dumps([protolib.ToDict(e, full=True) for e in events],
       indent=None)
 
-  sessions = request.kbsite.sessions.all().order_by('-id')[:10]
+  sessions = models.DrinkingSession.objects.all().order_by('-id')[:10]
   context['sessions'] = sessions
   context['initial_sessions'] = kbjson.dumps([protolib.ToDict(s, full=True) for s in sessions],
       indent=None)
 
-  taps = request.kbsite.taps.filter(current_keg__isnull=False)
+  taps = models.KegTap.objects.filter(current_keg__isnull=False)
   context['initial_taps'] = kbjson.dumps([protolib.ToDict(t, full=True) for t in taps], indent=None)
 
   context['have_events'] = len(events) > 0
@@ -72,7 +71,7 @@ def index(request):
 
 @cache_page(30)
 def system_stats(request):
-  stats = request.kbsite.GetStats()
+  stats = models.KegbotSite.get().GetStats()
   context = RequestContext(request, {
     'stats': stats,
   })
@@ -98,15 +97,14 @@ def system_stats(request):
 def user_detail(request, username):
   user = get_object_or_404(models.User, username=username, is_active=True)
   try:
-    stats = models.UserStats.objects.get(site=request.kbsite, user=user).stats
+    stats = models.UserStats.objects.get(user=user).stats
   except models.UserStats.DoesNotExist:
     stats = None
 
   # TODO(mikey): Limit to "recent" sessions for now.
   # Bug: https://github.com/Kegbot/kegbot/issues/37
-  chunks = models.UserSessionChunk.objects.filter(site=request.kbsite,
-      user=user).select_related(depth=1)[:10]
-  drinks = user.drinks.filter(site=request.kbsite)
+  chunks = models.UserSessionChunk.objects.filter(user=user).select_related(depth=1)[:10]
+  drinks = user.drinks.valid()
 
   context = RequestContext(request, {
       'drinks': drinks,
@@ -122,11 +120,11 @@ class KegListView(ListView):
   paginate_by = 10
 
   def get_queryset(self):
-    return self.request.kbsite.kegs.all().order_by('-id')
+    return models.Keg.objects.all().order_by('-id')
 
 @cache_page(30)
 def keg_detail(request, keg_id):
-  keg = get_object_or_404(models.Keg, site=request.kbsite, id=keg_id)
+  keg = get_object_or_404(models.Keg, id=keg_id)
   sessions = keg.Sessions()
   context = RequestContext(request, {
     'keg': keg,
@@ -135,22 +133,21 @@ def keg_detail(request, keg_id):
   return render_to_response('kegweb/keg_detail.html', context_instance=context)
 
 def short_drink_detail(request, drink_id):
-  url = request.kbsite.full_url() + '/drinks/' + str(drink_id)
+  url = KegbotSite.get().full_url() + '/drinks/' + str(drink_id)
   return HttpResponseRedirect(url)
 
 def short_session_detail(request, session_id):
-  session = get_object_or_404(models.DrinkingSession, site=request.kbsite,
-      id=session_id)
+  session = get_object_or_404(models.DrinkingSession, id=session_id)
   url = session.get_absolute_url()
   return HttpResponseRedirect(url)
 
 def drink_detail(request, drink_id):
-  drink = get_object_or_404(models.Drink, site=request.kbsite, id=drink_id)
+  drink = get_object_or_404(models.Drink, id=drink_id)
   context = RequestContext(request, {'drink': drink})
   return render_to_response('kegweb/drink_detail.html', context_instance=context)
 
 def session_detail(request, year, month, day, id, slug):
-  session = get_object_or_404(models.DrinkingSession, site=request.kbsite, id=id)
+  session = get_object_or_404(models.DrinkingSession, id=id)
   context = RequestContext(request, {
     'session': session,
     'stats': session.GetStats(),
@@ -165,9 +162,6 @@ class SessionArchiveIndexView(ArchiveIndexView):
   context_object_name = 'sessions'
   paginate_by = 20
 
-  def get_queryset(self):
-    return self.request.kbsite.sessions.all()
-
 
 class SessionYearArchiveView(YearArchiveView):
   model = models.DrinkingSession
@@ -176,9 +170,6 @@ class SessionYearArchiveView(YearArchiveView):
   make_object_list = True
   context_object_name = 'sessions'
   paginate_by = 20
-
-  def get_queryset(self):
-    return self.request.kbsite.sessions.all()
 
 
 class SessionMonthArchiveView(MonthArchiveView):
@@ -189,9 +180,6 @@ class SessionMonthArchiveView(MonthArchiveView):
   context_object_name = 'sessions'
   paginate_by = 20
 
-  def get_queryset(self):
-    return self.request.kbsite.sessions.all()
-
 
 class SessionDayArchiveView(DayArchiveView):
   model = models.DrinkingSession
@@ -201,18 +189,12 @@ class SessionDayArchiveView(DayArchiveView):
   context_object_name = 'sessions'
   paginate_by = 20
 
-  def get_queryset(self):
-    return self.request.kbsite.sessions.all()
-
 
 class SessionDateDetailView(DateDetailView):
   model = models.DrinkingSession
   date_field = 'start_time'
   template_name = 'kegweb/session_detail.html'
   context_object_name = 'session'
-
-  def get_queryset(self):
-    return self.request.kbsite.sessions.all()
 
   def get_context_data(self, **kwargs):
     """Adds `stats` to the context."""

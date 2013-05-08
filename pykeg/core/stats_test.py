@@ -30,8 +30,7 @@ class StatsTestCase(TransactionTestCase):
   reset_sequences = True
 
   def setUp(self):
-    self.site, created = models.KegbotSite.objects.get_or_create(name='default')
-    self.backend = backend.KegbotBackend(site=self.site)
+    self.backend = backend.KegbotBackend()
 
     test_usernames = ('user1', 'user2', 'user3')
     self.users = [self.backend.CreateNewUser(name) for name in test_usernames]
@@ -74,7 +73,7 @@ class StatsTestCase(TransactionTestCase):
     return s
 
   def testStuff(self):
-    builder = stats.SystemStatsBuilder(None)
+    builder = stats.SystemStatsBuilder(drink=None, drink_qs=models.Drink.objects.all())
 
     empty_stats = models_pb2.Stats()
     system_stats_d0 = builder.Build()
@@ -107,7 +106,8 @@ class StatsTestCase(TransactionTestCase):
     expected.registered_drinkers.append("user1")
     expected.sessions_count = 1
 
-    system_stats_d1 = stats.SystemStatsBuilder(drink1).Build()
+    system_stats_d1 = stats.SystemStatsBuilder(
+        drink1, drink_qs=models.Drink.objects.all()).Build()
     self.assertProtosEqual(expected, system_stats_d1)
 
     # Pour another drink
@@ -130,10 +130,12 @@ class StatsTestCase(TransactionTestCase):
     y = expected.volume_by_year[0]
     y.volume_ml += 200
 
-    system_stats_d2 = stats.SystemStatsBuilder(drink2).Build()
+    system_stats_d2 = stats.SystemStatsBuilder(drink2,
+        drink_qs=models.Drink.objects.all()).Build()
     self.assertProtosEqual(expected, system_stats_d2)
 
     # Build the same stats incrementally and verify identical result.
-    system_stats_d2_inc = stats.SystemStatsBuilder(drink2, system_stats_d1).Build()
+    system_stats_d2_inc = stats.SystemStatsBuilder(drink2, previous=system_stats_d1,
+        drink_qs=models.Drink.objects.all()).Build()
     self.assertProtosEqual(system_stats_d2, system_stats_d2_inc)
 

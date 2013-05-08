@@ -109,7 +109,7 @@ class TapForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
     site = kwargs.pop('site', None)
     super(TapForm, self).__init__(*args, **kwargs)
-    self.fields['temperature_sensor'].queryset = models.ThermoSensor.objects.filter(site=site)
+    self.fields['temperature_sensor'].queryset = models.ThermoSensor.objects.all()
     self.fields['temperature_sensor'].empty_label = 'No sensor.'
 
   helper = FormHelper()

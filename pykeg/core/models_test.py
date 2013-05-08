@@ -33,9 +33,8 @@ from kegbot.util import units
 
 class CoreModelsTestCase(TestCase):
   def setUp(self):
-    models.KegbotSite.objects.filter(name='default').delete()
-    self.site, created = models.KegbotSite.objects.get_or_create(name='default')
-    self.backend = backend.KegbotBackend(site=self.site)
+    models.KegbotSite.get()  # create the site
+    self.backend = backend.KegbotBackend()
     self.brewer = models.Brewer.objects.create(
         name='Moonshine Beers',
         country='USA',
@@ -67,7 +66,6 @@ class CoreModelsTestCase(TestCase):
     )
 
     self.keg = models.Keg.objects.create(
-        site=self.site,
         type=self.beer_type,
         size=self.keg_size,
         start_time=make_datetime(2000, 4, 1),
@@ -78,7 +76,6 @@ class CoreModelsTestCase(TestCase):
     )
 
     self.tap = models.KegTap.objects.create(
-        site=self.site,
         name='Test Tap',
         meter_name='test',
         ml_per_tick=(1000.0/2200.0),

@@ -5,6 +5,15 @@
 {% block pagetitle %}System Stats{% endblock %}
 
 {% block col-1 %}
+{% if not stats %}
+<div class="alert alert-info">
+  <h2>No Stats.. yet.</h2>
+  <p>
+    This place will be a lot more interesting once somebody has
+    poured a drink.
+  </p>
+</div>
+{% else %}
 <h2>Summary</h2>
 
 {% include "kegweb/basic-badges.html" %}
@@ -13,12 +22,15 @@
     {% include "kegweb/basic-stats.html" %}
   </tbody>
 </table>
+{% endif %}
 {% endblock col-1 %}
 
 {% block col-2 %}
-  <h2>Top Drinkers</h2>
-  {% chart users_by_volume stats 280 220 %}<br/>
-  {% with top_drinkers as ranked_drinkers %}
-    {% include "kegweb/drinker-rank.html" %}
-  {% endwith %}
+{% if stats %}
+<h2>Top Drinkers</h2>
+{% chart users_by_volume stats 280 220 %}<br/>
+{% with top_drinkers as ranked_drinkers %}
+{% include "kegweb/drinker-rank.html" %}
+{% endwith %}
+{% endif %}
 {% endblock col-2 %}

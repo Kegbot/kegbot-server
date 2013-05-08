@@ -7,24 +7,20 @@
 
 {% block kb-account-main %}
 <h2>Change Mugshot</h2>
-<div class="row">
-  <div class="span11">
-    <div class="well">
-      <form enctype="multipart/form-data" method="post" action="">
-        {% csrf_token %}
-        <div class="clearfix">
-          <label for="existing-mugshot">Current mugshot</label>
-          <div class="input" id="existing-mugshot">
-            {% mugshot_box user 100 %}
-          </div>
-        </div>
-        {{ mugshot_form|crispy }}
-        <div class="actions">
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-        </div>
-      </form>
+<div class="well">
+  <form enctype="multipart/form-data" method="post" action="">
+    {% csrf_token %}
+    <div class="clearfix">
+      <label for="existing-mugshot">Current mugshot</label>
+      <div class="input" id="existing-mugshot">
+        {% mugshot_box user 100 %}
+      </div>
     </div>
-  </div>
+    {{ mugshot_form|crispy }}
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+    </div>
+  </form>
 </div>
 
 {% endblock %}

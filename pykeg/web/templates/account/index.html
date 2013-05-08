@@ -5,25 +5,23 @@
 {% block pagetitle %}Account Settings{% endblock %}
 
 {% block kb-account-main %}
-<h2>Hello, {{user.username}}!</h2>
 
 {% if user.is_staff or user.is_superuser %}
 <h2>API Access</h2>
-<div class="row">
-  <div class="span11">
+<p>
+  Use this API key to access the kegbot web service. Ssh! Keep it secret!
+</p>
 
-    <p>
-      Use this API key to access the kegbot web service. Ssh! Keep it secret!
-    </p>
+<pre>{{ user.get_profile.GetApiKey }}</pre>
 
-    <pre>{{ user.get_profile.GetApiKey }}</pre>
+<form action="regenerate-api-key/" method="POST">
+{% csrf_token %}
+{{ apikey_form.as_p }}
+<button type="submit" class="btn btn-primary"><i class="icon-refresh icon-white"></i> Regenerate API Key</button>
+</form>
 
-    <form action="regenerate-api-key/" method="POST">
-    {% csrf_token %}
-    {{ apikey_form.as_p }}
-    <button type="submit" class="btn btn-primary"><i class="icon-refresh icon-white"></i> Regenerate API Key</button>
-    </form>
-  </div>
-</div>
+{% else %}
+<h2>Hello, {{user.username}}!</h2>
 {% endif %}
+
 {% endblock %}

@@ -29,7 +29,6 @@ INSTALLED_APPS = (
     'pykeg.web',
     'pykeg.web.api',
     'pykeg.web.account',
-    'pykeg.web.charts',
     'pykeg.web.kegadmin',
     'pykeg.web.kegweb',
     'pykeg.web.setup_wizard',

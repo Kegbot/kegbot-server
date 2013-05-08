@@ -51,3 +51,5 @@ unless otherwise noted.
 We love getting patches! Send us a pull request, or hop on to IRC if
 you'd like to chat about something substantial.
 
+[![Build Status](https://travis-ci.org/Kegbot/kegbot.png?branch=master)](https://travis-ci.org/Kegbot/kegbot)
+

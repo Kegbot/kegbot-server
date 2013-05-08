@@ -38,6 +38,8 @@ def setup_view(f):
   """Decorator for setup views."""
   def new_function(*args, **kwargs):
     request = args[0]
+    if not settings.DEBUG:
+      raise Http404('Site is not in DEBUG mode.')
     if request.kbsite and request.kbsite.is_setup:
       raise Http404('Site is already setup, wizard disabled.')
     return f(*args, **kwargs)

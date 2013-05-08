@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.utils import unittest
+from django.test import TransactionTestCase
 
 from kegbot.api import models_pb2
 from kegbot.api.protoutil import ProtoMessageToDict
@@ -26,7 +26,9 @@ from . import models
 from . import stats
 from .testutils import make_datetime
 
-class StatsTestCase(unittest.TestCase):
+class StatsTestCase(TransactionTestCase):
+  reset_sequences = True
+
   def setUp(self):
     self.site, created = models.KegbotSite.objects.get_or_create(name='default')
     self.backend = backend.KegbotBackend(site=self.site)

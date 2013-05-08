@@ -19,10 +19,10 @@
 """Unittests for pykeg.core.models"""
 
 import datetime
-import unittest
 
 from django.conf import settings
 from django.utils import timezone
+from django.test import TestCase
 
 from . import backend
 from . import kb_common
@@ -31,7 +31,7 @@ from .testutils import make_datetime
 
 from kegbot.util import units
 
-class CoreModelsTestCase(unittest.TestCase):
+class CoreModelsTestCase(TestCase):
   def setUp(self):
     models.KegbotSite.objects.filter(name='default').delete()
     self.site, created = models.KegbotSite.objects.get_or_create(name='default')

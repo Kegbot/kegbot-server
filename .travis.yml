@@ -1,0 +1,18 @@
+language: python
+python:
+  - "2.7"
+
+install:
+  - pip install . --use-mirrors
+
+services:
+  - memcache
+
+before_script:
+  - mkdir -p ~/kegbot-data/media
+  - mkdir -p ~/kegbot-data/static
+  - mkdir -p ~/.kegbot/
+  - cp deploy/travis/local_settings.py ~/.kegbot/
+
+script:
+  - kegbot-admin.py test

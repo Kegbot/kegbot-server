@@ -29,7 +29,7 @@ class AlreadyInstalledError(Exception):
   """Thrown when database is already installed."""
 
 def set_defaults(force=False):
-  """ default values (contents may change with schema) """
+  """Creates a new site and sets defaults, returning that site."""
   if not force and db_is_installed():
     raise AlreadyInstalledError("Database is already installed.")
 
@@ -72,3 +72,4 @@ def set_defaults(force=False):
       volume_ml=volume_int,
     )
     ks.save()
+  return site

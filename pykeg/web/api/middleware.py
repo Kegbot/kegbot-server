@@ -59,24 +59,29 @@ class ApiRequestMiddleware:
     if not request.is_kb_api_request:
       # Not an API request. Skip me.
       return None
-    elif request.kbsite.settings.privacy == 'public':
-      # API request, but public site privacy.  Views will check access as needed.
-      return None
-    elif request.path in ('/api/login/', '/api/get-api-key/'):
-      # API request to whitelisted path.
-      return None
-    else:
-      # API request to non-whitelisted path, in non-public site privacy mode.
-      # Demand API key.
-      if request.user.is_authenticated:
+    try:
+      if request.need_setup:
+        raise ValueError('Setup required')
+      elif request.need_upgrade:
+        raise ValueError('Upgrade required')
+
+      privacy = request.kbsite.settings.privacy
+      if privacy == 'public':
+        # API request, but public site privacy.  Views will check access as needed.
         return None
-      elif request.kbsite.settings.privacy == 'staff' and request.user.is_staff:
+      elif request.path in ('/api/login/', '/api/get-api-key/'):
+        # API request to whitelisted path.
         return None
       else:
-        try:
-          util.check_api_key(request)
-        except Exception, e:
-          return wrap_exception(request, e)
+        # API request to non-whitelisted path, in non-public site privacy mode.
+        # Demand API key.
+        if privacy == 'members' and request.user.is_authenticated():
+          return None
+        elif privacy == 'staff' and request.user.is_staff:
+          return None
+        util.check_api_key(request)
+    except Exception, e:
+      return wrap_exception(request, e)
 
 
 class ApiResponseMiddleware:

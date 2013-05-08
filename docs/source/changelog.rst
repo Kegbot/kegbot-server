@@ -5,6 +5,16 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+
+* Security: Fixed issue #124 (some API endpoints remained exposed despite
+  members-only privacy mode)
+* Virgin systems no longer show the "sessions" tab, since there aren't any.
+* Fixed issue #122 (staff-only privacy mode causing an error).
+* Fixed issue #120 (error during setup wizard).
+
+
 Version 0.9.8 (2013-04-06)
 --------------------------
 

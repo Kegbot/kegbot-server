@@ -245,11 +245,6 @@ LOGGING = {
       'handlers': ['console'],
       'propagate': False,
     },
-    'sentry.errors': {
-      'level': 'DEBUG',
-      'handlers': ['console'],
-      'propagate': False,
-    },
   },
 }
 
@@ -257,29 +252,14 @@ LOGGING = {
 
 if HAVE_RAVEN:
   INSTALLED_APPS += (
-    'raven.contrib.django',
+    'raven.contrib.django.raven_compat',
   )
 
   LOGGING['root']['handlers'] = ['sentry']
   LOGGING['handlers']['sentry'] = {
     'level': 'ERROR',
-    'class': 'raven.contrib.django.handlers.SentryHandler',
+    'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
   }
-
-### sentry
-
-if HAVE_SENTRY:
-  INSTALLED_APPS += (
-    'sentry',
-  )
-
-### tornado
-
-if HAVE_DJANGOTORNADO:
-  INSTALLED_APPS += (
-    'rjdj.djangotornado',
-  )
-
 
 ### django.contrib.messages
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'

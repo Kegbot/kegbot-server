@@ -17,6 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
+from django.core.signals import got_request_exception
 from django.http import HttpResponse
 
 from . import util
@@ -37,10 +38,6 @@ def wrap_exception(request, exception):
         'request': request,
       }
   )
-
-  if settings.DEBUG and settings.HAVE_RAVEN:
-    from raven.contrib.django.models import client
-    client.captureException()
 
   # Don't wrap the exception during debugging.
   if settings.DEBUG and 'deb' in request.GET:
@@ -81,6 +78,7 @@ class ApiRequestMiddleware:
           return None
         util.check_api_key(request)
     except Exception, e:
+      got_request_exception.send(sender=self, request=request)
       return wrap_exception(request, e)
 
 

@@ -90,12 +90,6 @@ if settings.DEBUG:
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', { 'document_root': settings.MEDIA_ROOT, }),
   )
 
-### sentry
-if settings.HAVE_SENTRY:
-  urlpatterns += patterns('',
-      (r'^sentry/', include('sentry.web.urls')),
-  )
-
 ### main kegweb urls
 urlpatterns += patterns('',
   (r'^', include('pykeg.web.kegweb.urls')),

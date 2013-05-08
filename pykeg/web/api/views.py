@@ -467,25 +467,3 @@ def register(request):
 
 def default_handler(request):
   raise Http404, "Not an API endpoint: %s" % request.path[:100]
-
-if settings.HAVE_RAVEN and settings.HAVE_SENTRY:
-  class LocalRavenClient(raven.Client):
-    logger = logging.getLogger('kegbot.api.client.debug')
-    def send(self, **kwargs):
-      return GroupedMessage.objects.from_kwargs(**kwargs)
-
-@csrf_exempt
-@auth_required
-def debug_log(request):
-  if request.method != 'POST' or not settings.HAVE_RAVEN or not settings.HAVE_SENTRY:
-    raise Http404('Method not supported')
-
-  form = forms.DebugLogForm(request.POST)
-  if not form.is_valid():
-    raise kbapi.BadRequestError(_form_errors(form))
-  client = LocalRavenClient([])
-  message = form.cleaned_data['message']
-  ident = client.get_ident(client.create_from_text(message))
-  client.send()
-  return {'log_id': ident}
-

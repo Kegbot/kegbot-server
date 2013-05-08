@@ -32,3 +32,24 @@ background::
 
   (kb) $ kegbot-admin celeryd_detach -E
 
+Remote Error Logs (Sentry)
+--------------------------
+
+Your Kegbot server can log internal errors and exceptions to a
+`Sentry <https://github.com/getsentry/sentry>`_ web server. This is mostly
+useful for monitoring a production site.  You can
+`read the Sentry docs <http://sentry.readthedocs.org/>`_ to run your
+own server, or you can `pay for a hosted Sentry server <https://www.getsentry.com/>`_.
+
+Configuring Kegbot to log to your Sentry server is easy:
+
+1. Be sure you have Raven, the sentry client, installed::
+
+    (kb) pip install raven
+
+2. In your ``local_settings.py``, add your Sentry URL (shown in your Sentry dashboard)::
+
+    RAVEN_CONFIG = {
+      'dsn': 'http://foo:bar@localhost:9000/2',
+    }
+

@@ -13,12 +13,6 @@ except ImportError:
   HAVE_RAVEN = False
 
 try:
-  import sentry
-  HAVE_SENTRY = True
-except ImportError:
-  HAVE_SENTRY = False
-
-try:
   import celery
   HAVE_CELERY = True
 except ImportError:
@@ -35,9 +29,3 @@ try:
   HAVE_DJKOMBU = True
 except ImportError:
   HAVE_DJKOMBU = False
-
-try:
-  import rjdj.djangotornado
-  HAVE_DJANGOTORNADO = True
-except ImportError:
-  HAVE_DJANGOTORNADO = False

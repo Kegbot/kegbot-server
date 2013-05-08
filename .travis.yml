@@ -15,4 +15,4 @@ before_script:
   - cp deploy/travis/local_settings.py ~/.kegbot/
 
 script:
-  - kegbot-admin.py test --traverse-namespace --first-package-wins
+  - kegbot test --traverse-namespace --first-package-wins

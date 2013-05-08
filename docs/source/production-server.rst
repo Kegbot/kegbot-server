@@ -21,7 +21,7 @@ Gunicorn
 Starting with version 0.9.4, Gunicorn is automatically installed with Kegbot
 Server.  You can test it with the built-in command, ``run_gunicorn``::
   
-  (kb) $ kegbot-admin.py run_gunicorn --debug
+  (kb) $ kegbot run_gunicorn --debug
 
 If this works, you're ready to fire up nginx.
 

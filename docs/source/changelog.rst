@@ -8,6 +8,7 @@ Changelog
 Current Version (in development)
 --------------------------------
 
+* ``kegbot-admin.py`` has been renamed ``kegbot``. It's cleaner.
 * Security: Fixed issue #124 (some API endpoints remained exposed despite
   members-only privacy mode)
 * Virgin systems no longer show the "sessions" tab, since there aren't any.

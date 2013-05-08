@@ -14,7 +14,7 @@ is not a high performance web server, but works well during testing.
 
 Launch the web server with the following command::
 
-  (kb) $ kegbot-admin.py runserver
+  (kb) $ kegbot runserver
   Validating models...
 
   0 errors found
@@ -51,7 +51,7 @@ By default, the built-in web server only accepts connections from the local
 machine.  To allow external computers to reach this server, specify the bind
 address when running it::
 
-  $ kegbot-admin.py runserver 0.0.0.0:8000
+  $ kegbot runserver 0.0.0.0:8000
 
 Next steps
 ----------

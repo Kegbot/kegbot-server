@@ -47,7 +47,7 @@ MEDIA_ROOT = '/path/to/media/'
 MEDIA_URL = '/media/'
 
 # A directory where non-media static files will be stored. You should create
-# this directory, and use 'kegbot-admin.py collectstatic' to fill it.
+# this directory, and use 'kegbot collectstatic' to fill it.
 STATIC_ROOT = '/path/to/static/'
 
 # URL of the directory above. The default is '/static/'. Note that the directory

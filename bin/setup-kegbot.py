@@ -567,24 +567,24 @@ class SetupApp(app.App):
       raise ValueError('Imported settings does not match: imported=%s '
           'expected=%s' % (existing_file, settings_file))
 
-    self.run_command('kegbot-admin.py syncdb --all --noinput -v 0')
-    self.run_command('kegbot-admin.py migrate --all --fake --noinput -v 0')
+    self.run_command('kegbot syncdb --all --noinput -v 0')
+    self.run_command('kegbot migrate --all --fake --noinput -v 0')
 
     if FLAGS.interactive:
       try:
-        self.run_command('kegbot-admin.py collectstatic')
+        self.run_command('kegbot collectstatic')
       except FatalError, e:
         print 'WARNING: Collecting static files failed: %s' % e
         print ''
-        print 'Try again with "kegbot-admin.py collectstatic"'
+        print 'Try again with "kegbot collectstatic"'
     else:
-      self.run_command('kegbot-admin.py collectstatic --noinput')
+      self.run_command('kegbot collectstatic --noinput')
 
     print ''
     print 'Done!'
     print ''
     print 'You may now run the dev server:'
-    print 'kegbot-admin.py runserver'
+    print 'kegbot runserver'
 
   def run_command(self, s, allow_fail=False):
     print 'Running command: %s' % s

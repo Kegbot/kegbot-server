@@ -12,7 +12,7 @@ Super quick start instructions:
 $ mkvirtualenv kb
 (kb) $ pip install kegbot
 (kb) $ setup-kegbot.py
-(kb) $ kegbot-admin.py runserver
+(kb) $ kegbot runserver
 Development server is running at http://localhost:8000/
 ```
 

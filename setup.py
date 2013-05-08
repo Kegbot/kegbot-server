@@ -54,7 +54,7 @@ def setup_package():
       url = 'http://kegbot.org/',
       packages = find_packages(),
       scripts = [
-        'bin/kegbot-admin.py',
+        'bin/kegbot',
         'bin/setup-kegbot.py',
       ],
       install_requires = DEPENDENCIES,

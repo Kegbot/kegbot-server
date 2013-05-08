@@ -101,8 +101,8 @@ its dependencies::
 The command may take a few minutes as it downloads and installs everything.
 When it finishes, confirm Kegbot was installed by trying the admin tool::
 
-	(kb) $ kegbot-admin.py
-	Type 'kegbot-admin.py help' for usage.
+	(kb) $ kegbot
+	Type 'kegbot help' for usage.
 
 
 .. _install-git:
@@ -131,6 +131,6 @@ this section.
 The command may take a few minutes as it downloads and installs everything.
 When it finishes, confirm Kegbot was installed by trying the admin tool::
 
-	(kb) $ kegbot-admin.py
-	Type 'kegbot-admin.py help' for usage.
+	(kb) $ kegbot
+	Type 'kegbot help' for usage.
 

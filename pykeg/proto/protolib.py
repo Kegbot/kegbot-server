@@ -125,7 +125,7 @@ def PourPictureToProto(record, full=False):
 @converts(models.BeerStyle)
 def BeerStyleToProto(style, full=False):
   ret = models_pb2.BeerStyle()
-  ret.id = str(style.id)
+  ret.id = style.id
   ret.name = style.name
   return ret
 

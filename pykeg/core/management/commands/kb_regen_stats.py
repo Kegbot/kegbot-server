@@ -33,12 +33,7 @@ class Command(NoArgsCommand):
     models.UserStats.objects.all().delete()
     models.SessionStats.objects.all().delete()
 
-    for site in models.KegbotSite.objects.all():
-      print 'site: %s' % site
-      self.handle_site(site)
-
-  def handle_site(self, site):
-    drinks = site.drinks.valid()
+    drinks = models.Drink.objects.valid()
 
     last_drinks = drinks.order_by('-time')
     if last_drinks:
@@ -47,7 +42,7 @@ class Command(NoArgsCommand):
     progbar('recalc system stats', 1, 1)
     print ''
 
-    kegs = site.kegs.all()
+    kegs = models.Keg.objects.all()
     count = kegs.count()
     pos = 0
     for k in kegs:
@@ -64,7 +59,7 @@ class Command(NoArgsCommand):
     for user in users:
       pos += 1
       progbar('recalc user stats', pos, count)
-      user_drinks = user.drinks.valid().filter(site=site).order_by('-time')
+      user_drinks = user.drinks.valid().order_by('-time')
       if user_drinks:
         last = user_drinks[0]
         last._UpdateUserStats()
@@ -76,7 +71,7 @@ class Command(NoArgsCommand):
     for session in sessions:
       pos += 1
       progbar('recalc session stats', pos, count)
-      session_drinks = session.drinks.valid().filter(site=site).order_by('-time')
+      session_drinks = session.drinks.valid().order_by('-time')
       if session_drinks:
         last = session_drinks[0]
         last._UpdateSessionStats()

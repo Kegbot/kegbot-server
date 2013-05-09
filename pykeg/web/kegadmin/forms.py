@@ -52,7 +52,6 @@ class ChangeKegForm(forms.Form):
       current.end_keg()
     cd = self.cleaned_data
     new_keg = models.Keg()
-    new_keg.site = tap.site
     new_keg.size = cd['keg_size']
     new_keg.description = cd['description']
     new_keg.status = 'online'

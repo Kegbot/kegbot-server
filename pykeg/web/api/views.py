@@ -115,8 +115,7 @@ def add_drink_photo(request, drink_id):
       user=drink.user,
       keg=drink.keg,
       session=drink.session)
-  if settings.HAVE_CELERY:
-    tasks.handle_new_picture.delay(pour_pic.id)
+  tasks.handle_new_picture.delay(pour_pic.id)
   return protolib.ToProto(pour_pic, full=True)
 
 def get_session(request, session_id):

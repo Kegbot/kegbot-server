@@ -12,20 +12,3 @@ try:
 except ImportError:
   HAVE_RAVEN = False
 
-try:
-  import celery
-  HAVE_CELERY = True
-except ImportError:
-  HAVE_CELERY = False
-
-try:
-  import djcelery
-  HAVE_DJCELERY = True
-except ImportError:
-  HAVE_DJCELERY = False
-
-try:
-  import djkombu
-  HAVE_DJKOMBU = True
-except ImportError:
-  HAVE_DJKOMBU = False

@@ -18,6 +18,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'crispy_forms',
+    'djcelery',
+    'djkombu',
     'bootstrap-pagination',
     'imagekit',
     'pykeg.connections',
@@ -163,24 +165,18 @@ CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 INTERNAL_IPS = ('127.0.0.1',)
 
 ### Celery
-if HAVE_DJCELERY and HAVE_DJKOMBU:
-  INSTALLED_APPS += (
-    'djcelery',
-    'djkombu',
-  )
+import djcelery
+djcelery.setup_loader()
+BROKER_URL = "django://"
 
-  import djcelery
-  djcelery.setup_loader()
-  BROKER_URL = "django://"
-
-  CELERY_QUEUES = {
-    'default' : {
-      'exchange': 'default',
-      'binding_key': 'default'
-    },
-  }
-  CELERY_DEFAULT_QUEUE = "default"
-  CELERYD_CONCURRENCY = 3
+CELERY_QUEUES = {
+  'default' : {
+    'exchange': 'default',
+    'binding_key': 'default'
+  },
+}
+CELERY_DEFAULT_QUEUE = "default"
+CELERYD_CONCURRENCY = 3
 
 ### debug_toolbar
 

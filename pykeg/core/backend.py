@@ -29,8 +29,7 @@ from . import kb_common
 from . import models
 from . import time_series
 
-if settings.HAVE_CELERY:
-  from pykeg.web import tasks
+from pykeg.web import tasks
 
 class BackendError(Exception):
   """Base backend error exception."""
@@ -136,8 +135,7 @@ class KegbotBackend:
     if do_postprocess:
       d.PostProcess()
       event_list = [e for e in models.SystemEvent.objects.filter(drink=d).order_by('id')]
-      if settings.HAVE_CELERY:
-        tasks.handle_new_events.delay(event_list)
+      tasks.handle_new_events.delay(event_list)
 
     return d
 

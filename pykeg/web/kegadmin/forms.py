@@ -3,6 +3,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field, Hidden, Div
 from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
+from pykeg.core import backend
 from pykeg.core import models
 
 ALL_TAPS = models.KegTap.objects.all()
@@ -47,43 +48,17 @@ class ChangeKegForm(forms.Form):
   def save(self, tap):
     if not self.is_valid():
       raise ValueError('Form is not valid.')
-    current = tap.current_keg
-    if current:
-      current.end_keg()
-    cd = self.cleaned_data
-    new_keg = models.Keg()
-    new_keg.size = cd['keg_size']
-    new_keg.description = cd['description']
-    new_keg.status = 'online'
+    b = backend.KegbotBackend()
 
-    beer_type = None
-    brewer = None
-    style = None
-    if cd['beer_id']:
-      beer_type = models.BeerType.objects.get(id=int(cd['beer_id']))
-    if cd['brewer_id']:
-      brewer = models.Brewer.objects.get(id=int(cd['brewer_id']))
-    if cd['style_id']:
-      style = models.BeerStyle.objects.get(id=int(cd['style_id']))
+    if tap.is_active():
+      b.EndKeg(tap)
 
-    if not style or style.name != cd['style_name']:
-      style, new = models.BeerStyle.objects.get_or_create(name=cd['style_name'])
-    if not brewer or brewer.name != cd['brewer_name']:
-      brewer, new = models.Brewer.objects.get_or_create(name=cd['brewer_name'])
-    if not beer_type or \
-        beer_type.name != cd['beer_name'] or \
-        beer_type.brewer.name != brewer.name or \
-        beer_type.style.name != style.name:
-      beer_type = models.BeerType.objects.create(
-        name=cd['beer_name'],
-        brewer=brewer,
-        style=style)
+    keg = b.StartKeg(tap, beer_name=cd['beer_name'], brewer_name=cd['brewer_name'],
+        style_name=cd['style_name'])
 
-    new_keg.type = beer_type
-    new_keg.save()
-
-    tap.current_keg = new_keg
-    tap.save()
+    if cd['description']:
+      keg.description = cd['description']
+      keg.save()
 
 
 class EndKegForm(forms.Form):

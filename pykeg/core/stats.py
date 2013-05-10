@@ -279,7 +279,7 @@ class SessionStatsBuilder(SystemStatsBuilder):
 
 def main():
   from pykeg.core import models
-  last_drink = models.Drink.objects.valid().order_by('-id')[0]
+  last_drink = models.Drink.objects.all().order_by('-id')[0]
   builder = KegStatsBuilder(last_drink)
 
   print "building..."
@@ -289,7 +289,7 @@ def main():
 
   if False:
     for user in models.User.objects.all():
-      last_drink = user.drinks.valid().order_by('-time')
+      last_drink = user.drinks.all().order_by('-time')
       if not last_drink:
         continue
       last_drink = last_drink[0]

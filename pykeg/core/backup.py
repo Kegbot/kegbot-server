@@ -57,7 +57,7 @@ def dump(output_fp, kbsite, indent=None, log_cb=_no_log):
       ('thermologs', kbsite.thermologs.all().order_by('-id')[:60*24]),
       ('users', models.User.objects.all().order_by('id')),
       ('profiles', models.UserProfile.objects.all().order_by('id')),
-      ('drinks', kbsite.drinks.valid().order_by('id')),
+      ('drinks', kbsite.drinks.all().order_by('id')),
       ('tokens', kbsite.tokens.all().order_by('id')),
   )
 
@@ -273,7 +273,7 @@ def restore(input_fp, kbsite, log_cb=_no_log):
   _RegenEvents(kbsite)
 
 def _RegenSessions(kbsite):
-  for d in kbsite.drinks.valid().order_by('starttime'):
+  for d in kbsite.drinks.all().order_by('starttime'):
     d.session.AddDrink(d)
 
 def _RegenStats(kbsite):
@@ -281,7 +281,7 @@ def _RegenStats(kbsite):
   models.UserStats.objects.filter(site=kbsite).delete()
   models.KegStats.objects.filter(site=kbsite).delete()
   models.SessionStats.objects.filter(site=kbsite).delete()
-  for d in kbsite.drinks.valid().order_by('starttime'):
+  for d in kbsite.drinks.all().order_by('starttime'):
     d._UpdateSystemStats()
     d._UpdateUserStats()
     d._UpdateKegStats()
@@ -289,5 +289,5 @@ def _RegenStats(kbsite):
 
 def _RegenEvents(kbsite):
   kbsite.events.all().delete()
-  for d in kbsite.drinks.valid().order_by('starttime'):
+  for d in kbsite.drinks.all().order_by('starttime'):
     models.SystemEvent.ProcessDrink(d)

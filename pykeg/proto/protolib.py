@@ -184,7 +184,6 @@ def DrinkToProto(drink, full=False):
   ret.session_id = drink.session.id
   ret.time = datestr(drink.time)
   ret.duration = drink.duration
-  ret.status = drink.status
   if drink.keg:
     ret.keg_id = drink.keg.id
   if drink.user:
@@ -219,7 +218,8 @@ def KegToProto(keg, full=False):
   ret.percent_full = keg.percent_full()
   ret.start_time = datestr(keg.start_time)
   ret.end_time = datestr(keg.end_time)
-  ret.status = keg.status
+  if hasattr(ret, 'online'):
+    ret.online = keg.online
   if keg.description is not None:
     ret.description = keg.description
   ret.spilled_ml = keg.spilled_ml

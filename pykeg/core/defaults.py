@@ -22,6 +22,15 @@ from kegbot.util import units
 
 from . import models
 
+DEFAULT_KEG_SIZE_GALLONS = 15.5
+DEFAULT_KEG_SIZE_DESCRIPTION = "Full Keg (half barrel)"
+
+def get_default_keg_size():
+  volume = units.Quantity(DEFAULT_KEG_SIZE_GALLONS, units.UNITS.USGallon)
+  volume_int = volume.Amount(in_units=units.RECORD_UNIT)
+  return models.KegSize.objects.get_or_create(name=DEFAULT_KEG_SIZE_DESCRIPTION,
+      volume_ml=volume_int)[0]
+
 def db_is_installed():
   return len(models.KegbotSite.objects.all()) > 0
 
@@ -55,7 +64,7 @@ def set_defaults(force=False):
 
   # KegSize defaults - from http://en.wikipedia.org/wiki/Keg#Size
   default_sizes = (
-    (15.5, "Full Keg (half barrel)"),
+    (DEFAULT_KEG_SIZE_GALLONS, DEFAULT_KEG_SIZE_DESCRIPTION),
     (13.2, "Import Keg (European barrel)"),
     (7.75, "Pony Keg (quarter barrel)"),
     (6.6, "European Half Barrel"),

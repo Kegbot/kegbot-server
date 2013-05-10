@@ -104,7 +104,7 @@ def user_detail(request, username):
   # TODO(mikey): Limit to "recent" sessions for now.
   # Bug: https://github.com/Kegbot/kegbot/issues/37
   chunks = models.UserSessionChunk.objects.filter(user=user).select_related(depth=1)[:10]
-  drinks = user.drinks.valid()
+  drinks = user.drinks.all()
 
   context = RequestContext(request, {
       'drinks': drinks,

@@ -28,7 +28,7 @@ class Command(NoArgsCommand):
   args = '<none>'
 
   def handle(self, **options):
-    drinks = models.Drink.objects.valid()
+    drinks = models.Drink.objects.all()
 
     pos = 0
     count = drinks.count()

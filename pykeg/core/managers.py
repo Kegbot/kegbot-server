@@ -19,11 +19,6 @@
 from django.db import models
 from pykeg.core import kb_common
 
-class DrinkManager(models.Manager):
-  """Manager for drink models."""
-  def valid(self):
-    return self.filter(status='valid')
-
 
 class SessionManager(models.Manager):
   """Manager for session models."""

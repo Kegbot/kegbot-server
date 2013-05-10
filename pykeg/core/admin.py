@@ -37,12 +37,14 @@ class KegTapAdmin(admin.ModelAdmin):
 admin.site.register(models.KegTap, KegTapAdmin)
 
 class KegAdmin(admin.ModelAdmin):
-  list_display = ('id', 'type')
+  list_display = ('id', 'type', 'online')
+  list_filter = ('online', )
+  search_fields = ('id', 'type__name')
 admin.site.register(models.Keg, KegAdmin)
 
 class DrinkAdmin(admin.ModelAdmin):
   list_display = ('id', 'user', 'keg', 'time')
-  list_filter = ('keg', 'status', 'time')
+  list_filter = ('keg', 'time')
   search_fields = ('id', 'user__username')
 admin.site.register(models.Drink, DrinkAdmin)
 

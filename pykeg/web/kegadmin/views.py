@@ -38,6 +38,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from kegbot.util import kbjson
 
+from pykeg.core import backend
 from pykeg.core import backup
 from pykeg.core import logger
 from pykeg.core import models
@@ -107,7 +108,7 @@ def tap_detail(request, tap_id):
         activate_keg_form.save(tap)
         messages.success(request, 'The new keg was activated. Bottoms up!')
         return redirect('kegadmin-taps')
-    
+
     elif 'submit_tap_form' in request.POST:
       tap_settings_form = forms.TapForm(request.POST, instance=tap, site=request.kbsite)
       if tap_settings_form.is_valid():
@@ -119,8 +120,8 @@ def tap_detail(request, tap_id):
       delete_form = forms.DeleteTapForm(request.POST)
       if delete_form.is_valid():
         if tap.current_keg:
-          tap.current_keg.status = 'offline'
-          tap.current_keg.save()
+          b = backend.KegbotBackend()
+          b.EndKeg(tap)
         tap.delete()
         messages.success(request, 'Tap deleted.')
         return redirect('kegadmin-taps')
@@ -130,9 +131,8 @@ def tap_detail(request, tap_id):
       if end_keg_form.is_valid():
         tap.current_keg = None
         tap.save()
-        keg = end_keg_form.cleaned_data['keg']
-        keg.status = 'offline'
-        keg.save()
+        b = backend.KegbotBackend()
+        b.EndKeg(tap)
         messages.success(request, 'Keg %s was ended.' % keg.id)
 
     else:

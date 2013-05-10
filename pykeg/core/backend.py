@@ -25,6 +25,7 @@ import logging
 
 from django.conf import settings
 from django.utils import timezone
+from pykeg.core import defaults
 from . import kb_common
 from . import models
 from . import time_series
@@ -32,56 +33,57 @@ from . import time_series
 from pykeg.web import tasks
 
 class BackendError(Exception):
-  """Base backend error exception."""
+    """Base backend error exception."""
 
 class NoTokenError(BackendError):
-  """Token given is unknown."""
+    """Token given is unknown."""
 
 class KegbotBackend:
-  """Django Backend."""
+  """Provides high-level operations against the Kegbot system."""
 
   def __init__(self):
     self._logger = logging.getLogger('backend')
 
-  def _GetTapFromName(self, tap_name):
-    try:
-      return models.KegTap.objects.get(meter_name=tap_name)
-    except models.KegTap.DoesNotExist:
-      return None
-
-  def _GetKegForTapName(self, tap_name):
-    tap = self._GetTapFromName(tap_name)
-    if tap and tap.current_keg and tap.current_keg.status == 'online':
-      return tap.current_keg
-    return None
-
-  def _GetSensorFromName(self, name, autocreate=True):
-    try:
-      return models.ThermoSensor.objects.get(raw_name=name)
-    except models.ThermoSensor.DoesNotExist:
-      if autocreate:
-        sensor = models.ThermoSensor(raw_name=name, nice_name=name)
-        sensor.save()
-        return sensor
-      else:
-        return None
-
-  def _GetUserObjFromUsername(self, username):
-    try:
-      return models.User.objects.get(username=username)
-    except models.User.DoesNotExist:
-      return None
-
   def CreateNewUser(self, username):
+    """Creates and returns a User for the given username."""
     return models.User.objects.create(username=username)
 
   def CreateTap(self, name, meter_name, relay_name=None, ml_per_tick=None):
+    """Creates and returns a new KegTap.
+
+    Args:
+      name: The human-meaningful name for the tap, for instance, "Main Tap".
+      meter_name: The unique sensor name for the tap, for instance,
+          "kegboard.flow0".
+      relay_name: If the tap is connected to a relay, this specifies its
+          name, for instance, "kegboard.relay0".
+      ml_per_tick: The number of milliliters per flow meter tick on this
+          tap's meter.
+
+    Returns:
+        The new KegTap instance.
+    """
     tap = models.KegTap.objects.create(name=name,
         meter_name=meter_name, relay_name=relay_name, ml_per_tick=ml_per_tick)
     tap.save()
     return tap
 
   def CreateAuthToken(self, auth_device, token_value, username=None):
+    """Creates a new AuthenticationToken.
+
+    The combination of (auth_device, token_value) must be unique within the
+    system.
+
+    Args:
+        auth_device: The name of the authentication device, for instance,
+            "core.rfid".
+        token_value: The opaque string value of the token, which is typically
+            unique within the `auth_device` namespace.
+        username: The User with which to associate this Token.
+
+    Returns:
+        The newly-created AuthenticationToken.
+    """
     token = models.AuthenticationToken.objects.create(
         auth_device=auth_device, token_value=token_value)
     if username:
@@ -90,16 +92,41 @@ class KegbotBackend:
     token.save()
     return token
 
-  def GetAllTaps(self):
-    return list(models.KegTap.objects.all())
-
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, shout='', tick_time_series='',
       do_postprocess=True):
+    """Records a new drink against a given tap.
+
+    The tap must have a Keg assigned to it (KegTap.current_keg), and the keg
+    must be active.
+
+    Args:
+        tap_name: The tap's meter_name.
+        ticks: The number of ticks observed by the flow sensor for this drink.
+        volume_ml: The volume, in milliliters, of the pour.  If specifed, this
+            value is saved as the Drink's actual value.  If not specified, a
+            volume is computed based on `ticks` and the KegTap's
+            `ml_per_tick` setting.
+        username: The username with which to associate this Drink, or None for
+            an anonymous Drink.
+        pour_time: The datetime of the drink.  If not supplied, the current
+            date and time will be used.
+        duration: Number of seconds it took to pour this Drink.  This is
+            optional information not critical to the record.
+        shout: A short comment left by the user about this Drink.  Optional.
+        tick_time_series: Vector of flow update data, used for diagnostic
+            purposes.
+        do_postprocess: Set to False during bulk inserts.
+
+    Returns:
+        The newly-created Drink instance.
+    """
 
     tap = self._GetTapFromName(tap_name)
     if not tap:
       raise BackendError("Tap unknown")
+    if not tap.is_active:
+      raise BackendError("No active keg at this tap")
 
     if volume_ml is None:
       volume_ml = float(ticks) * tap.ml_per_tick
@@ -113,9 +140,7 @@ class KegbotBackend:
     if not pour_time:
       pour_time = timezone.now()
 
-    keg = None
-    if tap.current_keg and tap.current_keg.status == 'online':
-      keg = tap.current_keg
+    keg = tap.current_keg
 
     if tick_time_series:
       try:
@@ -139,36 +164,49 @@ class KegbotBackend:
 
     return d
 
-  def CancelDrink(self, drink_id, spilled=False):
-    try:
-      d = models.Drink.objects.get(id=drink_id)
-    except models.Drink.DoesNotExist:
-      return
+  def CancelDrink(self, drink, spilled=False):
+    """Permanently deletes a Drink from the system.
 
-    keg = d.keg
-    user = d.user
-    session = d.session
+    Associated data, such as SystemEvent, PourPicture, and other data, will
+    be destroyed along with the drink. Statistics and session data will be
+    recomputed after the drink is destroyed.
+
+    Args:
+        drink_id: The Drink, or id of the Drink, to cancel.
+        spilled: If True, after canceling the Drink, the drink's volume will
+            be added to its Keg's "spilled" total.  This is is typically useful
+            for removing test pours from the system while still accounting for
+            the lost volume.
+
+    Returns:
+        The deleted drink.
+    """
+    if not isinstance(drink, models.Drink):
+      drink = models.Drink.objects.get(id=drink)
+
+    keg = drink.keg
+    user = drink.user
+    session = drink.session
 
     # Transfer volume to spillage if requested.
-    if spilled and d.volume_ml and d.keg:
-      d.keg.spilled_ml += d.volume_ml
-      d.keg.save()
-
-    d.status = 'deleted'
-    d.save()
+    if spilled and drink.volume_ml and drink.keg:
+      drink.keg.spilled_ml += drink.volume_ml
+      drink.keg.save()
 
     # Invalidate all statistics.
     models.SystemStats.objects.all().delete()
-    models.KegStats.objects.filter(keg=d.keg).delete()
-    models.UserStats.objects.filter(user=d.user).delete()
-    models.SessionStats.objects.filter(session=d.session).delete()
+    models.KegStats.objects.filter(keg=drink.keg).delete()
+    models.UserStats.objects.filter(user=drink.user).delete()
+    models.SessionStats.objects.filter(session=drink.session).delete()
 
     # Delete any SystemEvents for this drink.
-    models.SystemEvent.objects.filter(drink=d).delete()
+    old_session = drink.session
+    drink.delete()
+    models.SystemEvent.objects.filter(drink=drink).delete()
 
     # Regenerate new statistics, based on the most recent drink
     # post-cancellation.
-    last_qs = models.Drink.objects.valid().order_by('-id')
+    last_qs = models.Drink.objects.all().order_by('-id')
     if last_qs:
       last_drink = last_qs[0]
       last_drink._UpdateSystemStats()
@@ -180,11 +218,61 @@ class KegbotBackend:
     if session:
       session.Rebuild()
       session.RecomputeStats()
+    return drink
 
-    # TODO(mikey): recompute session.
-    return d
+  def AssignDrink(self, drink, user):
+    """Assigns, or re-assigns, a previously-recorded Drink.
+
+    Statistics and session data will be recomputed as a side-effect
+    of any change to user assignment.  (If the drink is already assigned
+    to the given user, this method is a no-op).
+
+    Args:
+        drink: The Drink object (or drink id) to assign.
+        user: The User object (or username) to set as the owner,
+            or None for anonymous.
+
+    Returns:
+        The drink.
+    """
+    drink = get_drink(drink)
+    if drink.user == user:
+      return drink
+
+    old_user = drink.user
+    drink.user = user
+    drink.save()
+    drink.session.RecomputeStats()
+
+    if old_user is not None:
+      old_user.get_profile().RecomputeStats()
+
+    return drink
 
   def LogSensorReading(self, sensor_name, temperature, when=None):
+    """Logs a ThermoSensor reading.
+
+    To avoid an excessive number of entries, the system limits temperature
+    readings to one per minute.  If there is already a recording for the
+    given time period, that record will be updated with the current temperature
+    ("last one wins").
+
+    Regardless of this record's timestamp, any records older than
+    `kb_common.THERMO_SENSOR_HISTORY_MINUTES` will be deleted as a side effect
+    of this call.
+
+    Args:
+        sensor_name: The name of the sensor, corresponding to
+            ThermoSensor.raw_name.
+        temperature: Temperature, in celsius degrees.  Values outside of the
+            range specified in `kb_common.THERMO_SENSOR_RANGE` will be
+            rejected.
+        when: If specified, a datetime of the recording, otherwise the current
+            time is used.
+
+    Returns:
+        The record for this reading.
+    """
     now = timezone.now()
     if not when:
       when = now
@@ -210,18 +298,175 @@ class KegbotBackend:
     record.save()
 
     # Delete old entries.
-    keep_time = now - datetime.timedelta(hours=24)
+    keep_time = now - datetime.timedelta(
+        minutes=kb_common.THERMO_SENSOR_HISTORY_MINUTES)
     old_entries = models.Thermolog.objects.filter(time__lt=keep_time)
     old_entries.delete()
 
     return record
 
   def GetAuthToken(self, auth_device, token_value):
+    """Fetches the AuthenticationToken matching the given parameters.
+
+    Args:
+        auth_device: The requested token's auth_device.
+        token_value: The token's value, typically unique within auth_device.
+
+    Returns:
+        The matching token.
+
+    Raises:
+        NoTokenError: No matching token could be found.
+    """
     if token_value and auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
       token_value = token_value.lower()
     try:
       return models.AuthenticationToken.objects.get(auth_device=auth_device,
           token_value=token_value)
     except models.AuthenticationToken.DoesNotExist:
+      # TODO(mikey): return None instead of raising.
       raise NoTokenError
 
+  def StartKeg(self, tap, beer_type=None, keg_size=None,
+          brewer_name=None, beer_name=None, style_name=None):
+      """Activates a new keg at the given tap.
+
+      The tap must be inactive (tap.current_keg == None), otherwise a
+      ValueError will be thrown.
+
+      A beer type must be specified, either by providing an existing
+      BeerType instance as `beer_type`, or by specifying values for
+      `brewer_name`, `beer_name`, and `style_name`.
+
+      When using the latter form, the system will attempt to match
+      the string type parameters against an already-existing BeerType.
+      Otherwise, a new BeerType will be created.
+
+      Args:
+          tap: The KegTap object to tap against, or a string matching
+              KegTap.meter_name.
+          beer_type: The type of beer, as a beer_type object.  If specified,
+              brewer_name, beer_name, and style_name must all be None.
+          keg_size: The size of this keg.  If unspecified, the default
+              size will be used.
+          brewer_name: The Brewer's name for the keg's beer.  Must be
+              given with beer_name and style_name; beer_type must be None.
+          beer_name: The BeerType's name for the keg's beer.  Must be
+              given with brewer_name and style_name; beer_type must be
+              None.
+          style_name: The BeerStyle for the keg's beer.  Must be given
+              with brewer_name and beer_name; beer_type must be None.
+
+      Returns:
+          The new keg instance.
+      """
+      if not isinstance(tap, models.KegTap):
+          tap = models.KegTap.objects.get(meter_name=tap)
+
+      if tap.is_active():
+          raise ValueError('Tap is already active, must end keg first.')
+
+      if beer_type:
+          if brewer_name or beer_name or style_name:
+              raise ValueError(
+                  'Cannot give brewer_name, beer_name, or style_name with beer_type')
+      else:
+          if not beer_name:
+              raise ValueError('Must supply beer_name when beer_type is None')
+          if not brewer_name:
+              raise ValueError('Must supply brewer_name when beer_type is None')
+          if not style_name:
+              raise ValueError('Must supply style_name when beer_type is None')
+          beer_style = models.BeerStyle.objects.get_or_create(name=style_name)[0]
+          brewer = models.Brewer.objects.get_or_create(name=brewer_name)[0]
+          beer_type = models.BeerType.objects.get_or_create(name=beer_name,
+                  brewer=brewer, style=beer_style)[0]
+
+      if not keg_size:
+          keg_size = defaults.get_default_keg_size()
+
+      keg = models.Keg.objects.create(type=beer_type, size=keg_size,
+              online=True)
+      old_keg = tap.current_keg
+      if old_keg:
+          old_keg.online = False
+          old_keg.save()
+
+      tap.current_keg = keg
+      tap.save()
+
+      return keg
+
+  def EndKeg(self, tap):
+      """Takes the current Keg offline at the given tap.
+
+      Args:
+          tap: The KegTap object to tap against, or a string matching
+              KegTap.meter_name.
+
+      Returns:
+          The old keg.
+
+      Raises:
+          ValueError: if the tap is missing or already offline.
+      """
+      if not isinstance(tap, models.KegTap):
+          tap = models.KegTap.objects.get(meter_name=tap)
+
+      if not tap.current_keg:
+          raise ValueError('Tap is already offline.')
+
+      keg = tap.current_keg
+      keg.online = False
+      keg.save()
+
+      tap.current_keg = None
+      tap.save()
+
+      return keg
+
+  def _GetTapFromName(self, tap_name):
+    """"Returns a KegTap object with meter_name matching tap_name, or None."""
+    try:
+      return models.KegTap.objects.get(meter_name=tap_name)
+    except models.KegTap.DoesNotExist:
+      return None
+
+  def _GetKegForTapName(self, tap_name):
+    """Returns the current keg at tap matching tap_name, or None."""
+    tap = self._GetTapFromName(tap_name)
+    if tap and tap.current_keg and tap.current_keg.online:
+      return tap.current_keg
+    return None
+
+  def _GetSensorFromName(self, name, autocreate=True):
+    """Returns the TemperatureSensor with raw_name matching name.
+
+    Args:
+        name: The sensor's raw_name.
+        autocreate: If True, create a new sensor if one does not exist.
+
+    Returns:
+        The TemperatureSensor object, or None if none exists and autocreate was
+        not True.
+    """
+    try:
+      return models.ThermoSensor.objects.get(raw_name=name)
+    except models.ThermoSensor.DoesNotExist:
+      if autocreate:
+        sensor = models.ThermoSensor(raw_name=name, nice_name=name)
+        sensor.save()
+        return sensor
+      else:
+        return None
+
+  def _GetUserObjFromUsername(self, username):
+    """Returns the User object for the given username, or None."""
+    try:
+      return models.User.objects.get(username=username)
+    except models.User.DoesNotExist:
+      return None
+
+def get_drink(drink_or_id):
+  if not isinstance(drink_or_id, models.Drink):
+    return models.Drink.objects.get(pk=drink_or_id)

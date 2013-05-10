@@ -51,11 +51,7 @@ from pykeg.web.api import forms
 from pykeg.web.api import util
 from pykeg.web.kegadmin.forms import ChangeKegForm
 
-if settings.HAVE_CELERY:
-  from pykeg.web import tasks
-
-if settings.HAVE_RAVEN:
-  import raven
+from pykeg.web import tasks
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -132,7 +128,7 @@ def get_keg(request, keg_id):
 
 def get_keg_drinks(request, keg_id):
   keg = get_object_or_404(models.Keg, id=keg_id)
-  return keg.drinks.valid()
+  return keg.drinks.all()
 
 def get_keg_events(request, keg_id):
   keg = get_object_or_404(models.Keg, id=keg_id)
@@ -148,7 +144,9 @@ def get_keg_sizes(request):
 @csrf_exempt
 def end_keg(request, keg_id):
   keg = get_object_or_404(models.Keg, id=keg_id)
-  keg.end_keg()
+  tap = keg.current_tap
+  b = backend.KegbotBackend()
+  keg = b.EndKeg(tap)
   return protolib.ToProto(keg, full=True)
 
 def all_sessions(request):
@@ -208,7 +206,7 @@ def get_user(request, username):
 
 def get_user_drinks(request, username):
   user = get_object_or_404(models.User, username=username)
-  return user.drinks.valid()
+  return user.drinks.all()
 
 def get_user_events(request, username):
   user = get_object_or_404(models.User, username=username)
@@ -237,19 +235,21 @@ def assign_auth_token(request, auth_device, token_value):
 
   b = backend.KegbotBackend()
   username = form.cleaned_data['username']
-  try:
-    tok = b.GetAuthToken(auth_device, token_value)
-    user = b._GetUserObjFromUsername(username)
-    if not user:
-      raise kbapi.BadRequestError("User does not exist")
+
+  user = b._GetUserObjFromUsername(username)
+  if not user:
+    raise kbapi.BadRequestError("User does not exist")
+
+  tok = b.GetAuthToken(auth_device, token_value)
+  if not tok:
+    tok = b.CreateAuthToken(auth_device, token_value, username=username)
+  else:
     if tok.user != user:
       if tok.user:
         raise kbapi.BadRequestError("Token is already bound to a user")
       tok.user = user
       tok.save()
-    return tok
-  except backend.NoTokenError:
-    return b.CreateAuthToken(auth_device, token_value, username=username)
+  return tok
 
 def all_thermo_sensors(request):
   return models.ThermoSensor.objects.all()
@@ -395,10 +395,9 @@ def _tap_detail_post(request, tap):
 @csrf_exempt
 @auth_required
 def cancel_drink(request):
-  #if request.method != 'POST':
-  #  raise kbapi.BadRequestError, 'Method not supported at this endpoint'
-  #form = forms.DrinkCancelForm(request.POST)
-  form = forms.CancelDrinkForm(request.GET)
+  if request.method != 'POST':
+    raise kbapi.BadRequestError('POST required')
+  form = forms.CancelDrinkForm(request.POST)
   if not form.is_valid():
     raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data

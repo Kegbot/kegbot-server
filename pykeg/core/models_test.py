@@ -70,9 +70,7 @@ class CoreModelsTestCase(TestCase):
         size=self.keg_size,
         start_time=make_datetime(2000, 4, 1),
         end_time=make_datetime(2000, 5, 1),
-        status='online',
         description='Our first keg!',
-        origcost=99.0,
     )
 
     self.tap = models.KegTap.objects.create(
@@ -195,14 +193,14 @@ class CoreModelsTestCase(TestCase):
     # session 1: should be 10 minutes long as created above
     self.assertEqual(s1.start_time, drinks_u1[0].time)
     self.assertEqual(s1.end_time, drinks_u1[0].time + td_10m + SESSION_DELTA)
-    self.assertEqual(s1.drinks.valid().filter(user=u1).count(), 2)
-    self.assertEqual(s1.drinks.valid().filter(user=u2).count(), 1)
+    self.assertEqual(s1.drinks.all().filter(user=u1).count(), 2)
+    self.assertEqual(s1.drinks.all().filter(user=u2).count(), 1)
 
     # session 2: at time 200, 1 drink
     self.assertEqual(s2.start_time, base_time + td_390m)
     self.assertEqual(s2.end_time, base_time + td_400m + SESSION_DELTA)
-    self.assertEqual(s2.drinks.valid().filter(user=u1).count(), 1)
-    self.assertEqual(s2.drinks.valid().filter(user=u2).count(), 2)
+    self.assertEqual(s2.drinks.all().filter(user=u1).count(), 1)
+    self.assertEqual(s2.drinks.all().filter(user=u2).count(), 2)
 
     # user2 session2: drinks are added out of order to create this, ensure times
     # match

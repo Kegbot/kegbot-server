@@ -33,7 +33,7 @@ class Command(NoArgsCommand):
     models.UserStats.objects.all().delete()
     models.SessionStats.objects.all().delete()
 
-    drinks = models.Drink.objects.valid()
+    drinks = models.Drink.objects.all()
 
     last_drinks = drinks.order_by('-time')
     if last_drinks:
@@ -48,7 +48,7 @@ class Command(NoArgsCommand):
     for k in kegs:
       pos += 1
       progbar('recalc keg stats', pos, count)
-      last_drinks = k.drinks.valid().order_by('-time')
+      last_drinks = k.drinks.all().order_by('-time')
       if last_drinks:
         last_drinks[0]._UpdateKegStats()
     print ''
@@ -59,7 +59,7 @@ class Command(NoArgsCommand):
     for user in users:
       pos += 1
       progbar('recalc user stats', pos, count)
-      user_drinks = user.drinks.valid().order_by('-time')
+      user_drinks = user.drinks.all().order_by('-time')
       if user_drinks:
         last = user_drinks[0]
         last._UpdateUserStats()
@@ -71,7 +71,7 @@ class Command(NoArgsCommand):
     for session in sessions:
       pos += 1
       progbar('recalc session stats', pos, count)
-      session_drinks = session.drinks.valid().order_by('-time')
+      session_drinks = session.drinks.all().order_by('-time')
       if session_drinks:
         last = session_drinks[0]
         last._UpdateSessionStats()

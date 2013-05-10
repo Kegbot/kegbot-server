@@ -34,7 +34,7 @@ class Command(NoArgsCommand):
     print ''
 
     pos = 0
-    drinks = models.Drink.objects.valid()
+    drinks = models.Drink.objects.all()
     count = drinks.count()
     for d in drinks.order_by('time'):
       pos += 1

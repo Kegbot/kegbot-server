@@ -8,9 +8,10 @@ Changelog
 Current Version (in development)
 --------------------------------
 
-* ``kegbot-admin.py`` has been renamed ``kegbot``. It's cleaner.
 * Security: Fixed issue #124 (some API endpoints remained exposed despite
   members-only privacy mode)
+* Drinks can now be canceled in the kegadmin dashboard.
+* ``kegbot-admin.py`` has been renamed ``kegbot``. It's cleaner.
 * Virgin systems no longer show the "sessions" tab, since there aren't any.
 * Fixed issue #122 (staff-only privacy mode causing an error).
 * Fixed issue #120 (error during setup wizard).

@@ -15,6 +15,9 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^users/create/$', 'add_user', name='kegadmin-add-user'),
     url(r'^users/(?P<user_id>\d+)/$', 'user_detail', name='kegadmin-edit-user'),
 
+    url(r'^drinks/$', 'drink_list', name='kegadmin-drinks'),
+    url(r'^drinks/(?P<drink_id>\d+)/$', 'drink_detail', name='kegadmin-edit-drink'),
+
     url(r'^tokens/$', 'token_list', name='kegadmin-tokens'),
     url(r'^tokens/create/$', 'add_token', name='kegadmin-add-token'),
     url(r'^tokens/(?P<token_id>\d+)/$', 'token_detail', name='kegadmin-edit-token'),

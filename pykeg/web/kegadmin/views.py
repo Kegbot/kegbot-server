@@ -223,6 +223,43 @@ def user_detail(request, user_id):
   return render_to_response('kegadmin/user_detail.html', context_instance=context)
 
 @staff_member_required
+def drink_list(request):
+  context = RequestContext(request)
+  drinks = models.Drink.objects.all().order_by('-time')
+  paginator = Paginator(drinks, 25)
+
+  page = request.GET.get('page')
+  try:
+    drinks = paginator.page(page)
+  except PageNotAnInteger:
+    drinks = paginator.page(1)
+  except EmptyPage:
+    drinks = paginator.page(paginator.num_pages)
+
+  context['drinks'] = drinks
+  return render_to_response('kegadmin/drink_list.html', context_instance=context)
+
+@staff_member_required
+def drink_detail(request, drink_id):
+  drink = get_object_or_404(models.Drink, id=drink_id)
+  b = backend.KegbotBackend()
+
+  if request.method == 'POST':
+    if 'submit_cancel' in request.POST:
+      # TODO check csrf
+      b.CancelDrink(drink)
+      messages.success(request, 'Drink %s was cancelled.' % drink_id)
+      return redirect('kegadmin-drinks')
+
+    elif 'submit_reassign' in request.POST:
+      pass
+
+  context = RequestContext(request)
+  context['drink'] = drink
+  return render_to_response('kegadmin/drink_detail.html', context_instance=context)
+
+
+@staff_member_required
 def token_list(request):
   context = RequestContext(request)
   tokens = models.AuthenticationToken.objects.all().order_by('-created_time')
@@ -277,7 +314,6 @@ def add_token(request):
       return redirect('kegadmin-tokens')
   context['form'] = form
   return render_to_response('kegadmin/add_token.html', context_instance=context)
-
 
 @staff_member_required
 def connections(request):

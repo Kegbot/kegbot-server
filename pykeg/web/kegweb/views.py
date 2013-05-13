@@ -77,9 +77,7 @@ def system_stats(request):
   })
 
   top_drinkers = []
-  for drinkervol in stats.get('volume_by_drinker', []):
-    username = drinkervol.username
-    vol = drinkervol.volume_ml
+  for username, vol in stats.get('volume_by_drinker', {}).iteritems():
     try:
       user = models.User.objects.get(username=username)
     except models.User.DoesNotExist:
@@ -96,10 +94,7 @@ def system_stats(request):
 
 def user_detail(request, username):
   user = get_object_or_404(models.User, username=username, is_active=True)
-  try:
-    stats = models.UserStats.objects.get(user=user).stats
-  except models.UserStats.DoesNotExist:
-    stats = None
+  stats = user.get_profile().GetStats()
 
   # TODO(mikey): Limit to "recent" sessions for now.
   # Bug: https://github.com/Kegbot/kegbot/issues/37

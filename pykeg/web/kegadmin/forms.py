@@ -53,6 +53,7 @@ class ChangeKegForm(forms.Form):
     if tap.is_active():
       b.EndKeg(tap)
 
+    cd = self.cleaned_data
     keg = b.StartKeg(tap, beer_name=cd['beer_name'], brewer_name=cd['brewer_name'],
         style_name=cd['style_name'])
 

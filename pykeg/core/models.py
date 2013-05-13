@@ -37,7 +37,6 @@ from pykeg.core import fields
 from pykeg.core import imagespecs
 from pykeg.core import jsonfield
 from pykeg.core import managers
-from pykeg.core import stats
 from pykeg.core.util import make_serial
 
 from kegbot.util import units
@@ -77,7 +76,7 @@ class KegbotSite(models.Model):
 
   def GetStatsRecord(self):
     try:
-      return SystemStats.objects.get()
+      return SystemStats.objects.latest()
     except SystemStats.DoesNotExist:
       return None
 
@@ -197,10 +196,10 @@ class UserProfile(models.Model):
       return qs[0]
 
   def GetStatsRecord(self):
-    try:
-      return UserStats.objects.get(user=self)
-    except UserStats.DoesNotExist:
-      return None
+    qs = UserStats.objects.filter(user=self).order_by('-id')
+    if len(qs):
+      return qs[0]
+    return None
 
   def GetStats(self):
     ret = {}
@@ -208,12 +207,6 @@ class UserProfile(models.Model):
     if record:
       ret = record.stats
     return util.AttrDict(ret)
-
-  def RecomputeStats(self):
-    self.user.stats.all().delete()
-    last_d = self.user.drinks.all().order_by('-time')
-    if last_d:
-      last_d[0]._UpdateUserStats()
 
   def GetApiKey(self):
     api_key, new = ApiKey.objects.get_or_create(user=self.user,
@@ -458,10 +451,10 @@ class Keg(models.Model):
     return None
 
   def GetStatsRecord(self):
-    try:
-      return KegStats.objects.get(keg=self)
-    except KegStats.DoesNotExist:
-      return None
+    qs = KegStats.objects.filter(keg=self).order_by('-id')
+    if len(qs):
+      return qs[0]
+    return None
 
   def GetStats(self):
     ret = {}
@@ -469,12 +462,6 @@ class Keg(models.Model):
     if record:
       ret = record.stats
     return util.AttrDict(ret)
-
-  def RecomputeStats(self):
-    self.stats.all().delete()
-    last_d = self.drinks.all().order_by('-time')
-    if last_d:
-      last_d[0]._UpdateKegStats()
 
   def Sessions(self):
     chunks = SessionChunk.objects.filter(keg=self).order_by('-start_time').select_related(depth=2)
@@ -493,10 +480,8 @@ class Keg(models.Model):
     if not stats:
       return []
     ret = []
-    entries = stats.get('volume_by_drinker', [])
-    for entry in entries:
-      username = str(entry.username)
-      vol = entry.volume_ml
+    entries = stats.get('volume_by_drinker', {})
+    for username, vol in entries.iteritems():
       try:
         user = User.objects.get(username=username)
       except User.DoesNotExist:
@@ -584,35 +569,6 @@ class Drink(models.Model):
 
   def __str__(self):
     return "Drink %i by %s" % (self.id, self.user)
-
-  def _UpdateSystemStats(self):
-    try:
-      stats = SystemStats.objects.get()
-    except SystemStats.DoesNotExist:
-      stats = SystemStats.objects.create()
-    stats.Update(self)
-
-  def _UpdateUserStats(self):
-    if self.user:
-      stats, created = UserStats.objects.get_or_create(user=self.user)
-      stats.Update(self)
-
-  def _UpdateKegStats(self):
-    if self.keg:
-      stats, created = KegStats.objects.get_or_create(keg=self.keg)
-      stats.Update(self)
-
-  def _UpdateSessionStats(self):
-    if self.session:
-      stats, created = SessionStats.objects.get_or_create(session=self.session)
-      stats.Update(self)
-
-  def PostProcess(self):
-    self._UpdateSystemStats()
-    self._UpdateUserStats()
-    self._UpdateKegStats()
-    self._UpdateSessionStats()
-    SystemEvent.ProcessDrink(self)
 
 
 class AuthenticationToken(models.Model):
@@ -729,14 +685,6 @@ class DrinkingSession(_AbstractChunk):
       return pictures[1:]
     return []
 
-  def RecomputeStats(self):
-    self.stats.all().delete()
-    try:
-      last_d = self.drinks.all().latest()
-      last_d._UpdateSessionStats()
-    except Drink.DoesNotExist:
-      pass
-
   @models.permalink
   def get_absolute_url(self):
     dt = self.start_time
@@ -749,10 +697,10 @@ class DrinkingSession(_AbstractChunk):
       'pk' : self.pk})
 
   def GetStatsRecord(self):
-    try:
-      return SessionStats.objects.get(session=self)
-    except SessionStats.DoesNotExist:
-      return None
+    qs = SessionStats.objects.filter(session=self).order_by('-id')
+    if len(qs):
+      return qs[0]
+    return None
 
   def GetStats(self):
     ret = {}
@@ -841,7 +789,7 @@ class DrinkingSession(_AbstractChunk):
     This method should be called after changing the set of drinks
     belonging to this session.
 
-    This method has no effect on statistics; see RecomputeStats.
+    This method has no effect on statistics; see stats module.
     """
     self.volume_ml = 0
     self.chunks.all().delete()
@@ -850,6 +798,7 @@ class DrinkingSession(_AbstractChunk):
 
     drinks = self.drinks.all()
     if not drinks:
+      self.save()
       # TODO(mikey): cancel/delete the session entirely.  As it is, session will
       # remain a placeholder.
       return
@@ -977,53 +926,46 @@ class Thermolog(models.Model):
 
 
 class _StatsModel(models.Model):
-  STATS_BUILDER = None
+  time = models.DateTimeField(default=timezone.now)
+  stats = jsonfield.JSONField()
+  drink = models.ForeignKey(Drink)
 
   class Meta:
     abstract = True
-
-  def Update(self, drink, force=False):
-    previous = None
-    try:
-      if not force and self.stats:
-        previous = protoutil.DictToProtoMessage(self.stats, models_pb2.Stats())
-    except TypeError, e:
-      pass
-    builder = self.STATS_BUILDER(drink=drink, previous=previous,
-        drink_qs=Drink.objects.all())
-    self.stats = protoutil.ProtoMessageToDict(builder.Build())
-    self.save()
-
-  time = models.DateTimeField(default=timezone.now)
-  stats = jsonfield.JSONField()
+    get_latest_by = 'id'
 
 
 class SystemStats(_StatsModel):
-  STATS_BUILDER = stats.SystemStatsBuilder
-
+  pass
 
 class UserStats(_StatsModel):
-  STATS_BUILDER = stats.DrinkerStatsBuilder
-  user = models.ForeignKey(User, blank=True, null=True, unique=True,
+  user = models.ForeignKey(User, blank=True, null=True,
       related_name='stats')
+
+  class Meta:
+    unique_together = ('drink', 'user')
 
   def __str__(self):
     return 'UserStats for %s' % self.user
 
 
 class KegStats(_StatsModel):
-  STATS_BUILDER = stats.KegStatsBuilder
-  keg = models.ForeignKey(Keg, unique=True, related_name='stats')
+  keg = models.ForeignKey(Keg, related_name='stats')
   completed = models.BooleanField(default=False)
+
+  class Meta:
+    unique_together = ('drink', 'keg')
 
   def __str__(self):
     return 'KegStats for %s' % self.keg
 
 
 class SessionStats(_StatsModel):
-  STATS_BUILDER = stats.SessionStatsBuilder
-  session = models.ForeignKey(DrinkingSession, unique=True, related_name='stats')
+  session = models.ForeignKey(DrinkingSession, related_name='stats')
   completed = models.BooleanField(default=False)
+
+  class Meta:
+    unique_together = ('drink', 'session')
 
   def __str__(self):
     return 'SessionStats for %s' % self.session
@@ -1095,12 +1037,14 @@ class SystemEvent(models.Model):
     session = drink.session
     user = drink.user
 
+    events = []
     if keg:
       q = keg.events.filter(kind='keg_tapped')
       if q.count() == 0:
         e = keg.events.create(kind='keg_tapped', time=drink.time,
             keg=keg, user=user, drink=drink, session=session)
         e.save()
+        events.append(e)
 
     if session:
       q = session.events.filter(kind='session_started')
@@ -1108,6 +1052,7 @@ class SystemEvent(models.Model):
         e = session.events.create(kind='session_started',
             time=session.start_time, drink=drink, user=user)
         e.save()
+        events.append(e)
 
     if user:
       q = user.events.filter(kind='session_joined', session=session)
@@ -1115,6 +1060,7 @@ class SystemEvent(models.Model):
         e = user.events.create(kind='session_joined',
             time=drink.time, session=session, drink=drink, user=user)
         e.save()
+        events.append(e)
 
     q = drink.events.filter(kind='drink_poured')
     if q.count() == 0:
@@ -1122,6 +1068,9 @@ class SystemEvent(models.Model):
           time=drink.time, drink=drink, user=user, keg=keg,
           session=session)
       e.save()
+      events.append(e)
+
+    return events
 
 
 def _pics_file_name(instance, filename):

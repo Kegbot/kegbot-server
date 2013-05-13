@@ -188,7 +188,7 @@ def get_keg_sessions(request, keg_id):
 
 def get_keg_stats(request, keg_id):
   keg = get_object_or_404(models.Keg, id=keg_id)
-  return keg.GetStatsRecord()
+  return keg.GetStats()
 
 def get_system_stats(request):
   return models.KegbotSite.get().GetStatsRecord()

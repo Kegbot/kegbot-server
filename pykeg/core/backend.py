@@ -24,8 +24,10 @@ import datetime
 import logging
 
 from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 from pykeg.core import defaults
+from pykeg.core import stats
 from . import kb_common
 from . import models
 from . import time_series
@@ -44,10 +46,12 @@ class KegbotBackend:
   def __init__(self):
     self._logger = logging.getLogger('backend')
 
+  @transaction.commit_on_success
   def CreateNewUser(self, username):
     """Creates and returns a User for the given username."""
     return models.User.objects.create(username=username)
 
+  @transaction.commit_on_success
   def CreateTap(self, name, meter_name, relay_name=None, ml_per_tick=None):
     """Creates and returns a new KegTap.
 
@@ -68,6 +72,7 @@ class KegbotBackend:
     tap.save()
     return tap
 
+  @transaction.commit_on_success
   def CreateAuthToken(self, auth_device, token_value, username=None):
     """Creates a new AuthenticationToken.
 
@@ -92,6 +97,7 @@ class KegbotBackend:
     token.save()
     return token
 
+  @transaction.commit_on_success
   def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
       pour_time=None, duration=0, shout='', tick_time_series='',
       do_postprocess=True):
@@ -125,7 +131,7 @@ class KegbotBackend:
     tap = self._GetTapFromName(tap_name)
     if not tap:
       raise BackendError("Tap unknown")
-    if not tap.is_active:
+    if not tap.is_active or not tap.current_keg:
       raise BackendError("No active keg at this tap")
 
     if volume_ml is None:
@@ -158,12 +164,13 @@ class KegbotBackend:
     d.save()
 
     if do_postprocess:
-      d.PostProcess()
-      event_list = [e for e in models.SystemEvent.objects.filter(drink=d).order_by('id')]
-      tasks.handle_new_events.delay(event_list)
+      stats.generate(d)
+      events = models.SystemEvent.ProcessDrink(d)
+      tasks.handle_new_events.delay(events)
 
     return d
 
+  @transaction.commit_on_success
   def CancelDrink(self, drink, spilled=False):
     """Permanently deletes a Drink from the system.
 
@@ -184,9 +191,7 @@ class KegbotBackend:
     if not isinstance(drink, models.Drink):
       drink = models.Drink.objects.get(id=drink)
 
-    keg = drink.keg
-    user = drink.user
-    session = drink.session
+    drink_id = drink.id
 
     # Transfer volume to spillage if requested.
     if spilled and drink.volume_ml and drink.keg:
@@ -194,32 +199,18 @@ class KegbotBackend:
       drink.keg.save()
 
     # Invalidate all statistics.
-    models.SystemStats.objects.all().delete()
-    models.KegStats.objects.filter(keg=drink.keg).delete()
-    models.UserStats.objects.filter(user=drink.user).delete()
-    models.SessionStats.objects.filter(session=drink.session).delete()
+    stats.invalidate(drink)
 
-    # Delete any SystemEvents for this drink.
-    old_session = drink.session
+    # Delete the drink, including any objects related to it.
     drink.delete()
-    models.SystemEvent.objects.filter(drink=drink).delete()
 
-    # Regenerate new statistics, based on the most recent drink
-    # post-cancellation.
-    last_qs = models.Drink.objects.all().order_by('-id')
-    if last_qs:
-      last_drink = last_qs[0]
-      last_drink._UpdateSystemStats()
+    # Regenerate stats for any drinks following the just-deleted one.
+    for drink in models.Drink.objects.filter(id__gt=drink_id).order_by('id'):
+      stats.generate(drink)
 
-    if keg:
-      keg.RecomputeStats()
-    if user and user.get_profile():
-      user.get_profile().RecomputeStats()
-    if session:
-      session.Rebuild()
-      session.RecomputeStats()
     return drink
 
+  @transaction.commit_on_success
   def AssignDrink(self, drink, user):
     """Assigns, or re-assigns, a previously-recorded Drink.
 
@@ -239,16 +230,14 @@ class KegbotBackend:
     if drink.user == user:
       return drink
 
-    old_user = drink.user
+    stats.invalidate(drink)
     drink.user = user
     drink.save()
-    drink.session.RecomputeStats()
-
-    if old_user is not None:
-      old_user.get_profile().RecomputeStats()
+    stats.generate(drink)
 
     return drink
 
+  @transaction.commit_on_success
   def LogSensorReading(self, sensor_name, temperature, when=None):
     """Logs a ThermoSensor reading.
 
@@ -305,6 +294,7 @@ class KegbotBackend:
 
     return record
 
+  @transaction.commit_on_success
   def GetAuthToken(self, auth_device, token_value):
     """Fetches the AuthenticationToken matching the given parameters.
 
@@ -327,6 +317,7 @@ class KegbotBackend:
       # TODO(mikey): return None instead of raising.
       raise NoTokenError
 
+  @transaction.commit_on_success
   def StartKeg(self, tap, beer_type=None, keg_size=None,
           brewer_name=None, beer_name=None, style_name=None):
       """Activates a new keg at the given tap.
@@ -397,6 +388,7 @@ class KegbotBackend:
 
       return keg
 
+  @transaction.commit_on_success
   def EndKeg(self, tap):
       """Takes the current Keg offline at the given tap.
 

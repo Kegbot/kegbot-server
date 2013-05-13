@@ -18,63 +18,27 @@
 
 from django.core.management.base import CommandError
 from django.core.management.base import NoArgsCommand
+from django.db import transaction
 
 from pykeg.core import models
+from pykeg.core import stats
 from pykeg.core.management.commands.common import progbar
-
 
 class Command(NoArgsCommand):
   help = u'Regenerate all cached stats.'
   args = '<none>'
 
+  @transaction.commit_on_success()
   def handle(self, **options):
-    models.SystemStats.objects.all().delete()
-    models.KegStats.objects.all().delete()
-    models.UserStats.objects.all().delete()
-    models.SessionStats.objects.all().delete()
+    stats.invalidate(None)
 
-    drinks = models.Drink.objects.all()
-
-    last_drinks = drinks.order_by('-time')
-    if last_drinks:
-      progbar('recalc system stats', 0, 1)
-      last_drinks[0]._UpdateSystemStats()
-    progbar('recalc system stats', 1, 1)
-    print ''
-
-    kegs = models.Keg.objects.all()
-    count = kegs.count()
+    drinks = models.Drink.objects.all().order_by('id')
+    num_drinks = len(drinks)
     pos = 0
-    for k in kegs:
+    for d in drinks:
       pos += 1
-      progbar('recalc keg stats', pos, count)
-      last_drinks = k.drinks.all().order_by('-time')
-      if last_drinks:
-        last_drinks[0]._UpdateKegStats()
-    print ''
+      progbar('regenerating stats', pos, num_drinks)
+      stats.generate(d, invalidate_first=False)
 
-    users = models.User.objects.all()
-    count = users.count()
-    pos = 0
-    for user in users:
-      pos += 1
-      progbar('recalc user stats', pos, count)
-      user_drinks = user.drinks.all().order_by('-time')
-      if user_drinks:
-        last = user_drinks[0]
-        last._UpdateUserStats()
     print ''
-
-    sessions = models.DrinkingSession.objects.all()
-    count = sessions.count()
-    pos = 0
-    for session in sessions:
-      pos += 1
-      progbar('recalc session stats', pos, count)
-      session_drinks = session.drinks.all().order_by('-time')
-      if session_drinks:
-        last = session_drinks[0]
-        last._UpdateSessionStats()
-    print ''
-
     print 'done!'

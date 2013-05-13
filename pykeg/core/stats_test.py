@@ -20,6 +20,7 @@ from django.test import TransactionTestCase
 
 from kegbot.api import models_pb2
 from kegbot.api.protoutil import ProtoMessageToDict
+from kegbot.util import util
 
 from . import backend
 from . import models
@@ -40,102 +41,57 @@ class StatsTestCase(TransactionTestCase):
         self.backend.CreateTap('tap2', 'kegboard.flow1', ml_per_tick=1/2200.0),
     ]
 
-    #self.drinks = []
-    #for user in self.users:
-    #  for amt in (100, 200, 300):
-    #    d = self.backend.RecordDrink('kegboard.flow0', ticks=amt,
-    #        volume_ml=amt, username=user.username, do_postprocess=False)
-    #    self.drinks.append(d)
-
-  def assertProtosEqual(self, expected, actual):
-    d1 = ProtoMessageToDict(expected)
-    d2 = ProtoMessageToDict(actual)
-    msg = ''
-    for k, v in d1.iteritems():
-      if k not in d2:
-        msg += 'Value for %s not present in actual. \n' % k
-      elif v != d2[k]:
-        msg += 'Values for %s differ: expected "%s", actual "%s". \n' % (k, v, d2[k])
-    for k, v in d2.iteritems():
-      if k not in d1:
-        msg += 'Value for %s not present in expected. \n' % k
-    if msg:
-      self.fail(msg)
-
-  def _getEmptyStats(self):
-    s = models_pb2.Stats()
-    s.last_drink_id = 0
-    s.total_volume_ml = 0.0
-    s.total_pours = 0
-    s.average_volume_ml = 0.0
-    s.greatest_volume_ml = 0.0
-    s.greatest_volume_id = 0
-    return s
+    self.keg = self.backend.StartKeg('kegboard.flow0', beer_name='Unknown',
+        brewer_name='Unknown', style_name='Unknown')
 
   def testStuff(self):
-    builder = stats.SystemStatsBuilder(drink=None, drink_qs=models.Drink.objects.all())
+    site = models.KegbotSite.get()
+    stats = site.GetStats()
+    self.assertEquals(stats, {})
 
-    empty_stats = models_pb2.Stats()
-    system_stats_d0 = builder.Build()
-    self.assertEquals(empty_stats, system_stats_d0)
+    now = make_datetime(2012, 1, 2, 12, 00)
+    self.maxDiff = None
 
-    # Record a new drink and verify stats.
-    pour_time = make_datetime(2011, 05, 01, 12, 00)
-    self.backend.RecordDrink('kegboard.flow0', ticks=100,
-        volume_ml=100, username='user1', pour_time=pour_time,
-        do_postprocess=False)
-    drink1 = models.Drink.objects.get(id=1)
+    self.backend.RecordDrink('kegboard.flow0', ticks=1, volume_ml=100,
+        username='user1', pour_time=now)
+    expected = util.AttrDict({
+        u'volume_by_year': {u'2012': 100.0},
+        u'total_pours': 1,
+        u'has_guest_pour': False,
+        u'greatest_volume_ml': 100.0,
+        u'registered_drinkers': [u'user1'],
+        u'volume_by_day_of_week': {u'1': 100.0},
+        u'greatest_volume_id': 1,
+        u'volume_by_drinker': {u'user1': 100.0},
+        u'last_drink_id': 1,
+        u'sessions_count': 1,
+        u'average_volume_ml': 100.0,
+        u'total_volume_ml': 100.0
+    })
+    stats = site.GetStats()
+    self.assertDictEqual(expected, stats)
 
-    expected = self._getEmptyStats()
-    expected.last_drink_id = 1
-    expected.total_volume_ml = 100.0
-    expected.total_pours = 1
-    expected.average_volume_ml = 100.0
-    expected.greatest_volume_ml = 100.0
-    expected.greatest_volume_id = 1
-    expected.has_guest_pour = False
-    d = expected.volume_by_day_of_week.add()
-    d.weekday = "0"  # Sunday
-    d.volume_ml = 100
-    u = expected.volume_by_drinker.add()
-    u.username = "user1"
-    u.volume_ml = 100
-    y = expected.volume_by_year.add()
-    y.year = 2011
-    y.volume_ml = 100
-    expected.registered_drinkers.append("user1")
-    expected.sessions_count = 1
-
-    system_stats_d1 = stats.SystemStatsBuilder(
-        drink1, drink_qs=models.Drink.objects.all()).Build()
-    self.assertProtosEqual(expected, system_stats_d1)
-
-    # Pour another drink
+    now = make_datetime(2012, 1, 3, 12, 00)
     self.backend.RecordDrink('kegboard.flow0', ticks=200,
-        volume_ml=200, username='user1', pour_time=pour_time,
-        do_postprocess=False)
-    drink2 = models.Drink.objects.get(id=2)
-
-    # Adjust stats
-    expected.last_drink_id = 2
-    expected.total_volume_ml = 300.0
+        volume_ml=200, username='user2', pour_time=now)
+    stats = site.GetStats()
     expected.total_pours = 2
-    expected.average_volume_ml = 150.0
     expected.greatest_volume_ml = 200.0
     expected.greatest_volume_id = 2
-    d = expected.volume_by_day_of_week[0]
-    d.volume_ml += 200
-    u = expected.volume_by_drinker[0]
-    u.volume_ml += 200
-    y = expected.volume_by_year[0]
-    y.volume_ml += 200
+    expected.registered_drinkers.append(u'user2')
+    expected.volume_by_drinker[u'user2'] = 200.0
+    expected.last_drink_id = 2
+    expected.average_volume_ml = 150.0
+    expected.total_volume_ml = 300.0
+    expected.volume_by_day_of_week[u'2'] = 200.0
+    expected.volume_by_year[u'2012'] = 300.0
+    expected.sessions_count = 2
+    print 'EXPECTED'
+    import pprint
+    pprint.pprint(expected)
+    print '----'
+    print 'ACTUAL'
+    pprint.pprint(stats)
+    self.assertDictEqual(expected, stats)
 
-    system_stats_d2 = stats.SystemStatsBuilder(drink2,
-        drink_qs=models.Drink.objects.all()).Build()
-    self.assertProtosEqual(expected, system_stats_d2)
-
-    # Build the same stats incrementally and verify identical result.
-    system_stats_d2_inc = stats.SystemStatsBuilder(drink2, previous=system_stats_d1,
-        drink_qs=models.Drink.objects.all()).Build()
-    self.assertProtosEqual(system_stats_d2, system_stats_d2_inc)
 

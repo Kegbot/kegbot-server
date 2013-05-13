@@ -138,12 +138,12 @@ def VolumeByWeekday(stats):
     stats - a stats object containing volume_by_day_of_week
   """
   volmap = [0] * 7
-  vols = stats.get('volume_by_day_of_week', [])
+  vols = stats.get('volume_by_day_of_week', {})
   if not volmap:
     raise ChartError('Daily volumes unavailable')
 
-  for v in vols:
-    volmap[int(v.weekday)] += to_pints(v.volume_ml)
+  for weekday, vol in vols.iteritems():
+    volmap[int(weekday)] += to_pints(vol)
   return _DayOfWeekChart(volmap)
 
 def UserSessionsByWeekday(user):
@@ -199,9 +199,9 @@ def UsersByVolume(stats):
 
   volmap = {}
   data = []
-  for entry in vols:
-    pints = to_pints(entry.volume_ml)
-    label = '<b>%s</b> (%.1f)' % (entry.username, pints)
+  for username, volume in vols.iteritems():
+    pints = to_pints(volume)
+    label = '<b>%s</b> (%.1f)' % (username, pints)
     data.append((label, pints))
 
   other_vol = 0

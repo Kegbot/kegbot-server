@@ -1,83 +1,22 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        # Removing unique constraint on 'SessionStats', fields ['session']
-        db.delete_unique(u'core_sessionstats', ['session_id'])
-
-        # Removing unique constraint on 'UserStats', fields ['user']
-        db.delete_unique(u'core_userstats', ['user_id'])
-
-        # Removing unique constraint on 'KegStats', fields ['keg']
-        db.delete_unique(u'core_kegstats', ['keg_id'])
-
-        # Adding field 'KegStats.drink'
-        db.add_column(u'core_kegstats', 'drink',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['core.Drink']),
-                      keep_default=False)
-
-        # Adding unique constraint on 'KegStats', fields ['keg', 'drink']
-        db.create_unique(u'core_kegstats', ['keg_id', 'drink_id'])
-
-        # Adding field 'UserStats.drink'
-        db.add_column(u'core_userstats', 'drink',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['core.Drink']),
-                      keep_default=False)
-
-        # Adding unique constraint on 'UserStats', fields ['drink', 'user']
-        db.create_unique(u'core_userstats', ['drink_id', 'user_id'])
-
-        # Adding field 'SessionStats.drink'
-        db.add_column(u'core_sessionstats', 'drink',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['core.Drink']),
-                      keep_default=False)
-
-        # Adding unique constraint on 'SessionStats', fields ['session', 'drink']
-        db.create_unique(u'core_sessionstats', ['session_id', 'drink_id'])
-
-        # Adding field 'SystemStats.drink'
-        db.add_column(u'core_systemstats', 'drink',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['core.Drink']),
-                      keep_default=False)
-
+        orm['core.SystemStats'].objects.all().delete()
+        orm['core.KegStats'].objects.all().delete()
+        orm['core.UserStats'].objects.all().delete()
+        orm['core.SessionStats'].objects.all().delete()
 
     def backwards(self, orm):
-        # Removing unique constraint on 'SessionStats', fields ['session', 'drink']
-        db.delete_unique(u'core_sessionstats', ['session_id', 'drink_id'])
-
-        # Removing unique constraint on 'UserStats', fields ['drink', 'user']
-        db.delete_unique(u'core_userstats', ['drink_id', 'user_id'])
-
-        # Removing unique constraint on 'KegStats', fields ['keg', 'drink']
-        db.delete_unique(u'core_kegstats', ['keg_id', 'drink_id'])
-
-        # Deleting field 'KegStats.drink'
-        db.delete_column(u'core_kegstats', 'drink_id')
-
-        # Adding unique constraint on 'KegStats', fields ['keg']
-        db.create_unique(u'core_kegstats', ['keg_id'])
-
-        # Deleting field 'UserStats.drink'
-        db.delete_column(u'core_userstats', 'drink_id')
-
-        # Adding unique constraint on 'UserStats', fields ['user']
-        db.create_unique(u'core_userstats', ['user_id'])
-
-        # Deleting field 'SessionStats.drink'
-        db.delete_column(u'core_sessionstats', 'drink_id')
-
-        # Adding unique constraint on 'SessionStats', fields ['session']
-        db.create_unique(u'core_sessionstats', ['session_id'])
-
-        # Deleting field 'SystemStats.drink'
-        db.delete_column(u'core_systemstats', 'drink_id')
-
+        orm['core.SystemStats'].objects.all().delete()
+        orm['core.KegStats'].objects.all().delete()
+        orm['core.UserStats'].objects.all().delete()
+        orm['core.SessionStats'].objects.all().delete()
 
     models = {
         u'auth.group': {
@@ -235,11 +174,10 @@ class Migration(SchemaMigration):
             'volume_ml': ('django.db.models.fields.FloatField', [], {})
         },
         u'core.kegstats': {
-            'Meta': {'unique_together': "(('drink', 'keg'),)", 'object_name': 'KegStats'},
+            'Meta': {'object_name': 'KegStats'},
             'completed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'drink': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Drink']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'keg': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stats'", 'to': u"orm['core.Keg']"}),
+            'keg': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stats'", 'unique': 'True', 'to': u"orm['core.Keg']"}),
             'stats': ('pykeg.core.jsonfield.JSONField', [], {'default': "'{}'"}),
             'time': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
         },
@@ -282,11 +220,10 @@ class Migration(SchemaMigration):
             'volume_ml': ('django.db.models.fields.FloatField', [], {'default': '0'})
         },
         u'core.sessionstats': {
-            'Meta': {'unique_together': "(('drink', 'session'),)", 'object_name': 'SessionStats'},
+            'Meta': {'object_name': 'SessionStats'},
             'completed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'drink': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Drink']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'session': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stats'", 'to': u"orm['core.DrinkingSession']"}),
+            'session': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stats'", 'unique': 'True', 'to': u"orm['core.DrinkingSession']"}),
             'stats': ('pykeg.core.jsonfield.JSONField', [], {'default': "'{}'"}),
             'time': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
         },
@@ -322,7 +259,6 @@ class Migration(SchemaMigration):
         },
         u'core.systemstats': {
             'Meta': {'object_name': 'SystemStats'},
-            'drink': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Drink']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'stats': ('pykeg.core.jsonfield.JSONField', [], {'default': "'{}'"}),
             'time': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
@@ -356,13 +292,13 @@ class Migration(SchemaMigration):
             'volume_ml': ('django.db.models.fields.FloatField', [], {'default': '0'})
         },
         u'core.userstats': {
-            'Meta': {'unique_together': "(('drink', 'user'),)", 'object_name': 'UserStats'},
-            'drink': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['core.Drink']"}),
+            'Meta': {'object_name': 'UserStats'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'stats': ('pykeg.core.jsonfield.JSONField', [], {'default': "'{}'"}),
             'time': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'stats'", 'null': 'True', 'to': u"orm['auth.User']"})
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'stats'", 'unique': 'True', 'null': 'True', 'to': u"orm['auth.User']"})
         }
     }
 
     complete_apps = ['core']
+    symmetrical = True

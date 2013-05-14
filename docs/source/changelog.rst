@@ -5,8 +5,12 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.9 (2013-05-14)
+--------------------------
+
+.. note::
+  Android app versions earlier than 1.0.0 beta 39 are not compatible with
+  this release.
 
 * Security: Fixed issue #124 (some API endpoints remained exposed despite
   members-only privacy mode)

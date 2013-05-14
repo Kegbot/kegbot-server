@@ -46,20 +46,20 @@ class StatsBuilder:
       if hasattr(fn, 'statname'):
         self.STAT_MAP[fn.statname] = fn
 
-  def build(self):
-    self.stats = util.AttrDict()
+  def build(self, tag=None):
+    stats = util.AttrDict()
     if not self.drink:
-      return self.stats
+      return stats
     if self.previous:
-      self.stats = copy.deepcopy(self.previous)
+      stats = copy.deepcopy(self.previous)
     for statname, fn in self.STAT_MAP.iteritems():
       previous = self.previous.get(statname, None)
       #print statname, 'previous', previous
       val = fn(previous)
       if val is None:
         raise ValueError('Stat generator for %s returned None' % statname)
-      self.stats[statname] = val
-    return self.stats
+      stats[statname] = val
+    return stats
 
   @stat('last_drink_id')
   def LastDrinkId(self, previous):
@@ -185,7 +185,7 @@ class StatsBuilder:
           return True
       return False
     else:
-      return previous or self.drink.user is None
+      return bool(previous or self.drink.user is None)
 
   @stat('volume_by_drinker')
   def VolumeByDrinker(self, previous):
@@ -246,62 +246,42 @@ def generate(drink, invalidate_first=False):
       invalidate(drink)
 
     # System stats.
-    qs = models.Drink.objects.all()
+    qs = models.Drink.objects.filter(id__lt=drink.id)
     previous = _get_previous(drink, models.SystemStats.objects.all())
     builder = StatsBuilder(drink, qs, previous)
-    stats = builder.build()
+    stats = builder.build('system')
     models.SystemStats.objects.create(drink=drink, stats=stats)
 
     # Keg stats.
     if drink.keg:
-      qs = models.Drink.objects.filter(keg=drink.keg)
+      qs = models.Drink.objects.filter(id__lt=drink.id, keg_id=drink.keg.id)
       previous = _get_previous(drink,
           models.KegStats.objects.filter(keg=drink.keg))
       builder = StatsBuilder(drink, qs, previous)
-      stats = builder.build()
+      stats = builder.build('keg ' + str(drink.keg.id))
       models.KegStats.objects.create(drink=drink, keg=drink.keg, stats=stats)
 
     # User stats.
-    qs = models.Drink.objects.filter(user=drink.user)
+    if drink.user:
+      user_id = drink.user.id
+    else:
+      user_id = None
+    qs = models.Drink.objects.filter(id__lt=drink.id, user_id=user_id)
     previous = _get_previous(drink,
         models.UserStats.objects.filter(user=drink.user))
     builder = StatsBuilder(drink, qs, previous)
-    stats = builder.build()
+    stats = builder.build('user ' + str(user_id))
     models.UserStats.objects.create(drink=drink, user=drink.user, stats=stats)
 
     # Session stats.
     if drink.session:
-      qs = models.Drink.objects.filter(session=drink.session)
+      qs = models.Drink.objects.filter(id__lt=drink.id, session_id=drink.session.id)
       previous = _get_previous(drink,
           models.SessionStats.objects.filter(session=drink.session))
       builder = StatsBuilder(drink, qs, previous)
-      stats = builder.build()
+      stats = builder.build('session ' + str(drink.session.id))
       models.SessionStats.objects.create(drink=drink, session=drink.session, stats=stats)
 
-
-def main():
-  from pykeg.core import models
-  last_drink = models.Drink.objects.all().order_by('-id')[0]
-  builder = KegStatsBuilder(last_drink)
-
-  print "building..."
-  stats = builder.Build()
-  print "done"
-  print stats
-
-  if False:
-    for user in models.User.objects.all():
-      last_drink = user.drinks.all().order_by('-time')
-      if not last_drink:
-        continue
-      last_drink = last_drink[0]
-      builder = DrinkerStatsBuilder()
-      stats = builder.Build(last_drink)
-      print '-'*72
-      print 'stats for %s' % user
-      for k, v in stats.iteritems():
-        print '   %s: %s' % (k, v)
-      print ''
 
 if __name__ == '__main__':
   import cProfile

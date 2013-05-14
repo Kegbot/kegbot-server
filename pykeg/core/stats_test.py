@@ -52,7 +52,7 @@ class StatsTestCase(TransactionTestCase):
     now = make_datetime(2012, 1, 2, 12, 00)
     self.maxDiff = None
 
-    self.backend.RecordDrink('kegboard.flow0', ticks=1, volume_ml=100,
+    d = self.backend.RecordDrink('kegboard.flow0', ticks=1, volume_ml=100,
         username='user1', pour_time=now)
     expected = util.AttrDict({
         u'volume_by_year': {u'2012': 100.0},
@@ -61,9 +61,9 @@ class StatsTestCase(TransactionTestCase):
         u'greatest_volume_ml': 100.0,
         u'registered_drinkers': [u'user1'],
         u'volume_by_day_of_week': {u'1': 100.0},
-        u'greatest_volume_id': 1,
+        u'greatest_volume_id': d.id,
         u'volume_by_drinker': {u'user1': 100.0},
-        u'last_drink_id': 1,
+        u'last_drink_id': d.id,
         u'sessions_count': 1,
         u'average_volume_ml': 100.0,
         u'total_volume_ml': 100.0
@@ -72,15 +72,15 @@ class StatsTestCase(TransactionTestCase):
     self.assertDictEqual(expected, stats)
 
     now = make_datetime(2012, 1, 3, 12, 00)
-    self.backend.RecordDrink('kegboard.flow0', ticks=200,
+    d = self.backend.RecordDrink('kegboard.flow0', ticks=200,
         volume_ml=200, username='user2', pour_time=now)
     stats = site.GetStats()
     expected.total_pours = 2
     expected.greatest_volume_ml = 200.0
-    expected.greatest_volume_id = 2
+    expected.greatest_volume_id = d.id
     expected.registered_drinkers.append(u'user2')
     expected.volume_by_drinker[u'user2'] = 200.0
-    expected.last_drink_id = 2
+    expected.last_drink_id = d.id
     expected.average_volume_ml = 150.0
     expected.total_volume_ml = 300.0
     expected.volume_by_day_of_week[u'2'] = 200.0

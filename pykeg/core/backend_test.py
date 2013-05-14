@@ -54,23 +54,23 @@ class BaseApiTestCase(TestCase):
 		drink = self.backend.RecordDrink(TAP_NAME, ticks=2200)
 		self.assertIsNotNone(drink)
 		self.assertEquals(2200, drink.ticks)
-		self.assertEquals(1000.0, drink.volume_ml)
-		self.assertEquals(1000.0, keg.served_volume())
+		self.assertAlmostEqual(1000.0, drink.volume_ml, places=3)
+		self.assertAlmostEqual(1000.0, keg.served_volume(), places=3)
 		self.assertEquals('', drink.shout)
 		self.assertEquals(0, drink.duration)
 
 		drink = self.backend.RecordDrink(TAP_NAME, ticks=1100)
 		self.assertIsNotNone(drink)
 		self.assertEquals(1100, drink.ticks)
-		self.assertEquals(500.0, drink.volume_ml)
-		self.assertEquals(1500.0, keg.served_volume())
+		self.assertAlmostEqual(500.0, drink.volume_ml, places=3)
+		self.assertAlmostEqual(1500.0, keg.served_volume(), places=3)
 
 		# Add with volume, taking precedence over ticks.
 		drink = self.backend.RecordDrink(TAP_NAME, ticks=1100, volume_ml=1)
 		self.assertIsNotNone(drink)
 		self.assertEquals(1100, drink.ticks)
-		self.assertEquals(1.0, drink.volume_ml)
-		self.assertEquals(1501.0, keg.served_volume())
+		self.assertAlmostEqual(1.0, drink.volume_ml, places=3)
+		self.assertAlmostEqual(1501.0, keg.served_volume(), places=3)
 
 		# Add with a user.
 		user = models.User.objects.create(username='testy')
@@ -93,18 +93,18 @@ class BaseApiTestCase(TestCase):
 
 		drinks = list(models.Drink.objects.all().order_by('id'))
 		self.assertEquals(10, len(drinks))
-		self.assertEquals(1000.0, keg.served_volume())
+		self.assertAlmostEqual(1000.0, keg.served_volume(), places=3)
 
 		cancel_drink = drinks[-1]
 		session = cancel_drink.session
-		self.assertEquals(session.GetStats().total_volume_ml, 1000.0)
+		self.assertAlmostEqual(session.GetStats().total_volume_ml, 1000.0, places=3)
 
 		self.backend.CancelDrink(drinks[-1])
 		drinks = list(models.Drink.objects.all().order_by('id'))
 		self.assertEquals(9, len(drinks))
-		self.assertEquals(900.0, keg.served_volume())
+		self.assertAlmostEqual(900.0, keg.served_volume(), places=3)
 		session = models.DrinkingSession.objects.get(id=session.id)
-		self.assertEquals(session.GetStats().total_volume_ml, 900.0)
+		self.assertAlmostEqual(session.GetStats().total_volume_ml, 900.0, places=3)
 
 		spilled_drink = drinks[-1]
 		keg = models.Keg.objects.all()[0]
@@ -113,8 +113,8 @@ class BaseApiTestCase(TestCase):
 		keg = models.Keg.objects.all()[0]
 		drinks = list(models.Drink.objects.all().order_by('id'))
 		self.assertEquals(8, len(drinks))
-		self.assertEquals(900.0, keg.served_volume())
-		self.assertEquals(100.0, keg.spilled_ml)
+		self.assertAlmostEqual(900.0, keg.served_volume(), places=3)
+		self.assertAlmostEqual(100.0, keg.spilled_ml, places=3)
 
 	def test_keg_management(self):
 		"""Tests adding and removing kegs."""

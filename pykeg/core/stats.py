@@ -228,12 +228,72 @@ def invalidate(drink):
       models.SessionStats.objects.all().delete()
 
 def _get_previous(drink, qs):
-  qs = qs.filter(drink_id__lt=drink.id).order_by('-id')
-  if len(qs):
+  qs = qs.filter(drink_id__lt=drink.id).order_by('-id')[:1]
+  if qs.count():
     return qs[0].stats
   return {}
 
-def generate(drink, invalidate_first=False):
+def build_system_stats(drink):
+  """Builds (but does not save) system stats dictionary for drink."""
+  qs = models.Drink.objects.filter(id__lte=drink.id)
+  previous = _get_previous(drink, models.SystemStats.objects.all())
+  builder = StatsBuilder(drink, qs, previous)
+  return builder.build('system')
+
+def generate_system_stats(drink):
+  """Builds and saves system stats record for drink."""
+  stats = build_system_stats(drink)
+  return models.SystemStats.objects.create(drink=drink, stats=stats)
+
+def build_keg_stats(drink):
+  """Builds (but does not save) keg stats dictionary for drink."""
+  if drink.keg:
+    qs = models.Drink.objects.filter(id__lte=drink.id, keg_id=drink.keg.id)
+    previous = _get_previous(drink,
+        models.KegStats.objects.filter(keg=drink.keg))
+    builder = StatsBuilder(drink, qs, previous)
+    return builder.build('keg ' + str(drink.keg.id))
+
+def generate_keg_stats(drink):
+  """Builds and saves keg stats record for drink."""
+  stats = build_keg_stats(drink)
+  if stats:
+    return models.KegStats.objects.create(drink=drink, keg=drink.keg, stats=stats)
+
+def build_user_stats(drink):
+  """Builds (but does not save) user stats dictionary for drink."""
+  if drink.user:
+    user_id = drink.user.id
+  else:
+    user_id = None
+  qs = models.Drink.objects.filter(id__lte=drink.id, user_id=user_id)
+  previous = _get_previous(drink,
+      models.UserStats.objects.filter(user=drink.user))
+  builder = StatsBuilder(drink, qs, previous)
+  return builder.build('user ' + str(user_id))
+
+def generate_user_stats(drink):
+  """Builds and saves user stats record for drink."""
+  stats = build_user_stats(drink)
+  return models.UserStats.objects.create(drink=drink, user=drink.user, stats=stats)
+
+def build_session_stats(drink):
+  """Builds (but does not save) session stats dictionary for drink."""
+  if drink.session:
+    qs = models.Drink.objects.filter(id__lte=drink.id, session_id=drink.session.id)
+    previous = _get_previous(drink,
+        models.SessionStats.objects.filter(session=drink.session))
+    builder = StatsBuilder(drink, qs, previous)
+    return builder.build('session ' + str(drink.session.id))
+
+def generate_session_stats(drink):
+  """Builds and saves session stats record for drink."""
+  stats = build_session_stats(drink)
+  if stats:
+    return models.SessionStats.objects.create(drink=drink,
+        session=drink.session, stats=stats)
+
+def generate(drink, invalidate_first=True):
   """Generate all stats for this drink.
 
   Args:
@@ -245,43 +305,10 @@ def generate(drink, invalidate_first=False):
     if invalidate_first:
       invalidate(drink)
 
-    # System stats.
-    qs = models.Drink.objects.filter(id__lt=drink.id)
-    previous = _get_previous(drink, models.SystemStats.objects.all())
-    builder = StatsBuilder(drink, qs, previous)
-    stats = builder.build('system')
-    models.SystemStats.objects.create(drink=drink, stats=stats)
-
-    # Keg stats.
-    if drink.keg:
-      qs = models.Drink.objects.filter(id__lt=drink.id, keg_id=drink.keg.id)
-      previous = _get_previous(drink,
-          models.KegStats.objects.filter(keg=drink.keg))
-      builder = StatsBuilder(drink, qs, previous)
-      stats = builder.build('keg ' + str(drink.keg.id))
-      models.KegStats.objects.create(drink=drink, keg=drink.keg, stats=stats)
-
-    # User stats.
-    if drink.user:
-      user_id = drink.user.id
-    else:
-      user_id = None
-    qs = models.Drink.objects.filter(id__lt=drink.id, user_id=user_id)
-    previous = _get_previous(drink,
-        models.UserStats.objects.filter(user=drink.user))
-    builder = StatsBuilder(drink, qs, previous)
-    stats = builder.build('user ' + str(user_id))
-    models.UserStats.objects.create(drink=drink, user=drink.user, stats=stats)
-
-    # Session stats.
-    if drink.session:
-      qs = models.Drink.objects.filter(id__lt=drink.id, session_id=drink.session.id)
-      previous = _get_previous(drink,
-          models.SessionStats.objects.filter(session=drink.session))
-      builder = StatsBuilder(drink, qs, previous)
-      stats = builder.build('session ' + str(drink.session.id))
-      models.SessionStats.objects.create(drink=drink, session=drink.session, stats=stats)
-
+    generate_system_stats(drink)
+    generate_keg_stats(drink)
+    generate_user_stats(drink)
+    generate_session_stats(drink)
 
 if __name__ == '__main__':
   import cProfile

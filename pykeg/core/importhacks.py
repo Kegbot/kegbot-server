@@ -20,10 +20,15 @@
 
 import os
 import sys
-from pykeg.core import kb_common
+from pykeg.core.kb_common import LOCAL_SETTINGS_SEARCH_DIRS
 
 _DEBUG = False
-_SEARCH_DIRS = [os.path.expanduser(d) for d in kb_common.LOCAL_SETTINGS_SEARCH_DIRS]
+
+_CUSTOM_SEARCH_DIR = os.getenv('KEGBOT_SETTINGS_DIR')
+if _CUSTOM_SEARCH_DIR:
+  _SEARCH_DIRS = [os.path.expanduser(_CUSTOM_SEARCH_DIR)]
+else:
+  _SEARCH_DIRS = [os.path.expanduser(d) for d in LOCAL_SETTINGS_SEARCH_DIRS]
 
 def _Debug(message):
   if _DEBUG:

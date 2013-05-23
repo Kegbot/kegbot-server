@@ -62,7 +62,10 @@ def format_record(record):
     ret['addr'] = request.META.get('REMOTE_ADDR')
     ret['request_path'] = request.path
     ret['method'] = request.method
-    ret['username'] = request.user.username
+    if hasattr(request, 'user'):
+      ret['username'] = request.user.username
+    else:
+      ret['usernmae'] = ''
   else:
     ret['addr'] = ''
     ret['request_path'] = ''

@@ -18,7 +18,7 @@ DEPENDENCIES = [
   'kegbot-api == 0.1.8',
 
   'Django >= 1.5,<1.6',
-  'django-imagekit >= 2.0',
+  'django-imagekit == 2.0.2',
   'django-registration',
   'django-socialregistration >= 0.5.10',
   'django-bootstrap-pagination',

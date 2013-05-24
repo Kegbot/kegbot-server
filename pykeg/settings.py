@@ -256,6 +256,10 @@ if HAVE_RAVEN:
     'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
   }
 
+### django-storages
+if HAVE_STORAGES:
+  INSTALLED_APPS += ('storages',)
+
 ### django.contrib.messages
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 

@@ -12,3 +12,8 @@ try:
 except ImportError:
   HAVE_RAVEN = False
 
+try:
+  import storages
+  HAVE_STORAGES = True
+except ImportError:
+  HAVE_STORAGES = False

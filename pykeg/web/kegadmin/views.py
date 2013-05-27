@@ -129,11 +129,9 @@ def tap_detail(request, tap_id):
     elif 'submit_end_keg_form' in request.POST:
       end_keg_form = forms.EndKegForm(request.POST)
       if end_keg_form.is_valid():
-        tap.current_keg = None
-        tap.save()
         b = backend.KegbotBackend()
-        b.EndKeg(tap)
-        messages.success(request, 'Keg %s was ended.' % keg.id)
+        old_keg = b.EndKeg(tap)
+        messages.success(request, 'Keg %s was ended.' % old_keg.id)
 
     else:
       messages.warning(request, 'No form data was found. Bug?')

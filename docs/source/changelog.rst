@@ -5,9 +5,10 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.10 (2013-05-27)
+---------------------------
 
+* Fixed issue #127 (bug assigning a token)
 * Fixed issue #128 (bug while ending a keg)
 
 Version 0.9.9 (2013-05-14)

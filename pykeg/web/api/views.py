@@ -240,15 +240,15 @@ def assign_auth_token(request, auth_device, token_value):
   if not user:
     raise kbapi.BadRequestError("User does not exist")
 
-  tok = b.GetAuthToken(auth_device, token_value)
-  if not tok:
+  try:
+    tok = b.GetAuthToken(auth_device, token_value)
+  except backend.NoTokenError:
     tok = b.CreateAuthToken(auth_device, token_value, username=username)
-  else:
-    if tok.user != user:
-      if tok.user:
-        raise kbapi.BadRequestError("Token is already bound to a user")
-      tok.user = user
-      tok.save()
+  if tok.user != user:
+    if tok.user:
+      raise kbapi.BadRequestError("Token is already bound to a user")
+    tok.user = user
+    tok.save()
   return tok
 
 def all_thermo_sensors(request):

@@ -51,7 +51,8 @@ def checkin_event(event):
   do_checkin(event)
 
 def _get_vars(event):
-  base_url = core_models.SiteSettings.get().base_url()
+  settings = core_models.SiteSettings.get()
+  base_url = settings.base_url()
   name = ''
   if event.user:
     name = event.user.username
@@ -65,13 +66,13 @@ def _get_vars(event):
   beer_name = ''
   if event.drink.keg and event.drink.keg.type:
     beer_name = event.drink.keg.type.name
-    
+
   drink_size = ''
   if event.drink:
     drink_size = '%.1foz' % event.drink.Volume().InOunces()
 
   kbvars = {
-    'kb_name': event.site.settings.title,
+    'kb_name': settings.title,
     'name': name,
     'kb_url': base_url,
     'drink_url': drink_url,

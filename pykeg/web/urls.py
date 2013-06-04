@@ -36,9 +36,6 @@ from registration.views import register
 from pykeg.web.kegweb.forms import KegbotRegistrationForm
 
 urlpatterns = patterns('',
-    ### django admin site
-    (r'^admin/', include(admin.site.urls)),
-
     ### api
     (r'^api/', include('pykeg.web.api.urls')),
 
@@ -88,6 +85,11 @@ if settings.DEBUG:
   urlpatterns += staticfiles_urlpatterns()
   urlpatterns += patterns('',
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', { 'document_root': settings.MEDIA_ROOT, }),
+  )
+
+if settings.KEGBOT_ENABLE_ADMIN:
+  urlpatterns += patterns('',
+    (r'^admin/', include(admin.site.urls)),
   )
 
 ### main kegweb urls

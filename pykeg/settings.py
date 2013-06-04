@@ -7,7 +7,6 @@
 from pykeg.core.optional_modules import *
 
 INSTALLED_APPS = (
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.humanize',
@@ -164,6 +163,9 @@ CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 
 INTERNAL_IPS = ('127.0.0.1',)
 
+# Set to true if the database admin module should be enabled.
+KEGBOT_ENABLE_ADMIN = False
+
 ### Celery
 import djcelery
 djcelery.setup_loader()
@@ -293,6 +295,9 @@ FOURSQUARE_REQUEST_PERMISSIONS = ''
 UNTAPPD_CLIENT_ID = ''
 UNTAPPD_CLIENT_SECRET = ''
 
+### Imagekit
+IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = 'imagekit.imagecache.NonValidatingImageCacheBackend'
+
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = ['--exe']
 SKIP_SOUTH_TESTS = True
@@ -315,6 +320,7 @@ except ImportError:
     raise ImportError(msg)
 
 ### socialregistration (after importing common settings)
+
 if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:
   MIDDLEWARE_CLASSES += (
     'socialregistration.middleware.FacebookMiddleware',
@@ -327,3 +333,7 @@ if TWITTER_CONSUMER_KEY and TWITTER_CONSUMER_SECRET_KEY:
   AUTHENTICATION_BACKENDS += (
     'socialregistration.contrib.twitter.auth.TwitterAuth',
   )
+
+if KEGBOT_ENABLE_ADMIN:
+  INSTALLED_APPS += ('django.contrib.admin',)
+

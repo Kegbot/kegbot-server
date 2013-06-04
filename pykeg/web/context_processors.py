@@ -24,6 +24,7 @@ def kbsite(request):
     'EPOCH': pykeg.EPOCH,
     'VERSION': pykeg.__version__,
     'HAVE_SESSIONS': False,
+    'HAVE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,
     'GOOGLE_ANALYTICS_ID': None,
     'kbsite': kbsite,
     'request_path': request.path,

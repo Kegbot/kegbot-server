@@ -29,7 +29,7 @@ class SetupWizardTestCase(TransactionTestCase):
 
     def test_settings_debug_false(self):
         """Verify wizard is not offered (DEBUG is False)."""
-        for path in ('/', '/stats/', '/admin/'):
+        for path in ('/', '/stats/'):
             response = self.client.get(path)
             self.assertContains(response, '<h2>Kegbot Offline</h2>',
                 status_code=403)
@@ -43,7 +43,7 @@ class SetupWizardTestCase(TransactionTestCase):
     @override_settings(DEBUG=True)
     def test_settings_debug_true(self):
         """Verify wizard is offered (DEBUG is True)."""
-        for path in ('/', '/stats/', '/admin/'):
+        for path in ('/', '/stats/'):
             response = self.client.get(path)
             self.assertContains(response, '<h2>Setup Required</h2>', status_code=403)
             self.assertContains(response, 'Start Setup', status_code=403)

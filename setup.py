@@ -23,7 +23,7 @@ DEPENDENCIES = [
   'django-socialregistration >= 0.5.10',
   'django-bootstrap-pagination',
 
-  'Celery',
+  'Celery == 3.0.19',
   'django-celery',
   'django-kombu',
 

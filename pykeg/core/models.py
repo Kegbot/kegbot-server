@@ -213,9 +213,8 @@ class UserProfile(models.Model):
         defaults={'key': ApiKey.generate_key()})
     return api_key.key
 
-  @models.permalink
   def get_absolute_url(self):
-    return ('kb-drinker', (self.user.username,))
+    return reverse('kb-drinker', args=(self.user.username,))
 
   user = models.OneToOneField(User)
   mugshot = models.ForeignKey('Picture', blank=True, null=True,
@@ -406,9 +405,8 @@ class Keg(models.Model):
   notes = models.TextField(blank=True, null=True,
       help_text='Private notes about this keg, viewable only by admins.')
 
-  @models.permalink
   def get_absolute_url(self):
-    return ('kb-keg', (str(self.id),))
+    return reverse('kb-keg', args=(str(self.id),))
 
   def full_volume(self):
     return self.size.volume_ml
@@ -551,9 +549,8 @@ class Drink(models.Model):
   tick_time_series = models.TextField(blank=True, null=True, editable=False,
       help_text='Tick update sequence that generated this drink (diagnostic data).')
 
-  @models.permalink
   def get_absolute_url(self):
-    return ('kb-drink', (str(self.id),))
+    return reverse('kb-drink', args=(str(self.id),))
 
   def ShortUrl(self):
     return '%s%s' % (KegbotSite.get().full_url(), reverse('kb-drink-short', args=(str(self.id),)))
@@ -685,12 +682,11 @@ class DrinkingSession(_AbstractChunk):
       return pictures[1:]
     return []
 
-  @models.permalink
   def get_absolute_url(self):
     dt = self.start_time
     if settings.USE_TZ:
       dt = timezone.localtime(dt)
-    return ('kb-session-detail', (), {
+    return reverse('kb-session-detail', args=(), kwargs={
       'year' : dt.year,
       'month' : dt.month,
       'day' : dt.day,

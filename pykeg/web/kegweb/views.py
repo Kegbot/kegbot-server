@@ -22,13 +22,14 @@
 import datetime
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
+from django.shortcuts import redirect
 from django.template import RequestContext
 from django.views.decorators.cache import cache_page
-from django.http import HttpResponseRedirect
 from django.views.generic.dates import ArchiveIndexView
 from django.views.generic.dates import DateDetailView
 from django.views.generic.dates import DayArchiveView
@@ -128,13 +129,12 @@ def keg_detail(request, keg_id):
   return render_to_response('kegweb/keg_detail.html', context_instance=context)
 
 def short_drink_detail(request, drink_id):
-  url = KegbotSite.get().full_url() + '/drinks/' + str(drink_id)
-  return HttpResponseRedirect(url)
+  return redirect('kb-drink', drink_id=str(drink_id), permanent=True)
 
 def short_session_detail(request, session_id):
   session = get_object_or_404(models.DrinkingSession, id=session_id)
   url = session.get_absolute_url()
-  return HttpResponseRedirect(url)
+  return redirect(url, permanent=True)
 
 def drink_detail(request, drink_id):
   drink = get_object_or_404(models.Drink, id=drink_id)

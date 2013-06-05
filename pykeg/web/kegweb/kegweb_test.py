@@ -53,4 +53,13 @@ class KegwebTestCase(TransactionTestCase):
         response = self.client.get('/s/%s' % session_id, follow=True)
         self.assertRedirects(response, d.session.get_absolute_url(), status_code=301)
 
+    def testShout(self):
+        b = backend.KegbotBackend()
+        keg = b.StartKeg('kegboard.flow0', beer_name='Unknown', brewer_name='Unknown',
+            style_name='Unknown')
+        d = b.RecordDrink('kegboard.flow0', ticks=123, shout='_UNITTEST_')
+        response = self.client.get(d.get_absolute_url())
+        self.assertContains(response, '<p>_UNITTEST_</p>', status_code=200)
+
+
 

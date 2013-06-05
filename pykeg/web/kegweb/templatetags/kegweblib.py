@@ -173,6 +173,37 @@ class VolumeNode(Node):
     title = '%s %s' % (amount, units)
     return cls.TEMPLATE % vars()
 
+### drinker
+@register.tag('drinker_name')
+def drinker_name_tag(parser, token):
+  """{% drinker <drink> %}"""
+  tokens = token.contents.split()
+  if len(tokens) < 2:
+    raise TemplateSyntaxError, '%s requires at least 2 tokens' % tokens[0]
+  return DrinkerNameNode(tokens[1], tokens[2:])
+
+class DrinkerNameNode(Node):
+  def __init__(self, drink_varname, extra_args):
+    self._drink_varname = drink_varname
+    self._extra_args = extra_args
+
+  def render(self, context):
+    tv = Variable(self._drink_varname)
+    try:
+      drink = tv.resolve(context)
+    except (VariableDoesNotExist, ValueError):
+      drink = None
+    if not drink or not isinstance(drink, models.Drink):
+      return ''
+    if drink.user:
+      return drink.user.username
+    return context['guest_info']['name']
+
+  @classmethod
+  def format(cls, amount, units):
+    title = '%s %s' % (amount, units)
+    return cls.TEMPLATE % vars()
+
 
 ### chart
 

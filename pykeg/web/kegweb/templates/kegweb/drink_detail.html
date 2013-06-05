@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load kegweblib %}
 
-{% block title %}Drink {{ drink.id }} by {{ drink.user.username }} | {{ block.super }}{% endblock %}
-{% block pagetitle %}Drink {{ drink.id }} by {{ drink.user.username }}{% endblock %}
+{% block title %}Drink {{ drink.id }} by {% drinker_name drink %}| {{ block.super }}{% endblock %}
+{% block pagetitle %}Drink {{ drink.id }} by {% drinker_name drink %}{% endblock %}
 
 {% block content %}
 <div class="row-fluid">
@@ -59,11 +59,16 @@
 </div>
 
 {% with drink.pictures.all as pictures %}
-{% if pictures.count %}
 <div class="span6">
+  {% if pictures.count %}
   <img src="{{pictures.0.picture.resized.url}}">
+  {% endif %}
+  {% if drink.shout %}
+  <blockquote>
+  <p>{{ drink.shout }}</p>
+  <small>{% drinker_name drink %}, during pour</small>
+  {% endif %}
 </div>
-{% endif %}
 {% endwith %}
 
 

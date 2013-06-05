@@ -28,6 +28,7 @@ from django.db import transaction
 from django.utils import timezone
 from pykeg.core import defaults
 from pykeg.core import stats
+from pykeg.core.cache import KegbotCache
 from . import kb_common
 from . import models
 from . import time_series
@@ -45,6 +46,7 @@ class KegbotBackend:
 
   def __init__(self):
     self._logger = logging.getLogger('backend')
+    self.cache = KegbotCache()
 
   @transaction.commit_on_success
   def CreateNewUser(self, username):
@@ -162,6 +164,7 @@ class KegbotBackend:
         shout=shout, tick_time_series=tick_time_series)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
+    self.cache.update_generation()
 
     if do_postprocess:
       stats.generate(d)
@@ -208,6 +211,8 @@ class KegbotBackend:
     for drink in models.Drink.objects.filter(id__gt=drink_id).order_by('id'):
       stats.generate(drink)
 
+    self.cache.update_generation()
+
     return drink
 
   @transaction.commit_on_success
@@ -234,6 +239,8 @@ class KegbotBackend:
     drink.user = user
     drink.save()
     stats.generate(drink)
+
+    self.cache.update_generation()
 
     return drink
 

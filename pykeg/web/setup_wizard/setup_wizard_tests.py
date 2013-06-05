@@ -19,6 +19,7 @@
 """Unittests for setup wizard."""
 
 from django.conf import settings
+from django.core.cache import cache
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
@@ -26,6 +27,9 @@ from . import models
 from pykeg.core import defaults
 
 class SetupWizardTestCase(TransactionTestCase):
+
+    def setUp(self):
+        cache.clear()
 
     def test_settings_debug_false(self):
         """Verify wizard is not offered (DEBUG is False)."""

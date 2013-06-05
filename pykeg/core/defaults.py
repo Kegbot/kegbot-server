@@ -32,19 +32,19 @@ def get_default_keg_size():
       volume_ml=volume_int)[0]
 
 def db_is_installed():
-  return len(models.KegbotSite.objects.all()) > 0
+  return models.KegbotSite.objects.all().count() > 0
 
 class AlreadyInstalledError(Exception):
   """Thrown when database is already installed."""
 
-def set_defaults(force=False, is_setup=False):
+def set_defaults(force=False, set_is_setup=False):
   """Creates a new site and sets defaults, returning that site."""
   if not force and db_is_installed():
     raise AlreadyInstalledError("Database is already installed.")
 
   site = models.KegbotSite.get()
-  if site.is_setup != is_setup:
-    site.is_setup = is_setup
+  if set_is_setup and not site.is_setup:
+    site.is_setup = True
     site.save()
 
   # KegTap defaults

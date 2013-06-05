@@ -31,20 +31,13 @@ FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 
 ### Helper methods
 
-def create_site():
-    site = defaults.set_defaults()
-    site.is_setup = True
-    site.save()
-    return site
-
 class BaseApiTestCase(TestCase):
 	def setUp(self):
 		self.backend = backend.KegbotBackend()
+		defaults.set_defaults(set_is_setup=True)
 
 	def test_drink_management(self):
 		"""Test adding drinks."""
-		defaults.set_defaults()
-
 		tap = models.KegTap.objects.get(meter_name=TAP_NAME)
 		keg = self.backend.StartKeg(TAP_NAME, beer_name=FAKE_BEER_NAME,
 				brewer_name=FAKE_BREWER_NAME, style_name=FAKE_BEER_STYLE)
@@ -80,8 +73,6 @@ class BaseApiTestCase(TestCase):
 
 	def test_drink_cancel(self):
 		"""Tests cancelling drinks."""
-		defaults.set_defaults()
-
 		tap = models.KegTap.objects.get(meter_name=TAP_NAME)
 		keg = self.backend.StartKeg(TAP_NAME, beer_name=FAKE_BEER_NAME,
 				brewer_name=FAKE_BREWER_NAME, style_name=FAKE_BEER_STYLE)
@@ -118,8 +109,6 @@ class BaseApiTestCase(TestCase):
 
 	def test_keg_management(self):
 		"""Tests adding and removing kegs."""
-		defaults.set_defaults()
-
 		tap = models.KegTap.objects.get(meter_name=TAP_NAME)
 		self.assertFalse(tap.is_active(), "Tap is already active.")
 

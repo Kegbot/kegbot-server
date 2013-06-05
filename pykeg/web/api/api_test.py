@@ -26,7 +26,7 @@ from kegbot.util import kbjson
 ### Helper methods
 
 def create_site():
-    return defaults.set_defaults(is_setup=True)
+    return defaults.set_defaults(set_is_setup=True)
 
 class BaseApiTestCase(TestCase):
     def get(self, subpath, data={}, follow=False, **extra):

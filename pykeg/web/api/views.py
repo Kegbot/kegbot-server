@@ -145,8 +145,7 @@ def get_keg_sizes(request):
 def end_keg(request, keg_id):
   keg = get_object_or_404(models.Keg, id=keg_id)
   tap = keg.current_tap
-  b = backend.KegbotBackend()
-  keg = b.EndKeg(tap)
+  keg = request.backend.EndKeg(tap)
   return protolib.ToProto(keg, full=True)
 
 def all_sessions(request):
@@ -218,8 +217,7 @@ def get_user_stats(request, username):
 
 @auth_required
 def get_auth_token(request, auth_device, token_value):
-  b = backend.KegbotBackend()
-  tok = b.GetAuthToken(auth_device, token_value)
+  tok = request.backend.GetAuthToken(auth_device, token_value)
   return tok
 
 @csrf_exempt
@@ -233,7 +231,7 @@ def assign_auth_token(request, auth_device, token_value):
     errors = _form_errors(form)
     raise kbapi.BadRequestError(errors)
 
-  b = backend.KegbotBackend()
+  b = request.backend
   username = form.cleaned_data['username']
 
   user = b._GetUserObjFromUsername(username)
@@ -293,10 +291,9 @@ def _thermo_sensor_post(request, sensor_name):
   if not form.is_valid():
     raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
-  b = backend.KegbotBackend()
   sensor, created = models.ThermoSensor.objects.get_or_create(raw_name=sensor_name)
   # TODO(mikey): use form fields to compute `when`
-  return b.LogSensorReading(sensor.raw_name, cd['temp_c'])
+  return request.backend.LogSensorReading(sensor.raw_name, cd['temp_c'])
 
 def get_thermo_sensor_logs(request, sensor_name):
   sensor = _get_sensor_or_404(request, sensor_name)
@@ -378,9 +375,8 @@ def _tap_detail_post(request, tap):
   duration = cd.get('duration')
   if duration is None:
     duration = 0
-  b = backend.KegbotBackend()
   try:
-    res = b.RecordDrink(tap_name=tap.meter_name,
+    res = request.backend.RecordDrink(tap_name=tap.meter_name,
       ticks=cd['ticks'],
       volume_ml=cd.get('volume_ml'),
       username=cd.get('username'),
@@ -401,9 +397,8 @@ def cancel_drink(request):
   if not form.is_valid():
     raise kbapi.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
-  b = backend.KegbotBackend()
   try:
-    res = b.CancelDrink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
+    res = request.backend.CancelDrink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
     return protolib.ToProto(res, full=True)
   except backend.BackendError, e:
     raise kbapi.ServerError(str(e))

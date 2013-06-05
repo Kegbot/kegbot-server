@@ -120,8 +120,7 @@ def tap_detail(request, tap_id):
       delete_form = forms.DeleteTapForm(request.POST)
       if delete_form.is_valid():
         if tap.current_keg:
-          b = backend.KegbotBackend()
-          b.EndKeg(tap)
+          request.backend.EndKeg(tap)
         tap.delete()
         messages.success(request, 'Tap deleted.')
         return redirect('kegadmin-taps')
@@ -240,12 +239,11 @@ def drink_list(request):
 @staff_member_required
 def drink_detail(request, drink_id):
   drink = get_object_or_404(models.Drink, id=drink_id)
-  b = backend.KegbotBackend()
 
   if request.method == 'POST':
     if 'submit_cancel' in request.POST:
       # TODO check csrf
-      b.CancelDrink(drink)
+      request.backend.CancelDrink(drink)
       messages.success(request, 'Drink %s was cancelled.' % drink_id)
       return redirect('kegadmin-drinks')
 

@@ -19,6 +19,7 @@
 from pykeg import EPOCH
 
 from pykeg.core import models
+from pykeg.core.backend import KegbotBackend
 
 from django.db import DatabaseError
 from django.conf import settings
@@ -68,6 +69,7 @@ class KegbotSiteMiddleware:
     elif not epoch or epoch < EPOCH:
       request.need_upgrade = True
 
+    request.backend = KegbotBackend()
     return None
 
   def process_view(self, request, view_func, view_args, view_kwargs):

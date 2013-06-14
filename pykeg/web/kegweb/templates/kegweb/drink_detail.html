@@ -5,6 +5,33 @@
 {% block pagetitle %}Drink {{ drink.id }} by {% drinker_name drink %}{% endblock %}
 
 {% block content %}
+
+{% if user.is_staff %}
+<div id="cancelModal" class="modal hide fade" tabindex="-1"
+    role="dialog" aria-labelledby="cancelDialogLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="cancelDialogLabel">Really Delete Drink {{ drink.id }}?</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            Are you sure you want to cancel <b>Drink {{ drink.id }}</b>{% if drink.user %} by <b>{{ drink.user }}</b>{% endif %}?
+        </p>
+        <p>
+            Deleting the drink will <b>immediately delete the drink and all data about it</b>, including
+            any pictures recorded during the pour.  This action cannot be undone.
+        </p>
+    </div>
+    <div class="modal-footer">
+         <form action="{% url "kegadmin-edit-drink" drink.id %}" method="POST">{% csrf_token %}
+         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+             <input type="submit" name="submit_cancel"
+                class="btn btn-danger" value="Delete Drink"/>
+         </form>
+    </div>
+</div>
+{% endif %}
+
 <div class="row-fluid">
 
 <div class="span6">
@@ -56,7 +83,22 @@
 
   </tbody>
 </table>
+
+{% if user.is_staff %}
+<h3>Manager Controls</h3>
+      <form action="{% url "kegadmin-edit-drink" drink.id %}" class="user-select" method="POST">{% csrf_token %}
+        <div class="input-append">
+          <input class="span8" name="username" type="text" placeholder="username" />
+          <button class="btn" type="submit" name="submit_reassign">
+            <i class="icon-user"></i> {% if drink.user %}Reassign{% else %}Assign{% endif %}
+          </button>
+          <a href="#cancelModal" role="button" class="btn btn-danger" data-toggle="modal">
+            <i class="icon-trash icon-white"></i> Delete</a>
+        </div>
+      </form>
+{% endif %}
 </div>
+
 
 {% with drink.pictures.all as pictures %}
 <div class="span6">

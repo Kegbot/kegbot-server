@@ -31,6 +31,10 @@
     });
   </script>
 
+  {% if user.is_staff %}
+  {% include 'kegadmin/includes/extrajs.html' %}
+  {% endif %}
+
   <style>
     body {
   {% if kbsite %}{% if kbsite.settings.background_image %}

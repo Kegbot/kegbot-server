@@ -250,5 +250,11 @@ class AddTokenForm(forms.ModelForm):
     return username
 
 
+class CancelDrinkForm(forms.Form):
+  pass
+
+class ReassignDrinkForm(forms.Form):
+  username = forms.CharField(required=False)
+
 
 

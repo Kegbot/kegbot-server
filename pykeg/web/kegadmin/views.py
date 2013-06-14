@@ -35,6 +35,7 @@ from django.forms import widgets
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.decorators.http import require_http_methods
 
 from kegbot.util import kbjson
 
@@ -220,39 +221,39 @@ def user_detail(request, user_id):
   return render_to_response('kegadmin/user_detail.html', context_instance=context)
 
 @staff_member_required
-def drink_list(request):
-  context = RequestContext(request)
-  drinks = models.Drink.objects.all().order_by('-time')
-  paginator = Paginator(drinks, 25)
-
-  page = request.GET.get('page')
-  try:
-    drinks = paginator.page(page)
-  except PageNotAnInteger:
-    drinks = paginator.page(1)
-  except EmptyPage:
-    drinks = paginator.page(paginator.num_pages)
-
-  context['drinks'] = drinks
-  return render_to_response('kegadmin/drink_list.html', context_instance=context)
-
-@staff_member_required
-def drink_detail(request, drink_id):
+@require_http_methods(["POST"])
+def drink_edit(request, drink_id):
   drink = get_object_or_404(models.Drink, id=drink_id)
 
-  if request.method == 'POST':
-    if 'submit_cancel' in request.POST:
-      # TODO check csrf
+  print request.POST
+  if 'submit_cancel' in request.POST:
+    # TODO check csrf
+    form = forms.CancelDrinkForm(request.POST)
+    old_keg = drink.keg
+    if form.is_valid():
       request.backend.CancelDrink(drink)
       messages.success(request, 'Drink %s was cancelled.' % drink_id)
-      return redirect('kegadmin-drinks')
+      return redirect(old_keg.get_absolute_url())
+    else:
+      messages.error(request, 'Invalid request')
+      return redirect(drink.get_absolute_url())
 
-    elif 'submit_reassign' in request.POST:
-      pass
+  elif 'submit_reassign' in request.POST:
+    form = forms.ReassignDrinkForm(request.POST)
+    if form.is_valid():
+      username = form.cleaned_data.get('username', None)
+      try:
+        request.backend.AssignDrink(drink, username)
+        messages.success(request, 'Drink %s was reassigned.' % drink_id)
+      except models.User.DoesNotExist:
+        messages.error(request, 'No such user')
+    else:
+      messages.error(request, 'Invalid request')
+    return redirect(drink.get_absolute_url())
 
-  context = RequestContext(request)
-  context['drink'] = drink
-  return render_to_response('kegadmin/drink_detail.html', context_instance=context)
+  else:
+    message.error(request, 'Unknown action.')
+    return redirect(drink.get_absolute_url())
 
 
 @staff_member_required

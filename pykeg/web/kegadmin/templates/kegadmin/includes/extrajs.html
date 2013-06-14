@@ -1,0 +1,65 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+    var beer_labels, beer_mapped;
+    var beer_complete_url = "{% url "kegadmin-autocomplete-beer" %}";
+    $('.beer-select').each(function() {
+      var beer_name = $(this).find('input[name=beer_name]');
+      var brewer_name = $(this).find('input[name=brewer_name]');
+      var style_name = $(this).find('input[name=style_name]');
+      var beer_id = $(this).find('input[name=beer_id]');
+      var brewer_id = $(this).find('input[name=brewer_id]');
+      var style_id = $(this).find('input[name=style_id]');
+
+      beer_name.typeahead({
+        source: function (query, process) {
+          $.get(beer_complete_url, { q: query }, function (data) {
+            beer_labels = []
+            beer_mapped = {}
+
+            $.each(data, function (i, item) {
+              var name = item.name + " (" + item.brewer_name + ")";
+              beer_mapped[name] = item;
+              beer_labels.push(name);
+            })
+
+            process(beer_labels);
+          })
+        },
+        updater: function (item) {
+            brewer_name.val(beer_mapped[item].brewer_name);
+            style_name.val(beer_mapped[item].style_name);
+            beer_id.val(beer_mapped[item].id);
+            brewer_id.val(beer_mapped[item].brewer_id);
+            style_id.val(beer_mapped[item].style_id);
+            return beer_mapped[item].name;
+        },
+      });
+    });
+
+    var user_labels, user_mapped;
+    var user_complete_url = "{% url "kegadmin-autocomplete-user" %}";
+    $('.user-select').each(function() {
+      var username = $(this).find('input[name=username]');
+
+      username.typeahead({
+        source: function (query, process) {
+          $.get(user_complete_url, { q: query }, function (data) {
+            user_labels = []
+            user_mapped = {}
+
+            $.each(data, function (i, item) {
+              var name = item.username + " (" + item.email + ")";
+              user_mapped[name] = item;
+              user_labels.push(name);
+            })
+
+            process(user_labels);
+          })
+        },
+        updater: function (item) {
+            return user_mapped[item].username;
+        },
+      });
+    });
+  });
+</script>

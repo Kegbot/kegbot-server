@@ -572,7 +572,7 @@ class SetupApp(app.App):
 
     if FLAGS.interactive:
       try:
-        self.run_command('kegbot collectstatic')
+        self.run_command('kegbot collectstatic --noinput')
       except FatalError, e:
         print 'WARNING: Collecting static files failed: %s' % e
         print ''
@@ -583,8 +583,8 @@ class SetupApp(app.App):
     print ''
     print 'Done!'
     print ''
-    print 'You may now run the dev server:'
-    print 'kegbot runserver'
+    print 'You may now run the built-in web server:'
+    print '  $ kegbot runserver'
 
   def run_command(self, s, allow_fail=False):
     print 'Running command: %s' % s

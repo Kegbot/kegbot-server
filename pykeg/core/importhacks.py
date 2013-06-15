@@ -26,16 +26,17 @@ _DEBUG = False
 
 _CUSTOM_SEARCH_DIR = os.getenv('KEGBOT_SETTINGS_DIR')
 if _CUSTOM_SEARCH_DIR:
-  _SEARCH_DIRS = [os.path.expanduser(_CUSTOM_SEARCH_DIR)]
+  SEARCH_DIRS = [os.path.expanduser(_CUSTOM_SEARCH_DIR)]
 else:
-  _SEARCH_DIRS = [os.path.expanduser(d) for d in LOCAL_SETTINGS_SEARCH_DIRS]
+  SEARCH_DIRS = [os.path.expanduser(d) for d in LOCAL_SETTINGS_SEARCH_DIRS]
 
 def _Debug(message):
   if _DEBUG:
     sys.stderr.write('importhacks: %s\n' % (message,))
 
 def _Warning(message):
-  sys.stderr.write('importhacks: %s\n' % (message,))
+  if _DEBUG:
+    sys.stderr.write('importhacks: %s\n' % (message,))
 
 def _AddToSysPath(paths):
   for path in paths:
@@ -49,7 +50,7 @@ def _AddToSysPath(paths):
 def _ExtendSysPath():
   """ Add some paths where we'll look for user settings. """
   paths = []
-  for dir in _SEARCH_DIRS:
+  for dir in SEARCH_DIRS:
     paths.append(dir)
     if _DEBUG:
       test_settings = os.path.join(dir, 'local_settings.py')

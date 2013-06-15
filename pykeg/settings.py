@@ -309,15 +309,12 @@ from pykeg.core import importhacks
 try:
   from local_settings import *
 except ImportError:
-  try:
-    from common_settings import *
-    import warnings
-    warnings.warn('common_settings.py should be renamed to local_settings.py')
-  except ImportError:
-    msg = """ Error: Could not find local_settings.py
-    Most likely, this means Kegbot has not been configured properly.
-    Consult setup documentation.  Exiting..."""
-    raise ImportError(msg)
+  msg = "Could not find local_settings.py; has Kegbot been set up?\n"
+  msg += 'Tried: ' + ' '.join(importhacks.SEARCH_DIRS) + '\n\n'
+  msg += 'Run setup-kegbot.py or set KEGBOT_SETTINGS_DIR to the settings directory.'
+  import sys
+  print>>sys.stderr, msg
+  sys.exit(1)
 
 ### socialregistration (after importing common settings)
 

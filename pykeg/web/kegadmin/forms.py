@@ -256,5 +256,11 @@ class CancelDrinkForm(forms.Form):
 class ReassignDrinkForm(forms.Form):
   username = forms.CharField(required=False)
 
-
+class ChangeDrinkVolumeForm(forms.Form):
+  UNIT_CHOICES = (
+    ('mL', 'mL'),
+    ('oz', 'oz')
+  )
+  volume = forms.FloatField(required=True, min_value=0)
+  units = forms.ChoiceField(required=True, choices=UNIT_CHOICES)
 

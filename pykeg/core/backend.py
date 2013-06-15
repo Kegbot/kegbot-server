@@ -255,6 +255,19 @@ class KegbotBackend:
     return drink
 
   @transaction.commit_on_success
+  def SetDrinkVolume(self, drink, volume_ml):
+    """Updates the drink volume."""
+    if volume_ml == drink.volume_ml:
+      return
+
+    drink.volume_ml = volume_ml
+    drink.save()
+
+    stats.invalidate(drink)
+    drink.session.Rebuild()
+    stats.generate(drink)
+
+  @transaction.commit_on_success
   def LogSensorReading(self, sensor_name, temperature, when=None):
     """Logs a ThermoSensor reading.
 

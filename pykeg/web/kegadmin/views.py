@@ -38,6 +38,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.decorators.http import require_http_methods
 
 from kegbot.util import kbjson
+from kegbot.util import units
 
 from pykeg.core import backend
 from pykeg.core import backup
@@ -251,9 +252,24 @@ def drink_edit(request, drink_id):
       messages.error(request, 'Invalid request')
     return redirect(drink.get_absolute_url())
 
-  else:
-    message.error(request, 'Unknown action.')
+  elif 'submit_edit_volume' in request.POST:
+    form = forms.ChangeDrinkVolumeForm(request.POST)
+    if form.is_valid():
+      units_str = form.cleaned_data.get('units')
+      volume = form.cleaned_data.get('volume')
+      if units_str == 'oz':
+        volume = float(units.Quantity(volume, units.UNITS.Ounce).InMilliliters())
+      if volume == drink.volume_ml:
+        messages.warning(request, 'Drink volume unchanged.')
+      else:
+        request.backend.SetDrinkVolume(drink, volume)
+        messages.success(request, 'Drink %s was updated.' % drink_id)
+    else:
+      messages.error(request, 'Please provide a valid volume.')
     return redirect(drink.get_absolute_url())
+
+  message.error(request, 'Unknown action.')
+  return redirect(drink.get_absolute_url())
 
 
 @staff_member_required

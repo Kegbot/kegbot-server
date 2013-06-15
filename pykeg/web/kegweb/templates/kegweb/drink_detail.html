@@ -40,6 +40,26 @@
 <tbody>
   <tr>
     <th>Size</th>
+    {% if user.is_staff %}
+    <td>
+      <form action="{% url 'kegadmin-edit-drink' drink.id %}" method="POST">{% csrf_token %}
+      <div class="input-prepend input-append">
+        {% if kbsite.settings.volume_display_units == 'metric' %}
+          <input type="hidden" name="units" value="mL">
+          <input class="span4" type="text" name="volume" value="{{ drink.volume_ml|floatformat:2 }}">
+          <span class="add-on">mL</span>
+        {% else %}
+          <input type="hidden" name="units" value="oz">
+          <input class="span4" type="text" name="volume" value="{{ drink.volume_ml|volume:'ounces'|floatformat:2 }}">
+          <span class="add-on">oz</span>
+        {% endif %}
+        <button class="btn btn-warning" name="submit_edit_volume" type="submit">
+          <i class="icon-pencil icon-white"></i> Resize
+        </button>
+      </div>
+      </form>
+    </td>
+    {% else %}
     <td>
       {% volume drink.volume_ml %}
       {% if drink.duration %}
@@ -48,6 +68,7 @@
       </span>
       {% endif %}
     </td>
+    {% endif %}
   </tr>
 
   <tr>

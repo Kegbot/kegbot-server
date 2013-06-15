@@ -47,9 +47,11 @@ def post_webhook_event(hook_url, event_list):
 
 @task
 def handle_new_events(event_list):
-  hook_url = models.SiteSettings.get().event_web_hook
-  if hook_url:
-    post_webhook_event.delay(hook_url, event_list)
+  web_hook_urls = models.SiteSettings.get().web_hook_urls
+  if web_hook_urls:
+    urls = [u for u in web_hook_urls.split() if u]
+    for url in urls:
+      post_webhook_event.delay(url, event_list)
 
   for event in event_list:
     connection_tasks.handle_new_event.delay(event)

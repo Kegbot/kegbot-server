@@ -128,8 +128,8 @@ class SiteSettings(models.Model):
   background_image = models.ForeignKey('Picture', blank=True, null=True,
       on_delete=models.SET_NULL,
       help_text='Background for this site.')
-  event_web_hook = models.URLField(blank=True, null=True,
-      help_text='Web hook URL for newly-generated events.')
+  web_hook_urls = models.TextField(blank=True, null=True,
+      help_text='URL(s) to POST newly-generated events.')
   google_analytics_id = models.CharField(blank=True, null=True, max_length=64,
       help_text='Set to your Google Analytics ID to enable tracking. '
       'Example: UA-XXXX-y')

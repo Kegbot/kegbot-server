@@ -100,6 +100,7 @@ def add_tap(request):
 def tap_detail(request, tap_id):
   tap = get_object_or_404(models.KegTap, id=tap_id)
 
+  record_drink_form = forms.RecordDrinkForm()
   activate_keg_form = forms.ChangeKegForm()
   tap_settings_form = forms.TapForm(instance=tap, site=request.kbsite)
 
@@ -130,9 +131,19 @@ def tap_detail(request, tap_id):
     elif 'submit_end_keg_form' in request.POST:
       end_keg_form = forms.EndKegForm(request.POST)
       if end_keg_form.is_valid():
-        b = backend.KegbotBackend()
-        old_keg = b.EndKeg(tap)
+        old_keg = request.backend.EndKeg(tap)
         messages.success(request, 'Keg %s was ended.' % old_keg.id)
+
+    elif 'submit_record_drink' in request.POST:
+      record_drink_form = forms.RecordDrinkForm(request.POST)
+      if record_drink_form.is_valid():
+        user = record_drink_form.cleaned_data.get('user')
+        volume_ml = record_drink_form.cleaned_data.get('volume_ml')
+        d = request.backend.RecordDrink(tap.meter_name, ticks=0, username=user,
+            volume_ml=volume_ml)
+        messages.success(request, 'Drink %s recorded.' % d.id)
+      else:
+        messages.error(request, 'Please enter a valid volume and user.')
 
     else:
       messages.warning(request, 'No form data was found. Bug?')
@@ -143,6 +154,7 @@ def tap_detail(request, tap_id):
   context['tap'] = tap
   context['current_keg'] = tap.current_keg
   context['activate_keg_form'] = activate_keg_form
+  context['record_drink_form'] = record_drink_form
   context['end_keg_form'] = end_keg_form
   context['tap_settings_form'] = tap_settings_form
   context['delete_tap_form'] = forms.DeleteTapForm()
@@ -255,14 +267,11 @@ def drink_edit(request, drink_id):
   elif 'submit_edit_volume' in request.POST:
     form = forms.ChangeDrinkVolumeForm(request.POST)
     if form.is_valid():
-      units_str = form.cleaned_data.get('units')
-      volume = form.cleaned_data.get('volume')
-      if units_str == 'oz':
-        volume = float(units.Quantity(volume, units.UNITS.Ounce).InMilliliters())
-      if volume == drink.volume_ml:
+      volume_ml = form.cleaned_data.get('volume_ml')
+      if volume_ml == drink.volume_ml:
         messages.warning(request, 'Drink volume unchanged.')
       else:
-        request.backend.SetDrinkVolume(drink, volume)
+        request.backend.SetDrinkVolume(drink, volume_ml)
         messages.success(request, 'Drink %s was updated.' % drink_id)
     else:
       messages.error(request, 'Please provide a valid volume.')

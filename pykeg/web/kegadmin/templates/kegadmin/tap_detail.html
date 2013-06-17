@@ -7,15 +7,54 @@
 
 {% block kegadmin-main %}
 {% if current_keg %}
-  <h2>Current Keg</h2>
-  {% with current_keg as keg %}
-  {% include "kegweb/keg-snapshot.html" %}
-  {% endwith %}
-  {% crispy end_keg_form %}
+<h2>Current Keg</h2>
+<table class="table table-striped table-hover">
+<tr>
+	<th>Keg</th>
+	<td><a href="{% url 'kb-keg' current_keg.id %}">{{ current_keg }}</a></td>
+</tr>
+<tr>
+	<th>Tapped</th>
+	<td>{{ current_keg.start_time }}</td>
+</tr>
+<tr>
+	<th>Volume</th>
+	<td>{% volume current_keg.remaining_volume %} remaining ({{ current_keg.percent_full|floatformat:2 }}% full)</td>
+</tr>
+</table>
+{% crispy end_keg_form %}
+
+<h2>Add Drink</h2>
+<p>
+	Manually record a drink using the form below.
+	You may leave the <em>username</em> field blank to
+	add an anonymous pour.
+</p>
+
+<form action="" class="user-select" method="POST">{% csrf_token %}
+<div class="input-prepend input-append">
+{% if kbsite.settings.volume_display_units == 'metric' %}
+  <input type="hidden" name="units" value="mL">
+  <input class="span4" type="text" name="volume" placeholder="123">
+  <span class="add-on">mL</span>
 {% else %}
-  <h2>Empty Tap, Activate Keg</h2>
-  {% crispy activate_keg_form %}
+  <input type="hidden" name="units" value="oz">
+  <input class="span4" type="text" name="volume" placeholder="1.23">
+  <span class="add-on">oz</span>
 {% endif %}
+  <input class="span4" type="text" name="username" placeholder="username">
+<button class="btn btn-info" name="submit_record_drink" type="submit">
+  <i class="icon-plus-sign icon-white"></i> Record
+</button>
+</div>
+</form>
+
+{% else %}
+<h2>Empty Tap, Activate Keg</h2>
+{% crispy activate_keg_form %}
+
+{% endif %}
+
 
 <h2>Tap Settings</h2>
 {% crispy tap_settings_form %}

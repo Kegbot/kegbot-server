@@ -3,6 +3,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field, Hidden, Div
 from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
+from kegbot.util import units
 from pykeg.core import backend
 from pykeg.core import models
 
@@ -261,6 +262,37 @@ class ChangeDrinkVolumeForm(forms.Form):
     ('mL', 'mL'),
     ('oz', 'oz')
   )
-  volume = forms.FloatField(required=True, min_value=0)
   units = forms.ChoiceField(required=True, choices=UNIT_CHOICES)
+  volume = forms.FloatField(required=True, min_value=0)
 
+  def clean_volume(self):
+    volume = self.cleaned_data['volume']
+    if self.cleaned_data['units'] == 'oz':
+      self.cleaned_data['volume_ml'] = float(units.Quantity(volume, units.UNITS.Ounce).InMilliliters())
+    else:
+      self.cleaned_data['volume_ml'] = volume
+    return volume
+
+class RecordDrinkForm(forms.Form):
+  units = forms.ChoiceField(required=True, choices=ChangeDrinkVolumeForm.UNIT_CHOICES)
+  volume = forms.FloatField(required=True, min_value=0)
+  username = forms.CharField(required=False)
+
+  def clean_username(self):
+    username = self.cleaned_data['username']
+    if username == '':
+      self.cleaned_data['user'] = None
+      return
+    try:
+      self.cleaned_data['user'] = models.User.objects.get(username=username)
+    except models.User.DoesNotExist:
+      raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
+    return username
+
+  def clean_volume(self):
+    volume = self.cleaned_data['volume']
+    if self.cleaned_data['units'] == 'oz':
+      self.cleaned_data['volume_ml'] = float(units.Quantity(volume, units.UNITS.Ounce).InMilliliters())
+    else:
+      self.cleaned_data['volume_ml'] = volume
+    return volume

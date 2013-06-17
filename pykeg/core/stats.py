@@ -54,7 +54,6 @@ class StatsBuilder:
       stats = copy.deepcopy(self.previous)
     for statname, fn in self.STAT_MAP.iteritems():
       previous = self.previous.get(statname, None)
-      #print statname, 'previous', previous
       val = fn(previous)
       if val is None:
         raise ValueError('Stat generator for %s returned None' % statname)
@@ -180,10 +179,7 @@ class StatsBuilder:
   @stat('has_guest_pour')
   def HasGuestPour(self, previous):
     if not previous:
-      for drink in self.drinks:
-        if not drink.user:
-          return True
-      return False
+      return self.drinks.filter(user_id=None).count() > 0
     else:
       return bool(previous or self.drink.user is None)
 

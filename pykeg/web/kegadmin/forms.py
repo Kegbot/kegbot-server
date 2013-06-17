@@ -225,14 +225,20 @@ class AddTokenForm(forms.ModelForm):
         'token_value',
         'enabled',
     )
+  CHOICES = (
+    ('core.rfid', 'RFID'),
+    ('core.onewire', 'OneWire/iButton'),
+    ('nfc', 'NFC'),
+  )
+  auth_device = forms.ChoiceField(choices=CHOICES)
   username = forms.CharField(required=False)
 
   helper = FormHelper()
   helper.form_class = 'form-horizontal user-select'
   helper.layout = Layout(
-      Field('username', css_class='input-xlarge'),
       Field('auth_device', css_class='input-xlarge'),
       Field('token_value', css_class='input-xlarge'),
+      Field('username', css_class='input-xlarge'),
       'enabled',
       FormActions(
           Submit('submit', 'Save', css_class='btn-primary'),

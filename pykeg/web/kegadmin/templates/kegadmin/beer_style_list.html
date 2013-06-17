@@ -1,0 +1,38 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+{% load bootstrap_pagination %}
+
+{% block title %}Kegbot Admin: Beer Styles | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Beer Styles{% endblock %}
+
+{% block kegadmin-main %}
+
+<table class="table table-hover table-bordered">
+<thead>
+    <tr>
+        <th>Name</th>
+    </tr>
+</thead>
+<tbody>
+{% for style in styles %}
+<tr class="clickable" data-href="{% url 'kegadmin-edit-beer-style' style.id %}">
+    <td>
+        <div class="form-horizontal">
+            <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-beer-style' style.id %}">Edit</a>&nbsp;&nbsp;
+            <span>{{ style.name }}</span>
+    </td>
+</tr>
+{% endfor %}
+<!-- <tr class="info">
+    <td colspan="4" style="text-align:right;">
+        <a class="btn btn-success"
+            href=""><i class="icon-plus-sign icon-white"></i> Add New Style</a>
+    </td>
+</tr> -->
+</tbody>
+</table>
+
+{% bootstrap_paginate styles %}
+
+{% endblock %}

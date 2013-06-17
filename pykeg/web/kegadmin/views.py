@@ -337,6 +337,109 @@ def add_token(request):
   context['form'] = form
   return render_to_response('kegadmin/add_token.html', context_instance=context)
 
+
+@staff_member_required
+def beer_type_list(request):
+  context = RequestContext(request)
+  beers = models.BeerType.objects.all().order_by('name')
+  paginator = Paginator(beers, 25)
+
+  page = request.GET.get('page')
+  try:
+    beers = paginator.page(page)
+  except PageNotAnInteger:
+    beers = paginator.page(1)
+  except EmptyPage:
+    beers = paginator.page(paginator.num_pages)
+
+  context['beers'] = beers
+  return render_to_response('kegadmin/beer_type_list.html', context_instance=context)
+
+
+@staff_member_required
+def beer_type_detail(request, beer_id):
+  btype = get_object_or_404(models.BeerType, id=beer_id)
+
+  form = forms.BeerTypeForm(instance=btype)
+  if request.method == 'POST':
+    form = forms.BeerTypeForm(request.POST, instance=btype)
+    if form.is_valid():
+      form.save()
+      messages.success(request, 'Beer type updated.')
+
+  context = RequestContext(request)
+  context['beer_type'] = btype
+  context['form'] = form
+  return render_to_response('kegadmin/beer_type_detail.html', context_instance=context)
+
+
+@staff_member_required
+def brewer_list(request):
+  context = RequestContext(request)
+  brewers = models.Brewer.objects.all().order_by('name')
+  paginator = Paginator(brewers, 25)
+
+  page = request.GET.get('page')
+  try:
+    brewers = paginator.page(page)
+  except PageNotAnInteger:
+    brewers = paginator.page(1)
+  except EmptyPage:
+    brewers = paginator.page(paginator.num_pages)
+
+  context['brewers'] = brewers
+  return render_to_response('kegadmin/brewer_list.html', context_instance=context)
+
+@staff_member_required
+def brewer_detail(request, brewer_id):
+  brewer = get_object_or_404(models.Brewer, id=brewer_id)
+
+  form = forms.BrewerForm(instance=brewer)
+  if request.method == 'POST':
+    form = forms.BrewerForm(request.POST, instance=brewer)
+    if form.is_valid():
+      form.save()
+      messages.success(request, 'Brewer updated.')
+
+  context = RequestContext(request)
+  context['brewer'] = brewer
+  context['form'] = form
+  return render_to_response('kegadmin/brewer_detail.html', context_instance=context)
+
+
+@staff_member_required
+def beer_style_list(request):
+  context = RequestContext(request)
+  styles = models.BeerStyle.objects.all().order_by('name')
+  paginator = Paginator(styles, 25)
+
+  page = request.GET.get('page')
+  try:
+    styles = paginator.page(page)
+  except PageNotAnInteger:
+    styles = paginator.page(1)
+  except EmptyPage:
+    styles = paginator.page(paginator.num_pages)
+
+  context['styles'] = styles
+  return render_to_response('kegadmin/beer_style_list.html', context_instance=context)
+
+@staff_member_required
+def beer_style_detail(request, style_id):
+  style = get_object_or_404(models.BeerStyle, id=style_id)
+
+  form = forms.BeerStyleForm(instance=style)
+  if request.method == 'POST':
+    form = forms.BeerStyleForm(request.POST, instance=style)
+    if form.is_valid():
+      form.save()
+      messages.success(request, 'Beer style updated.')
+
+  context = RequestContext(request)
+  context['style'] = style
+  context['form'] = form
+  return render_to_response('kegadmin/beer_style_detail.html', context_instance=context)
+
 @staff_member_required
 def connections(request):
   context = RequestContext(request)

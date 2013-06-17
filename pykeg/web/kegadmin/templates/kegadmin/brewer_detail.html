@@ -1,0 +1,14 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Edit Brewer | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Edit Brewer {% endblock %}
+
+{% block kegadmin-main %}
+
+<h2>Edit Brewer</h2>
+    
+{% crispy form %}
+
+{% endblock %}

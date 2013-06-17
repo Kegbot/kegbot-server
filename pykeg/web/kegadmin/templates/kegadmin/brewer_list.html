@@ -1,0 +1,44 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+{% load bootstrap_pagination %}
+
+{% block title %}Kegbot Admin: Brewers | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Brewers{% endblock %}
+
+{% block kegadmin-main %}
+
+<table class="table table-hover table-bordered">
+<thead>
+    <tr>
+        <th>Name</th>
+        <th>Country</th>
+        <th>State</th>
+        <th>City</th>
+    </tr>
+</thead>
+<tbody>
+{% for brewer in brewers %}
+<tr class="clickable" data-href="{% url 'kegadmin-edit-brewer' brewer.id %}">
+    <td>
+        <div class="form-horizontal">
+            <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-brewer' brewer.id %}">Edit</a>&nbsp;&nbsp;
+            <span>{{ brewer.name }}</span>
+    </td>
+    <td>{{ beer.origin_country }}</td>
+    <td>{{ beer.origin_state }}</td>
+    <td>{{ beer.origin_city }}</td>
+</tr>
+{% endfor %}
+<!-- <tr class="info">
+    <td colspan="4" style="text-align:right;">
+        <a class="btn btn-success"
+            href=""><i class="icon-plus-sign icon-white"></i> Add New Brewer</a>
+    </td>
+</tr> -->
+</tbody>
+</table>
+
+{% bootstrap_paginate brewers %}
+
+{% endblock %}

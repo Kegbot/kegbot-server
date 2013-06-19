@@ -19,7 +19,7 @@ DEPENDENCIES = [
 
   'Django >= 1.5,<1.6',
   'django-imagekit == 2.0.2',
-  'django-registration',
+  'django-registration == 0.8',
   'django-socialregistration >= 0.5.10',
   'django-bootstrap-pagination',
 

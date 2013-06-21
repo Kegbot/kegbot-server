@@ -186,7 +186,7 @@ def get_keg_stats(request, keg_id):
   return keg.GetStats()
 
 def get_system_stats(request):
-  return models.KegbotSite.get().GetStatsRecord()
+  return models.KegbotSite.get().GetStats()
 
 def all_taps(request):
   return models.KegTap.objects.all().order_by('name')

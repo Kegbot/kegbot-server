@@ -20,6 +20,7 @@ from pykeg import EPOCH
 
 from pykeg.core import models
 from pykeg.core.backend import KegbotBackend
+from pykeg.core.cache import KegbotCache
 
 from django.db import DatabaseError
 from django.conf import settings
@@ -69,6 +70,7 @@ class KegbotSiteMiddleware:
     elif not epoch or epoch < EPOCH:
       request.need_upgrade = True
 
+    request.kbcache = KegbotCache()
     request.backend = KegbotBackend()
     return None
 

@@ -54,32 +54,36 @@ def wrap_exception(request, exception):
 
 
 class ApiRequestMiddleware:
-  def process_request(self, request):
+  def process_view(self, request, view_func, view_args, view_kwargs):
     request.is_kb_api_request = util.is_api_request(request)
     if not request.is_kb_api_request:
       # Not an API request. Skip me.
       return None
+
     try:
       if request.need_setup:
         raise ValueError('Setup required')
       elif request.need_upgrade:
         raise ValueError('Upgrade required')
 
+      need_auth = util.needs_auth(view_func)
       privacy = request.kbsite.settings.privacy
-      if privacy == 'public':
-        # API request, but public site privacy.  Views will check access as needed.
-        return None
-      elif request.path in ('/api/login/', '/api/get-api-key/'):
+      if request.path in ('/api/login/', '/api/get-api-key/'):
         # API request to whitelisted path.
-        return None
+        need_auth = False
       else:
         # API request to non-whitelisted path, in non-public site privacy mode.
         # Demand API key.
-        if privacy == 'members' and request.user.is_authenticated():
-          return None
-        elif privacy == 'staff' and request.user.is_staff:
-          return None
+        if privacy == 'members' and not request.user.is_authenticated():
+          need_auth = True
+        elif privacy == 'staff' and not request.user.is_staff:
+          need_auth = True
+
+      if need_auth:
         util.check_api_key(request)
+
+      return None
+
     except Exception, e:
       return wrap_exception(request, e)
 

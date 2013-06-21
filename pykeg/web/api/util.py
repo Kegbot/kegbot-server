@@ -40,8 +40,16 @@ import types
 
 LOGGER = logging.getLogger(__name__)
 
+ATTR_NEED_AUTH = 'api_auth_required'
+
 def is_api_request(request):
   return request.path.startswith('/api')
+
+def needs_auth(viewfunc):
+  return getattr(viewfunc, ATTR_NEED_AUTH, False)
+
+def set_needs_auth(viewfunc):
+  setattr(viewfunc, ATTR_NEED_AUTH, True)
 
 def check_api_key(request):
   """Check a request for an API key."""

@@ -58,12 +58,8 @@ _LOGGER = logging.getLogger(__name__)
 ### Decorators
 
 def auth_required(viewfunc):
-  """Checks for a valid API key before serving the decorated view."""
-  def new_function(*args, **kwargs):
-    request = args[0]
-    util.check_api_key(request)
-    return viewfunc(*args, **kwargs)
-  return wraps(viewfunc)(new_function)
+  util.set_needs_auth(viewfunc)
+  return viewfunc
 
 ### Helpers
 

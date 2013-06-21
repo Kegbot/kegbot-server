@@ -21,6 +21,7 @@ from pykeg import EPOCH
 from pykeg.core import models
 from pykeg.core.backend import KegbotBackend
 from pykeg.core.cache import KegbotCache
+from pykeg.web.api.util import is_api_request
 
 from django.db import DatabaseError
 from django.conf import settings
@@ -78,6 +79,10 @@ class KegbotSiteMiddleware:
     for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
       if view_func.__module__.startswith(prefix):
         return None
+
+    if is_api_request(request):
+      # API endpoints handle "setup required" differently.
+      return None
 
     if request.need_setup:
       return self._setup_required(request)

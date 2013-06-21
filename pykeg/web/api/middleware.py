@@ -82,6 +82,14 @@ class ApiRequestMiddleware:
       if need_auth:
         util.check_api_key(request)
 
+      if request.method == 'GET':
+        cached = request.kbcache.gen_get(cache_key(request))
+        if cached:
+          callback = request.GET.get('callback')
+          response = util.build_response(cached, 200, callback=callback)
+          response.is_from_cache = True
+          return response
+
       return None
 
     except Exception, e:
@@ -106,5 +114,12 @@ class ApiResponseMiddleware:
       }
       callback = request.GET.get('callback')
       response = util.build_response(data, 200, callback=callback)
+      if request.method == 'GET' and response.status_code == 200:
+        if not getattr(response, 'is_from_cache', False):
+          request.kbcache.gen_set(cache_key(request), data)
     response['Cache-Control'] = 'max-age=0'
     return response
+
+
+def cache_key(request):
+  return 'api:%s' % request.get_full_path()

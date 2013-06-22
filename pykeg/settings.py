@@ -250,6 +250,9 @@ ACCOUNT_ACTIVATION_DAYS = 3
 ### Statsd
 STATSD_CLIENT = 'django_statsd.clients.normal'
 
+# Set to true to route statsd pings to the debug toolbar.
+KEGBOT_STATSD_TO_TOOLBAR = False
+
 ### E-mail
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
@@ -362,15 +365,14 @@ if HAVE_STATSD:
   ) + MIDDLEWARE_CLASSES
 
   INSTALLED_APPS += ('django_statsd',)
-  if HAVE_DEBUG_TOOLBAR:
-    MIDDLEWARE_CLASSES = (
-      'debug_toolbar.middleware.DebugToolbarMiddleware',
-    ) + MIDDLEWARE_CLASSES
-    DEBUG_TOOLBAR_PANELS = (
-      'django_statsd.panel.StatsdPanel',
-    ) + DEBUG_TOOLBAR_PANELS
 
-if DEBUG and HAVE_DEBUG_TOOLBAR:
+if DEBUG and HAVE_DEBUG_TOOLBAR and KEGBOT_STATSD_TO_TOOLBAR:
+  MIDDLEWARE_CLASSES = (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+  ) + MIDDLEWARE_CLASSES
+  DEBUG_TOOLBAR_PANELS = (
+    'django_statsd.panel.StatsdPanel',
+  ) + DEBUG_TOOLBAR_PANELS
   STATSD_CLIENT = 'django_statsd.clients.toolbar'
 
 MIDDLEWARE_CLASSES += ('pykeg.web.api.middleware.ApiResponseMiddleware',)

@@ -16,7 +16,7 @@ Ultra-quick install instructions for the experienced and impatient::
   $ . ~/kb/bin/activate             # step into it
   (kb) $ pip install kegbot         # install the latest kegbot release
   (kb) $ setup-kegbot.py            # interactive configuration tool
-  (kb) $ kegbot-admin.py runserver  # run the dev web server
+  (kb) $ kegbot runserver           # run the dev web server
   Development server is running at http://127.0.0.1:8000/
 
 

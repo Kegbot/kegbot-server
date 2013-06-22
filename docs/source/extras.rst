@@ -6,32 +6,6 @@ Extras and Add-Ons
 By now you've got a default Kegbot server running.  There are several more
 features you can enable by installing and configuring optional components.
 
-Task queue (Celery)
--------------------
-
-Certain features, such as Twitter checkins and web hook support, require a
-non-webserver process to run them in the background.  Kegbot uses `Celery
-<http://celeryproject.org/>`_ as its task queue.
-
-To install Celery and related dependencies::
-
-  (kb) $ pip install Celery django-celery django-kombu
-  (kb) $ kegbot-admin.py syncdb
-  (kb) $ kegbot-admin.py migrate
-
-Once Celery is installed, you can try running it in the foreground::
-
-  (kb) $ kegbot-admin.py celeryd -E -v2 -l info
-
-You should see the Celery welcome banner and some verbose log output.  When a
-drink is poured, you should see Celery log some output a few seconds after the
-drink is saved.
-
-If everything is working correctly, cancel the process and restart celery in the
-background::
-
-  (kb) $ kegbot-admin celeryd_detach -E
-
 Remote Error Logs (Sentry)
 --------------------------
 
@@ -52,4 +26,47 @@ Configuring Kegbot to log to your Sentry server is easy:
     RAVEN_CONFIG = {
       'dsn': 'http://foo:bar@localhost:9000/2',
     }
+
+Debug Toolbar
+-------------
+
+Developers can get extra information while Kegbot is running by
+installing
+`Django Debug Toolbar <https://github.com/django-debug-toolbar/django-debug-toolbar>`_.
+
+To install::
+
+  ### Required: Install the base package.
+  (kb) $ pip install django-debug-toolbar
+
+  ### Optional: Additional memcache stats panel.
+  (kb) $ pip install django-debug-toolbar-memcache
+
+When this package is installed and ``settings.DEBUG`` is ``True``, Kegbot will
+automatically enable it; you don't need to do any additional configuration.
+
+Stats Aggregation (StatsD)
+--------------------------
+
+Kegbot can post server-related counters and other statistics to
+`StatsD <https://github.com/etsy/statsd/>`_.  This is primarily of interest
+to developers.  To install::
+
+  (kb) $ pip install django-statsd-mozilla
+
+Once installed, you may optionally change the default settings by adding entries
+to ``local_settings.py``:
+
+* ``STATSD_CLIENT`` (default is statsd.client)
+* ``STATSD_HOST`` (default is ``localhost``)
+* ``STATSD_PORT`` (default is 8125)
+* ``STATSD_PREFIX`` (default is empty)
+
+If you have the debug toolbar installed, you may instead route StatsD pings
+to it by setting ``KEGBOT_STATSD_TO_TOOLBAR = True``.
+
+Consult the `django-statsd configuration docs
+<http://django-statsd.readthedocs.org/en/latest/index.html>`_ for more details.
+
+
 

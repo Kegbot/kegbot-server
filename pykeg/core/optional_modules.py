@@ -48,3 +48,8 @@ try:
 except ImportError:
   HAVE_MEMCACHE_TOOLBAR = False
 
+try:
+  import johnny
+  HAVE_JOHNNY_CACHE = True
+except ImportError:
+  HAVE_JOHNNY_CACHE = False

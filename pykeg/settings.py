@@ -237,6 +237,13 @@ if HAVE_RAVEN:
     'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
   }
 
+### Johnny Cache
+if HAVE_JOHNNY_CACHE:
+  MIDDLEWARE_CLASSES = (
+    'johnny.middleware.LocalStoreClearMiddleware',
+    'johnny.middleware.QueryCacheMiddleware',
+  ) + MIDDLEWARE_CLASSES
+
 ### django-storages
 if HAVE_STORAGES:
   INSTALLED_APPS += ('storages',)
@@ -376,4 +383,9 @@ if DEBUG and HAVE_DEBUG_TOOLBAR and KEGBOT_STATSD_TO_TOOLBAR:
   STATSD_CLIENT = 'django_statsd.clients.toolbar'
 
 MIDDLEWARE_CLASSES += ('pykeg.web.api.middleware.ApiResponseMiddleware',)
+
+if HAVE_JOHNNY_CACHE:
+  if CACHES.get('default', {}).get('BACKEND', '') == 'django.core.cache.backends.memcached.MemcachedCache':
+    CACHES['default']['BACKEND'] = 'johnny.backends.memcached.MemcachedCache'
+    CACHES['default']['JOHNNY_CACHE'] = True
 

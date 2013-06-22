@@ -261,7 +261,7 @@ class KegbotBackend:
       return
 
     drink.volume_ml = volume_ml
-    drink.save()
+    drink.save(update_fields=['volume_ml'])
 
     stats.invalidate(drink)
     drink.session.Rebuild()

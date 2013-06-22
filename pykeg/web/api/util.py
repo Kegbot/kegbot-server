@@ -103,13 +103,22 @@ def to_json_error(e, exc_info):
     result['error']['traceback'] = "".join(traceback.format_exception(*exc_info))
   return result, http_code
 
-def build_response(result_data, response_code=200, callback=None):
+def build_response(request, result_data, response_code=200):
   """Builds an HTTP response for JSON data."""
+  callback = request.GET.get('callback')
+  format = request.GET.get('format', None)
+  debug = request.GET.get('debug', False)
   indent = 2
+
   json_str = kbjson.dumps(result_data, indent=indent)
   if callback and validate_jsonp.is_valid_jsonp_callback_value(callback):
     json_str = '%s(%s);' % (callback, json_str)
-  return HttpResponse(json_str, mimetype='application/json', status=response_code)
+
+  if format == 'html' or (settings.DEBUG and debug):
+    html = '<html><body><pre>%s</pre></body></html>' % json_str
+    return HttpResponse(html, mimetype='text/html', status=response_code)
+  else:
+    return HttpResponse(json_str, mimetype='application/json', status=response_code)
 
 
 def prepare_data(data, inner=False):
@@ -159,6 +168,6 @@ def wrap_exception(request, exception):
   result_data['meta'] = {
     'result': 'error'
   }
-  return build_response(result_data, response_code=http_code)
+  return build_response(request, result_data, response_code=http_code)
 
 

@@ -164,6 +164,10 @@ class KegbotBackend:
         shout=shout, tick_time_series=tick_time_series)
     models.DrinkingSession.AssignSessionForDrink(d)
     d.save()
+
+    keg.served_volume_ml += volume_ml
+    keg.save(update_fields=['served_volume_ml'])
+
     self.cache.update_generation()
 
     if do_postprocess:
@@ -195,11 +199,18 @@ class KegbotBackend:
       drink = models.Drink.objects.get(id=drink)
 
     drink_id = drink.id
+    keg = drink.keg
+    volume_ml = drink.volume_ml
+
+    keg_update_fields = ['served_volume_ml']
+    keg.served_volume_ml -= volume_ml
 
     # Transfer volume to spillage if requested.
-    if spilled and drink.volume_ml and drink.keg:
-      drink.keg.spilled_ml += drink.volume_ml
-      drink.keg.save()
+    if spilled and volume_ml and drink.keg:
+      keg.spilled_ml += volume_ml
+      keg_update_fields.append('spilled_ml')
+
+    keg.save(update_fields=keg_update_fields)
 
     # Invalidate all statistics.
     stats.invalidate(drink)
@@ -260,8 +271,13 @@ class KegbotBackend:
     if volume_ml == drink.volume_ml:
       return
 
+    difference = volume_ml - drink.volume_ml
     drink.volume_ml = volume_ml
     drink.save(update_fields=['volume_ml'])
+
+    keg = drink.keg
+    keg.served_volume_ml += difference
+    keg.save(update_fields=['served_volume_ml'])
 
     stats.invalidate(drink)
     drink.session.Rebuild()
@@ -407,7 +423,8 @@ class KegbotBackend:
           keg_size = defaults.get_default_keg_size()
 
       keg = models.Keg.objects.create(type=beer_type, size=keg_size,
-              online=True)
+              online=True, full_volume_ml=keg_size.volume_ml)
+
       old_keg = tap.current_keg
       if old_keg:
           old_keg.online = False

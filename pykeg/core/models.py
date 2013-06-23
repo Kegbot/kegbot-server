@@ -390,6 +390,10 @@ class Keg(models.Model):
       help_text='Beverage in this Keg.')
   size = models.ForeignKey(KegSize, on_delete=models.PROTECT,
       help_text='Size of this Keg.')
+  served_volume_ml = models.FloatField(default=0, editable=False,
+      help_text='Computed served volume.')
+  full_volume_ml = models.FloatField(default=0, editable=False,
+      help_text='Full volume of this Keg, usually set from its KegSize.')
   start_time = models.DateTimeField(default=timezone.now,
       help_text='Time the Keg was first tapped.')
   end_time = models.DateTimeField(default=timezone.now,
@@ -409,20 +413,17 @@ class Keg(models.Model):
     return reverse('kb-keg', args=(str(self.id),))
 
   def full_volume(self):
-    return self.size.volume_ml
+    return self.full_volume_ml
 
   def served_volume(self):
-    """Returns total volume served (sum of drinks plus spilled_volume)."""
-    total = self.spilled_ml
-    for d in self.drinks.all():
-      total += d.volume_ml
-    return total
+    # Deprecated
+    return self.served_volume_ml
 
   def remaining_volume(self):
-    return self.full_volume() - self.served_volume()
+    return self.full_volume_ml - self.served_volume_ml
 
   def percent_full(self):
-    result = float(self.remaining_volume()) / float(self.full_volume()) * 100
+    result = float(self.remaining_volume()) / float(self.full_volume_ml) * 100
     result = max(min(result, 100), 0)
     return result
 

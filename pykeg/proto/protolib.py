@@ -114,11 +114,11 @@ def PourPictureToProto(record, full=False):
     ret.caption = record.caption
   if record.user_id:
     ret.user_id = record.user.username
-  if record.keg:
+  if record.keg_id:
     ret.keg_id = record.keg_id
-  if record.session:
+  if record.session_id:
     ret.session_id = record.session_id
-  if record.drink:
+  if record.drink_id:
     ret.drink_id = record.drink_id
   return ret
 

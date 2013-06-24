@@ -56,7 +56,7 @@ class ChangeKegForm(forms.Form):
 
     cd = self.cleaned_data
     keg = b.StartKeg(tap, beer_name=cd['beer_name'], brewer_name=cd['brewer_name'],
-        style_name=cd['style_name'])
+        style_name=cd['style_name'], keg_size=cd['keg_size'])
 
     if cd['description']:
       keg.description = cd['description']
@@ -183,7 +183,7 @@ class BeerTypeForm(forms.ModelForm):
 class BrewerForm(forms.ModelForm):
   class Meta:
     model = models.Brewer
-    
+
   helper = FormHelper()
   helper.form_class = 'form-horizontal'
   helper.layout = Layout(

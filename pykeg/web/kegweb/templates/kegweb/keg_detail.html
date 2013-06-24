@@ -42,7 +42,7 @@
     <tr>
       <th>Status</th>
       <td>
-        {% ifequal keg.status "online" %}
+        {% if keg.online %}
         Keg is <b>online</b>, and is {{ keg.keg_age.days }}
         day{{keg.keg_age.days|pluralize}} old.
         <span class="muted">
@@ -55,7 +55,7 @@
         {% else %}
         Keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
         day{{keg.keg_age.days|pluralize}}.
-        {% endifequal %}
+        {% endif %}
       </td>
     </tr>
 

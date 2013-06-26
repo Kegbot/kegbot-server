@@ -28,3 +28,7 @@ class SessionManager(models.Manager):
 class SystemEventManager(models.Manager):
     def timeline(self):
         return self.filter(kind__in=('drink_poured', 'session_joined'))
+
+    def short_timeline(self):
+        """Limited to 20 events."""
+        return self.timeline()[:20]

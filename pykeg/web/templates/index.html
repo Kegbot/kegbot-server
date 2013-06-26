@@ -106,12 +106,27 @@
 {% endif %}
 
 {% if sessions %}
-{% for session in sessions %}
-  {% include "kegweb/keg-session.html" %}
-{% endfor %}
-<p>
+
+{% if current_session %}
+  <p class="lead">
+    Now Drinking
+    <small>(<a href="{{ current_session.get_absolute_url}}">details</a>)</small>
+  </p>
+  {% with current_session.events.short_timeline as events %}
+  {% include 'kegweb/includes/timeline.html' %}
+  {% endwith %}
+{% elif last_session %}
+  <p class="lead">
+    Last Session
+    <small>(ended <a href="{{ last_session.get_absolute_url}}">{% timeago last_session.end_time %}</a>)</small>
+  </p>
+  {% with last_session.events.short_timeline as events %}
+  {% include 'kegweb/includes/timeline.html' %}
+  {% endwith %}
+{% endif %}
+<div class="well">
   See <a href="{% url "kb-sessions" %}">all sessions</a>.
-</p>
+</div>
 {% endif %}
 
 {% endblock col-1 %}

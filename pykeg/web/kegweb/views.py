@@ -62,6 +62,16 @@ def index(request):
   context['initial_sessions'] = kbjson.dumps([protolib.ToDict(s, full=True) for s in sessions],
       indent=None)
 
+  if sessions:
+    last_session = sessions[0]
+    context['last_session'] = last_session
+    if sessions and last_session.IsActiveNow():
+      context['current_session'] = last_session
+      if sessions.count() > 1:
+        context['last_session'] = sessions[1]
+      else:
+        context['last_session'] = None
+
   taps = models.KegTap.objects.filter(current_keg__isnull=False)
   context['initial_taps'] = kbjson.dumps([protolib.ToDict(t, full=True) for t in taps], indent=None)
 

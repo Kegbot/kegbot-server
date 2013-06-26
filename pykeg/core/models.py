@@ -997,6 +997,8 @@ class SystemEvent(models.Model):
       related_name='events',
       help_text='Session involved in the event, if any.')
 
+  objects = managers.SystemEventManager()
+
   def __str__(self):
     if self.kind == 'drink_poured':
       ret = 'Drink %i poured' % self.drink.id
@@ -1091,6 +1093,10 @@ class Picture(models.Model):
 
 class PourPicture(models.Model):
   '''Stores additional metadata about a picture taken during a pour.'''
+  class Meta:
+    get_latest_by = 'time'
+    ordering = ('-time',)
+
   picture = models.ForeignKey('Picture')
   drink = models.ForeignKey(Drink, blank=True, null=True,
       related_name='pictures',

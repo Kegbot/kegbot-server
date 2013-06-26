@@ -59,11 +59,7 @@
         {% else %}
         <a class="brand" href="/">
         {% endif %}
-        {% if kbsite.settings.title %}
-          {{kbsite.settings.title}}
-        {% else %}
-          kegbot beer device
-        {% endif %}
+        {{ kbsite.settings.title }}
         </a>{% endspaceless %}
 
         <ul class="nav">

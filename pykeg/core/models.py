@@ -121,8 +121,8 @@ class SiteSettings(models.Model):
   temperature_display_units = models.CharField(max_length=64,
       choices=TEMPERATURE_DISPLAY_UNITS_CHOICES, default='f',
       help_text='Unit system to use when displaying temperature data.')
-  title = models.CharField(max_length=64, blank=True, null=True,
-      help_text='The title of this site. Example: "Kegbot San Francisco"')
+  title = models.CharField(max_length=64, default='My Kegbot',
+      help_text='The title of this site.')
   description = models.TextField(blank=True, null=True,
       help_text='Description of this site')
   background_image = models.ForeignKey('Picture', blank=True, null=True,

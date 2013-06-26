@@ -127,9 +127,7 @@
   <img src="{{pictures.0.picture.resized.url}}">
   {% endif %}
   {% if drink.shout %}
-  <blockquote>
-  <p>{{ drink.shout }}</p>
-  <small>{% drinker_name drink %}, during pour</small>
+    {% include 'kegweb/includes/drink_shout.html' %}
   {% endif %}
 </div>
 {% endwith %}

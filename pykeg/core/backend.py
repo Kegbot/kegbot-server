@@ -198,6 +198,7 @@ class KegbotBackend:
     if not isinstance(drink, models.Drink):
       drink = models.Drink.objects.get(id=drink)
 
+    session = drink.session
     drink_id = drink.id
     keg = drink.keg
     volume_ml = drink.volume_ml
@@ -217,6 +218,8 @@ class KegbotBackend:
 
     # Delete the drink, including any objects related to it.
     drink.delete()
+
+    session.Rebuild()
 
     # Regenerate stats for any drinks following the just-deleted one.
     for drink in models.Drink.objects.filter(id__gt=drink_id).order_by('id'):

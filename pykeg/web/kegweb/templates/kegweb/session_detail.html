@@ -3,7 +3,10 @@
 {% load humanize %}
 
 {% block title %}{{ session.GetTitle }} | {{ block.super}}{% endblock %}
-{% block pagetitle %}{{ session.GetTitle }}{% endblock %}
+{% block pagetitle %}
+  {{ session.GetTitle }}
+  <small>{{ session.start_time|date:"l, F jS, P" }}</small>
+{% endblock %}
 
 {% block col-1 %}
 
@@ -16,17 +19,15 @@
 
 
 {% block col-2 %}
-{% chart users_by_volume stats 350 250 %}
-
-<table class="table table-condensed">
-  <tbody>
+<table class="table table-condensed table-bordered">
+  <thead>
     <tr>
-      <th>When</th>
-      <td>
-        {{session.start_time}}
-      </td>
+      <th colspan="2">
+        Session Summary
+      </th>
     </tr>
-
+  </thead>
+  <tbody>
     {% with session.keg_chunks.all as keg_chunks %}
     <tr>
       <th>Keg{{keg_chunks.count|pluralize}}</th>
@@ -55,13 +56,34 @@
         drinker{{ stats.registered_drinkers|length|pluralize }}
       </td>
     </tr>
+  </tbody>
+</table>
 
+{% chart users_by_volume stats 300 250 %}
+<br/>
+
+{% with session.UserChunksByVolume as chunks %}
+{% if chunks %}
+<table class="table table-bordered table-striped table-condensed table-hover">
+  <thead>
+    <tr>
+      <th>
+        Drinker
+      </th>
+      <th>
+        Volume
+      </th>
+    </tr>
+  </thead>
+  <tbody>
     {% for chunk in session.UserChunksByVolume %}
     <tr>
-      <th>{% drinker_name chunk.user nolink %}</th>
+      <th>{% drinker_name chunk.user %}</th>
       <td>{% volume chunk.volume_ml %}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+{% endif %}
+{% endwith %}
 {% endblock col-2 %}

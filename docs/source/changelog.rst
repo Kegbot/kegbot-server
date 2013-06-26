@@ -5,6 +5,19 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+
+* Drinks can now be cancelled, modified, and re-assigned in the web interface.
+* Multiple web hook URLs may be given.
+* New admin interfaces for authentication tokens and beer types.
+* Statistics are regenerated more quickly.
+* New generational caching mechanism; many API responses benefit.
+* Improved automatic support for django-debug-toolbar.
+* Keg full and served volume is now persistently maintained (rather than dervied
+from drink logs)
+
+
 Version 0.9.10 (2013-05-27)
 ---------------------------
 

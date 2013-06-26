@@ -1,0 +1,50 @@
+{% load kegweblib %}
+{% load humanize %}
+{% if event.kind == 'drink_poured' %}
+{% with event.drink as drink %}
+<div class="row">
+  <div class="span1">
+    {% mugshot_box event.user 48 %}
+  </div>
+  <div class="span6">
+    <div style="vertical-align: bottom;">
+      <span>
+        <strong>{% drinker_name event.user %}</strong> poured <strong>{% volume drink.volume_ml %}</strong>
+        of {{ drink.keg.type.name }}
+      </span>
+      <span class="muted pull-right">
+        <a href="{{ drink.get_absolute_url }}">{% timeago event.time %}</a>
+      </span>
+    </div>
+    {% with drink.pictures.latest as pic %}
+    {% if pic %}
+      <p></p>
+      <a class="gallery-image" rel="gallery-{{ gallery_id }}"
+          href="{{ pic.picture.resized.url }}"
+          title="{% drinker_name event.user nolink %} pouring drink {{ event.drink.id }}">
+        <img src="{{pic.picture.resized.url}}">
+      </a>
+    {% endif %}
+    {% endwith %}
+    {% if drink.shout %}
+      {% include 'kegweb/includes/drink_shout.html' %}
+    {% endif %}
+    <hr/>
+  </div>
+</div>
+{% endwith %}
+
+{% elif event.kind == 'session_joined' %}
+<div class="row">
+  <div class="span6 offset1">
+    <span>
+      {% drinker_name event.user %} started drinking 
+    </span>
+    <span class="muted pull-right">
+      {% timeago event.time %}
+    </span>
+    <hr/>
+  </div>
+</div>
+{% endif %}
+<p/>

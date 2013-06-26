@@ -7,7 +7,16 @@
 
 {% block col-1 %}
 
-<h2>Summary</h2>
+{% with session.events.timeline as events %}
+{% include 'kegweb/includes/timeline.html' %}
+{% endwith %}
+
+{% endblock col-1 %}
+
+
+
+{% block col-2 %}
+{% chart users_by_volume stats 350 250 %}
 
 <table class="table table-condensed">
   <tbody>
@@ -32,78 +41,27 @@
     {% endwith %}
 
     <tr>
-      <th>Drink Count</th>
+      <th>Total</th>
       <td>
-        {{ session.drinks.valid.count }} pours,
+        {{ session.drinks.count }} pours,
         {% volume session.volume_ml %}
       </td>
     </tr>
 
     <tr>
-      <th>Registered Drinkers</th>
+      <th>Drinkers</th>
       <td>
         {{ stats.registered_drinkers|length }}
         drinker{{ stats.registered_drinkers|length|pluralize }}
       </td>
     </tr>
-  </tbody>
-</table>
 
-{% comment %}
-{% for chunk in session.UserChunksByVolume %}
-  {% if chunk.user %}
-  <div class="kb-drink-box-mugshot">
-    {% with chunk.user as drinker %}
-      {% mugshot_box drinker 96 %}
-    {% endwith %}
-  </div>
-  {% endif %}
-{% endfor %}
-{% endcomment %}
-
-<h2>Drinkers by Volume</h2>
-<table class="condensed-table">
-  <tbody>
     {% for chunk in session.UserChunksByVolume %}
     <tr>
-      <td>
-        <div class="kb-drink-box-mugshot">
-          {% with chunk.user as drinker %}
-            {% mugshot_box drinker 96 %}
-          {% endwith %}
-         <span class="label">{{ forloop.counter|ordinal }}</span>
-          {% if chunk.user %}{{ chunk.user }}{% else %}{{guest_info.name}}{% endif %}
-        </div>
-      </td>
-      <td>
-        {% chart user_session_chunks chunk 350 100 %}
-      </td>
+      <th>{% drinker_name chunk.user nolink %}</th>
+      <td>{% volume chunk.volume_ml %}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
-
-{% with session.pictures.all as pictures %}
-{% if pictures.count %}
-<h2>Beer Goggles!</h2>
-<div class="row">
-{% gallery pictures "span2" gallery_id=session.id %}
-</div>
-{% endif %}
-{% endwith %}
-
-{% endblock col-1 %}
-
-{% block col-2 %}
-<div class="row">
-    <h2>Drinker Breakdown</h2>
-    {% chart users_by_volume stats 350 250 %}
-</div>
-
-<div class="row">
-    <h2>All Pours</h2>
-    {% for drink in session.drinks.all %}
-      {% include "kegweb/drink-box.html" %}
-    {% endfor %}
-</div>
 {% endblock col-2 %}

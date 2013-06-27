@@ -284,7 +284,12 @@ class KegbotBackend:
 
     stats.invalidate(drink)
     drink.session.Rebuild()
-    stats.generate(drink)
+
+    # Regenerate stats for this drink and all subsequent.
+    for drink in models.Drink.objects.filter(id__gte=drink.id).order_by('id'):
+      stats.generate(drink)
+
+    self.cache.update_generation()
 
   @transaction.commit_on_success
   def LogSensorReading(self, sensor_name, temperature, when=None):

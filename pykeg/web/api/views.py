@@ -209,7 +209,7 @@ def get_user_events(request, username):
 
 def get_user_stats(request, username):
   user = get_object_or_404(models.User, username=username)
-  return user.get_profile().GetStatsRecord()
+  return user.get_profile().GetStats()
 
 @auth_required
 def get_auth_token(request, auth_device, token_value):

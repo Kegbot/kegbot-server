@@ -196,7 +196,7 @@ class UserProfile(models.Model):
       return qs[0]
 
   def GetStatsRecord(self):
-    qs = UserStats.objects.filter(user=self).order_by('-id')
+    qs = UserStats.objects.filter(user=self.user).order_by('-id')
     if len(qs):
       return qs[0]
     return None

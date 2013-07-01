@@ -364,7 +364,15 @@ def beer_type_detail(request, beer_id):
   if request.method == 'POST':
     form = forms.BeerTypeForm(request.POST, instance=btype)
     if form.is_valid():
-      form.save()
+      btype = form.save()
+      new_image = request.FILES.get('new_image')
+      if new_image:
+        pic = models.Picture.objects.create()
+        pic.image.save(new_image.name, new_image)
+        pic.save()
+        btype.image = pic
+        btype.save()
+
       messages.success(request, 'Beer type updated.')
 
   context = RequestContext(request)

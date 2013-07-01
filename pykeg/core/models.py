@@ -263,6 +263,9 @@ class BeerDBModel(models.Model):
 
 class Brewer(BeerDBModel):
   """Describes a producer of beer."""
+  class Meta:
+        ordering = ('name',)
+
   PRODUCTION_CHOICES = (
     ('commercial', 'Commercial brewer'),
     ('homebrew', 'Home brewer'),
@@ -293,6 +296,9 @@ class Brewer(BeerDBModel):
 
 class BeerStyle(BeerDBModel):
   """Describes a named style of beer (Stout, IPA, etc)"""
+  class Meta:
+        ordering = ('name',)
+
   name = models.CharField(max_length=128,
       help_text='Name of the beer style')
 
@@ -302,6 +308,9 @@ class BeerStyle(BeerDBModel):
 
 class BeerType(BeerDBModel):
   """Describes a specific kind of beer, by name, brewer, and style."""
+  class Meta:
+        ordering = ('name',)
+
   name = models.CharField(max_length=255,
       help_text='Name of the beer; typically unique within a Brewer.')
   brewer = models.ForeignKey(Brewer,

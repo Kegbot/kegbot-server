@@ -32,6 +32,9 @@
   {{keg.type.name}}
   {% if keg.type.brewer %}
   <small>{{keg.type.brewer}}</small>
+  {% if user.is_staff %}
+  <small>(<a href="{% url 'kegadmin-edit-beer-type' keg.type.id %}">edit beer</a>)</small>
+  {% endif %}
   {% endif %}
 </h2>
 

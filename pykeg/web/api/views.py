@@ -230,7 +230,7 @@ def assign_auth_token(request, auth_device, token_value):
   b = request.backend
   username = form.cleaned_data['username']
 
-  user = b._GetUserObjFromUsername(username)
+  user = backend.get_user(username)
   if not user:
     raise kbapi.BadRequestError("User does not exist")
 
@@ -238,6 +238,7 @@ def assign_auth_token(request, auth_device, token_value):
     tok = b.GetAuthToken(auth_device, token_value)
   except backend.NoTokenError:
     tok = b.CreateAuthToken(auth_device, token_value, username=username)
+
   if tok.user != user:
     if tok.user:
       raise kbapi.BadRequestError("Token is already bound to a user")

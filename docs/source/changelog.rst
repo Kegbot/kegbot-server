@@ -5,9 +5,10 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.11 (2013-07-01)
+---------------------------
 
+* Home page and session page redesigned to show more photos.
 * Drinks can now be cancelled, modified, and re-assigned in the web interface.
 * Multiple web hook URLs may be given.
 * New admin interfaces for authentication tokens and beer types.

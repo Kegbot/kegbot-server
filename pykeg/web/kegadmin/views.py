@@ -234,13 +234,29 @@ def user_detail(request, user_id):
   return render_to_response('kegadmin/user_detail.html', context_instance=context)
 
 @staff_member_required
+def drink_list(request):
+  context = RequestContext(request)
+  drinks = models.Drink.objects.all().order_by('-time')
+  paginator = Paginator(drinks, 25)
+
+  page = request.GET.get('page')
+  try:
+    drinks = paginator.page(page)
+  except PageNotAnInteger:
+    drinks = paginator.page(1)
+  except EmptyPage:
+    drinks = paginator.page(paginator.num_pages)
+
+  context['drinks'] = drinks
+  return render_to_response('kegadmin/drink_list.html', context_instance=context)
+
+
+@staff_member_required
 @require_http_methods(["POST"])
 def drink_edit(request, drink_id):
   drink = get_object_or_404(models.Drink, id=drink_id)
 
-  print request.POST
   if 'submit_cancel' in request.POST:
-    # TODO check csrf
     form = forms.CancelDrinkForm(request.POST)
     old_keg = drink.keg
     if form.is_valid():

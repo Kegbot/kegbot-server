@@ -1,0 +1,40 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+{% load bootstrap_pagination %}
+
+{% block title %}Kegbot Admin: Drinks | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Drinks{% endblock %}
+
+{% block kegadmin-main %}
+
+<table class="table table-hover table-bordered">
+<thead>
+    <tr>
+        <th>Drink</th>
+        <th>Date</th>
+        <th>Volume</th>
+        <th>User</th>
+        <th>Keg</th>
+    </tr>
+</thead>
+<tbody>
+{% for drink in drinks %}
+<tr>
+    <td>
+        <div class="form-horizontal">
+            <a class="btn btn-small btn-primary" href="{% url "kb-drink" drink.id %}">Edit</a>&nbsp;&nbsp;
+            <span>{{ drink.id }}</span>
+    </td>
+    <td>{{ drink.time }}</td>
+    <td>{% volume drink.volume_ml %}</td>
+    <td>{{ drink.user }}</td>
+    <td>{{ drink.keg }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% bootstrap_paginate drinks %}
+
+{% endblock %}
+

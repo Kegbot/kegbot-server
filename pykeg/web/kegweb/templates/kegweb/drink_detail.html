@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load kegweblib %}
 
-{% block title %}Drink {{ drink.id }} by {% drinker_name drink %}| {{ block.super }}{% endblock %}
+{% block title %}Drink {{ drink.id }} by {% drinker_name drink nolink %} | {{ block.super }}{% endblock %}
 {% block pagetitle %}Drink {{ drink.id }} by {% drinker_name drink %}{% endblock %}
 
 {% block content %}

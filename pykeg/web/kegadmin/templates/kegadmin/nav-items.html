@@ -1,18 +1,25 @@
 {% load kegweblib %}
 
+<li class="nav-header">Kegbot Admin</a>
 {% navitem kegadmin-dashboard "Dashboard" exact %}
+
+<li class="nav-header">General</a>
 {% navitem kegadmin-main "General Settings" %}
-{% navitem kegadmin-taps "Taps" %}
 {% navitem kegadmin-connections "Connections" %}
+{% navitem kegadmin-logs "Logs" %}
+
+<li class="nav-header">System</li>
 {% navitem kegadmin-users "Users" %}
+{% navitem kegadmin-taps "Taps" %}
 {% navitem kegadmin-tokens "Tokens" %}
+
+<li class="nav-header">Beer DB</li>
 {% navitem kegadmin-brewers "Beer Brewers" %}
 {% navitem kegadmin-beer-styles "Beer Styles" %}
 {% navitem kegadmin-beer-types "Beer Types" %}
-{% navitem kegadmin-logs "Logs" %}
-{% if HAVE_ADMIN %}
 <li class="divider"></li>
+<li class="nav-header">Other</li>
+{% if HAVE_ADMIN %}
 <li><a href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a></li>
 {% endif %}
-<li class="divider"></li>
 <li><a href='https://github.com/Kegbot/kegbot/issues' target="_blank">Report a Bug &raquo;</a></li>

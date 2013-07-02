@@ -91,6 +91,13 @@ class KegbotSiteMiddleware:
 
     return None
 
+  def process_response(self, request, response):
+    if request.method in ('POST', 'PUT', 'PATCH') and response.status_code < 400:
+      # Invalidate cache on any successful change.
+      # TODO(mikey): More granular cache invalidations.
+      request.kbcache.update_generation()
+    return response
+
   def _setup_required(self, request):
     return SimpleTemplateResponse('setup_wizard/setup_required.html',
         context=RequestContext(request), status=403)

@@ -173,7 +173,7 @@ class KegbotBackend:
     if do_postprocess:
       stats.generate(d)
       events = models.SystemEvent.ProcessDrink(d)
-      tasks.handle_new_events.delay(events)
+      tasks.schedule_tasks(events)
 
     return d
 

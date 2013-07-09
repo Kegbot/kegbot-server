@@ -41,6 +41,7 @@ DEPENDENCIES = [
   'python-memcached == 1.51',
   'pytz == 2013b',
   'tweepy == 2.0',
+  'mock == 1.0.1',
 ]
 
 def setup_package():

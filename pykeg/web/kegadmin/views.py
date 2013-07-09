@@ -582,7 +582,7 @@ def plugin_settings(request, plugin_name):
   if not plugin:
     raise Http404('Plugin "%s" not loaded' % plugin_name)
 
-  view = plugin.get_settings_view()
+  view = plugin.get_admin_settings_view()
   if not view:
     raise Http404('No settings for this plugin')
 

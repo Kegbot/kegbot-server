@@ -73,9 +73,6 @@ class KegbotSite(models.Model):
     return KegbotSite.objects.get_or_create(name='default',
         defaults={'is_setup': False})[0]
 
-  def full_url(self):
-    return 'http://%s' % Site.objects.get_current().domain
-
   def GetStatsRecord(self):
     try:
       return SystemStats.objects.latest()
@@ -181,6 +178,14 @@ class SiteSettings(models.Model):
   def reverse_full(self, *args, **kwargs):
     """Calls reverse, and returns a full URL (includes base_url())."""
     return '%s%s' % (self.base_url(), reverse(*args, **kwargs))
+
+  def format_volume(self, volume_ml):
+    if SiteSettings.get().volume_display_units == 'metric':
+      if volume_ml < 500:
+        return '%d mL' % int(volume_ml)
+      return '%.1f L' % (volume_ml / 1000.0)
+    else:
+      return '%1.f oz' % units.Quantity(volume_ml).InOunces()
 
   @classmethod
   def get(cls):
@@ -575,7 +580,7 @@ class Drink(models.Model):
     return reverse('kb-drink', args=(str(self.id),))
 
   def ShortUrl(self):
-    return '%s%s' % (KegbotSite.get().full_url(), reverse('kb-drink-short', args=(str(self.id),)))
+    return '%s%s' % (SiteSettings.get().base_url(), reverse('kb-drink-short', args=(str(self.id),)))
 
   def Volume(self):
     return units.Quantity(self.volume_ml)
@@ -688,6 +693,10 @@ class DrinkingSession(_AbstractChunk):
 
   def __str__(self):
     return "Session #%s: %s" % (self.id, self.start_time)
+
+  def ShortUrl(self):
+    return '%s%s' % (SiteSettings.get().base_url(), reverse('kb-session-short',
+        args=(str(self.id),)))
 
   def HighlightPicture(self):
     pictures = self.pictures.all().order_by('-time')

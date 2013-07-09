@@ -24,7 +24,7 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
 
       ### sessions
       url(r'^session/(?P<session_id>\d+)/$', 'short_session_detail'),
-      url(r'^s/(?P<session_id>\d+)/$', 'short_session_detail'),
+      url(r'^s/(?P<session_id>\d+)/$', 'short_session_detail', name='kb-session-short'),
 
       url(r'^sessions/$', views.SessionArchiveIndexView.as_view(), name='kb-sessions'),
       url(r'^sessions/(?P<year>\d{4})/$', views.SessionYearArchiveView.as_view(), name='kb-sessions-year'),

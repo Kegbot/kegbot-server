@@ -1,0 +1,83 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Twitter Settings | {{ block.super }}{% endblock %}
+{% block pagetitle %}Twitter Settings{% endblock %}
+
+{% block kegadmin-main %}
+
+<h4>Twitter API Keys</h4>
+<div class="well">
+<p class="lead">
+  API Keys are needed before your Kegbot can talk to Twitter. To register for API keys, see the
+  <a href="http://dev.twitter.com">Twitter Developer site</a>.
+</p>
+
+<form method="post" action="">
+   {% csrf_token %}
+   {{credentials_form|crispy }}
+    <button type="submit" class="btn btn-success" name="submit-keys">
+      <i class="icon-edit icon-white"></i> Update Keys</button>
+    </button>
+</form>
+</div>
+
+{% if have_credentials %}
+{% if site_profile %}
+<h4>System Twitter Account</h4>
+<div class="well">
+<p class="lead">
+    Twitter is currently linked to <b>@{{ site_profile.twitter_name }}</b>.
+</p>
+<p>
+<form method="post" action="{% url "plugin-twitter-site_twitter_redirect" %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-info" name="submit-link">
+      <i class="icon-repeat icon-white"></i> Re-link Account</button>
+    </button>
+    <button type="submit" class="btn btn-danger" name="submit-remove">
+      <i class="icon-remove icon-white"></i> Remove Account</button>
+    </button>
+</form>
+</p>
+</div>
+
+{% else %}
+<h4>Link Twitter Account</h4>
+<div class="well">
+    <p class="lead">
+      Link a Twitter account to this Kegbot for system-wide use.  
+    <p>
+    <form method="post" action="{% url "plugin-twitter-site_twitter_redirect" %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-info" name="submit">
+          <i class="icon-share-alt icon-white"></i> Link Account</button>
+        </button>
+    </form>
+</p>
+</div>
+{% endif %}
+
+<h4>Settings</h4>
+<div class="well">
+<p class="lead">
+  Site-wide settings control how Kegbot will use the system account. 
+</p>
+<form method="post" action="">
+   {% csrf_token %}
+   {{ settings_form|crispy }}
+    <button type="submit" class="btn btn-success" name="submit-settings">
+      <i class="icon-edit icon-white"></i> Update Settings</button>
+    </button>
+</form>
+</div>
+
+
+{% else %}
+<p class="muted">
+  Other Twitter settings can be changed once API keys are set.
+</p>
+{% endif %}
+
+{% endblock %}

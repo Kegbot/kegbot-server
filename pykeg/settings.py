@@ -69,10 +69,6 @@ SITE_ID = 1
 # http://blogs.law.harvard.edu/tech/stories/storyReader$15
 LANGUAGE_CODE = 'en-us'
 
-# Local time zone for this installation. All choices can be found here:
-# http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
-TIME_ZONE = 'America/Los_Angeles'
-
 # Enable Django 1.4+ timezone support.  Do not disable this.
 USE_TZ = True
 
@@ -307,6 +303,10 @@ except ImportError:
   import sys
   print>>sys.stderr, msg
   sys.exit(1)
+
+# Override any user-specified timezone: As of Kegbot 0.9.12, this is
+# specified in site settings.
+TIME_ZONE = 'UTC'
 
 ### socialregistration (after importing common settings)
 

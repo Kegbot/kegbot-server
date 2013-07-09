@@ -33,6 +33,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import SimpleTemplateResponse
 from django.template import RequestContext
+from django.utils import timezone
 
 # TODO(mikey): rename me
 ALLOWED_PATHS = (
@@ -68,8 +69,10 @@ class KegbotSiteMiddleware:
 
     if not request.kbsite or not request.kbsite.is_setup:
       request.need_setup = True
-    elif not epoch or epoch < EPOCH:
-      request.need_upgrade = True
+    else:
+      if not epoch or epoch < EPOCH:
+        request.need_upgrade = True
+      timezone.activate(request.kbsite.settings.timezone)
 
     request.kbcache = KegbotCache()
     request.backend = KegbotBackend()

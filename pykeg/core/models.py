@@ -19,6 +19,7 @@
 
 import datetime
 import os
+import pytz
 import random
 
 from django.conf import settings
@@ -46,6 +47,8 @@ from kegbot.api import models_pb2
 from kegbot.api import protoutil
 
 """Django models definition for the kegbot database."""
+
+TIMEZONE_CHOICES = ((z, z) for z in pytz.common_timezones)
 
 class KegbotSite(models.Model):
   name = models.CharField(max_length=64, unique=True, default='default',
@@ -156,6 +159,9 @@ class SiteSettings(models.Model):
       help_text='Whether registration requires e-mail confirmation.')
   allowed_hosts = models.TextField(blank=True, null=True, default='',
       help_text='List of allowed hostnames. If blank, validation is disabled.')
+  timezone = models.CharField(max_length=255, choices=TIMEZONE_CHOICES,
+      default='UTC',
+      help_text='Time zone for this system')
 
   class Meta:
     verbose_name_plural = "site settings"

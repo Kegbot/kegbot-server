@@ -48,6 +48,7 @@ class MiniSiteSettingsForm(forms.ModelForm):
     fields = (
         'title',
         'privacy',
+        'timezone',
         'volume_display_units',
         'temperature_display_units',
         'registration_allowed',
@@ -64,6 +65,7 @@ class MiniSiteSettingsForm(forms.ModelForm):
   helper.layout = Layout(
       Field('title', css_class='span12'),
       Field('privacy', css_class='span12'),
+      Field('timezone', css_class='span12'),
       Field('volume_display_units', css_class='span12'),
       Field('temperature_display_units', css_class='span12'),
       Field('registration_allowed'),

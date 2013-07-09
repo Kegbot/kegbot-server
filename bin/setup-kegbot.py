@@ -34,7 +34,6 @@ import pprint
 import random
 import subprocess
 
-import pytz
 from kegbot.util import app
 
 from pykeg import __version__ as VERSION
@@ -75,9 +74,6 @@ gflags.DEFINE_string('db_database', 'kegbot',
 gflags.DEFINE_string('sqlite_filename', 'kegbot.sqlite',
     'File name for the Kegbot sqlite database within `data_root`.  Ignored if not using SQLite.')
 
-gflags.DEFINE_string('timezone', 'America/Los_Angeles',
-    'Default time zone.')
-
 gflags.DEFINE_string('use_memcached', True,
     'Configure Kegbot to use memcached. ')
 
@@ -99,7 +95,6 @@ SETTINGS_NAMES = (
   'KEGBOT_ROOT',
   'MEDIA_ROOT',
   'STATIC_ROOT',
-  'TIME_ZONE',
   'CACHES',
   'SECRET_KEY',
 )
@@ -323,31 +318,6 @@ class KegbotDataRoot(ConfigurationSetupStep):
       raise FatalError('Could not create directory "%s": %s' % (self.value, e))
 
 
-class TimeZone(ConfigurationSetupStep):
-  """Time zone for this system.
-
-  The value should be a string time zone name. Examples:
-    America/Los_Angeles
-    America/Denver
-    America/Chicago
-    America/New_York
-    Australia/ACT
-    GMT
-
-  A full list of acceptable names can be found here:
-    http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
-  """
-
-  FLAG = 'timezone'
-
-  def validate(self, ctx):
-    try:
-      tz = pytz.timezone(self.value)
-    except pytz.exceptions.UnknownTimeZoneError:
-      raise ValueError('Timezone "%s" is not known.')
-    ctx['TIME_ZONE'] = self.value
-
-
 class Memcached(ConfigurationSetupStep):
   """Enable memcached caching layer.
 
@@ -468,7 +438,6 @@ class ConfigureDatabase(ConfigurationSetupStep):
 STEPS = [
     RequiredLibraries(),
     SettingsDir(),
-    TimeZone(),
     Memcached(),
     KegbotDataRoot(),
     ConfigureDatabase(),

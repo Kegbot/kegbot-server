@@ -5,6 +5,11 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+
+* Site timezone can be changed in the admin panel.
+
 Version 0.9.11 (2013-07-01)
 ---------------------------
 

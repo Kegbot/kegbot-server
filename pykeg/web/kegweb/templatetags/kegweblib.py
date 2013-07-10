@@ -89,9 +89,12 @@ class NavitemNode(Node):
     self._exact = 'exact' in args[2:]
 
   def render(self, context):
-    viewname = self._viewname
+    viewname = Variable(self._viewname).resolve(context)
     title = Variable(self._title).resolve(context)
-    urlbase = reverse(viewname)
+    if viewname.startswith('/'):
+      urlbase = viewname
+    else:
+      urlbase = reverse(viewname)
 
     request_path = context['request_path']
 

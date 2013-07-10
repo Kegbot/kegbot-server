@@ -70,12 +70,12 @@
 
         <ul class="nav">
           {% if kbsite %}
-          {% if HAVE_SESSIONS %}{% navitem kb-sessions "Sessions" %}{% endif %}
-          {% navitem kb-kegs "Kegs" %}
-          {% navitem kb-stats "Stats" %}
-          {% if user.is_authenticated %}{% navitem kb-account-main "Account" %}{% endif %}
+          {% if HAVE_SESSIONS %}{% navitem "kb-sessions" "Sessions" %}{% endif %}
+          {% navitem "kb-kegs" "Kegs" %}
+          {% navitem "kb-stats" "Stats" %}
+          {% if user.is_authenticated %}{% navitem "kb-account-main" "Account" %}{% endif %}
           {% if user.is_staff %}
-          {% navitem kegadmin-dashboard "Admin" %}
+          {% navitem "kegadmin-dashboard" "Admin" %}
           {% endif %}
           {% endif %}
         </ul>

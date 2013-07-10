@@ -1,23 +1,24 @@
 {% load kegweblib %}
 
 <li class="nav-header">Kegbot Admin</a>
-{% navitem kegadmin-dashboard "Dashboard" exact %}
+{% navitem "kegadmin-dashboard" "Dashboard" exact %}
 
 <li class="nav-header">General</a>
-{% navitem kegadmin-main "General Settings" %}
-{% navitem kegadmin-connections "Connections" %}
-{% navitem kegadmin-logs "Logs" %}
+{% navitem "kegadmin-main" "General Settings" %}
+{% navitem "kegadmin-connections" "Connections" %}
+{% navitem "kegadmin-logs" "Logs" %}
 
 <li class="nav-header">System</li>
-{% navitem kegadmin-taps "Taps" %}
-{% navitem kegadmin-drinks "Drinks" %}
-{% navitem kegadmin-users "Users" %}
-{% navitem kegadmin-tokens "Tokens" %}
+{% navitem "kegadmin-taps" "Taps" %}
+{% navitem "kegadmin-drinks" "Drinks" %}
+{% navitem "kegadmin-users" "Users" %}
+{% navitem "kegadmin-tokens" "Tokens" %}
 
 <li class="nav-header">Beer DB</li>
-{% navitem kegadmin-brewers "Beer Brewers" %}
-{% navitem kegadmin-beer-styles "Beer Styles" %}
-{% navitem kegadmin-beer-types "Beer Types" %}
+{% navitem "kegadmin-brewers" "Beer Brewers" %}
+{% navitem "kegadmin-beer-styles" "Beer Styles" %}
+{% navitem "kegadmin-beer-types" "Beer Types" %}
+
 <li class="divider"></li>
 <li class="nav-header">Other</li>
 {% if HAVE_ADMIN %}

@@ -5,14 +5,14 @@
 <div class="row">
   <div class="span2">
     <ul class="nav nav-pills nav-stacked" data-pills="pills">
-      {% navitem kb-account-main "Account Main" exact %}
-      {% navitem password_change "Password" %}
-      {% navitem account-mugshot "Mugshot" %}
+      {% navitem "kb-account-main" "Account Main" exact %}
+      {% navitem "password_change" "Password" %}
+      {% navitem "account-mugshot" "Mugshot" %}
       {% if USE_TWITTER or USE_FOURSQUARE or USE_UNTAPPD %}
-      {% navitem account-connections "Connections" %}
+      {% navitem "account-connections" "Connections" %}
       {% endif %}
       {% if USE_FACEBOOK %}
-      {% navitem fb-account-settings "Facebook" %}
+      {% navitem "fb-account-settings" "Facebook" %}
       {% endif %}
     </ul>
   </div>

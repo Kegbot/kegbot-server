@@ -27,7 +27,6 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
-from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -162,6 +161,10 @@ class SiteSettings(models.Model):
   timezone = models.CharField(max_length=255, choices=TIMEZONE_CHOICES,
       default='UTC',
       help_text='Time zone for this system')
+  hostname = models.CharField(max_length=255,
+      help_text='Hostname (and optional port) for this system. Examples: mykegbot.example.com, 192.168.1.100:8000')
+  use_ssl = models.BooleanField(default=False,
+      help_text='Use SSL for URLs to this site.')
 
   class Meta:
     verbose_name_plural = "site settings"
@@ -170,7 +173,10 @@ class SiteSettings(models.Model):
     return datetime.timedelta(minutes=self.session_timeout_minutes)
 
   def base_url(self):
-    return 'http://%s' % (Site.objects.get_current(),)
+    protocol = 'http'
+    if self.use_ssl:
+      protocol = 'https'
+    return '%s://%s' % (protocol, self.hostname)
 
   def reverse_full(self, *args, **kwargs):
     """Calls reverse, and returns a full URL (includes base_url())."""

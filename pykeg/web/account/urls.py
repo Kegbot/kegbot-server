@@ -18,6 +18,7 @@ urlpatterns = patterns('pykeg.web.account.views',
     url(r'^remove-foursquare/$', 'remove_foursquare', name='remove-foursquare'),
     url(r'^update-twitter-settings/$', 'update_twitter_settings', name='update-twitter-settings'),
     url(r'^remove-twitter/$', 'remove_twitter', name='remove-twitter'),
+    url(r'^plugin/(?P<plugin_name>\w+)/$', 'plugin_settings', name='account-plugin-settings'),
 )
 
 if features.use_facebook():
@@ -29,3 +30,5 @@ if features.use_untappd():
   urlpatterns += patterns('',
       url(r'^remove-untappd/$', remove_untappd, name='remove-untappd'),
   )
+from pykeg.plugin import util
+urlpatterns += util.get_account_urls()

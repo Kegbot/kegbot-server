@@ -23,6 +23,8 @@ from pykeg.core.backend import KegbotBackend
 from pykeg.core.cache import KegbotCache
 from pykeg.web.api.util import is_api_request
 
+from pykeg.plugin import util as plugin_util
+
 from django.db import DatabaseError
 from django.conf import settings
 from django.contrib import messages
@@ -73,6 +75,7 @@ class KegbotSiteMiddleware:
       if not epoch or epoch < EPOCH:
         request.need_upgrade = True
       timezone.activate(request.kbsite.settings.timezone)
+      request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins())
 
     request.kbcache = KegbotCache()
     request.backend = KegbotBackend()

@@ -163,3 +163,16 @@ def password_change(request, *args, **kwargs):
 
 def password_change_done(request):
   return password_change_done_orig(request, 'account/password_change_done.html')
+
+@login_required
+def plugin_settings(request, plugin_name):
+  context = RequestContext(request)
+  plugin = request.plugins.get(plugin_name, None)
+  if not plugin:
+    raise Http404('Plugin "%s" not loaded' % plugin_name)
+
+  view = plugin.get_user_settings_view()
+  if not view:
+    raise Http404('No user settings for this plugin')
+
+  return view(request, plugin)

@@ -2,12 +2,22 @@
 {% load kegweblib %}
 
 {% block content %}
-<div class="row">
+<div class="row-fluid">
   <div class="span2">
-    <ul class="nav nav-pills nav-stacked" data-pills="pills">
+    <ul class="nav nav-list">
+      <li class="nav-header">General</a>
       {% navitem "kb-account-main" "Account Main" exact %}
       {% navitem "password_change" "Password" %}
       {% navitem "account-mugshot" "Mugshot" %}
+
+      {% if PLUGINS %}
+      <li class="nav-header">Extras</li>
+      {% for plugin in PLUGINS.values %}
+      {% url "account-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
+      {% navitem settings_url plugin.get_name %}
+      {% endfor %}
+      {% endif %}
+
       {% if USE_TWITTER or USE_FOURSQUARE or USE_UNTAPPD %}
       {% navitem "account-connections" "Connections" %}
       {% endif %}
@@ -17,7 +27,7 @@
     </ul>
   </div>
 
-  <div class="span8">
+  <div class="span10">
     {% block kb-account-main %}{% endblock %}
   </div>
 </div>

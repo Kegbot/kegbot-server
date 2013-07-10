@@ -19,6 +19,14 @@
 {% navitem "kegadmin-beer-styles" "Beer Styles" %}
 {% navitem "kegadmin-beer-types" "Beer Types" %}
 
+{% if PLUGINS %}
+<li class="nav-header">Plugins</li>
+{% for plugin in PLUGINS.values %}
+{% url "kegadmin-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
+{% navitem settings_url plugin.get_name %}
+{% endfor %}
+{% endif %}
+
 <li class="divider"></li>
 <li class="nav-header">Other</li>
 {% if HAVE_ADMIN %}

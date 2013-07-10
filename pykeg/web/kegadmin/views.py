@@ -26,6 +26,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Q
+from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
@@ -573,6 +574,19 @@ def autocomplete_token(request):
   })
   return HttpResponse(kbjson.dumps(values, indent=None),
     mimetype='application/json', status=200)
+
+@staff_member_required
+def plugin_settings(request, plugin_name):
+  context = RequestContext(request)
+  plugin = request.plugins.get(plugin_name, None)
+  if not plugin:
+    raise Http404('Plugin "%s" not loaded' % plugin_name)
+
+  view = plugin.get_settings_view()
+  if not view:
+    raise Http404('No settings for this plugin')
+
+  return view(request, plugin)
 
 @staff_member_required
 def backup_restore(request):

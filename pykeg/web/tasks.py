@@ -23,6 +23,7 @@ from kegbot.util import kbjson
 
 from pykeg.core import models
 from pykeg.proto import protolib
+from pykeg.plugin import util as plugin_util
 
 from pykeg.connections import tasks as connection_tasks
 
@@ -30,6 +31,18 @@ from urllib import urlencode
 import urllib2
 
 from celery.decorators import task
+
+def schedule_tasks(event_list):
+  """Synchronously schedules tasks related to the given events, if any."""
+  web_hook_urls = models.SiteSettings.get().web_hook_urls
+  if web_hook_urls:
+    urls = [u for u in web_hook_urls.split() if u]
+    for url in urls:
+      post_webhook_event.delay(url, event_list)
+
+  for event in event_list:
+    for plugin in plugin_util.get_plugins():
+        plugin.handle_new_event(event)
 
 @task
 def post_webhook_event(hook_url, event_list):

@@ -33,6 +33,7 @@ INSTALLED_APPS = (
     'pykeg.web.kegadmin',
     'pykeg.web.kegweb',
     'pykeg.web.setup_wizard',
+    'pykeg.plugin',
     'gunicorn',
     'icanhaz',
     'registration',
@@ -162,6 +163,9 @@ INTERNAL_IPS = ('127.0.0.1',)
 
 # Set to true if the database admin module should be enabled.
 KEGBOT_ENABLE_ADMIN = True
+
+# Add plugins in local_settings.py
+KEGBOT_PLUGINS = []
 
 ### Celery
 import djcelery
@@ -365,6 +369,11 @@ if DEBUG:
       elif HAVE_PYLIBMC:
         DEBUG_TOOLBAR_PANELS += ('debug_toolbar_memcache.panels.pylibmc.PylibmcPanel',)
 
+# Add all plugins to INSTALLED_APPS in order to pick up their
+# templates.  TODO(mikey): Move into template loader.
+for plugin in KEGBOT_PLUGINS:
+  module = plugin[:plugin.rindex('.')]
+  INSTALLED_APPS += (module,)
 
 ### Statsd
 

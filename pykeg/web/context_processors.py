@@ -33,6 +33,7 @@ def kbsite(request):
       'name': 'guest',
       'image': None,
     },
+    'PLUGINS': getattr(request, 'plugins', {}),
   }
 
   if kbsite:

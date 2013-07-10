@@ -20,7 +20,6 @@ import logging
 
 from pykeg.core import features
 from pykeg.connections.foursquare import tasks as foursquare_tasks
-from pykeg.connections.twitter import tasks as twitter_tasks
 from pykeg.connections.untappd import tasks as untappd_tasks
 from celery.decorators import task
 from celery.utils.log import get_task_logger
@@ -29,12 +28,6 @@ LOGGER = get_task_logger(__name__)
 
 @task
 def handle_new_event(event):
-  if features.use_twitter():
-    LOGGER.info('handle_new_event: dispatching to twitter ..')
-    twitter_tasks.tweet_event(event)
-  else:
-    LOGGER.info('handle_new_event: twitter not enabled, skipping.')
-
   if features.use_foursquare():
     LOGGER.info('handle_new_event: dispatching to foursquare ..')
     foursquare_tasks.checkin_event(event)

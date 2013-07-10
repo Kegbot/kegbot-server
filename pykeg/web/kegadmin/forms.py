@@ -223,9 +223,6 @@ class BeerStyleForm(forms.ModelForm):
       )
   )
 
-class TweetForm(forms.Form):
-  tweet = forms.CharField(max_length=140, required=True)
-
 class FindUserForm(forms.Form):
   username = forms.CharField()
 

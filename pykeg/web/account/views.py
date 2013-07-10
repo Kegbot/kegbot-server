@@ -39,7 +39,6 @@ from pykeg.core import models
 from pykeg.web.kegweb import forms
 
 from pykeg.connections.foursquare import forms as foursquare_forms
-from pykeg.connections.twitter import forms as twitter_forms
 from pykeg.connections.untappd import forms as untappd_forms
 
 @login_required
@@ -59,9 +58,6 @@ def connections(request):
   except sr_twitter_models.TwitterProfile.DoesNotExist:
     pass
   context['twitter_profile'] = twitter_profile
-  context['twitter_settings_form'] = twitter_forms.TwitterSettingsForm()
-  if twitter_profile:
-    context['twitter_settings_form'] = twitter_forms.TwitterSettingsForm(instance=twitter_profile.settings)
 
   foursquare_profile = None
   try:
@@ -108,25 +104,6 @@ def regenerate_api_key(request):
     key, is_new = models.ApiKey.objects.get_or_create(user=request.user)
     key.regenerate()
     key.save()
-  return redirect('kb-account-main')
-
-@login_required
-@require_POST
-def remove_twitter(request):
-  form = twitter_forms.UnlinkTwitterForm(request.POST)
-  if form.is_valid():
-    sr_twitter_models.TwitterProfile.objects.filter(user=request.user).delete()
-  return redirect('kb-account-main')
-
-@login_required
-@require_POST
-def update_twitter_settings(request):
-  user = request.user
-  twitter_profile = sr_twitter_models.TwitterProfile.objects.get(user=user)
-  form = twitter_forms.TwitterSettingsForm(request.POST, instance=twitter_profile.settings)
-  if form.is_valid():
-    form.save()
-    messages.success(request, 'Twitter settings were successfully updated.')
   return redirect('kb-account-main')
 
 @login_required

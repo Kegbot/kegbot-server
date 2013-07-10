@@ -23,7 +23,6 @@ INSTALLED_APPS = (
     'imagekit',
     'pykeg.connections',
     'pykeg.connections.foursquare',
-    'pykeg.connections.twitter',
     'pykeg.connections.untappd',
     'pykeg.contrib.soundserver',
     'pykeg.core',

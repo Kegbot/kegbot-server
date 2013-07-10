@@ -47,9 +47,6 @@ from pykeg.core import logger
 from pykeg.core import models
 from pykeg.connections.foursquare import forms as foursquare_forms
 from pykeg.connections.foursquare import models as foursquare_models
-from pykeg.connections.twitter import models as twitter_models
-from pykeg.connections.twitter import forms as twitter_forms
-from pykeg.connections.twitter import util as twitter_util
 
 from pykeg.web.kegadmin import forms
 
@@ -470,34 +467,6 @@ def connections(request):
   context = RequestContext(request)
   kbsite = request.kbsite
 
-  try:
-    twitter_profile = models.KegbotSite.get().twitter_profile
-  except twitter_models.SiteTwitterProfile.DoesNotExist:
-    twitter_profile = None
-
-  tweet_form = forms.TweetForm()
-  if request.method == 'POST' and 'tweet-form-submit' in request.POST:
-    tweet_form = forms.TweetForm(request.POST)
-    if tweet_form.is_valid():
-      if kbsite.twitter_profile.is_enabled():
-        tweet = tweet_form.cleaned_data['tweet']
-        twitter_util.update_site_status(kbsite, tweet)
-        tweet_form = forms.TweetForm()
-        messages.success(request, 'Tweetz0red!')
-      else:
-        messages.error(request, 'Twitter profile not enabled.')
-
-  if twitter_profile:
-    instance, _ = twitter_models.SiteTwitterSettings.objects.get_or_create(profile=twitter_profile)
-    twitter_settings_form = twitter_forms.SiteTwitterSettingsForm(instance=instance)
-    if request.method == 'POST' and 'twitter-settings-submit' in request.POST:
-      twitter_settings_form = twitter_forms.SiteTwitterSettingsForm(request.POST, instance=instance)
-      if twitter_settings_form.is_valid():
-        twitter_settings_form.save()
-      else:
-        messages.error(request, 'Twitter settings form had errors.')
-    context['twitter_settings_form'] = twitter_settings_form
-
   instance, _ = foursquare_models.SiteFoursquareSettings.objects.get_or_create(site=kbsite)
   foursquare_form = foursquare_forms.SiteFoursquareSettingsForm(instance=instance)
   if request.method == 'POST' and 'foursquare-settings-submit' in request.POST:
@@ -506,8 +475,6 @@ def connections(request):
       foursquare_form.save()
       messages.success(request, 'Foursquare settings updated!')
 
-  context['twitter_profile'] = twitter_profile
-  context['tweet_form'] = tweet_form
   context['foursquare_settings_form'] = foursquare_form
   return render_to_response('kegadmin/connections.html', context_instance=context)
 

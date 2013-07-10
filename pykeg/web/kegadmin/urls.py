@@ -46,11 +46,6 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^plugin/(?P<plugin_name>\w+)/$', 'plugin_settings', name='kegadmin-plugin-settings'),
 )
 
-urlpatterns += patterns('pykeg.connections.twitter.views',
-    url('^redirect/$', 'site_twitter_redirect', name='site_twitter_redirect'),
-    url('^callback/$', 'site_twitter_callback', name='site_twitter_callback'),
-)
-
 from pykeg.plugin import util
 if util.get_plugins():
     urlpatterns += util.get_admin_urls()

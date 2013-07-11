@@ -47,7 +47,7 @@ class Command(NoArgsCommand):
     run(syncdb.Command(), args=['--noinput', '-v', '0'])
     run(migrate.Command(), args=['-v', '0'])
     run(kb_regen_stats.Command())
-    run(collectstatic.Command())
+    run(collectstatic.Command(), args=['--noinput'])
 
     site = models.KegbotSite.get()
     site.epoch = EPOCH
@@ -60,7 +60,7 @@ class Command(NoArgsCommand):
 
     print 'Performing epoch upgrades ...'
     for version in range(installed + 1, EPOCH + 1):
-      fn = getattr(self, 'to_%s', None)
+      fn = getattr(self, 'to_%s' % version, None)
       if fn:
         print '  ~ %s' % version
         fn()

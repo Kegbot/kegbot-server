@@ -25,11 +25,13 @@ from django.core.management.base import NoArgsCommand
 from django.core.management.base import CommandError
 from django.contrib.auth.management.commands import createsuperuser
 from django.db.utils import DatabaseError
+from django.db import connection
 
 from django.contrib.staticfiles.management.commands import collectstatic
 from south.management.commands import migrate
 from south.management.commands import syncdb
 from pykeg.core.management.commands import kb_regen_stats
+from pykeg.core import models
 
 def run(cmd, args=[]):
   cmdname = cmd.__module__.split('.')[-1]
@@ -41,12 +43,31 @@ class Command(NoArgsCommand):
   help = u'Perform post-upgrade tasks.'
 
   def handle(self, **options):
+    self.do_epoch_upgrades()
     run(syncdb.Command(), args=['--noinput', '-v', '0'])
     run(migrate.Command(), args=['-v', '0'])
     run(kb_regen_stats.Command())
     run(collectstatic.Command())
 
-    from pykeg.core import models
-    for site in models.KegbotSite.objects.all():
-      site.epoch = EPOCH
-      site.save()
+    site = models.KegbotSite.get()
+    site.epoch = EPOCH
+    site.save()
+
+  def do_epoch_upgrades(self):
+    installed = models.KegbotSite.get().epoch
+    if installed == EPOCH or not installed:
+      return
+
+    print 'Performing epoch upgrades ...'
+    for version in range(installed + 1, EPOCH + 1):
+      fn = getattr(self, 'to_%s', None)
+      if fn:
+        print '  ~ %s' % version
+        fn()
+      else:
+        print '  ~ %s (no-op)' % version
+
+  def to_101(self):
+    cursor = connection.cursor()
+    cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s',
+        ['twitter'])

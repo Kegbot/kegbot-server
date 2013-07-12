@@ -14,8 +14,6 @@ urlpatterns = patterns('pykeg.web.account.views',
     url(r'^password/$', password_change, name='password_change'),
     url(r'^mugshot/$', 'edit_mugshot', name='account-mugshot'),
     url(r'^regenerate-api-key/$', 'regenerate_api_key', name='regen-api-key'),
-    url(r'^update-foursquare-settings/$', 'update_foursquare_settings', name='update-foursquare-settings'),
-    url(r'^remove-foursquare/$', 'remove_foursquare', name='remove-foursquare'),
     url(r'^plugin/(?P<plugin_name>\w+)/$', 'plugin_settings', name='account-plugin-settings'),
 )
 

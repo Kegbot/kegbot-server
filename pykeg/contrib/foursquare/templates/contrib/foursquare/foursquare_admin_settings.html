@@ -1,0 +1,24 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Foursquare Settings | {{ block.super }}{% endblock %}
+{% block pagetitle %}Foursquare Settings{% endblock %}
+
+{% block kegadmin-main %}
+
+<h4>Settings</h4>
+<div class="well">
+<p class="lead">
+  Site-wide settings linking this Kegbot to Foursquare. 
+</p>
+<form method="post" action="">
+   {% csrf_token %}
+   {{ settings_form|crispy }}
+    <button type="submit" class="btn btn-success" name="submit-settings">
+      <i class="icon-edit icon-white"></i> Update Settings</button>
+    </button>
+</form>
+</div>
+
+{% endblock %}

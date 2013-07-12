@@ -33,8 +33,6 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
 
     url(r'^backup-restore/$', 'backup_restore', name='kegadmin-backup-restore'),
     url(r'^backup-restore/dump/$', 'generate_backup', name='kegadmin-get-backup'),
-    url(r'^connections/', include('pykeg.connections.urls')),
-    url(r'^edit-connections/$', 'connections', name='kegadmin-connections'),
     url(r'^logs/$', 'logs', name='kegadmin-logs'),
     url(r'^autocomplete/beer/$', 'autocomplete_beer_type',
       name='kegadmin-autocomplete-beer'),

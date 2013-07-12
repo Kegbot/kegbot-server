@@ -1,6 +1,5 @@
 {% extends "account/base.html" %}
 {% load kegweblib %}
-{% load foursquare %}
 {% load untappd %}
 {% load crispy_forms_tags %}
 
@@ -97,36 +96,5 @@
 </div> <!-- /row -->
 {% endif %}
 
-{% if USE_FOURSQUARE %}
-<div class="row">
-  <div class="span11">
-    <h2>Foursquare</h2>
-    <div class="well">
-    {% if foursquare_profile %}
-      <h4>Settings</h4>
-      <form method="post" action="{% url "update-foursquare-settings" %}"
-          style="display:inline;">
-      {% csrf_token %}
-      {{ foursquare_settings_form|crispy }}
-      <button type="submit" class="btn btn-success btn-small" name="link">
-        <i class="icon-repeat icon-white"></i> Update Settings</button>
-      </button>
-      </form>
-
-      <form method="post"
-          style="display:inline;"
-          action="{% url "remove-foursquare" %}">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-danger btn-small" name="remove">
-        <i class="icon-remove icon-white"></i> Remove Account</button>
-      </button>
-      </form>
-    {% else %}
-      {% foursquare_button %}
-    {% endif %}
-    </div> <!-- /well -->
-  </div> <!-- /span11 -->
-</div> <!-- row -->
-{% endif %}
 
 {% endblock %}

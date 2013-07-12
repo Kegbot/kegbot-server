@@ -19,7 +19,6 @@
 import logging
 
 from pykeg.core import features
-from pykeg.connections.foursquare import tasks as foursquare_tasks
 from pykeg.connections.untappd import tasks as untappd_tasks
 from celery.decorators import task
 from celery.utils.log import get_task_logger
@@ -28,12 +27,6 @@ LOGGER = get_task_logger(__name__)
 
 @task
 def handle_new_event(event):
-  if features.use_foursquare():
-    LOGGER.info('handle_new_event: dispatching to foursquare ..')
-    foursquare_tasks.checkin_event(event)
-  else:
-    LOGGER.info('handle_new_event: foursquare not enabled, skipping.')
-
   if features.use_untappd():
     LOGGER.info('handle_new_event: dispatching to untappd ..')
     untappd_tasks.checkin_event(event)
@@ -42,9 +35,4 @@ def handle_new_event(event):
 
 @task
 def handle_new_picture(picture_id):
-  if features.use_foursquare():
-    LOGGER.info('handle_new_picture: dispatching to foursquare ..')
-    foursquare_tasks.handle_new_picture(picture_id)
-  else:
-    LOGGER.info('handle_new_picture: foursquare not enabled, skipping.')
-
+  pass

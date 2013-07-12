@@ -18,7 +18,6 @@
 
 from pykeg.core import models as core_models
 from pykeg.connections import common
-from pykeg.connections.foursquare import models as foursquare_models
 from django.contrib.sites.models import Site
 from pykeg.connections.untappd import models
 
@@ -119,13 +118,6 @@ def do_checkin(event):
     logger.info('No access token for user %s.' % drink.user)
     return
 
-  try:
-    site_4sq_settings = foursquare_models.SiteFoursquareSettings.objects.get(site=event.site)
-    #venue_id = site_4sq_settings.venue_id
-    venue_id = ''
-  except foursquare_models.SiteFoursquareSettings.DoesNotExist:
-    venue_id = ''
-
   kbvars = _get_vars(event)
 
   shout = DEFAULT_CHECKIN_TEMPLATE % kbvars
@@ -142,9 +134,6 @@ def do_checkin(event):
     'client_secret': settings.UNTAPPD_CLIENT_SECRET,
     'timezone': settings.TIME_ZONE
   }
-
-  if venue_id:
-    params['foursquare_id'] = venue_id
 
   params = urlencode(params)
   req = urllib2.Request("http://api.untappd.com/v4/checkin/add?" + params, params)

@@ -45,8 +45,6 @@ from pykeg.core import backend
 from pykeg.core import backup
 from pykeg.core import logger
 from pykeg.core import models
-from pykeg.connections.foursquare import forms as foursquare_forms
-from pykeg.connections.foursquare import models as foursquare_models
 
 from pykeg.web.kegadmin import forms
 
@@ -461,22 +459,6 @@ def beer_style_detail(request, style_id):
   context['style'] = style
   context['form'] = form
   return render_to_response('kegadmin/beer_style_detail.html', context_instance=context)
-
-@staff_member_required
-def connections(request):
-  context = RequestContext(request)
-  kbsite = request.kbsite
-
-  instance, _ = foursquare_models.SiteFoursquareSettings.objects.get_or_create(site=kbsite)
-  foursquare_form = foursquare_forms.SiteFoursquareSettingsForm(instance=instance)
-  if request.method == 'POST' and 'foursquare-settings-submit' in request.POST:
-    foursquare_form = foursquare_forms.SiteFoursquareSettingsForm(request.POST, instance=instance)
-    if foursquare_form.is_valid():
-      foursquare_form.save()
-      messages.success(request, 'Foursquare settings updated!')
-
-  context['foursquare_settings_form'] = foursquare_form
-  return render_to_response('kegadmin/connections.html', context_instance=context)
 
 @staff_member_required
 def autocomplete_beer_type(request):

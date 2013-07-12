@@ -69,5 +69,8 @@ class Command(NoArgsCommand):
 
   def to_101(self):
     cursor = connection.cursor()
-    cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s',
-        ['twitter'])
+    cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['twitter'])
+
+  def to_102(self):
+    cursor = connection.cursor()
+    cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['foursquare'])

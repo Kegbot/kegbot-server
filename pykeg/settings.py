@@ -22,7 +22,6 @@ INSTALLED_APPS = (
     'bootstrap-pagination',
     'imagekit',
     'pykeg.connections',
-    'pykeg.connections.foursquare',
     'pykeg.connections.untappd',
     'pykeg.contrib.soundserver',
     'pykeg.core',
@@ -37,9 +36,7 @@ INSTALLED_APPS = (
     'icanhaz',
     'registration',
     'socialregistration',
-    'socialregistration.contrib.twitter',
     'socialregistration.contrib.facebook',
-    'socialregistration.contrib.foursquare',
     'south',
     'django_nose', # must be after south
 )

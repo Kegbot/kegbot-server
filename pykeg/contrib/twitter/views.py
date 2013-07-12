@@ -36,10 +36,6 @@ class TwitterClient(Twitter):
   def get_callback_url(self):
     return self.callback_url
 
-  def set_credentials(self, consumer_key, consumer_secret):
-    self.api_key = consumer_key
-    self.secret_key = consumer_secret
-
 
 @staff_member_required
 def admin_settings(request, plugin):

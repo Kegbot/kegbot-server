@@ -7,6 +7,7 @@
 
 {% block kegadmin-main %}
 
+{% if not EMBEDDED %}
 <h4>Twitter API Keys</h4>
 <div class="well">
 <p class="lead">
@@ -22,6 +23,7 @@
     </button>
 </form>
 </div>
+{% endif %}
 
 {% if have_credentials %}
 {% if site_profile %}

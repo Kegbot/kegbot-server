@@ -18,8 +18,10 @@
 
 """Twitter plugin for Kegbot."""
 
+from django.conf import settings
 from pykeg.plugin import plugin
 from pykeg.plugin import util
+
 import tweepy
 
 from kegbot.util import kbjson
@@ -150,6 +152,11 @@ class TwitterPlugin(plugin.Plugin):
         self.datastore.delete('user_profile:%s' % user.id)
 
     def get_credentials(self):
+        if getattr(settings, 'EMBEDDED', False):
+            return (
+                getattr(settings, 'TWITTER_CONSUMER_KEY', ''),
+                getattr(settings, 'TWITTER_CONSUMER_SECRET_KEY', ''),
+            )
         return self.datastore.get(KEY_CONSUMER_KEY), self.datastore.get(KEY_CONSUMER_SECRET)
 
     def get_api(self):

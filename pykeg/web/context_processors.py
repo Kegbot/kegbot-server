@@ -21,6 +21,7 @@ def kbsite(request):
 
   ret = {
     'DEBUG': settings.DEBUG,
+    'EMBEDDED': getattr(settings, 'EMBEDDED', False),
     'EPOCH': pykeg.EPOCH,
     'VERSION': pykeg.__version__,
     'HAVE_SESSIONS': False,

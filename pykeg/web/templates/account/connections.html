@@ -8,65 +8,10 @@
 
 {% block kb-account-main %}
 
-{% if not USE_TWITTER and not USE_FOURSQUARE and not USE_UNTAPPD %}
+{% if not USE_UNTAPPD %}
 <div class="alert alert-warning">
   No connections are available.
 </div>
-{% endif %}
-
-{% if USE_TWITTER %}
-<div class="row">
-  <div class="span11">
-    <h2>Twitter</h2>
-    <div class="well">
-      {% if twitter_profile %}
-
-      <h4>Settings</h4>
-      <p>
-        <small>
-        Current account: <strong><a target="_blank"
-          href="http://twitter.com/{{twitter_profile.settings.twitter_name}}">@{{twitter_profile.settings.twitter_name}}</a></strong>
-        </small>
-      </p>
-
-      <form method="post" action="{% url "update-twitter-settings" %}"
-          style="display:inline;">
-      {% csrf_token %}
-      {{ twitter_settings_form|crispy }}
-      <button type="submit" class="btn btn-success btn-small" name="link">
-        <i class="icon-ok icon-white"></i> Update Settings</button>
-      </button>
-      </form>
-
-      <form class="connect-button" name="login" method="post"
-          style="display:inline;"
-          action="{% url "socialregistration:twitter:redirect" %}">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-info btn-small" name="link">
-        <i class="icon-repeat icon-white"></i> Re-link Account</button>
-      </button>
-      </form>
-
-      <form method="post"
-          style="display:inline;"
-          action="{% url "remove-twitter" %}">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-danger btn-small" name="remove">
-        <i class="icon-remove icon-white"></i> Remove Account</button>
-      </button>
-      </form>
-
-      {% else %}
-      <form class="connect-button" name="login" method="post" action="{% url "socialregistration:twitter:redirect" %}">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-info btn-small" name="submit">
-        <i class="icon-share-alt icon-white"></i> Link Account</button>
-      </button>
-      </form>
-      {% endif %}
-    </div> <!-- /well -->
-  </div> <!-- /span11 -->
-</div> <!-- /row -->
 {% endif %}
 
 {% if USE_UNTAPPD %}

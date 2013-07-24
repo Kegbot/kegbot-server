@@ -197,7 +197,7 @@ class TwitterPlugin(plugin.Plugin):
             tweet = self._compose_tweet(event, template, append_url)
 
         elif kind == 'session_joined':
-            if not settings.tweet_session_events:
+            if not settings.get('tweet_session_events'):
                 self.logger.info('Skipping system tweet for session join event %s: disabled by settings.' % event.id)
                 return
             template = settings.get('session_joined_template')

@@ -21,8 +21,6 @@ INSTALLED_APPS = (
     'djkombu',
     'bootstrap-pagination',
     'imagekit',
-    'pykeg.connections',
-    'pykeg.connections.untappd',
     'pykeg.contrib.soundserver',
     'pykeg.core',
     'pykeg.web',

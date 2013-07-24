@@ -25,8 +25,6 @@ from pykeg.core import models
 from pykeg.proto import protolib
 from pykeg.plugin import util as plugin_util
 
-from pykeg.connections import tasks as connection_tasks
-
 from urllib import urlencode
 import urllib2
 
@@ -60,4 +58,4 @@ def post_webhook_event(hook_url, event_list):
 
 @task
 def handle_new_picture(picture_id):
-  connection_tasks.handle_new_picture.delay(picture_id)
+  pass  # TODO(mikey): plugin support

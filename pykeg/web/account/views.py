@@ -31,32 +31,14 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.views import password_change as password_change_orig
 from django.contrib.auth.views import password_change_done as password_change_done_orig
 
-from pykeg.connections.untappd import models as untappd_models
-
 from pykeg.core import models
 from pykeg.web.kegweb import forms
-
-from pykeg.connections.untappd import forms as untappd_forms
 
 @login_required
 def account_main(request):
   context = RequestContext(request)
   context['user'] = request.user
   return render_to_response('account/index.html', context_instance=context)
-
-@login_required
-def connections(request):
-  user = request.user
-  context = RequestContext(request)
-
-  untappd_profile = None
-  try:
-    untappd_profile = untappd_models.UntappdProfile.objects.get(user=user)
-  except untappd_models.UntappdProfile.DoesNotExist:
-    pass
-  context['untappd_profile'] = untappd_profile
-
-  return render_to_response('account/connections.html', context_instance=context)
 
 @login_required
 def edit_mugshot(request):
@@ -85,14 +67,6 @@ def regenerate_api_key(request):
     key.regenerate()
     key.save()
   return redirect('kb-account-main')
-
-@login_required
-@require_POST
-def remove_untappd(request):
-  form = untappd_forms.UnlinkUntappdForm(request.POST)
-  if form.is_valid():
-    untappd_models.UntappdProfile.objects.get(user=request.user).delete()
-  return redirect('account-connections')
 
 def password_change(request, *args, **kwargs):
   kwargs['template_name'] = 'account/password_change.html'

@@ -11,9 +11,6 @@ def enabled_features(request):
   # visible/being used.
   ret = {}
   ret['USE_FACEBOOK'] = features.use_facebook()
-  ret['USE_FOURSQUARE'] = features.use_foursquare()
-  ret['USE_TWITTER'] = features.use_twitter()
-  ret['USE_UNTAPPD'] = features.use_untappd()
   return ret
 
 def kbsite(request):

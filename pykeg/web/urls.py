@@ -76,11 +76,6 @@ if features.use_facebook():
       (r'^fb/', include('pykeg.web.contrib.facebook.urls')),
   )
 
-if features.use_untappd():
-  urlpatterns += patterns('',
-      url(r'^untappd/', include('pykeg.connections.untappd.urls', namespace='untappd')),
-  )
-
 if settings.DEBUG:
   urlpatterns += staticfiles_urlpatterns()
   urlpatterns += patterns('',

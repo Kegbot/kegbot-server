@@ -33,6 +33,6 @@ Upgrade procedure
 
     (kb) $ kegbot kb_upgrade
 
-4. Restart the Kegbot web server.
+4. Restart the Kegbot web server and Celery.
 
 

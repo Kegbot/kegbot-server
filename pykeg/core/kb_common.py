@@ -6,6 +6,9 @@ LOCAL_SETTINGS_SEARCH_DIRS = (
 
 ### Drink-related constants
 
+# SF800 default (5400 ticks/Liter == 5.4 ticks/mL == 1/5.4 mL/tick)
+ML_PER_TICK = (1/5.4)
+
 # Don't record teeny drinks
 MIN_VOLUME_TO_RECORD = 10
 

@@ -11,10 +11,10 @@ Version 0.9.12 (2013-08-01)
 * Site timezone can be changed in the admin panel.
 * Site hostname should be specified in the admin panel.
 * Plugins: Twitter, Foursquare, and Untappd support have been moved into
-a new plugin model.  These features must be re-activated through the Kegadmin
-and Account web interfaces; previous configuration will not be migrated.
+  a new plugin model.  These features must be re-activated through the Kegadmin
+  and Account web interfaces; previous configuration will not be migrated.
 * The default SF800 calibration factor has been changed to ``0.185185185185``. You
-may need to adjust your taps manually.
+  may need to adjust your taps manually.
 
 
 Version 0.9.11 (2013-07-01)
@@ -28,7 +28,7 @@ Version 0.9.11 (2013-07-01)
 * New generational caching mechanism; many API responses benefit.
 * Improved automatic support for django-debug-toolbar.
 * Keg full and served volume is now persistently maintained (rather than dervied
-from drink logs)
+  from drink logs)
 
 
 Version 0.9.10 (2013-05-27)

@@ -159,7 +159,11 @@ INTERNAL_IPS = ('127.0.0.1',)
 KEGBOT_ENABLE_ADMIN = True
 
 # Add plugins in local_settings.py
-KEGBOT_PLUGINS = []
+KEGBOT_PLUGINS = [
+    'pykeg.contrib.twitter.plugin.TwitterPlugin',
+    'pykeg.contrib.foursquare.plugin.FoursquarePlugin',
+    'pykeg.contrib.untappd.plugin.UntappdPlugin',
+]
 
 ### Celery
 import djcelery

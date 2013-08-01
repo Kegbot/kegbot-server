@@ -74,3 +74,7 @@ class Command(NoArgsCommand):
   def to_102(self):
     cursor = connection.cursor()
     cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['foursquare'])
+
+  def to_103(self):
+    cursor = connection.cursor()
+    cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['untappd'])

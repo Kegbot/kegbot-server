@@ -2,7 +2,7 @@
 
 This is the main code repository for the Kegbot Server package.
 (Or it might be a fork.  The official repository lives here:
-https://github.com/Kegbot/kegbot).
+https://github.com/Kegbot/kegbot-server).
 
 ## Quick start
 
@@ -42,7 +42,7 @@ can now be found in a new repository: https://github.com/Kegbot/kegboard/
 All code is offered under the **GPLv2** license, unless otherwise noted.
 Please see ``LICENSE.txt`` for the full license.
 
-All code and documentation are **Copyright 2003-2012 Mike Wakerly**,
+All code and documentation are **Copyright 2003-2013 Mike Wakerly**,
 unless otherwise noted.
 
 

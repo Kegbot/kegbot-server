@@ -16,9 +16,9 @@ urlpatterns = patterns('pykeg.web.account.views',
 )
 
 if features.use_facebook():
-  urlpatterns += patterns('',
-      url(r'fb-settings/$', 'pykeg.web.contrib.facebook.views.account_settings', name='fb-account-settings'),
-  )
+    urlpatterns += patterns('',
+        url(r'fb-settings/$', 'pykeg.web.contrib.facebook.views.account_settings', name='fb-account-settings'),
+    )
 
 from pykeg.plugin import util
 urlpatterns += util.get_account_urls()

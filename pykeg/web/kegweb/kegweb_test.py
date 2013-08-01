@@ -60,6 +60,3 @@ class KegwebTestCase(TransactionTestCase):
         d = b.RecordDrink('kegboard.flow0', ticks=123, shout='_UNITTEST_')
         response = self.client.get(d.get_absolute_url())
         self.assertContains(response, '<p>_UNITTEST_</p>', status_code=200)
-
-
-

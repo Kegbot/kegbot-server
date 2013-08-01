@@ -19,21 +19,19 @@
 import sys
 
 def progbar(title, pos, total, width=40):
-  """Prints a progress bar to stdout.
+    """Prints a progress bar to stdout.
 
-  Args
-    title: title to show next to progress bar
-    pos: current position (integer)
-    total: total positions (integer)
-    width: width of the progres bar, in characters
-  """
-  if not total:
-    chars = width
-  else:
-    chars = int((float(pos)/total)*width)
-  rem = width - chars
-  inner = '+'*chars + ' '*rem
-  sys.stdout.write('%-30s  [%s] %i/%i\r' % (title, inner, pos, total))
-  sys.stdout.flush()
-
-
+    Args
+      title: title to show next to progress bar
+      pos: current position (integer)
+      total: total positions (integer)
+      width: width of the progres bar, in characters
+    """
+    if not total:
+        chars = width
+    else:
+        chars = int((float(pos)/total)*width)
+    rem = width - chars
+    inner = '+'*chars + ' '*rem
+    sys.stdout.write('%-30s  [%s] %i/%i\r' % (title, inner, pos, total))
+    sys.stdout.flush()

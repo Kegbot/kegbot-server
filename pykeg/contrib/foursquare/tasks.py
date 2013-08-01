@@ -48,5 +48,5 @@ def _get_last_checkin(client):
     result = client.users.checkins(params={'limit': 1})
     items = result.get('checkins', {}).get('items', [])
     if items:
-       return items[0]
+        return items[0]
     return None

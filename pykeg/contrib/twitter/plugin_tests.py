@@ -69,4 +69,4 @@ class TwitterPluginTestCase(TestCase):
         self.plugin.save_site_profile('1', '2', '3', '4')
 
 if __name__ == '__main__':
-  unittest.main()
+    unittest.main()

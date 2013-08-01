@@ -25,4 +25,4 @@ class PluginData(models.Model):
     value = models.TextField()
 
     class Meta:
-      unique_together = ('plugin_name', 'key')
+        unique_together = ('plugin_name', 'key')

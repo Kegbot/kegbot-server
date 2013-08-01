@@ -21,9 +21,9 @@ from pykeg.core import kb_common
 
 
 class SessionManager(models.Manager):
-  """Manager for session models."""
-  def valid(self):
-    return self.filter(volume_ml__gt=kb_common.MIN_SESSION_VOLUME_DISPLAY_ML)
+    """Manager for session models."""
+    def valid(self):
+        return self.filter(volume_ml__gt=kb_common.MIN_SESSION_VOLUME_DISPLAY_ML)
 
 class SystemEventManager(models.Manager):
     def timeline(self):

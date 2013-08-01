@@ -39,4 +39,3 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
           name='kb-session-detail'),
 
 )
-

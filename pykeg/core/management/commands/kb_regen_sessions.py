@@ -24,60 +24,60 @@ from pykeg.core import models
 from pykeg.core.management.commands.common import progbar
 
 class Command(NoArgsCommand):
-  help = u'Regenerate all cached stats.'
-  args = '<none>'
+    help = u'Regenerate all cached stats.'
+    args = '<none>'
 
-  def handle(self, **options):
-    drinks = models.Drink.objects.all()
+    def handle(self, **options):
+        drinks = models.Drink.objects.all()
 
-    pos = 0
-    count = drinks.count()
-    for d in drinks:
-      pos += 1
-      progbar('clear drink sessions', pos, count)
-      d.session = None
-      d.save()
-    print ''
+        pos = 0
+        count = drinks.count()
+        for d in drinks:
+            pos += 1
+            progbar('clear drink sessions', pos, count)
+            d.session = None
+            d.save()
+        print ''
 
-    pics = models.PourPicture.objects.all()
-    count = pics.count()
-    pos = 0
-    for p in pics:
-      pos += 1
-      progbar('clear image sessions', pos, count)
-      p.session = None
-      p.save()
-    print ''
+        pics = models.PourPicture.objects.all()
+        count = pics.count()
+        pos = 0
+        for p in pics:
+            pos += 1
+            progbar('clear image sessions', pos, count)
+            p.session = None
+            p.save()
+        print ''
 
-    print 'deleting old sessions..',
-    try:
-      with connection.constraint_checks_disabled():
-        cursor = connection.cursor()
-        for table in ('core_drinkingsession', 'core_kegsessionchunk',
-          'core_usersessionchunk', 'core_sessionchunk'):
-          cursor.execute('TRUNCATE TABLE `%s`' % table)
-        print 'truncate successful'
-    except Exception, e:
-      models.DrinkingSession.objects.all().delete()
-      print 'orm delete successful'
+        print 'deleting old sessions..',
+        try:
+            with connection.constraint_checks_disabled():
+                cursor = connection.cursor()
+                for table in ('core_drinkingsession', 'core_kegsessionchunk',
+                  'core_usersessionchunk', 'core_sessionchunk'):
+                    cursor.execute('TRUNCATE TABLE `%s`' % table)
+                print 'truncate successful'
+        except Exception, e:
+            models.DrinkingSession.objects.all().delete()
+            print 'orm delete successful'
 
-    pos = 0
-    count = drinks.count()
-    for d in drinks.order_by('time'):
-      pos += 1
-      progbar('calc new sessions', pos, count)
-      sess = models.DrinkingSession.AssignSessionForDrink(d)
-    print ''
+        pos = 0
+        count = drinks.count()
+        for d in drinks.order_by('time'):
+            pos += 1
+            progbar('calc new sessions', pos, count)
+            sess = models.DrinkingSession.AssignSessionForDrink(d)
+        print ''
 
-    pics = models.PourPicture.objects.all()
-    count = pics.count()
-    pos = 0
-    for p in pics:
-      pos += 1
-      progbar('set image sessions', pos, count)
-      if p.drink:
-        p.session = p.drink.session
-        p.save()
-    print ''
+        pics = models.PourPicture.objects.all()
+        count = pics.count()
+        pos = 0
+        for p in pics:
+            pos += 1
+            progbar('set image sessions', pos, count)
+            if p.drink:
+                p.session = p.drink.session
+                p.save()
+        print ''
 
-    print 'done!'
+        print 'done!'

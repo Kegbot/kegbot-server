@@ -26,27 +26,27 @@ from pykeg.core import models
 
 
 class Command(BaseCommand):
-  help = u'Deletes any old temperature sensor records'
-  args = '<none>'
+    help = u'Deletes any old temperature sensor records'
+    args = '<none>'
 
-  def handle(self, *args, **options):
-    if len(args) != 0:
-      raise CommandError('No arguments required')
+    def handle(self, *args, **options):
+        if len(args) != 0:
+            raise CommandError('No arguments required')
 
-    now = timezone.now()
+        now = timezone.now()
 
-    # keep at least the most recent 24 hours
-    keep_time = now - datetime.timedelta(hours=24)
+        # keep at least the most recent 24 hours
+        keep_time = now - datetime.timedelta(hours=24)
 
-    # round down to the start of the day
-    keep_date = datetime.datetime(year=keep_time.year, month=keep_time.month,
-        day=keep_time.day)
+        # round down to the start of the day
+        keep_date = datetime.datetime(year=keep_time.year, month=keep_time.month,
+            day=keep_time.day)
 
-    print "Deleting entries older than %s" % keep_date
+        print "Deleting entries older than %s" % keep_date
 
-    for sensor in models.ThermoSensor.objects.all():
-      old_entries = sensor.thermolog_set.filter(time__lt=keep_date).order_by('time')
-      print "Sensor: %s" % sensor
-      print "Deleting %s entries ..." % (old_entries.count())
-      old_entries.delete()
-      print ""
+        for sensor in models.ThermoSensor.objects.all():
+            old_entries = sensor.thermolog_set.filter(time__lt=keep_date).order_by('time')
+            print "Sensor: %s" % sensor
+            print "Deleting %s entries ..." % (old_entries.count())
+            old_entries.delete()
+            print ""

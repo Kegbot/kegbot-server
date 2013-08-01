@@ -42,49 +42,49 @@ from kegbot.util import kbjson
 from django.db import models
 
 class JSONDict(dict):
-  """
-  Hack so repr() called by dumpdata will output JSON instead of
-  Python formatted data.  This way fixtures will work!
-  """
-  def __repr__(self):
-    return kbjson.dumps(self)
+    """
+    Hack so repr() called by dumpdata will output JSON instead of
+    Python formatted data.  This way fixtures will work!
+    """
+    def __repr__(self):
+        return kbjson.dumps(self)
 
 class JSONField(models.TextField):
-  """JSONField is a generic textfield that neatly serializes/unserializes
-  JSON objects seamlessly.  Main thingy must be a dict object."""
+    """JSONField is a generic textfield that neatly serializes/unserializes
+    JSON objects seamlessly.  Main thingy must be a dict object."""
 
-  # Used so to_python() is called
-  __metaclass__ = models.SubfieldBase
+    # Used so to_python() is called
+    __metaclass__ = models.SubfieldBase
 
-  def __init__(self, *args, **kwargs):
-    if 'default' not in kwargs:
-      kwargs['default'] = '{}'
-    models.TextField.__init__(self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        if 'default' not in kwargs:
+            kwargs['default'] = '{}'
+        models.TextField.__init__(self, *args, **kwargs)
 
-  def to_python(self, value):
-    """Convert our string value to JSON after we load it from the DB"""
-    if not value:
-      return {}
-    elif isinstance(value, basestring):
-      res = kbjson.loads(value)
-      assert isinstance(res, dict)
-      return JSONDict(**res)
-    else:
-      return value
+    def to_python(self, value):
+        """Convert our string value to JSON after we load it from the DB"""
+        if not value:
+            return {}
+        elif isinstance(value, basestring):
+            res = kbjson.loads(value)
+            assert isinstance(res, dict)
+            return JSONDict(**res)
+        else:
+            return value
 
-  def get_db_prep_save(self, value, connection):
-    """Convert our JSON object to a string before we save"""
-    if not value:
-      return super(JSONField, self).get_db_prep_save("", connection=connection)
-    else:
-      return super(JSONField, self).get_db_prep_save(kbjson.dumps(value),
-          connection=connection)
+    def get_db_prep_save(self, value, connection):
+        """Convert our JSON object to a string before we save"""
+        if not value:
+            return super(JSONField, self).get_db_prep_save("", connection=connection)
+        else:
+            return super(JSONField, self).get_db_prep_save(kbjson.dumps(value),
+                connection=connection)
 
 try:
-  from south.modelsinspector import add_introspection_rules
+    from south.modelsinspector import add_introspection_rules
 except ImportError:
-  pass
+    pass
 else:
-  add_introspection_rules([
-    ([JSONField], [], {}),
-    ], ["^pykeg\.core\.jsonfield\.JSONField"])
+    add_introspection_rules([
+      ([JSONField], [], {}),
+      ], ["^pykeg\.core\.jsonfield\.JSONField"])

@@ -36,55 +36,55 @@ from pykeg.web.kegweb import forms
 
 @login_required
 def account_main(request):
-  context = RequestContext(request)
-  context['user'] = request.user
-  return render_to_response('account/index.html', context_instance=context)
+    context = RequestContext(request)
+    context['user'] = request.user
+    return render_to_response('account/index.html', context_instance=context)
 
 @login_required
 def edit_mugshot(request):
-  context = RequestContext(request)
-  context['mugshot_form'] = forms.MugshotForm()
-  if request.method == 'POST':
-    form = forms.MugshotForm(request.POST, request.FILES)
-    context['mugshot_form'] = form
-    if form.is_valid():
-      pic = models.Picture.objects.create()
-      image = request.FILES['new_mugshot']
-      pic.image.save(image.name, image)
-      pic.save()
+    context = RequestContext(request)
+    context['mugshot_form'] = forms.MugshotForm()
+    if request.method == 'POST':
+        form = forms.MugshotForm(request.POST, request.FILES)
+        context['mugshot_form'] = form
+        if form.is_valid():
+            pic = models.Picture.objects.create()
+            image = request.FILES['new_mugshot']
+            pic.image.save(image.name, image)
+            pic.save()
 
-      profile = request.user.get_profile()
-      profile.mugshot = pic
-      profile.save()
-  return render_to_response('account/mugshot.html', context_instance=context)
+            profile = request.user.get_profile()
+            profile.mugshot = pic
+            profile.save()
+    return render_to_response('account/mugshot.html', context_instance=context)
 
 @login_required
 @require_POST
 def regenerate_api_key(request):
-  form = forms.RegenerateApiKeyForm(request.POST)
-  if form.is_valid():
-    key, is_new = models.ApiKey.objects.get_or_create(user=request.user)
-    key.regenerate()
-    key.save()
-  return redirect('kb-account-main')
+    form = forms.RegenerateApiKeyForm(request.POST)
+    if form.is_valid():
+        key, is_new = models.ApiKey.objects.get_or_create(user=request.user)
+        key.regenerate()
+        key.save()
+    return redirect('kb-account-main')
 
 def password_change(request, *args, **kwargs):
-  kwargs['template_name'] = 'account/password_change.html'
-  kwargs['post_change_redirect'] = reverse('password_change_done')
-  return password_change_orig(request, *args, **kwargs)
+    kwargs['template_name'] = 'account/password_change.html'
+    kwargs['post_change_redirect'] = reverse('password_change_done')
+    return password_change_orig(request, *args, **kwargs)
 
 def password_change_done(request):
-  return password_change_done_orig(request, 'account/password_change_done.html')
+    return password_change_done_orig(request, 'account/password_change_done.html')
 
 @login_required
 def plugin_settings(request, plugin_name):
-  context = RequestContext(request)
-  plugin = request.plugins.get(plugin_name, None)
-  if not plugin:
-    raise Http404('Plugin "%s" not loaded' % plugin_name)
+    context = RequestContext(request)
+    plugin = request.plugins.get(plugin_name, None)
+    if not plugin:
+        raise Http404('Plugin "%s" not loaded' % plugin_name)
 
-  view = plugin.get_user_settings_view()
-  if not view:
-    raise Http404('No user settings for this plugin')
+    view = plugin.get_user_settings_view()
+    if not view:
+        raise Http404('No user settings for this plugin')
 
-  return view(request, plugin)
+    return view(request, plugin)

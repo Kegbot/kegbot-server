@@ -49,7 +49,7 @@ is_reserved_js_word = frozenset([
 
     # potentially reserved in a future version of the ES5 standard
     # 'let', 'yield'
-    
+
     ]).__contains__
 
 # ------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ def is_valid_javascript_identifier(identifier, escape=r'\u', ucd_cat=category):
             except Exception:
                 return False
             add_char(segment[4:])
-            
+
         identifier = u''.join(new)
 
     if is_reserved_js_word(identifier):

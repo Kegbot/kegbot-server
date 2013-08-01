@@ -31,31 +31,31 @@ import urllib2
 from celery.decorators import task
 
 def schedule_tasks(event_list):
-  """Synchronously schedules tasks related to the given events, if any."""
-  web_hook_urls = models.SiteSettings.get().web_hook_urls
-  if web_hook_urls:
-    urls = [u for u in web_hook_urls.split() if u]
-    for url in urls:
-      post_webhook_event.delay(url, event_list)
+    """Synchronously schedules tasks related to the given events, if any."""
+    web_hook_urls = models.SiteSettings.get().web_hook_urls
+    if web_hook_urls:
+        urls = [u for u in web_hook_urls.split() if u]
+        for url in urls:
+            post_webhook_event.delay(url, event_list)
 
-  for event in event_list:
-    for plugin in plugin_util.get_plugins():
-        plugin.handle_new_event(event)
+    for event in event_list:
+        for plugin in plugin_util.get_plugins():
+            plugin.handle_new_event(event)
 
 @task
 def post_webhook_event(hook_url, event_list):
-  post_data = kbjson.dumps({'events': [protolib.ToDict(e) for e in event_list]})
-  post_data = urlencode({'payload': post_data})
-  opener = urllib2.build_opener()
-  opener.addheaders = [
-    ('User-agent', 'Kegbot/%s' % util.get_version('kegbot')),
-  ]
-  try:
-    opener.open(hook_url, data=post_data, timeout=5)
-    return True
-  except urllib2.URLError:
-    return False
+    post_data = kbjson.dumps({'events': [protolib.ToDict(e) for e in event_list]})
+    post_data = urlencode({'payload': post_data})
+    opener = urllib2.build_opener()
+    opener.addheaders = [
+      ('User-agent', 'Kegbot/%s' % util.get_version('kegbot')),
+    ]
+    try:
+        opener.open(hook_url, data=post_data, timeout=5)
+        return True
+    except urllib2.URLError:
+        return False
 
 @task
 def handle_new_picture(picture_id):
-  pass  # TODO(mikey): plugin support
+    pass  # TODO(mikey): plugin support

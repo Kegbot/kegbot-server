@@ -34,47 +34,47 @@ from pykeg.core.management.commands import kb_regen_stats
 from pykeg.core import models
 
 def run(cmd, args=[]):
-  cmdname = cmd.__module__.split('.')[-1]
-  arg_str = ' '.join('%s' % a for a in args)
-  print '--- Running command: %s %s' % (cmdname, arg_str)
-  cmd.run_from_argv([sys.argv[0], cmdname] + args)
+    cmdname = cmd.__module__.split('.')[-1]
+    arg_str = ' '.join('%s' % a for a in args)
+    print '--- Running command: %s %s' % (cmdname, arg_str)
+    cmd.run_from_argv([sys.argv[0], cmdname] + args)
 
 class Command(NoArgsCommand):
-  help = u'Perform post-upgrade tasks.'
+    help = u'Perform post-upgrade tasks.'
 
-  def handle(self, **options):
-    self.do_epoch_upgrades()
-    run(syncdb.Command(), args=['--noinput', '-v', '0'])
-    run(migrate.Command(), args=['-v', '0'])
-    run(kb_regen_stats.Command())
-    run(collectstatic.Command(), args=['--noinput'])
+    def handle(self, **options):
+        self.do_epoch_upgrades()
+        run(syncdb.Command(), args=['--noinput', '-v', '0'])
+        run(migrate.Command(), args=['-v', '0'])
+        run(kb_regen_stats.Command())
+        run(collectstatic.Command(), args=['--noinput'])
 
-    site = models.KegbotSite.get()
-    site.epoch = EPOCH
-    site.save()
+        site = models.KegbotSite.get()
+        site.epoch = EPOCH
+        site.save()
 
-  def do_epoch_upgrades(self):
-    installed = models.KegbotSite.get().epoch
-    if installed == EPOCH or not installed:
-      return
+    def do_epoch_upgrades(self):
+        installed = models.KegbotSite.get().epoch
+        if installed == EPOCH or not installed:
+            return
 
-    print 'Performing epoch upgrades ...'
-    for version in range(installed + 1, EPOCH + 1):
-      fn = getattr(self, 'to_%s' % version, None)
-      if fn:
-        print '  ~ %s' % version
-        fn()
-      else:
-        print '  ~ %s (no-op)' % version
+        print 'Performing epoch upgrades ...'
+        for version in range(installed + 1, EPOCH + 1):
+            fn = getattr(self, 'to_%s' % version, None)
+            if fn:
+                print '  ~ %s' % version
+                fn()
+            else:
+                print '  ~ %s (no-op)' % version
 
-  def to_101(self):
-    cursor = connection.cursor()
-    cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['twitter'])
+    def to_101(self):
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['twitter'])
 
-  def to_102(self):
-    cursor = connection.cursor()
-    cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['foursquare'])
+    def to_102(self):
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['foursquare'])
 
-  def to_103(self):
-    cursor = connection.cursor()
-    cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['untappd'])
+    def to_103(self):
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['untappd'])

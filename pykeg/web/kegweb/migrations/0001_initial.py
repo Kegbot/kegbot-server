@@ -5,9 +5,9 @@ from django.db import models
 from pykeg.web.kegweb.models import *
 
 class Migration:
-    
+
     def forwards(self, orm):
-        
+
         # Adding model 'Page'
         db.create_table('kegweb_page', (
             ('id', orm['kegweb.Page:id']),
@@ -21,16 +21,16 @@ class Migration:
             ('last_modified', orm['kegweb.Page:last_modified']),
         ))
         db.send_create_signal('kegweb', ['Page'])
-        
-    
-    
+
+
+
     def backwards(self, orm):
-        
+
         # Deleting model 'Page'
         db.delete_table('kegweb_page')
-        
-    
-    
+
+
+
     models = {
         'auth.group': {
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -78,5 +78,5 @@ class Migration:
             'title': ('django.db.models.fields.CharField', [], {'max_length': '256'})
         }
     }
-    
+
     complete_apps = ['kegweb']

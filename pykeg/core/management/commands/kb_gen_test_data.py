@@ -40,45 +40,44 @@ BASE_TIME = timezone.now() - datetime.timedelta(days=365)
 #l.addHandler(logging.StreamHandler())
 
 class Command(NoArgsCommand):
-  help = u'Generate fake data'
-  args = '<none>'
+    help = u'Generate fake data'
+    args = '<none>'
 
-  def handle(self, **options):
-    profile = False
-    if profile:
-      import cProfile
-      command = 'self.generate()'
-      cProfile.runctx(command, globals(), locals())
-    else:
-      self.generate()
+    def handle(self, **options):
+        profile = False
+        if profile:
+            import cProfile
+            command = 'self.generate()'
+            cProfile.runctx(command, globals(), locals())
+        else:
+            self.generate()
 
-  def generate(self):
-    num_drinks = 0
-    num_sessions = 0
+    def generate(self):
+        num_drinks = 0
+        num_sessions = 0
 
-    now = BASE_TIME
-    b = backend.KegbotBackend()
-    while num_drinks < NUM_DRINKS:
-      num_drinks += 1
-      ticks = 400 + random.randrange(0, 400)
-      username = random.choice(DRINKERS)
-      if username:
-        models.User.objects.get_or_create(username=username)
+        now = BASE_TIME
+        b = backend.KegbotBackend()
+        while num_drinks < NUM_DRINKS:
+            num_drinks += 1
+            ticks = 400 + random.randrange(0, 400)
+            username = random.choice(DRINKERS)
+            if username:
+                models.User.objects.get_or_create(username=username)
 
-      start_time = time.time()
-      d = b.RecordDrink(TAP, ticks, pour_time=now, username=username)
-      delta = time.time() - start_time
-      end_session = random.random() >= 0.75
+            start_time = time.time()
+            d = b.RecordDrink(TAP, ticks, pour_time=now, username=username)
+            delta = time.time() - start_time
+            end_session = random.random() >= 0.75
 
-      ms = int(delta * 1000)
-      print '%s: %s: %s [%s]' % (ms, d.id, d.user, d.keg)
+            ms = int(delta * 1000)
+            print '%s: %s: %s [%s]' % (ms, d.id, d.user, d.keg)
 
-      if end_session:
-        now += datetime.timedelta(hours=24 + random.randrange(0, 12))
-      else:
-        now += datetime.timedelta(minutes=random.randrange(3, 60))
+            if end_session:
+                now += datetime.timedelta(hours=24 + random.randrange(0, 12))
+            else:
+                now += datetime.timedelta(minutes=random.randrange(3, 60))
 
-      if d.keg.remaining_volume < 10000:
-        b.EndKeg(TAP)
-        b.StartKeg(TAP)
-
+            if d.keg.remaining_volume < 10000:
+                b.EndKeg(TAP)
+                b.StartKeg(TAP)

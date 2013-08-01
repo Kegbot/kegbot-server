@@ -96,8 +96,8 @@ class TwitterPlugin(plugin.Plugin):
     def handle_new_event(self, event):
         self.logger.info('Handling new event: %s' % event.id)
         if util.is_stale(event.time):
-          self.logger.info('Event is stale, ignoring: %s' % event.id)
-          return
+            self.logger.info('Event is stale, ignoring: %s' % event.id)
+            return
 
         profile = self.get_site_profile()
         if not profile:
@@ -241,14 +241,14 @@ class TwitterPlugin(plugin.Plugin):
         return truncate_tweet(tweet)
 
     def _schedule_tweet(self, tweet, profile):
-          if not profile:
-                self.logger.warning('Empty profile, skipping tweet.')
-                return
-          self.logger.info('Scheduling tweet on @%s: %s' % (profile.get('twitter_name'), repr(tweet)))
-          consumer_key, consumer_secret = self.get_credentials()
-          oauth_token = profile.get(KEY_OAUTH_TOKEN)
-          oauth_token_secret = profile.get(KEY_OAUTH_TOKEN_SECRET)
-          tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret, tweet)
+        if not profile:
+            self.logger.warning('Empty profile, skipping tweet.')
+            return
+        self.logger.info('Scheduling tweet on @%s: %s' % (profile.get('twitter_name'), repr(tweet)))
+        consumer_key, consumer_secret = self.get_credentials()
+        oauth_token = profile.get(KEY_OAUTH_TOKEN)
+        oauth_token_secret = profile.get(KEY_OAUTH_TOKEN_SECRET)
+        tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret, tweet)
 
     def get_vars(self, event):
         settings = SiteSettings.get()

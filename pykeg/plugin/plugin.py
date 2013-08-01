@@ -197,4 +197,3 @@ class Plugin:
         for field_name, value in defaults.iteritems():
             form.fields[field_name].initial = value
         return form
-

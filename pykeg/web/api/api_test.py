@@ -128,7 +128,3 @@ class ApiClientTestCase(BaseApiTestCase):
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'error')
         self.assertEquals(data.error.code, 'NoAuthTokenError')
-
-
-
-

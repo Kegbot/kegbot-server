@@ -46,5 +46,3 @@ def checkin(token, beer_id, timezone_name, shout=None):
     url = 'https://api.untappd.com/v4/checkin/add'
     r = requests.post(url, params=params, data=data)
     logger.info('Response: %s' % str(r.text))
-
-

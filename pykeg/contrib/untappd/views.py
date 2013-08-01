@@ -31,94 +31,94 @@ from . import oauth_client
 
 @staff_member_required
 def admin_settings(request, plugin):
-  context = RequestContext(request)
-  settings_form = plugin.get_site_settings_form()
+    context = RequestContext(request)
+    settings_form = plugin.get_site_settings_form()
 
-  if request.method == 'POST':
-    if 'submit-settings' in request.POST:
-      settings_form = forms.SiteSettingsForm(request.POST)
-      if settings_form.is_valid():
-        client_id = settings_form.cleaned_data['client_id']
-        client_secret = settings_form.cleaned_data['client_secret']
-        plugin.save_site_settings_form(settings_form)
-        messages.success(request, 'Settings updated')
+    if request.method == 'POST':
+        if 'submit-settings' in request.POST:
+            settings_form = forms.SiteSettingsForm(request.POST)
+            if settings_form.is_valid():
+                client_id = settings_form.cleaned_data['client_id']
+                client_secret = settings_form.cleaned_data['client_secret']
+                plugin.save_site_settings_form(settings_form)
+                messages.success(request, 'Settings updated')
 
-  context['plugin'] = plugin
-  context['settings_form'] = settings_form
+    context['plugin'] = plugin
+    context['settings_form'] = settings_form
 
-  return render_to_response('contrib/untappd/untappd_admin_settings.html',
-      context_instance=context)
+    return render_to_response('contrib/untappd/untappd_admin_settings.html',
+        context_instance=context)
 
 
 @login_required
 def user_settings(request, plugin):
-  context = RequestContext(request)
-  user = request.user
+    context = RequestContext(request)
+    user = request.user
 
-  settings_form = plugin.get_user_settings_form(user)
+    settings_form = plugin.get_user_settings_form(user)
 
-  if request.method == 'POST':
-    if 'submit-settings' in request.POST:
-      settings_form = forms.UserSettingsForm(request.POST)
-      if settings_form.is_valid():
-        plugin.save_user_settings_form(user, settings_form)
-        messages.success(request, 'Settings updated')
+    if request.method == 'POST':
+        if 'submit-settings' in request.POST:
+            settings_form = forms.UserSettingsForm(request.POST)
+            if settings_form.is_valid():
+                plugin.save_user_settings_form(user, settings_form)
+                messages.success(request, 'Settings updated')
 
-  context['plugin'] = plugin
-  context['profile'] = plugin.get_user_profile(user)
-  context['settings_form'] = settings_form
+    context['plugin'] = plugin
+    context['profile'] = plugin.get_user_profile(user)
+    context['settings_form'] = settings_form
 
-  return render_to_response('contrib/untappd/untappd_user_settings.html',
-      context_instance=context)
+    return render_to_response('contrib/untappd/untappd_user_settings.html',
+        context_instance=context)
 
 
 @staff_member_required
 def auth_redirect(request):
-  if 'submit-remove' in request.POST:
-    plugin = request.plugins.get('untappd')
-    plugin.save_user_profile(request.user, None)
-    plugin.save_user_token(request.user, '')
-    messages.success(request, 'Removed Untappd account.')
-    return redirect('account-plugin-settings', plugin_name='untappd')
+    if 'submit-remove' in request.POST:
+        plugin = request.plugins.get('untappd')
+        plugin.save_user_profile(request.user, None)
+        plugin.save_user_token(request.user, '')
+        messages.success(request, 'Removed Untappd account.')
+        return redirect('account-plugin-settings', plugin_name='untappd')
 
-  plugin = request.plugins['untappd']
-  url = request.kbsite.settings.reverse_full('plugin-untappd-callback')
-  client = get_client(*plugin.get_credentials(), callback_url=url)
+    plugin = request.plugins['untappd']
+    url = request.kbsite.settings.reverse_full('plugin-untappd-callback')
+    client = get_client(*plugin.get_credentials(), callback_url=url)
 
-  request.session['untappd_client'] = client
+    request.session['untappd_client'] = client
 
-  try:
-    return redirect(client.get_redirect_url())
-  except OAuthError, error:
-    messages.error(request, 'Error: %s' % str(error))
-    return redirect('account-plugin-settings', plugin_name='untappd')
+    try:
+        return redirect(client.get_redirect_url())
+    except OAuthError, error:
+        messages.error(request, 'Error: %s' % str(error))
+        return redirect('account-plugin-settings', plugin_name='untappd')
 
 
 @staff_member_required
 def auth_callback(request):
-  try:
-    client = request.session['untappd_client']
-    del request.session['untappd_client']
-    token = client.complete(dict(request.GET.items()))
-  except KeyError:
-    messages.error(request, 'Session expired.')
-  except OAuthError, error:
-    messages.error(request, str(error))
-  else:
-    plugin = request.plugins.get('untappd')
-    profile = client.get_user_info()
-    token = client.get_access_token()
-    plugin.save_user_profile(request.user, profile)
-    plugin.save_user_token(request.user, token)
+    try:
+        client = request.session['untappd_client']
+        del request.session['untappd_client']
+        token = client.complete(dict(request.GET.items()))
+    except KeyError:
+        messages.error(request, 'Session expired.')
+    except OAuthError, error:
+        messages.error(request, str(error))
+    else:
+        plugin = request.plugins.get('untappd')
+        profile = client.get_user_info()
+        token = client.get_access_token()
+        plugin.save_user_profile(request.user, profile)
+        plugin.save_user_token(request.user, token)
 
-    username = '%s %s' % (profile.get('first_name'), profile.get('last_name'))
-    messages.success(request, 'Successfully linked to Untappd user %s' % username)
+        username = '%s %s' % (profile.get('first_name'), profile.get('last_name'))
+        messages.success(request, 'Successfully linked to Untappd user %s' % username)
 
-  return redirect('account-plugin-settings', plugin_name='untappd')
+    return redirect('account-plugin-settings', plugin_name='untappd')
 
 
 def get_client(client_id, client_secret, callback_url):
-  client = oauth_client.Untappd(callback_url=callback_url)
-  client.client_id = client_id
-  client.secret = client_secret
-  return client
+    client = oauth_client.Untappd(callback_url=callback_url)
+    client.client_id = client_id
+    client.secret = client_secret
+    return client

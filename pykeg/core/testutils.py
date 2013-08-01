@@ -24,7 +24,7 @@ from django.conf import settings
 from django.utils import timezone
 
 def make_datetime(*args):
-  if settings.USE_TZ:
-    return datetime.datetime(*args, tzinfo=timezone.utc)
-  else:
-    return datetime.datetime(*args)
+    if settings.USE_TZ:
+        return datetime.datetime(*args, tzinfo=timezone.utc)
+    else:
+        return datetime.datetime(*args)

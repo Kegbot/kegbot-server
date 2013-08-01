@@ -24,31 +24,31 @@ from django.db import models
 from django.contrib.auth.models import User
 
 def sound_file_name(instance, filename):
-  rand_salt = random.randrange(0xffff)
-  new_filename = '%04x-%s' % (rand_salt, filename)
-  return os.path.join('sounds', new_filename)
+    rand_salt = random.randrange(0xffff)
+    new_filename = '%04x-%s' % (rand_salt, filename)
+    return os.path.join('sounds', new_filename)
 
 
 class SoundFile(models.Model):
-  site = models.ForeignKey(core_models.KegbotSite, related_name='sound_files')
-  sound = models.FileField(upload_to=sound_file_name)
-  title = models.CharField(max_length=128)
-  active = models.BooleanField(default=True)
+    site = models.ForeignKey(core_models.KegbotSite, related_name='sound_files')
+    sound = models.FileField(upload_to=sound_file_name)
+    title = models.CharField(max_length=128)
+    active = models.BooleanField(default=True)
 
-  def __str__(self):
-    return '%s (%s)' % (self.title, self.sound)
+    def __str__(self):
+        return '%s (%s)' % (self.title, self.sound)
 
 
 class SoundEvent(models.Model):
-  site = models.ForeignKey(core_models.KegbotSite, related_name='sound_events')
-  event_name = models.CharField(max_length=256)
-  event_predicate = models.CharField(max_length=256, blank=True, null=True)
-  soundfile = models.ForeignKey(SoundFile)
-  user = models.ForeignKey(User, blank=True, null=True)
+    site = models.ForeignKey(core_models.KegbotSite, related_name='sound_events')
+    event_name = models.CharField(max_length=256)
+    event_predicate = models.CharField(max_length=256, blank=True, null=True)
+    soundfile = models.ForeignKey(SoundFile)
+    user = models.ForeignKey(User, blank=True, null=True)
 
-  def SoundTitle(self):
-    return self.soundfile.title
+    def SoundTitle(self):
+        return self.soundfile.title
 
-  def __str__(self):
-    return '%s(%s) -> %s' % (self.event_name, self.event_predicate,
-        self.soundfile.title)
+    def __str__(self):
+        return '%s(%s) -> %s' % (self.event_name, self.event_predicate,
+            self.soundfile.title)

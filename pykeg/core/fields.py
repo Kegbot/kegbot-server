@@ -5,7 +5,7 @@ from django.utils.translation import ugettext as _
 # Source: http://www.djangosnippets.org/snippets/1281/
 
 COUNTRIES = (
-    ('AFG', _('Afghanistan')), 
+    ('AFG', _('Afghanistan')),
     ('ALA', _('Aland Islands')),
     ('ALB', _('Albania')),
     ('DZA', _('Algeria')),
@@ -266,4 +266,3 @@ else:
             {},
         ),
     ], ["^pykeg\.core\.fields\.CountryField"])
-

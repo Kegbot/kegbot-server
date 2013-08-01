@@ -133,5 +133,3 @@ class KegbotCache:
     def gen_decr(self, basename, delta=1):
         """Like `decr()`, but returns a key namespaced by the generation."""
         return self.cache.decr(self.gen_keyname(basename), delta)
-
-

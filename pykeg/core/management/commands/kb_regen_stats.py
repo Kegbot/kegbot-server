@@ -25,20 +25,20 @@ from pykeg.core import stats
 from pykeg.core.management.commands.common import progbar
 
 class Command(NoArgsCommand):
-  help = u'Regenerate all cached stats.'
-  args = '<none>'
+    help = u'Regenerate all cached stats.'
+    args = '<none>'
 
-  @transaction.commit_on_success()
-  def handle(self, **options):
-    stats.invalidate(None)
+    @transaction.commit_on_success()
+    def handle(self, **options):
+        stats.invalidate(None)
 
-    drinks = models.Drink.objects.all().order_by('id')
-    num_drinks = len(drinks)
-    pos = 0
-    for d in drinks:
-      pos += 1
-      progbar('regenerating stats', pos, num_drinks)
-      stats.generate(d, invalidate_first=False)
+        drinks = models.Drink.objects.all().order_by('id')
+        num_drinks = len(drinks)
+        pos = 0
+        for d in drinks:
+            pos += 1
+            progbar('regenerating stats', pos, num_drinks)
+            stats.generate(d, invalidate_first=False)
 
-    print ''
-    print 'done!'
+        print ''
+        print 'done!'

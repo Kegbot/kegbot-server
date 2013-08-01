@@ -77,15 +77,15 @@ def _to_urls(urllist, short_name):
     return urls
 
 def is_stale(time, now=None):
-  if not now:
-    now = timezone.now()
-  return (time + MAX_TASK_AGE) <= now
+    if not now:
+        now = timezone.now()
+    return (time + MAX_TASK_AGE) <= now
 
 def get_logger(name):
-  try:
-    from celery.utils.log import get_task_logger
-    logger = get_task_logger(name)
-  except ImportError:
-    import logging
-    logger = logging.getLogger(name)
-  return logger
+    try:
+        from celery.utils.log import get_task_logger
+        logger = get_task_logger(name)
+    except ImportError:
+        import logging
+        logger = logging.getLogger(name)
+    return logger

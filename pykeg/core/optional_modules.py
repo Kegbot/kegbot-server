@@ -4,52 +4,52 @@ import imp
 from django.core.exceptions import ImproperlyConfigured
 
 try:
-  import debug_toolbar
-  HAVE_DEBUG_TOOLBAR = True
+    import debug_toolbar
+    HAVE_DEBUG_TOOLBAR = True
 except ImportError:
-  HAVE_DEBUG_TOOLBAR = False
+    HAVE_DEBUG_TOOLBAR = False
 
 try:
-  import raven.contrib.django
-  HAVE_RAVEN = True
+    import raven.contrib.django
+    HAVE_RAVEN = True
 except ImportError:
-  HAVE_RAVEN = False
+    HAVE_RAVEN = False
 
 try:
-  import django_statsd
-  HAVE_STATSD = True
+    import django_statsd
+    HAVE_STATSD = True
 except ImproperlyConfigured:
-  # Good enough; statsd is fussy on import.
-  HAVE_STATSD = True
+    # Good enough; statsd is fussy on import.
+    HAVE_STATSD = True
 except ImportError:
-  HAVE_STATSD = False
+    HAVE_STATSD = False
 
 try:
-  import storages
-  HAVE_STORAGES = True
+    import storages
+    HAVE_STORAGES = True
 except ImportError:
-  HAVE_STORAGES = False
+    HAVE_STORAGES = False
 
 try:
-  import memcache
-  HAVE_MEMCACHE = True
+    import memcache
+    HAVE_MEMCACHE = True
 except ImportError:
-  HAVE_MEMCACHE = False
+    HAVE_MEMCACHE = False
 
 try:
-  import pylibmc
-  HAVE_PYLIBMC = True
+    import pylibmc
+    HAVE_PYLIBMC = True
 except ImportError:
-  HAVE_PYLIBMC = False
+    HAVE_PYLIBMC = False
 
 try:
-  import debug_toolbar_memcache
-  HAVE_MEMCACHE_TOOLBAR = True
+    import debug_toolbar_memcache
+    HAVE_MEMCACHE_TOOLBAR = True
 except ImportError:
-  HAVE_MEMCACHE_TOOLBAR = False
+    HAVE_MEMCACHE_TOOLBAR = False
 
 try:
-  import johnny
-  HAVE_JOHNNY_CACHE = True
+    import johnny
+    HAVE_JOHNNY_CACHE = True
 except ImportError:
-  HAVE_JOHNNY_CACHE = False
+    HAVE_JOHNNY_CACHE = False

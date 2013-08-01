@@ -83,4 +83,4 @@ JSON_SERVER_PORT_DEFAULT = 9100
 ### Exceptions
 
 class ConfigurationError(Exception):
-  """Raised when the system is misconfigured"""
+    """Raised when the system is misconfigured"""

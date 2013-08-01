@@ -32,116 +32,116 @@ import foursquare
 from . import forms
 
 class FoursquareClient(Foursquare):
-  def set_callback_url(self, url):
-    self.callback_url = url
+    def set_callback_url(self, url):
+        self.callback_url = url
 
-  def get_callback_url(self):
-    return self.callback_url
+    def get_callback_url(self):
+        return self.callback_url
 
 
 @staff_member_required
 def admin_settings(request, plugin):
-  context = RequestContext(request)
-  settings_form = plugin.get_site_settings_form()
+    context = RequestContext(request)
+    settings_form = plugin.get_site_settings_form()
 
-  if request.method == 'POST':
-    if 'submit-settings' in request.POST:
-      settings_form = forms.SiteSettingsForm(request.POST)
-      if settings_form.is_valid():
-        client_id = settings_form.cleaned_data['client_id']
-        client_secret = settings_form.cleaned_data['client_secret']
-        venue_id = settings_form.cleaned_data['venue_id']
-        client = foursquare.Foursquare(client_id=client_id, client_secret=client_secret)
-        venue = None
-        try:
-          # Search for the venue. Simultaneous validates all three credentials.
-          if venue_id:
-            venue = client.venues(venue_id)
-        except foursquare.FoursquareException, e:
-          messages.error(request, 'Error testing Foursquare connection: %s' % str(e))
-        else:
-          plugin.save_site_settings_form(settings_form)
-          plugin.save_venue_detail(venue)
-          messages.success(request, 'Settings updated')
+    if request.method == 'POST':
+        if 'submit-settings' in request.POST:
+            settings_form = forms.SiteSettingsForm(request.POST)
+            if settings_form.is_valid():
+                client_id = settings_form.cleaned_data['client_id']
+                client_secret = settings_form.cleaned_data['client_secret']
+                venue_id = settings_form.cleaned_data['venue_id']
+                client = foursquare.Foursquare(client_id=client_id, client_secret=client_secret)
+                venue = None
+                try:
+                    # Search for the venue. Simultaneous validates all three credentials.
+                    if venue_id:
+                        venue = client.venues(venue_id)
+                except foursquare.FoursquareException, e:
+                    messages.error(request, 'Error testing Foursquare connection: %s' % str(e))
+                else:
+                    plugin.save_site_settings_form(settings_form)
+                    plugin.save_venue_detail(venue)
+                    messages.success(request, 'Settings updated')
 
-  context['plugin'] = plugin
-  context['settings_form'] = settings_form
-  context['venue_detail'] = plugin.get_venue_detail()
+    context['plugin'] = plugin
+    context['settings_form'] = settings_form
+    context['venue_detail'] = plugin.get_venue_detail()
 
-  return render_to_response('contrib/foursquare/foursquare_admin_settings.html', context_instance=context)
+    return render_to_response('contrib/foursquare/foursquare_admin_settings.html', context_instance=context)
 
 
 @login_required
 def user_settings(request, plugin):
-  context = RequestContext(request)
-  user = request.user
+    context = RequestContext(request)
+    user = request.user
 
-  settings_form = plugin.get_user_settings_form(user)
+    settings_form = plugin.get_user_settings_form(user)
 
-  if request.method == 'POST':
-    if 'submit-settings' in request.POST:
-      settings_form = forms.UserSettingsForm(request.POST)
-      if settings_form.is_valid():
-        plugin.save_user_settings_form(user, settings_form)
-        messages.success(request, 'Settings updated')
+    if request.method == 'POST':
+        if 'submit-settings' in request.POST:
+            settings_form = forms.UserSettingsForm(request.POST)
+            if settings_form.is_valid():
+                plugin.save_user_settings_form(user, settings_form)
+                messages.success(request, 'Settings updated')
 
-  context['plugin'] = plugin
-  context['venue'] = plugin.get_venue_detail()
-  context['profile'] = plugin.get_user_profile(user)
-  context['settings_form'] = settings_form
+    context['plugin'] = plugin
+    context['venue'] = plugin.get_venue_detail()
+    context['profile'] = plugin.get_user_profile(user)
+    context['settings_form'] = settings_form
 
-  return render_to_response('contrib/foursquare/foursquare_user_settings.html', context_instance=context)
+    return render_to_response('contrib/foursquare/foursquare_user_settings.html', context_instance=context)
 
 
 @staff_member_required
 def auth_redirect(request):
-  if 'submit-remove' in request.POST:
-    plugin = request.plugins.get('foursquare')
-    plugin.save_user_profile(request.user, None)
-    plugin.save_user_token(request.user, '')
-    messages.success(request, 'Removed Foursquare account.')
-    return redirect('account-plugin-settings', plugin_name='foursquare')
+    if 'submit-remove' in request.POST:
+        plugin = request.plugins.get('foursquare')
+        plugin.save_user_profile(request.user, None)
+        plugin.save_user_token(request.user, '')
+        messages.success(request, 'Removed Foursquare account.')
+        return redirect('account-plugin-settings', plugin_name='foursquare')
 
-  plugin = request.plugins['foursquare']
-  client = get_client(*plugin.get_credentials())
+    plugin = request.plugins['foursquare']
+    client = get_client(*plugin.get_credentials())
 
-  url = request.kbsite.settings.reverse_full('plugin-foursquare-callback')
-  client.set_callback_url(url)
+    url = request.kbsite.settings.reverse_full('plugin-foursquare-callback')
+    client.set_callback_url(url)
 
-  request.session['foursquare_client'] = client
+    request.session['foursquare_client'] = client
 
-  try:
-    return redirect(client.get_redirect_url())
-  except OAuthError, error:
-    messages.error(request, 'Error: %s' % str(error))
-    return redirect('account-plugin-settings', plugin_name='foursquare')
+    try:
+        return redirect(client.get_redirect_url())
+    except OAuthError, error:
+        messages.error(request, 'Error: %s' % str(error))
+        return redirect('account-plugin-settings', plugin_name='foursquare')
 
 
 @staff_member_required
 def auth_callback(request):
-  try:
-    client = request.session['foursquare_client']
-    del request.session['foursquare_client']
-    token = client.complete(dict(request.GET.items()))
-  except KeyError:
-    messages.error(request, 'Session expired.')
-  except OAuthError, error:
-    messages.error(request, str(error))
-  else:
-    plugin = request.plugins.get('foursquare')
-    profile = client.get_user_info()
-    token = client.get_access_token()
-    plugin.save_user_profile(request.user, profile)
-    plugin.save_user_token(request.user, token)
+    try:
+        client = request.session['foursquare_client']
+        del request.session['foursquare_client']
+        token = client.complete(dict(request.GET.items()))
+    except KeyError:
+        messages.error(request, 'Session expired.')
+    except OAuthError, error:
+        messages.error(request, str(error))
+    else:
+        plugin = request.plugins.get('foursquare')
+        profile = client.get_user_info()
+        token = client.get_access_token()
+        plugin.save_user_profile(request.user, profile)
+        plugin.save_user_token(request.user, token)
 
-    username = '%s %s' % (profile.get('firstName'), profile.get('lastName'))
-    messages.success(request, 'Successfully linked to foursquare user %s' % username)
+        username = '%s %s' % (profile.get('firstName'), profile.get('lastName'))
+        messages.success(request, 'Successfully linked to foursquare user %s' % username)
 
-  return redirect('account-plugin-settings', plugin_name='foursquare')
+    return redirect('account-plugin-settings', plugin_name='foursquare')
 
 
 def get_client(client_id, client_secret):
-  client = FoursquareClient()
-  client.client_id = client_id
-  client.secret = client_secret
-  return client
+    client = FoursquareClient()
+    client.client_id = client_id
+    client.secret = client_secret
+    return client

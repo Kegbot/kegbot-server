@@ -21,6 +21,5 @@
 import random
 
 def make_serial():
-  '''Returns a random serial number.'''
-  return '%016x' % random.randrange(0, 2**64 - 1)
-
+    '''Returns a random serial number.'''
+    return '%016x' % random.randrange(0, 2**64 - 1)

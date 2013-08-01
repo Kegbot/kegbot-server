@@ -23,16 +23,16 @@ import unittest
 from . import middleware
 
 class MiddlewareTestCase(unittest.TestCase):
-  def test_validate_host(self):
-  	allowed_hosts = []
-  	self.assertTrue(middleware.HttpHostMiddleware.validate_host('foo', allowed_hosts))
+    def test_validate_host(self):
+        allowed_hosts = []
+        self.assertTrue(middleware.HttpHostMiddleware.validate_host('foo', allowed_hosts))
 
-  	allowed_hosts = ['blort', '*']
-	self.assertTrue(middleware.HttpHostMiddleware.validate_host('foo', allowed_hosts))
+        allowed_hosts = ['blort', '*']
+        self.assertTrue(middleware.HttpHostMiddleware.validate_host('foo', allowed_hosts))
 
-	allowed_hosts = ['blort']
-	self.assertFalse(middleware.HttpHostMiddleware.validate_host('foo', allowed_hosts))
+        allowed_hosts = ['blort']
+        self.assertFalse(middleware.HttpHostMiddleware.validate_host('foo', allowed_hosts))
 
-	# Patterns are not supported.. yet.
-	allowed_hosts = ['*.bar.com']
-	self.assertFalse(middleware.HttpHostMiddleware.validate_host('foo.bar.com', allowed_hosts))
+        # Patterns are not supported.. yet.
+        allowed_hosts = ['*.bar.com']
+        self.assertFalse(middleware.HttpHostMiddleware.validate_host('foo.bar.com', allowed_hosts))

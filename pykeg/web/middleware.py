@@ -48,175 +48,174 @@ ALLOWED_PATHS = (
 )
 
 def _path_allowed(path, kbsite):
-  for p in ALLOWED_PATHS:
-    if path.startswith(p):
-      return True
-  return False
-
-
-class KegbotSiteMiddleware:
-  ALLOWED_VIEW_MODULE_PREFIXES = (
-      'pykeg.web.setup_wizard.',
-  )
-  def process_request(self, request):
-    epoch = None
-    request.need_setup = False
-    request.need_upgrade = False
-
-    try:
-      request.kbsite = models.KegbotSite.objects.get(name='default')
-      epoch = request.kbsite.epoch
-    except (models.KegbotSite.DoesNotExist, DatabaseError), e:
-      request.kbsite = None
-
-    if not request.kbsite or not request.kbsite.is_setup:
-      request.need_setup = True
-    else:
-      if not epoch or epoch < EPOCH:
-        request.need_upgrade = True
-      timezone.activate(request.kbsite.settings.timezone)
-      request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins())
-
-    request.kbcache = KegbotCache()
-    request.backend = KegbotBackend()
-    return None
-
-  def process_view(self, request, view_func, view_args, view_kwargs):
-    for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
-      if view_func.__module__.startswith(prefix):
-        return None
-
-    if is_api_request(request):
-      # API endpoints handle "setup required" differently.
-      return None
-
-    if request.need_setup:
-      return self._setup_required(request)
-    elif request.need_upgrade:
-      return self._upgrade_required(request)
-
-    return None
-
-  def process_response(self, request, response):
-    if request.method in ('POST', 'PUT', 'PATCH') and response.status_code < 400:
-      # Invalidate cache on any successful change.
-      # TODO(mikey): More granular cache invalidations.
-      request.kbcache.update_generation()
-    return response
-
-  def _setup_required(self, request):
-    return SimpleTemplateResponse('setup_wizard/setup_required.html',
-        context=RequestContext(request), status=403)
-
-  def _upgrade_required(self, request, current_epoch=None):
-    context = RequestContext(request)
-    context['current_epoch'] = current_epoch
-    return SimpleTemplateResponse('setup_wizard/upgrade_required.html',
-        context=context, status=403)
-
-
-class SiteActiveMiddleware:
-  """Middleware which throws 503s when KegbotSite.is_active is false."""
-  def process_view(self, request, view_func, view_args, view_kwargs):
-    if not hasattr(request, 'kbsite') or not request.kbsite:
-      return None
-    kbsite = request.kbsite
-
-    # We have a KegbotSite, and that site is active: nothing to do.
-    if kbsite.is_active:
-      return None
-
-    # If the request is for a whitelisted path, allow it.
-    if _path_allowed(request.path, kbsite):
-      return None
-
-    # Allow staff/superusers access if inactive.
-    if request.user.is_staff or request.user.is_superuser:
-      return None
-
-    return HttpResponse('Site temporarily unavailable', status=503)
-
-class HttpHostMiddleware:
-  """Middleware which checks a dynamic version of settings.ALLOWED_HOSTS."""
-  def process_request(self, request):
-    if not getattr(request, 'kbsite', None):
-      return None
-
-    host = request.get_host()
-    allowed_hosts_str = request.kbsite.settings.allowed_hosts
-    if allowed_hosts_str:
-      host_patterns = allowed_hosts_str.strip().split()
-    else:
-      host_patterns = []
-    valid = HttpHostMiddleware.validate_host(host, host_patterns)
-
-    if not valid:
-      message =  "Invalid HTTP_HOST header (you may need to change Kegbot's ALLOWED_HOSTS setting): %s" % host
-      if request.user.is_superuser or request.user.is_staff:
-        messages.warning(request, message)
-      else:
-        raise SuspiciousOperation(message)
-
-  @classmethod
-  def validate_host(cls, host, allowed_hosts):
-    """Clone of django.http.request.validate_host.
-
-    Local differences: treats an empty `allowed_hosts` list as a pass.
-    """
-    # Validate only the domain part.
-    if not allowed_hosts:
-      return True
-
-    if host[-1] == ']':
-        # It's an IPv6 address without a port.
-        domain = host
-    else:
-        domain = host.rsplit(':', 1)[0]
-
-    for pattern in allowed_hosts:
-      pattern = pattern.lower()
-      match = (
-          pattern == '*' or
-          pattern.startswith('.') and (
-              domain.endswith(pattern) or domain == pattern[1:]
-              ) or
-          pattern == domain
-          )
-      if match:
-          return True
-
+    for p in ALLOWED_PATHS:
+        if path.startswith(p):
+            return True
     return False
 
 
+class KegbotSiteMiddleware:
+    ALLOWED_VIEW_MODULE_PREFIXES = (
+        'pykeg.web.setup_wizard.',
+    )
+    def process_request(self, request):
+        epoch = None
+        request.need_setup = False
+        request.need_upgrade = False
+
+        try:
+            request.kbsite = models.KegbotSite.objects.get(name='default')
+            epoch = request.kbsite.epoch
+        except (models.KegbotSite.DoesNotExist, DatabaseError), e:
+            request.kbsite = None
+
+        if not request.kbsite or not request.kbsite.is_setup:
+            request.need_setup = True
+        else:
+            if not epoch or epoch < EPOCH:
+                request.need_upgrade = True
+            timezone.activate(request.kbsite.settings.timezone)
+            request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins())
+
+        request.kbcache = KegbotCache()
+        request.backend = KegbotBackend()
+        return None
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
+            if view_func.__module__.startswith(prefix):
+                return None
+
+        if is_api_request(request):
+            # API endpoints handle "setup required" differently.
+            return None
+
+        if request.need_setup:
+            return self._setup_required(request)
+        elif request.need_upgrade:
+            return self._upgrade_required(request)
+
+        return None
+
+    def process_response(self, request, response):
+        if request.method in ('POST', 'PUT', 'PATCH') and response.status_code < 400:
+            # Invalidate cache on any successful change.
+            # TODO(mikey): More granular cache invalidations.
+            request.kbcache.update_generation()
+        return response
+
+    def _setup_required(self, request):
+        return SimpleTemplateResponse('setup_wizard/setup_required.html',
+            context=RequestContext(request), status=403)
+
+    def _upgrade_required(self, request, current_epoch=None):
+        context = RequestContext(request)
+        context['current_epoch'] = current_epoch
+        return SimpleTemplateResponse('setup_wizard/upgrade_required.html',
+            context=context, status=403)
+
+
+class SiteActiveMiddleware:
+    """Middleware which throws 503s when KegbotSite.is_active is false."""
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        if not hasattr(request, 'kbsite') or not request.kbsite:
+            return None
+        kbsite = request.kbsite
+
+        # We have a KegbotSite, and that site is active: nothing to do.
+        if kbsite.is_active:
+            return None
+
+        # If the request is for a whitelisted path, allow it.
+        if _path_allowed(request.path, kbsite):
+            return None
+
+        # Allow staff/superusers access if inactive.
+        if request.user.is_staff or request.user.is_superuser:
+            return None
+
+        return HttpResponse('Site temporarily unavailable', status=503)
+
+class HttpHostMiddleware:
+    """Middleware which checks a dynamic version of settings.ALLOWED_HOSTS."""
+    def process_request(self, request):
+        if not getattr(request, 'kbsite', None):
+            return None
+
+        host = request.get_host()
+        allowed_hosts_str = request.kbsite.settings.allowed_hosts
+        if allowed_hosts_str:
+            host_patterns = allowed_hosts_str.strip().split()
+        else:
+            host_patterns = []
+        valid = HttpHostMiddleware.validate_host(host, host_patterns)
+
+        if not valid:
+            message =  "Invalid HTTP_HOST header (you may need to change Kegbot's ALLOWED_HOSTS setting): %s" % host
+            if request.user.is_superuser or request.user.is_staff:
+                messages.warning(request, message)
+            else:
+                raise SuspiciousOperation(message)
+
+    @classmethod
+    def validate_host(cls, host, allowed_hosts):
+        """Clone of django.http.request.validate_host.
+
+        Local differences: treats an empty `allowed_hosts` list as a pass.
+        """
+        # Validate only the domain part.
+        if not allowed_hosts:
+            return True
+
+        if host[-1] == ']':
+                # It's an IPv6 address without a port.
+            domain = host
+        else:
+            domain = host.rsplit(':', 1)[0]
+
+        for pattern in allowed_hosts:
+            pattern = pattern.lower()
+            match = (
+                pattern == '*' or
+                pattern.startswith('.') and (
+                    domain.endswith(pattern) or domain == pattern[1:]
+                    ) or
+                pattern == domain
+                )
+            if match:
+                return True
+
+        return False
+
+
 class PrivacyMiddleware:
-  """Enforces site privacy settings.
+    """Enforces site privacy settings.
 
-  Must be installed after ApiRequestMiddleware (in request order) to
-  access is_kb_api_request attribute.
-  """
-  def process_view(self, request, view_func, view_args, view_kwargs):
-    if not hasattr(request, 'kbsite'):
-      return None
-    elif _path_allowed(request.path, request.kbsite):
-      return None
-    elif request.is_kb_api_request:
-      # api.middleware will enforce access requirements.
-      return None
+    Must be installed after ApiRequestMiddleware (in request order) to
+    access is_kb_api_request attribute.
+    """
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        if not hasattr(request, 'kbsite'):
+            return None
+        elif _path_allowed(request.path, request.kbsite):
+            return None
+        elif request.is_kb_api_request:
+            # api.middleware will enforce access requirements.
+            return None
 
-    privacy = request.kbsite.settings.privacy
+        privacy = request.kbsite.settings.privacy
 
-    if privacy == 'public':
-      return None
-    elif privacy == 'staff':
-      if not request.user.is_staff:
-        return SimpleTemplateResponse('kegweb/staff_only.html',
-            context=RequestContext(request), status=401)
-      return None
-    elif privacy == 'members':
-      if not request.user.is_authenticated or not request.user.is_active:
-        return SimpleTemplateResponse('kegweb/members_only.html',
-            context=RequestContext(request), status=401)
-      return None
+        if privacy == 'public':
+            return None
+        elif privacy == 'staff':
+            if not request.user.is_staff:
+                return SimpleTemplateResponse('kegweb/staff_only.html',
+                    context=RequestContext(request), status=401)
+            return None
+        elif privacy == 'members':
+            if not request.user.is_authenticated or not request.user.is_active:
+                return SimpleTemplateResponse('kegweb/members_only.html',
+                    context=RequestContext(request), status=401)
+            return None
 
-    return HttpResponse('Server misconfigured, unknown privacy setting:%s' % privacy, status=500)
-
+        return HttpResponse('Server misconfigured, unknown privacy setting:%s' % privacy, status=500)

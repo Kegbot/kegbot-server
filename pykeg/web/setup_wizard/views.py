@@ -35,81 +35,81 @@ from .forms import CreateOrImportForm
 from .forms import MiniSiteSettingsForm
 
 def setup_view(f):
-  """Decorator for setup views."""
-  def new_function(*args, **kwargs):
-    request = args[0]
-    if not settings.DEBUG:
-      raise Http404('Site is not in DEBUG mode.')
-    if request.kbsite and request.kbsite.is_setup:
-      raise Http404('Site is already setup, wizard disabled.')
-    return f(*args, **kwargs)
-  return wraps(f)(new_function)
+    """Decorator for setup views."""
+    def new_function(*args, **kwargs):
+        request = args[0]
+        if not settings.DEBUG:
+            raise Http404('Site is not in DEBUG mode.')
+        if request.kbsite and request.kbsite.is_setup:
+            raise Http404('Site is already setup, wizard disabled.')
+        return f(*args, **kwargs)
+    return wraps(f)(new_function)
 
 @setup_view
 @never_cache
 def start(request):
-  context = RequestContext(request)
-  return render_to_response('setup_wizard/start.html', context_instance=context)
+    context = RequestContext(request)
+    return render_to_response('setup_wizard/start.html', context_instance=context)
 
 @setup_view
 @never_cache
 def create_or_import(request):
-  context = RequestContext(request)
-  form = CreateOrImportForm(initial={'mode': 'create'})
-  if request.method == 'POST':
-    form = CreateOrImportForm(request.POST)
-    if form.is_valid():
-      if form.cleaned_data['mode'] == 'create':
-        try:
-          defaults.set_defaults()
-          messages.success(request, 'Started new site!')
-        except defaults.AlreadyInstalledError:
-          messages.warning(request, 'Site already installed, proceeding.')
-        return redirect('setup_site_settings')
-      else:
-        messages.error(request, 'Sorry, imports are not yet supported.')
-  context['form'] = form
-  print ' '.join(str(type(d)) for d in context.dicts)
-  return render_to_response('setup_wizard/create_or_import.html', context_instance=context)
+    context = RequestContext(request)
+    form = CreateOrImportForm(initial={'mode': 'create'})
+    if request.method == 'POST':
+        form = CreateOrImportForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['mode'] == 'create':
+                try:
+                    defaults.set_defaults()
+                    messages.success(request, 'Started new site!')
+                except defaults.AlreadyInstalledError:
+                    messages.warning(request, 'Site already installed, proceeding.')
+                return redirect('setup_site_settings')
+            else:
+                messages.error(request, 'Sorry, imports are not yet supported.')
+    context['form'] = form
+    print ' '.join(str(type(d)) for d in context.dicts)
+    return render_to_response('setup_wizard/create_or_import.html', context_instance=context)
 
 @setup_view
 @never_cache
 def site_settings(request):
-  context = RequestContext(request)
-  form = MiniSiteSettingsForm(instance=request.kbsite.settings)
-  if request.method == 'POST':
-    form = MiniSiteSettingsForm(request.POST, instance=request.kbsite.settings)
-    if form.is_valid():
-      form.save()
-      messages.success(request, 'Settings saved!')
-      return redirect('setup_admin')
-  context['form'] = form
-  return render_to_response('setup_wizard/site_settings.html', context_instance=context)
+    context = RequestContext(request)
+    form = MiniSiteSettingsForm(instance=request.kbsite.settings)
+    if request.method == 'POST':
+        form = MiniSiteSettingsForm(request.POST, instance=request.kbsite.settings)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Settings saved!')
+            return redirect('setup_admin')
+    context['form'] = form
+    return render_to_response('setup_wizard/site_settings.html', context_instance=context)
 
 @setup_view
 @never_cache
 def admin(request):
-  context = RequestContext(request)
-  form = AdminUserForm()
-  if request.method == 'POST':
-    form = AdminUserForm(request.POST)
-    if form.is_valid():
-      form.save()
-      user = authenticate(username=form.cleaned_data.get('username'),
-          password=form.cleaned_data.get('password'))
-      if user:
-        login(request, user)
-      return redirect('setup_finish')
-  context['form'] = form
-  return render_to_response('setup_wizard/admin.html', context_instance=context)
+    context = RequestContext(request)
+    form = AdminUserForm()
+    if request.method == 'POST':
+        form = AdminUserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            user = authenticate(username=form.cleaned_data.get('username'),
+                password=form.cleaned_data.get('password'))
+            if user:
+                login(request, user)
+            return redirect('setup_finish')
+    context['form'] = form
+    return render_to_response('setup_wizard/admin.html', context_instance=context)
 
 @setup_view
 @never_cache
 def finish(request):
-  context = RequestContext(request)
-  if request.method == 'POST':
-    request.kbsite.is_setup = True
-    request.kbsite.save()
-    messages.success(request, 'Tip: Install a new Keg in Admin: Taps')
-    return redirect('kegadmin-main')
-  return render_to_response('setup_wizard/finish.html', context_instance=context)
+    context = RequestContext(request)
+    if request.method == 'POST':
+        request.kbsite.is_setup = True
+        request.kbsite.save()
+        messages.success(request, 'Tip: Install a new Keg in Admin: Taps')
+        return redirect('kegadmin-main')
+    return render_to_response('setup_wizard/finish.html', context_instance=context)

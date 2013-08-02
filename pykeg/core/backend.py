@@ -23,7 +23,6 @@ from __future__ import absolute_import
 import datetime
 import logging
 
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from pykeg.core import defaults
@@ -332,11 +331,11 @@ class KegbotBackend:
             raise ValueError('Temperature out of bounds')
 
         sensor = self._GetSensorFromName(sensor_name)
-        defaults = {
+        log_defaults = {
             'temp': temperature,
         }
         record, created = models.Thermolog.objects.get_or_create(sensor=sensor,
-          time=when, defaults=defaults)
+          time=when, defaults=log_defaults)
         record.temp = temperature
         record.save()
 

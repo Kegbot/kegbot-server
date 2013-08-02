@@ -16,15 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from optparse import make_option
 import sys
 
 from pykeg import EPOCH
 
 from django.core.management.base import NoArgsCommand
-from django.core.management.base import CommandError
-from django.contrib.auth.management.commands import createsuperuser
-from django.db.utils import DatabaseError
 from django.db import connection
 
 from django.contrib.staticfiles.management.commands import collectstatic

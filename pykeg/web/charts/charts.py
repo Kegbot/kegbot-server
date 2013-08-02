@@ -98,7 +98,6 @@ def KegVolumeChart(keg):
     served = units.Quantity(stats.get('total_volume_ml', 0))
     served_pints = to_pints(served)
     full_pints = to_pints(keg.full_volume())
-    remain_pints = full_pints - served_pints
 
     res = {
       'chart': {
@@ -197,7 +196,6 @@ def UsersByVolume(stats):
     if not vols:
         raise ChartError('no data')
 
-    volmap = {}
     data = []
     for username, volume in vols.iteritems():
         pints = to_pints(volume)
@@ -241,11 +239,12 @@ def UsersByVolume(stats):
 
 def UserSessionChunks(user_chunk):
     if not isinstance(user_chunk, models.UserSessionChunk):
-        raise ChartUnavailableError, "Must give user chunk as argument"
+        raise ChartError("Must give user chunk as argument")
 
     max_pints = user_chunk.session.UserChunksByVolume()
     if not max_pints:
-        raise ChartUnavailableError, "Error: session corrupt"
+        raise ChartError("Error: session corrupt")
+
     max_pints = to_pints(max_pints[0].volume_ml)
     drinks = user_chunk.GetDrinks()
     totals = {}

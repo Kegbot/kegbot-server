@@ -17,14 +17,10 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
-import datetime
 import pytz
 
 from django.conf import settings
-from django.core import urlresolvers
-from django.core.urlresolvers import NoReverseMatch
 from django.core.urlresolvers import reverse
-from django import template
 from django.template import Library
 from django.template import Node
 from django.template import VariableDoesNotExist

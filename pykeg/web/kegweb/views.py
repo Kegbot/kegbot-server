@@ -1,4 +1,3 @@
-#
 # Copyright 2008 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
@@ -19,12 +18,6 @@
 
 """Kegweb main views."""
 
-import datetime
-
-from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.contrib.auth.decorators import login_required
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
 from django.shortcuts import redirect
@@ -41,9 +34,6 @@ from kegbot.util import kbjson
 
 from pykeg.core import models
 from pykeg.proto import protolib
-
-from pykeg.web.kegweb import forms
-from pykeg.web.kegweb import signals
 
 ### main views
 

@@ -19,13 +19,8 @@
 """Kegweb RESTful API views."""
 
 import datetime
-from functools import wraps
 import logging
-import sys
-import traceback
-import types
 
-from django.conf import settings
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -35,13 +30,9 @@ from django.utils import timezone
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
-from django.db import transaction
-from django.db.models.query import QuerySet
 
 from kegbot.api import kbapi
-from kegbot.util import kbjson
 
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import backend
@@ -276,7 +267,7 @@ def _thermo_sensor_get(request, sensor_name):
         last_temp = logs[0].temp
         last_time = logs[0].time
     res = {
-      'sensor': to_dict(sensor),
+      'sensor': sensor,
       'last_temp': last_temp,
       'last_time': last_time,
     }

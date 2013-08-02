@@ -22,7 +22,6 @@ import os
 import pytz
 import random
 
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import post_save
@@ -41,9 +40,6 @@ from pykeg.core.util import make_serial
 
 from kegbot.util import units
 from kegbot.util import util
-
-from kegbot.api import models_pb2
-from kegbot.api import protoutil
 
 """Django models definition for the kegbot database."""
 
@@ -197,20 +193,6 @@ class UserProfile(models.Model):
     """Extra per-User information."""
     def __str__(self):
         return "profile for %s" % (self.user,)
-
-    def FacebookProfile(self):
-        if 'socialregistration' not in settings.INSTALLED_APPS:
-            return None
-        qs = self.user.facebookprofile_set.all()
-        if qs:
-            return qs[0]
-
-    def TwitterProfile(self):
-        if 'socialregistration' not in settings.INSTALLED_APPS:
-            return None
-        qs = self.user.twitterprofile_set.all()
-        if qs:
-            return qs[0]
 
     def GetStatsRecord(self):
         qs = UserStats.objects.filter(user=self.user).order_by('-id')
@@ -714,9 +696,7 @@ class DrinkingSession(_AbstractChunk):
         return []
 
     def get_absolute_url(self):
-        dt = self.start_time
-        if settings.USE_TZ:
-            dt = timezone.localtime(dt)
+        dt = timezone.localtime(self.start_time)
         return reverse('kb-session-detail', args=(), kwargs={
           'year' : dt.year,
           'month' : dt.month,

@@ -329,14 +329,6 @@ class ChartNode(Node):
         """
         return charts.TemperatureSensorChart(obj)
 
-    def chart_keg_volume(self, obj):
-        """Shows a horizontal bar chart of keg served/remaining volume.
-
-        Args:
-          obj - the models.Keg instance to chart
-        """
-        return charts.KegVolumeChart(obj)
-
     def chart_volume_by_day(self, obj):
         """Shows keg or session usage by day of the week.
 
@@ -371,13 +363,6 @@ class ChartNode(Node):
         """
         return charts.UsersByVolume(obj)
 
-    def chart_user_session_chunks(self, obj):
-        """Show's a single user's activity within a session.
-
-        Args:
-          obj - the models.UserSessionChunk for the user/session to chart
-        """
-        return charts.UserSessionChunks(obj)
 
 @register.filter
 def volume(text, fmt='pints'):

@@ -90,44 +90,6 @@ def TemperatureSensorChart(sensor):
     }
     return res
 
-def KegVolumeChart(keg):
-    if not isinstance(keg, models.Keg):
-        raise ChartError('Bad value given for keg')
-    stats = keg.GetStats()
-
-    served = units.Quantity(stats.get('total_volume_ml', 0))
-    served_pints = to_pints(served)
-    full_pints = to_pints(keg.full_volume())
-
-    res = {
-      'chart': {
-        'defaultSeriesType': 'bar',
-      },
-      'series': [
-        {'data': [served_pints]},
-      ],
-      'tooltip': {
-        'enabled': False,
-      },
-      'xAxis': {
-        'categories': ['Served'],
-        'labels': {
-          'enabled': False,
-        },
-        'gridLineWidth': 0,
-      },
-      'yAxis': {
-        'endOnTick': False,
-        'min': 0,
-        'max': full_pints,
-        'lineWidth': 0,
-        'labels': {
-          'enabled': False,
-        },
-      },
-    }
-    return res
-
 def VolumeByWeekday(stats):
     """ Shows a histogram of volume by day of the week.
 
@@ -233,56 +195,6 @@ def UsersByVolume(stats):
       },
       'tooltip': {
         'enabled': False,
-      },
-    }
-    return res
-
-def UserSessionChunks(user_chunk):
-    if not isinstance(user_chunk, models.UserSessionChunk):
-        raise ChartError("Must give user chunk as argument")
-
-    max_pints = user_chunk.session.UserChunksByVolume()
-    if not max_pints:
-        raise ChartError("Error: session corrupt")
-
-    max_pints = to_pints(max_pints[0].volume_ml)
-    drinks = user_chunk.GetDrinks()
-    totals = {}
-    for drink in drinks:
-        if drink.keg:
-            label = 'keg %i' % drink.keg.id
-        else:
-            label = 'unknown keg'
-        totals[label] = totals.get(label, 0) + to_pints(drink.volume_ml)
-
-    series = []
-    for name, tot in totals.iteritems():
-        series.append({
-          'name': name,
-          'data': [tot],
-        })
-
-    res = {
-      'xAxis': {
-        'categories': ['Pints'],
-      },
-      'yAxis': {
-        'max': max_pints,
-      },
-      'series': series,
-      'tooltip': {
-        'enabled': False,
-      },
-      'chart': {
-        'defaultSeriesType': 'bar',
-      },
-      'legend': {
-        'enabled': True,
-      },
-      'plotOptions': {
-        'series': {
-          'stacking': 'normal',
-        },
       },
     }
     return res

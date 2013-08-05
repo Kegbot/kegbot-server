@@ -78,14 +78,13 @@ class BaseApiTestCase(TestCase):
 
     def test_drink_cancel(self):
         """Tests cancelling drinks."""
-        tap = models.KegTap.objects.get(meter_name=TAP_NAME)
         keg = self.backend.StartKeg(TAP_NAME, beer_name=FAKE_BEER_NAME,
                 brewer_name=FAKE_BREWER_NAME, style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
         self.assertEquals(0, keg.served_volume())
 
         for i in xrange(10):
-            d = self.backend.RecordDrink(tap_name=TAP_NAME, ticks=1, volume_ml=100)
+            self.backend.RecordDrink(tap_name=TAP_NAME, ticks=1, volume_ml=100)
 
         drinks = list(models.Drink.objects.all().order_by('id'))
         keg = models.Keg.objects.get(pk=keg.id)
@@ -104,7 +103,6 @@ class BaseApiTestCase(TestCase):
         session = models.DrinkingSession.objects.get(id=session.id)
         self.assertAlmostEqual(session.GetStats().total_volume_ml, 900.0, places=3)
 
-        spilled_drink = drinks[-1]
         keg = models.Keg.objects.get(pk=keg.id)
         self.assertEquals(0, keg.spilled_ml)
 
@@ -114,6 +112,23 @@ class BaseApiTestCase(TestCase):
         self.assertEquals(8, len(drinks))
         self.assertAlmostEqual(800.0, keg.served_volume(), places=3)
         self.assertAlmostEqual(100.0, keg.spilled_ml, places=3)
+
+        # Cancel all drinks and confirm the session is deleted.
+        num_sessions = models.DrinkingSession.objects.all().count()
+        first_drink, other_drinks = drinks[0], drinks[1:]
+        for d in other_drinks:
+            self.backend.CancelDrink(d)
+
+        self.assertEquals(first_drink.volume_ml, first_drink.session.volume_ml)
+        session_id = first_drink.session.id
+
+        self.backend.CancelDrink(first_drink)
+
+        with self.assertRaises(models.DrinkingSession.DoesNotExist):
+            models.DrinkingSession.objects.get(pk=session_id)
+
+        self.assertEquals(num_sessions - 1, models.DrinkingSession.objects.all().count())
+
 
     def test_keg_management(self):
         """Tests adding and removing kegs."""
@@ -144,7 +159,6 @@ class BaseApiTestCase(TestCase):
         self.assertEquals(style.name, FAKE_BEER_STYLE)
 
         # Now activate a new keg.
-        keg_id = keg.id
         keg = self.backend.EndKeg(tap)
         tap = models.KegTap.objects.get(meter_name=TAP_NAME)
         self.assertFalse(tap.is_active())

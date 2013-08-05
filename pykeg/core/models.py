@@ -805,9 +805,7 @@ class DrinkingSession(_AbstractChunk):
 
         drinks = self.drinks.all()
         if not drinks:
-            self.save()
-            # TODO(mikey): cancel/delete the session entirely.  As it is, session will
-            # remain a placeholder.
+            self.delete()
             return
 
         session_delta = SiteSettings.get().GetSessionTimeoutDelta()

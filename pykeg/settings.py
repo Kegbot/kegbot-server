@@ -53,9 +53,9 @@ STATICFILES_FINDERS = (
 
 ROOT_URLCONF = 'pykeg.web.urls'
 
-TEMPLATE_DIRS = (
+TEMPLATE_DIRS = [
     'web/templates',
-)
+]
 
 SITE_ID = 1
 
@@ -367,11 +367,9 @@ if DEBUG:
             elif HAVE_PYLIBMC:
                 DEBUG_TOOLBAR_PANELS += ('debug_toolbar_memcache.panels.pylibmc.PylibmcPanel',)
 
-# Add all plugins to INSTALLED_APPS in order to pick up their
-# templates.  TODO(mikey): Move into template loader.
-for plugin in KEGBOT_PLUGINS:
-    module = plugin[:plugin.rindex('.')]
-    INSTALLED_APPS += (module,)
+# Add all plugin template dirs to search path.
+from pykeg.core.util import get_plugin_template_dirs
+TEMPLATE_DIRS += get_plugin_template_dirs(KEGBOT_PLUGINS)
 
 ### Statsd
 

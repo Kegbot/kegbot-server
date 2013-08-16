@@ -176,9 +176,18 @@ CELERY_QUEUES = {
     'binding_key': 'default'
   },
 }
+
 CELERY_DEFAULT_QUEUE = "default"
 CELERYD_CONCURRENCY = 3
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+from datetime import timedelta
+CELERYBEAT_SCHEDULE = {
+    'ping-every-60-seconds': {
+        'task': 'pykeg.web.tasks.ping',
+        'schedule': timedelta(seconds=60),
+    },
+}
 
 ### logging
 

@@ -59,3 +59,7 @@ def post_webhook_event(hook_url, event_list):
 @task
 def handle_new_picture(picture_id):
     pass  # TODO(mikey): plugin support
+
+@task
+def ping():
+    return True

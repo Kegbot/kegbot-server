@@ -178,6 +178,7 @@ CELERY_QUEUES = {
 }
 CELERY_DEFAULT_QUEUE = "default"
 CELERYD_CONCURRENCY = 3
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 ### logging
 

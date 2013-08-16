@@ -53,10 +53,6 @@ class CalibrateTapForm(forms.Form):
 class TapSpillForm(forms.Form):
     volume_ml = forms.FloatField()
 
-class PhotoForm(forms.Form):
-    photo = forms.ImageField()
-    time = forms.CharField(required=False)
-
 class DebugLogForm(forms.Form):
     message = forms.CharField()
     client_name = forms.CharField(required=False)

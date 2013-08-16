@@ -20,6 +20,7 @@
 
 import datetime
 import logging
+from functools import wraps
 
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -48,9 +49,11 @@ _LOGGER = logging.getLogger(__name__)
 
 ### Decorators
 
-def auth_required(viewfunc):
-    util.set_needs_auth(viewfunc)
-    return viewfunc
+def auth_required(view_func):
+    def wrapped_view(*args, **kwargs):
+        return view_func(*args, **kwargs)
+    util.set_needs_auth(wrapped_view)
+    return wraps(view_func)(wrapped_view)
 
 ### Helpers
 
@@ -439,6 +442,35 @@ def register(request):
             user_errs.append('Username not available.')
             errors['username'] = user_errs
     raise kbapi.BadRequestError(errors)
+
+@csrf_exempt
+@auth_required
+def user_photo(request, username):
+    user = get_object_or_404(models.User, username=username)
+    if request.method == 'POST':
+        return post_user_photo(request, user)
+    else:
+        return get_user_photo(request, user)
+
+def get_user_photo(request, user):
+    mugshot = user.get_profile().mugshot
+    if not mugshot:
+        return {}
+    return mugshot
+
+def post_user_photo(request, user):
+    photo_file = request.FILES.get('photo')
+    if not photo_file:
+        raise kbapi.BadRequestError('The file "photo" is required.')
+
+    pic = models.Picture.objects.create()
+    pic.image.save(photo_file.name, photo_file)
+    pic.save()
+    profile = user.get_profile()
+    profile.mugshot = pic
+    profile.save()
+    return protolib.ToProto(pic)
+
 
 def default_handler(request):
     raise Http404, "Not an API endpoint: %s" % request.path[:100]

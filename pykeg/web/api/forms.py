@@ -60,7 +60,7 @@ class DebugLogForm(forms.Form):
 class RegisterForm(forms.Form):
     username = forms.RegexField(max_length=30, regex=r"^[\w-]+$")
     email = forms.EmailField()
-    password = forms.CharField()
+    password = forms.CharField(required=False)
     photo = forms.ImageField(required=False)
 
 class AssignTokenForm(forms.Form):

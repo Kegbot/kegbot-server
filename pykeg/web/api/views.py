@@ -426,7 +426,12 @@ def register(request):
             u = models.User()
             u.username = username
             u.email = form.cleaned_data['email']
-            u.set_password(form.cleaned_data['password'])
+            password = form.cleaned_data.get('password')
+            if password:
+                u.set_password(password)
+            else:
+                # Must set password using recovery process.
+                u.set_unusable_password()
             u.save()
             if 'photo' in request.FILES:
                 pic = models.Picture.objects.create()

@@ -178,9 +178,6 @@ class TwitterPlugin(plugin.Plugin):
             if not settings.get('tweet_drink_events'):
                 self.logger.info('Skipping system tweet for drink event %s: disabled by settings.' % event.id)
                 return
-            elif not event.user and not settings.get('include_guests'):
-                self.logger.info('Skipping system tweet for event %s: guest pour.' % event.id)
-                return
             template = settings.get('drink_poured_template')
 
         elif kind == 'session_started':
@@ -195,6 +192,10 @@ class TwitterPlugin(plugin.Plugin):
                 return
             template = settings.get('session_joined_template')
             append_url = bool(settings.get('append_url'))
+
+        if not event.user and not settings.get('include_guests'):
+            self.logger.info('Skipping system tweet for event %s: guest pour.' % event.id)
+            return
 
         tweet = self._compose_tweet(event, template, append_url)
 

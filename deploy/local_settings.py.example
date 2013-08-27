@@ -1,6 +1,6 @@
 # Local settings for kegbot.
-# Edit settings, then copy this file to /etc/kegbot/local_settings.py or
-# ~/.kegbot/local_settings.py
+# Edit settings, then copy this file to /etc/kegbot/local_settings.py,
+# /usr/local/etc/kegbot or ~/.kegbot/local_settings.py
 
 # Disable DEBUG mode when serving external traffic.
 DEBUG = True

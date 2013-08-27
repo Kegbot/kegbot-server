@@ -2,6 +2,7 @@
 LOCAL_SETTINGS_SEARCH_DIRS = (
     '~/.kegbot/',
     '/etc/kegbot/',
+    '/usr/local/etc/kegbot',
 )
 
 ### Drink-related constants

@@ -262,13 +262,14 @@ class SettingsDir(ConfigurationSetupStep):
   Kegbot's master settings file for this system (local_settings.py) should live
   in one of two places on the filesystem:
 
-    ~/.kegbot/     (local to this user, recommended)
-    /etc/kegbot/   (global to all users, requires root access)
+    ~/.kegbot/            (local to this user, recommended)
+    /etc/kegbot/          (global to all users, requires root access)
+    /usr/local/etc/kegbot (same as above, for FreeBSD)
 
   If in doubt, use the default.
   """
   FLAG = 'settings_dir'
-  CHOICES = ('~/.kegbot', '/etc/kegbot')
+  CHOICES = ('~/.kegbot', '/etc/kegbot', '/usr/local/etc/kegbot')
 
   def validate(self, ctx):
     self.value = os.path.expanduser(self.value)

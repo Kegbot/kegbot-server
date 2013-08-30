@@ -16,23 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tasks for the Kegbot core."""
+"""Webhook plugin forms."""
 
-from kegbot.util import util
-from pykeg.plugin import util as plugin_util
+from django import forms
+from django.conf import settings
 
-from celery.decorators import task
+WIDE_TEXT = forms.TextInput(attrs={'class': 'input-block-level'})
 
-def schedule_tasks(event_list):
-    """Synchronously schedules tasks related to the given events."""
-    for event in event_list:
-        for plugin in plugin_util.get_plugins():
-            plugin.handle_new_event(event)
-
-@task
-def handle_new_picture(picture_id):
-    pass  # TODO(mikey): plugin support
-
-@task
-def ping():
-    return True
+class SiteSettingsForm(forms.Form):
+    webhook_urls = forms.CharField(required=False, widget=WIDE_TEXT,
+        help_text='URLs for webhooks, one per line.')

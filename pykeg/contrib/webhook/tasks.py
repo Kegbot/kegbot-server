@@ -16,23 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tasks for the Kegbot core."""
+"""Celery tasks for Webhook plugin."""
 
-from kegbot.util import util
-from pykeg.plugin import util as plugin_util
+from celery.task import task
+from pykeg.plugin import util
+from pykeg.proto import protolib
+from kegbot.util import kbjson
+from urllib import urlencode
+import urllib2
 
-from celery.decorators import task
+logger = util.get_logger(__name__)
 
-def schedule_tasks(event_list):
-    """Synchronously schedules tasks related to the given events."""
-    for event in event_list:
-        for plugin in plugin_util.get_plugins():
-            plugin.handle_new_event(event)
-
-@task
-def handle_new_picture(picture_id):
-    pass  # TODO(mikey): plugin support
-
-@task
-def ping():
-    return True
+@task(expires=180)
+def post_webhook(url, event):
+    """Posts an event to the supplied URL."""
+    logger.info('Posting webhook: url=%s event=%s' % (url, event))
+    post_data = kbjson.dumps({'events': [protolib.ToDict(event)]})
+    post_data = urlencode({'payload': post_data})
+    opener = urllib2.build_opener()
+    opener.addheaders = [
+      ('User-agent', 'Kegbot/%s' % util.get_version('kegbot')),
+    ]
+    try:
+        opener.open(hook_url, data=post_data, timeout=5)
+        return True
+    except urllib2.URLError:
+        return False

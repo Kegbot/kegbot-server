@@ -118,13 +118,9 @@ class SiteSettings(models.Model):
         help_text='Unit system to use when displaying temperature data.')
     title = models.CharField(max_length=64, default='My Kegbot',
         help_text='The title of this site.')
-    description = models.TextField(blank=True, null=True,
-        help_text='Description of this site')
     background_image = models.ForeignKey('Picture', blank=True, null=True,
         on_delete=models.SET_NULL,
         help_text='Background for this site.')
-    web_hook_urls = models.TextField(blank=True, null=True,
-        help_text='URL(s) to POST newly-generated events.')
     google_analytics_id = models.CharField(blank=True, null=True, max_length=64,
         help_text='Set to your Google Analytics ID to enable tracking. '
         'Example: UA-XXXX-y')

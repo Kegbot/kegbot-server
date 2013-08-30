@@ -158,9 +158,10 @@ KEGBOT_ENABLE_ADMIN = True
 
 # Add plugins in local_settings.py
 KEGBOT_PLUGINS = [
-    'pykeg.contrib.twitter.plugin.TwitterPlugin',
     'pykeg.contrib.foursquare.plugin.FoursquarePlugin',
+    'pykeg.contrib.twitter.plugin.TwitterPlugin',
     'pykeg.contrib.untappd.plugin.UntappdPlugin',
+    'pykeg.contrib.webhook.plugin.WebhookPlugin',
 ]
 
 ### Celery

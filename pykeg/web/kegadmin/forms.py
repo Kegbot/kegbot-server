@@ -27,9 +27,6 @@ class ChangeKegForm(forms.Form):
       help_text='Example: Pale Ale, Stout, etc.')
     style_id = forms.CharField(widget=forms.HiddenInput(), required=False)
 
-    description = forms.CharField(required=False,
-        help_text='Public description of this specific keg (optional)')
-
     helper = FormHelper()
     helper.form_class = 'form-horizontal beer-select'
     helper.layout = Layout(
@@ -40,7 +37,6 @@ class ChangeKegForm(forms.Form):
         Field('style_name', css_class='input-xlarge'),
         Field('style_id', type='hidden'),
         Field('keg_size', css_class='input-xlarge'),
-        Field('description', css_class='input-xlarge'),
         FormActions(
             Submit('submit_change_keg_form', 'Activate Keg', css_class='btn-primary'),
         )
@@ -118,14 +114,12 @@ class SiteSettingsForm(forms.ModelForm):
         model = models.SiteSettings
         fields = (
             'title',
-            'description',
             'privacy',
             'volume_display_units',
             'temperature_display_units',
             'timezone',
             'hostname',
             'use_ssl',
-            'web_hook_urls',
             'session_timeout_minutes',
             'google_analytics_id',
             'guest_name',
@@ -140,14 +134,12 @@ class SiteSettingsForm(forms.ModelForm):
     helper.form_class = 'form-horizontal'
     helper.layout = Layout(
         Field('title', css_class='input-xlarge'),
-        Field('description', css_class='input-xlarge'),
         Field('privacy', css_class='input-xlarge'),
         Field('volume_display_units', css_class='input-xlarge'),
         Field('temperature_display_units', css_class='input-xlarge'),
         Field('timezone'),
         Field('hostname'),
         Field('use_ssl'),
-        Field('web_hook_urls'),
         Field('session_timeout_minutes'),
         Field('google_analytics_id'),
         Field('guest_name'),

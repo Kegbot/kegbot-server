@@ -48,12 +48,12 @@ class KegbotBackend:
         self.cache = KegbotCache()
 
     @transaction.commit_on_success
-    def CreateNewUser(self, username):
+    def create_new_user(self, username):
         """Creates and returns a User for the given username."""
         return models.User.objects.create(username=username)
 
     @transaction.commit_on_success
-    def CreateTap(self, name, meter_name, relay_name=None, ml_per_tick=None):
+    def create_tap(self, name, meter_name, relay_name=None, ml_per_tick=None):
         """Creates and returns a new KegTap.
 
         Args:
@@ -74,7 +74,7 @@ class KegbotBackend:
         return tap
 
     @transaction.commit_on_success
-    def CreateAuthToken(self, auth_device, token_value, username=None):
+    def create_auth_token(self, auth_device, token_value, username=None):
         """Creates a new AuthenticationToken.
 
         The combination of (auth_device, token_value) must be unique within the
@@ -99,7 +99,7 @@ class KegbotBackend:
         return token
 
     @transaction.commit_on_success
-    def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
+    def record_drink(self, tap_name, ticks, volume_ml=None, username=None,
         pour_time=None, duration=0, shout='', tick_time_series='',
         do_postprocess=True):
         """Records a new drink against a given tap.
@@ -129,7 +129,7 @@ class KegbotBackend:
             The newly-created Drink instance.
         """
 
-        tap = self._GetTapFromName(tap_name)
+        tap = self._get_tap_from_name(tap_name)
         if not tap:
             raise BackendError("Tap unknown")
         if not tap.is_active or not tap.current_keg:
@@ -177,7 +177,7 @@ class KegbotBackend:
         return d
 
     @transaction.commit_on_success
-    def CancelDrink(self, drink, spilled=False):
+    def cancel_drink(self, drink, spilled=False):
         """Permanently deletes a Drink from the system.
 
         Associated data, such as SystemEvent, PourPicture, and other data, will
@@ -229,7 +229,7 @@ class KegbotBackend:
         return drink
 
     @transaction.commit_on_success
-    def AssignDrink(self, drink, user):
+    def assign_drink(self, drink, user):
         """Assigns, or re-assigns, a previously-recorded Drink.
 
         Statistics and session data will be recomputed as a side-effect
@@ -268,7 +268,7 @@ class KegbotBackend:
         return drink
 
     @transaction.commit_on_success
-    def SetDrinkVolume(self, drink, volume_ml):
+    def set_drink_volume(self, drink, volume_ml):
         """Updates the drink volume."""
         if volume_ml == drink.volume_ml:
             return
@@ -291,7 +291,7 @@ class KegbotBackend:
         self.cache.update_generation()
 
     @transaction.commit_on_success
-    def LogSensorReading(self, sensor_name, temperature, when=None):
+    def log_sensor_reading(self, sensor_name, temperature, when=None):
         """Logs a ThermoSensor reading.
 
         To avoid an excessive number of entries, the system limits temperature
@@ -330,7 +330,7 @@ class KegbotBackend:
         if temperature < min_val or temperature > max_val:
             raise ValueError('Temperature out of bounds')
 
-        sensor = self._GetSensorFromName(sensor_name)
+        sensor = self._get_sensor_form_name(sensor_name)
         log_defaults = {
             'temp': temperature,
         }
@@ -348,7 +348,7 @@ class KegbotBackend:
         return record
 
     @transaction.commit_on_success
-    def GetAuthToken(self, auth_device, token_value):
+    def get_auth_token(self, auth_device, token_value):
         """Fetches the AuthenticationToken matching the given parameters.
 
         Args:
@@ -371,7 +371,7 @@ class KegbotBackend:
             raise NoTokenError
 
     @transaction.commit_on_success
-    def StartKeg(self, tap, beer_type=None, keg_size=None,
+    def start_keg(self, tap, beer_type=None, keg_size=None,
             brewer_name=None, beer_name=None, style_name=None):
         """Activates a new keg at the given tap.
 
@@ -443,7 +443,7 @@ class KegbotBackend:
         return keg
 
     @transaction.commit_on_success
-    def EndKeg(self, tap):
+    def end_keg(self, tap):
         """Takes the current Keg offline at the given tap.
 
         Args:
@@ -471,21 +471,14 @@ class KegbotBackend:
 
         return keg
 
-    def _GetTapFromName(self, tap_name):
+    def _get_tap_from_name(self, tap_name):
         """"Returns a KegTap object with meter_name matching tap_name, or None."""
         try:
             return models.KegTap.objects.get(meter_name=tap_name)
         except models.KegTap.DoesNotExist:
             return None
 
-    def _GetKegForTapName(self, tap_name):
-        """Returns the current keg at tap matching tap_name, or None."""
-        tap = self._GetTapFromName(tap_name)
-        if tap and tap.current_keg and tap.current_keg.online:
-            return tap.current_keg
-        return None
-
-    def _GetSensorFromName(self, name, autocreate=True):
+    def _get_sensor_form_name(self, name, autocreate=True):
         """Returns the TemperatureSensor with raw_name matching name.
 
         Args:

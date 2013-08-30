@@ -119,7 +119,7 @@ def tap_detail(request, tap_id):
             delete_form = forms.DeleteTapForm(request.POST)
             if delete_form.is_valid():
                 if tap.current_keg:
-                    request.backend.EndKeg(tap)
+                    request.backend.end_keg(tap)
                 tap.delete()
                 messages.success(request, 'Tap deleted.')
                 return redirect('kegadmin-taps')
@@ -127,7 +127,7 @@ def tap_detail(request, tap_id):
         elif 'submit_end_keg_form' in request.POST:
             end_keg_form = forms.EndKegForm(request.POST)
             if end_keg_form.is_valid():
-                old_keg = request.backend.EndKeg(tap)
+                old_keg = request.backend.end_keg(tap)
                 messages.success(request, 'Keg %s was ended.' % old_keg.id)
 
         elif 'submit_record_drink' in request.POST:
@@ -135,7 +135,7 @@ def tap_detail(request, tap_id):
             if record_drink_form.is_valid():
                 user = record_drink_form.cleaned_data.get('user')
                 volume_ml = record_drink_form.cleaned_data.get('volume_ml')
-                d = request.backend.RecordDrink(tap.meter_name, ticks=0, username=user,
+                d = request.backend.record_drink(tap.meter_name, ticks=0, username=user,
                     volume_ml=volume_ml)
                 messages.success(request, 'Drink %s recorded.' % d.id)
             else:
@@ -256,7 +256,7 @@ def drink_edit(request, drink_id):
         form = forms.CancelDrinkForm(request.POST)
         old_keg = drink.keg
         if form.is_valid():
-            request.backend.CancelDrink(drink)
+            request.backend.cancel_drink(drink)
             messages.success(request, 'Drink %s was cancelled.' % drink_id)
             return redirect(old_keg.get_absolute_url())
         else:
@@ -268,7 +268,7 @@ def drink_edit(request, drink_id):
         if form.is_valid():
             username = form.cleaned_data.get('username', None)
             try:
-                request.backend.AssignDrink(drink, username)
+                request.backend.assign_drink(drink, username)
                 messages.success(request, 'Drink %s was reassigned.' % drink_id)
             except models.User.DoesNotExist:
                 messages.error(request, 'No such user')
@@ -283,7 +283,7 @@ def drink_edit(request, drink_id):
             if volume_ml == drink.volume_ml:
                 messages.warning(request, 'Drink volume unchanged.')
             else:
-                request.backend.SetDrinkVolume(drink, volume_ml)
+                request.backend.set_drink_volume(drink, volume_ml)
                 messages.success(request, 'Drink %s was updated.' % drink_id)
         else:
             messages.error(request, 'Please provide a valid volume.')

@@ -34,14 +34,14 @@ class StatsTestCase(TransactionTestCase):
         self.backend = backend.KegbotBackend()
 
         test_usernames = ('user1', 'user2', 'user3')
-        self.users = [self.backend.CreateNewUser(name) for name in test_usernames]
+        self.users = [self.backend.create_new_user(name) for name in test_usernames]
 
         self.taps = [
-            self.backend.CreateTap('tap1', 'kegboard.flow0', ml_per_tick=1/2200.0),
-            self.backend.CreateTap('tap2', 'kegboard.flow1', ml_per_tick=1/2200.0),
+            self.backend.create_tap('tap1', 'kegboard.flow0', ml_per_tick=1/2200.0),
+            self.backend.create_tap('tap2', 'kegboard.flow1', ml_per_tick=1/2200.0),
         ]
 
-        self.keg = self.backend.StartKeg('kegboard.flow0', beer_name='Unknown',
+        self.keg = self.backend.start_keg('kegboard.flow0', beer_name='Unknown',
             brewer_name='Unknown', style_name='Unknown')
 
     def testStuff(self):
@@ -52,7 +52,7 @@ class StatsTestCase(TransactionTestCase):
         now = make_datetime(2012, 1, 2, 12, 00)
         self.maxDiff = None
 
-        d = self.backend.RecordDrink('kegboard.flow0', ticks=1, volume_ml=100,
+        d = self.backend.record_drink('kegboard.flow0', ticks=1, volume_ml=100,
             username='user1', pour_time=now)
         expected = util.AttrDict({
             u'volume_by_year': {u'2012': 100.0},
@@ -72,7 +72,7 @@ class StatsTestCase(TransactionTestCase):
         self.assertDictEqual(expected, stats)
 
         now = make_datetime(2012, 1, 3, 12, 00)
-        d = self.backend.RecordDrink('kegboard.flow0', ticks=200,
+        d = self.backend.record_drink('kegboard.flow0', ticks=200,
             volume_ml=200, username='user2', pour_time=now)
         stats = site.GetStats()
         expected.total_pours = 2

@@ -135,7 +135,7 @@ def get_keg_sizes(request):
 def end_keg(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
     tap = keg.current_tap
-    keg = request.backend.EndKeg(tap)
+    keg = request.backend.end_keg(tap)
     return protolib.ToProto(keg, full=True)
 
 def all_sessions(request):
@@ -207,7 +207,7 @@ def get_user_stats(request, username):
 
 @auth_required
 def get_auth_token(request, auth_device, token_value):
-    tok = request.backend.GetAuthToken(auth_device, token_value)
+    tok = request.backend.get_auth_token(auth_device, token_value)
     return tok
 
 @csrf_exempt
@@ -229,9 +229,9 @@ def assign_auth_token(request, auth_device, token_value):
         raise kbapi.BadRequestError("User does not exist")
 
     try:
-        tok = b.GetAuthToken(auth_device, token_value)
+        tok = b.get_auth_token(auth_device, token_value)
     except backend.NoTokenError:
-        tok = b.CreateAuthToken(auth_device, token_value, username=username)
+        tok = b.create_auth_token(auth_device, token_value, username=username)
 
     if tok.user != user:
         if tok.user:
@@ -284,7 +284,7 @@ def _thermo_sensor_post(request, sensor_name):
     cd = form.cleaned_data
     sensor, created = models.ThermoSensor.objects.get_or_create(raw_name=sensor_name)
     # TODO(mikey): use form fields to compute `when`
-    return request.backend.LogSensorReading(sensor.raw_name, cd['temp_c'])
+    return request.backend.log_sensor_reading(sensor.raw_name, cd['temp_c'])
 
 def get_thermo_sensor_logs(request, sensor_name):
     sensor = _get_sensor_or_404(request, sensor_name)
@@ -367,7 +367,7 @@ def _tap_detail_post(request, tap):
     if duration is None:
         duration = 0
     try:
-        res = request.backend.RecordDrink(tap_name=tap.meter_name,
+        res = request.backend.record_drink(tap_name=tap.meter_name,
           ticks=cd['ticks'],
           volume_ml=cd.get('volume_ml'),
           username=cd.get('username'),
@@ -389,7 +389,7 @@ def cancel_drink(request):
         raise kbapi.BadRequestError, _form_errors(form)
     cd = form.cleaned_data
     try:
-        res = request.backend.CancelDrink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
+        res = request.backend.cancel_drink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
         return protolib.ToProto(res, full=True)
     except backend.BackendError, e:
         raise kbapi.ServerError(str(e))

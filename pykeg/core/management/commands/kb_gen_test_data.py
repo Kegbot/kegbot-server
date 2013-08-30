@@ -66,7 +66,7 @@ class Command(NoArgsCommand):
                 models.User.objects.get_or_create(username=username)
 
             start_time = time.time()
-            d = b.RecordDrink(TAP, ticks, pour_time=now, username=username)
+            d = b.record_drink(TAP, ticks, pour_time=now, username=username)
             delta = time.time() - start_time
             end_session = random.random() >= 0.75
 
@@ -79,5 +79,5 @@ class Command(NoArgsCommand):
                 now += datetime.timedelta(minutes=random.randrange(3, 60))
 
             if d.keg.remaining_volume < 10000:
-                b.EndKeg(TAP)
-                b.StartKeg(TAP)
+                b.end_keg(TAP)
+                b.start_keg(TAP)

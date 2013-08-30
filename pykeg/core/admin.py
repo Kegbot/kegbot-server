@@ -1,5 +1,4 @@
-# -*- coding: latin-1 -*-
-# Copyright 2009 Mike Wakerly <opensource@hoho.com>
+# Copyright 2013 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -17,10 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Django admin site settings for core models."""
+
 from django.contrib import admin
-
 from kegbot.util import util
-
 from pykeg.core import models
 
 admin.site.register(models.UserProfile)

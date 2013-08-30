@@ -42,7 +42,6 @@ from kegbot.util import kbjson
 from kegbot.util import units
 
 from pykeg.core import backend
-from pykeg.core import backup
 from pykeg.core import logger
 from pykeg.core import models
 
@@ -536,35 +535,6 @@ def plugin_settings(request, plugin_name):
         raise Http404('No settings for this plugin')
 
     return view(request, plugin)
-
-@staff_member_required
-def backup_restore(request):
-    context = RequestContext(request)
-    return render_to_response('kegadmin/backup-restore.html', context_instance=context)
-
-@staff_member_required
-def generate_backup(request):
-    context = RequestContext(request)
-
-    fmt = request.GET.get('fmt', 'minjson')
-    if fmt == 'json':
-        indent = 2
-    else:
-        indent = None
-        fmt = 'minjson'
-
-    kbsite = request.kbsite
-    datestr = timezone.now().strftime('%Y%m%d-%H%M%S')
-    filename = 'kegbot-%s.%s.%s.txt' % (kbsite.name, datestr, fmt)
-
-    output_fp = cStringIO.StringIO()
-    backup.dump(output_fp, kbsite, indent=indent)
-
-    response = HttpResponse(output_fp.getvalue(),
-        mimetype="application/octet-stream")
-    response['Content-Disposition'] = 'attachment; filename=%s' % filename
-    output_fp.close()
-    return response
 
 @staff_member_required
 def logs(request):

@@ -31,8 +31,6 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^tokens/create/$', 'add_token', name='kegadmin-add-token'),
     url(r'^tokens/(?P<token_id>\d+)/$', 'token_detail', name='kegadmin-edit-token'),
 
-    url(r'^backup-restore/$', 'backup_restore', name='kegadmin-backup-restore'),
-    url(r'^backup-restore/dump/$', 'generate_backup', name='kegadmin-get-backup'),
     url(r'^logs/$', 'logs', name='kegadmin-logs'),
     url(r'^autocomplete/beer/$', 'autocomplete_beer_type',
       name='kegadmin-autocomplete-beer'),

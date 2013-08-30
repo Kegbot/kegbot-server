@@ -1,7 +1,9 @@
-# Pykeg main settings file.
+# Kegbot Server main settings file.
+#
+# YOU SHOULD NOT EDIT THIS FILE.  Instead, run `setup-kegbot.py` and override
+# any settings in the local_settings.py file it installs.
 
-# Note: YOU SHOULD NOT NEED TO EDIT THIS FILE.  Instead, see the instructions in
-# local_settings.py.example.
+# --------------------------------------------------------------------------- #
 
 # Grab flags for optional modules.
 from pykeg.core.optional_modules import *

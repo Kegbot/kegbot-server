@@ -1,17 +1,8 @@
 from django.conf import settings
 
 import pykeg
-from pykeg.core import features
 from pykeg.core import models
 from pykeg.web.kegweb.forms import LoginForm
-
-def enabled_features(request):
-    """Adds a USE_FEATURENAME flags for each enabled feature (see features.py)"""
-    # TODO(mikey): this might make it harder to diagnose why features aren't
-    # visible/being used.
-    ret = {}
-    ret['USE_FACEBOOK'] = features.use_facebook()
-    return ret
 
 def kbsite(request):
     kbsite = getattr(request, 'kbsite', None)

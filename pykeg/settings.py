@@ -34,7 +34,6 @@ INSTALLED_APPS = (
     'icanhaz',
     'registration',
     'socialregistration',
-    'socialregistration.contrib.facebook',
     'south',
     'django_nose', # must be after south
 )
@@ -110,7 +109,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.contrib.auth.context_processors.auth',
     'django.contrib.messages.context_processors.messages',
-    'pykeg.web.context_processors.enabled_features',
     'pykeg.web.context_processors.kbsite',
 )
 
@@ -331,19 +329,6 @@ except ImportError:
 TIME_ZONE = 'UTC'
 
 ### socialregistration (after importing common settings)
-
-if FACEBOOK_API_KEY and FACEBOOK_SECRET_KEY:
-    MIDDLEWARE_CLASSES += (
-      'socialregistration.middleware.FacebookMiddleware',
-    )
-    AUTHENTICATION_BACKENDS += (
-      'socialregistration.contrib.facebook.auth.FacebookAuth',
-    )
-
-if TWITTER_CONSUMER_KEY and TWITTER_CONSUMER_SECRET_KEY:
-    AUTHENTICATION_BACKENDS += (
-      'socialregistration.contrib.twitter.auth.TwitterAuth',
-    )
 
 if KEGBOT_ENABLE_ADMIN:
     INSTALLED_APPS += ('django.contrib.admin',)

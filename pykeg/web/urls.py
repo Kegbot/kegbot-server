@@ -17,7 +17,6 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
-from pykeg.core import features
 
 from django.conf import settings
 from django.conf.urls import include
@@ -69,12 +68,6 @@ urlpatterns = patterns('',
     ### kegadmin
     (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 )
-
-if features.use_facebook():
-    urlpatterns += patterns('',
-        ### facebook kegweb stuff
-        (r'^fb/', include('pykeg.web.contrib.facebook.urls')),
-    )
 
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()

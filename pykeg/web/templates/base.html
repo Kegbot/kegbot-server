@@ -1,7 +1,6 @@
 {% extends "skel.html" %}
 {% load kegweblib %}
 {% load humanize %}
-{% if USE_FACEBOOK %}{% load facebook %}{% endif %}
 
 {% block title %}{% if kbsite.settings.title %}{{ kbsite.settings.title }}{% else %}Kegbot{% endif %}{% endblock %}
 

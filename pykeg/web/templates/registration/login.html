@@ -5,12 +5,6 @@
 {% block title %}Log In to {{kbsite.name}}{% endblock %}
 {% block pagetitle %}Log In{% endblock %}
 
-{% block kb-extrajs %}
-   {% if USE_FACEBOOK %}
-   {% load facebook %}
-   {% endif %}
-{% endblock %}
-
 {% block col-1 %}
 <div class="well">
   <form action="" method="POST">
@@ -25,17 +19,3 @@
 </p>
 
 {% endblock col-1 %}
-
-{% block col-2 %}
-
-  {% if USE_FACEBOOK %}
-  <div class="kb-contentbox-head">
-    login using facebook
-  </div>
-  <div class="kb-contentbox">
-    {% facebook_button %}
-  </div>
-  <p/>
-  {% endif %}
-
-{% endblock %}

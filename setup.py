@@ -31,7 +31,6 @@ DEPENDENCIES = [
   'django-crispy-forms == 1.2.8',
   'django-icanhaz == 0.2.1',
   'django_nose == 1.1',
-  'facebook-sdk == 0.4.0',
   'foursquare == 20130402',
   'gunicorn == 0.17.4',
   'MySQL-python == 1.2.4',

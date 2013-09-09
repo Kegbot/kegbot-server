@@ -5,10 +5,11 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.13 (2013-09-09)
+---------------------------
 
 * Deleting the last drink in a session will delete the session.
+* Bug fixes: #146, #147, #150.
 
 Version 0.9.12 (2013-08-01)
 ---------------------------

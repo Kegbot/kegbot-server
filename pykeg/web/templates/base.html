@@ -140,15 +140,17 @@
     </div>
 
     <footer>
-      <p>
+      <p class="muted">
         <small>
           Powered by
-          <a href="http://kegbot.org/">Kegbot</a>{% if user.is_staff %}, version {{ VERSION }}{% endif %}.
-        &copy; 2003-{% now "Y" %} mike wakerly<br/>
-
-        <a href='#' onClick='window.app.get("pageSettings").toggleMetric();'>Toggle Units</a>
-        <span id="page-settings"></span> |
-        charts by <a href="http://highcharts.com/" target="_blank">highcharts</a>
+          <a href="http://kegbot.org/?utm_source=kbserver">Kegbot</a>{% if user.is_staff %}, version {{ VERSION }}{% endif %}
+          &mdash;
+          &copy; 2003-2013 <a href="http://bevbot.com/?utm_source=kbserver">Bevbot LLC</a>
+          &mdash;
+          Charts by <a href="http://highcharts.com/" target="_blank">Highcharts</a>
+          &mdash;
+          <a href='#' onClick='window.app.get("pageSettings").toggleMetric();'>Toggle Units</a>
+          <span id="page-settings"></span>
         </small>
       </p>
     </footer>

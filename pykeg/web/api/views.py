@@ -95,6 +95,10 @@ def add_drink_photo(request, drink_id):
     if request.method != 'POST':
         raise Http404('Method not supported')
     drink = get_object_or_404(models.Drink, id=drink_id)
+    pour_pic = _save_pour_pic(request, drink)
+    return protolib.ToProto(pour_pic, full=True)
+
+def _save_pour_pic(request, drink):
     pic = models.Picture.objects.create(image=request.FILES['photo'])
     pour_pic = models.PourPicture.objects.create(picture_id=pic.id,
         drink=drink,
@@ -102,7 +106,7 @@ def add_drink_photo(request, drink_id):
         keg=drink.keg,
         session=drink.session)
     tasks.handle_new_picture.delay(pour_pic.id)
-    return protolib.ToProto(pour_pic, full=True)
+    return pour_pic
 
 def get_session(request, session_id):
     session = get_object_or_404(models.DrinkingSession, id=session_id)
@@ -367,7 +371,7 @@ def _tap_detail_post(request, tap):
     if duration is None:
         duration = 0
     try:
-        res = request.backend.record_drink(tap_name=tap.meter_name,
+        drink = request.backend.record_drink(tap_name=tap.meter_name,
           ticks=cd['ticks'],
           volume_ml=cd.get('volume_ml'),
           username=cd.get('username'),
@@ -375,7 +379,9 @@ def _tap_detail_post(request, tap):
           duration=duration,
           shout=cd.get('shout'),
           tick_time_series=cd.get('tick_time_series'))
-        return protolib.ToProto(res, full=True)
+        if 'photo' in request.FILES:
+            _save_pour_pic(request, drink)
+        return protolib.ToProto(drink, full=True)
     except backend.BackendError, e:
         raise kbapi.ServerError(str(e))
 

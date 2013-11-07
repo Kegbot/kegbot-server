@@ -54,7 +54,7 @@ class ChangeKegForm(forms.Form):
         keg = b.start_keg(tap, beer_name=cd['beer_name'], brewer_name=cd['brewer_name'],
             style_name=cd['style_name'], keg_size=cd['keg_size'])
 
-        if cd['description']:
+        if cd.get('description'):
             keg.description = cd['description']
             keg.save()
 

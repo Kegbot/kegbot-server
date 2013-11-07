@@ -21,10 +21,12 @@
 # Note: imports should be limited to python stdlib, since methods here
 # may be used in models.py, settings.py, etc.
 
-from importlib import import_module
+import pkgutil
 import os
 import sys
 import random
+
+from django.core.exceptions import ImproperlyConfigured
 
 def make_serial():
     '''Returns a random serial number.'''
@@ -38,11 +40,10 @@ def get_plugin_template_dirs(plugin_list):
     ret = []
     for plugin in plugin_list:
         plugin_module = '.'.join(plugin.split('.')[:-1])
-        try:
-            mod = import_module(plugin_module)
-        except ImportError as e:
-            continue
-        template_dir = os.path.join(os.path.dirname(mod.__file__), 'templates')
+        pkg = pkgutil.get_loader(plugin_module)
+        if not pkg:
+            raise ImproperlyConfigured('Cannot find plugin "%s"' % plugin)
+        template_dir = os.path.join(os.path.dirname(pkg.filename), 'templates')
         if os.path.isdir(template_dir):
             if not six.PY3:
                 template_dir = template_dir.decode(fs_encoding)

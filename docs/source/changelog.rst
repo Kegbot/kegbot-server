@@ -5,6 +5,11 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* Webhook support moved to plugin.
+
+
 Version 0.9.13 (2013-09-09)
 ---------------------------
 

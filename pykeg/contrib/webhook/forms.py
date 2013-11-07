@@ -21,8 +21,8 @@
 from django import forms
 from django.conf import settings
 
-WIDE_TEXT = forms.TextInput(attrs={'class': 'input-block-level'})
+TEXTAREA = forms.Textarea(attrs={'class': 'input-block-level'})
 
 class SiteSettingsForm(forms.Form):
-    webhook_urls = forms.CharField(required=False, widget=WIDE_TEXT,
+    webhook_urls = forms.CharField(required=False, widget=TEXTAREA,
         help_text='URLs for webhooks, one per line.')

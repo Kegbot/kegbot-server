@@ -22,7 +22,7 @@
       <a class="gallery-image" rel="gallery-{{ gallery_id }}"
           href="{{ pic.picture.resized.url }}"
           title="{% drinker_name event.user nolink %} pouring drink {{ event.drink.id }}">
-        <img class="lazy" data-original="{{pic.picture.resized.url}}" />
+        <img class="lazy" data-original="{{pic.picture.resized.url}}" width="1024" height="1024"/>
         <noscript><img src="{{pic.picture.resized.url}}" /></noscript>
       </a>
     {% endif %}

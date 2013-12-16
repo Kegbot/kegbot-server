@@ -5,8 +5,9 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.14 (2013-12-16)
+---------------------------
+* Pour images will be loaded lazily in the browser.
 * Webhook support moved to plugin.
 
 

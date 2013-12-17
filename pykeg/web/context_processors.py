@@ -2,6 +2,7 @@ from django.conf import settings
 
 import pykeg
 from pykeg.core import models
+from pykeg.core import util
 from pykeg.web.kegweb.forms import LoginForm
 
 def kbsite(request):
@@ -11,7 +12,7 @@ def kbsite(request):
       'DEBUG': settings.DEBUG,
       'EMBEDDED': getattr(settings, 'EMBEDDED', False),
       'EPOCH': pykeg.EPOCH,
-      'VERSION': pykeg.__version__,
+      'VERSION': util.get_version(),
       'HAVE_SESSIONS': False,
       'HAVE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,
       'GOOGLE_ANALYTICS_ID': None,

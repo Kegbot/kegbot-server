@@ -36,7 +36,7 @@ import subprocess
 
 from kegbot.util import app
 
-from pykeg import __version__ as VERSION
+from pykeg.core import util
 from pykeg.core import kb_common
 
 gflags.DEFINE_boolean('use_existing', True,
@@ -87,7 +87,7 @@ SETTINGS_TEMPLATE = """# Kegbot local settings.
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-""" % (sys.argv[0], VERSION)
+""" % (sys.argv[0], util.get_version())
 
 # Context values which will be copied to the output settings.
 SETTINGS_NAMES = (

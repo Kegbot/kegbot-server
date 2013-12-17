@@ -23,10 +23,17 @@
 
 import pkgutil
 import os
+import pkg_resources
 import sys
 import random
 
 from django.core.exceptions import ImproperlyConfigured
+
+def get_version():
+    try:
+        return pkg_resources.get_distribution('kegbot').version
+    except pkg_resources.DistributionNotFound:
+        return 'unknown'
 
 def make_serial():
     '''Returns a random serial number.'''

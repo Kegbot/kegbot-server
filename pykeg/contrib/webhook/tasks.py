@@ -21,24 +21,38 @@
 from celery.task import task
 from pykeg.plugin import util
 from pykeg.proto import protolib
+from pykeg.core.util import get_version
 from kegbot.util import kbjson
-from urllib import urlencode
+import requests
 import urllib2
 
 logger = util.get_logger(__name__)
 
 @task(expires=180)
 def post_webhook(url, event):
-    """Posts an event to the supplied URL."""
+    """Posts an event to the supplied URL.
+
+    The request body is a JSON dictionary of:
+      * type: webhook message type (currently always 'event')
+      * data: webhook data (the event payload)
+
+    Event payloads are in the same format as the /api/events/ endpoint.
+    """
     logger.info('Posting webhook: url=%s event=%s' % (url, event))
-    post_data = kbjson.dumps({'events': [protolib.ToDict(event)]})
-    post_data = urlencode({'payload': post_data})
-    opener = urllib2.build_opener()
-    opener.addheaders = [
-      ('User-agent', 'Kegbot/%s' % util.get_version('kegbot')),
-    ]
+
+    event_dict = protolib.ToDict(event)
+    hook_dict = {
+        'type': 'event',
+        'data': event_dict,
+    }
+
+    headers = {
+        'content-type': 'application/json',
+        'user-agent': 'Kegbot/%s' % get_version(),
+    }
+    
     try:
-        opener.open(hook_url, data=post_data, timeout=5)
-        return True
-    except urllib2.URLError:
+        return requests.post(url, data=kbjson.dumps(hook_dict), headers=headers)
+    except requests.exceptions.RequestException, e:
+        logger.warning('Error posting hook: %s' % e)
         return False

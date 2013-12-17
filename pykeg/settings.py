@@ -20,7 +20,6 @@ INSTALLED_APPS = (
 
     'crispy_forms',
     'djcelery',
-    'djkombu',
     'bootstrap-pagination',
     'imagekit',
     'pykeg.contrib.soundserver',

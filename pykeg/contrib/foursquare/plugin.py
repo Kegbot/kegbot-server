@@ -58,8 +58,8 @@ class FoursquarePlugin(plugin.Plugin):
         self.logger.info('Handling new event: %s' % event.id)
         user = event.user
 
-        if event.kind != 'drink_poured':
-            self.logger.info('Ignoring event: not session_joined.')
+        if event.kind != event.DRINK_POURED:
+            self.logger.info('Ignoring event: not %s.' % event.DRINK_POURED)
             return
 
         if not user:

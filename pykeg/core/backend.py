@@ -171,7 +171,7 @@ class KegbotBackend:
 
         if do_postprocess:
             stats.generate(d)
-            events = models.SystemEvent.ProcessDrink(d)
+            events = models.SystemEvent.build_events_for_drink(d)
             tasks.schedule_tasks(events)
 
         return d
@@ -440,6 +440,9 @@ class KegbotBackend:
         tap.current_keg = keg
         tap.save()
 
+        events = models.SystemEvent.build_events_for_keg(keg)
+        tasks.schedule_tasks(events)
+
         return keg
 
     @transaction.commit_on_success
@@ -468,6 +471,9 @@ class KegbotBackend:
 
         tap.current_keg = None
         tap.save()
+
+        events = models.SystemEvent.build_events_for_keg(keg)
+        tasks.schedule_tasks(events)
 
         return keg
 

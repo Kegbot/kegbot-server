@@ -174,28 +174,40 @@ class TwitterPlugin(plugin.Plugin):
         tweet = None
         append_url = bool(settings.get('append_url'))
 
-        if kind == 'drink_poured':
+        if kind == event.DRINK_POURED:
             if not settings.get('tweet_drink_events'):
                 self.logger.info('Skipping system tweet for drink event %s: disabled by settings.' % event.id)
                 return
             template = settings.get('drink_poured_template')
 
-        elif kind == 'session_started':
+        elif kind == event.SESSION_STARTED:
             if not settings.get('tweet_session_events'):
                 self.logger.info('Skipping system tweet for session start event %s: disabled by settings.' % event.id)
                 return
             template = settings.get('session_started_template')
 
-        elif kind == 'session_joined':
+        elif kind == event.SESSION_JOINED:
             if not settings.get('tweet_session_events'):
                 self.logger.info('Skipping system tweet for session join event %s: disabled by settings.' % event.id)
                 return
             template = settings.get('session_joined_template')
-            append_url = bool(settings.get('append_url'))
 
-        if not event.user and not settings.get('include_guests'):
-            self.logger.info('Skipping system tweet for event %s: guest pour.' % event.id)
-            return
+        elif kind == event.KEG_TAPPED:
+            if not settings.get('tweet_keg_events'):
+                self.logger.info('Skipping system tweet for keg start event %s: disabled by settings.' % event.id)
+                return
+            template = settings.get('keg_started_template')
+
+        elif kind == event.KEG_ENDED:
+            if not settings.get('tweet_keg_events'):
+                self.logger.info('Skipping system tweet for keg end event %s: disabled by settings.' % event.id)
+                return
+            template = settings.get('keg_ended_template')
+
+        if kind in (event.DRINK_POURED, event.SESSION_JOINED):
+            if not event.user and not settings.get('include_guests'):
+                self.logger.info('Skipping system tweet for event %s: guest pour.' % event.id)
+                return
 
         tweet = self._compose_tweet(event, template, append_url)
 
@@ -208,7 +220,7 @@ class TwitterPlugin(plugin.Plugin):
         tweet = None
         append_url = bool(site_settings.get('append_url'))
 
-        if kind not in ('session_joined', 'drink_poured'):
+        if kind not in (event.SESSION_JOINED, event.DRINK_POURED):
             return
 
         profile = self.get_user_profile(user)
@@ -218,13 +230,13 @@ class TwitterPlugin(plugin.Plugin):
 
         user_settings = self.get_user_settings(user)
         
-        if kind == 'drink_poured':
+        if kind == event.DRINK_POURED:
             if not user_settings.get('tweet_drink_events'):
                 self.logger.info('Skipping drink tweet for event %s: disabled by user.' % event.id)
                 return
             template = site_settings.get('drink_poured_template')
 
-        elif kind == 'session_joined':
+        elif kind == event.SESSION_JOINED:
             if not user_settings.get('tweet_session_events'):
                 self.logger.info('Skipping session tweet for event %s: disabled by user.' % event.id)
                 return
@@ -273,6 +285,12 @@ class TwitterPlugin(plugin.Plugin):
         beer_name = ''
         if event.drink and (event.drink.keg and event.drink.keg.type):
             beer_name = event.drink.keg.type.name
+
+        # Must be a keg event if we still have no beer name.
+        if event.keg and event.keg.type and not beer_name:
+            beer_name = event.keg.type.name
+            if not url:
+                url = event.keg.full_url()
 
         volume_str = ''
         if event.drink:

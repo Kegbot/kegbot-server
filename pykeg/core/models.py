@@ -416,6 +416,9 @@ class Keg(models.Model):
     def get_absolute_url(self):
         return reverse('kb-keg', args=(str(self.id),))
 
+    def full_url(self):
+        return '%s%s' % (SiteSettings.get().base_url(), self.get_absolute_url())
+
     def full_volume(self):
         return self.full_volume_ml
 
@@ -517,12 +520,6 @@ def _keg_pre_save(sender, instance, **kwargs):
             keg.end_time = drink.time
 
 pre_save.connect(_keg_pre_save, sender=Keg)
-
-def _keg_post_save(sender, instance, **kwargs):
-    keg = instance
-    SystemEvent.ProcessKeg(keg)
-
-post_save.connect(_keg_post_save, sender=Keg)
 
 
 class Drink(models.Model):
@@ -977,12 +974,18 @@ class SystemEvent(models.Model):
         ordering = ('-id',)
         get_latest_by = 'time'
 
+    DRINK_POURED = 'drink_poured'
+    SESSION_STARTED = 'session_started'
+    SESSION_JOINED = 'session_joined'
+    KEG_TAPPED = 'keg_tapped'
+    KEG_ENDED = 'keg_ended'
+
     KINDS = (
-        ('drink_poured', 'Drink poured'),
-        ('session_started', 'Session started'),
-        ('session_joined', 'User joined session'),
-        ('keg_tapped', 'Keg tapped'),
-        ('keg_ended', 'Keg ended'),
+        (DRINK_POURED, 'Drink poured'),
+        (SESSION_STARTED, 'Session started'),
+        (SESSION_JOINED, 'User joined session'),
+        (KEG_TAPPED, 'Keg tapped'),
+        (KEG_ENDED, 'Keg ended'),
     )
 
     kind = models.CharField(max_length=255, choices=KINDS,
@@ -1004,38 +1007,44 @@ class SystemEvent(models.Model):
     objects = managers.SystemEventManager()
 
     def __str__(self):
-        if self.kind == 'drink_poured':
+        if self.kind == self.DRINK_POURED:
             ret = 'Drink %i poured' % self.drink.id
-        elif self.kind == 'session_started':
+        elif self.kind == self.SESSION_STARTED:
             ret = 'Session %s started by drink %s' % (self.session.id,
                 self.drink.id)
-        elif self.kind == 'session_joined':
+        elif self.kind == self.SESSION_JOINED:
             ret = 'Session %s joined by %s (drink %s)' % (self.session.id,
                 self.user.username, self.drink.id)
-        elif self.kind == 'keg_tapped':
+        elif self.kind == self.KEG_TAPPED:
             ret = 'Keg %s tapped' % self.keg.id
-        elif self.kind == 'keg_ended':
+        elif self.kind == self.KEG_ENDED:
             ret = 'Keg %s ended' % self.keg.id
         else:
             ret = 'Unknown event type (%s)' % self.kind
         return 'Event %s: %s' % (self.id, ret)
 
     @classmethod
-    def ProcessKeg(cls, keg):
+    def build_events_for_keg(cls, keg):
+        '''Generates and returns system events for the keg.'''
+        events = []
         if keg.online:
             q = keg.events.filter(kind='keg_tapped')
             if q.count() == 0:
                 e = keg.events.create(kind='keg_tapped', time=keg.start_time, keg=keg)
                 e.save()
+                events.append(e)
 
         if not keg.online:
             q = keg.events.filter(kind='keg_ended')
             if q.count() == 0:
                 e = keg.events.create(kind='keg_ended', time=keg.end_time, keg=keg)
                 e.save()
+                events.append(e)
+        
+        return events
 
     @classmethod
-    def ProcessDrink(cls, drink):
+    def build_events_for_drink(cls, drink):
         keg = drink.keg
         session = drink.session
         user = drink.user

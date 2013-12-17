@@ -37,6 +37,12 @@ class SiteSettingsForm(forms.Form):
         help_text='When tweeting drink events, whether to include guest pours.')
     append_url = forms.BooleanField(initial=True, required=False,
         help_text='Whether to append drink URLs to tweets.')
+    keg_started_template = forms.CharField(max_length=255, widget=WIDE_TEXT,
+        initial='Woot! Just tapped a new keg of $BEER!',
+        help_text='Template to use when a new keg is tapped.')
+    keg_ended_template = forms.CharField(max_length=255, widget=WIDE_TEXT,
+        initial='The keg of $BEER has been finished.',
+        help_text='Template to use when a keg is ended.')
     session_started_template = forms.CharField(max_length=255, widget=WIDE_TEXT,
         initial='$DRINKER kicked off a new session on $SITENAME.',
         help_text='Template to use when a session is started.')

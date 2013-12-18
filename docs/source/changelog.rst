@@ -5,11 +5,16 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.15 (2013-12-17)
+---------------------------
+* Webhooks now get single events (backwards-incompatible change).
+* Updated Celery integration.
+* Bug fix: #154 (Twitter keg events not firing).
+
 Version 0.9.14 (2013-12-16)
 ---------------------------
 * Pour images will be loaded lazily in the browser.
 * Webhook support moved to plugin.
-
 
 Version 0.9.13 (2013-09-09)
 ---------------------------

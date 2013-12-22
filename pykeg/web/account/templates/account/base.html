@@ -13,9 +13,11 @@
       {% if PLUGINS %}
       <li class="nav-header">Extras</li>
       {% for plugin in PLUGINS.values %}
-      {% url "account-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
-      {% navitem settings_url plugin.get_name %}
-      {% endfor %}
+        {% if plugin.get_user_settings_view %}
+          {% url "account-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
+          {% navitem settings_url plugin.get_name %}
+        {% endif %}
+        {% endfor %}
       {% endif %}
 
       {% if USE_FACEBOOK %}

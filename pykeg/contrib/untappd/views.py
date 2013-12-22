@@ -72,7 +72,7 @@ def user_settings(request, plugin):
         context_instance=context)
 
 
-@staff_member_required
+@login_required
 def auth_redirect(request):
     if 'submit-remove' in request.POST:
         plugin = request.plugins.get('untappd')
@@ -94,7 +94,7 @@ def auth_redirect(request):
         return redirect('account-plugin-settings', plugin_name='untappd')
 
 
-@staff_member_required
+@login_required
 def auth_callback(request):
     try:
         client = request.session['untappd_client']

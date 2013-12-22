@@ -171,7 +171,7 @@ def user_twitter_redirect(request):
         return redirect('account-plugin-settings', plugin_name='twitter')
 
 
-@staff_member_required
+@login_required
 def user_twitter_callback(request):
     try:
         client = request.session['user_twitter']

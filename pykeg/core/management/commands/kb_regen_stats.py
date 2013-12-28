@@ -28,7 +28,7 @@ class Command(NoArgsCommand):
     help = u'Regenerate all cached stats.'
     args = '<none>'
 
-    @transaction.commit_on_success()
+    @transaction.atomic
     def handle(self, **options):
         stats.invalidate(None)
 

@@ -12,7 +12,6 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.humanize',
-    'django.contrib.markup',
     'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.sites',
@@ -120,7 +119,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
 
     'pykeg.web.middleware.KegbotSiteMiddleware',

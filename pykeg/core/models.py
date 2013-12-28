@@ -29,11 +29,14 @@ from django.db.models.signals import pre_save
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+from imagekit.models import ImageSpecField
+from imagekit.processors import Adjust
+from imagekit.processors import resize
+
 from pykeg import EPOCH
 
 from pykeg.core import kb_common
 from pykeg.core import fields
-from pykeg.core import imagespecs
 from pykeg.core import jsonfield
 from pykeg.core import managers
 from pykeg.core.util import make_serial
@@ -1093,10 +1096,22 @@ def _pics_file_name(instance, filename):
 class Picture(models.Model):
     image = models.ImageField(upload_to=_pics_file_name,
         help_text='The image')
-    resized = imagespecs.resized
-    thumbnail = imagespecs.thumbnail
-    small_resized = imagespecs.small_resized
-    small_thumbnail = imagespecs.small_thumbnail
+    resized = ImageSpecField(source='image',
+        processors=[resize.ResizeToFit(1024, 1024)],
+        format='JPEG',
+        options={'quality': 100})
+    small_resized = ImageSpecField(source='image',
+        processors=[resize.ResizeToFit(256, 256)],
+        format='JPEG',
+        options={'quality': 100})
+    thumbnail = ImageSpecField(source='image',
+        processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(128, 128)],
+        format='JPEG',
+        options={'quality': 90})
+    small_thumbnail = ImageSpecField(source='image',
+        processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(32, 32)],
+        format='JPEG',
+        options={'quality': 90})
 
     time = models.DateTimeField(default=timezone.now)
 

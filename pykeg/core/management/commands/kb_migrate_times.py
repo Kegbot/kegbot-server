@@ -90,7 +90,7 @@ class Command(NoArgsCommand):
         confirm('Start migration?')
         print ''
 
-        with transaction.commit_on_success():
+        with transaction.atomic():
             do_migrate(drinks)
 
             print ''

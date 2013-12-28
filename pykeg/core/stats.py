@@ -211,7 +211,7 @@ def invalidate(drink):
         drink: The starting point to invalidate; all stats starting from this
             drink will be deleted.  If None, deletes *all* stats.
     """
-    with transaction.commit_on_success():
+    with transaction.atomic():
         if drink:
             models.SystemStats.objects.filter(drink_id__gte=drink.id).delete()
             models.KegStats.objects.filter(drink_id__gte=drink.id).delete()
@@ -297,7 +297,7 @@ def generate(drink, invalidate_first=True):
         invalidate_first: If True, deletes any existing records for (or after)
             this drink first.
     """
-    with transaction.commit_on_success():
+    with transaction.atomic():
         if invalidate_first:
             invalidate(drink)
 

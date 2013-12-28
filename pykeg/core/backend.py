@@ -47,12 +47,12 @@ class KegbotBackend:
         self._logger = logging.getLogger('backend')
         self.cache = KegbotCache()
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def create_new_user(self, username):
         """Creates and returns a User for the given username."""
         return models.User.objects.create(username=username)
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def create_tap(self, name, meter_name, relay_name=None, ml_per_tick=None):
         """Creates and returns a new KegTap.
 
@@ -73,7 +73,7 @@ class KegbotBackend:
         tap.save()
         return tap
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def create_auth_token(self, auth_device, token_value, username=None):
         """Creates a new AuthenticationToken.
 
@@ -98,7 +98,7 @@ class KegbotBackend:
         token.save()
         return token
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def record_drink(self, tap_name, ticks, volume_ml=None, username=None,
         pour_time=None, duration=0, shout='', tick_time_series='',
         do_postprocess=True):
@@ -176,7 +176,7 @@ class KegbotBackend:
 
         return d
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def cancel_drink(self, drink, spilled=False):
         """Permanently deletes a Drink from the system.
 
@@ -228,7 +228,7 @@ class KegbotBackend:
 
         return drink
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def assign_drink(self, drink, user):
         """Assigns, or re-assigns, a previously-recorded Drink.
 
@@ -267,7 +267,7 @@ class KegbotBackend:
         self.cache.update_generation()
         return drink
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def set_drink_volume(self, drink, volume_ml):
         """Updates the drink volume."""
         if volume_ml == drink.volume_ml:
@@ -290,7 +290,7 @@ class KegbotBackend:
 
         self.cache.update_generation()
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def log_sensor_reading(self, sensor_name, temperature, when=None):
         """Logs a ThermoSensor reading.
 
@@ -347,7 +347,7 @@ class KegbotBackend:
 
         return record
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def get_auth_token(self, auth_device, token_value):
         """Fetches the AuthenticationToken matching the given parameters.
 
@@ -370,7 +370,7 @@ class KegbotBackend:
             # TODO(mikey): return None instead of raising.
             raise NoTokenError
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def start_keg(self, tap, beer_type=None, keg_size=None,
             brewer_name=None, beer_name=None, style_name=None):
         """Activates a new keg at the given tap.
@@ -445,7 +445,7 @@ class KegbotBackend:
 
         return keg
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def end_keg(self, tap):
         """Takes the current Keg offline at the given tap.
 

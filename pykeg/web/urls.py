@@ -31,9 +31,6 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 admin.autodiscover()
 
-from registration.views import register
-from pykeg.web.kegweb.forms import KegbotRegistrationForm
-
 urlpatterns = patterns('',
     ### api
     (r'^api/', include('pykeg.web.api.urls')),
@@ -43,6 +40,7 @@ urlpatterns = patterns('',
 
     ### auth account
     (r'^accounts/', include('pykeg.web.registration.urls')),
+    
     url(r'^accounts/password/reset/$', password_reset, {'template_name':
      'registration/password_reset.html'}, name="password-reset"),
     (r'^accounts/password/reset/done/$', password_reset_done, {'template_name':
@@ -51,13 +49,6 @@ urlpatterns = patterns('',
      'registration/password_reset_confirm.html'}),
     (r'^accounts/password/reset/complete/$', password_reset_complete, {'template_name':
      'registration/password_reset_complete.html'}),
-
-    ### django-registration
-    url(r'^accounts/register/$', register,
-      {'form_class': KegbotRegistrationForm},
-      name='registration_register',
-    ),
-    (r'^accounts/', include('pykeg.web.registration.urls')),
 
     ### socialregistration
     (r'^sr/', include('socialregistration.urls', namespace='socialregistration')),

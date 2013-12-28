@@ -1,0 +1,20 @@
+{% extends 'notification/email_base.html' %}
+
+{% block subject %}[{{ site_name }}] New keg tapped: Keg {{ keg.id }}: {{ keg.type }}{% endblock %}
+
+{% block body_plain %}
+A new keg of {{ keg.type }} was just tapped on {{ site_name }}!
+
+Track it here: {{ url }}
+{% endblock %}
+
+{% block body_html %}
+<p>
+A new keg of <b>{{ keg.type }}</b> was just tapped on
+<b><a href="{{ site_url }}">{{ site_name }}</a></b>!
+</p>
+
+<p>
+Track it <a href="{{ url }}">here</a>.
+</p>
+{% endblock %}

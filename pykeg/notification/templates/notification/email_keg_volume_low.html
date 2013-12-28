@@ -1,0 +1,19 @@
+{% extends 'notification/email_base.html' %}
+
+{% block subject %}[{{ site_name }}] Volume low on keg {{ keg.id }} ({{ keg.type }}){% endblock %}
+
+{% block body_plain %}
+Keg {{ keg.id }} ({{ keg.type }}) is {{ keg.percent_full}}% full.
+
+See full statistics here: {{ url }}
+{% endblock %}
+
+{% block body_html %}
+<p>
+Keg {{ keg.id }} ({{ keg.type }}) is <b>{{ keg.percent_full }}</b>% full.
+</p>
+
+<p>
+See full statistics <a href="{{ url }}">here</a>.
+</p>
+{% endblock %}

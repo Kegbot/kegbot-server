@@ -1,0 +1,39 @@
+{% comment %}
+Base template for storing e-mail subject and plain/html
+messages in a single file.
+
+Implementation note:
+It's not straigtforward to grab rendered template blocks using the
+django.template API.  Instead, we render the whole template and
+do a string split on the big ugly ASCII art separator.
+
+Do not modify this template without first understanding
+email.build_message().
+{% endcomment %}
+
+{% block subject %}(No subject){% endblock %}
+
+---EMAIL-BLOCK---
+
+{% block body_plain %}(No body){% endblock %}
+
+---EMAIL-BLOCK---
+
+{% block body_html %}<p>(No body)</p>{% endblock %}
+
+---EMAIL-BLOCK---
+
+{% block footer_plain %}
+You are receiving this e-mail because you have notifications enabled
+on {{ site_name }}.  To change your settings, visit {{ settings_url }}.
+{% endblock %}
+
+---EMAIL-BLOCK---
+
+{% block footer_html %}
+<p>
+You are receiving this e-mail because you have notifications enabled
+on <a href="{{ site_url }}">{{ site_name }}</a>.  To change your settings, visit
+{{ settings_url }}.
+</p>
+{% endblock %}

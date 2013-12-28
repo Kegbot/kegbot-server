@@ -29,6 +29,7 @@ INSTALLED_APPS = (
     'pykeg.web.kegadmin',
     'pykeg.web.kegweb',
     'pykeg.web.setup_wizard',
+    'pykeg.notification',
     'pykeg.plugin',
     'gunicorn',
     'icanhaz',
@@ -275,6 +276,11 @@ STATSD_CLIENT = 'django_statsd.clients.normal'
 
 # Set to true to route statsd pings to the debug toolbar.
 KEGBOT_STATSD_TO_TOOLBAR = False
+
+### Notifications
+NOTIFICATION_BACKENDS = [
+  'pykeg.notification.backends.email.EmailNotificationBackend'
+]
 
 ### E-mail
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'

@@ -1,0 +1,20 @@
+{% extends 'notification/email_base.html' %}
+
+{% block subject %}[{{ site_name }}] Keg ended: Keg {{ keg.id }}: {{ keg.type }}{% endblock %}
+
+{% block body_plain %}
+Keg {{ keg.id }} of {{ keg.type }} was just finished on {{ site_name }}.
+
+See final statistics here: {{ url }}
+{% endblock %}
+
+{% block body_html %}
+<p>
+Keg {{ keg.id }} ({{ keg.type }}) was just finished on
+<b><a href="{{ site_url }}">{{ site_name }}</a></b>.
+</p>
+
+<p>
+See final statistics <a href="{{ url }}">here</a>.
+</p>
+{% endblock %}

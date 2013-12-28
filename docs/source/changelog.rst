@@ -5,6 +5,12 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* E-mail notification support (see docs).
+* Bugfixes in Twitter and Untappd plugins.
+* Updated to Django 1.6.1.
+
 Version 0.9.15 (2013-12-17)
 ---------------------------
 * Webhooks now get single events (backwards-incompatible change).

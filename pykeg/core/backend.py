@@ -25,6 +25,7 @@ import logging
 
 from django.db import transaction
 from django.utils import timezone
+from pykeg import notification
 from pykeg.core import defaults
 from pykeg.core import stats
 from pykeg.core.cache import KegbotCache

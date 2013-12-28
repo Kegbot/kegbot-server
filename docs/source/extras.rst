@@ -32,6 +32,9 @@ backend.  To use an SMTP server, add the following lines to your
   EMAIL_USE_SSL = False
   EMAIL_USE_TLS = False
 
+  # "From" address for e-mails.
+  EMAIL_FROM_ADDRESS = 'me@example.com'
+
 
 Plugins
 -------

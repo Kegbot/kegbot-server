@@ -1,0 +1,26 @@
+{% extends "account/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Account: Notifications | {{ block.super }}{% endblock %}
+{% block pagetitle %}Account: Notifications{% endblock %}
+
+{% block kb-account-main %}
+
+<h4>E-Mail Notifications</h4>
+<div class="well">
+<p class="lead">
+  Notify me via e-mail when:
+</p>
+
+<form method="post" action="">
+   {% csrf_token %}
+   {{ form|crispy }}
+    <button type="submit" class="btn btn-success" name="submit">
+      <i class="icon-edit icon-white"></i> Update Settings</button>
+    </button>
+</form>
+
+</div>
+
+{% endblock %}

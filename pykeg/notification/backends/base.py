@@ -1,4 +1,4 @@
-# Copyright 2013 Mike Wakerly <opensource@hoho.com>
+# Copyright 2014 Mike Wakerly <opensource@hoho.com>
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -16,26 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tasks for the Kegbot core."""
+"""Base notification module."""
 
-from kegbot.util import util
-from pykeg.plugin import util as plugin_util
-from pykeg import notification
+class BaseNotificationBackend:
+    """Base class for notification backend implementations."""
 
-from celery.decorators import task
+    def notify(self, event, user):
+        """Sends a single notification.
 
-def schedule_tasks(events):
-    """Synchronously schedules tasks related to the given events."""
-    for event in events:
-        for plugin in plugin_util.get_plugins():
-            plugin.handle_new_event(event)
-    notification.handle_new_system_events(events)
+        Args:
+            event: the SystemEvent triggering a notification.
+            user: the user who should receive the notification.
 
-
-@task
-def handle_new_picture(picture_id):
-    pass  # TODO(mikey): plugin support
-
-@task
-def ping():
-    return True
+        Returns:
+            True on success, False otherwise.
+        """
+        raise NotImplementedError('Subclasses must override notify() method')
+        

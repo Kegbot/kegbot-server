@@ -1,0 +1,23 @@
+{% extends 'notification/email_base.html' %}
+
+{% block subject %}[{{ site_name }}] A new session (session {{ session.id }}) has started.{% endblock %}
+
+{% block body_plain %}
+{% if drink.user %}A new session was just kicked off by {{ drink.user }} on {{ site_name }}.
+{% else %}A new session was just kicked off on {{ site_name }}.{% endif %}
+
+You can follow the session here: {{ url }}
+{% endblock %}
+
+{% block body_html %}
+<p>
+{% if drink.user %}A new session was just kicked off by <a href="{{ drink.user.full_url }}">{{ drink.user }}</a>
+on <b><a href="{{ site_url }}">{{ site_name }}</a></b>.
+{% else %}A new session was just kicked off on <a href="{{ site_url }}">{{ site_name }}</a>.{% endif %}
+</p>
+
+<p>
+You can follow the session <a href="{{ url }}">here</a>.
+</p>
+
+{% endblock %}

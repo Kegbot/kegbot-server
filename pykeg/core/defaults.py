@@ -25,6 +25,9 @@ from . import models
 DEFAULT_KEG_SIZE_GALLONS = 15.5
 DEFAULT_KEG_SIZE_DESCRIPTION = "Full Keg (half barrel)"
 
+METER_NAME_0 = 'kegboard.flow0'
+METER_NAME_1 = 'kegboard.flow1'
+
 def get_default_keg_size():
     volume = units.Quantity(DEFAULT_KEG_SIZE_GALLONS, units.UNITS.USGallon)
     volume_int = volume.Amount(in_units=units.RECORD_UNIT)
@@ -48,9 +51,9 @@ def set_defaults(force=False, set_is_setup=False):
         site.save()
 
     # KegTap defaults
-    main_tap = models.KegTap(name='Main Tap', meter_name='kegboard.flow0')
+    main_tap = models.KegTap(name='Main Tap', meter_name=METER_NAME_0)
     main_tap.save()
-    secondary_tap = models.KegTap(name='Second Tap', meter_name='kegboard.flow1')
+    secondary_tap = models.KegTap(name='Second Tap', meter_name=METER_NAME_1)
     secondary_tap.save()
 
     # brewer defaults

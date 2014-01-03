@@ -24,6 +24,8 @@ from pykeg.plugin import util
 
 from kegbot.util import kbjson
 from pykeg.core.models import SiteSettings
+from socialregistration.contrib.twitter.client import Twitter
+import oauth2 as oauth
 
 from . import forms
 from . import tasks
@@ -59,6 +61,14 @@ def truncate_tweet(tweet, max_len=TWEET_MAX_LEN, truncate_str=TRUNCATE_STR):
         if not tweet or len(candidate) <= max_len:
             return candidate
         words = words[:-1]
+
+
+class TwitterClient(Twitter):
+    def set_callback_url(self, url):
+        self.callback_url = url
+
+    def get_callback_url(self):
+        return self.callback_url
 
 
 class TwitterPlugin(plugin.Plugin):
@@ -315,3 +325,9 @@ class TwitterPlugin(plugin.Plugin):
         template = template.replace('$SITENAME', kbvars.get('site_name', ''))
         template = template.replace('$URL', kbvars.get('url', ''))
         return template
+
+    def get_client(self):
+        consumer_key, consumer_secret = self.get_credentials()
+        client = TwitterClient()
+        client.consumer = oauth.Consumer(consumer_key, consumer_secret)
+        return client

@@ -25,16 +25,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-import oauth2 as oauth
+
+from httplib2 import HttpLib2Error
 
 from . import forms
-
-class TwitterClient(Twitter):
-    def set_callback_url(self, url):
-        self.callback_url = url
-
-    def get_callback_url(self):
-        return self.callback_url
 
 
 @staff_member_required
@@ -109,27 +103,19 @@ def site_twitter_redirect(request):
 
     plugin = request.plugins['twitter']
 
-    consumer_key, consumer_secret = plugin.get_credentials()
-    client = TwitterClient()
-    client.consumer = oauth.Consumer(consumer_key, consumer_secret)
-
+    client = plugin.get_client()
     url = request.kbsite.settings.reverse_full('plugin-twitter-site_twitter_callback')
     client.set_callback_url(url)
 
-    request.session['site_twitter'] = client
-
-    try:
-        return redirect(client.get_redirect_url())
-    except OAuthError, error:
-        messages.error(request, 'Error: %s' % str(error))
-        return redirect('kegadmin-plugin-settings', plugin_name='twitter')
+    return do_redirect(request, client, 'kegadmin-plugin-settings')
 
 
 @staff_member_required
 def site_twitter_callback(request):
+    plugin = request.plugins.get('twitter')
+    client = plugin.get_client()
+
     try:
-        client = request.session['site_twitter']
-        del request.session['site_twitter']
         token = client.complete(dict(request.GET.items()))
     except KeyError:
         messages.error(request, 'Session expired.')
@@ -154,28 +140,19 @@ def user_twitter_redirect(request):
         return redirect('account-plugin-settings', plugin_name='twitter')
 
     plugin = request.plugins['twitter']
-
-    consumer_key, consumer_secret = plugin.get_credentials()
-    client = TwitterClient()
-    client.consumer = oauth.Consumer(consumer_key, consumer_secret)
-
+    client = plugin.get_client()
     url = request.kbsite.settings.reverse_full('plugin-twitter-user_twitter_callback')
     client.set_callback_url(url)
 
-    request.session['user_twitter'] = client
-
-    try:
-        return redirect(client.get_redirect_url())
-    except OAuthError, error:
-        messages.error(request, 'Error: %s' % str(error))
-        return redirect('account-plugin-settings', plugin_name='twitter')
+    return do_redirect(request, client, 'account-plugin-settings')
 
 
 @login_required
 def user_twitter_callback(request):
+    plugin = request.plugins['twitter']
+    client = plugin.get_client()
+
     try:
-        client = request.session['user_twitter']
-        del request.session['user_twitter']
         token = client.complete(dict(request.GET.items()))
     except KeyError:
         messages.error(request, 'Session expired.')
@@ -189,3 +166,28 @@ def user_twitter_callback(request):
         messages.success(request, 'Successfully linked to @%s' % user_info['screen_name'])
 
     return redirect('account-plugin-settings', plugin_name='twitter')
+
+
+def do_redirect(request, client, next_url_name):
+    """Common redirect method, handling any incidental errors.
+
+    Args:
+        request: the incoming request
+        client: the TwitterClient context_instance
+        next_url_name: Django URL name to redirect to upon error
+
+    Returns:
+        A redirect response, either to the OAuth redirect URL
+        or to `next_url_name` on error.
+    """
+    try:
+        return redirect(client.get_redirect_url())
+    except OAuthError, e:
+        messages.error(request, 'Error: %s' % str(e))
+        return redirect(next_url_name, plugin_name='twitter')
+    except HttpLib2Error, e:
+        # This path can occur when api.twitter.com is unresolvable
+        # or unreachable.
+        messages.error(request, 'Twitter API server not available. Try again later. (%s)' % str(e))
+        return redirect(next_url_name, plugin_name='twitter')
+

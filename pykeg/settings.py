@@ -278,6 +278,7 @@ KEGBOT_STATSD_TO_TOOLBAR = False
 
 ### E-mail
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+EMAIL_SUBJECT_PREFIX = ''
 
 # Bogus default values (to prevent djangofb from choking if unavailable);
 # replace with site-specific values in local_settings.py, if desired.
@@ -332,6 +333,12 @@ TIME_ZONE = 'UTC'
 
 if KEGBOT_ENABLE_ADMIN:
     INSTALLED_APPS += ('django.contrib.admin',)
+
+### djcelery_email
+
+if HAVE_CELERY_EMAIL:
+    CELERY_EMAIL_BACKEND = EMAIL_BACKEND
+    EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 
 ### debug_toolbar
 

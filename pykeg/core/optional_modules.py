@@ -53,3 +53,9 @@ try:
     HAVE_JOHNNY_CACHE = True
 except ImportError:
     HAVE_JOHNNY_CACHE = False
+
+try:
+    import djcelery_email
+    HAVE_CELERY_EMAIL = True
+except ImportError:
+    HAVE_CELERY_EMAIL = False

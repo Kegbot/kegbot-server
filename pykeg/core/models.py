@@ -24,6 +24,7 @@ import random
 
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db import IntegrityError
 from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
 from django.contrib.auth.models import User
@@ -219,7 +220,12 @@ class UserProfile(models.Model):
       on_delete=models.SET_NULL)
 
 def _user_post_save(sender, instance, **kwargs):
-    profile, new = UserProfile.objects.get_or_create(user=instance)
+    # HACK: Do not use get_or_create due to transaction.atomic conflict
+    # with sqlite & django-registration.
+    try:
+        UserProfile.objects.create(user=instance)
+    except IntegrityError:
+        pass
 post_save.connect(_user_post_save, sender=User)
 
 

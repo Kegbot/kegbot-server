@@ -20,7 +20,7 @@ class RegistrationView(BaseRegistrationView):
             return self._simple
 
     def get_success_url(self, request, user):
-        return 'account_main'
+        return 'kb-account-main'
 
     def registration_allowed(self, request):
         settings = request.kbsite.settings

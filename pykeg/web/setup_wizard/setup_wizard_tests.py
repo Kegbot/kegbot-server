@@ -23,7 +23,6 @@ from django.core.cache import cache
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
-from . import models
 from pykeg.core import defaults
 
 class SetupWizardTestCase(TransactionTestCase):

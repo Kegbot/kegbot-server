@@ -18,7 +18,7 @@
 
 """Unittests for pykeg.web.api"""
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from pykeg.core import models
 from pykeg.core import defaults
 from kegbot.util import kbjson
@@ -28,7 +28,7 @@ from kegbot.util import kbjson
 def create_site():
     return defaults.set_defaults(set_is_setup=True)
 
-class BaseApiTestCase(TestCase):
+class BaseApiTestCase(TransactionTestCase):
     def get(self, subpath, data={}, follow=False, **extra):
         response = self.client.get('/api/%s' % subpath, data=data, follow=follow,
             **extra)

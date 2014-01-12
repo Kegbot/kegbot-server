@@ -48,3 +48,7 @@ AUTH_MODULE_CONTRIB_PHIDGET_RFID = AUTH_MODULE_CORE_RFID
 
 # Auth modules whose token values should be interpreted as lower-case hex.
 AUTH_MODULE_NAMES_HEX_VALUES = (AUTH_MODULE_CORE_ONEWIRE, AUTH_MODULE_CORE_RFID)
+
+# Low volume threshold: 15% full
+KEG_VOLUME_LOW_PERCENT = 0.15
+

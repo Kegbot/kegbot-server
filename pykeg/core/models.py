@@ -436,7 +436,7 @@ class Keg(models.Model):
         return self.served_volume_ml
 
     def remaining_volume(self):
-        return self.full_volume_ml - self.served_volume_ml
+        return self.full_volume_ml - self.served_volume_ml - self.spilled_ml
 
     def percent_full(self):
         result = float(self.remaining_volume()) / float(self.full_volume_ml) * 100
@@ -563,7 +563,7 @@ class Drink(models.Model):
     def get_absolute_url(self):
         return reverse('kb-drink', args=(str(self.id),))
 
-    def ShortUrl(self):
+    def short_url(self):
         return '%s%s' % (SiteSettings.get().base_url(), reverse('kb-drink-short', args=(str(self.id),)))
 
     def Volume(self):
@@ -678,9 +678,12 @@ class DrinkingSession(_AbstractChunk):
     def __str__(self):
         return "Session #%s: %s" % (self.id, self.start_time)
 
-    def ShortUrl(self):
+    def short_url(self):
         return '%s%s' % (SiteSettings.get().base_url(), reverse('kb-session-short',
             args=(str(self.id),)))
+
+    def full_url(self):
+        return '%s%s' % (SiteSettings.get().base_url(), self.get_absolute_url())
 
     def HighlightPicture(self):
         pictures = self.pictures.all().order_by('-time')
@@ -987,6 +990,7 @@ class SystemEvent(models.Model):
     SESSION_STARTED = 'session_started'
     SESSION_JOINED = 'session_joined'
     KEG_TAPPED = 'keg_tapped'
+    KEG_VOLUME_LOW = 'keg_volume_low'
     KEG_ENDED = 'keg_ended'
 
     KINDS = (
@@ -994,6 +998,7 @@ class SystemEvent(models.Model):
         (SESSION_STARTED, 'Session started'),
         (SESSION_JOINED, 'User joined session'),
         (KEG_TAPPED, 'Keg tapped'),
+        (KEG_VOLUME_LOW, 'Keg volume low'),
         (KEG_ENDED, 'Keg ended'),
     )
 
@@ -1026,6 +1031,8 @@ class SystemEvent(models.Model):
                 self.user.username, self.drink.id)
         elif self.kind == self.KEG_TAPPED:
             ret = 'Keg %s tapped' % self.keg.id
+        elif self.kind == self.KEG_VOLUME_LOW:
+            ret = 'Keg %s volume low' % self.keg.id
         elif self.kind == self.KEG_ENDED:
             ret = 'Keg %s ended' % self.keg.id
         else:
@@ -1037,16 +1044,16 @@ class SystemEvent(models.Model):
         '''Generates and returns system events for the keg.'''
         events = []
         if keg.online:
-            q = keg.events.filter(kind='keg_tapped')
+            q = keg.events.filter(kind=cls.KEG_TAPPED)
             if q.count() == 0:
-                e = keg.events.create(kind='keg_tapped', time=keg.start_time, keg=keg)
+                e = keg.events.create(kind=cls.KEG_TAPPED, time=keg.start_time, keg=keg)
                 e.save()
                 events.append(e)
 
         if not keg.online:
-            q = keg.events.filter(kind='keg_ended')
+            q = keg.events.filter(kind=cls.KEG_ENDED)
             if q.count() == 0:
-                e = keg.events.create(kind='keg_ended', time=keg.end_time, keg=keg)
+                e = keg.events.create(kind=cls.KEG_ENDED, time=keg.end_time, keg=keg)
                 e.save()
                 events.append(e)
         
@@ -1059,37 +1066,40 @@ class SystemEvent(models.Model):
         user = drink.user
 
         events = []
-        if keg:
-            q = keg.events.filter(kind='keg_tapped')
-            if q.count() == 0:
-                e = keg.events.create(kind='keg_tapped', time=drink.time,
-                    keg=keg, user=user, drink=drink, session=session)
-                e.save()
-                events.append(e)
 
         if session:
-            q = session.events.filter(kind='session_started')
+            q = session.events.filter(kind=cls.SESSION_STARTED)
             if q.count() == 0:
-                e = session.events.create(kind='session_started',
+                e = session.events.create(kind=cls.SESSION_STARTED,
                     time=session.start_time, drink=drink, user=user)
                 e.save()
                 events.append(e)
 
         if user:
-            q = user.events.filter(kind='session_joined', session=session)
+            q = user.events.filter(kind=cls.SESSION_JOINED, session=session)
             if q.count() == 0:
-                e = user.events.create(kind='session_joined',
+                e = user.events.create(kind=cls.SESSION_JOINED,
                     time=drink.time, session=session, drink=drink, user=user)
                 e.save()
                 events.append(e)
 
-        q = drink.events.filter(kind='drink_poured')
-        if q.count() == 0:
-            e = drink.events.create(kind='drink_poured',
-                time=drink.time, drink=drink, user=user, keg=keg,
-                session=session)
-            e.save()
-            events.append(e)
+        e = drink.events.create(kind=cls.DRINK_POURED,
+            time=drink.time, drink=drink, user=user, keg=keg,
+            session=session)
+        e.save()
+        events.append(e)
+
+        if keg:
+            volume_now = keg.remaining_volume()
+            volume_before = volume_now + drink.volume_ml
+            threshold = keg.full_volume_ml * kb_common.KEG_VOLUME_LOW_PERCENT
+
+            if volume_now <= threshold and volume_before > threshold:
+                e = drink.events.create(kind=cls.KEG_VOLUME_LOW,
+                    time=drink.time, drink=drink, user=user, keg=keg,
+                    session=session)
+                e.save()
+                events.append(e)
 
         return events
 

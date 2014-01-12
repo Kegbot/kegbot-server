@@ -214,6 +214,10 @@ class TwitterPlugin(plugin.Plugin):
                 return
             template = settings.get('keg_ended_template')
 
+        else:
+            self.logger.info('Skipping unhandled event type: %s' % kind)
+            return
+
         if kind in (event.DRINK_POURED, event.SESSION_JOINED):
             if not event.user and not settings.get('include_guests'):
                 self.logger.info('Skipping system tweet for event %s: guest pour.' % event.id)
@@ -288,9 +292,9 @@ class TwitterPlugin(plugin.Plugin):
 
         url = ''
         if event.drink:
-            url = event.drink.ShortUrl()
+            url = event.drink.short_url()
         elif event.session:
-            url = event.session.ShortUrl()
+            url = event.session.short_url()
 
         beer_name = ''
         if event.drink and (event.drink.keg and event.drink.keg.type):

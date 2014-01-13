@@ -32,6 +32,8 @@ from pykeg.notification import models
 from pykeg.notification.backends.base import BaseNotificationBackend
 
 
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+@override_settings(EMAIL_FROM_ADDRESS='test-from@example')
 class EmailNotificationBackendTestCase(TestCase):
     def setUp(self):
         self.backend = backend.KegbotBackend()
@@ -57,6 +59,7 @@ class EmailNotificationBackendTestCase(TestCase):
         msg = mail.outbox[0]
         self.assertEquals('[My Kegbot] New keg tapped: Keg 1: Unknown by Unknown', msg.subject)
         self.assertEquals(['test@example'], msg.to)
+        self.assertEquals('test-from@example', msg.from_email)
 
         expected_body_plain = '''A new keg of Unknown by Unknown was just tapped on My Kegbot!
 
@@ -99,6 +102,7 @@ http:///account.
         msg = mail.outbox[0]
         self.assertEquals('[My Kegbot] A new session (session 1) has started.', msg.subject)
         self.assertEquals(['test@example'], msg.to)
+        self.assertEquals('test-from@example', msg.from_email)
 
         expected_body_plain = '''A new session was just kicked off on My Kegbot.
 
@@ -141,6 +145,7 @@ http:///account.
         msg = mail.outbox[0]
         self.assertEquals('[My Kegbot] Volume low on keg 1 (Unknown by Unknown)', msg.subject)
         self.assertEquals(['test@example'], msg.to)
+        self.assertEquals('test-from@example', msg.from_email)
 
         expected_body_plain = '''Keg 1 (Unknown by Unknown) is 15.0% full.
 
@@ -183,6 +188,7 @@ http:///account.
         msg = mail.outbox[0]
         self.assertEquals('[My Kegbot] Keg ended: Keg 1: Unknown by Unknown', msg.subject)
         self.assertEquals(['test@example'], msg.to)
+        self.assertEquals('test-from@example', msg.from_email)
 
         expected_body_plain = '''Keg 1 of Unknown by Unknown was just finished on My Kegbot.
 

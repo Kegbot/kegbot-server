@@ -284,6 +284,7 @@ NOTIFICATION_BACKENDS = [
 
 ### E-mail
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+EMAIL_FROM_ADDRESS = ''
 EMAIL_SUBJECT_PREFIX = ''
 
 # Bogus default values (to prevent djangofb from choking if unavailable);

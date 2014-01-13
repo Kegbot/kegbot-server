@@ -1,15 +1,12 @@
 {% extends "base.html" %}
 {% load kegweblib %}
 
-{% block title %}Registration Complete{% endblock %}
-{% block pagetitle %}Registration Complete{% endblock %}
+{% block title %}Confirm Your E-Mail Address{% endblock %}
+{% block pagetitle %}Confirm Your E-Mail Address{% endblock %}
 
 {% block content %}
 <p>
-  Begin drinking!
-</p>
-<p>
-  ... or perhaps <a href="{% url "kb-account-main" %}">edit your profile</a>, or
-  <a href="{% url "account-mugshot" %}">upload your mugshot</a>?
+  You're almost done! Please click the activation link in your e-mail
+  to continue.
 </p>
 {% endblock %}

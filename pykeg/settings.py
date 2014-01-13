@@ -335,6 +335,9 @@ except ImportError:
 # specified in site settings.
 TIME_ZONE = 'UTC'
 
+# Update email addresses.
+DEFAULT_FROM_EMAIL = EMAIL_FROM_ADDRESS
+
 ### socialregistration (after importing common settings)
 
 if KEGBOT_ENABLE_ADMIN:

@@ -1,1 +1,8 @@
-HERE IS YOUR SHIZ.
+Hi there!
+
+Someone, hopefully you, just registered for an account on {{ site_name }}.
+To activate your account, please click on the following link:
+
+  {{ base_url }}{% url 'registration_activate' activation_key %}
+
+This link will expire after {{ expiration_days }} days.

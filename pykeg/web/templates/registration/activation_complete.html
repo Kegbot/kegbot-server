@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load kegweblib %}
+
+{% block title %}Activation Complete{% endblock %}
+{% block pagetitle %}Activation Complete{% endblock %}
+
+{% block content %}
+<p>
+  You may now <a href="{% url "auth_login" %}">log in</a>.
+</p>
+{% endblock %}

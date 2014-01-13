@@ -5,8 +5,8 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.16 (2014-01-13)
+---------------------------
 * E-mail notification support (see docs).
 * Bugfixes in Twitter and Untappd plugins.
 * Updated to Django 1.6.1.

@@ -128,6 +128,7 @@ class SiteSettingsForm(forms.ModelForm):
             'registration_allowed',
             'registration_confirmation',
             'allowed_hosts',
+            'keg_empty_notification_email_address'
         )
 
     helper = FormHelper()
@@ -148,6 +149,7 @@ class SiteSettingsForm(forms.ModelForm):
         Field('registration_allowed', css_class='input-xlarge'),
         Field('registration_confirmation', css_class='input-xlarge'),
         Field('allowed_hosts'),
+        Field('keg_empty_notification_email_address'),
         FormActions(
             Submit('submit', 'Save Settings', css_class='btn-primary'),
         )

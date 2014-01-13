@@ -32,6 +32,7 @@ from pykeg.core.cache import KegbotCache
 from . import kb_common
 from . import models
 from . import time_series
+from . import notification
 
 from pykeg.web import tasks
 
@@ -169,6 +170,11 @@ class KegbotBackend:
         keg.save(update_fields=['served_volume_ml'])
 
         self.cache.update_generation()
+
+        if (not keg.notified_empty and keg.percent_full() < 10):
+            notification.email_empty_keg(keg, models.SiteSettings.get().keg_empty_notification_email_address)
+            keg.notified_empty = True
+            keg.save()
 
         if do_postprocess:
             stats.generate(d)

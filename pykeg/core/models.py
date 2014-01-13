@@ -158,6 +158,8 @@ class SiteSettings(models.Model):
         help_text='Hostname (and optional port) for this system. Examples: mykegbot.example.com, 192.168.1.100:8000')
     use_ssl = models.BooleanField(default=False,
         help_text='Use SSL for URLs to this site.')
+    keg_empty_notification_email_address = models.CharField(blank=True, null=True, max_length=255,
+    help_text='e-mail address to notify when keg is about to be empty.')
 
     class Meta:
         verbose_name_plural = "site settings"
@@ -421,6 +423,8 @@ class Keg(models.Model):
         help_text='Amount of beverage poured without an associated Drink.')
     notes = models.TextField(blank=True, null=True,
         help_text='Private notes about this keg, viewable only by admins.')
+    notified_empty = models.BooleanField(default=False, editable=False,
+        help_text='True if we have already notified that the keg is almost empty')
 
     def get_absolute_url(self):
         return reverse('kb-keg', args=(str(self.id),))

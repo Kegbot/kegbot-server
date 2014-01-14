@@ -352,17 +352,6 @@ class BeerType(BeerDBModel):
         return None
 
 
-class KegSize(models.Model):
-    """ A convenient table of common Keg sizes """
-    name = models.CharField(max_length=128,
-        help_text='Name of the size, for example "Half Barrel".')
-    volume_ml = models.FloatField(help_text='Volume per instance.')
-
-    def __str__(self):
-        gallons = units.Quantity(self.volume_ml).InUSGallons()
-        return "%s [%.2f gal]" % (self.name, gallons)
-
-
 class KegTap(models.Model):
     """A physical tap of beer."""
     meter_name = models.CharField(max_length=128, unique=True,
@@ -406,8 +395,6 @@ class Keg(models.Model):
         choices=keg_sizes.DESCRIPTIONS.items(),
         default=keg_sizes.HALF_BARREL,
         help_text='Keg container type, used to initialize keg\'s full volume')
-    size = models.ForeignKey(KegSize, on_delete=models.PROTECT,
-        help_text='Size of this Keg (deprecated).')
     served_volume_ml = models.FloatField(default=0, editable=False,
         help_text='Computed served volume.')
     full_volume_ml = models.FloatField(default=0, editable=False,

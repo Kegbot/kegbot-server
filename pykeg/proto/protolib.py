@@ -210,9 +210,9 @@ def KegToProto(keg, full=False):
     ret.id = keg.id
     ret.url = keg.get_absolute_url()
     ret.type_id = str(keg.type_id)
-    ret.size_id = keg.size_id
-    ret.size_name = keg.size.name
-    ret.size_volume_ml = keg.size.volume_ml
+    ret.size_id = 0
+    ret.size_name = keg.keg_type
+    ret.size_volume_ml = keg.full_volume_ml
     rem = float(keg.remaining_volume())
     ret.volume_ml_remain = rem
     ret.percent_full = keg.percent_full()
@@ -227,17 +227,14 @@ def KegToProto(keg, full=False):
     if full:
         if keg.type:
             ret.type.MergeFrom(ToProto(keg.type))
-        if keg.size:
-            ret.size.MergeFrom(ToProto(keg.size))
 
-    return ret
+        # Deprecated.
+        s = models_pb2.KegSize()
+        s.id = 0
+        s.name = ret.size_name
+        s.volume_ml = ret.size_volume_ml
+        ret.size.MergeFrom(s)
 
-@converts(models.KegSize)
-def KegSizeToProto(size, full=False):
-    ret = models_pb2.KegSize()
-    ret.id = size.id
-    ret.name = size.name
-    ret.volume_ml = size.volume_ml
     return ret
 
 @converts(models.KegTap)

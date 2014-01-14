@@ -5,19 +5,19 @@ from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
 from kegbot.util import units
 from pykeg.core import backend
+from pykeg.core import keg_sizes
 from pykeg.core import models
 
 ALL_TAPS = models.KegTap.objects.all()
-ALL_SIZES = models.KegSize.objects.all()
 ALL_KEGS = models.Keg.objects.all()
 
 class GeneralSettingsForm(forms.Form):
     name = forms.CharField(help_text='Name of this Kegbot system')
 
 class ChangeKegForm(forms.Form):
-    keg_size = forms.ModelChoiceField(queryset=ALL_SIZES,
-        required=True,
-        empty_label=None)
+    keg_size = forms.ChoiceField(choices=keg_sizes.CHOICES,
+        initial=keg_sizes.HALF_BARREL,
+        required=True)
 
     beer_name = forms.CharField(required=True, label='Beer Name')
     beer_id = forms.CharField(widget=forms.HiddenInput(), required=False)
@@ -52,7 +52,7 @@ class ChangeKegForm(forms.Form):
 
         cd = self.cleaned_data
         keg = b.start_keg(tap, beer_name=cd['beer_name'], brewer_name=cd['brewer_name'],
-            style_name=cd['style_name'], keg_size=cd['keg_size'])
+            style_name=cd['style_name'], keg_type=cd['keg_size'])
 
         if cd.get('description'):
             keg.description = cd['description']

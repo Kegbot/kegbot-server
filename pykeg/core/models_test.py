@@ -58,14 +58,9 @@ class CoreModelsTestCase(TestCase):
             abv=0.05,
         )
 
-        self.keg_size = models.KegSize.objects.create(
-            name='Tiny Keg',
-            volume_ml=2000,
-        )
-
         self.keg = models.Keg.objects.create(
             type=self.beer_type,
-            size=self.keg_size,
+            keg_type='other',
             start_time=make_datetime(2000, 4, 1),
             end_time=make_datetime(2000, 5, 1),
             description='Our first keg!',
@@ -97,7 +92,7 @@ class CoreModelsTestCase(TestCase):
 
     def testKegStuff(self):
         """Test basic keg relations that should always work."""
-        self.assertEqual(self.keg.size.volume_ml,
+        self.assertEqual(self.keg.full_volume_ml,
             units.Quantity(2.0, units.UNITS.Liter).InMilliliters())
         self.assertEqual(self.keg.type.brewer.name, "Moonshine Beers")
 

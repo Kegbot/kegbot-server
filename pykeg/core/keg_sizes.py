@@ -46,6 +46,8 @@ DESCRIPTIONS = {
     OTHER: 'Other',
 }
 
+CHOICES = [(x, DESCRIPTIONS[x]) for x in reversed(sorted(VOLUMES_ML, key=VOLUMES_ML.get))]
+
 def find_closest_keg_size(volume_ml, tolerance_ml=100.0):
     """Returns the nearest fuzzy match name within tolerance_ml.
 

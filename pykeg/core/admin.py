@@ -24,8 +24,6 @@ from pykeg.core import models
 
 admin.site.register(models.UserProfile)
 
-admin.site.register(models.KegSize)
-
 class KegbotSiteAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active')
     list_filter = ('is_active',)

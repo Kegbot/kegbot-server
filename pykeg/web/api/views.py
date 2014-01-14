@@ -37,6 +37,7 @@ from kegbot.api import kbapi
 
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import backend
+from pykeg.core import keg_sizes
 from pykeg.core import models
 from pykeg.core import util as core_util
 from pykeg.proto import protolib
@@ -132,7 +133,17 @@ def get_keg_events(request, keg_id):
     return events
 
 def get_keg_sizes(request):
-    return models.KegSize.objects.all()
+    # Deprecated endpoint.
+    ret = []
+    fake_id = 0
+    for size_name, volume_ml in keg_sizes.VOLUMES_ML.iteritems():
+        ret.append({
+                'volume_ml': volume_ml,
+                'id': fake_id,
+                'description': keg_sizes.DESCRIPTIONS[size_name],
+            })
+        fake_id += 1
+    return ret
 
 @require_http_methods(["POST"])
 @auth_required

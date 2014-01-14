@@ -58,7 +58,7 @@ class EmailNotificationBackend(BaseNotificationBackend):
             context['url'] = event.keg.full_url()
         elif event.kind == core_models.SystemEvent.SESSION_STARTED:
             template_name = 'notification/email_session_started.html'
-            context['url'] = event.session.full_url()
+            context['url'] = event.session.short_url()
         elif event.kind == core_models.SystemEvent.KEG_VOLUME_LOW:
             template_name = 'notification/email_keg_volume_low.html'
             context['url'] = event.keg.full_url()

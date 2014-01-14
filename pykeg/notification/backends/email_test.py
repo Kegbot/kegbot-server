@@ -106,7 +106,7 @@ http:///account.
 
         expected_body_plain = '''A new session was just kicked off on My Kegbot.
 
-You can follow the session here: http:///sessions/2014/1/13/1/
+You can follow the session here: http:///s/1/
 
 You are receiving this e-mail because you have notifications enabled
 on My Kegbot.  To change your settings, visit http:///account.'''
@@ -118,7 +118,7 @@ A new session was just kicked off on <a href="http://">My Kegbot</a>.
 </p>
 
 <p>
-You can follow the session <a href="http:///sessions/2014/1/13/1/">here</a>.
+You can follow the session <a href="http:///s/1/">here</a>.
 </p>
 
 <p>

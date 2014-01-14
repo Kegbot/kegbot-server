@@ -103,11 +103,6 @@ def PictureToProto(record, full=False):
     #  ret.height = record.image.height
     #except IOError:
     #  pass
-    return ret
-
-@converts(models.PourPicture)
-def PourPictureToProto(record, full=False):
-    ret = PictureToProto(record.picture)
     if record.time:
         ret.time = datestr(record.time)
     if record.caption:
@@ -118,8 +113,6 @@ def PourPictureToProto(record, full=False):
         ret.keg_id = record.keg_id
     if record.session_id:
         ret.session_id = record.session_id
-    if record.drink_id:
-        ret.drink_id = record.drink_id
     return ret
 
 @converts(models.BeerStyle)
@@ -200,8 +193,8 @@ def DrinkToProto(drink, full=False):
             ret.keg.MergeFrom(ToProto(drink.keg))
         if drink.session:
             ret.session.MergeFrom(ToProto(drink.session))
-        for i in drink.pictures.all():
-            ret.images.add().MergeFrom(ToProto(i))
+        if drink.picture:
+            ret.images.add().MergeFrom(ToProto(drink.picture))
     return ret
 
 @converts(models.Keg)

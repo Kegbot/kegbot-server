@@ -97,18 +97,24 @@ def add_drink_photo(request, drink_id):
     if request.method != 'POST':
         raise Http404('Method not supported')
     drink = get_object_or_404(models.Drink, id=drink_id)
-    pour_pic = _save_pour_pic(request, drink)
-    return protolib.ToProto(pour_pic, full=True)
+    pic = _save_pour_pic(request, drink)
+    return protolib.ToProto(pic, full=True)
 
 def _save_pour_pic(request, drink):
-    pic = models.Picture.objects.create(image=request.FILES['photo'])
-    pour_pic = models.PourPicture.objects.create(picture_id=pic.id,
+    pic = models.Picture.objects.create(
+        image=request.FILES['photo'],
         drink=drink,
         user=drink.user,
         keg=drink.keg,
-        session=drink.session)
-    tasks.handle_new_picture.delay(pour_pic.id)
-    return pour_pic
+        session=drink.session
+    )
+    # TODO(mikey): Should we do anything with a previously-saved
+    # picture here?
+    drink.picture = pic
+    drink.save()
+
+    tasks.handle_new_picture.delay(pic.id)
+    return pic
 
 def get_session(request, session_id):
     session = get_object_or_404(models.DrinkingSession, id=session_id)

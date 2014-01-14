@@ -39,7 +39,7 @@ class Command(NoArgsCommand):
             d.save()
         print ''
 
-        pics = models.PourPicture.objects.all()
+        pics = models.Picture.objects.all()
         count = pics.count()
         pos = 0
         for p in pics:
@@ -50,16 +50,8 @@ class Command(NoArgsCommand):
         print ''
 
         print 'deleting old sessions..',
-        try:
-            with connection.constraint_checks_disabled():
-                cursor = connection.cursor()
-                for table in ('core_drinkingsession', 'core_kegsessionchunk',
-                  'core_usersessionchunk', 'core_sessionchunk'):
-                    cursor.execute('TRUNCATE TABLE `%s`' % table)
-                print 'truncate successful'
-        except Exception, e:
-            models.DrinkingSession.objects.all().delete()
-            print 'orm delete successful'
+        models.DrinkingSession.objects.all().delete()
+        print 'orm delete successful'
 
         pos = 0
         count = drinks.count()
@@ -69,7 +61,7 @@ class Command(NoArgsCommand):
             sess = models.DrinkingSession.AssignSessionForDrink(d)
         print ''
 
-        pics = models.PourPicture.objects.all()
+        pics = models.Picture.objects.all()
         count = pics.count()
         pos = 0
         for p in pics:

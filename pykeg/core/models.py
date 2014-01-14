@@ -140,7 +140,8 @@ class SiteSettings(models.Model):
     guest_name = models.CharField(max_length=63, default='guest',
         help_text='Name to be shown in various places for unauthenticated pours.')
     guest_image = models.ForeignKey('Picture', blank=True, null=True,
-        related_name='guest_images', on_delete=models.SET_NULL,
+        related_name='guest_images',
+        on_delete=models.SET_NULL,
         help_text='Profile picture to be shown for unauthenticated pours.')
     default_user = models.ForeignKey(User, blank=True, null=True,
         help_text='Default user to set as owner for unauthenticated drinks. '
@@ -293,7 +294,8 @@ class Brewer(BeerDBModel):
     description = models.TextField(default='', blank=True, null=True,
         help_text='A short description of the brewer')
     image = models.ForeignKey('Picture', blank=True, null=True,
-        related_name='beer_brewers', on_delete=models.SET_NULL)
+        related_name='beer_brewers',
+        on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.name
@@ -336,7 +338,8 @@ class BeerType(BeerDBModel):
     specific_gravity = models.FloatField(blank=True, null=True,
         help_text='Specific/final gravity of the beer.')
     image = models.ForeignKey('Picture', blank=True, null=True,
-        related_name='beer_types', on_delete=models.SET_NULL,
+        related_name='beer_types',
+        on_delete=models.SET_NULL,
         help_text='Logo or artwork for this beer type.')
     untappd_beer_id = models.IntegerField(blank=True, null=True,
         help_text='Untappd.com beer id for this beer, if known')
@@ -389,7 +392,8 @@ class KegTap(models.Model):
 
 class Keg(models.Model):
     """Record for each physical Keg."""
-    type = models.ForeignKey(BeerType, on_delete=models.PROTECT,
+    type = models.ForeignKey(BeerType,
+        on_delete=models.PROTECT,
         help_text='Beverage in this Keg.')
     keg_type = models.CharField(max_length=32,
         choices=keg_sizes.DESCRIPTIONS.items(),
@@ -551,6 +555,9 @@ class Drink(models.Model):
         help_text='Comment from the drinker at the time of the pour.')
     tick_time_series = models.TextField(blank=True, null=True, editable=False,
         help_text='Tick update sequence that generated this drink (diagnostic data).')
+    picture = models.OneToOneField('Picture', blank=True, null=True,
+        on_delete=models.SET_NULL,
+        help_text='Picture snapped with this drink.')
 
     def get_absolute_url(self):
         return reverse('kb-drink', args=(str(self.id),))
@@ -1121,7 +1128,21 @@ class Picture(models.Model):
         format='JPEG',
         options={'quality': 90})
 
-    time = models.DateTimeField(default=timezone.now)
+    time = models.DateTimeField(default=timezone.now,
+        help_text='Time/date of image capture')
+    caption = models.TextField(blank=True, null=True,
+        help_text='Caption for the picture, if any.')
+    user = models.ForeignKey(User, blank=True, null=True,
+        related_name='owned_pictures',
+        help_text='User that owns/uploaded this picture')
+    keg = models.ForeignKey(Keg, blank=True, null=True,
+        related_name='owned_pictures',
+        on_delete=models.SET_NULL,
+        help_text='Keg this picture was taken with, if any.')
+    session = models.ForeignKey(DrinkingSession, blank=True, null=True,
+        related_name='owned_pictures',
+        on_delete=models.SET_NULL,
+        help_text='Session this picture was taken with, if any.')
 
     def __str__(self):
         return 'Picture: %s' % self.image

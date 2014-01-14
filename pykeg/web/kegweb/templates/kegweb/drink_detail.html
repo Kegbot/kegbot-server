@@ -121,16 +121,14 @@
 </div>
 
 
-{% with drink.pictures.all as pictures %}
 <div class="span6">
-  {% if pictures.count %}
-  <img src="{{pictures.0.picture.resized.url}}">
+  {% if drink.picture %}
+  <img src="{{ drink.picture.resized.url }}">
   {% endif %}
   {% if drink.shout %}
     {% include 'kegweb/includes/drink_shout.html' %}
   {% endif %}
 </div>
-{% endwith %}
 
 
 </div> <!-- /row-fluid -->

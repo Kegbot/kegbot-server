@@ -37,6 +37,7 @@ from imagekit.processors import resize
 from pykeg import EPOCH
 
 from pykeg.core import kb_common
+from pykeg.core import keg_sizes
 from pykeg.core import fields
 from pykeg.core import jsonfield
 from pykeg.core import managers
@@ -401,12 +402,16 @@ class Keg(models.Model):
     """Record for each physical Keg."""
     type = models.ForeignKey(BeerType, on_delete=models.PROTECT,
         help_text='Beverage in this Keg.')
+    keg_type = models.CharField(max_length=32,
+        choices=keg_sizes.DESCRIPTIONS.items(),
+        default=keg_sizes.HALF_BARREL,
+        help_text='Keg container type, used to initialize keg\'s full volume')
     size = models.ForeignKey(KegSize, on_delete=models.PROTECT,
-        help_text='Size of this Keg.')
+        help_text='Size of this Keg (deprecated).')
     served_volume_ml = models.FloatField(default=0, editable=False,
         help_text='Computed served volume.')
     full_volume_ml = models.FloatField(default=0, editable=False,
-        help_text='Full volume of this Keg, usually set from its KegSize.')
+        help_text='Full volume of this Keg; usually set automatically from keg_type.')
     start_time = models.DateTimeField(default=timezone.now,
         help_text='Time the Keg was first tapped.')
     end_time = models.DateTimeField(default=timezone.now,

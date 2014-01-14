@@ -38,6 +38,7 @@ from kegbot.api import kbapi
 from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import backend
 from pykeg.core import models
+from pykeg.core import util as core_util
 from pykeg.proto import protolib
 from pykeg.web.api import forms
 from pykeg.web.api import util
@@ -185,6 +186,9 @@ def get_keg_stats(request, keg_id):
 
 def get_system_stats(request):
     return models.KegbotSite.get().GetStats()
+
+def get_info(request):
+    return {'kegbot_server_version': core_util.get_version()}
 
 def all_taps(request):
     return models.KegTap.objects.all().order_by('name')

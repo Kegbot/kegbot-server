@@ -21,7 +21,6 @@ INSTALLED_APPS = (
     'djcelery',
     'bootstrap-pagination',
     'imagekit',
-    'pykeg.contrib.soundserver',
     'pykeg.core',
     'pykeg.web',
     'pykeg.web.api',
@@ -30,6 +29,8 @@ INSTALLED_APPS = (
     'pykeg.web.kegweb',
     'pykeg.web.setup_wizard',
     'pykeg.notification',
+    'pykeg.contrib.demomode',
+    'pykeg.contrib.soundserver',
     'pykeg.plugin',
     'gunicorn',
     'icanhaz',
@@ -125,6 +126,7 @@ MIDDLEWARE_CLASSES = (
     'pykeg.web.middleware.KegbotSiteMiddleware',
     'pykeg.web.middleware.HttpHostMiddleware',
     'pykeg.web.middleware.SiteActiveMiddleware',
+    'pykeg.contrib.demomode.middleware.DemoModeMiddleware',
     'pykeg.web.api.middleware.ApiRequestMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',
 
@@ -163,6 +165,9 @@ KEGBOT_PLUGINS = [
     'pykeg.contrib.untappd.plugin.UntappdPlugin',
     'pykeg.contrib.webhook.plugin.WebhookPlugin',
 ]
+
+# You probably don't want to turn this on.
+DEMO_MODE = False
 
 ### Celery
 import djcelery

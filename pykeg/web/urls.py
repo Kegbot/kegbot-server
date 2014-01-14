@@ -71,6 +71,11 @@ if settings.KEGBOT_ENABLE_ADMIN:
       (r'^admin/', include(admin.site.urls)),
     )
 
+if settings.DEMO_MODE:
+    urlpatterns += patterns('',
+      (r'^demo/', include('pykeg.contrib.demomode.urls')),
+    )
+
 ### main kegweb urls
 urlpatterns += patterns('',
   (r'^', include('pykeg.web.kegweb.urls')),

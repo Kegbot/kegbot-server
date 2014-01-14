@@ -105,6 +105,10 @@
 
 {% endif %}
 
+{% if DEMO_MODE %}
+{% include 'contrib/demomode/demo_notice.html' %}
+{% endif %}
+
 {% if sessions %}
 
 {% if current_session %}

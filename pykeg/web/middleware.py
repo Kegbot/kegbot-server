@@ -31,7 +31,6 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.http import Http404
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import SimpleTemplateResponse
 from django.template import RequestContext
@@ -135,6 +134,7 @@ class SiteActiveMiddleware:
             return None
 
         return HttpResponse('Site temporarily unavailable', status=503)
+
 
 class HttpHostMiddleware:
     """Middleware which checks a dynamic version of settings.ALLOWED_HOSTS."""

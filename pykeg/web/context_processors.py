@@ -10,6 +10,7 @@ def kbsite(request):
 
     ret = {
       'DEBUG': settings.DEBUG,
+      'DEMO_MODE': getattr(settings, 'DEMO_MODE', False),
       'EMBEDDED': getattr(settings, 'EMBEDDED', False),
       'EPOCH': pykeg.EPOCH,
       'VERSION': util.get_version(),

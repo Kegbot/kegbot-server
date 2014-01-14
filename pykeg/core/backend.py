@@ -375,7 +375,7 @@ class KegbotBackend:
     @transaction.atomic
     def start_keg(self, tap, beer_type=None, keg_type=keg_sizes.HALF_BARREL,
             full_volume_ml=None, brewer_name=None, beer_name=None,
-            style_name=None):
+            style_name=None, when=None):
         """Activates a new keg at the given tap.
 
         The tap must be inactive (tap.current_keg == None), otherwise a
@@ -405,6 +405,8 @@ class KegbotBackend:
                 None.
             style_name: The BeerStyle for the keg's beer.  Must be given
                 with brewer_name and beer_name; beer_type must be None.
+            when: Keg activation date and time. If not specified, current
+                time will be used.
 
         Returns:
             The new keg instance.
@@ -436,8 +438,11 @@ class KegbotBackend:
         if full_volume_ml is None:
             full_volume_ml = keg_sizes.VOLUMES_ML[keg_type]
 
+        if not when:
+            when = timezone.now()
+
         keg = models.Keg.objects.create(type=beer_type, keg_type=keg_type,
-                online=True, full_volume_ml=full_volume_ml)
+                online=True, full_volume_ml=full_volume_ml, start_time=when)
 
         old_keg = tap.current_keg
         if old_keg:

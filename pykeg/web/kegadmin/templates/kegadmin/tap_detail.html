@@ -19,7 +19,7 @@
 </tr>
 <tr>
 	<th>Volume</th>
-	<td>{% volume current_keg.remaining_volume %} remaining ({{ current_keg.percent_full|floatformat:2 }}% full)</td>
+	<td>{% volume current_keg.remaining_volume_ml %} remaining ({{ current_keg.percent_full|floatformat:2 }}% full)</td>
 </tr>
 </table>
 {% crispy end_keg_form %}

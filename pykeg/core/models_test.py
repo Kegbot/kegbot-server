@@ -97,7 +97,7 @@ class CoreModelsTestCase(TestCase):
         self.assertEqual(self.keg.type.brewer.name, "Moonshine Beers")
 
         self.assertEqual(0.0, self.keg.served_volume())
-        self.assertEqual(2000, self.keg.remaining_volume())
+        self.assertEqual(2000, self.keg.remaining_volume_ml())
 
     def testDrinkAccounting(self):
         vol = units.Quantity(1200)

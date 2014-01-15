@@ -431,11 +431,11 @@ class Keg(models.Model):
         # Deprecated
         return self.served_volume_ml
 
-    def remaining_volume(self):
+    def remaining_volume_ml(self):
         return self.full_volume_ml - self.served_volume_ml - self.spilled_ml
 
     def percent_full(self):
-        result = float(self.remaining_volume()) / float(self.full_volume_ml) * 100
+        result = float(self.remaining_volume_ml()) / float(self.full_volume_ml) * 100
         result = max(min(result, 100), 0)
         return result
 
@@ -447,7 +447,7 @@ class Keg(models.Model):
         return end - self.start_time
 
     def is_empty(self):
-        return float(self.remaining_volume()) <= 0
+        return float(self.remaining_volume_ml()) <= 0
 
     def previous(self):
         q = Keg.objects.filter(start_time__lt=self.start_time).order_by('-start_time')
@@ -1089,7 +1089,7 @@ class SystemEvent(models.Model):
         events.append(e)
 
         if keg:
-            volume_now = keg.remaining_volume()
+            volume_now = keg.remaining_volume_ml()
             volume_before = volume_now + drink.volume_ml
             threshold = keg.full_volume_ml * kb_common.KEG_VOLUME_LOW_PERCENT
 

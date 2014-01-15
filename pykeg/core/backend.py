@@ -182,7 +182,7 @@ class KegbotBackend:
     def cancel_drink(self, drink, spilled=False):
         """Permanently deletes a Drink from the system.
 
-        Associated data, such as SystemEvent, PourPicture, and other data, will
+        Associated data, such as SystemEvent, Pictures, and other data, will
         be destroyed along with the drink. Statistics and session data will be
         recomputed after the drink is destroyed.
 

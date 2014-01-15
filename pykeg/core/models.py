@@ -684,7 +684,7 @@ class DrinkingSession(_AbstractChunk):
     def full_url(self):
         return '%s%s' % (SiteSettings.get().base_url(), self.get_absolute_url())
 
-    def HighlightPicture(self):
+    def get_highlighted_picture(self):
         pictures = self.pictures.all().order_by('-time')
         if pictures:
             return pictures[0]
@@ -693,7 +693,7 @@ class DrinkingSession(_AbstractChunk):
             mugshot = chunks[0].user.get_profile().mugshot
             return mugshot
 
-    def OtherPictures(self):
+    def get_non_highlighted_pictures(self):
         pictures = self.pictures.all().order_by('-time')
         if pictures:
             return pictures[1:]
@@ -1133,45 +1133,21 @@ class Picture(models.Model):
     caption = models.TextField(blank=True, null=True,
         help_text='Caption for the picture, if any.')
     user = models.ForeignKey(User, blank=True, null=True,
-        related_name='owned_pictures',
+        related_name='pictures',
         help_text='User that owns/uploaded this picture')
     keg = models.ForeignKey(Keg, blank=True, null=True,
-        related_name='owned_pictures',
+        related_name='pictures',
         on_delete=models.SET_NULL,
         help_text='Keg this picture was taken with, if any.')
     session = models.ForeignKey(DrinkingSession, blank=True, null=True,
-        related_name='owned_pictures',
+        related_name='pictures',
         on_delete=models.SET_NULL,
         help_text='Session this picture was taken with, if any.')
 
     def __str__(self):
         return 'Picture: %s' % self.image
 
-
-class PourPicture(models.Model):
-    '''Stores additional metadata about a picture taken during a pour.'''
-    class Meta:
-        get_latest_by = 'time'
-        ordering = ('-time',)
-
-    picture = models.ForeignKey('Picture')
-    drink = models.ForeignKey(Drink, blank=True, null=True,
-        related_name='pictures',
-        help_text='Drink this picture is associated with, if any')
-    time = models.DateTimeField(default=timezone.now)
-    caption = models.TextField(blank=True, null=True,
-        help_text='Caption for the picture')
-    user = models.ForeignKey(User, blank=True, null=True,
-        help_text='User this picture is associated with, if any')
-    keg = models.ForeignKey(Keg, blank=True, null=True, related_name='pictures',
-        on_delete=models.SET_NULL,
-        help_text='Keg this picture is associated with, if any')
-    session = models.ForeignKey(DrinkingSession, blank=True, null=True,
-        on_delete=models.SET_NULL,
-        related_name='pictures',
-        help_text='Session this picture is associated with, if any')
-
-    def GetCaption(self):
+    def get_caption(self):
         if self.caption:
             return self.caption
         elif self.drink:
@@ -1179,5 +1155,5 @@ class PourPicture(models.Model):
                 return '%s pouring drink %s' % (self.user.username, self.drink.id)
             else:
                 return 'An unknown drinker pouring drink %s' % (self.drink.id,)
-        else:
-            return ''
+        return ''
+

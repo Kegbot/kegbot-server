@@ -80,14 +80,9 @@ class SystemEventAdmin(admin.ModelAdmin):
 admin.site.register(models.SystemEvent, SystemEventAdmin)
 
 class PictureAdmin(admin.ModelAdmin):
-    list_display = ('id', 'time')
+    list_display = ('id', 'time', 'user', 'keg', 'session', 'caption')
     list_filter = ('time',)
 admin.site.register(models.Picture, PictureAdmin)
-
-class PourPictureAdmin(admin.ModelAdmin):
-    list_display = ('id', 'time', 'user', 'drink', 'keg', 'session', 'caption')
-    list_filter = ('time',)
-admin.site.register(models.PourPicture, PourPictureAdmin)
 
 class BeerTypeInline(admin.TabularInline):
     model = models.BeerType

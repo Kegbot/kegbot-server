@@ -100,7 +100,7 @@ class LoadDemoDataCommand(BaseCommand):
         tap = random_item(models.KegTap)
 
         # End keg if it's near empty.
-        if tap.current_keg and tap.current_keg.remaining_volume() < volume_ml:
+        if tap.current_keg and tap.current_keg.remaining_volume_ml() < volume_ml:
             be.end_keg(tap)
 
         # Start keg if the tap is idle.

@@ -22,7 +22,6 @@ logger = logging.getLogger('notification')
 from django.conf import settings
 from django.utils.module_loading import import_by_path
 from pykeg.notification import models
-from pykeg.core import models as core_models
 
 __all__ = ['get_backends', 'handle_new_system_events']
 
@@ -54,15 +53,14 @@ def handle_single_event(event, backends):
     for backend in backends:
         backend_name = str(backend.__class__)
         prefs = models.NotificationSettings.objects.filter(backend=backend_name)
-        SystemEvent = core_models.SystemEvent
 
-        if kind == SystemEvent.KEG_TAPPED:
+        if kind == event.KEG_TAPPED:
             prefs = prefs.filter(keg_tapped=True)
-        elif kind == SystemEvent.SESSION_STARTED:
+        elif kind == event.SESSION_STARTED:
             prefs = prefs.filter(session_started=True)
-        elif kind == SystemEvent.KEG_VOLUME_LOW:
+        elif kind == event.KEG_VOLUME_LOW:
             prefs = prefs.filter(keg_volume_low=True)
-        elif kind == SystemEvent.KEG_ENDED:
+        elif kind == event.KEG_ENDED:
             prefs = prefs.filter(keg_ended=True)
         else:
             logger.info('Unknown kind: %s' % kind)

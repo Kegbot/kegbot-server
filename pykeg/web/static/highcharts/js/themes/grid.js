@@ -1,6 +1,6 @@
 /**
  * Grid theme for Highcharts JS
- * @author Torstein Hønsi
+ * @author Torstein Honsi
  */
 
 Highcharts.theme = {
@@ -87,6 +87,14 @@ Highcharts.theme = {
 	labels: {
 		style: {
 			color: '#99b'
+		}
+	},
+
+	navigation: {
+		buttonOptions: {
+			theme: {
+				stroke: '#CCCCCC'
+			}
 		}
 	}
 };

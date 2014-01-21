@@ -1,5 +1,6 @@
 {% load kegweblib %}
 {% load humanize %}
+
 {% if event.kind == 'drink_poured' %}
 {% with event.drink as drink %}
 <div class="row">
@@ -9,7 +10,8 @@
   <div class="span6">
     <div style="vertical-align: bottom;">
       <span>
-        <strong>{% drinker_name event.user %}</strong> poured <strong>{% volume drink.volume_ml %}</strong>
+        <strong>{% drinker_name event.user %}</strong> poured
+        {% volume drink.volume_ml badge %}
         of {{ drink.keg.type.name }}
       </span>
       <span class="muted pull-right">

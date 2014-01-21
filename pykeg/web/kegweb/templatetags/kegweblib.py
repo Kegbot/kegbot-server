@@ -149,7 +149,7 @@ def volumetag(parser, token):
 
 class VolumeNode(Node):
     TEMPLATE = """
-      <span class="hmeasure" title="%(title)s">
+      <span class="hmeasure %(extra_css)s" title="%(title)s">
         <span class="num">%(amount)s</span>
         <span class="unit">%(units)s</span>
       </span>""".strip()
@@ -165,11 +165,15 @@ class VolumeNode(Node):
         except (VariableDoesNotExist, ValueError):
             num = 'unknown'
         unit = 'mL'
-        return self.format(num, unit)
+        make_badge = 'badge' in self._extra_args
+        return self.format(num, unit, make_badge)
 
     @classmethod
-    def format(cls, amount, units):
+    def format(cls, amount, units, make_badge=False):
         title = '%s %s' % (amount, units)
+        extra_css = ''
+        if make_badge:
+            extra_css = 'badge '
         return cls.TEMPLATE % vars()
 
 ### drinker

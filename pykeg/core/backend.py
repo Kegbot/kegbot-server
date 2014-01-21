@@ -446,8 +446,7 @@ class KegbotBackend:
 
         old_keg = tap.current_keg
         if old_keg:
-            old_keg.online = False
-            old_keg.save()
+            self.end_keg(tap)
 
         tap.current_keg = keg
         tap.save()

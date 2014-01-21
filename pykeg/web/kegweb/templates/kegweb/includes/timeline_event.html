@@ -49,5 +49,32 @@
     <hr/>
   </div>
 </div>
+
+{% elif event.kind == 'keg_tapped' %}
+<div class="row">
+  <div class="span6 offset1">
+    <span>
+      <a href="{{ event.keg.get_absolute_url }}">Keg {{ event.keg.id }} ({{ event.keg.type.name }})</a> was tapped.
+    </span>
+    <span class="muted pull-right">
+      {% timeago event.time %}
+    </span>
+    <hr/>
+  </div>
+</div>
+
+{% elif event.kind == 'keg_ended' %}
+<div class="row">
+  <div class="span6 offset1">
+    <span>
+      <a href="{{ event.keg.get_absolute_url }}">Keg {{ event.keg.id }} ({{ event.keg.type.name }})</a> was finished.
+    </span>
+    <span class="muted pull-right">
+      {% timeago event.time %}
+    </span>
+    <hr/>
+  </div>
+</div>
 {% endif %}
+
 <p/>

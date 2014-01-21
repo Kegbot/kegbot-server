@@ -160,6 +160,8 @@ def UsersByVolume(stats):
 
     data = []
     for username, volume in vols.iteritems():
+        if not username:
+          username = 'Guest'
         pints = to_pints(volume)
         label = '<b>%s</b> (%.1f)' % (username, pints)
         data.append((label, pints))

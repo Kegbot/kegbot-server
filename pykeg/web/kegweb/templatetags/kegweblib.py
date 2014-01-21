@@ -31,6 +31,7 @@ from django.utils.safestring import mark_safe
 
 from kegbot.util import kbjson
 from kegbot.util import units
+from kegbot.util import util
 
 from pykeg.core import models
 from pykeg.web.charts import charts
@@ -137,6 +138,39 @@ class TimeagoNode(Node):
         return '<abbr class="timeago" title="%s">%s</abbr>' % (iso, alt)
 
 
+### temperature
+
+@register.tag('temperature')
+def volumetag(parser, token):
+    """{% temperature <temp_c> %}"""
+    tokens = token.contents.split()
+    if len(tokens) < 2:
+        raise TemplateSyntaxError, '%s requires at least 2 tokens' % tokens[0]
+    return TemperatureNode(tokens[1])
+
+class TemperatureNode(Node):
+    TEMPLATE = "%(amount)s&deg; %(unit)s"
+
+    def __init__(self, varname):
+        self.varname = varname
+
+    def render(self, context):
+
+        v = Variable(self.varname)
+        try:
+            amount = v.resolve(context)
+        except (VariableDoesNotExist, ValueError):
+            raise
+            amount = 'unknown'
+
+        unit = 'C'
+        s = models.SiteSettings.get()
+        if s.temperature_display_units == 'f':
+            unit = 'F'
+            amount = util.CtoF(amount)
+
+        return self.TEMPLATE % vars()
+
 ### volume
 
 @register.tag('volume')
@@ -170,6 +204,8 @@ class VolumeNode(Node):
 
     @classmethod
     def format(cls, amount, units, make_badge=False):
+        if amount < 0:
+            amount = 0
         title = '%s %s' % (amount, units)
         extra_css = ''
         if make_badge:
@@ -177,6 +213,7 @@ class VolumeNode(Node):
         return cls.TEMPLATE % vars()
 
 ### drinker
+
 @register.tag('drinker_name')
 def drinker_name_tag(parser, token):
     """{% drinker_name <drink_or_user_obj> [nolink] %}"""

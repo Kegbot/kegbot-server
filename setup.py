@@ -28,7 +28,6 @@ DEPENDENCIES = [
 
   'South == 0.8.1',
   'django-crispy-forms == 1.2.8',
-  'django-icanhaz == 0.2.1',
   'django_nose == 1.2',
   'foursquare == 20130402',
   'gunicorn == 18.0',

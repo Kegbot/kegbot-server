@@ -1,0 +1,63 @@
+{% load kegweblib %}
+
+{% with tap.current_keg as keg %}
+
+{% if keg %}
+<div class="well well-small clickable"
+    data-href="{{ keg.get_absolute_url }}">
+{% elif user.is_staff %}
+<div class="well well-small clickable"
+    data-href="{% url 'kegadmin-edit-tap' tap.id %}">
+{% else %}
+<div class="well well-small">
+{% endif %}
+
+  <div class="row-fluid">
+    {% if keg.type and keg.type.image %}
+    <div class="span8">
+    {% else %}
+    <div class="span12">
+    {% endif %}
+      <h4 style="margin-top: 0px;">
+        {% if keg %}
+          {{ keg.type.name }} <br/>
+          <small>{{ tap.name }}</small>
+        {% else %}
+          {{ tap.name }}
+        {% endif %}
+      </h4>
+
+      {% if not keg %}
+        <p>
+          Tap is offline{% if user.is_staff %} (click to manage){% endif %}.
+        </p>
+
+      {% else %}
+          <div class="progress" style="margin-bottom: 4px;">
+            <div class="bar {% if keg.percent_full < 10 %}bar-danger{% elif keg.percent_full < 25 %}bar-warning{% else %}bar-success{% endif %}"
+                style="width: {{ keg.percent_full }}%;"></div>
+          </div>
+
+          {% volume keg.remaining_volume_ml %} remaining <span class="muted">({{ keg.percent_full|floatformat }}% full)</span>
+
+          {% if tap.temperature_sensor %}
+          {% with tap.temperature_sensor.LastLog as temp %}
+          {% if temp %}
+            &middot; {% temperature temp.temp %}
+          {% endif %}
+          {% endwith %}
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div class="span4">
+      {% if keg.type and keg.type.image %}
+        <div style="border: 1px solid #ccc;">
+          <img src="{{keg.type.image.resized.url}}"/>
+        </div>
+      {% endif %}
+      </div>
+
+  </div> <!-- /row-fluid -->
+</div>
+{% endwith %}

@@ -1,20 +1,20 @@
 {% load kegweblib %}
 {% load humanize %}
-<table class="condensed-table zebra-striped">
-  <tbody>
-  {% for volume_ml,user in ranked_drinkers %}
-    {% with forloop.counter as rank %}
-      <tr>
-        <td>{% mugshot_box user 128 %}</td>
-        <td>
-          <div class="arrow_box" style="margin-left: 15px;">
-            <h3>{{ user.username }}</h3>
-            <span class="label">{{ rank|ordinal }}</span>
-            {% volume volume_ml %}
-          </div>
-        </td>
-      </tr>
-    {% endwith %}
-  {% endfor %}
-  </tbody>
-</table>
+
+{% for volume_ml,user in ranked_drinkers %}
+{% with forloop.counter as rank %}
+<div class="row-fluid">
+  <div class="span3 offset 1">
+    {% mugshot_box user 64 %}
+  </div>
+  <div class="span8">
+    <h4>
+      {{ user.username }} <br/>
+      <small>
+      #{{ rank }} &middot; {% volume volume_ml %}
+      </small>
+    </h4>
+  </div>
+</div>
+{% endwith %}
+{% endfor %}

@@ -33,7 +33,6 @@ INSTALLED_APPS = (
     'pykeg.contrib.soundserver',
     'pykeg.plugin',
     'gunicorn',
-    'icanhaz',
     'registration',
     'socialregistration',
     'south',

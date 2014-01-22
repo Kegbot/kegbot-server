@@ -35,7 +35,6 @@ INSTALLED_APPS = (
     'imagekit',
     'gunicorn',
     'registration',
-    'rest_framework',
     'socialregistration',
     'south',
     'django_nose', # must be after south

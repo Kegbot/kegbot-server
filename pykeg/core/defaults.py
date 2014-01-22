@@ -48,16 +48,4 @@ def set_defaults(force=False, set_is_setup=False):
     secondary_tap = models.KegTap(name='Second Tap', meter_name=METER_NAME_1)
     secondary_tap.save()
 
-    # brewer defaults
-    unk_brewer = models.Brewer(name='Unknown Brewer')
-    unk_brewer.save()
-
-    # beerstyle defaults
-    unk_style = models.BeerStyle(name='Unknown Style')
-    unk_style.save()
-
-    # beertype defaults
-    unk_type = models.BeerType(name="Unknown Beer", brewer=unk_brewer, style=unk_style)
-    unk_type.save()
-
     return site

@@ -21,6 +21,7 @@ import os.path
 import random
 import datetime
 from collections import deque
+from uuid import uuid1
 
 from django.core.files import File
 from django.core.management.base import BaseCommand
@@ -34,7 +35,7 @@ from pykeg.core import defaults
 from pykeg.core import models
 
 
-NUM_SESSIONS = 10
+NUM_SESSIONS = 30
 MINUTES_IN_DAY = 60 * 24
 
 MINIMUM_POUR_SIZE_ML = 100
@@ -61,13 +62,28 @@ class LoadDemoDataCommand(BaseCommand):
 
             # Install demo data.
             for username in demo_data['drinkers']:
-                models.User.objects.create(username=username)
+                user = models.User.objects.create_superuser(username=username, email=None, password=username)
+
+                picture_path = os.path.join(data_dir, 'pictures', 'drinkers', username, 'mugshot.png')
+                if os.path.exists(picture_path):
+                    p = self.create_picture(picture_path, user=user)
+                    profile = user.get_profile()
+                    profile.mugshot = p
+                    profile.save()
 
             for beverage in demo_data['beverages']:
                 brewer, _ = models.Brewer.objects.get_or_create(name=beverage['brewer_name'])
                 style, _ = models.BeerStyle.objects.get_or_create(name=beverage['style'])
                 beer, _ = models.BeerType.objects.get_or_create(name=beverage['name'],
                     brewer=brewer, style=style)
+
+                picture_path = beverage.get('image')
+                if picture_path:
+                    picture = self.create_picture(os.path.join(data_dir, picture_path))
+                    beer.image = picture
+                    beer.save()
+                else:
+                    raise ValueError('No pic for brewer!')
 
             sessions = self.build_random_sessions(models.User.objects.all(),
                 NUM_SESSIONS, demo_data['shouts'])
@@ -112,12 +128,19 @@ class LoadDemoDataCommand(BaseCommand):
             username=user.username, pour_time=when, shout=shout)
 
         if picture_path:
-            p = models.Picture.objects.create(image=File(open(picture_path)), user=user,
+            p = self.create_picture(picture_path, user=user,
                 session=drink.session, keg=drink.keg)
-            p.save()
             drink.picture = p
             drink.save()
         return drink
+
+    def create_picture(self, path, **kwargs):
+        f = File(open(path, 'r'))
+        p = models.Picture(image=f, **kwargs)
+        name = '%s%s' % (uuid1(), os.path.splitext(f.name)[1])
+        p.image.save(name, f)
+        p.save()
+        return p
 
     def build_random_sessions(self, all_drinkers, count, shouts):
         MIN_POUR_ML = 200
@@ -181,11 +204,12 @@ class LoadDemoDataCommand(BaseCommand):
         for drinker_name in demo_data['drinkers']:
             demo_data['pictures'][drinker_name] = deque()
 
-            pictures_dir = os.path.join(drinkers_dir, drinker_name)
+            pictures_dir = os.path.join(path, 'pictures', 'drinkers', drinker_name)
             if not os.path.isdir(pictures_dir):
                 continue
 
             for picture_name in (p for p in os.listdir(pictures_dir) if not p.startswith('.')):
+                if picture_name == 'mugshot.png': continue
                 picture_path = os.path.join(pictures_dir, picture_name)
                 demo_data['pictures'][drinker_name].append(picture_path)
             random.shuffle(demo_data['pictures'][drinker_name])

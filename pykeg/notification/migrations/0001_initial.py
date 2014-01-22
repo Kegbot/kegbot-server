@@ -20,13 +20,8 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'notification', ['NotificationSettings'])
 
-        # Adding unique constraint on 'NotificationSettings', fields ['user', 'backend']
-        db.create_unique(u'notification_notificationsettings', ['user_id', 'backend'])
-
 
     def backwards(self, orm):
-        # Removing unique constraint on 'NotificationSettings', fields ['user', 'backend']
-        db.delete_unique(u'notification_notificationsettings', ['user_id', 'backend'])
 
         # Deleting model 'NotificationSettings'
         db.delete_table(u'notification_notificationsettings')
@@ -70,7 +65,6 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         u'notification.notificationsettings': {
-            'Meta': {'unique_together': "(('user', 'backend'),)", 'object_name': 'NotificationSettings'},
             'backend': ('django.db.models.fields.TextField', [], {}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'keg_ended': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),

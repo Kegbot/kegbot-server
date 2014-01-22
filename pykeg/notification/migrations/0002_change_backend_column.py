@@ -12,7 +12,13 @@ class Migration(SchemaMigration):
         # Changing field 'NotificationSettings.backend'
         db.alter_column(u'notification_notificationsettings', 'backend', self.gf('django.db.models.fields.CharField')(max_length=255))
 
+        # Adding unique constraint on 'NotificationSettings', fields ['user', 'backend']
+        db.create_unique(u'notification_notificationsettings', ['user_id', 'backend'])
+
     def backwards(self, orm):
+
+        # Removing unique constraint on 'NotificationSettings', fields ['user', 'backend']
+        db.delete_unique(u'notification_notificationsettings', ['user_id', 'backend'])
 
         # Changing field 'NotificationSettings.backend'
         db.alter_column(u'notification_notificationsettings', 'backend', self.gf('django.db.models.fields.TextField')())

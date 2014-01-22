@@ -3,6 +3,7 @@
 
 {% for volume_ml,user in ranked_drinkers %}
 {% with forloop.counter as rank %}
+<div class="well well-small">
 <div class="row-fluid">
   <div class="span3 offset 1">
     {% mugshot_box user 64 %}
@@ -15,6 +16,7 @@
       </small>
     </h4>
   </div>
+</div>
 </div>
 {% endwith %}
 {% endfor %}

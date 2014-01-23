@@ -50,7 +50,7 @@ def summon_drinker(request):
     be = backend.KegbotBackend()
 
     # End keg if it's near empty.
-    if tap.current_keg and tap.current_keg.remaining_volume() < MIN_KEG_VOLUME_ML:
+    if tap.current_keg and tap.current_keg.remaining_volume_ml() < MIN_KEG_VOLUME_ML:
         be.end_keg(tap)
 
     # Start keg if the tap is idle.

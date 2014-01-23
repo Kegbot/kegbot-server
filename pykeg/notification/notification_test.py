@@ -64,7 +64,7 @@ class NotificationTestCase(TestCase):
         self.backend = backend.KegbotBackend()
         defaults.set_defaults(set_is_setup=True)
 
-        self.user = core_models.AuthUser.objects.create(username='notification_user',
+        self.user = core_models.User.objects.create(username='notification_user',
             email='test@example')
 
     @override_settings(NOTIFICATION_BACKENDS=['pykeg.notification.notification_test.CaptureBackend'])

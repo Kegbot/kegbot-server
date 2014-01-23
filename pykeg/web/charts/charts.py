@@ -109,7 +109,7 @@ def VolumeByWeekday(stats):
 
 def UserSessionsByWeekday(user):
     """Shows a user's total session by volume by day of week."""
-    if not isinstance(user, models.AuthUser):
+    if not isinstance(user, models.User):
         raise ChartError('Bad value for user')
     chunks = user.user_session_chunks.all()
     weekdays = [0] * 7

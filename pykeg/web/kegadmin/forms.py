@@ -220,7 +220,7 @@ class FindUserForm(forms.Form):
 
 class UserForm(forms.ModelForm):
     class Meta:
-        model = models.AuthUser
+        model = models.User
         fields = (
             'username',
             'email',
@@ -266,8 +266,8 @@ class TokenForm(forms.ModelForm):
             self.cleaned_data['user'] = None
             return
         try:
-            self.cleaned_data['user'] = models.AuthUser.objects.get(username=username)
-        except models.AuthUser.DoesNotExist:
+            self.cleaned_data['user'] = models.User.objects.get(username=username)
+        except models.User.DoesNotExist:
             raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
         return username
 
@@ -306,8 +306,8 @@ class AddTokenForm(forms.ModelForm):
             self.cleaned_data['user'] = None
             return
         try:
-            self.cleaned_data['user'] = models.AuthUser.objects.get(username=username)
-        except models.AuthUser.DoesNotExist:
+            self.cleaned_data['user'] = models.User.objects.get(username=username)
+        except models.User.DoesNotExist:
             raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
         return username
 
@@ -345,8 +345,8 @@ class RecordDrinkForm(forms.Form):
             self.cleaned_data['user'] = None
             return
         try:
-            self.cleaned_data['user'] = models.AuthUser.objects.get(username=username)
-        except models.AuthUser.DoesNotExist:
+            self.cleaned_data['user'] = models.User.objects.get(username=username)
+        except models.User.DoesNotExist:
             raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
         return username
 

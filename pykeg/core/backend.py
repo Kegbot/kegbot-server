@@ -52,7 +52,7 @@ class KegbotBackend:
     @transaction.atomic
     def create_new_user(self, username):
         """Creates and returns a User for the given username."""
-        return models.AuthUser.objects.create(username=username)
+        return models.User.objects.create(username=username)
 
     @transaction.atomic
     def create_tap(self, name, meter_name, relay_name=None, ml_per_tick=None):
@@ -520,8 +520,8 @@ def get_user(user_or_username):
     """Returns the User object for the given username, or None."""
     if not user_or_username:
         return None
-    if not isinstance(user_or_username, models.AuthUser):
-        return models.AuthUser.objects.get(username=user_or_username)
+    if not isinstance(user_or_username, models.User):
+        return models.User.objects.get(username=user_or_username)
     return user_or_username
 
 def get_drink(drink_or_id):

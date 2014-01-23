@@ -212,22 +212,22 @@ def all_taps(request):
 
 @auth_required
 def user_list(request):
-    return models.AuthUser.objects.filter(is_active=True).order_by('username')
+    return models.User.objects.filter(is_active=True).order_by('username')
 
 def get_user(request, username):
-    user = get_object_or_404(models.AuthUser, username=username)
+    user = get_object_or_404(models.User, username=username)
     return protolib.ToProto(user, full=True)
 
 def get_user_drinks(request, username):
-    user = get_object_or_404(models.AuthUser, username=username)
+    user = get_object_or_404(models.User, username=username)
     return user.drinks.all()
 
 def get_user_events(request, username):
-    user = get_object_or_404(models.AuthUser, username=username)
+    user = get_object_or_404(models.User, username=username)
     return user.events.all()
 
 def get_user_stats(request, username):
-    user = get_object_or_404(models.AuthUser, username=username)
+    user = get_object_or_404(models.User, username=username)
     return user.get_profile().GetStats()
 
 @auth_required
@@ -450,7 +450,7 @@ def register(request):
     else:
         username = form.cleaned_data['username']
         try:
-            u = models.AuthUser()
+            u = models.User()
             u.username = username
             u.email = form.cleaned_data['email']
             password = form.cleaned_data.get('password')
@@ -478,7 +478,7 @@ def register(request):
 @csrf_exempt
 @auth_required
 def user_photo(request, username):
-    user = get_object_or_404(models.AuthUser, username=username)
+    user = get_object_or_404(models.User, username=username)
     if request.method == 'POST':
         return post_user_photo(request, user)
     else:

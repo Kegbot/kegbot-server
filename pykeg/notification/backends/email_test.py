@@ -39,7 +39,7 @@ class EmailNotificationBackendTestCase(TestCase):
         self.backend = backend.KegbotBackend()
         defaults.set_defaults(set_is_setup=True)
 
-        self.user = core_models.AuthUser.objects.create(username='notification_user',
+        self.user = core_models.User.objects.create(username='notification_user',
             email='test@example')
 
         self.prefs = models.NotificationSettings.objects.create(user=self.user,

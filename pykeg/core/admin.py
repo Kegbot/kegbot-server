@@ -24,6 +24,12 @@ from pykeg.core import models
 
 admin.site.register(models.UserProfile)
 
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'date_joined', 'last_login', 'is_active',
+        'is_superuser', 'is_staff')
+    list_filter = ('is_active', 'is_superuser', 'is_staff')
+admin.site.register(models.User, UserAdmin)
+
 class KegbotSiteAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active')
     list_filter = ('is_active',)

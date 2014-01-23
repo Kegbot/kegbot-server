@@ -71,7 +71,7 @@ class BaseApiTestCase(TestCase):
         self.assertAlmostEqual(1501.0, keg.served_volume(), places=3)
 
         # Add with a user.
-        user = models.AuthUser.objects.create(username='testy')
+        user = models.User.objects.create(username='testy')
         drink = self.backend.record_drink(TAP_NAME, ticks=2200, username=user.username)
         self.assertIsNotNone(drink)
         self.assertEquals(user, drink.user)

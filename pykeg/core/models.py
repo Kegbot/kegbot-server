@@ -628,8 +628,8 @@ class Keg(models.Model):
         entries = stats.get('volume_by_drinker', {})
         for username, vol in entries.iteritems():
             try:
-                user = AuthUser.objects.get(username=username)
-            except AuthUser.DoesNotExist:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
                 continue  # should not happen
             ret.append((vol, user))
         ret.sort(reverse=True)

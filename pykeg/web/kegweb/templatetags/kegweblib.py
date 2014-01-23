@@ -27,6 +27,7 @@ from django.template import VariableDoesNotExist
 from django.template import TemplateSyntaxError
 from django.template import Variable
 from django.template.defaultfilters import pluralize
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from kegbot.util import kbjson
@@ -134,7 +135,7 @@ class TimeagoNode(Node):
                 pass
 
         iso = ts.isoformat()
-        alt = ts.strftime("%A, %B %d, %Y %I:%M%p")
+        alt = timezone.localtime(ts).strftime("%A, %B %d, %Y %I:%M%p")
         return '<abbr class="timeago" title="%s">%s</abbr>' % (iso, alt)
 
 

@@ -5,6 +5,13 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* Internal: Migrated to Django custom user model.
+* Internal: Better support for non-beer beverage types.
+* Keg sizes are predefined.
+* Bug fix: Issues with migrating on MySQL with v0.9.16.
+
 Version 0.9.16 (2014-01-13)
 ---------------------------
 * E-mail notification support (see docs).

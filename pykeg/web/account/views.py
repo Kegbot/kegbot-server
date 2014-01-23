@@ -46,18 +46,19 @@ def account_main(request):
 def edit_mugshot(request):
     context = RequestContext(request)
     context['mugshot_form'] = forms.MugshotForm()
+
+    user = request.user
     if request.method == 'POST':
         form = forms.MugshotForm(request.POST, request.FILES)
         context['mugshot_form'] = form
         if form.is_valid():
-            pic = models.Picture.objects.create()
+            pic = models.Picture.objects.create(user=user)
             image = request.FILES['new_mugshot']
             pic.image.save(image.name, image)
             pic.save()
 
-            profile = request.user.get_profile()
-            profile.mugshot = pic
-            profile.save()
+            user.mugshot = pic
+            user.save()
     return render_to_response('account/mugshot.html', context_instance=context)
 
 @login_required

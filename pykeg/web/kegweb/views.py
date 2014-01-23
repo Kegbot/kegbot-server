@@ -79,7 +79,7 @@ def system_stats(request):
 
 def user_detail(request, username):
     user = get_object_or_404(models.User, username=username, is_active=True)
-    stats = user.get_profile().GetStats()
+    stats = user.get_stats()
 
     # TODO(mikey): Limit to "recent" sessions for now.
     # Bug: https://github.com/Kegbot/kegbot/issues/37

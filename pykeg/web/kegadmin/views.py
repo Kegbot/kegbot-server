@@ -221,7 +221,6 @@ def user_detail(request, user_id):
 
     context = RequestContext(request)
     context['user'] = user
-    context['profile'] = user.get_profile()
     context['stats'] = context['profile'].GetStats()
 
     context['tokens'] = user.tokens.all().order_by('created_time')

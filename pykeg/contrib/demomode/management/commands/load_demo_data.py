@@ -67,9 +67,8 @@ class LoadDemoDataCommand(BaseCommand):
                 picture_path = os.path.join(data_dir, 'pictures', 'drinkers', username, 'mugshot.png')
                 if os.path.exists(picture_path):
                     p = self.create_picture(picture_path, user=user)
-                    profile = user.get_profile()
-                    profile.mugshot = p
-                    profile.save()
+                    user.mugshot = p
+                    user.save()
 
             for beverage in demo_data['beverages']:
                 brewer, _ = models.Brewer.objects.get_or_create(name=beverage['brewer_name'])

@@ -228,7 +228,7 @@ def get_user_events(request, username):
 
 def get_user_stats(request, username):
     user = get_object_or_404(models.User, username=username)
-    return user.get_profile().GetStats()
+    return user.get_stats()
 
 @auth_required
 def get_auth_token(request, auth_device, token_value):
@@ -319,7 +319,7 @@ def get_api_key(request):
     user = request.user
     api_key = ''
     if user and (user.is_staff or user.is_superuser):
-        api_key = user.get_profile().GetApiKey()
+        api_key = user.get_api_key()
     return {'api_key': api_key}
 
 @csrf_exempt
@@ -461,13 +461,13 @@ def register(request):
                 u.set_unusable_password()
             u.save()
             if 'photo' in request.FILES:
-                pic = models.Picture.objects.create()
+                pic = models.Picture.objects.create(user=u)
                 photo = request.FILES['photo']
                 pic.image.save(photo.name, photo)
                 pic.save()
-                profile = u.get_profile()
-                profile.mugshot = pic
-                profile.save()
+
+                u.mugshot = pic
+                u.save()
             return protolib.ToProto(u, full=True)
         except IntegrityError:
             user_errs = errors.get('username', [])
@@ -485,7 +485,7 @@ def user_photo(request, username):
         return get_user_photo(request, user)
 
 def get_user_photo(request, user):
-    mugshot = user.get_profile().mugshot
+    mugshot = user.mugshot
     if not mugshot:
         return {}
     return mugshot
@@ -495,12 +495,12 @@ def post_user_photo(request, user):
     if not photo_file:
         raise kbapi.BadRequestError('The file "photo" is required.')
 
-    pic = models.Picture.objects.create()
+    pic = models.Picture.objects.create(user=user)
     pic.image.save(photo_file.name, photo_file)
     pic.save()
-    profile = user.get_profile()
-    profile.mugshot = pic
-    profile.save()
+
+    user.mugshot = pic
+    user.save()
     return protolib.ToProto(pic)
 
 

@@ -101,6 +101,10 @@ class User(AbstractBaseUser):
                     'active. Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
+    mugshot = models.ForeignKey('Picture', blank=True, null=True,
+        related_name='user_mugshot',
+        on_delete=models.SET_NULL)
+
     objects = UserManager()
 
     ### AbstractUser methods
@@ -124,9 +128,6 @@ class User(AbstractBaseUser):
         Sends an email to this User.
         """
         send_mail(subject, message, from_email, [self.email])
-
-    def get_profile(self):
-        raise NotImplemented
 
     ### PermissionsMixin methods
 
@@ -182,6 +183,25 @@ class User(AbstractBaseUser):
             return True
 
         return auth_models._user_has_module_perms(self, app_label)
+
+    ### Local methods
+    def get_stats_record(self):
+        qs = UserStats.objects.filter(user=self).order_by('-id')
+        if len(qs):
+            return qs[0]
+        return None
+
+    def get_stats(self):
+        ret = {}
+        record = self.get_stats_record()
+        if record:
+            ret = record.stats
+        return util.AttrDict(ret)
+
+    def get_api_key(self):
+        api_key, new = ApiKey.objects.get_or_create(user=self,
+            defaults={'key': ApiKey.generate_key()})
+        return api_key.key
 
 
 class KegbotSite(models.Model):
@@ -824,8 +844,7 @@ class DrinkingSession(_AbstractChunk):
             return pictures[0]
         chunks = self.user_chunks.filter(user__ne=None).order_by('-volume_ml')
         if chunks:
-            mugshot = chunks[0].user.get_profile().mugshot
-            return mugshot
+            return chunks[0].user.mugshot
 
     def get_non_highlighted_pictures(self):
         pictures = self.pictures.all().order_by('-time')

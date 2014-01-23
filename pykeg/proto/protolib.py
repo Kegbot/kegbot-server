@@ -288,7 +288,7 @@ def ThermoSensorToProto(record, full=False):
 def UserToProto(user, full=False):
     ret = models_pb2.User()
     ret.username = user.username
-    ret.url = user.get_profile().get_absolute_url()
+    ret.url = user.get_absolute_url()
     ret.is_active = user.is_active
     if full:
         ret.first_name = user.first_name
@@ -299,9 +299,8 @@ def UserToProto(user, full=False):
         ret.is_superuser = user.is_superuser
         ret.last_login = datestr(user.last_login)
         ret.date_joined = datestr(user.date_joined)
-    profile = user.get_profile()
-    if profile.mugshot_id:
-        ret.image.MergeFrom(ToProto(profile.mugshot))
+    if user.mugshot_id:
+        ret.image.MergeFrom(ToProto(user.mugshot))
     return ret
 
 @converts(models.UserProfile)
@@ -343,7 +342,7 @@ def SystemEventToProto(record, full=False):
 
     image = None
     if record.kind in ('drink_poured', 'session_started', 'session_joined') and record.user:
-        image = record.user.get_profile().mugshot
+        image = record.user.mugshot
     elif record.kind in ('keg_tapped', 'keg_ended'):
         if record.keg.type and record.keg.type.image:
             image = record.keg.type.image

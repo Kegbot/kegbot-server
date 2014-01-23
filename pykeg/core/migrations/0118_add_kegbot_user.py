@@ -58,10 +58,10 @@ class Migration(SchemaMigration):
                     date_joined=u.date_joined)
                 user.save()
                 
-            for perm in u.user_permissions.all():
-                user.user_permissions.add(perm)
-            for group in u.groups.all():
-                user.groups.add(group)
+                for perm in u.user_permissions.all():
+                    user.user_permissions.add(perm)
+                for group in u.groups.all():
+                    user.groups.add(group)
 
     def backwards(self, orm):
         # Deleting model 'User'

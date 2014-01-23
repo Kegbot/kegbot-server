@@ -13,7 +13,7 @@
 {% endif %}
 
   <div class="row-fluid">
-    {% if keg.type and keg.type.image %}
+    {% if keg.type and keg.type.picture %}
     <div class="span8">
     {% else %}
     <div class="span12">
@@ -50,13 +50,13 @@
         </div>
       {% endif %}
 
+      {% if keg.type and keg.type.picture %}
       <div class="span4">
-      {% if keg.type and keg.type.image %}
         <div style="border: 1px solid #ccc;">
-          <img src="{{keg.type.image.resized.url}}"/>
+          <img src="{{ keg.type.picture.resized.url }}"/>
         </div>
-      {% endif %}
       </div>
+      {% endif %}
 
   </div> <!-- /row-fluid -->
 </div>

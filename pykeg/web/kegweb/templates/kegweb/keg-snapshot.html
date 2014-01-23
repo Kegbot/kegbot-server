@@ -4,8 +4,8 @@
     data-href="{% url "kb-keg" keg.id %}">
   <div class="row-fluid">
     <div class="span3">
-      {% if keg.type.GetImage %}
-        <img class="tap-snapshot-image" src="{{ keg.type.GetImage.resized.url }}">
+      {% if keg.type.picture %}
+        <img class="tap-snapshot-image" src="{{ keg.type.picture.resized.url }}">
       {% else %}
         <img class="tap-snapshot-image" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
       {% endif %}

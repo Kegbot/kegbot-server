@@ -12,6 +12,11 @@ class Migration(SchemaMigration):
         # Changing field 'NotificationSettings.backend'
         db.alter_column(u'notification_notificationsettings', 'backend', self.gf('django.db.models.fields.CharField')(max_length=255))
 
+        # NOTE: Delete unique constraint if it already exists.
+        # This will be the case with any sites that ran migration 0001
+        # prior to v0.9.17.
+        db.delete_unique(u'notification_notificationsettings', ['user_id', 'backend'])
+
         # Adding unique constraint on 'NotificationSettings', fields ['user', 'backend']
         db.create_unique(u'notification_notificationsettings', ['user_id', 'backend'])
 

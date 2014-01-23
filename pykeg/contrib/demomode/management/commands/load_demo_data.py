@@ -71,15 +71,14 @@ class LoadDemoDataCommand(BaseCommand):
                     user.save()
 
             for beverage in demo_data['beverages']:
-                brewer, _ = models.Brewer.objects.get_or_create(name=beverage['brewer_name'])
-                style, _ = models.BeerStyle.objects.get_or_create(name=beverage['style'])
-                beer, _ = models.BeerType.objects.get_or_create(name=beverage['name'],
-                    brewer=brewer, style=style)
+                brewer, _ = models.BeverageProducer.objects.get_or_create(name=beverage['brewer_name'])
+                beer, _ = models.Beverage.objects.get_or_create(name=beverage['name'], beverage_type='beer',
+                    producer=brewer, style=beverage['style'])
 
                 picture_path = beverage.get('image')
                 if picture_path:
                     picture = self.create_picture(os.path.join(data_dir, picture_path))
-                    beer.image = picture
+                    beer.picture = picture
                     beer.save()
                 else:
                     raise ValueError('No pic for brewer!')
@@ -120,8 +119,8 @@ class LoadDemoDataCommand(BaseCommand):
 
         # Start keg if the tap is idle.
         if not tap.current_keg:
-            beer_type = random_item(models.BeerType)
-            be.start_keg(tap, beer_type=beer_type)
+            beverage = random_item(models.Beverage)
+            be.start_keg(tap, beverage=beverage)
 
         drink = be.record_drink(tap.meter_name, ticks=0, volume_ml=volume_ml,
             username=user.username, pour_time=when, shout=shout)

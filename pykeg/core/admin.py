@@ -89,3 +89,5 @@ class PictureAdmin(admin.ModelAdmin):
     list_filter = ('time',)
 admin.site.register(models.Picture, PictureAdmin)
 
+admin.site.register(models.Beverage)
+admin.site.register(models.BeverageProducer)

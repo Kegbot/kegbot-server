@@ -72,7 +72,7 @@ class ApiClientTestCase(BaseApiTestCase):
 
         protected_get_endpoints = ('users/',)
 
-        user = models.User.objects.create(username='testuser')
+        user = models.AuthUser.objects.create(username='testuser')
         user.set_password('testpass')
         user.save()
 

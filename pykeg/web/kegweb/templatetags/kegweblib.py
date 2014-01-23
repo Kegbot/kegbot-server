@@ -238,7 +238,7 @@ class DrinkerNameNode(Node):
         if obj:
             if isinstance(obj, models.Drink) or isinstance(obj, models.SystemEvent):
                 user = obj.user
-            elif isinstance(obj, models.User):
+            elif isinstance(obj, models.AuthUser):
                 user = obj
         if user:
             if 'nolink' in self._extra_args:

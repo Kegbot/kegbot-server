@@ -64,8 +64,8 @@ def system_stats(request):
     top_drinkers = []
     for username, vol in stats.get('volume_by_drinker', {}).iteritems():
         try:
-            user = models.User.objects.get(username=username)
-        except models.User.DoesNotExist:
+            user = models.AuthUser.objects.get(username=username)
+        except models.AuthUser.DoesNotExist:
             continue  # should not happen
         top_drinkers.append((vol, user))
     top_drinkers.sort(reverse=True)
@@ -78,7 +78,7 @@ def system_stats(request):
 ### object lists and detail (generic views)
 
 def user_detail(request, username):
-    user = get_object_or_404(models.User, username=username, is_active=True)
+    user = get_object_or_404(models.AuthUser, username=username, is_active=True)
     stats = user.get_profile().GetStats()
 
     # TODO(mikey): Limit to "recent" sessions for now.

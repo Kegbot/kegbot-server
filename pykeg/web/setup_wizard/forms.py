@@ -113,14 +113,14 @@ class AdminUserForm(forms.Form):
         username = self.cleaned_data.get('username')
         if username:
             try:
-                models.User.objects.get(username=username)
+                models.AuthUser.objects.get(username=username)
                 raise forms.ValidationError('Sorry, this username is taken already?!')
-            except models.User.DoesNotExist:
+            except models.AuthUser.DoesNotExist:
                 pass  # expected
         return username
 
     def save(self):
-        u = models.User()
+        u = models.AuthUser()
         u.username = self.cleaned_data.get('username')
         u.email = self.cleaned_data.get('email')
         u.is_staff = True

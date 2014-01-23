@@ -74,11 +74,11 @@ class CoreModelsTestCase(TestCase):
             current_keg=self.keg,
         )
 
-        self.user = models.User.objects.create(
+        self.user = models.AuthUser.objects.create(
             username='kb_tester',
         )
 
-        self.user2 = models.User.objects.create(
+        self.user2 = models.AuthUser.objects.create(
             username='kb_tester2',
         )
 

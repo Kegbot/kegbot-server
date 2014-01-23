@@ -39,7 +39,7 @@ RANDOM_POUR_RANGE_ML = (100, 500)
 @require_http_methods(["POST"])
 @transaction.atomic
 def summon_drinker(request):
-    user = random_item(models.User)
+    user = random_item(models.AuthUser)
     tap = random_item(models.KegTap)
     beer_type = random_item(models.BeerType)
 

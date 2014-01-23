@@ -284,7 +284,7 @@ def ThermoSensorToProto(record, full=False):
     ret.nice_name = record.nice_name
     return ret
 
-@converts(models.User)
+@converts(models.AuthUser)
 def UserToProto(user, full=False):
     ret = models_pb2.User()
     ret.username = user.username

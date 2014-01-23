@@ -51,8 +51,8 @@ from pykeg.web.kegadmin import forms
 def dashboard(request):
     context = RequestContext(request)
     recent_time = timezone.now() - datetime.timedelta(days=30)
-    active_users = models.User.objects.filter(is_active=True)
-    new_users = models.User.objects.filter(date_joined__gte=recent_time)
+    active_users = models.AuthUser.objects.filter(is_active=True)
+    new_users = models.AuthUser.objects.filter(date_joined__gte=recent_time)
     context['num_users'] = len(active_users)
     context['num_new_users'] = len(new_users)
     return render_to_response('kegadmin/dashboard.html', context_instance=context)
@@ -164,12 +164,12 @@ def user_list(request):
         if form.is_valid():
             username = form.cleaned_data.get('username')
             try:
-                user = models.User.objects.get(username=username)
+                user = models.AuthUser.objects.get(username=username)
                 return redirect('kegadmin-edit-user', user.id)
-            except models.User.DoesNotExist:
+            except models.AuthUser.DoesNotExist:
                 messages.error(request, 'User "%s" does not exist.' % username)
 
-    users = models.User.objects.all().order_by('-id')
+    users = models.AuthUser.objects.all().order_by('-id')
     paginator = Paginator(users, 25)
 
     page = request.GET.get('page')
@@ -200,7 +200,7 @@ def add_user(request):
 
 @staff_member_required
 def user_detail(request, user_id):
-    user = get_object_or_404(models.User, id=user_id)
+    user = get_object_or_404(models.AuthUser, id=user_id)
 
     if request.method == 'POST':
         if 'submit_enable' in request.POST:
@@ -269,7 +269,7 @@ def drink_edit(request, drink_id):
             try:
                 request.backend.assign_drink(drink, username)
                 messages.success(request, 'Drink %s was reassigned.' % drink_id)
-            except models.User.DoesNotExist:
+            except models.AuthUser.DoesNotExist:
                 messages.error(request, 'No such user')
         else:
             messages.error(request, 'Invalid request')
@@ -486,9 +486,9 @@ def autocomplete_user(request):
     context = RequestContext(request)
     search = request.GET.get('q')
     if search:
-        users = models.User.objects.filter(Q(username__icontains=search) | Q(email__icontains=search))
+        users = models.AuthUser.objects.filter(Q(username__icontains=search) | Q(email__icontains=search))
     else:
-        users = models.User.objects.all()
+        users = models.AuthUser.objects.all()
     users = users[:10]  # autocomplete widget limited to 10
     values = []
     for user in users:

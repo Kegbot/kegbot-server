@@ -21,7 +21,6 @@ import random
 
 from pykeg.core import models as core_models
 from django.db import models
-from django.contrib.auth.models import User
 
 def sound_file_name(instance, filename):
     rand_salt = random.randrange(0xffff)
@@ -44,7 +43,7 @@ class SoundEvent(models.Model):
     event_name = models.CharField(max_length=256)
     event_predicate = models.CharField(max_length=256, blank=True, null=True)
     soundfile = models.ForeignKey(SoundFile)
-    user = models.ForeignKey(User, blank=True, null=True)
+    user = models.ForeignKey('core.User', blank=True, null=True)
 
     def SoundTitle(self):
         return self.soundfile.title

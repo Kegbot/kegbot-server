@@ -26,7 +26,7 @@ class NotificationSettings(models.Model):
     class Meta:
         unique_together = ('user', 'backend')
 
-    user = models.ForeignKey('auth.User',
+    user = models.ForeignKey('core.User',
         help_text='User for these settings.')
     backend = models.CharField(max_length=255,
         help_text='Notification backend (dotted path) for these settings.')

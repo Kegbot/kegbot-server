@@ -277,7 +277,7 @@ class SiteSettings(models.Model):
         related_name='guest_images',
         on_delete=models.SET_NULL,
         help_text='Profile picture to be shown for unauthenticated pours.')
-    default_user = models.ForeignKey(AuthUser, blank=True, null=True,
+    default_user = models.ForeignKey(User, blank=True, null=True,
         help_text='Default user to set as owner for unauthenticated drinks. '
             'When set, the "guest" user will not be used. This is mostly '
             'useful for closed, single-user systems.')
@@ -352,7 +352,7 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(AuthUser)
     mugshot = models.ForeignKey('Picture', blank=True, null=True,
-      on_delete=models.SET_NULL)
+        on_delete=models.SET_NULL)
 
 
 def _user_post_save(sender, instance, **kwargs):
@@ -367,7 +367,7 @@ post_save.connect(_user_post_save, sender=AuthUser)
 
 class ApiKey(models.Model):
     """Grants access to certain API endpoints to a user via a secret key."""
-    user = models.OneToOneField(AuthUser,
+    user = models.OneToOneField(User,
         help_text='User receiving API access.')
     key = models.CharField(max_length=127, editable=False, unique=True,
         help_text='The secret key.')
@@ -675,7 +675,7 @@ class Drink(models.Model):
       help_text='Date and time of pour.')
     duration = models.PositiveIntegerField(blank=True, default=0, editable=False,
         help_text='Time in seconds taken to pour this Drink.')
-    user = models.ForeignKey(AuthUser, null=True, blank=True, related_name='drinks',
+    user = models.ForeignKey(User, null=True, blank=True, related_name='drinks',
         editable=False,
         help_text='User responsible for this Drink, or None if anonymous/unknown.')
     keg = models.ForeignKey(Keg, null=True, blank=True, related_name='drinks',
@@ -725,7 +725,7 @@ class AuthenticationToken(models.Model):
         help_text='A human-readable alias for the token, for example "Guest Key".')
     pin = models.CharField(max_length=256, blank=True, null=True,
         help_text='A secret value necessary to authenticate with this token.')
-    user = models.ForeignKey(AuthUser, blank=True, null=True,
+    user = models.ForeignKey(User, blank=True, null=True,
         related_name='tokens',
         help_text='User in possession of and authenticated by this token.')
     enabled = models.BooleanField(default=True,
@@ -991,7 +991,7 @@ class SessionChunk(_AbstractChunk):
         ordering = ('-start_time',)
 
     session = models.ForeignKey(DrinkingSession, related_name='chunks')
-    user = models.ForeignKey(AuthUser, related_name='session_chunks', blank=True,
+    user = models.ForeignKey(User, related_name='session_chunks', blank=True,
         null=True)
     keg = models.ForeignKey(Keg, related_name='session_chunks', blank=True,
         null=True, on_delete=models.PROTECT)
@@ -1005,7 +1005,7 @@ class UserSessionChunk(_AbstractChunk):
         ordering = ('-start_time',)
 
     session = models.ForeignKey(DrinkingSession, related_name='user_chunks')
-    user = models.ForeignKey(AuthUser, related_name='user_session_chunks', blank=True,
+    user = models.ForeignKey(User, related_name='user_session_chunks', blank=True,
         null=True)
 
     def GetTitle(self):
@@ -1082,7 +1082,7 @@ class SystemStats(_StatsModel):
     pass
 
 class UserStats(_StatsModel):
-    user = models.ForeignKey(AuthUser, blank=True, null=True,
+    user = models.ForeignKey(User, blank=True, null=True,
         related_name='stats')
 
     class Meta:
@@ -1138,7 +1138,7 @@ class SystemEvent(models.Model):
     kind = models.CharField(max_length=255, choices=KINDS,
         help_text='Type of event.')
     time = models.DateTimeField(help_text='Time of the event.')
-    user = models.ForeignKey(AuthUser, blank=True, null=True,
+    user = models.ForeignKey(User, blank=True, null=True,
         related_name='events',
         help_text='User responsible for the event, if any.')
     drink = models.ForeignKey(Drink, blank=True, null=True,
@@ -1266,7 +1266,7 @@ class Picture(models.Model):
         help_text='Time/date of image capture')
     caption = models.TextField(blank=True, null=True,
         help_text='Caption for the picture, if any.')
-    user = models.ForeignKey(AuthUser, blank=True, null=True,
+    user = models.ForeignKey(User, blank=True, null=True,
         related_name='pictures',
         help_text='User that owns/uploaded this picture')
     keg = models.ForeignKey(Keg, blank=True, null=True,

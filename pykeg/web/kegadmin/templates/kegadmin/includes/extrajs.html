@@ -1,37 +1,35 @@
 <script type="text/javascript">
   $(document).ready(function() {
-    var beer_labels, beer_mapped;
-    var beer_complete_url = "{% url "kegadmin-autocomplete-beer" %}";
+    var beverage_labels, beverage_mapped;
+    var beverage_complete_url = "{% url "kegadmin-autocomplete-beverage" %}";
     $('.beer-select').each(function() {
-      var beer_name = $(this).find('input[name=beer_name]');
-      var brewer_name = $(this).find('input[name=brewer_name]');
-      var style_name = $(this).find('input[name=style_name]');
-      var beer_id = $(this).find('input[name=beer_id]');
-      var brewer_id = $(this).find('input[name=brewer_id]');
-      var style_id = $(this).find('input[name=style_id]');
+      var beverage_name = $(this).find('input[name=beverage_name]');
+      var beverage_id = $(this).find('input[name=beverage_id]');
+      var producer_name = $(this).find('input[name=producer_name]');
+      var producer_id = $(this).find('input[name=producer_id]');
+      var style = $(this).find('input[name=style]');
 
-      beer_name.typeahead({
+      beverage_name.typeahead({
         source: function (query, process) {
-          $.get(beer_complete_url, { q: query }, function (data) {
-            beer_labels = []
-            beer_mapped = {}
+          $.get(beverage_complete_url, { q: query }, function (data) {
+            beverage_labels = []
+            beverage_mapped = {}
 
             $.each(data, function (i, item) {
-              var name = item.name + " (" + item.brewer_name + ")";
-              beer_mapped[name] = item;
-              beer_labels.push(name);
+              var name = item.name + " (" + item.producer_name + ")";
+              beverage_mapped[name] = item;
+              beverage_labels.push(name);
             })
 
-            process(beer_labels);
+            process(beverage_labels);
           })
         },
         updater: function (item) {
-            brewer_name.val(beer_mapped[item].brewer_name);
-            style_name.val(beer_mapped[item].style_name);
-            beer_id.val(beer_mapped[item].id);
-            brewer_id.val(beer_mapped[item].brewer_id);
-            style_id.val(beer_mapped[item].style_id);
-            return beer_mapped[item].name;
+            producer_name.val(beverage_mapped[item].producer_name);
+            style.val(beverage_mapped[item].style);
+            beverage_id.val(beverage_mapped[item].id);
+            producer_id.val(beverage_mapped[item].producer_id);
+            return beverage_mapped[item].name;
         },
       });
     });

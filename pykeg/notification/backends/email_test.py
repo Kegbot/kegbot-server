@@ -52,8 +52,8 @@ class EmailNotificationBackendTestCase(TestCase):
         self.prefs.save()
         self.assertEquals(0, len(mail.outbox))
 
-        keg = self.backend.start_keg(defaults.METER_NAME_0, beer_name='Unknown',
-            brewer_name='Unknown', style_name='Unknown')
+        keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
+            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
         self.assertEquals(1, len(mail.outbox))
 
         msg = mail.outbox[0]
@@ -94,8 +94,8 @@ http:///account.
         self.prefs.save()
         self.assertEquals(0, len(mail.outbox))
         
-        keg = self.backend.start_keg(defaults.METER_NAME_0, beer_name='Unknown',
-            brewer_name='Unknown', style_name='Unknown')
+        keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
+            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
         drink = self.backend.record_drink(defaults.METER_NAME_0, ticks=500)
         self.assertEquals(1, len(mail.outbox))
 
@@ -136,8 +136,8 @@ http:///account.
         self.prefs.save()
         self.assertEquals(0, len(mail.outbox))
 
-        keg = self.backend.start_keg(defaults.METER_NAME_0, beer_name='Unknown',
-            brewer_name='Unknown', style_name='Unknown')
+        keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
+            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
         drink = self.backend.record_drink(defaults.METER_NAME_0, ticks=500,
             volume_ml=keg.full_volume_ml * (1 - kb_common.KEG_VOLUME_LOW_PERCENT))
         self.assertEquals(1, len(mail.outbox))
@@ -179,8 +179,8 @@ http:///account.
         self.prefs.save()
         self.assertEquals(0, len(mail.outbox))
 
-        keg = self.backend.start_keg(defaults.METER_NAME_0, beer_name='Unknown',
-            brewer_name='Unknown', style_name='Unknown')
+        keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
+            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
         self.assertEquals(0, len(mail.outbox))
         self.backend.end_keg(defaults.METER_NAME_0)
         self.assertEquals(1, len(mail.outbox))

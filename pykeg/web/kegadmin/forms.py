@@ -19,23 +19,21 @@ class ChangeKegForm(forms.Form):
         initial=keg_sizes.HALF_BARREL,
         required=True)
 
-    beer_name = forms.CharField(required=True, label='Beer Name')
-    beer_id = forms.CharField(widget=forms.HiddenInput(), required=False)
-    brewer_name = forms.CharField(required=True, label='Brewer')
-    brewer_id = forms.CharField(widget=forms.HiddenInput(), required=False)
-    style_name = forms.CharField(required=True, label='Style',
+    beverage_name = forms.CharField(required=True, label='Beer Name')
+    beverage_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    producer_name = forms.CharField(required=True, label='Brewer')
+    producer_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    style = forms.CharField(required=True, label='Style',
       help_text='Example: Pale Ale, Stout, etc.')
-    style_id = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal beer-select'
     helper.layout = Layout(
-        Field('beer_name', css_class='input-xlarge'),
-        Field('beer_id', type='hidden'),
-        Field('brewer_name', css_class='input-xlarge'),
-        Field('brewer_id', type='hidden'),
-        Field('style_name', css_class='input-xlarge'),
-        Field('style_id', type='hidden'),
+        Field('beverage_name', css_class='input-xlarge'),
+        Field('beverage_id', type='hidden'),
+        Field('producer_name', css_class='input-xlarge'),
+        Field('producer_id', type='hidden'),
+        Field('style', css_class='input-xlarge'),
         Field('keg_size', css_class='input-xlarge'),
         FormActions(
             Submit('submit_change_keg_form', 'Activate Keg', css_class='btn-primary'),
@@ -50,9 +48,10 @@ class ChangeKegForm(forms.Form):
         if tap.is_active():
             b.end_keg(tap)
 
+        # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
-        keg = b.start_keg(tap, beer_name=cd['beer_name'], brewer_name=cd['brewer_name'],
-            style_name=cd['style_name'], keg_type=cd['keg_size'])
+        keg = b.start_keg(tap, beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
+            beverage_type='beer', style_name=cd['style'], keg_type=cd['keg_size'])
 
         if cd.get('description'):
             keg.description = cd['description']
@@ -153,11 +152,11 @@ class SiteSettingsForm(forms.ModelForm):
         )
     )
 
-class BeerTypeForm(forms.ModelForm):
+class BeverageForm(forms.ModelForm):
     class Meta:
-        model = models.BeerType
-        fields = ('name', 'style', 'brewer', 'edition', 'abv',
-            'calories_oz', 'carbs_oz', 'original_gravity', 'specific_gravity',
+        model = models.Beverage
+        fields = ('name', 'style', 'producer', 'vintage_year', 'abv_percent',
+            'original_gravity', 'specific_gravity',
             'untappd_beer_id')
 
     new_image = forms.ImageField(required=False,
@@ -168,13 +167,9 @@ class BeerTypeForm(forms.ModelForm):
     helper.layout = Layout(
         Field('name', css_class='input-xlarge'),
         Field('style', css_class='input-xlarge'),
-        Field('brewer'),
-        Field('edition'),
-        Field('abv'),
-        Field('calories_oz'),
-        Field('carbs_oz'),
-        Field('original_gravity'),
-        Field('specific_gravity'),
+        Field('producer'),
+        Field('edition_year'),
+        Field('abv_percent'),
         Field('untappd_beer_id'),
         Field('new_image'),
         FormActions(
@@ -182,9 +177,9 @@ class BeerTypeForm(forms.ModelForm):
         )
     )
 
-class BrewerForm(forms.ModelForm):
+class BeverageProducerForm(forms.ModelForm):
     class Meta:
-        model = models.Brewer
+        model = models.BeverageProducer
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
@@ -193,23 +188,9 @@ class BrewerForm(forms.ModelForm):
         Field('country', css_class='input-xlarge'),
         Field('origin_state', css_class='input-xlarge'),
         Field('origin_city', css_class='input-xlarge'),
-        Field('production'),
+        Field('is_homebrew'),
         Field('url'),
         Field('description'),
-        Field('image'),
-        FormActions(
-            Submit('submit', 'Save', css_class='btn-primary'),
-        )
-    )
-
-class BeerStyleForm(forms.ModelForm):
-    class Meta:
-        model = models.BeerStyle
-
-    helper = FormHelper()
-    helper.form_class = 'form-horizontal'
-    helper.layout = Layout(
-        Field('name', css_class='input-xlarge'),
         FormActions(
             Submit('submit', 'Save', css_class='btn-primary'),
         )

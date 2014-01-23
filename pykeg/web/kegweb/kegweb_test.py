@@ -37,8 +37,8 @@ class KegwebTestCase(TransactionTestCase):
             self.assertEquals(404, response.status_code)
 
         b = backend.KegbotBackend()
-        keg = b.start_keg('kegboard.flow0', beer_name='Unknown', brewer_name='Unknown',
-            style_name='Unknown')
+        keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
+            beverage_type='beer', style_name='Unknown')
         self.assertIsNotNone(keg)
         response = self.client.get('/kegs/')
         self.assertEquals(200, response.status_code)
@@ -55,8 +55,8 @@ class KegwebTestCase(TransactionTestCase):
 
     def testShout(self):
         b = backend.KegbotBackend()
-        keg = b.start_keg('kegboard.flow0', beer_name='Unknown', brewer_name='Unknown',
-            style_name='Unknown')
+        keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
+            beverage_type='beer', style_name='Unknown')
         d = b.record_drink('kegboard.flow0', ticks=123, shout='_UNITTEST_')
         response = self.client.get(d.get_absolute_url())
         self.assertContains(response, '<p>_UNITTEST_</p>', status_code=200)

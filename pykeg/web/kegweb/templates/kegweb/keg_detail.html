@@ -30,11 +30,10 @@
 {% block col-1 %}
 <h2>
   {{keg.type.name}}
-  {% if keg.type.brewer %}
-  <br/>
-  <small>{{keg.type.brewer}}</small>
+  {% if keg.type.producer %}
+  <small>{{keg.type.producer}}</small>
   {% if user.is_staff %}
-  <small>(<a href="{% url 'kegadmin-edit-beer-type' keg.type.id %}">edit beer</a>)</small>
+  <small>(<a href="{% url 'kegadmin-edit-beverage' keg.type.id %}">edit beer</a>)</small>
   {% endif %}
   {% endif %}
 </h2>

@@ -41,9 +41,9 @@ RANDOM_POUR_RANGE_ML = (100, 500)
 def summon_drinker(request):
     user = random_item(models.User)
     tap = random_item(models.KegTap)
-    beer_type = random_item(models.BeerType)
+    beverage = random_item(models.Beverage)
 
-    if not tap or not user or not beer_type:
+    if not tap or not user or not beverage:
         messages.error(request, 'No drinkers are available!')
         return redirect('kb-home')
 
@@ -55,7 +55,7 @@ def summon_drinker(request):
 
     # Start keg if the tap is idle.
     if not tap.current_keg:
-        be.start_keg(tap, beer_type=beer_type)
+        be.start_keg(tap, beverage=beverage)
 
     volume_ml = random.randint(*RANDOM_POUR_RANGE_ML)
     drink = be.record_drink(tap.meter_name, ticks=0, volume_ml=volume_ml,

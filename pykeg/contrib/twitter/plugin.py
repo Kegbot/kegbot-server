@@ -296,13 +296,13 @@ class TwitterPlugin(plugin.Plugin):
         elif event.session:
             url = event.session.short_url()
 
-        beer_name = ''
+        beverage_name = ''
         if event.drink and (event.drink.keg and event.drink.keg.type):
-            beer_name = event.drink.keg.type.name
+            beverage_name = event.drink.keg.type.name
 
         # Must be a keg event if we still have no beer name.
-        if event.keg and event.keg.type and not beer_name:
-            beer_name = event.keg.type.name
+        if event.keg and event.keg.type and not beverage_name:
+            beverage_name = event.keg.type.name
             if not url:
                 url = event.keg.full_url()
 
@@ -315,7 +315,7 @@ class TwitterPlugin(plugin.Plugin):
             'username': username,
             'url': url,
             'volume_str': volume_str,
-            'beer_name': beer_name,
+            'beverage_name': beverage_name,
         }
         return kbvars
 
@@ -325,7 +325,8 @@ class TwitterPlugin(plugin.Plugin):
             return ''
         template = template.replace('$DRINKER', kbvars.get('username', ''))
         template = template.replace('$VOLUME', kbvars.get('volume_str', ''))
-        template = template.replace('$BEER', kbvars.get('beer_name', ''))
+        template = template.replace('$BEVERAGE', kbvars.get('beverage_name', ''))
+        template = template.replace('$BEER', kbvars.get('beverage_name', ''))  # compatibility
         template = template.replace('$SITENAME', kbvars.get('site_name', ''))
         template = template.replace('$URL', kbvars.get('url', ''))
         return template

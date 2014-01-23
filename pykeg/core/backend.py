@@ -373,38 +373,37 @@ class KegbotBackend:
             raise NoTokenError
 
     @transaction.atomic
-    def start_keg(self, tap, beer_type=None, keg_type=keg_sizes.HALF_BARREL,
-            full_volume_ml=None, brewer_name=None, beer_name=None,
-            style_name=None, when=None):
+    def start_keg(self, tap, beverage=None, keg_type=keg_sizes.HALF_BARREL,
+            full_volume_ml=None, beverage_name=None, beverage_type=None,
+            producer_name=None, style_name=None, when=None):
         """Activates a new keg at the given tap.
 
         The tap must be inactive (tap.current_keg == None), otherwise a
         ValueError will be thrown.
 
-        A beer type must be specified, either by providing an existing
-        BeerType instance as `beer_type`, or by specifying values for
-        `brewer_name`, `beer_name`, and `style_name`.
+        A beverage must be specified, either by providing an existing
+        Beverage instance as `beverage`, or by specifying values for
+        `beverage_type`, `beverage_name`, `producer_name`,
+        and `style_name`.
 
         When using the latter form, the system will attempt to match
-        the string type parameters against an already-existing BeerType.
-        Otherwise, a new BeerType will be created.
+        the string type parameters against an already-existing Beverage.
+        Otherwise, a new Beverage will be created.
 
         Args:
             tap: The KegTap object to tap against, or a string matching
                 KegTap.meter_name.
-            beer_type: The type of beer, as a beer_type object.  If specified,
-                brewer_name, beer_name, and style_name must all be None.
+            beverage: The type of beverage, as a Beverage object.
             keg_type: The type of physical keg, from keg_sizes.
             full_volume_ml: The keg's original unserved volume.  If unspecified,
                 will be interpreted from keg_type.  It is an error to omit this
                 parameter when keg_type is OTHER.
-            brewer_name: The Brewer's name for the keg's beer.  Must be
-                given with beer_name and style_name; beer_type must be None.
-            beer_name: The BeerType's name for the keg's beer.  Must be
-                given with brewer_name and style_name; beer_type must be
-                None.
-            style_name: The BeerStyle for the keg's beer.  Must be given
-                with brewer_name and beer_name; beer_type must be None.
+            beverage_name: The keg's beverage name.  Must be given with
+                `producer_name` and `style_name`;
+                `beverage` must be None.
+            beverage_type: The keg beverage type.
+            producer_name: The brewer or producer of this beverage.
+            style_name: The style of this beverage.
             when: Keg activation date and time. If not specified, current
                 time will be used.
 
@@ -417,21 +416,22 @@ class KegbotBackend:
         if tap.is_active():
             raise ValueError('Tap is already active, must end keg first.')
 
-        if beer_type:
-            if brewer_name or beer_name or style_name:
+        if beverage:
+            if beverage_type or beverage_name or producer_name or style_name:
                 raise ValueError(
-                    'Cannot give brewer_name, beer_name, or style_name with beer_type')
+                    'Cannot give beverage_type, beverage_name, producer_name, or style_name with beverage')
         else:
-            if not beer_name:
-                raise ValueError('Must supply beer_name when beer_type is None')
-            if not brewer_name:
-                raise ValueError('Must supply brewer_name when beer_type is None')
+            if not beverage_type:
+                raise ValueError('Must supply beverage_type when beverage is None')
+            if not beverage_name:
+                raise ValueError('Must supply beverage_name when beverage is None')
+            if not producer_name:
+                raise ValueError('Must supply producer_name when beverage is None')
             if not style_name:
-                raise ValueError('Must supply style_name when beer_type is None')
-            beer_style = models.BeerStyle.objects.get_or_create(name=style_name)[0]
-            brewer = models.Brewer.objects.get_or_create(name=brewer_name)[0]
-            beer_type = models.BeerType.objects.get_or_create(name=beer_name,
-                    brewer=brewer, style=beer_style)[0]
+                raise ValueError('Must supply style_name when beverage is None')
+            producer = models.BeverageProducer.objects.get_or_create(name=producer_name)[0]
+            beverage = models.Beverage.objects.get_or_create(name=beverage_name, beverage_type=beverage_type,
+                    producer=producer, style=style_name)[0]
 
         if keg_type not in keg_sizes.DESCRIPTIONS:
             raise ValueError('Unrecognized keg type: %s' % keg_type)
@@ -441,8 +441,9 @@ class KegbotBackend:
         if not when:
             when = timezone.now()
 
-        keg = models.Keg.objects.create(type=beer_type, keg_type=keg_type,
-                online=True, full_volume_ml=full_volume_ml, start_time=when)
+        keg = models.Keg.objects.create(type=beverage, keg_type=keg_type,
+                online=True, full_volume_ml=full_volume_ml,
+                start_time=when)
 
         old_keg = tap.current_keg
         if old_keg:

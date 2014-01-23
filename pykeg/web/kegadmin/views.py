@@ -349,9 +349,9 @@ def add_token(request):
 
 
 @staff_member_required
-def beer_type_list(request):
+def beverages_list(request):
     context = RequestContext(request)
-    beers = models.BeerType.objects.all().order_by('name')
+    beers = models.Beverage.objects.all().order_by('name')
     paginator = Paginator(beers, 25)
 
     page = request.GET.get('page')
@@ -362,17 +362,17 @@ def beer_type_list(request):
     except EmptyPage:
         beers = paginator.page(paginator.num_pages)
 
-    context['beers'] = beers
+    context['beverages'] = beers
     return render_to_response('kegadmin/beer_type_list.html', context_instance=context)
 
 
 @staff_member_required
-def beer_type_detail(request, beer_id):
-    btype = get_object_or_404(models.BeerType, id=beer_id)
+def beverage_detail(request, beer_id):
+    btype = get_object_or_404(models.Beverage, id=beer_id)
 
-    form = forms.BeerTypeForm(instance=btype)
+    form = forms.BeverageForm(instance=btype)
     if request.method == 'POST':
-        form = forms.BeerTypeForm(request.POST, instance=btype)
+        form = forms.BeverageForm(request.POST, instance=btype)
         if form.is_valid():
             btype = form.save()
             new_image = request.FILES.get('new_image')
@@ -392,9 +392,9 @@ def beer_type_detail(request, beer_id):
 
 
 @staff_member_required
-def brewer_list(request):
+def beverage_producer_list(request):
     context = RequestContext(request)
-    brewers = models.Brewer.objects.all().order_by('name')
+    brewers = models.BeverageProducer.objects.all().order_by('name')
     paginator = Paginator(brewers, 25)
 
     page = request.GET.get('page')
@@ -409,12 +409,12 @@ def brewer_list(request):
     return render_to_response('kegadmin/brewer_list.html', context_instance=context)
 
 @staff_member_required
-def brewer_detail(request, brewer_id):
-    brewer = get_object_or_404(models.Brewer, id=brewer_id)
+def beverage_producer_detail(request, brewer_id):
+    brewer = get_object_or_404(models.BeverageProducer, id=brewer_id)
 
-    form = forms.BrewerForm(instance=brewer)
+    form = forms.BeverageProducerForm(instance=brewer)
     if request.method == 'POST':
-        form = forms.BrewerForm(request.POST, instance=brewer)
+        form = forms.BeverageProducerForm(request.POST, instance=brewer)
         if form.is_valid():
             form.save()
             messages.success(request, 'Brewer updated.')
@@ -424,58 +424,23 @@ def brewer_detail(request, brewer_id):
     context['form'] = form
     return render_to_response('kegadmin/brewer_detail.html', context_instance=context)
 
-
 @staff_member_required
-def beer_style_list(request):
-    context = RequestContext(request)
-    styles = models.BeerStyle.objects.all().order_by('name')
-    paginator = Paginator(styles, 25)
-
-    page = request.GET.get('page')
-    try:
-        styles = paginator.page(page)
-    except PageNotAnInteger:
-        styles = paginator.page(1)
-    except EmptyPage:
-        styles = paginator.page(paginator.num_pages)
-
-    context['styles'] = styles
-    return render_to_response('kegadmin/beer_style_list.html', context_instance=context)
-
-@staff_member_required
-def beer_style_detail(request, style_id):
-    style = get_object_or_404(models.BeerStyle, id=style_id)
-
-    form = forms.BeerStyleForm(instance=style)
-    if request.method == 'POST':
-        form = forms.BeerStyleForm(request.POST, instance=style)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Beer style updated.')
-
-    context = RequestContext(request)
-    context['style'] = style
-    context['form'] = form
-    return render_to_response('kegadmin/beer_style_detail.html', context_instance=context)
-
-@staff_member_required
-def autocomplete_beer_type(request):
+def autocomplete_beverage(request):
     context = RequestContext(request)
     search = request.GET.get('q')
     if search:
-        types = models.BeerType.objects.filter(Q(name__icontains=search) | Q(brewer__name__icontains=search))
+        beverages = models.Beverage.objects.filter(Q(name__icontains=search) | Q(producer__name__icontains=search))
     else:
-        types = models.BeerType.objects.all()
-    types = types[:10]  # autocomplete widget limited to 10
+        beverages = models.Beverage.objects.all()
+    beverages = beverages[:10]  # autocomplete widget limited to 10
     values = []
-    for beer in types:
+    for beverage in beverages:
         values.append({
-          'name': beer.name,
-          'id': beer.id,
-          'brewer_name': beer.brewer.name,
-          'brewer_id': beer.brewer.id,
-          'style_name': beer.style.name,
-          'style_id': beer.style.id,
+          'name': beverage.name,
+          'id': beverage.id,
+          'producer_name': beverage.producer.name,
+          'producer_id': beverage.producer.id,
+          'style': beverage.style,
       })
     return HttpResponse(kbjson.dumps(values, indent=None),
       mimetype='application/json', status=200)

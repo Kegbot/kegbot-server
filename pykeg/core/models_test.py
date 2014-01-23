@@ -35,31 +35,26 @@ class CoreModelsTestCase(TestCase):
     def setUp(self):
         models.KegbotSite.get()  # create the site
         self.backend = backend.KegbotBackend()
-        self.brewer = models.Brewer.objects.create(
+        self.producer = models.BeverageProducer.objects.create(
             name='Moonshine Beers',
             country='USA',
             origin_state='Anystate',
             origin_city='Bathtub',
-            production='retail',
             url='http://example.com/',
             description='Pretty bad beers.',
         )
 
-        self.beer_style = models.BeerStyle.objects.create(
-            name='Porter',
-        )
-
-        self.beer_type = models.BeerType.objects.create(
+        self.beverage = models.Beverage.objects.create(
             name='Moonshine Porter',
-            brewer=self.brewer,
-            style=self.beer_style,
-            calories_oz=3.0,
-            carbs_oz=10.0,
-            abv=0.05,
+            producer=self.producer,
+            style='Porter',
+            calories_per_ml=3.0,
+            carbs_per_ml=10.0,
+            abv_percent=0.05,
         )
 
         self.keg = models.Keg.objects.create(
-            type=self.beer_type,
+            type=self.beverage,
             keg_type='other',
             start_time=make_datetime(2000, 4, 1),
             end_time=make_datetime(2000, 5, 1),
@@ -86,15 +81,14 @@ class CoreModelsTestCase(TestCase):
         self.user.delete()
         self.user2.delete()
         self.keg.delete()
-        self.beer_type.delete()
-        self.beer_style.delete()
-        self.brewer.delete()
+        self.beverage.delete()
+        self.producer.delete()
 
     def testKegStuff(self):
         """Test basic keg relations that should always work."""
         self.assertEqual(self.keg.full_volume_ml,
             units.Quantity(2.0, units.UNITS.Liter).InMilliliters())
-        self.assertEqual(self.keg.type.brewer.name, "Moonshine Beers")
+        self.assertEqual(self.keg.type.producer.name, "Moonshine Beers")
 
         self.assertEqual(0.0, self.keg.served_volume())
         self.assertEqual(2000, self.keg.remaining_volume_ml())

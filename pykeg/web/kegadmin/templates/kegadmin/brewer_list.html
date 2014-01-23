@@ -19,10 +19,10 @@
 </thead>
 <tbody>
 {% for brewer in brewers %}
-<tr class="clickable" data-href="{% url 'kegadmin-edit-brewer' brewer.id %}">
+<tr class="clickable" data-href="{% url 'kegadmin-edit-beverage-producer' brewer.id %}">
     <td>
         <div class="form-horizontal">
-            <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-brewer' brewer.id %}">Edit</a>&nbsp;&nbsp;
+            <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-beverage-producer' brewer.id %}">Edit</a>&nbsp;&nbsp;
             <span>{{ brewer.name }}</span>
     </td>
     <td>{{ beer.origin_country }}</td>

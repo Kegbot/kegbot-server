@@ -244,106 +244,6 @@ class ApiKey(models.Model):
         return '%032x' % random.randint(0, 2**128 - 1)
 
 
-class BeerDBModel(models.Model):
-    class Meta:
-        abstract = True
-    added = models.DateTimeField(default=timezone.now, editable=False)
-    edited = models.DateTimeField(editable=False)
-    beerdb_id = models.CharField(blank=True, null=True, max_length=128)
-
-    def save(self, *args, **kwargs):
-        self.edited = timezone.now()
-        super(BeerDBModel, self).save(*args, **kwargs)
-
-
-class Brewer(BeerDBModel):
-    """Describes a producer of beer."""
-    class Meta:
-        ordering = ('name',)
-
-    PRODUCTION_CHOICES = (
-      ('commercial', 'Commercial brewer'),
-      ('homebrew', 'Home brewer'),
-    )
-
-    name = models.CharField(max_length=255,
-        help_text='Name of the brewer')
-    country = fields.CountryField(default='USA',
-        help_text='Country of origin')
-    origin_state = models.CharField(max_length=128,
-        default='', blank=True, null=True,
-        help_text='State of origin, if applicable')
-    origin_city = models.CharField(max_length=128, default='', blank=True,
-        null=True,
-        help_text='City of origin, if known')
-    production = models.CharField(max_length=128, choices=PRODUCTION_CHOICES,
-        default='commercial')
-    url = models.URLField(default='', blank=True, null=True,
-        help_text='Brewer\'s home page')
-    description = models.TextField(default='', blank=True, null=True,
-        help_text='A short description of the brewer')
-    image = models.ForeignKey('Picture', blank=True, null=True,
-        related_name='beer_brewers',
-        on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return self.name
-
-
-class BeerStyle(BeerDBModel):
-    """Describes a named style of beer (Stout, IPA, etc)"""
-    class Meta:
-        ordering = ('name',)
-
-    name = models.CharField(max_length=128,
-        help_text='Name of the beer style')
-
-    def __str__(self):
-        return self.name
-
-
-class BeerType(BeerDBModel):
-    """Describes a specific kind of beer, by name, brewer, and style."""
-    class Meta:
-        ordering = ('name',)
-
-    name = models.CharField(max_length=255,
-        help_text='Name of the beer; typically unique within a Brewer.')
-    brewer = models.ForeignKey(Brewer,
-        help_text='Brewer producing this beer.')
-    style = models.ForeignKey(BeerStyle,
-        help_text='Style of the beer.')
-    edition = models.CharField(max_length=255, blank=True, null=True,
-        help_text='For seasonal or special edition beers, the year or '
-            'other name uniquely identifying it.')
-    abv = models.FloatField(blank=True, null=True,
-        help_text='Alcohol by volume, as percentage (0-100).')
-    calories_oz = models.FloatField(blank=True, null=True,
-        help_text='Calories per fluid ounce of beer.')
-    carbs_oz = models.FloatField(blank=True, null=True,
-        help_text='Carbohydrates per fluid ounce of beer.')
-    original_gravity = models.FloatField(blank=True, null=True,
-        help_text='Original gravity of the beer.')
-    specific_gravity = models.FloatField(blank=True, null=True,
-        help_text='Specific/final gravity of the beer.')
-    image = models.ForeignKey('Picture', blank=True, null=True,
-        related_name='beer_types',
-        on_delete=models.SET_NULL,
-        help_text='Logo or artwork for this beer type.')
-    untappd_beer_id = models.IntegerField(blank=True, null=True,
-        help_text='Untappd.com beer id for this beer, if known')
-
-    def __str__(self):
-        return "%s by %s" % (self.name, self.brewer)
-
-    def GetImage(self):
-        if self.image:
-            return self.image
-        if self.brewer.image:
-            return self.brewer.image
-        return None
-
-
 class BeverageProducer(models.Model):
     """Information about a beverage producer (brewer, vineyard, etc)."""
     name = models.CharField(max_length=255,
@@ -363,6 +263,12 @@ class BeverageProducer(models.Model):
         help_text='A short description of the brewer')
     picture = models.ForeignKey('Picture', blank=True, null=True,
         on_delete=models.SET_NULL)
+
+    class Meta:
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name
 
 
 class Beverage(models.Model):
@@ -416,6 +322,12 @@ class Beverage(models.Model):
         help_text='Future use.')
     beverage_backend_id = models.CharField(max_length=255, blank=True, null=True,
         help_text='Future use.')
+
+    class Meta:
+        ordering = ('name',)
+
+    def __str__(self):
+        return '%s by %s' % (self.name, self.producer)
 
 
 class KegTap(models.Model):

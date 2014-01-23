@@ -41,8 +41,8 @@ class StatsTestCase(TransactionTestCase):
             self.backend.create_tap('tap2', 'kegboard.flow1', ml_per_tick=1/2200.0),
         ]
 
-        self.keg = self.backend.start_keg('kegboard.flow0', beer_name='Unknown',
-            brewer_name='Unknown', style_name='Unknown')
+        self.keg = self.backend.start_keg('kegboard.flow0', beverage_name='Unknown',
+            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
 
     def testStuff(self):
         site = models.KegbotSite.get()

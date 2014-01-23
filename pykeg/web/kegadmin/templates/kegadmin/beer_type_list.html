@@ -17,15 +17,15 @@
     </tr>
 </thead>
 <tbody>
-{% for beer in beers %}
-<tr class="clickable" data-href="{% url 'kegadmin-edit-beer-type' beer.id %}">
+{% for beverage in beverages %}
+<tr class="clickable" data-href="{% url 'kegadmin-edit-beverage' beverage.id %}">
     <td>
         <div class="form-horizontal">
-            <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-beer-type' beer.id %}">Edit</a>&nbsp;&nbsp;
-            <span>{{ beer.name }}</span>
+            <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-beverage' beverage.id %}">Edit</a>&nbsp;&nbsp;
+            <span>{{ beverage.name }}</span>
     </td>
-    <td>{{ beer.brewer }}</td>
-    <td>{{ beer.style }}</td>
+    <td>{{ beverage.producer }}</td>
+    <td>{{ beverage.style }}</td>
 </tr>
 {% endfor %}
 <!-- <tr class="info">
@@ -36,6 +36,6 @@
 </tr> -->
 </tbody>
 </table>
-{% bootstrap_paginate beers %}
+{% bootstrap_paginate beverages %}
 
 {% endblock %}

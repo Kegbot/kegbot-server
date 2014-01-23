@@ -41,8 +41,9 @@ class BaseApiTestCase(TestCase):
         tap = models.KegTap.objects.get(meter_name=TAP_NAME)
         tap.ml_per_tick = (1/2.2)
         tap.save()
-        keg = self.backend.start_keg(TAP_NAME, beer_name=FAKE_BEER_NAME,
-                brewer_name=FAKE_BREWER_NAME, style_name=FAKE_BEER_STYLE)
+        keg = self.backend.start_keg(TAP_NAME, beverage_name=FAKE_BEER_NAME,
+                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
 
         self.assertEquals(0, keg.served_volume())
@@ -78,8 +79,9 @@ class BaseApiTestCase(TestCase):
 
     def test_drink_cancel(self):
         """Tests cancelling drinks."""
-        keg = self.backend.start_keg(TAP_NAME, beer_name=FAKE_BEER_NAME,
-                brewer_name=FAKE_BREWER_NAME, style_name=FAKE_BEER_STYLE)
+        keg = self.backend.start_keg(TAP_NAME, beverage_name=FAKE_BEER_NAME,
+                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
         self.assertEquals(0, keg.served_volume())
 
@@ -136,12 +138,13 @@ class BaseApiTestCase(TestCase):
         self.assertFalse(tap.is_active(), "Tap is already active.")
 
         # No beer types yet.
-        qs = models.BeerType.objects.filter(name=FAKE_BEER_NAME)
-        self.assertEquals(len(qs), 0, "BeerType already exists")
+        qs = models.Beverage.objects.filter(name=FAKE_BEER_NAME)
+        self.assertEquals(len(qs), 0, "Beverage already exists")
 
         # Tap the keg.
-        keg = self.backend.start_keg(TAP_NAME, beer_name=FAKE_BEER_NAME,
-                brewer_name=FAKE_BREWER_NAME, style_name=FAKE_BEER_STYLE)
+        keg = self.backend.start_keg(TAP_NAME, beverage_name=FAKE_BEER_NAME,
+                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
         self.assertTrue(keg.online)
 
@@ -150,13 +153,13 @@ class BaseApiTestCase(TestCase):
         self.assertTrue(keg.current_tap.is_active())
 
         # Check that the beer type was created.
-        qs = models.BeerType.objects.filter(name=FAKE_BEER_NAME)
-        self.assertEquals(len(qs), 1, "Expected a single new BeerType.")
-        beer_type = qs[0]
-        brewer = beer_type.brewer
-        style = beer_type.style
+        qs = models.Beverage.objects.filter(name=FAKE_BEER_NAME)
+        self.assertEquals(len(qs), 1, "Expected a single new Beverage.")
+        beverage = qs[0]
+        brewer = beverage.producer
+        style = beverage.style
         self.assertEquals(brewer.name, FAKE_BREWER_NAME)
-        self.assertEquals(style.name, FAKE_BEER_STYLE)
+        self.assertEquals(style, FAKE_BEER_STYLE)
 
         # Now activate a new keg.
         keg = self.backend.end_keg(tap)
@@ -164,25 +167,26 @@ class BaseApiTestCase(TestCase):
         self.assertFalse(tap.is_active())
         self.assertFalse(keg.online)
 
-        new_keg = self.backend.start_keg(TAP_NAME, beer_type=beer_type)
+        new_keg = self.backend.start_keg(TAP_NAME, beverage=beverage)
         self.assertIsNotNone(new_keg)
         self.assertNotEquals(new_keg, keg)
 
         # Ensure the beer type was reused.
-        self.assertEquals(new_keg.type, beer_type)
+        self.assertEquals(new_keg.type, beverage)
 
         # Deactivate, and activate a new keg again by name.
         self.backend.end_keg(tap.meter_name)
-        new_keg_2 = self.backend.start_keg(TAP_NAME, beer_name='Other Beer',
-                brewer_name=FAKE_BREWER_NAME, style_name=FAKE_BEER_STYLE)
-        self.assertEquals(new_keg_2.type.brewer, keg.type.brewer)
+        new_keg_2 = self.backend.start_keg(TAP_NAME, beverage_name='Other Beer',
+                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                style_name=FAKE_BEER_STYLE)
+        self.assertEquals(new_keg_2.type.producer, keg.type.producer)
         self.assertEquals(new_keg_2.type.style, keg.type.style)
         self.assertNotEquals(new_keg_2.type, keg.type)
 
         # New brewer, identical beer name == new beer type.
         self.backend.end_keg(tap.meter_name)
-        new_keg_3 = self.backend.start_keg(TAP_NAME, beer_name=FAKE_BEER_NAME,
-                brewer_name='Other Brewer', style_name=FAKE_BEER_STYLE)
-        self.assertNotEquals(new_keg_3.type.brewer, keg.type.brewer)
+        new_keg_3 = self.backend.start_keg(TAP_NAME, beverage_name=FAKE_BEER_NAME,
+                beverage_type='beer', producer_name='Other Brewer', style_name=FAKE_BEER_STYLE)
+        self.assertNotEquals(new_keg_3.type.producer, keg.type.producer)
         self.assertEquals(new_keg_3.type.name, keg.type.name)
         self.assertNotEquals(new_keg_3.type, keg.type)

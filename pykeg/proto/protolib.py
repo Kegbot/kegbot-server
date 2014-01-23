@@ -115,56 +115,43 @@ def PictureToProto(record, full=False):
         ret.session_id = record.session_id
     return ret
 
-@converts(models.BeerStyle)
-def BeerStyleToProto(style, full=False):
-    ret = models_pb2.BeerStyle()
-    ret.id = style.id
-    ret.name = style.name
-    return ret
-
-@converts(models.BeerType)
-def BeerTypeToProto(beertype, full=False):
+@converts(models.Beverage)
+def BeverageToProto(beverage, full=False):
     ret = models_pb2.BeerType()
-    ret.id = str(beertype.id)
-    ret.name = beertype.name
-    ret.brewer_id = str(beertype.brewer_id)
-    ret.style_id = str(beertype.style_id)
-    if beertype.edition is not None:
-        ret.edition = beertype.edition
+    ret.id = str(beverage.id)
+    ret.name = beverage.name
+    ret.brewer_id = str(beverage.producer_id)
+    ret.style_id = '0'
     # TODO(mikey): guarantee this at DB level
-    abv = beertype.abv or 0.0
+    abv = beverage.abv_percent or 0.0
     ret.abv = max(min(abv, 100.0), 0.0)
-    if beertype.calories_oz is not None:
-        ret.calories_oz = beertype.calories_oz
-    if beertype.carbs_oz is not None:
-        ret.carbs_oz = beertype.carbs_oz
-    if beertype.specific_gravity is not None:
-        ret.specific_gravity = beertype.specific_gravity
-    if beertype.original_gravity is not None:
-        ret.original_gravity = beertype.original_gravity
-    if beertype.image:
-        ret.image.MergeFrom(ToProto(beertype.image))
+    if beverage.specific_gravity is not None:
+        ret.specific_gravity = beverage.specific_gravity
+    if beverage.original_gravity is not None:
+        ret.original_gravity = beverage.original_gravity
+    if beverage.picture:
+        ret.image.MergeFrom(ToProto(beverage.image))
     return ret
 
-@converts(models.Brewer)
-def BrewerToProto(brewer, full=False):
+@converts(models.BeverageProducer)
+def ProducerToProto(producer, full=False):
     ret = models_pb2.Brewer()
-    ret.id = str(brewer.id)
-    ret.name = brewer.name
-    if brewer.country is not None:
-        ret.country = brewer.country
-    if brewer.origin_state is not None:
-        ret.origin_state = brewer.origin_state
-    if brewer.origin_city is not None:
-        ret.origin_city = brewer.origin_city
-    if brewer.production is not None:
-        ret.production = brewer.production
-    if brewer.url is not None:
-        ret.url = brewer.url
-    if brewer.description is not None:
-        ret.description = brewer.description
-    if brewer.image:
-        ret.image.MergeFrom(ToProto(brewer.image))
+    ret.id = str(producer.id)
+    ret.name = producer.name
+    if producer.country is not None:
+        ret.country = producer.country
+    if producer.origin_state is not None:
+        ret.origin_state = producer.origin_state
+    if producer.origin_city is not None:
+        ret.origin_city = producer.origin_city
+    if producer.production is not None:
+        ret.production = 'commercial'
+    if producer.url is not None:
+        ret.url = producer.url
+    if producer.description is not None:
+        ret.description = producer.description
+    if producer.image:
+        ret.image.MergeFrom(ToProto(producer.image))
     return ret
 
 @converts(models.Drink)
@@ -338,8 +325,8 @@ def SystemEventToProto(record, full=False):
     if record.kind in ('drink_poured', 'session_started', 'session_joined') and record.user:
         image = record.user.mugshot
     elif record.kind in ('keg_tapped', 'keg_ended'):
-        if record.keg.type and record.keg.type.image:
-            image = record.keg.type.image
+        if record.keg.type and record.keg.type.picture:
+            image = record.keg.type.picture
     if image:
         ret.image.MergeFrom(ToProto(image))
 

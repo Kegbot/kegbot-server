@@ -455,7 +455,7 @@ class KegTap(models.Model):
 
 class Keg(models.Model):
     """Record for each physical Keg."""
-    type = models.ForeignKey(BeerType,
+    type = models.ForeignKey(Beverage,
         on_delete=models.PROTECT,
         help_text='Beverage in this Keg.')
     keg_type = models.CharField(max_length=32,

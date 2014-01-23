@@ -40,8 +40,9 @@ INSTALLED_APPS = (
     'django_nose', # must be after south
 )
 
-AUTH_PROFILE_MODULE = "core.UserProfile"
 LOGIN_REDIRECT_URL = "/account/"
+
+AUTH_USER_MODEL = 'core.User'
 
 # List of finder classes that know how to find static files in
 # various locations.

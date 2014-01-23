@@ -303,12 +303,6 @@ def UserToProto(user, full=False):
         ret.image.MergeFrom(ToProto(user.mugshot))
     return ret
 
-@converts(models.UserProfile)
-def UserProfileToProto(record, full=False):
-    ret = models_pb2.UserProfile()
-    ret.username = record.user.username
-    return ret
-
 @converts(models.SystemStats)
 @converts(models.UserStats)
 @converts(models.KegStats)

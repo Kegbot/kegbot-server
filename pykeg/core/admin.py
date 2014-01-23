@@ -22,7 +22,6 @@ from django.contrib import admin
 from kegbot.util import util
 from pykeg.core import models
 
-admin.site.register(models.UserProfile)
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'date_joined', 'last_login', 'is_active',

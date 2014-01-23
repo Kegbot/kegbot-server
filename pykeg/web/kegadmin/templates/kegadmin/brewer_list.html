@@ -25,9 +25,9 @@
             <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-beverage-producer' brewer.id %}">Edit</a>&nbsp;&nbsp;
             <span>{{ brewer.name }}</span>
     </td>
-    <td>{{ beer.origin_country }}</td>
-    <td>{{ beer.origin_state }}</td>
-    <td>{{ beer.origin_city }}</td>
+    <td>{{ brewer.country }}</td>
+    <td>{{ brewer.origin_state }}</td>
+    <td>{{ brewer.origin_city }}</td>
 </tr>
 {% endfor %}
 <!-- <tr class="info">

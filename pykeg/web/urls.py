@@ -39,7 +39,7 @@ urlpatterns = patterns('',
     (r'^account/', include('pykeg.web.account.urls')),
 
     ### auth account
-    (r'^accounts/', include('pykeg.web.registration.urls')),
+    (r'^accounts/', include('pykeg.web.kbregistration.urls')),
     
     url(r'^accounts/password/reset/$', password_reset, {'template_name':
      'registration/password_reset.html'}, name="password-reset"),

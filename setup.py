@@ -26,7 +26,7 @@ DEPENDENCIES = [
   'django-celery == 3.1.1',
   'Celery == 3.1.6',
 
-  'South == 0.8.1',
+  'South == 0.8.4',
   'django-crispy-forms == 1.2.8',
   'django_nose == 1.2',
   'foursquare == 20130402',

@@ -3,8 +3,8 @@ from django.conf.urls import patterns
 from django.conf.urls import url
 from django.views.generic.base import TemplateView
 
-from pykeg.web.registration.views import RegistrationView
-from registration.backends.default.views import ActivationView
+from pykeg.web.kbregistration.views import ActivationView
+from pykeg.web.kbregistration.views import RegistrationView
 
 
 urlpatterns = patterns('',

@@ -344,6 +344,80 @@ class BeerType(BeerDBModel):
         return None
 
 
+class BeverageProducer(models.Model):
+    """Information about a beverage producer (brewer, vineyard, etc)."""
+    name = models.CharField(max_length=255,
+        help_text='Name of the brewer')
+    country = fields.CountryField(default='USA',
+        help_text='Country of origin')
+    origin_state = models.CharField(max_length=128,
+        default='', blank=True, null=True,
+        help_text='State of origin, if applicable')
+    origin_city = models.CharField(max_length=128, default='', blank=True,
+        null=True,
+        help_text='City of origin, if known')
+    is_homebrew = models.BooleanField(default=False)
+    url = models.URLField(default='', blank=True, null=True,
+        help_text='Brewer\'s home page')
+    description = models.TextField(default='', blank=True, null=True,
+        help_text='A short description of the brewer')
+    picture = models.ForeignKey('Picture', blank=True, null=True,
+        on_delete=models.SET_NULL)
+
+
+class Beverage(models.Model):
+    """Information about a beverage being served (beer, typically)."""
+    TYPE_BEER = 'beer'
+    TYPE_WINE = 'wine'
+    TYPE_SODA = 'soda'
+    TYPE_KOMBUCHA = 'kombucha'
+    TYPE_OTHER = 'other'
+
+    TYPES = (
+        (TYPE_BEER, 'Beer'),
+        (TYPE_WINE, 'Wine'),
+        (TYPE_WINE, 'Soda'),
+        (TYPE_WINE, 'Kombucha'),
+        (TYPE_OTHER, 'Other/Unknown'),
+    )
+
+    name = models.CharField(max_length=255,
+        help_text='Name of the beverage, such as "Potrero Pale".')
+    producer = models.ForeignKey(BeverageProducer)
+
+    beverage_type = models.CharField(max_length=32,
+        choices=TYPES,
+        default=TYPE_BEER)
+    style = models.CharField(max_length=255, blank=True, null=True,
+        help_text='Beverage style within type, eg "Pale Ale", "Pinot Noir".')
+    description = models.TextField(blank=True, null=True,
+        help_text='Free-form description of the beverage.')
+
+    picture = models.ForeignKey('Picture', blank=True, null=True,
+        help_text='Label image.')
+    vintage_year = models.DateField(blank=True, null=True,
+        help_text='Date of production, for wines or special/seasonal editions')
+
+    abv_percent = models.FloatField(blank=True, null=True,
+        help_text='Alcohol by volume, as percentage (0.0-100.0).')
+    calories_per_ml = models.FloatField(blank=True, null=True,
+        help_text='Calories per mL of beverage.')
+    carbs_per_ml = models.FloatField(blank=True, null=True,
+        help_text='Carbohydrates per mL of beverage.')
+
+    original_gravity = models.FloatField(blank=True, null=True,
+        help_text='Original gravity (beer only).')
+    specific_gravity = models.FloatField(blank=True, null=True,
+        help_text='Specific/final gravity (beer only).')
+    untappd_beer_id = models.IntegerField(blank=True, null=True,
+        help_text='Untappd.com resource ID (beer only).')
+
+    beverage_backend = models.CharField(max_length=255, blank=True, null=True,
+        help_text='Future use.')
+    beverage_backend_id = models.CharField(max_length=255, blank=True, null=True,
+        help_text='Future use.')
+
+
 class KegTap(models.Model):
     """A physical tap of beer."""
     meter_name = models.CharField(max_length=128, unique=True,

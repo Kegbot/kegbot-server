@@ -130,7 +130,7 @@ def BeverageToProto(beverage, full=False):
     if beverage.original_gravity is not None:
         ret.original_gravity = beverage.original_gravity
     if beverage.picture:
-        ret.image.MergeFrom(ToProto(beverage.image))
+        ret.image.MergeFrom(ToProto(beverage.picture))
     return ret
 
 @converts(models.BeverageProducer)
@@ -150,8 +150,8 @@ def ProducerToProto(producer, full=False):
         ret.url = producer.url
     if producer.description is not None:
         ret.description = producer.description
-    if producer.image:
-        ret.image.MergeFrom(ToProto(producer.image))
+    if producer.picture:
+        ret.image.MergeFrom(ToProto(producer.picture))
     return ret
 
 @converts(models.Drink)

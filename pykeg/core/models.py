@@ -194,6 +194,9 @@ class SiteSettings(models.Model):
     use_ssl = models.BooleanField(default=False,
         help_text='Use SSL for URLs to this site.')
 
+    check_for_updates = models.BooleanField(default=True,
+        help_text='Periodically check for updates (<a href="https://kegbot.org/about/checkin">more info</a>)')
+
     class Meta:
         verbose_name_plural = "site settings"
 

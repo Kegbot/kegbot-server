@@ -11,8 +11,6 @@ from pykeg.core import models
 ALL_TAPS = models.KegTap.objects.all()
 ALL_KEGS = models.Keg.objects.all()
 
-class GeneralSettingsForm(forms.Form):
-    name = forms.CharField(help_text='Name of this Kegbot system')
 
 class ChangeKegForm(forms.Form):
     keg_size = forms.ChoiceField(choices=keg_sizes.CHOICES,
@@ -126,6 +124,7 @@ class SiteSettingsForm(forms.ModelForm):
             'default_user',
             'registration_allowed',
             'registration_confirmation',
+            'check_for_updates',
             'allowed_hosts',
         )
 
@@ -146,6 +145,7 @@ class SiteSettingsForm(forms.ModelForm):
         Field('default_user'),
         Field('registration_allowed', css_class='input-xlarge'),
         Field('registration_confirmation', css_class='input-xlarge'),
+        Field('check_for_updates'),
         Field('allowed_hosts'),
         FormActions(
             Submit('submit', 'Save Settings', css_class='btn-primary'),

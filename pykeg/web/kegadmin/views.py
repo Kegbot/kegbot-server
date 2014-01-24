@@ -53,6 +53,7 @@ def dashboard(request):
     recent_time = timezone.now() - datetime.timedelta(days=30)
     active_users = models.User.objects.filter(is_active=True)
     new_users = models.User.objects.filter(date_joined__gte=recent_time)
+    context['checkin'] = models.KegbotSite.get().last_checkin_response
     context['num_users'] = len(active_users)
     context['num_new_users'] = len(new_users)
     return render_to_response('kegadmin/dashboard.html', context_instance=context)

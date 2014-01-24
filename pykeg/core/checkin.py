@@ -1,0 +1,90 @@
+# Copyright 2014 Mike Wakerly <opensource@hoho.com>
+#
+# This file is part of the Pykeg package of the Kegbot project.
+# For more information on Pykeg or Kegbot, see http://kegbot.org/
+#
+# Pykeg is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# Pykeg is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Checks a central server for updates."""
+
+from pykeg.core import models
+from pykeg.core import util
+import logging
+import os
+import requests
+
+FIELD_REG_ID = 'reg_id'
+FIELD_PRODUCT = 'product'
+
+FIELD_INTERVAL_MILLIS = 'interval_millis'
+FIELD_UPDATE_AVAILABLE = 'update_available'
+FIELD_UPDATE_REQUIRED = 'update_required'
+FIELD_UPDATE_TITLE = 'update_title'
+FIELD_UPDATE_URL = 'update_url'
+FIELD_NEWS = 'news'
+
+PRODUCT = 'kegbot-server'
+
+CHECKIN_URL = os.getenv('CHECKIN_URL', None) or 'https://kegbotcheckin.appspot.com/checkin'
+
+LOGGER = logging.getLogger('checkin')
+
+class CheckinError(Exception):
+    """Base exception."""
+
+
+def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None):
+    """Issue a single checkin to the checkin server.
+
+    No-op if settings.check_for_updates is False.
+
+    Returns
+        A checkin response dictionary, or None if checkin is disabled.
+
+    Raises
+        ValueError: On malformed reponse.
+        requests.RequestException: On error talking to server.
+    """
+    settings = models.SiteSettings.get()
+    if not settings.check_for_updates:
+        LOGGER.debug('Upgrade check is disabled')
+        return
+
+    site = models.KegbotSite.get()
+    reg_id = site.serial_number
+
+    headers = {
+        'User-Agent': util.get_user_agent(),
+    }
+    payload = {
+        FIELD_PRODUCT: product,
+        FIELD_REG_ID: reg_id,
+    }
+
+    try:
+        LOGGER.info('Checking in, url=%s reg_id=%s' % (url, reg_id))
+        result = requests.post(url, data=payload, headers=headers, timeout=timeout).json()
+        new_reg_id = result.get(FIELD_REG_ID)
+        if new_reg_id != reg_id:
+            LOGGER.info('Updating reg_id=%s' % new_reg_id)
+            site.serial_number = new_reg_id
+            site.save()
+        LOGGER.debug('Checkin result: %s' % str(result))
+        site.last_checkin_response = result
+        site.save()
+        return result
+    except (ValueError, requests.RequestException) as e:
+        LOGGER.warning('Checkin error: %s' % str(e))
+        raise CheckinError(e)
+

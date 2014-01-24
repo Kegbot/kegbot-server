@@ -10,6 +10,21 @@
 </>
 </div>
 
+{% if checkin and checkin.update_availabe %}
+<div class="alert alert-info">
+  <p>
+  <em>Update Available:</em> A newer version of Kegbot Server
+  {% if checkin.update_title %}({{ checkin.update_title }}){% endif %}
+  is available.
+  </p>
+  {% if checkin.update_url %}
+  <p>
+  See <a href="{{checkin.update_url}}">here</a> for more information.
+  </p>
+  {% endif %}
+</div>
+{% endif %}
+
 <div class="row-fluid">
   <div class="span12">
     {% crispy form %}

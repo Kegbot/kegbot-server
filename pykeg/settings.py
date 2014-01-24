@@ -194,6 +194,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'pykeg.web.tasks.ping',
         'schedule': timedelta(seconds=60),
     },
+    'checkin': {
+        'task': 'pykeg.web.tasks.do_checkin',
+        'schedule': timedelta(hours=24),
+    }
 }
 
 ### logging

@@ -5,31 +5,6 @@
 {% block title %}Kegbot Admin | {{ block.super }}{% endblock %}
 {% block pagetitle %}Kegbot Admin{% endblock %}
 
-{% block kb-extrajs %}
-<script type="text/javascript">
-var myApp = angular.module('myApp',['ngSanitize']);
-
-function NewsController($scope, $http) {
-	$scope.fetch = function() {
-		$http({
-			method: 'JSONP',
-			url: 'https://kegbot.org/checkin/news/?id={{ SERIAL_NUMBER }}&version={{ VERSION }}&callback=JSON_CALLBACK'
-		}).success(function(data, status) {
-			var length = data.length;
-			for (var i=0; i < length; i++) {
-				data[i].date = new Date(data[i].date);
-			}
-			$scope.newsitems = data;
-		}).error(function(data, status) {
-		});
-	};
-	$scope.fetch();
-}
-</script>
-{% endblock kb-extrajs %}
-
-{% block bodyattrs %}ng-app="myApp"{% endblock %}
-
 {% block kegadmin-main %}
 <ul class="badge-list">
 {% badge num_users "User" do_pluralize=True %}
@@ -46,12 +21,14 @@ function NewsController($scope, $http) {
 {% else %}
 
 {% endif %}
-{% verbatim %}
-<div ng-controller="NewsController" class="ng-cloak">
-	<div ng-repeat="news in newsitems" class="alert alert-info">
-		<h4>{{ news.title }} <small>{{ news.date | date:'yyyy-MM-dd' }}</small></h4>
-		<p ng-bind-html="news.body"></p>
-	</div>
+
+{% if checkin %}
+{% for news in checkin.news %}
+<div class="alert alert-info">
+	<h4>{{ news.title }}</h4>
+	{{ news.body }}
 </div>
-{% endverbatim %}
+{% endfor %}
+{% endif %}
+
 {% endblock %}

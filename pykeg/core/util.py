@@ -35,6 +35,9 @@ def get_version():
     except pkg_resources.DistributionNotFound:
         return 'unknown'
 
+def get_user_agent():
+    return 'KegbotServer/%s' % get_version()
+
 def make_serial():
     '''Returns a random serial number.'''
     return '%016x' % random.randrange(0, 2**64 - 1)

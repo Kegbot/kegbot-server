@@ -27,7 +27,9 @@ from django.contrib.staticfiles.management.commands import collectstatic
 from south.management.commands import migrate
 from south.management.commands import syncdb
 from pykeg.core.management.commands import kb_regen_stats
+
 from pykeg.core import models
+from pykeg.core import checkin
 
 def run(cmd, args=[]):
     cmdname = cmd.__module__.split('.')[-1]
@@ -48,6 +50,12 @@ class Command(NoArgsCommand):
         site = models.KegbotSite.get()
         site.epoch = EPOCH
         site.save()
+
+        # Refresh any news (since we have a new version).
+        try:
+            checkin.checkin(timeout=5.0)
+        except (checkin.CheckinError, Exception) as e:
+            pass
 
     def do_epoch_upgrades(self):
         installed = models.KegbotSite.get().epoch

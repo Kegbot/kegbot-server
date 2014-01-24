@@ -21,6 +21,7 @@
 from kegbot.util import util
 from pykeg.plugin import util as plugin_util
 from pykeg import notification
+from pykeg.core import checkin
 
 from celery.decorators import task
 
@@ -36,6 +37,16 @@ def schedule_tasks(events):
 def handle_new_picture(picture_id):
     pass  # TODO(mikey): plugin support
 
+
 @task
 def ping():
     return True
+
+
+@task
+def do_checkin(default_retry_delay=60*60*1, max_retries=3):
+    try:
+        checkin.checkin()
+    except checkin.CheckinError as exc:
+        self.retry(exc=exc)
+        return

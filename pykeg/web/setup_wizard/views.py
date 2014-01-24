@@ -29,6 +29,7 @@ from django.template import RequestContext
 from django.views.decorators.cache import never_cache
 
 from pykeg.core import defaults
+from pykeg.core import checkin
 
 from .forms import AdminUserForm
 from .forms import CreateOrImportForm
@@ -55,6 +56,14 @@ def start(request):
 @never_cache
 def create_or_import(request):
     context = RequestContext(request)
+
+    if request.method == 'GET':
+        # Check for updates.
+        try:
+            context['checkin'] = checkin.checkin(timeout=3.0)
+        except (checkin.CheckinException, Exception):
+            context['checkin'] = {}
+
     form = CreateOrImportForm(initial={'mode': 'create'})
     if request.method == 'POST':
         form = CreateOrImportForm(request.POST)

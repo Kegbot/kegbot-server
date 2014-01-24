@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import datetime
 import os
 import pytz
@@ -40,12 +42,14 @@ from pykeg import EPOCH
 from pykeg.core import kb_common
 from pykeg.core import keg_sizes
 from pykeg.core import fields
-from pykeg.core import jsonfield
 from pykeg.core import managers
 from pykeg.core.util import make_serial
 
+from kegbot.util import kbjson
 from kegbot.util import units
 from kegbot.util import util
+
+from pykeg.core.jsonfield import JSONField
 
 """Django models definition for the kegbot database."""
 
@@ -910,7 +914,7 @@ class Thermolog(models.Model):
 
 class _StatsModel(models.Model):
     time = models.DateTimeField(default=timezone.now)
-    stats = jsonfield.JSONField()
+    stats = JSONField(dump_kwargs={'cls': kbjson.JSONEncoder})
     drink = models.ForeignKey(Drink)
 
     class Meta:

@@ -40,6 +40,7 @@ DEPENDENCIES = [
   'requests == 2.0.1',
   'tweepy == 2.0',
   'mock == 1.0.1',
+  'jsonfield == 0.9.20',
 ]
 
 def setup_package():

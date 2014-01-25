@@ -182,6 +182,7 @@ CELERY_QUEUES = {
     'binding_key': 'default'
   },
 }
+INSTALLED_APPS += ('kombu.transport.django', )
 
 CELERY_DEFAULT_QUEUE = "default"
 CELERYD_CONCURRENCY = 3

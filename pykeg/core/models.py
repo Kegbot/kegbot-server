@@ -43,7 +43,6 @@ from pykeg.core import kb_common
 from pykeg.core import keg_sizes
 from pykeg.core import fields
 from pykeg.core import managers
-from pykeg.core.util import make_serial
 
 from kegbot.util import kbjson
 from kegbot.util import units
@@ -121,11 +120,6 @@ class KegbotSite(models.Model):
         if record:
             ret = record.stats
         return util.AttrDict(ret)
-
-def _kegbotsite_pre_save(sender, instance, **kwargs):
-    if not instance.serial_number:
-        instance.serial_number = make_serial()
-pre_save.connect(_kegbotsite_pre_save, sender=KegbotSite)
 
 def _kegbotsite_post_save(sender, instance, **kwargs):
     """Creates a SiteSettings object if none already exists."""

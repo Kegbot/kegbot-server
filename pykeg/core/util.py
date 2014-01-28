@@ -25,7 +25,6 @@ import pkgutil
 import os
 import pkg_resources
 import sys
-import random
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -37,10 +36,6 @@ def get_version():
 
 def get_user_agent():
     return 'KegbotServer/%s' % get_version()
-
-def make_serial():
-    '''Returns a random serial number.'''
-    return '%016x' % random.randrange(0, 2**64 - 1)
 
 def get_plugin_template_dirs(plugin_list):
     from django.utils import six

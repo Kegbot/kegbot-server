@@ -16,13 +16,6 @@ class Migration(SchemaMigration):
         if db.dry_run:
             return
 
-        from pykeg.core.util import make_serial
-        for site in orm.KegbotSite.objects.all():
-            if not site.serial_number:
-                site.serial_number = make_serial()
-                site.save()
-
-
     def backwards(self, orm):
         # Deleting field 'KegbotSite.serial_number'
         db.delete_column(u'core_kegbotsite', 'serial_number')

@@ -3,6 +3,7 @@
 *.pyc
 *.egg
 *.egg-info
+.coverage
 
 ### docs
 docs/build

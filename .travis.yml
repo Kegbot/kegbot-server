@@ -4,6 +4,7 @@ python:
 
 install:
   - pip install . --use-mirrors
+  - pip install --use-mirrors coverage coveralls
 
 services:
   - memcache
@@ -15,4 +16,7 @@ before_script:
   - cp deploy/travis/local_settings.py ~/.kegbot/
 
 script:
-  - kegbot test --traverse-namespace --first-package-wins
+  - kegbot test --traverse-namespace --first-package-wins --with-coverage --cover-package=pykeg
+
+after_success:
+  - coveralls

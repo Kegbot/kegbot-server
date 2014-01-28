@@ -26,6 +26,7 @@ import requests
 
 FIELD_REG_ID = 'reg_id'
 FIELD_PRODUCT = 'product'
+FIELD_VERSION = 'version'
 
 FIELD_INTERVAL_MILLIS = 'interval_millis'
 FIELD_UPDATE_AVAILABLE = 'update_available'
@@ -70,6 +71,7 @@ def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None):
     payload = {
         FIELD_PRODUCT: product,
         FIELD_REG_ID: reg_id,
+        FIELD_VERSION: util.get_version(),
     }
 
     try:

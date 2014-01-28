@@ -24,19 +24,19 @@ import datetime
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.db.models import Q
+from django.forms import widgets
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.forms import widgets
-from django.views.decorators.http import require_POST
 from django.utils import timezone
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_POST
 
 from kegbot.util import kbjson
 from kegbot.util import units
@@ -46,6 +46,7 @@ from pykeg.core import logger
 from pykeg.core import models
 
 from pykeg.web.kegadmin import forms
+from pykeg.web.tasks import do_checkin
 
 @staff_member_required
 def dashboard(request):
@@ -53,6 +54,17 @@ def dashboard(request):
     recent_time = timezone.now() - datetime.timedelta(days=30)
     active_users = models.User.objects.filter(is_active=True)
     new_users = models.User.objects.filter(date_joined__gte=recent_time)
+
+    # Hack: Schedule an update checkin if it looks like it's been a while.
+    # This works around sites that are not running celerybeat.
+    settings = models.SiteSettings.get()
+    if settings.check_for_updates:
+        now = timezone.now()
+        last_checkin_time = request.kbsite.last_checkin_time
+        if not last_checkin_time or (now - last_checkin_time) > datetime.timedelta(hours=12):
+            do_checkin.delay()
+
+    context['last_checkin_time'] = request.kbsite.last_checkin_time
     context['checkin'] = models.KegbotSite.get().last_checkin_response
     context['num_users'] = len(active_users)
     context['num_new_users'] = len(new_users)

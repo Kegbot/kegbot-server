@@ -43,10 +43,9 @@ def ping():
     return True
 
 
-@task
-def do_checkin(default_retry_delay=60*60*1, max_retries=3):
+@task(bind=True, default_retry_delay=60*60*1, max_retries=3)
+def do_checkin(self):
     try:
         checkin.checkin()
     except checkin.CheckinError as exc:
         self.retry(exc=exc)
-        return

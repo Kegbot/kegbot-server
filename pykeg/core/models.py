@@ -93,9 +93,10 @@ class KegbotSite(models.Model):
     epoch = models.PositiveIntegerField(default=EPOCH,
         help_text='Database epoch number.',
         editable=False)
-    serial_number = models.TextField(max_length=128, editable=False,
+    registration_id = models.TextField(max_length=128, editable=False,
         blank=True, default='',
         help_text='A unique id for this system.')
+    last_checkin_time = models.DateTimeField(blank=True, null=True)
     last_checkin_response = JSONField(blank=True, null=True,
         dump_kwargs={'cls': kbjson.JSONEncoder})
 
@@ -221,11 +222,6 @@ class SiteSettings(models.Model):
     def get(cls):
         """Gets the default site settings."""
         return KegbotSite.get().settings
-
-def _sitesettings_pre_save(sender, instance, **kwargs):
-    if not instance.check_for_updates:
-        instance.last_checkin_response = {}
-pre_save.connect(_sitesettings_pre_save, sender=SiteSettings)
 
 
 class ApiKey(models.Model):

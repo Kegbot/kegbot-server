@@ -18,8 +18,11 @@
 
 """Checks a central server for updates."""
 
+from django.utils import timezone
+
 from pykeg.core import models
 from pykeg.core import util
+
 import logging
 import os
 import requests
@@ -63,7 +66,7 @@ def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None):
         return
 
     site = models.KegbotSite.get()
-    reg_id = site.serial_number
+    reg_id = site.registration_id
 
     headers = {
         'User-Agent': util.get_user_agent(),
@@ -80,10 +83,11 @@ def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None):
         new_reg_id = result.get(FIELD_REG_ID)
         if new_reg_id != reg_id:
             LOGGER.info('Updating reg_id=%s' % new_reg_id)
-            site.serial_number = new_reg_id
+            site.registration_id = new_reg_id
             site.save()
         LOGGER.debug('Checkin result: %s' % str(result))
         site.last_checkin_response = result
+        site.last_checkin_time = timezone.now()
         site.save()
         return result
     except (ValueError, requests.RequestException) as e:

@@ -33,7 +33,7 @@ class CheckinTestCase(TransactionTestCase):
 
     def test_checkin(self):
         site = models.KegbotSite.get()
-        site.serial_number = 'original-regid'
+        site.registration_id = 'original-regid'
         site.save()
 
         with patch('requests.post') as mock_post:
@@ -55,4 +55,4 @@ class CheckinTestCase(TransactionTestCase):
                 timeout=1.23)
 
         site = models.KegbotSite.get()
-        self.assertEquals('new-regid', site.serial_number)
+        self.assertEquals('new-regid', site.registration_id)

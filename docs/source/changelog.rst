@@ -7,6 +7,7 @@ Changelog
 
 Current Version (in development)
 --------------------------------
+* New site setting: "Check for updates".
 * Internal: Migrated to Django custom user model.
 * Internal: Better support for non-beer beverage types.
 * Keg sizes are predefined.

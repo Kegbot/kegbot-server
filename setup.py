@@ -31,7 +31,7 @@ DEPENDENCIES = [
   'django_nose == 1.2',
   'foursquare == 20130402',
   'gunicorn == 18.0',
-  'MySQL-python == 1.2.4',
+  'MySQL-python == 1.2.5',
   'pillow == 2.1.0',
   'protobuf == 2.5.0',
   'python-gflags == 2.0',

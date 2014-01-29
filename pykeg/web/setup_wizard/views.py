@@ -61,7 +61,7 @@ def create_or_import(request):
         # Check for updates.
         try:
             context['checkin'] = checkin.checkin(timeout=3.0)
-        except (checkin.CheckinException, Exception):
+        except (checkin.CheckinError, Exception):
             context['checkin'] = {}
 
     form = CreateOrImportForm(initial={'mode': 'create'})

@@ -24,6 +24,7 @@ import os
 import pytz
 import random
 import re
+from uuid import uuid4
 
 from django.contrib.auth.models import AbstractUser
 from django.core.urlresolvers import reverse
@@ -1082,8 +1083,11 @@ class SystemEvent(models.Model):
 
 
 def _pics_file_name(instance, filename):
-    rand_salt = random.randrange(0xffff)
-    new_filename = '%04x-%s' % (rand_salt, filename)
+    date_str = timezone.now().strftime('%Y%m%d%H%M%S')
+    uuid_str = str(uuid4()).replace('-', '')
+    ext = os.path.basename(filename)[1]
+    new_filename = '%s-%s.%s' % (date_str, uuid_str, ext)
+
     return os.path.join('pics', new_filename)
 
 class Picture(models.Model):

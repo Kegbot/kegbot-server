@@ -27,7 +27,7 @@ logger = util.get_logger(__name__)
 
 @task(expires=60)
 def send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret, tweet):
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret, secure=True)
     auth.set_access_token(oauth_token, oauth_token_secret)
     api = tweepy.API(auth)
     logger.info('Sending tweet: {}'.format(repr(tweet)))

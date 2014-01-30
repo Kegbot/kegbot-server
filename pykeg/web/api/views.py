@@ -103,7 +103,6 @@ def add_drink_photo(request, drink_id):
 def _save_pour_pic(request, drink):
     pic = models.Picture.objects.create(
         image=request.FILES['photo'],
-        drink=drink,
         user=drink.user,
         keg=drink.keg,
         session=drink.session

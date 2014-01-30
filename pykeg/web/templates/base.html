@@ -34,6 +34,10 @@
           'titlePosition' : 'inside',
           'cyclic' : true,
         });
+        $('.bar').progressbar({
+            display_text: 'fill',
+            percent_format: function(p) {return p + '% remaining';}
+        });
     });
   </script>
 

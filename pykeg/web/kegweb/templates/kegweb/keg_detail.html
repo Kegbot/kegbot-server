@@ -4,41 +4,26 @@
 {% block title %}Keg {{ keg.id }} | {{ block.super }}{% endblock %}
 {% block pagetitle %}Keg {{ keg.id }}{% endblock %}
 
-{% block sidebar %}
-  <div class="well">
-  {% include "kegweb/keg-image.html" %}
-
-  {% with keg.next as next %} {% with keg.previous as previous %}
-  {% if next or previous %}
-  <div style="font-size: 0.8em; text-align:center; margin-bottom:16px;">
-    {% if previous %}
-      <a href="{% url "kb-keg" previous.id %}">&laquo; previous keg</a>
-    {% endif %}
-    {% if next and previous %}
-    &mdash;
-    {% endif %}
-    {% if next %}
-      <a href="{% url "kb-keg" next.id %}">next keg &raquo;</a>
-    {% endif %}
-  </div>
-  {% endif %}
-  {% endwith %} {% endwith %}
-  </div>
-{% endblock sidebar %}
-
-
 {% block col-1 %}
-<h2>
-  {{keg.type.name}}
-  {% if keg.type.producer %}
-  <small>{{keg.type.producer}}</small>
-  {% if user.is_staff %}
-  <small>(<a href="{% url 'kegadmin-edit-beverage' keg.type.id %}">edit beer</a>)</small>
-  {% endif %}
-  {% endif %}
-</h2>
+<div class="well well-small">
 
-{% include "kegweb/basic-badges.html" %}
+  <h2>
+    {{keg.type.name}}
+    {% if keg.type.producer %}
+    <small>{{keg.type.producer}}</small>
+    {% if user.is_staff %}
+    <small>(<a href="{% url 'kegadmin-edit-beverage' keg.type.id %}">edit beer</a>)</small>
+    {% endif %}
+    {% endif %}
+  </h2>
+
+  {% if keg.online %}
+  {% progress_bar keg.percent_full %} 
+  {% endif %}
+  
+  {% include "kegweb/basic-badges.html" %}
+
+</div>
 
 <table class="table table-hover">
   <tbody>

@@ -33,12 +33,8 @@
         </p>
 
       {% else %}
-          <div class="progress" style="margin-bottom: 4px;">
-            <div class="bar {% if keg.percent_full < 10 %}bar-danger{% elif keg.percent_full < 25 %}bar-warning{% else %}bar-success{% endif %}"
-                style="width: {{ keg.percent_full }}%;"></div>
-          </div>
-
-          {% volume keg.remaining_volume_ml %} remaining <span class="muted">({{ keg.percent_full|floatformat }}% full)</span>
+          {% progress_bar keg.percent_full %}
+          &nbsp;{% volume keg.remaining_volume_ml %} remaining
 
           {% if tap.temperature_sensor %}
           {% with tap.temperature_sensor.LastLog as temp %}

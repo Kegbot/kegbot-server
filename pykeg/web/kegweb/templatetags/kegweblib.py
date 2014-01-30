@@ -69,6 +69,26 @@ def badge(amount, caption, style='', is_volume=False, do_pluralize=False):
         'badge_style': style,
     }
 
+@register.inclusion_tag('kegweb/includes/progress_bar.html', takes_context=True)
+def progress_bar(context, progress_int, extra_css=''):
+    c = copy.copy(context)
+    try:
+        progress_int = max(int(progress_int), 0)
+    except ValueError:
+        progress_int = 0
+    progress_int = min(progress_int, 100)
+
+    c['progress_int'] = progress_int
+    c['extra_css'] = extra_css
+    if progress_int < 10:
+        bar_type = 'bar-danger'
+    elif progress_int < 25:
+        bar_type = 'bar-warning'
+    else:
+        bar_type = 'bar-success'
+    c['bar_type'] = bar_type
+    return c
+
 
 ### navitem
 

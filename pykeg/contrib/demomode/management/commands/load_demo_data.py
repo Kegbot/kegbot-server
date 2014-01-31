@@ -149,7 +149,7 @@ class LoadDemoDataCommand(BaseCommand):
 
         for session_number in xrange(count):
             session = []
-            num_drinkers = random.randint(1, len(all_drinkers) - 1)
+            num_drinkers = random.randint(1, len(all_drinkers))
             drinkers = random.sample(all_drinkers, num_drinkers)
 
             # Drink a little more when others are joining

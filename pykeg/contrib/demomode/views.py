@@ -58,9 +58,18 @@ def summon_drinker(request):
         be.start_keg(tap, beverage=beverage)
 
     volume_ml = random.randint(*RANDOM_POUR_RANGE_ML)
+
     drink = be.record_drink(tap.meter_name, ticks=0, volume_ml=volume_ml,
         username=user.username)
 
+    pictures = list(models.Picture.objects.filter(user=user))
+    picture = random.choice(pictures) if pictures else None
+    if picture:
+        new_picture = models.Picture.objects.create(image=picture.image,
+            user=user)
+        drink.picture = new_picture
+        drink.save()
+    
     message = 'We poked <strong>%s</strong>, who just poured <a href="%s">Drink %s</a>.' % (
         user.username, drink.get_absolute_url(), drink.id)
     messages.success(request, SafeString(message))

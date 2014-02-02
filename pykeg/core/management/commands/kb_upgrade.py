@@ -57,8 +57,20 @@ class Command(NoArgsCommand):
         except (checkin.CheckinError, Exception) as e:
             pass
 
+        print ''
+        print 'Upgrade complete!'
+
+    def get_epoch(self):
+        cursor = connection.cursor()
+        cursor.execute("SELECT epoch FROM core_kegbotsite")
+        row = cursor.fetchone()
+        if not row:
+            return None
+        return int(row[0])
+
     def do_epoch_upgrades(self):
-        installed = models.KegbotSite.get().epoch
+        installed = self.get_epoch()
+        print '--- Current epoch: %s' % installed
         if installed == EPOCH or not installed:
             return
 

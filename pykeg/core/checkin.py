@@ -43,6 +43,7 @@ PRODUCT = 'kegbot-server'
 CHECKIN_URL = os.getenv('CHECKIN_URL', None) or 'https://kegbotcheckin.appspot.com/checkin'
 
 LOGGER = logging.getLogger('checkin')
+logging.getLogger('requests').setLevel(logging.WARNING)
 
 class CheckinError(Exception):
     """Base exception."""
@@ -78,14 +79,15 @@ def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None):
     }
 
     try:
-        LOGGER.info('Checking in, url=%s reg_id=%s' % (url, reg_id))
+        LOGGER.debug('Checking in, url=%s reg_id=%s' % (url, reg_id))
         result = requests.post(url, data=payload, headers=headers, timeout=timeout).json()
         new_reg_id = result.get(FIELD_REG_ID)
         if new_reg_id != reg_id:
-            LOGGER.info('Updating reg_id=%s' % new_reg_id)
+            LOGGER.debug('Updating reg_id=%s' % new_reg_id)
             site.registration_id = new_reg_id
             site.save()
         LOGGER.debug('Checkin result: %s' % str(result))
+        LOGGER.info('Checkin complete, reg_id=%s' % (reg_id,))
         site.last_checkin_response = result
         site.last_checkin_time = timezone.now()
         site.save()

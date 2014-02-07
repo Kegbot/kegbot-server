@@ -40,15 +40,6 @@ urlpatterns = patterns('',
 
     ### auth account
     (r'^accounts/', include('pykeg.web.kbregistration.urls')),
-    
-    url(r'^accounts/password/reset/$', password_reset, {'template_name':
-     'registration/password_reset.html'}, name="password-reset"),
-    (r'^accounts/password/reset/done/$', password_reset_done, {'template_name':
-     'registration/password_reset_done.html'}),
-    (r'^accounts/password/reset/confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', password_reset_confirm, {'template_name':
-     'registration/password_reset_confirm.html'}),
-    (r'^accounts/password/reset/complete/$', password_reset_complete, {'template_name':
-     'registration/password_reset_complete.html'}),
 
     ### socialregistration
     (r'^sr/', include('socialregistration.urls', namespace='socialregistration')),

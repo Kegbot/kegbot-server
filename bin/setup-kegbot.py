@@ -532,10 +532,11 @@ class SetupApp(app.App):
     if not existing:
       raise ValueError('Could not import local_settings.')
 
-    existing_file = existing.__file__
-    if not existing_file.startswith(settings_file):  # py,pyc
+    existing_file_base = os.path.splitext(existing.__file__)[0]
+    settings_file_base = os.path.splitext(settings_file)[0]
+    if existing_file_base != settings_file_base:  # py,pyc
       raise ValueError('Imported settings does not match: imported=%s '
-          'expected=%s' % (existing_file, settings_file))
+          'expected=%s' % (existing.__file__, settings_file))
 
     self.run_command('kegbot syncdb --all --noinput -v 0')
     self.run_command('kegbot migrate --all --fake --noinput -v 0')

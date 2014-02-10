@@ -25,6 +25,7 @@ import logging
 
 from django.db import transaction
 from django.utils import timezone
+from django.db.utils import IntegrityError
 from pykeg import notification
 from pykeg.core import defaults
 from pykeg.core import keg_sizes
@@ -55,7 +56,10 @@ class KegbotBackend:
     @transaction.atomic
     def create_new_user(self, username, email=None, password=None, photo=None):
         """Creates and returns a User for the given username."""
-        user = models.User.objects.create(username=username, email=email)
+        try:
+            user = models.User.objects.create(username=username, email=email)
+        except IntegrityError, e:
+            raise UserExistsError(e)
 
         if password is not None:
             user.set_password(password)

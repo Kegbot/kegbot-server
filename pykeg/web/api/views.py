@@ -25,7 +25,6 @@ from functools import wraps
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
-from django.db.utils import IntegrityError
 from django.utils import timezone
 
 from django.http import Http404
@@ -450,27 +449,14 @@ def register(request):
         errors = _form_errors(form)
     else:
         username = form.cleaned_data['username']
+        email = form.cleaned_data.get('email', None)
+        password = form.cleaned_data.get('password', None)
+        photo = request.FILES.get('photo', None)
         try:
-            u = models.User()
-            u.username = username
-            u.email = form.cleaned_data['email']
-            password = form.cleaned_data.get('password')
-            if password:
-                u.set_password(password)
-            else:
-                # Must set password using recovery process.
-                u.set_unusable_password()
-            u.save()
-            if 'photo' in request.FILES:
-                pic = models.Picture.objects.create(user=u)
-                photo = request.FILES['photo']
-                pic.image.save(photo.name, photo)
-                pic.save()
-
-                u.mugshot = pic
-                u.save()
-            return protolib.ToProto(u, full=True)
-        except IntegrityError:
+            user = request.backend.create_new_user(username, email=email,
+                password=password, photo=photo)
+            return protolib.ToProto(user, full=True)
+        except backend.UserExistsError:
             user_errs = errors.get('username', [])
             user_errs.append('Username not available.')
             errors['username'] = user_errs

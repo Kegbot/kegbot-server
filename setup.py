@@ -38,7 +38,7 @@ DEPENDENCIES = [
   'python-memcached == 1.51',
   'pytz == 2013b',
   'requests == 2.0.1',
-  'tweepy == 2.0',
+  'tweepy == 2.2',
   'mock == 1.0.1',
   'jsonfield == 0.9.20',
 ]

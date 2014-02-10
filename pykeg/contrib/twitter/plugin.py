@@ -235,6 +235,7 @@ class TwitterPlugin(plugin.Plugin):
         append_url = bool(site_settings.get('append_url'))
 
         if kind not in (event.SESSION_JOINED, event.DRINK_POURED):
+            self.logger.info('Skipping user tweet for event %s: unknown event.' % event)
             return
 
         profile = self.get_user_profile(user)
@@ -248,7 +249,6 @@ class TwitterPlugin(plugin.Plugin):
             if not user_settings.get('tweet_drink_events'):
                 self.logger.info('Skipping drink tweet for event %s: disabled by user.' % event.id)
                 return
-            template = site_settings.get('drink_poured_template')
             template = site_settings.get('user_drink_poured_template')
 
         elif kind == event.SESSION_JOINED:

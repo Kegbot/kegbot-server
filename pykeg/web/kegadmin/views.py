@@ -392,7 +392,7 @@ def beverage_detail(request, beer_id):
                 pic = models.Picture.objects.create()
                 pic.image.save(new_image.name, new_image)
                 pic.save()
-                btype.image = pic
+                btype.picture = pic
                 btype.save()
 
             messages.success(request, 'Beer type updated.')

@@ -20,8 +20,12 @@
 
 """Kegweb main views."""
 
+import uuid
+
 from django.http import Http404
 from django.contrib import messages
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
@@ -79,6 +83,38 @@ def notifications(request):
             existing_settings = instance
     context['form'] = NotificationSettingsForm(instance=existing_settings)
     return render_to_response('account/notifications.html', context_instance=context)
+
+
+def activate_account(request, activation_key):
+    users = models.User.objects.filter(activation_key=activation_key)
+    if users.count() != 1:
+        raise Http404('No such activation key')
+    user = users[0]
+
+    pw = str(uuid.uuid4())
+    user.set_password(pw)
+    user.save()
+
+    user = authenticate(username=user.username, password=pw)
+    auth_login(request, user)
+    if request.session.test_cookie_worked():
+        request.session.delete_test_cookie()
+
+    form = forms.ActivateAccountForm()
+    if request.method == 'POST':
+        form = forms.ActivateAccountForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            user.set_password(cd.get('password'))
+            user.activation_key = None
+            user.save()
+            messages.success(request, 'You account has been activated!')
+            return redirect('kb-account-main')
+
+    context = RequestContext(request)
+    context['form'] = form
+    return render_to_response('account/activate_account.html', context_instance=context)
+
 
 @login_required
 @require_POST

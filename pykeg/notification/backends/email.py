@@ -21,6 +21,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import Context
 from django.template.loader import get_template
 
+from pykeg.util.email import build_message
 from pykeg.core import models as core_models
 from pykeg.notification.backends.base import BaseNotificationBackend
 
@@ -74,22 +75,3 @@ class EmailNotificationBackend(BaseNotificationBackend):
     def send_message(self, message):
         logger.info('Sending message: %s' % message)
         message.send()
-
-def build_message(to_address, template_name, context_dict):
-    from_address = getattr(settings, 'EMAIL_FROM_ADDRESS', None)
-    if not from_address:
-        logger.error('EMAIL_FROM_ADDRESS is not available; aborting!')
-        return None
-
-    template = get_template(template_name)
-    context = Context(context_dict)
-    rendered = template.render(context)
-
-    parts = (x.strip() for x in rendered.split('---EMAIL-BLOCK---'))
-    subject, body_plain, body_html, footer_plain, footer_html = parts
-    body_plain += '\n\n' + footer_plain
-    body_html += '\n\n' + footer_html
-
-    message = EmailMultiAlternatives(subject, body_plain, from_address, [to_address])
-    message.attach_alternative(body_html, "text/html")
-    return message

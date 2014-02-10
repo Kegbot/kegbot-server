@@ -22,6 +22,7 @@ from __future__ import absolute_import
 
 import datetime
 import logging
+import uuid
 
 from django.db import transaction
 from django.utils import timezone
@@ -31,6 +32,7 @@ from pykeg.core import defaults
 from pykeg.core import keg_sizes
 from pykeg.core import stats
 from pykeg.core.cache import KegbotCache
+from pykeg.util.email import build_message
 from . import kb_common
 from . import models
 from . import time_series
@@ -73,6 +75,20 @@ class KegbotBackend:
             user.mugshot = pic
         
         user.save()
+        if email and not password:
+            user.activation_key = str(uuid.uuid4()).replace('-', '')
+            user.save()
+
+            settings = models.SiteSettings.get()
+            url = settings.reverse_full('activate-account', args=(),
+                kwargs={'activation_key': user.activation_key})
+            context = {
+                'site_name': settings.title,
+                'url': url,
+            }
+
+            message = build_message(email, 'email_new_registration.html', context)
+            message.send()
         return user
 
 

@@ -1,0 +1,20 @@
+{% extends "account/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Activate Your Account{% endblock %}
+{% block pagetitle %}Activate Your Account{% endblock %}
+
+{% block kb-account-main %}
+<h2>Choose a Password</h2>
+<div class="well">
+  <form method="post" action="">
+  {% csrf_token %}
+  {{ form|crispy }}
+  <div class="actions">
+    <button type="submit" class="btn btn-primary">Activate Me!</button>
+  </div>
+  </form>
+</div>
+
+{% endblock %}

@@ -60,6 +60,8 @@ class User(AbstractUser):
     mugshot = models.ForeignKey('Picture', blank=True, null=True,
         related_name='user_mugshot',
         on_delete=models.SET_NULL)
+    activation_key = models.CharField(max_length=128, blank=True,
+        null=True)
 
     def get_absolute_url(self):
         return reverse('kb-drinker', kwargs={'username': self.username})

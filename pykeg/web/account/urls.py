@@ -7,6 +7,7 @@ from pykeg.web.account.views import password_change_done
 
 urlpatterns = patterns('pykeg.web.account.views',
     url(r'^$', 'account_main', name='kb-account-main'),
+    url(r'^activate/(?P<activation_key>[0-9a-zA-Z]+)/$', 'activate_account', name='activate-account'),
     url(r'^password/done/$', password_change_done, name='password_change_done'),
     url(r'^password/$', password_change, name='password_change'),
     url(r'^mugshot/$', 'edit_mugshot', name='account-mugshot'),

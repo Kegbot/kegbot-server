@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # Removing unique constraint on 'ApiKey', fields ['user']
-        db.delete_unique(u'core_apikey', ['user_id'])
+        #db.delete_unique(u'core_apikey', ['user_id'])
 
         # Adding field 'ApiKey.description'
         db.add_column(u'core_apikey', 'description',

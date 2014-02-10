@@ -210,6 +210,11 @@ LOGGING = {
     'handlers': ['console'],  # replaced with sentry later, if available.
     'formatter': 'verbose',
   },
+  '': {
+    'level': 'DEBUG',
+    'handlers': ['console'],  # replaced with sentry later, if available.
+    'formatter': 'verbose',
+  },
   'filters': {
     'require_debug_true': {
       '()': 'django.utils.log.RequireDebugTrue',

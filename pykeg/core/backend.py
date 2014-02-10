@@ -42,6 +42,9 @@ class BackendError(Exception):
 class NoTokenError(BackendError):
     """Token given is unknown."""
 
+class UserExistsError(BackendError):
+    """A user with this username already exists."""
+
 class KegbotBackend:
     """Provides high-level operations against the Kegbot system."""
 
@@ -50,9 +53,24 @@ class KegbotBackend:
         self.cache = KegbotCache()
 
     @transaction.atomic
-    def create_new_user(self, username):
+    def create_new_user(self, username, email=None, password=None, photo=None):
         """Creates and returns a User for the given username."""
-        return models.User.objects.create(username=username)
+        user = models.User.objects.create(username=username, email=email)
+
+        if password is not None:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+
+        if photo:
+            pic = models.Picture.objects.create(user=user)
+            pic.image.save(photo.name, photo)
+            pic.save()
+            user.mugshot = pic
+        
+        user.save()
+        return user
+
 
     @transaction.atomic
     def create_tap(self, name, meter_name, relay_name=None, ml_per_tick=None):

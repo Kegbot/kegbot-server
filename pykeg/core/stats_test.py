@@ -34,7 +34,7 @@ class StatsTestCase(TransactionTestCase):
         self.backend = backend.KegbotBackend()
 
         test_usernames = ('user1', 'user2', 'user3')
-        self.users = [self.backend.create_new_user(name) for name in test_usernames]
+        self.users = [self.backend.create_new_user(name, '%s@example.com' % name) for name in test_usernames]
 
         self.taps = [
             self.backend.create_tap('tap1', 'kegboard.flow0', ml_per_tick=1/2200.0),

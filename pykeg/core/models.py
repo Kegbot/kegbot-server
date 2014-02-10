@@ -227,16 +227,21 @@ class SiteSettings(models.Model):
 
 class ApiKey(models.Model):
     """Grants access to certain API endpoints to a user via a secret key."""
-    user = models.OneToOneField(User,
+    user = models.ForeignKey(User, blank=True, null=True,
         help_text='User receiving API access.')
     key = models.CharField(max_length=127, editable=False, unique=True,
+        default=lambda: ApiKey.generate_key(),
         help_text='The secret key.')
     active = models.BooleanField(default=True,
         help_text='Whether access by this key is currently allowed.')
+    description = models.TextField(blank=True, null=True,
+        help_text='Information about this key.')
+    created_time = models.DateTimeField(default=timezone.now,
+        help_text='Time the key was created.')
 
     def is_active(self):
         """Returns true if both the key and the key's user are active."""
-        return self.active and self.user.is_active
+        return self.active and (not self.user or self.user.is_active)
 
     def regenerate(self):
         """Discards and regenerates the key."""

@@ -318,7 +318,9 @@ def get_api_key(request):
     user = request.user
     api_key = ''
     if user and (user.is_staff or user.is_superuser):
-        api_key = user.get_api_key()
+        description = request.GET.get('description', '')
+        api_key = models.ApiKey.objects.create(description=description)
+        api_key = api_key.key
     return {'api_key': api_key}
 
 @csrf_exempt

@@ -399,9 +399,8 @@ def _tap_detail_post(request, tap):
           pour_time=pour_time,
           duration=duration,
           shout=cd.get('shout'),
-          tick_time_series=cd.get('tick_time_series'))
-        if 'photo' in request.FILES:
-            _save_pour_pic(request, drink)
+          tick_time_series=cd.get('tick_time_series'),
+          photo=request.FILES.get('photo', None))
         return protolib.ToProto(drink, full=True)
     except backend.BackendError, e:
         raise kbapi.ServerError(str(e))

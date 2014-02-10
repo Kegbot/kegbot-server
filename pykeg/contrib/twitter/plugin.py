@@ -226,7 +226,11 @@ class TwitterPlugin(plugin.Plugin):
         tweet = self._compose_tweet(event, template, append_url)
 
         if tweet:
-            self._schedule_tweet(tweet, site_profile)
+            self.logger.info('Scheduling system tweet: %s' % tweet)
+            image_url = None
+            if event.drink and event.drink.picture:
+                image_url = event.drink.picture.resized.url
+            self._schedule_tweet(tweet, site_profile, image_url)
 
     def _issue_user_tweet(self, event, site_settings):
         kind = event.kind
@@ -264,7 +268,10 @@ class TwitterPlugin(plugin.Plugin):
 
         if tweet:
             self.logger.info('Scheduling tweet: %s' % tweet)
-            self._schedule_tweet(tweet, profile)
+            image_url = None
+            if event.drink and event.drink.picture:
+                image_url = event.drink.picture.resized.url
+            self._schedule_tweet(tweet, profile, image_url)
 
     def _compose_tweet(self, event, template, append_url):
         kbvars = self.get_vars(event)
@@ -275,7 +282,7 @@ class TwitterPlugin(plugin.Plugin):
             tweet = '%s %s' % (tweet, url)
         return truncate_tweet(tweet)
 
-    def _schedule_tweet(self, tweet, profile):
+    def _schedule_tweet(self, tweet, profile, image_url=None):
         if not profile:
             self.logger.warning('Empty profile, skipping tweet.')
             return
@@ -283,7 +290,8 @@ class TwitterPlugin(plugin.Plugin):
         consumer_key, consumer_secret = self.get_credentials()
         oauth_token = profile.get(KEY_OAUTH_TOKEN)
         oauth_token_secret = profile.get(KEY_OAUTH_TOKEN_SECRET)
-        tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret, tweet)
+        tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret, 
+            tweet, image_url)
 
     def get_vars(self, event):
         settings = SiteSettings.get()

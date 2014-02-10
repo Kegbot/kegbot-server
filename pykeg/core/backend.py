@@ -124,7 +124,7 @@ class KegbotBackend:
 
     @transaction.atomic
     def record_drink(self, tap_name, ticks, volume_ml=None, username=None,
-        pour_time=None, duration=0, shout='', tick_time_series='',
+        pour_time=None, duration=0, shout='', tick_time_series='', photo=None,
         do_postprocess=True):
         """Records a new drink against a given tap.
 
@@ -192,6 +192,16 @@ class KegbotBackend:
         keg.save(update_fields=['served_volume_ml'])
 
         self.cache.update_generation()
+
+        if photo:
+            pic = models.Picture.objects.create(
+                image=photo,
+                user=d.user,
+                keg=d.keg,
+                session=d.session
+            )
+            d.picture = pic
+            d.save()
 
         if do_postprocess:
             stats.generate(d)

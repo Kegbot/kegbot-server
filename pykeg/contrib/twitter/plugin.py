@@ -249,6 +249,7 @@ class TwitterPlugin(plugin.Plugin):
                 self.logger.info('Skipping drink tweet for event %s: disabled by user.' % event.id)
                 return
             template = site_settings.get('drink_poured_template')
+            template = site_settings.get('user_drink_poured_template')
 
         elif kind == event.SESSION_JOINED:
             if not user_settings.get('tweet_session_events'):
@@ -262,6 +263,7 @@ class TwitterPlugin(plugin.Plugin):
         tweet = self._compose_tweet(event, template, append_url)
 
         if tweet:
+            self.logger.info('Scheduling tweet: %s' % tweet)
             self._schedule_tweet(tweet, profile)
 
     def _compose_tweet(self, event, template, append_url):

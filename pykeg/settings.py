@@ -52,6 +52,11 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
+### Default session serialization.
+# Note: Twitter plugin requires Pickle (not JSON serializable).
+
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
 ### Kegweb specific stuff
 
 ROOT_URLCONF = 'pykeg.web.urls'

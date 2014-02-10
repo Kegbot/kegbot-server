@@ -30,6 +30,9 @@ from httplib2 import HttpLib2Error
 
 from . import forms
 
+# Session keys for temporarily storing oauth client.
+SESSION_KEY_SITE_TWITTER = 'site-twitter'
+SESSION_KEY_USER_TWITTER = 'user-twitter'
 
 @staff_member_required
 def admin_settings(request, plugin):
@@ -107,26 +110,30 @@ def site_twitter_redirect(request):
     url = request.kbsite.settings.reverse_full('plugin-twitter-site_twitter_callback')
     client.set_callback_url(url)
 
-    return do_redirect(request, client, 'kegadmin-plugin-settings')
+    return do_redirect(request, client, 'kegadmin-plugin-settings', SESSION_KEY_SITE_TWITTER)
 
 
 @staff_member_required
 def site_twitter_callback(request):
     plugin = request.plugins.get('twitter')
-    client = plugin.get_client()
+    client = request.session.get(SESSION_KEY_SITE_TWITTER)
 
-    try:
-        token = client.complete(dict(request.GET.items()))
-    except KeyError:
-        messages.error(request, 'Session expired.')
-    except OAuthError, error:
-        messages.error(request, str(error))
+    if not client:
+        messages.error(request, 'Lost OAuth session')
     else:
-        user_info = client.get_user_info()
-        plugin = request.plugins.get('twitter')
-        plugin.save_site_profile(token.key, token.secret, user_info['screen_name'],
-            int(user_info['user_id']))
-        messages.success(request, 'Successfully linked to @%s' % user_info['screen_name'])
+        del request.session[SESSION_KEY_SITE_TWITTER]
+        try:
+            token = client.complete(dict(request.GET.items()))
+        except KeyError:
+            messages.error(request, 'Session expired.')
+        except OAuthError, error:
+            messages.error(request, str(error))
+        else:
+            user_info = client.get_user_info()
+            plugin = request.plugins.get('twitter')
+            plugin.save_site_profile(token.key, token.secret, user_info['screen_name'],
+                int(user_info['user_id']))
+            messages.success(request, 'Successfully linked to @%s' % user_info['screen_name'])
 
     return redirect('kegadmin-plugin-settings', plugin_name='twitter')
 
@@ -144,31 +151,35 @@ def user_twitter_redirect(request):
     url = request.kbsite.settings.reverse_full('plugin-twitter-user_twitter_callback')
     client.set_callback_url(url)
 
-    return do_redirect(request, client, 'account-plugin-settings')
+    return do_redirect(request, client, 'account-plugin-settings', SESSION_KEY_USER_TWITTER)
 
 
 @login_required
 def user_twitter_callback(request):
     plugin = request.plugins['twitter']
-    client = plugin.get_client()
+    client = request.session.get(SESSION_KEY_USER_TWITTER)
 
-    try:
-        token = client.complete(dict(request.GET.items()))
-    except KeyError:
-        messages.error(request, 'Session expired.')
-    except OAuthError, error:
-        messages.error(request, str(error))
+    if not client:
+        messages.error(request, 'Lost OAuth session')
     else:
-        user_info = client.get_user_info()
-        plugin = request.plugins.get('twitter')
-        plugin.save_user_profile(request.user, token.key, token.secret,
-            user_info['screen_name'], int(user_info['user_id']))
-        messages.success(request, 'Successfully linked to @%s' % user_info['screen_name'])
+        del request.session[SESSION_KEY_USER_TWITTER]
+        try:
+            token = client.complete(dict(request.GET.items()))
+        except KeyError:
+            messages.error(request, 'Session expired.')
+        except OAuthError, error:
+            messages.error(request, str(error))
+        else:
+            user_info = client.get_user_info()
+            plugin = request.plugins.get('twitter')
+            plugin.save_user_profile(request.user, token.key, token.secret,
+                user_info['screen_name'], int(user_info['user_id']))
+            messages.success(request, 'Successfully linked to @%s' % user_info['screen_name'])
 
     return redirect('account-plugin-settings', plugin_name='twitter')
 
 
-def do_redirect(request, client, next_url_name):
+def do_redirect(request, client, next_url_name, session_key):
     """Common redirect method, handling any incidental errors.
 
     Args:
@@ -180,6 +191,7 @@ def do_redirect(request, client, next_url_name):
         A redirect response, either to the OAuth redirect URL
         or to `next_url_name` on error.
     """
+    request.session[session_key] = client
     try:
         return redirect(client.get_redirect_url())
     except OAuthError, e:

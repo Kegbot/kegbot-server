@@ -49,12 +49,6 @@ except ImportError:
     HAVE_MEMCACHE_TOOLBAR = False
 
 try:
-    import johnny
-    HAVE_JOHNNY_CACHE = True
-except ImportError:
-    HAVE_JOHNNY_CACHE = False
-
-try:
     import djcelery_email
     HAVE_CELERY_EMAIL = True
 except ImportError:

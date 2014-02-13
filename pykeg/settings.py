@@ -276,13 +276,6 @@ if HAVE_RAVEN:
       'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
     }
 
-### Johnny Cache
-if HAVE_JOHNNY_CACHE:
-    MIDDLEWARE_CLASSES = (
-      'johnny.middleware.LocalStoreClearMiddleware',
-      'johnny.middleware.QueryCacheMiddleware',
-    ) + MIDDLEWARE_CLASSES
-
 ### django-storages
 if HAVE_STORAGES:
     INSTALLED_APPS += ('storages',)
@@ -385,13 +378,13 @@ if DEBUG:
         DEBUG_TOOLBAR_PANELS = (
             'debug_toolbar.panels.version.VersionDebugPanel',
             'debug_toolbar.panels.timer.TimerDebugPanel',
-            'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
+            'debug_toolbar.panels.settings.SettingsPanel',
             'debug_toolbar.panels.headers.HeaderDebugPanel',
             'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
             'debug_toolbar.panels.template.TemplateDebugPanel',
             'debug_toolbar.panels.sql.SQLDebugPanel',
             'debug_toolbar.panels.signals.SignalDebugPanel',
-            'debug_toolbar.panels.logger.LoggingPanel',
+            'debug_toolbar.panels.logging.LoggingPanel',
             #'debug_toolbar.panels.profiling.ProfilingDebugPanel',
         )
         if HAVE_MEMCACHE_TOOLBAR:
@@ -432,8 +425,3 @@ if DEBUG and HAVE_DEBUG_TOOLBAR and KEGBOT_STATSD_TO_TOOLBAR:
     STATSD_CLIENT = 'django_statsd.clients.toolbar'
 
 MIDDLEWARE_CLASSES += ('pykeg.web.api.middleware.ApiResponseMiddleware',)
-
-if HAVE_JOHNNY_CACHE:
-    if CACHES.get('default', {}).get('BACKEND', '') == 'django.core.cache.backends.memcached.MemcachedCache':
-        CACHES['default']['BACKEND'] = 'johnny.backends.memcached.MemcachedCache'
-        CACHES['default']['JOHNNY_CACHE'] = True

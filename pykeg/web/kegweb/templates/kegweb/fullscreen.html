@@ -1,132 +1,130 @@
 {% extends "skel.html" %}
 {% load kegweblib %}
 
-{% block title %}Taplist | {{ block.super }}{% endblock %}
+{% block title %}{{ kbsite.settings.title }} (Fullscreen Mode){% endblock %}
 
 {% block kb-extracss %}
-  <style>
+<style>
+.bodyfaux {
+	height: 100%;
+	min-height: 100%;
+	width:100%;
+	padding:0;
+	margin:0;
+	overflow:hidden;
+	}
 
-    	.bodyfaux {
-			height: 100%;
-			min-height: 100%;
-			width:100%;
-			padding:0;
-			margin:0;
-			overflow:hidden;
-  		}
+.fullscreen-wrapper {
+    display:block;
+    position:relative;
+    min-width:100%;
+    height:100%;
+    min-height:100%;
+}
+.fullscreen-img {
+    display:block;
+    position:absolute;
+    z-index:1;
+    min-width:100%;
+    min-height:100%;
+    background:transparent url('{{ STATIC_URL }}images/chalkboard-bg.jpg') center center no-repeat;
+    background-size:cover;
+}
+.fullscreen-content {
+	display:block;
+	position:relative;
+	z-index:2;
+    height:100%;
+    width:100%;
+}
 
-		.fullscreen-wrapper {
-		    display:block;
-		    position:relative;
-		    min-width:100%;
-		    height:100%;
-		    min-height:100%;
-		}
-		.fullscreen-img {
-		    display:block;
-		    position:absolute;
-		    z-index:1;
-		    min-width:100%;
-		    min-height:100%;
-		    background:transparent url('{{ STATIC_URL }}images/chalkboard-bg.jpg') center center no-repeat;
-		    background-size:cover;
-		}
-		.fullscreen-content {
-			display:block;
-			position:relative;
-			z-index:2;
-		    height:100%;
-		    width:100%;
-		}
+.taplist-header {
+	padding-top:15px;
+	height:15%;
+	min-height:15%;
+	max-height:15%;
+	width:100%;
+}
 
-		.taplist-header {
-			padding-top:15px;
-			height:15%;
-			min-height:15%;
-			max-height:15%;
-			width:100%;
-		}
+img.taplist-logo {
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+}
 
-		img.taplist-logo {
-			display:block;
-			margin-left:auto;
-			margin-right:auto;
-		}
+.taplist-body {
+	height:68%;
+	min-height:68%;
+	max-height:68%;
+	width:100%;
+}
 
-		.taplist-body {
-			height:68%;
-			min-height:68%;
-			max-height:68%;
-			width:100%;
-		}
+.cycle-slideshow {
+	width:100%;
+	height:100%;
+}
 
-		.cycle-slideshow {
-			width:100%;
-			height:100%;
-		}
+.cycle-slideshow .cycle-wrap {
+	width:85%;
+	margin: 0 auto;
+	height:100%;
+}
 
-		.cycle-slideshow .cycle-wrap {
-			width:85%;
-			margin: 0 auto;
-			height:100%;
-		}
+.cycle-slideshow .cycle-keg-image {
+	float:left;
+	padding-right:30px;
+	height:100%;
+}
 
-		.cycle-slideshow .cycle-keg-image {
-			float:left;
-			padding-right:30px;
-			height:100%;
-		}
+.cycle-slideshow .cycle-keg-details {
+	margin-left:100px;
+	margin-top:10px;
+	background-color: rgba(0, 0, 0, 0.5);
+	-webkit-border-radius: 20px;
+	-moz-border-radius: 20px;
+	border-radius: 20px;
+		color:#ffffff;
+		padding-top:10px;
+		padding-bottom:10px;
+}
 
-		.cycle-slideshow .cycle-keg-details {
-			margin-left:100px;
-			margin-top:10px;
-			background-color: rgba(0, 0, 0, 0.5);
-			-webkit-border-radius: 20px;
-			-moz-border-radius: 20px;
-			border-radius: 20px;
-    		color:#ffffff;
-    		padding-top:10px;
-    		padding-bottom:10px;
-		}
+img.fullscreen-keg {
+	height:100%;
+	min-height:100%;
+	max-height:100%;
+}
 
-		img.fullscreen-keg {
-			height:100%;
-			min-height:100%;
-			max-height:100%;
-		}
+.establishment-logo {
+	position:fixed;
+	bottom:0;
+	left:0;
+	margin-left:15px;
+	height:7%;
+	min-height:7%;
+	max-height:7%;
+	width:100%;
+	color:#ffffff;
+	font-size:48px;
+}
 
-		.establishment-logo {
-			position:fixed;
-			bottom:0;
-			left:0;
-			margin-left:15px;
-			height:7%;
-			min-height:7%;
-			max-height:7%;
-			width:100%;
-			color:#ffffff;
-			font-size:48px;
-		}
+.kegbot-logo {
+	position:fixed;
+	bottom:0;
+	right:0;
+	height:7%;
+	min-height:7%;
+	max-height:7%;
+	width:100%;
+	margin-right:15px;
+	margin-bottom:15px;
+}
 
-		.kegbot-logo {
-			position:fixed;
-			bottom:0;
-			right:0;
-			height:7%;
-			min-height:7%;
-			max-height:7%;
-			width:100%;
-			margin-right:15px;
-			margin-bottom:15px;
-		}
-
-		img.taplist-foot-logos {
-			height:100%;
-			min-height:100%;
-			max-height:100%;
-		}
-
-  </style>
+img.taplist-foot-logos {
+	height:100%;
+	min-height:100%;
+	max-height:100%;
+}
+</style>
 {% endblock %}
 
 
@@ -212,27 +210,28 @@
 			    data-cycle-fx="scrollHorz" 
 			    data-cycle-slides="> div"
 			    data-cycle-timeout="7500"
-			    data-cycle-center-horz=true
-    			data-cycle-center-vert=true
-			    >
-			{% with keg.current_tap as tap %}
-    		{% for keg in kegs %}
+			    data-cycle-center-horz="true"
+    			data-cycle-center-vert="true">
+    		{% for tap in taps %}
+    		{% with tap.current_keg as keg %}
+    		{% if keg %}
     		<div class="cycle-wrap">
     			<div class="cycle-keg-image">
-					{% if keg.type.picture %}
+						{% if keg.type.picture %}
 				        <img class="fullscreen-keg" src="{{ keg.type.picture.resized_png.url }}">
 				    {% else %}
 				        <img class="fullscreen-keg" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
 				    {% endif %}
+					</div>
+					<div class="cycle-keg-details">
+						<h1>{{ keg.type.name }}: {{ tap.name }}</h1>
+						<h2>{{ tap.description }}</h2>
+					</div>
+					<div style="clear:both;"></div>
 				</div>
-				<div class="cycle-keg-details">
-					<h1>{{ keg.type.name }}: {{ keg.current_tap.name }}</h1>
-					<h2>{{ keg.current_tap.description }}</h2>
-				</div>
-				<div style="clear:both;"></div>
-			</div>
-			{% endfor %}
-			{% endwith %}
+				{% endif %}
+				{% endwith %}
+				{% endfor %}
 			</div>
 		</div>
 

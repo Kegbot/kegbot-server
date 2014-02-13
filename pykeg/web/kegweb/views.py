@@ -102,13 +102,10 @@ class KegListView(ListView):
     def get_queryset(self):
         return models.Keg.objects.all().order_by('-id')
 
-class TaplistView(ListView):
-    model = models.Keg
-    template_name = 'kegweb/taplist.html'
-    context_object_name = 'kegs'
-
-    def get_queryset(self):
-        return models.Keg.objects.all().order_by('-id')
+def fullscreen(request):
+    context = RequestContext(request)
+    context['taps'] = models.KegTap.objects.all()
+    return render_to_response('kegweb/fullscreen.html', context_instance=context)
 
 @cache_page(30)
 def keg_detail(request, keg_id):

@@ -14,8 +14,8 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
       url(r'^kegs/$', views.KegListView.as_view(), name='kb-kegs'),
       url(r'^kegs/(?P<keg_id>\d+)', 'keg_detail', name='kb-keg'),
 
-      ### taplist
-      url(r'^taplist/$', views.TaplistView.as_view(), name='kb-taplist'),
+      ### fullscreen mode
+      url(r'^fullscreen/$', 'fullscreen', name='kb-fullscreen'),
 
       ### drinkers
       url(r'^drinkers/(?P<username>[\w@.+-_]+)/$', 'user_detail', name='kb-drinker'),

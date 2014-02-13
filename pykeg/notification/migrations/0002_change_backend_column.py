@@ -19,6 +19,7 @@ class Migration(SchemaMigration):
             db.delete_unique(u'notification_notificationsettings', ['user_id', 'backend'])
         except ValueError:
             # Created without unique constraint; ignore and hope for the best.
+            pass
 
         # Adding unique constraint on 'NotificationSettings', fields ['user', 'backend']
         db.create_unique(u'notification_notificationsettings', ['user_id', 'backend'])

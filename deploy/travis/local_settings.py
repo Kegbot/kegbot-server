@@ -22,3 +22,5 @@ CACHES = {'default': {'LOCATION': '127.0.0.1:11211', 'BACKEND': 'django.core.cac
 
 SECRET_KEY = 'testkey'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_FROM_ADDRESS = 'no-reply@example.com'

@@ -92,6 +92,16 @@ def get_drink(request, drink_id):
 
 @csrf_exempt
 @auth_required
+def pictures(request, drink_id):
+    if request.method != 'POST':
+        raise Http404('Method not supported')
+    pic = models.Picture.objects.create(
+        image=request.FILES['photo'],
+    )
+    return protolib.ToProto(pic, full=True)
+
+@csrf_exempt
+@auth_required
 def add_drink_photo(request, drink_id):
     if request.method != 'POST':
         raise Http404('Method not supported')
@@ -323,8 +333,8 @@ def get_api_key(request):
     return {'api_key': api_key}
 
 @csrf_exempt
-def tap_detail(request, tap_id):
-    tap = get_object_or_404(models.KegTap, meter_name=tap_id)
+def tap_detail(request, meter_name):
+    tap = get_object_or_404(models.KegTap, meter_name=meter_name)
     if request.method == 'POST':
         return _tap_detail_post(request, tap)
     elif request.method == 'GET':
@@ -337,11 +347,11 @@ def _tap_detail_get(request, tap):
 
 @csrf_exempt
 @auth_required
-def tap_calibrate(request, tap_id):
+def tap_calibrate(request, meter_name):
     # TODO(mikey): This would make more semantic sense as PATCH /taps/tap-name/,
     # but Django's support for non-POST verbs is poor (specifically wrt request
     # body/form handling).
-    tap = get_object_or_404(models.KegTap, meter_name=tap_id)
+    tap = get_object_or_404(models.KegTap, meter_name=meter_name)
     form = forms.CalibrateTapForm(request.POST)
     if form.is_valid():
         tap.ml_per_tick = form.cleaned_data['ml_per_tick']
@@ -352,8 +362,8 @@ def tap_calibrate(request, tap_id):
 
 @csrf_exempt
 @auth_required
-def tap_spill(request, tap_id):
-    tap = get_object_or_404(models.KegTap, meter_name=tap_id)
+def tap_spill(request, meter_name):
+    tap = get_object_or_404(models.KegTap, meter_name=meter_name)
     if not tap.current_keg:
         raise kbapi.BadRequestError('No keg on tap.')
     form = forms.TapSpillForm(request.POST)
@@ -366,8 +376,8 @@ def tap_spill(request, tap_id):
 
 @csrf_exempt
 @auth_required
-def tap_activate(request, tap_id):
-    tap = get_object_or_404(models.KegTap, meter_name=tap_id)
+def tap_activate(request, meter_name):
+    tap = get_object_or_404(models.KegTap, meter_name=meter_name)
     form = ChangeKegForm(request.POST)
     if form.is_valid():
         form.save(tap)

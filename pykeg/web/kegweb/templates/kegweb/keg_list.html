@@ -8,7 +8,7 @@
 {% block content %}
 
 <div class="alert alert-info">
-	<button type="button" id="launch_taplist" class="btn btn-lg btn-primary">Click Here</button> to view your taplist in fullscreen!
+	<a class="btn btn-lg btn-primary" href="/taplist/">Click Here</a> to view your taplist in fullscreen!
 </div>
 
 {% for keg in kegs %}
@@ -21,14 +21,4 @@
 
 {% bootstrap_paginate page_obj range=10 %}
 
-{% endblock %}
-
-{% block kb-extrajs %}
-	<script type="text/javascript">
-		$(document).ready(function() {
-			$('#launch_taplist').click(function() {
-				window.location = '../taplist/';
-			});
-		});
-	</script>
 {% endblock %}

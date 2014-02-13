@@ -1,55 +1,12 @@
-{% extends "base.html" %}
+{% extends "skel.html" %}
 {% load kegweblib %}
 
 {% block title %}Taplist | {{ block.super }}{% endblock %}
 
-{% block facade %}
-<div class="fullscreen-wrapper">
-	<div class="fullscreen-img"></div>
-	<div class="fullscreen-content">
-		<div class="taplist-header">
-			<img class="taplist-logo" src="{{ STATIC_URL }}images/whats-on-tap.png">
-		</div>
-
-		<div class="taplist-body">
-			<div class="cycle-slideshow composite-example" 
-			    data-cycle-fx="scrollHorz" 
-			    data-cycle-slides="> div"
-			    data-cycle-timeout="7500"
-			    data-cycle-center-horz=true
-    			data-cycle-center-vert=true
-			    >
-			{% with keg.current_tap as tap %}
-    		{% for keg in kegs %}
-    		<div class="cycle-wrap">
-    			<div class="cycle-keg-image">
-					{% if keg.type.picture %}
-				        <img class="fullscreen-keg" src="{{ keg.type.picture.image.url }}">
-				    {% else %}
-				        <img class="fullscreen-keg" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
-				    {% endif %}
-				</div>
-				<div class="cycle-keg-details">
-					<h1>{{ keg.type.name }}: {{ keg.current_tap.name }}</h1>
-					<h2>{{ keg.current_tap.description }}</h2>
-				</div>
-			</div>
-			{% endfor %}
-			{% endwith %}
-			</div>
-		</div>
-
-
-		<div class="establishment-logo">{% if kbsite.settings.title %}{{ kbsite.settings.title }}{% else %}Kegbot{% endif %}</div>
-		<div class="kegbot-logo pull-right"><img class="taplist-foot-logos pull-right" src="{{ STATIC_URL }}images/kegbot-logo-full-white.png"></div>
-
-	</div>
-</div>
-{% endblock %}
-
 {% block kb-extracss %}
   <style>
-  		.bodyfaux {
+
+    	.bodyfaux {
 			height: 100%;
 			min-height: 100%;
 			width:100%;
@@ -58,15 +15,11 @@
 			overflow:hidden;
   		}
 
-		.overlay {
-			height:100%;
-			min-height:100%;
-		}
-
 		.fullscreen-wrapper {
 		    display:block;
 		    position:relative;
 		    min-width:100%;
+		    height:100%;
 		    min-height:100%;
 		}
 		.fullscreen-img {
@@ -101,23 +54,27 @@
 		}
 
 		.taplist-body {
-			height:75%;
-			min-height:75%;
-			max-height:75%;
+			height:68%;
+			min-height:68%;
+			max-height:68%;
 			width:100%;
 		}
 
 		.cycle-slideshow {
 			width:100%;
+			height:100%;
 		}
-
 
 		.cycle-slideshow .cycle-wrap {
 			width:85%;
 			margin: 0 auto;
+			height:100%;
 		}
 
 		.cycle-slideshow .cycle-keg-image {
+			float:left;
+			padding-right:30px;
+			height:100%;
 		}
 
 		.cycle-slideshow .cycle-keg-details {
@@ -132,15 +89,11 @@
     		padding-bottom:10px;
 		}
 
-
 		img.fullscreen-keg {
-			float:left;
-			padding-right:30px;
-			height:75%;
-			min-height:75%;
-			max-height:75%;
+			height:100%;
+			min-height:100%;
+			max-height:100%;
 		}
-
 
 		.establishment-logo {
 			position:fixed;
@@ -159,15 +112,18 @@
 			position:fixed;
 			bottom:0;
 			right:0;
+			height:7%;
+			min-height:7%;
+			max-height:7%;
 			width:100%;
 			margin-right:15px;
 			margin-bottom:15px;
 		}
 
 		img.taplist-foot-logos {
-			height:7%;
-			min-height:7%;
-			max-height:7%;
+			height:100%;
+			min-height:100%;
+			max-height:100%;
 		}
 
   </style>
@@ -178,30 +134,27 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cycle2.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cycle2.center.min.js"></script>
 
-	<script type="text/javascript">
+<script type="text/javascript">
 	$(document).ready(function() {
 
-			$('.navbar').hide();
-			$('.container').hide();
-			$('.overlay').show();
-			$('html,body').addClass('bodyfaux');
+			//This currently does nothing as endpoint URL can't run this without user interaction
 			launchFullscreen(document.documentElement);
-
-		$('.overlay').click(function() {
+			//
+		$('html,body').addClass('bodyfaux');
+		var root = location.protocol + '//' + location.host;
+		
+		$('.taplist-foot-logos').click(function() {
 			$('html,body').removeClass('bodyfaux');
-			var root = location.protocol + '//' + location.host;
 			window.location=root;
 			exitFullscreen();
 		});
 		$(document).keyup(function(e) {
-  			if (e.keyCode == 27) {
-				$('html,body').removeClass('bodyfaux');
-				var root = location.protocol + '//' + location.host;
+  			if (e.keyCode == 27) { // (Escape Key)
+  				$('html,body').removeClass('bodyfaux');
 				window.location=root;
 				exitFullscreen();
   			}
 		});
-
 
 		function launchFullscreen(element) {
 		  if(element.requestFullscreen) {
@@ -242,6 +195,49 @@
 		document.addEventListener("msfullscreenchange", function(e) {
 		  console.log("msfullscreenchange event! ", e);
 		});
-});
-	</script>
+	});
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="fullscreen-wrapper">
+	<div class="fullscreen-img"></div>
+	<div class="fullscreen-content">
+		<div class="taplist-header">
+			<img class="taplist-logo" src="{{ STATIC_URL }}images/whats-on-tap.png">
+		</div>
+
+		<div class="taplist-body">
+			<div class="cycle-slideshow composite-example" 
+			    data-cycle-fx="scrollHorz" 
+			    data-cycle-slides="> div"
+			    data-cycle-timeout="7500"
+			    data-cycle-center-horz=true
+    			data-cycle-center-vert=true
+			    >
+			{% with keg.current_tap as tap %}
+    		{% for keg in kegs %}
+    		<div class="cycle-wrap">
+    			<div class="cycle-keg-image">
+					{% if keg.type.picture %}
+				        <img class="fullscreen-keg" src="{{ keg.type.picture.resized_png.url }}">
+				    {% else %}
+				        <img class="fullscreen-keg" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
+				    {% endif %}
+				</div>
+				<div class="cycle-keg-details">
+					<h1>{{ keg.type.name }}: {{ keg.current_tap.name }}</h1>
+					<h2>{{ keg.current_tap.description }}</h2>
+				</div>
+				<div style="clear:both;"></div>
+			</div>
+			{% endfor %}
+			{% endwith %}
+			</div>
+		</div>
+
+		<div class="establishment-logo">{% if kbsite.settings.title %}{{ kbsite.settings.title }}{% else %}Kegbot{% endif %}</div>
+		<div class="kegbot-logo pull-right"><img class="taplist-foot-logos pull-right" src="{{ STATIC_URL }}images/kegbot-logo-full-white.png"></div>
+	</div>
+</div>
 {% endblock %}

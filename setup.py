@@ -49,8 +49,8 @@ def setup_package():
       version = VERSION,
       description = SHORT_DESCRIPTION,
       long_description = LONG_DESCRIPTION,
-      author = 'mike wakerly',
-      author_email = 'opensource@hoho.com',
+      author = 'Bevbot LLC',
+      author_email = 'info@bevbot.com',
       url = 'http://kegbot.org/',
       packages = find_packages(),
       scripts = [

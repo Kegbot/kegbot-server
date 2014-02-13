@@ -1,4 +1,4 @@
-# Copyright 2010 Mike Wakerly <opensource@hoho.com>
+# Copyright 2014 Bevbot LLC, All Rights Reserved
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/

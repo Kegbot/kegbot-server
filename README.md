@@ -1,8 +1,10 @@
-# Kegbot
+# Kegbot Server
 
-This is the main code repository for the Kegbot Server package.
-(Or it might be a fork.  The official repository lives here:
-https://github.com/Kegbot/kegbot-server).
+This is Kegbot Server, a backend and web interface for monitoring
+and managing kegged beverages.
+
+**Official repository:** https://github.com/Kegbot/kegbot-server/
+
 
 ## Quick start
 
@@ -18,6 +20,7 @@ Development server is running at http://localhost:8000/
 
 For much more detail, see the complete [Kegbot Server documentation](http://kegbot.org/docs/server/).
 
+
 ## Documentation and Help
 
 Please see our main website, http://kegbot.org/, for
@@ -31,19 +34,24 @@ You should definitely follow [@kegbot](http://twitter.com/kegbot) on
 Twitter, all the cool kids are.
 
 
-## Kegboard
+## Related Projects
 
-Firmware and schematics for Kegboard, our Arduino kegerator controller package,
-can now be found in a new repository: https://github.com/Kegbot/kegboard/
+* [Kegboard](https://github.com/Kegbot/kegboard): Firmware and schematics
+  for the Kegbot controller board.
+* [Kegbot Android app](https://github.com/Kegbot/kegbot-android): Kegtap,
+  the Kegbot manager app for Android.
 
 
 ## License and Copyright
 
-All code is offered under the **GPLv2** license, unless otherwise noted.
-Please see ``LICENSE.txt`` for the full license.
+This software is offered under the **GPLv2** license.  Your use of
+Kegbot Server constitutes your agreement to that license.  Please see
+``LICENSE.txt`` for the full license.
 
-All code and documentation are **Copyright 2003-2013 Mike Wakerly**,
-unless otherwise noted.
+Code and documentation are **Copyright 2014 Bevbot LLC**,
+unless otherwise noted.  Graphics and images distributed with Kegbot,
+such as the Kegbot logo, are also copyrighted works of Bevbot LLC
+unless otherwise noted, and may not be reused without permission.
 
 
 ## Contributing

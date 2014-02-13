@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% load kegweblib %}
+
+{% block title %}Taplist | {{ block.super }}{% endblock %}
+
+{% block facade %}
+<div class="fullscreen-wrapper">
+	<div class="fullscreen-img"></div>
+	<div class="fullscreen-content">
+		<div class="taplist-header">
+			<img class="taplist-logo" src="{{ STATIC_URL }}images/whats-on-tap.png">
+		</div>
+
+		<div class="taplist-body">
+			<div class="cycle-slideshow composite-example" 
+			    data-cycle-fx="scrollHorz" 
+			    data-cycle-slides="> div"
+			    data-cycle-timeout="7500"
+			    data-cycle-center-horz=true
+    			data-cycle-center-vert=true
+			    >
+			{% with keg.current_tap as tap %}
+    		{% for keg in kegs %}
+    		<div class="cycle-wrap">
+    			<div class="cycle-keg-image">
+					{% if keg.type.picture %}
+				        <img class="fullscreen-keg" src="{{ keg.type.picture.image.url }}">
+				    {% else %}
+				        <img class="fullscreen-keg" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
+				    {% endif %}
+				</div>
+				<div class="cycle-keg-details">
+					<h1>{{ keg.type.name }}: {{ keg.current_tap.name }}</h1>
+					<h2>{{ keg.current_tap.description }}</h2>
+				</div>
+			</div>
+			{% endfor %}
+			{% endwith %}
+			</div>
+		</div>
+
+
+		<div class="establishment-logo">{% if kbsite.settings.title %}{{ kbsite.settings.title }}{% else %}Kegbot{% endif %}</div>
+		<div class="kegbot-logo pull-right"><img class="taplist-foot-logos pull-right" src="{{ STATIC_URL }}images/kegbot-logo-full-white.png"></div>
+
+	</div>
+</div>
+{% endblock %}
+
+{% block kb-extracss %}
+  <style>
+  		.bodyfaux {
+			height: 100%;
+			min-height: 100%;
+			width:100%;
+			padding:0;
+			margin:0;
+			overflow:hidden;
+  		}
+
+		.overlay {
+			height:100%;
+			min-height:100%;
+		}
+
+		.fullscreen-wrapper {
+		    display:block;
+		    position:relative;
+		    min-width:100%;
+		    min-height:100%;
+		}
+		.fullscreen-img {
+		    display:block;
+		    position:absolute;
+		    z-index:1;
+		    min-width:100%;
+		    min-height:100%;
+		    background:transparent url('{{ STATIC_URL }}images/chalkboard-bg.jpg') center center no-repeat;
+		    background-size:cover;
+		}
+		.fullscreen-content {
+			display:block;
+			position:relative;
+			z-index:2;
+		    height:100%;
+		    width:100%;
+		}
+
+		.taplist-header {
+			padding-top:15px;
+			height:15%;
+			min-height:15%;
+			max-height:15%;
+			width:100%;
+		}
+
+		img.taplist-logo {
+			display:block;
+			margin-left:auto;
+			margin-right:auto;
+		}
+
+		.taplist-body {
+			height:75%;
+			min-height:75%;
+			max-height:75%;
+			width:100%;
+		}
+
+		.cycle-slideshow {
+			width:100%;
+		}
+
+
+		.cycle-slideshow .cycle-wrap {
+			width:85%;
+			margin: 0 auto;
+		}
+
+		.cycle-slideshow .cycle-keg-image {
+		}
+
+		.cycle-slideshow .cycle-keg-details {
+			margin-left:100px;
+			margin-top:10px;
+			background-color: rgba(0, 0, 0, 0.5);
+			-webkit-border-radius: 20px;
+			-moz-border-radius: 20px;
+			border-radius: 20px;
+    		color:#ffffff;
+    		padding-top:10px;
+    		padding-bottom:10px;
+		}
+
+
+		img.fullscreen-keg {
+			float:left;
+			padding-right:30px;
+			height:75%;
+			min-height:75%;
+			max-height:75%;
+		}
+
+
+		.establishment-logo {
+			position:fixed;
+			bottom:0;
+			left:0;
+			margin-left:15px;
+			height:7%;
+			min-height:7%;
+			max-height:7%;
+			width:100%;
+			color:#ffffff;
+			font-size:48px;
+		}
+
+		.kegbot-logo {
+			position:fixed;
+			bottom:0;
+			right:0;
+			width:100%;
+			margin-right:15px;
+			margin-bottom:15px;
+		}
+
+		img.taplist-foot-logos {
+			height:7%;
+			min-height:7%;
+			max-height:7%;
+		}
+
+  </style>
+{% endblock %}
+
+
+{% block kb-extrajs %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cycle2.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cycle2.center.min.js"></script>
+
+	<script type="text/javascript">
+	$(document).ready(function() {
+
+			$('.navbar').hide();
+			$('.container').hide();
+			$('.overlay').show();
+			$('html,body').addClass('bodyfaux');
+			launchFullscreen(document.documentElement);
+
+		$('.overlay').click(function() {
+			$('html,body').removeClass('bodyfaux');
+			var root = location.protocol + '//' + location.host;
+			window.location=root;
+			exitFullscreen();
+		});
+		$(document).keyup(function(e) {
+  			if (e.keyCode == 27) {
+				$('html,body').removeClass('bodyfaux');
+				var root = location.protocol + '//' + location.host;
+				window.location=root;
+				exitFullscreen();
+  			}
+		});
+
+
+		function launchFullscreen(element) {
+		  if(element.requestFullscreen) {
+			element.requestFullscreen();
+		  } else if(element.mozRequestFullScreen) {
+			element.mozRequestFullScreen();
+		  } else if(element.webkitRequestFullscreen) {
+			element.webkitRequestFullscreen();
+		  } else if(element.msRequestFullscreen) {
+			element.msRequestFullscreen();
+		  }
+		}
+
+		function exitFullscreen() {
+		  if(document.exitFullscreen) {
+			document.exitFullscreen();
+		  } else if(document.mozCancelFullScreen) {
+			document.mozCancelFullScreen();
+		  } else if(document.webkitExitFullscreen) {
+			document.webkitExitFullscreen();
+		  }
+		}
+
+		function dumpFullscreen() {
+		  console.log("document.fullscreenElement is: ", document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+		  console.log("document.fullscreenEnabled is: ", document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled);
+		}
+
+		document.addEventListener("fullscreenchange", function(e) {
+		  console.log("fullscreenchange event! ", e);
+		});
+		document.addEventListener("mozfullscreenchange", function(e) {
+		  console.log("mozfullscreenchange event! ", e);
+		});
+		document.addEventListener("webkitfullscreenchange", function(e) {
+		  console.log("webkitfullscreenchange event! ", e);
+		});
+		document.addEventListener("msfullscreenchange", function(e) {
+		  console.log("msfullscreenchange event! ", e);
+		});
+});
+	</script>
+{% endblock %}

@@ -17,11 +17,15 @@ class ChangeKegForm(forms.Form):
         initial=keg_sizes.HALF_BARREL,
         required=True)
 
-    beverage_name = forms.CharField(required=True, label='Beer Name')
+
+    beer_name = forms.CharField(required=False)  # legacy
+    brewer_name = forms.CharField(required=False)  # legacy
+
+    beverage_name = forms.CharField(label='Beer Name', required=False)
     beverage_id = forms.CharField(widget=forms.HiddenInput(), required=False)
-    producer_name = forms.CharField(required=True, label='Brewer')
+    producer_name = forms.CharField(label='Brewer', required=False)
     producer_id = forms.CharField(widget=forms.HiddenInput(), required=False)
-    style = forms.CharField(required=True, label='Style',
+    style_name = forms.CharField(required=True, label='Style',
       help_text='Example: Pale Ale, Stout, etc.')
 
     helper = FormHelper()
@@ -38,6 +42,24 @@ class ChangeKegForm(forms.Form):
         )
     )
 
+    def clean_beverage_name(self):
+        beverage_name = self.cleaned_data.get('beverage_name')
+        if not beverage_name:
+            beverage_name = self.cleaned_data.get('beer_name')
+            if not beverage_name:
+                raise forms.ValidationError('Must specify a beverage name')
+            self.cleaned_data['beverage_name'] = beverage_name
+        return beverage_name
+
+    def clean_producer_name(self):
+        producer_name = self.cleaned_data.get('producer_name')
+        if not producer_name:
+            producer_name = self.cleaned_data.get('brewer_name')
+            if not producer_name:
+                raise forms.ValidationError('Must specify a producer name')
+            self.cleaned_data['producer_name'] = producer_name
+        return producer_name
+
     def save(self, tap):
         if not self.is_valid():
             raise ValueError('Form is not valid.')
@@ -49,7 +71,7 @@ class ChangeKegForm(forms.Form):
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
         keg = b.start_keg(tap, beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
-            beverage_type='beer', style_name=cd['style'], keg_type=cd['keg_size'])
+            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'])
 
         if cd.get('description'):
             keg.description = cd['description']

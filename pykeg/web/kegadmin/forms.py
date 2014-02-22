@@ -35,7 +35,7 @@ class ChangeKegForm(forms.Form):
         Field('beverage_id', type='hidden'),
         Field('producer_name', css_class='input-xlarge'),
         Field('producer_id', type='hidden'),
-        Field('style', css_class='input-xlarge'),
+        Field('style_name', css_class='input-xlarge'),
         Field('keg_size', css_class='input-xlarge'),
         FormActions(
             Submit('submit_change_keg_form', 'Activate Keg', css_class='btn-primary'),

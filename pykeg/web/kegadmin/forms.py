@@ -190,7 +190,7 @@ class BeverageForm(forms.ModelForm):
         Field('name', css_class='input-xlarge'),
         Field('style', css_class='input-xlarge'),
         Field('producer'),
-        Field('edition_year'),
+        Field('vintage_year'),
         Field('abv_percent'),
         Field('untappd_beer_id'),
         Field('new_image'),

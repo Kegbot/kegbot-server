@@ -61,9 +61,11 @@
 {% include 'kegweb/includes/tap_snapshot.html' %}
 {% endfor %}
 
+{% comment %}
 <p class="muted">
   See all taps in <a href="{% url 'kb-fullscreen' %}">fullscreen mode</a>.
 </p>
+{% endcomment %}
 
 {% else %}
 <p class="muted">

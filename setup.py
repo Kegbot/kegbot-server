@@ -24,7 +24,7 @@ DEPENDENCIES = [
   'django-bootstrap-pagination == 0.1.10',
 
   'django-celery == 3.1.1',
-  'Celery == 3.1.6',
+  'Celery == 3.1.9',
 
   'South == 0.8.4',
   'django-crispy-forms == 1.2.8',

@@ -163,7 +163,7 @@ CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 INTERNAL_IPS = ('127.0.0.1',)
 
 # Set to true if the database admin module should be enabled.
-KEGBOT_ENABLE_ADMIN = True
+KEGBOT_ENABLE_ADMIN = False
 
 # Add plugins in local_settings.py
 KEGBOT_PLUGINS = [

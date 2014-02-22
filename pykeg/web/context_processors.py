@@ -32,5 +32,6 @@ def kbsite(request):
         ret['guest_info']['image'] = kbsite.settings.guest_image
         ret['HAVE_SESSIONS'] = models.DrinkingSession.objects.all().count() > 0
         ret['GOOGLE_ANALYTICS_ID'] = kbsite.settings.google_analytics_id
+        ret['metric_volumes'] = (kbsite.settings.volume_display_units == 'metric')
 
     return ret

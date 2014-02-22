@@ -5,14 +5,15 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>{% block title %}Kegbot{% endblock %}</title>
+<title>{% block title %}Kegbot{% endblock %}</title>
 
-  {% block css %}
-  <link rel="icon" type="image/png" href="{{ STATIC_URL}}images/kegbot-icon-72x72.png" />
-  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/kegweb.css" media="screen"/>
-  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fancybox/jquery.fancybox.css" media="screen" />
-  {% endblock %}
-  {% block kb-extracss %}{%endblock%}
+{% block css %}
+<link rel="icon" type="image/png" href="{{ STATIC_URL}}images/kegbot-icon-72x72.png" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/kegweb.css" media="screen"/>
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fancybox/jquery.fancybox.css" media="screen" />
+{% endblock %}
+
+{% block kb-extracss %}{% endblock %}
 </head>
 
 <body {% block bodyattrs %}{% endblock %}>
@@ -28,18 +29,8 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.lazyload.min.js"></script>
 
 <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
-
-<script type="text/javascript" src="{{ STATIC_URL }}angular/angular.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}angular/angular-sanitize.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}angular/angular-resource.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/kegweb-angular-filters.js"></script>
-
-<script type="text/javascript" src="{{ STATIC_URL }}lib/underscore/underscore.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}lib/backbone/backbone.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}lib/mustache/mustache.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}lib/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
 
-<script type="text/javascript" src="{{ STATIC_URL }}js/kb.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}highcharts/js/highcharts.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}fancybox/jquery.fancybox.pack.js"></script>
 
@@ -56,6 +47,39 @@
   })();
 </script>
 {% endif %}
+
+<script type="text/javascript">
+  $(document).ready(function() {
+      $("span.hmeasure").autounits({ metric: {% if metric_volumes %}true{% else %}false{% endif %} })
+      $("abbr.timeago").timeago();
+      $(".alert").alert()
+      $(".clickable").each(function() {
+        var href = $(this).attr("data-href");
+        $(this).click(function(e) {
+          var node = e.target.nodeName.toLowerCase();
+          if (node == 'a' || node == 'img') return;
+          window.location = href;
+          return false;
+        });
+      });
+      $("img.lazy").lazyload();
+      $("a.gallery-image").fancybox({
+        'speedIn' : 100,
+        'speedOut' : 100,
+        'titlePosition' : 'inside',
+        'cyclic' : true,
+      });
+      $('.bar').progressbar({
+          display_text: 'fill',
+          percent_format: function(p) {return p + '% remaining';}
+      });
+  });
+</script>
+
+{% if user.is_staff %}
+{% include 'kegadmin/includes/extrajs.html' %}
+{% endif %}
+
 {% endblock js %}
 
 {% block kb-extrajs %}{%endblock%}

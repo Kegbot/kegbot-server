@@ -4,60 +4,21 @@
 
 {% block title %}{% if kbsite.settings.title %}{{ kbsite.settings.title }}{% else %}Kegbot{% endif %}{% endblock %}
 
-{% block js %}
+{% block css %}
 {{ block.super }}
+<style>
+  body {
+{% if kbsite %}{% if kbsite.settings.background_image %}
+    background-image: url({{kbsite.settings.background_image.image.url}});
+{% else %}
+    background-image: url({{ STATIC_URL }}images/background.png);
+{% endif %} {% endif %}
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+</style>
 
-  <script type="text/javascript">
-    $(document).ready(function() {
-        var defaultUseMetric = {% if kbsite.settings.volume_display_units != 'metric' %}false{% else %}true{% endif%};
-        window.app.setApiBase("/api/")
-
-        window.app.getPageSettings().setMetric(defaultUseMetric);
-        window.app.getPageSettings().setGuestInfo("{{kbsite.settings.guest_name}}",
-            "{% if kbsite.settings.guest_image %}{{kbsite.settings.guest_image.thumbnail.url}}{% else %}{{STATIC_URL}}images/unknown-drinker.png{% endif %}");
-        $("span.hmeasure").autounits({metric:defaultUseMetric})
-        $("abbr.timeago").timeago();
-        $(".alert").alert()
-        $(".clickable").each(function() {
-          var href = $(this).attr("data-href");
-          $(this).click(function(e) {
-            var node = e.target.nodeName.toLowerCase();
-            if (node == 'a' || node == 'img') return;
-            window.location = href;
-            return false;
-          });
-        });
-        $("img.lazy").lazyload();
-        $("a.gallery-image").fancybox({
-          'speedIn' : 100,
-          'speedOut' : 100,
-          'titlePosition' : 'inside',
-          'cyclic' : true,
-        });
-        $('.bar').progressbar({
-            display_text: 'fill',
-            percent_format: function(p) {return p + '% remaining';}
-        });
-    });
-  </script>
-
-  {% if user.is_staff %}
-  {% include 'kegadmin/includes/extrajs.html' %}
-  {% endif %}
-
-  <style>
-    body {
-  {% if kbsite %}{% if kbsite.settings.background_image %}
-      background-image: url({{kbsite.settings.background_image.image.url}});
-  {% else %}
-      background-image: url({{ STATIC_URL }}images/background.png);
-  {% endif %} {% endif %}
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-    }
-  </style>
-
-{% endblock js %}
+{% endblock css %}
 
 {% block body %}
   <div class="navbar navbar-inverse navbar-fixed-top">
@@ -153,8 +114,6 @@
           &copy; 2003-2013 <a href="http://bevbot.com/?utm_source=kbserver">Bevbot LLC</a>
           &mdash;
           Charts by <a href="http://highcharts.com/" target="_blank">Highcharts</a>
-          &mdash;
-          <a href='#' onClick='window.app.get("pageSettings").toggleMetric();'>Toggle Units</a>
           <span id="page-settings"></span>
         </small>
       </p>

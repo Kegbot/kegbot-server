@@ -139,5 +139,18 @@ Test your new user account::
 	mysql> exit
 	Bye
 
+Fix MySQL Django/Timezone Bug
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+There's a `known issue <https://code.djangoproject.com/ticket/21629>`_ with 
+Django's handling of MySQL time zone information, which will cause a 
+Server 500 error when you click 'Sessions' in the navbar if the following 
+`fix <http://dev.mysql.com/doc/refman/5.5/en/mysql-tzinfo-to-sql.html>`_ 
+is not implemented.
+
+	$ mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql
+	Enter password:    <---- MySQL root user password
+	
+	Success/Warning/Error information will be supplied
+
 Done! You have successfully set up a MySQL database for Kegbot.
 

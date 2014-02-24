@@ -57,16 +57,17 @@ class EmailNotificationBackendTestCase(TestCase):
         self.assertEquals(1, len(mail.outbox))
 
         msg = mail.outbox[0]
-        self.assertEquals('[My Kegbot] New keg tapped: Keg 1: Unknown by Unknown', msg.subject)
+        self.assertEquals('[My Kegbot] New keg tapped: Keg %s: Unknown by Unknown' % keg.id,
+            msg.subject)
         self.assertEquals(['test@example'], msg.to)
         self.assertEquals('test-from@example', msg.from_email)
 
         expected_body_plain = '''A new keg of Unknown by Unknown was just tapped on My Kegbot!
 
-Track it here: http:///kegs/1
+Track it here: http:///kegs/%s
 
 You are receiving this e-mail because you have notifications enabled
-on My Kegbot.  To change your settings, visit http:///account.'''
+on My Kegbot.  To change your settings, visit http:///account.''' % (keg.id,)
 
         self.assertMultiLineEqual(expected_body_plain, msg.body)
 
@@ -76,14 +77,14 @@ A new keg of <b>Unknown by Unknown</b> was just tapped on
 </p>
 
 <p>
-Track it <a href="http:///kegs/1">here</a>.
+Track it <a href="http:///kegs/%s">here</a>.
 </p>
 
 <p>
 You are receiving this e-mail because you have notifications enabled
 on <a href="http://">My Kegbot</a>.  To change your settings, visit
 http:///account.
-</p>'''
+</p>''' % (keg.id,)
 
         self.assertEquals(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])
@@ -100,16 +101,17 @@ http:///account.
         self.assertEquals(1, len(mail.outbox))
 
         msg = mail.outbox[0]
-        self.assertEquals('[My Kegbot] A new session (session 1) has started.', msg.subject)
+        self.assertEquals('[My Kegbot] A new session (session %s) has started.' % (
+            drink.session.id,), msg.subject)
         self.assertEquals(['test@example'], msg.to)
         self.assertEquals('test-from@example', msg.from_email)
 
         expected_body_plain = '''A new session was just kicked off on My Kegbot.
 
-You can follow the session here: http:///s/1/
+You can follow the session here: http:///s/%s/
 
 You are receiving this e-mail because you have notifications enabled
-on My Kegbot.  To change your settings, visit http:///account.'''
+on My Kegbot.  To change your settings, visit http:///account.''' % (drink.session.id,)
 
         self.assertMultiLineEqual(expected_body_plain, msg.body)
 
@@ -118,14 +120,14 @@ A new session was just kicked off on <a href="http://">My Kegbot</a>.
 </p>
 
 <p>
-You can follow the session <a href="http:///s/1/">here</a>.
+You can follow the session <a href="http:///s/%s/">here</a>.
 </p>
 
 <p>
 You are receiving this e-mail because you have notifications enabled
 on <a href="http://">My Kegbot</a>.  To change your settings, visit
 http:///account.
-</p>'''
+</p>''' % (drink.session.id,)
 
         self.assertEquals(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])
@@ -143,32 +145,33 @@ http:///account.
         self.assertEquals(1, len(mail.outbox))
 
         msg = mail.outbox[0]
-        self.assertEquals('[My Kegbot] Volume low on keg 1 (Unknown by Unknown)', msg.subject)
+        self.assertEquals('[My Kegbot] Volume low on keg %s (Unknown by Unknown)' % keg.id,
+            msg.subject)
         self.assertEquals(['test@example'], msg.to)
         self.assertEquals('test-from@example', msg.from_email)
 
-        expected_body_plain = '''Keg 1 (Unknown by Unknown) is 15.0% full.
+        expected_body_plain = '''Keg %s (Unknown by Unknown) is 15.0%% full.
 
-See full statistics here: http:///kegs/1
+See full statistics here: http:///kegs/%s
 
 You are receiving this e-mail because you have notifications enabled
-on My Kegbot.  To change your settings, visit http:///account.'''
+on My Kegbot.  To change your settings, visit http:///account.''' % (keg.id, keg.id)
 
         self.assertMultiLineEqual(expected_body_plain, msg.body)
 
         expected_body_html = '''<p>
-Keg 1 (Unknown by Unknown) is <b>15.0</b>% full.
+Keg %s (Unknown by Unknown) is <b>15.0</b>%% full.
 </p>
 
 <p>
-See full statistics <a href="http:///kegs/1">here</a>.
+See full statistics <a href="http:///kegs/%s">here</a>.
 </p>
 
 <p>
 You are receiving this e-mail because you have notifications enabled
 on <a href="http://">My Kegbot</a>.  To change your settings, visit
 http:///account.
-</p>'''
+</p>''' % (keg.id, keg.id)
 
         self.assertEquals(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])
@@ -186,33 +189,33 @@ http:///account.
         self.assertEquals(1, len(mail.outbox))
 
         msg = mail.outbox[0]
-        self.assertEquals('[My Kegbot] Keg ended: Keg 1: Unknown by Unknown', msg.subject)
+        self.assertEquals('[My Kegbot] Keg ended: Keg %s: Unknown by Unknown' % keg.id, msg.subject)
         self.assertEquals(['test@example'], msg.to)
         self.assertEquals('test-from@example', msg.from_email)
 
-        expected_body_plain = '''Keg 1 of Unknown by Unknown was just finished on My Kegbot.
+        expected_body_plain = '''Keg %s of Unknown by Unknown was just finished on My Kegbot.
 
-See final statistics here: http:///kegs/1
+See final statistics here: http:///kegs/%s
 
 You are receiving this e-mail because you have notifications enabled
-on My Kegbot.  To change your settings, visit http:///account.'''
+on My Kegbot.  To change your settings, visit http:///account.''' % (keg.id, keg.id)
 
         self.assertMultiLineEqual(expected_body_plain, msg.body)
 
         expected_body_html = '''<p>
-Keg 1 (Unknown by Unknown) was just finished on
+Keg %s (Unknown by Unknown) was just finished on
 <b><a href="http://">My Kegbot</a></b>.
 </p>
 
 <p>
-See final statistics <a href="http:///kegs/1">here</a>.
+See final statistics <a href="http:///kegs/%s">here</a>.
 </p>
 
 <p>
 You are receiving this e-mail because you have notifications enabled
 on <a href="http://">My Kegbot</a>.  To change your settings, visit
 http:///account.
-</p>'''
+</p>''' % (keg.id, keg.id)
 
         self.assertEquals(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])

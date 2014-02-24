@@ -91,3 +91,7 @@ admin.site.register(models.Picture, PictureAdmin)
 
 admin.site.register(models.Beverage)
 admin.site.register(models.BeverageProducer)
+
+admin.site.register(models.Controller)
+admin.site.register(models.FlowMeter)
+

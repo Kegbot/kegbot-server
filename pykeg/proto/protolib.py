@@ -154,6 +154,27 @@ def ProducerToProto(producer, full=False):
         ret.image.MergeFrom(ToProto(producer.picture))
     return ret
 
+
+@converts(models.Controller)
+def ControllerToProto(controller, full=False):
+    ret = models_pb2.Controller()
+    ret.id = controller.id
+    ret.name = controller.name
+    ret.model_name = controller.model_name
+    ret.serial_number = controller.serial_number
+    return ret
+
+
+@converts(models.FlowMeter)
+def FlowMeterToProto(flow_meter, full=False):
+    ret = models_pb2.FlowMeter()
+    ret.id = flow_meter.id
+    ret.controller.MergeFrom(ToProto(flow_meter.controller))
+    ret.port_name = flow_meter.port_name
+    ret.ticks_per_ml = flow_meter.ticks_per_ml
+    return ret
+
+
 @converts(models.Drink)
 def DrinkToProto(drink, full=False):
     ret = models_pb2.Drink()

@@ -363,11 +363,18 @@ class KegTap(models.Model):
         help_text='Sensor monitoring the temperature of this Keg.')
 
     def __str__(self):
-        return "%s: %s" % (self.meter_name, self.name)
+        return "%s: %s" % (self.name, self.meter)
 
     def is_active(self):
         """Returns True if the tap has an active Keg."""
         return self.current_keg is not None
+
+    def current_meter(self):
+        """Returns the currently-assigned meter, or None."""
+        try:
+            return self.meter
+        except FlowMeter.DoesNotExist:
+            return None
 
     def Temperature(self):
         if self.temperature_sensor:
@@ -375,6 +382,47 @@ class KegTap(models.Model):
             if last_rec:
                 return last_rec[0]
         return None
+
+    @classmethod
+    def get_from_meter_name(cls, meter_name):
+        try:
+            meter = FlowMeter.get_from_meter_name(meter_name)
+        except FlowMeter.DoesNotExist, e:
+            raise cls.DoesNotExist(e)
+        tap = meter.tap
+        if not tap:
+            raise cls.DoesNotExist('Meter is inactive')
+        return tap
+
+
+class Controller(models.Model):
+    name = models.CharField(max_length=128, unique=True,
+        help_text='Identifying name for this device; must be unique.')
+    model_name = models.CharField(max_length=128, blank=True, null=True,
+        help_text='Type of controller (optional).')
+    serial_number = models.CharField(max_length=128, blank=True, null=True,
+        help_text='Serial number (optional).')
+
+    def __str__(self):
+        return 'Controller: %s' % (self.name,)
+
+
+class FlowMeter(models.Model):
+    class Meta:
+        unique_together = ('controller', 'port_name')
+    controller = models.ForeignKey(Controller, related_name='meters',
+        help_text='Controller that owns this meter.')
+    port_name = models.CharField(max_length=128,
+        help_text='Controller-specific data port name for this meter.')
+    tap = models.OneToOneField(KegTap, blank=True, null=True,
+        related_name='meter',
+        help_text='Tap to which this meter is currently bound.')
+
+    def meter_name(self):
+        return '%s.%s' % (self.controller.name, self.port_name)
+
+    def __str__(self):
+        return self.meter_name()
 
 
 class Keg(models.Model):

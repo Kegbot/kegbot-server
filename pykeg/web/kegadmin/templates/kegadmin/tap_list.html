@@ -23,7 +23,13 @@
 			<a class="btn btn-small btn-primary" href="{% url "kegadmin-edit-tap" tap.id %}">Edit</a>&nbsp;&nbsp;
 			<span>{{ tap.name }}</span>
 	</td>
-	<td>{{ tap.meter_name }}
+	<td>
+		{% if tap.current_meter %}
+			{{ tap.current_meter }}
+		{% else %}
+			<em>Not connected.</em>
+		{% endif %}
+	</td>
 	<td>
 		{% if tap.current_keg %}
 		Online: {{ tap.current_keg.type.name }}

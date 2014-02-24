@@ -10,6 +10,7 @@ from pykeg.core import models
 
 ALL_TAPS = models.KegTap.objects.all()
 ALL_KEGS = models.Keg.objects.all()
+ALL_METERS = models.FlowMeter.objects.all()
 
 
 class ChangeKegForm(forms.Form):
@@ -92,22 +93,53 @@ class EndKegForm(forms.Form):
 
 
 class TapForm(forms.ModelForm):
+    class FlowMeterModelChoiceField(forms.ModelChoiceField):
+        def label_from_instance(self, meter):
+            if meter.tap:
+                return '%s (connected to %s)' % (meter, meter.tap.name)
+            else:
+                return str(meter)
+
+    meter = FlowMeterModelChoiceField(queryset=ALL_METERS, required=False,
+        empty_label='Not connected.',
+        help_text='Currently-assigned flow meter.')
+
     class Meta:
         model = models.KegTap
         fields = ('name', 'meter_name', 'relay_name', 'description',
             'temperature_sensor', 'ml_per_tick')
 
     def __init__(self, *args, **kwargs):
-        site = kwargs.pop('site', None)
         super(TapForm, self).__init__(*args, **kwargs)
+
+        if self.instance:
+            self.fields['meter'].initial = self.instance.current_meter()
+
         self.fields['temperature_sensor'].queryset = models.ThermoSensor.objects.all()
         self.fields['temperature_sensor'].empty_label = 'No sensor.'
+
+    def save(self, commit=True):
+        if not commit:
+            raise ValueError('TapForm does not support commit=False')
+        instance = super(TapForm, self).save(commit=True)
+
+        old_meter = instance.current_meter()
+        new_meter = self.cleaned_data['meter']
+
+        if old_meter != new_meter:
+            if old_meter:
+                old_meter.tap = None
+                old_meter.save()
+            if new_meter:
+                new_meter.tap = instance
+                new_meter.save()
+        return instance
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
     helper.layout = Layout(
         Field('name', css_class='input-xlarge'),
-        Field('meter_name', css_class='input-xlarge'),
+        Field('meter', css_class='input-xlarge'),
         Field('relay_name', css_class='input-xlarge'),
         Field('temperature_sensor', css_class='input-xlarge'),
         Field('ml_per_tick', css_class='input-xlarge'),

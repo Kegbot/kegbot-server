@@ -42,10 +42,14 @@ def set_defaults(force=False, set_is_setup=False):
         site.is_setup = True
         site.save()
 
-    # KegTap defaults
-    main_tap = models.KegTap(name='Main Tap', meter_name=METER_NAME_0)
-    main_tap.save()
-    secondary_tap = models.KegTap(name='Second Tap', meter_name=METER_NAME_1)
-    secondary_tap.save()
+    controller = models.Controller.objects.create(name='kegboard')
+
+    tap_0 = models.KegTap.objects.create(name='Main Tap')
+    tap_1 = models.KegTap.objects.create(name='Second Tap')
+
+    meter_0 = models.FlowMeter.objects.create(controller=controller, port_name='flow0',
+        tap=tap_0)
+    meter_1 = models.FlowMeter.objects.create(controller=controller, port_name='flow1',
+        tap=tap_1)
 
     return site

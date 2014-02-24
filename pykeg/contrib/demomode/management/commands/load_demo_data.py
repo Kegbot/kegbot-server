@@ -122,7 +122,7 @@ class LoadDemoDataCommand(BaseCommand):
             beverage = random_item(models.Beverage)
             be.start_keg(tap, beverage=beverage)
 
-        drink = be.record_drink(tap.meter_name, ticks=0, volume_ml=volume_ml,
+        drink = be.record_drink(tap, ticks=0, volume_ml=volume_ml,
             username=user.username, pour_time=when, shout=shout)
 
         if picture_path:

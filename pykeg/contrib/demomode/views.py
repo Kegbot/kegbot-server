@@ -59,7 +59,7 @@ def summon_drinker(request):
 
     volume_ml = random.randint(*RANDOM_POUR_RANGE_ML)
 
-    drink = be.record_drink(tap.meter_name, ticks=0, volume_ml=volume_ml,
+    drink = be.record_drink(tap, ticks=0, volume_ml=volume_ml,
         username=user.username)
 
     pictures = list(models.Picture.objects.filter(user=user))

@@ -243,7 +243,11 @@ def KegTapToProto(tap, full=False):
     ret = models_pb2.KegTap()
     ret.id = tap.id
     ret.name = tap.name
-    ret.meter_name = tap.meter_name
+    meter = tap.current_meter()
+    if meter:
+        ret.meter_name = meter.meter_name()
+    else:
+        ret.meter_name = 'unknown.%s' % tap.id
     ret.relay_name = tap.relay_name or ''
     ret.ml_per_tick = tap.ml_per_tick
     if tap.description is not None:

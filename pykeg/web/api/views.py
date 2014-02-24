@@ -334,7 +334,7 @@ def get_api_key(request):
 
 @csrf_exempt
 def tap_detail(request, meter_name):
-    tap = get_object_or_404(models.KegTap, meter_name=meter_name)
+    tap = get_tap_from_meter_name_or_404(meter_name)
     if request.method == 'POST':
         return _tap_detail_post(request, tap)
     elif request.method == 'GET':
@@ -351,7 +351,7 @@ def tap_calibrate(request, meter_name):
     # TODO(mikey): This would make more semantic sense as PATCH /taps/tap-name/,
     # but Django's support for non-POST verbs is poor (specifically wrt request
     # body/form handling).
-    tap = get_object_or_404(models.KegTap, meter_name=meter_name)
+    tap = get_tap_from_meter_name_or_404(meter_name)
     form = forms.CalibrateTapForm(request.POST)
     if form.is_valid():
         tap.ml_per_tick = form.cleaned_data['ml_per_tick']
@@ -363,7 +363,7 @@ def tap_calibrate(request, meter_name):
 @csrf_exempt
 @auth_required
 def tap_spill(request, meter_name):
-    tap = get_object_or_404(models.KegTap, meter_name=meter_name)
+    tap = get_tap_from_meter_name_or_404(meter_name)
     if not tap.current_keg:
         raise kbapi.BadRequestError('No keg on tap.')
     form = forms.TapSpillForm(request.POST)
@@ -377,7 +377,7 @@ def tap_spill(request, meter_name):
 @csrf_exempt
 @auth_required
 def tap_activate(request, meter_name):
-    tap = get_object_or_404(models.KegTap, meter_name=meter_name)
+    tap = get_tap_from_meter_name_or_404(meter_name)
     form = ChangeKegForm(request.POST)
     if form.is_valid():
         form.save(tap)
@@ -402,7 +402,7 @@ def _tap_detail_post(request, tap):
     if duration is None:
         duration = 0
     try:
-        drink = request.backend.record_drink(tap_name=tap.meter_name,
+        drink = request.backend.record_drink(tap,
           ticks=cd['ticks'],
           volume_ml=cd.get('volume_ml'),
           username=cd.get('username'),
@@ -502,3 +502,11 @@ def post_user_photo(request, user):
 
 def default_handler(request):
     raise Http404, "Not an API endpoint: %s" % request.path[:100]
+
+
+def get_tap_from_meter_name_or_404(meter_name):
+    try:
+        return models.KegTap.get_from_meter_name(meter_name)
+    except models.KegTap.DoesNotExist, e:
+        raise Http404(str(e))
+

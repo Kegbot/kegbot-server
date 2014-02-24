@@ -344,8 +344,6 @@ class Beverage(models.Model):
 
 class KegTap(models.Model):
     """A physical tap of beer."""
-    meter_name = models.CharField(max_length=128, unique=True,
-        help_text='Flow meter name for this tap, for example, "kegboard.flow0"')
     name = models.CharField(max_length=128,
         help_text='The display name for this tap, for example, "Main Tap".')
     relay_name = models.CharField(max_length=128, blank=True, null=True,
@@ -363,7 +361,7 @@ class KegTap(models.Model):
         help_text='Sensor monitoring the temperature of this Keg.')
 
     def __str__(self):
-        return "%s: %s" % (self.name, self.meter)
+        return "%s: %s" % (self.name, self.current_keg)
 
     def is_active(self):
         """Returns True if the tap has an active Keg."""
@@ -423,6 +421,37 @@ class FlowMeter(models.Model):
 
     def __str__(self):
         return self.meter_name()
+
+    @classmethod
+    def get_or_create_from_meter_name(cls, meter_name):
+        try:
+            return cls.get_from_meter_name(meter_name)
+        except cls.DoesNotExist:
+            pass
+
+        idx = meter_name.find('.')
+        if idx <= 0:
+            raise ValueError('Illegal name')
+
+        controller_name = meter_name[:idx]
+        port_name = meter_name[idx+1:]
+        controller = Controller.objects.get_or_create(name=controller_name)[0]
+        return cls.objects.get_or_create(controller=controller, port_name=port_name)[0]
+
+    @classmethod
+    def get_from_meter_name(cls, meter_name):
+        idx = meter_name.find('.')
+        if idx <= 0:
+            raise cls.DoesNotExist('Illegal meter_name: %s' % repr(meter_name))
+        controller_name = meter_name[:idx]
+        port_name = meter_name[idx+1:]
+
+        try:
+            controller = Controller.objects.get(name=controller_name)
+        except Controller.DoesNotExist:
+            raise cls.DoesNotExist('No such controller: %s' % repr(controller_name))
+
+        return cls.objects.get(controller=controller, port_name=port_name)
 
 
 class Keg(models.Model):

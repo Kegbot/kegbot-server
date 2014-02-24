@@ -153,7 +153,7 @@ def tap_detail(request, tap_id):
             if record_drink_form.is_valid():
                 user = record_drink_form.cleaned_data.get('user')
                 volume_ml = record_drink_form.cleaned_data.get('volume_ml')
-                d = request.backend.record_drink(tap.meter_name, ticks=0, username=user,
+                d = request.backend.record_drink(tap, ticks=0, username=user,
                     volume_ml=volume_ml)
                 messages.success(request, 'Drink %s recorded.' % d.id)
             else:

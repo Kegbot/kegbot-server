@@ -64,9 +64,18 @@ class CoreModelsTestCase(TestCase):
 
         self.tap = models.KegTap.objects.create(
             name='Test Tap',
-            meter_name='test',
             ml_per_tick=(1000.0/2200.0),
             current_keg=self.keg,
+        )
+
+        self.controller = models.Controller.objects.create(
+            name='kegboard'
+        )
+
+        self.meter = models.FlowMeter.objects.create(
+            controller=self.controller,
+            port_name='flow0',
+            tap=self.tap
         )
 
         self.user = models.User.objects.create(
@@ -96,7 +105,7 @@ class CoreModelsTestCase(TestCase):
     def testDrinkAccounting(self):
         vol = units.Quantity(1200)
 
-        d = self.backend.record_drink(tap_name=self.tap.meter_name,
+        d = self.backend.record_drink(self.tap,
             ticks=1200,
             username=self.user.username,
         )
@@ -122,41 +131,41 @@ class CoreModelsTestCase(TestCase):
         self.assertEqual(models.DrinkingSession.objects.all().count(), 0)
 
         # u=1 t=0
-        self.backend.record_drink(tap_name=self.tap.meter_name,
+        self.backend.record_drink(self.tap,
             ticks=1200,
             username=u1.username,
             pour_time=base_time,
         )
         # u=2 t=0
-        self.backend.record_drink(tap_name=self.tap.meter_name,
+        self.backend.record_drink(self.tap,
             ticks=1200,
             username=u2.username,
             pour_time=base_time,
         )
 
         # u=1 t=10
-        self.backend.record_drink(tap_name=self.tap.meter_name,
+        self.backend.record_drink(self.tap,
             ticks=1200,
             username=u1.username,
             pour_time=base_time+td_10m,
         )
 
         # u=1 t=400
-        self.backend.record_drink(tap_name=self.tap.meter_name,
+        self.backend.record_drink(self.tap,
             ticks=1200,
             username=u1.username,
             pour_time=base_time+td_400m,
         )
 
         # u=2 t=490
-        self.backend.record_drink(tap_name=self.tap.meter_name,
+        self.backend.record_drink(self.tap,
             ticks=1200,
             username=u2.username,
             pour_time=base_time+td_390m,
         )
 
         # u=2 t=400
-        self.backend.record_drink(tap_name=self.tap.meter_name,
+        self.backend.record_drink(self.tap,
             ticks=1200,
             username=u2.username,
             pour_time=base_time+td_400m,

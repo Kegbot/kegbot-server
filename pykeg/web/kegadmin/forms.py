@@ -106,7 +106,7 @@ class TapForm(forms.ModelForm):
 
     class Meta:
         model = models.KegTap
-        fields = ('name', 'meter_name', 'relay_name', 'description',
+        fields = ('name', 'relay_name', 'description',
             'temperature_sensor', 'ml_per_tick')
 
     def __init__(self, *args, **kwargs):

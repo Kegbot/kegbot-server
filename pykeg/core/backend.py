@@ -108,9 +108,12 @@ class KegbotBackend:
         Returns:
             The new KegTap instance.
         """
-        tap = models.KegTap.objects.create(name=name,
-            meter_name=meter_name, relay_name=relay_name, ml_per_tick=ml_per_tick)
+        tap = models.KegTap.objects.create(name=name, relay_name=relay_name,
+            ml_per_tick=ml_per_tick)
         tap.save()
+        meter = models.FlowMeter.get_or_create_from_meter_name(meter_name)
+        meter.tap = tap
+        meter.save()
         return tap
 
     @transaction.atomic
@@ -139,7 +142,7 @@ class KegbotBackend:
         return token
 
     @transaction.atomic
-    def record_drink(self, tap_name, ticks, volume_ml=None, username=None,
+    def record_drink(self, tap, ticks, volume_ml=None, username=None,
         pour_time=None, duration=0, shout='', tick_time_series='', photo=None,
         do_postprocess=True):
         """Records a new drink against a given tap.
@@ -148,7 +151,7 @@ class KegbotBackend:
         must be active.
 
         Args:
-            tap_name: The tap's meter_name.
+            tap: A KegTap or matching meter name.
             ticks: The number of ticks observed by the flow sensor for this drink.
             volume_ml: The volume, in milliliters, of the pour.  If specifed, this
                 value is saved as the Drink's actual value.  If not specified, a
@@ -169,9 +172,7 @@ class KegbotBackend:
             The newly-created Drink instance.
         """
 
-        tap = self._get_tap_from_name(tap_name)
-        if not tap:
-            raise BackendError("Tap unknown")
+        tap = self._get_tap(tap)
         if not tap.is_active or not tap.current_keg:
             raise BackendError("No active keg at this tap")
 
@@ -381,7 +382,7 @@ class KegbotBackend:
         if temperature < min_val or temperature > max_val:
             raise ValueError('Temperature out of bounds')
 
-        sensor = self._get_sensor_form_name(sensor_name)
+        sensor = self._get_sensor_from_name(sensor_name)
         log_defaults = {
             'temp': temperature,
         }
@@ -440,8 +441,7 @@ class KegbotBackend:
         Otherwise, a new Beverage will be created.
 
         Args:
-            tap: The KegTap object to tap against, or a string matching
-                KegTap.meter_name.
+            tap: The KegTap or meter name to tap against.
             beverage: The type of beverage, as a Beverage object.
             keg_type: The type of physical keg, from keg_sizes.
             full_volume_ml: The keg's original unserved volume.  If unspecified,
@@ -459,8 +459,7 @@ class KegbotBackend:
         Returns:
             The new keg instance.
         """
-        if not isinstance(tap, models.KegTap):
-            tap = models.KegTap.objects.get(meter_name=tap)
+        tap = self._get_tap(tap)
 
         if tap.is_active():
             raise ValueError('Tap is already active, must end keg first.')
@@ -512,7 +511,7 @@ class KegbotBackend:
 
         Args:
             tap: The KegTap object to tap against, or a string matching
-                KegTap.meter_name.
+                the tap's meter name.
 
         Returns:
             The old keg.
@@ -520,8 +519,7 @@ class KegbotBackend:
         Raises:
             ValueError: if the tap is missing or already offline.
         """
-        if not isinstance(tap, models.KegTap):
-            tap = models.KegTap.objects.get(meter_name=tap)
+        tap = self._get_tap(tap)
 
         if not tap.current_keg:
             raise ValueError('Tap is already offline.')
@@ -540,14 +538,15 @@ class KegbotBackend:
 
         return keg
 
-    def _get_tap_from_name(self, tap_name):
-        """"Returns a KegTap object with meter_name matching tap_name, or None."""
+    def _get_tap(self, keg_tap_or_meter_name):
+        if isinstance(keg_tap_or_meter_name, models.KegTap):
+            return keg_tap_or_meter_name
         try:
-            return models.KegTap.objects.get(meter_name=tap_name)
-        except models.KegTap.DoesNotExist:
-            return None
+            return models.KegTap.get_from_meter_name(keg_tap_or_meter_name)
+        except models.KegTap.DoesNotExist, e:
+            raise BackendError('Invalid tap: %s: %s' % (repr(keg_tap_or_meter_name), e))
 
-    def _get_sensor_form_name(self, name, autocreate=True):
+    def _get_sensor_from_name(self, name, autocreate=True):
         """Returns the TemperatureSensor with raw_name matching name.
 
         Args:

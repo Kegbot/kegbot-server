@@ -1,6 +1,6 @@
 ### Constants
 
-# Internal version number, bumped every time "kb_upgrade" is needed.
+# Internal version number, bumped every time "kegbot upgrade" is needed.
 EPOCH = 103
 
 try:

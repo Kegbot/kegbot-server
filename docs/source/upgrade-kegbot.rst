@@ -31,7 +31,7 @@ Upgrade procedure
 
 3. Run the upgrade script::
 
-    (kb) $ kegbot kb_upgrade
+    (kb) $ kegbot upgrade
 
 4. Restart the Kegbot web server and Celery.
 

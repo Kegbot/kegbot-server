@@ -131,6 +131,24 @@ class BaseApiTestCase(TestCase):
 
         self.assertEquals(num_sessions - 1, models.DrinkingSession.objects.all().count())
 
+    def test_reassign_drink_with_photo(self):
+        keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
+                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                style_name=FAKE_BEER_STYLE)
+        self.assertIsNotNone(keg)
+        self.assertEquals(0, keg.served_volume())
+
+        drink = self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100,
+            photo='foo')
+
+        self.assertEquals(None, drink.user)
+        self.assertIsNotNone(drink.picture)
+        self.assertEquals(None, drink.picture.user)
+
+        user = self.backend.create_new_user('blort', email='blort@example.com')
+        updated_drink = self.backend.assign_drink(drink, user)
+        self.assertEquals(user, updated_drink.user)
+        self.assertEquals(user, updated_drink.picture.user)
 
     def test_keg_management(self):
         """Tests adding and removing kegs."""

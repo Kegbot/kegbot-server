@@ -56,7 +56,7 @@ class KegbotBackend:
         self.cache = KegbotCache()
 
     @transaction.atomic
-    def create_new_user(self, username, email=None, password=None, photo=None):
+    def create_new_user(self, username, email, password=None, photo=None):
         """Creates and returns a User for the given username."""
         try:
             user = models.User.objects.create(username=username, email=email)
@@ -307,9 +307,9 @@ class KegbotBackend:
         for e in drink.events.all():
             e.user = user
             e.save()
-        for p in drink.pictures.all():
-            p.user = user
-            p.save()
+        if drink.picture:
+            drink.picture.user = user
+            drink.picture.save()
 
         drink.session.Rebuild()
         stats.generate(drink)

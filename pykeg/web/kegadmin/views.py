@@ -64,6 +64,12 @@ def dashboard(request):
         if not last_checkin_time or (now - last_checkin_time) > datetime.timedelta(hours=12):
             do_checkin.delay()
 
+    email_backend = getattr(settings, 'EMAIL_BACKEND', None)
+    email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
+    email_configured = email_configured and bool(getattr(settings, 'EMAIL_FROM_ADDRESS', None))
+
+    context['email_configured'] = email_configured
+
     context['last_checkin_time'] = request.kbsite.last_checkin_time
     context['checkin'] = models.KegbotSite.get().last_checkin_response
     context['num_users'] = len(active_users)

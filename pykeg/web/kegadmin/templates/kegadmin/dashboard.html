@@ -13,13 +13,21 @@
 
 {% if DEBUG %}
 <div class="alert alert-error">
-	<h4>Warning!</h4>
-	 Kegbot Server is running in DEBUG mode.  For
-	 performance and security reasons, you should disable DEBUG mode by
-	 setting <code>DEBUG = False</code> in <code>local_settings.py</code>.
+  <h4>Warning!</h4>
+   Kegbot Server is running in DEBUG mode.  For
+   performance and security reasons, you should disable DEBUG mode by
+   setting <code>DEBUG = False</code> in <code>local_settings.py</code>.
 </div>
-{% else %}
+{% endif %}
 
+{% if not email_configured %}
+<div class="alert alert-error">
+  <h4>Warning!</h4>
+   E-mail is not properly configured; no mails will be sent.  Please
+   <a href="https://kegbot.org/docs/server/extras/">read the docs</a>
+   for more information (hint: set <code>EMAIL_BACKEND</code> and
+   <code>EMAIL_FROM_ADDRESS</code> in <code>local_settings.py</code>).
+</div>
 {% endif %}
 
 {% if checkin %}

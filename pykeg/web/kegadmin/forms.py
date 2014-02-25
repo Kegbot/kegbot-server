@@ -127,6 +127,22 @@ class DeleteTapForm(forms.Form):
         )
     )
 
+class KegForm(forms.ModelForm):
+    class Meta:
+        model = models.Keg
+        fields = ('spilled_ml', 'description', 'notes',)
+
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
+        Field('spilled_ml'),
+        Field('description'),
+        Field('notes'),
+        FormActions(
+            Submit('submit', 'Save', css_class='btn-primary'),
+        )
+    )
+
 
 class SiteSettingsForm(forms.ModelForm):
     class Meta:
@@ -192,6 +208,8 @@ class BeverageForm(forms.ModelForm):
         Field('producer'),
         Field('vintage_year'),
         Field('abv_percent'),
+        Field('original_gravity'),
+        Field('specific_gravity'),
         Field('untappd_beer_id'),
         Field('new_image'),
         FormActions(
@@ -360,3 +378,4 @@ class RecordDrinkForm(forms.Form):
         else:
             self.cleaned_data['volume_ml'] = volume
         return volume
+

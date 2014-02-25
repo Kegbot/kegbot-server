@@ -8,9 +8,14 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^settings/$', 'general_settings', name='kegadmin-main'),
 
     url(r'^beers/$', 'beverages_list', name='kegadmin-beverages'),
+    url(r'^beers/add/$', 'beverage_add', name='kegadmin-add-beverage'),
     url(r'^beers/(?P<beer_id>\d+)/$', 'beverage_detail', name='kegadmin-edit-beverage'),
 
+    url(r'^kegs/$', 'keg_list', name='kegadmin-kegs'),
+    url(r'^kegs/(?P<keg_id>\d+)/$', 'keg_detail', name='kegadmin-edit-keg'),
+
     url(r'^brewers/$', 'beverage_producer_list', name='kegadmin-beverage-producers'),
+    url(r'^brewers/add/$', 'beverage_producer_add', name='kegadmin-add-beverage-producer'),
     url(r'^brewers/(?P<brewer_id>\d+)/$', 'beverage_producer_detail', name='kegadmin-edit-beverage-producer'),
 
     url(r'^taps/$', 'tap_list', name='kegadmin-taps'),

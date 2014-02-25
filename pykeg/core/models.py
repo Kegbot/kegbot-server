@@ -396,11 +396,11 @@ class Keg(models.Model):
         help_text='Time the Keg was finished or disconnected.')
     online = models.BooleanField(default=True, editable=False,
         help_text='True if the keg is currently assigned to a tap.')
-    finished = models.BooleanField(default=True, editable=False,
+    finished = models.BooleanField(default=False, editable=False,
         help_text='True when the Keg has been exhausted or discarded.')
     description = models.CharField(max_length=256, blank=True, null=True,
         help_text='User-visible description of the Keg.')
-    spilled_ml = models.FloatField(default=0, editable=False,
+    spilled_ml = models.FloatField(default=0,
         help_text='Amount of beverage poured without an associated Drink.')
     notes = models.TextField(blank=True, null=True,
         help_text='Private notes about this keg, viewable only by admins.')

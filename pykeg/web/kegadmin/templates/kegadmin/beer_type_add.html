@@ -1,0 +1,22 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Add Beer Type | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Add Beer Type {% endblock %}
+
+{% block kegadmin-main %}
+
+<h2>Add Beer Type</h2>
+
+{% if beer_type.picture %}
+<div class="row-fluid">
+<div class="span10">
+<p><img src="{{beer_type.picture.resized.url}}"/></p>
+</div>
+</div>
+{% endif %}
+    
+{% crispy form %}
+
+{% endblock %}

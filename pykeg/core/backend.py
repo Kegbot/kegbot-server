@@ -226,6 +226,7 @@ class KegbotBackend:
 
         return d
 
+
     @transaction.atomic
     def cancel_drink(self, drink, spilled=False):
         """Permanently deletes a Drink from the system.
@@ -527,6 +528,8 @@ class KegbotBackend:
 
         keg = tap.current_keg
         keg.online = False
+        keg.end_time = timezone.now()
+        keg.finished = True
         keg.save()
 
         tap.current_keg = None

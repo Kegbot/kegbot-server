@@ -1,0 +1,42 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+{% load bootstrap_pagination %}
+
+{% block title %}Kegbot Admin: Kegs | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Kegs{% endblock %}
+
+{% block kegadmin-main %}
+
+<table class="table table-hover table-bordered">
+<thead>
+    <tr>
+        <th>Beverage</th>
+        <th>Start</th>
+        <th>End</th>
+    </tr>
+</thead>
+<tbody>
+{% for keg in kegs %}
+<tr class="clickable" data-href="{% url 'kegadmin-edit-keg' keg.id %}">
+    <td>
+        <div class="form-horizontal">
+            <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-keg' keg.id %}">Edit</a>&nbsp;&nbsp;
+            <span>{{ keg.type }}</span>
+    </td>
+    <td>{{ keg.start_time }}</td>
+    <td>
+        {% if keg.online %}
+        Online
+        {% else %}
+        {{ keg.end_time }}
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+{% bootstrap_paginate kegs %}
+
+{% endblock %}

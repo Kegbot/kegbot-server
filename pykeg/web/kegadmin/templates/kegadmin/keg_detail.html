@@ -1,0 +1,15 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Edit Keg | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Edit Keg {% endblock %}
+
+{% block kegadmin-main %}
+
+<h2>Edit Keg #{{keg.id}}: {{keg.type.name}}</h2>
+{% include "kegweb/basic-badges.html" %}
+    
+{% crispy form %}
+
+{% endblock %}

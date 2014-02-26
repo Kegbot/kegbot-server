@@ -93,7 +93,7 @@ class KegbotBackend:
 
 
     @transaction.atomic
-    def create_tap(self, name, meter_name, relay_name=None, ml_per_tick=None):
+    def create_tap(self, name, meter_name, relay_name=None, ticks_per_ml=None):
         """Creates and returns a new KegTap.
 
         Args:
@@ -102,17 +102,18 @@ class KegbotBackend:
               "kegboard.flow0".
           relay_name: If the tap is connected to a relay, this specifies its
               name, for instance, "kegboard.relay0".
-          ml_per_tick: The number of milliliters per flow meter tick on this
-              tap's meter.
+          ticks_per_ml: The number of flow meter ticks per milliliter of fluid
+              on this tap's meter.
 
         Returns:
             The new KegTap instance.
         """
-        tap = models.KegTap.objects.create(name=name, relay_name=relay_name,
-            ml_per_tick=ml_per_tick)
+        tap = models.KegTap.objects.create(name=name, relay_name=relay_name)
         tap.save()
         meter = models.FlowMeter.get_or_create_from_meter_name(meter_name)
         meter.tap = tap
+        if ticks_per_ml:
+            meter.ticks_per_ml = ticks_per_ml
         meter.save()
         return tap
 
@@ -155,8 +156,8 @@ class KegbotBackend:
             ticks: The number of ticks observed by the flow sensor for this drink.
             volume_ml: The volume, in milliliters, of the pour.  If specifed, this
                 value is saved as the Drink's actual value.  If not specified, a
-                volume is computed based on `ticks` and the KegTap's
-                `ml_per_tick` setting.
+                volume is computed based on `ticks` and the meter's
+                `ticks_per_ml` setting.
             username: The username with which to associate this Drink, or None for
                 an anonymous Drink.
             pour_time: The datetime of the drink.  If not supplied, the current
@@ -177,7 +178,10 @@ class KegbotBackend:
             raise BackendError("No active keg at this tap")
 
         if volume_ml is None:
-            volume_ml = float(ticks) * tap.ml_per_tick
+            meter = tap.current_meter()
+            if not meter:
+                raise BackendError("Tap has no meter, can't compute volume")
+            volume_ml = float(ticks) / meter.ticks_per_ml
 
         user = None
         if username:

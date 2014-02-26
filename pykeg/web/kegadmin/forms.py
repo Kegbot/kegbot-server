@@ -106,8 +106,7 @@ class TapForm(forms.ModelForm):
 
     class Meta:
         model = models.KegTap
-        fields = ('name', 'relay_name', 'description',
-            'temperature_sensor', 'ml_per_tick')
+        fields = ('name', 'relay_name', 'description', 'temperature_sensor')
 
     def __init__(self, *args, **kwargs):
         super(TapForm, self).__init__(*args, **kwargs)
@@ -142,7 +141,6 @@ class TapForm(forms.ModelForm):
         Field('meter', css_class='input-xlarge'),
         Field('relay_name', css_class='input-xlarge'),
         Field('temperature_sensor', css_class='input-xlarge'),
-        Field('ml_per_tick', css_class='input-xlarge'),
         Field('description', css_class='input-xlarge'),
         FormActions(
             Submit('submit_tap_form', 'Save Settings', css_class='btn-success'),

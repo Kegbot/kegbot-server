@@ -25,8 +25,8 @@ LOCAL_SETTINGS_SEARCH_DIRS = (
     '/usr/local/etc/kegbot',
 )
 
-# SF800 default (5400 ticks/Liter == 5.4 ticks/mL == 1/5.4 mL/tick)
-ML_PER_TICK = (1/5.4)
+# SF800 default.
+DEFAULT_TICKS_PER_ML = 5.4
 
 # Minimum session size, in milliliters, to display
 MIN_SESSION_VOLUME_DISPLAY_ML = 177  # 6 ounces

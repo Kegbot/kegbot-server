@@ -39,8 +39,10 @@ class BaseApiTestCase(TestCase):
     def test_drink_management(self):
         """Test adding drinks."""
         tap = models.KegTap.get_from_meter_name(METER_NAME)
-        tap.ml_per_tick = (1/2.2)
         tap.save()
+        meter = tap.meter
+        meter.ticks_per_ml = 2.2
+        meter.save()
         keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
                 beverage_type='beer', producer_name=FAKE_BREWER_NAME,
                 style_name=FAKE_BEER_STYLE)

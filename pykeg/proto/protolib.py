@@ -160,8 +160,10 @@ def ControllerToProto(controller, full=False):
     ret = models_pb2.Controller()
     ret.id = controller.id
     ret.name = controller.name
-    ret.model_name = controller.model_name
-    ret.serial_number = controller.serial_number
+    if controller.model_name:
+        ret.model_name = controller.model_name
+    if controller.serial_number:
+        ret.serial_number = controller.serial_number
     return ret
 
 
@@ -169,6 +171,7 @@ def ControllerToProto(controller, full=False):
 def FlowMeterToProto(flow_meter, full=False):
     ret = models_pb2.FlowMeter()
     ret.id = flow_meter.id
+    ret.name = flow_meter.meter_name()
     ret.controller.MergeFrom(ToProto(flow_meter.controller))
     ret.port_name = flow_meter.port_name
     ret.ticks_per_ml = flow_meter.ticks_per_ml
@@ -244,12 +247,17 @@ def KegTapToProto(tap, full=False):
     ret.id = tap.id
     ret.name = tap.name
     meter = tap.current_meter()
+
     if meter:
         ret.meter_name = meter.meter_name()
+        ret.ml_per_tick = 1/meter.ticks_per_ml
+        ret.meter.MergeFrom(ToProto(meter))
     else:
+        # TODO(mikey): Remove compatibility.
         ret.meter_name = 'unknown.%s' % tap.id
+        ret.ml_per_tick = 0
+
     ret.relay_name = tap.relay_name or ''
-    ret.ml_per_tick = tap.ml_per_tick
     if tap.description is not None:
         ret.description = tap.description
     if tap.current_keg:

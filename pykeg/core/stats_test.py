@@ -37,8 +37,8 @@ class StatsTestCase(TransactionTestCase):
         self.users = [self.backend.create_new_user(name, '%s@example.com' % name) for name in test_usernames]
 
         self.taps = [
-            self.backend.create_tap('tap1', 'kegboard.flow0', ml_per_tick=1/2200.0),
-            self.backend.create_tap('tap2', 'kegboard.flow1', ml_per_tick=1/2200.0),
+            self.backend.create_tap('tap1', 'kegboard.flow0', ticks_per_ml=2.2),
+            self.backend.create_tap('tap2', 'kegboard.flow1', ticks_per_ml=2.2),
         ]
 
         self.keg = self.backend.start_keg('kegboard.flow0', beverage_name='Unknown',

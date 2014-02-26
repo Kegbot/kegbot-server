@@ -348,9 +348,6 @@ class KegTap(models.Model):
         help_text='The display name for this tap, for example, "Main Tap".')
     relay_name = models.CharField(max_length=128, blank=True, null=True,
         help_text='Name of relay attached to this tap.')
-    ml_per_tick = models.FloatField(default=kb_common.ML_PER_TICK,
-        help_text='mL per flow meter tick.  Common values: %s '
-        '(SwissFlow), 0.454545454545 (Vision 2000)' % kb_common.ML_PER_TICK)
     description = models.TextField(blank=True, null=True,
         help_text='User-visible description for this tap.')
     current_keg = models.OneToOneField('Keg', blank=True, null=True,
@@ -415,6 +412,9 @@ class FlowMeter(models.Model):
     tap = models.OneToOneField(KegTap, blank=True, null=True,
         related_name='meter',
         help_text='Tap to which this meter is currently bound.')
+    ticks_per_ml = models.FloatField(default=kb_common.DEFAULT_TICKS_PER_ML,
+        help_text='Flow meter pulses per mL of fluid.  Common values: %s '
+        '(SF800), 2.2 (Vision 2000)' % kb_common.DEFAULT_TICKS_PER_ML)
 
     def meter_name(self):
         return '%s.%s' % (self.controller.name, self.port_name)

@@ -64,7 +64,6 @@ class CoreModelsTestCase(TestCase):
 
         self.tap = models.KegTap.objects.create(
             name='Test Tap',
-            ml_per_tick=(1000.0/2200.0),
             current_keg=self.keg,
         )
 
@@ -75,6 +74,7 @@ class CoreModelsTestCase(TestCase):
         self.meter = models.FlowMeter.objects.create(
             controller=self.controller,
             port_name='flow0',
+            ticks_per_ml=2.2,
             tap=self.tap
         )
 

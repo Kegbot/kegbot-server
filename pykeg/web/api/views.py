@@ -352,10 +352,15 @@ def tap_calibrate(request, meter_name):
     # but Django's support for non-POST verbs is poor (specifically wrt request
     # body/form handling).
     tap = get_tap_from_meter_name_or_404(meter_name)
+    meter = tap.current_meter()
+    if not meter:
+        raise kbapi.BadRequestError('Tap does not have a meter!')
+
     form = forms.CalibrateTapForm(request.POST)
     if form.is_valid():
-        tap.ml_per_tick = form.cleaned_data['ml_per_tick']
-        tap.save()
+        meter.ticks_per_ml = 1.0 / form.cleaned_data['ml_per_tick']
+        meter.save()
+        tap = get_tap_from_meter_name_or_404(meter_name)
     else:
         raise kbapi.BadRequestError, _form_errors(form)
     return protolib.ToProto(tap, full=True)

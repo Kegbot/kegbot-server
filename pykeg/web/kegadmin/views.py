@@ -175,6 +175,41 @@ def tap_detail(request, tap_id):
     return render_to_response('kegadmin/tap_detail.html', context_instance=context)
 
 @staff_member_required
+def keg_list(request):
+    context = RequestContext(request)
+    kegs = models.Keg.objects.all().order_by('-id')
+    paginator = Paginator(kegs, 25)
+
+    page = request.GET.get('page')
+    try:
+        kegs = paginator.page(page)
+    except PageNotAnInteger:
+        kegs = paginator.page(1)
+    except EmptyPage:
+        kegs = paginator.page(paginator.num_pages)
+
+    context['kegs'] = kegs
+    return render_to_response('kegadmin/keg_list.html', context_instance=context)
+
+@staff_member_required
+def keg_detail(request, keg_id):
+    keg = get_object_or_404(models.Keg, id=keg_id)
+
+    form = forms.KegForm(instance=keg)
+    if request.method == 'POST':
+        form = forms.KegForm(request.POST, instance=keg)
+        if form.is_valid():
+            keg = form.save()
+
+            messages.success(request, 'Keg updated.')
+            return redirect('kegadmin-kegs')
+
+    context = RequestContext(request)
+    context['keg'] = keg
+    context['form'] = form
+    return render_to_response('kegadmin/keg_detail.html', context_instance=context)
+
+@staff_member_required
 def user_list(request):
     context = RequestContext(request)
 
@@ -402,12 +437,36 @@ def beverage_detail(request, beer_id):
                 btype.save()
 
             messages.success(request, 'Beer type updated.')
+            return redirect('kegadmin-beverages')
 
     context = RequestContext(request)
     context['beer_type'] = btype
     context['form'] = form
     return render_to_response('kegadmin/beer_type_detail.html', context_instance=context)
 
+@staff_member_required
+def beverage_add(request):
+
+    form = forms.BeverageForm()
+    if request.method == 'POST':
+        form = forms.BeverageForm(request.POST)
+        if form.is_valid():
+            btype = form.save()
+            new_image = request.FILES.get('new_image')
+            if new_image:
+                pic = models.Picture.objects.create()
+                pic.image.save(new_image.name, new_image)
+                pic.save()
+                btype.picture = pic
+                btype.save()
+
+            messages.success(request, 'Beer type added.')
+            return redirect('kegadmin-beverages')
+
+    context = RequestContext(request)
+    context['beer_type'] = "new"
+    context['form'] = form
+    return render_to_response('kegadmin/beer_type_add.html', context_instance=context)
 
 @staff_member_required
 def beverage_producer_list(request):
@@ -436,11 +495,36 @@ def beverage_producer_detail(request, brewer_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Brewer updated.')
+            return redirect('kegadmin-beverage-producers')
 
     context = RequestContext(request)
     context['brewer'] = brewer
     context['form'] = form
     return render_to_response('kegadmin/brewer_detail.html', context_instance=context)
+
+@staff_member_required
+def beverage_producer_add(request):
+    
+    form = forms.BeverageProducerForm()
+    if request.method == 'POST':
+        form = forms.BeverageProducerForm(request.POST)
+        if form.is_valid():
+            btype = form.save()
+            new_image = request.FILES.get('new_image')
+            if new_image:
+                pic = models.Picture.objects.create()
+                pic.image.save(new_image.name, new_image)
+                pic.save()
+                btype.picture = pic
+                btype.save()
+
+            messages.success(request, 'Brewer added.')
+            return redirect('kegadmin-beverage-producers')
+
+    context = RequestContext(request)
+    context['brewer'] = "new"
+    context['form'] = form
+    return render_to_response('kegadmin/brewer_add.html', context_instance=context)
 
 @staff_member_required
 def autocomplete_beverage(request):

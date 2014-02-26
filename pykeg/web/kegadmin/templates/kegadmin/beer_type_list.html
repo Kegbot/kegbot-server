@@ -28,12 +28,11 @@
     <td>{{ beverage.style }}</td>
 </tr>
 {% endfor %}
-<!-- <tr class="info">
-    <td colspan="4" style="text-align:right;">
-        <a class="btn btn-success"
-            href=""><i class="icon-plus-sign icon-white"></i> Add New Type</a>
+<tr class="info">
+    <td colspan="3" style="text-align:right;">
+        <a class ="btn btn-small btn-success pull-right" href="{% url 'kegadmin-add-beverage' %}"><i class="icon-plus icon-white"></i> Add New Beer Type</a>
     </td>
-</tr> -->
+</tr>
 </tbody>
 </table>
 {% bootstrap_paginate beverages %}

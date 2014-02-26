@@ -21,6 +21,7 @@
 import cStringIO
 import datetime
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
@@ -57,8 +58,8 @@ def dashboard(request):
 
     # Hack: Schedule an update checkin if it looks like it's been a while.
     # This works around sites that are not running celerybeat.
-    settings = models.SiteSettings.get()
-    if settings.check_for_updates:
+    site_settings = models.SiteSettings.get()
+    if site_settings.check_for_updates:
         now = timezone.now()
         last_checkin_time = request.kbsite.last_checkin_time
         if not last_checkin_time or (now - last_checkin_time) > datetime.timedelta(hours=12):

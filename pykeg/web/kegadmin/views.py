@@ -158,6 +158,17 @@ def tap_detail(request, tap_id):
             else:
                 messages.error(request, 'Please enter a valid volume and user.')
 
+        elif 'submit_record_spill' in request.POST:
+            record_drink_form = forms.RecordDrinkForm(request.POST)
+            if record_drink_form.is_valid():
+                user = record_drink_form.cleaned_data.get('user')
+                volume_ml = record_drink_form.cleaned_data.get('volume_ml')
+                d = request.backend.record_drink(tap, ticks=0, username=user,
+                    volume_ml=volume_ml, spilled=True)
+                messages.success(request, 'Spill recorded.')
+            else:
+                messages.error(request, 'Please enter a valid volume.')
+
         else:
             messages.warning(request, 'No form data was found. Bug?')
 
@@ -308,6 +319,17 @@ def drink_edit(request, drink_id):
         if form.is_valid():
             request.backend.cancel_drink(drink)
             messages.success(request, 'Drink %s was cancelled.' % drink_id)
+            return redirect(old_keg.get_absolute_url())
+        else:
+            messages.error(request, 'Invalid request')
+            return redirect(drink.get_absolute_url())
+
+    if 'submit_spill' in request.POST:
+        form = forms.CancelDrinkForm(request.POST)
+        old_keg = drink.keg
+        if form.is_valid():
+            request.backend.cancel_drink(drink, spilled=True)
+            messages.success(request, 'Drink %s was spilled.' % drink_id)
             return redirect(old_keg.get_absolute_url())
         else:
             messages.error(request, 'Invalid request')

@@ -33,14 +33,15 @@ VOLUMES_ML = {
     EURO_HALF_BARREL: 50000.0,
     QUARTER_BARREL: 29336.9,
     EURO: 100000.0,
-    HALF_BARREL: 58673.9
+    HALF_BARREL: 58673.9,
+    OTHER: 0.0
 }
 
 DESCRIPTIONS = {
     CORNY: 'Corny Keg (5 gal)',
     SIXTH_BARREL: 'Sixth Barrel (5.17 gal)',
     EURO_HALF_BARREL: 'European Half Barrel (50 L)',
-    QUARTER_BARREL: 'Quarter Barrel (7.75)',
+    QUARTER_BARREL: 'Quarter Barrel (7.75 gal)',
     EURO: 'European Full Barrel (100 L)',
     HALF_BARREL: 'Half Barrel (15.5 gal)',
     OTHER: 'Other',

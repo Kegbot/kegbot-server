@@ -11,7 +11,7 @@
 <table class="table table-striped table-hover">
 <tr>
 	<th>Keg</th>
-	<td><a href="{% url 'kb-keg' current_keg.id %}">{{ current_keg }}</a></td>
+	<td><a href="{% url 'kegadmin-edit-keg' current_keg.id %}">{{ current_keg }}</a></td>
 </tr>
 <tr>
 	<th>Tapped</th>
@@ -49,6 +49,31 @@
 </div>
 </form>
 
+<h2>Add Spill</h2>
+<p>
+	Manually record a spill using the form below. Spills are
+	<em>not</em> attributed to any user and are <em>not</em> saved as an event.
+	You may also update the keg's total spilled volume on the
+	<a href="{% url 'kegadmin-edit-keg' current_keg.id %}">keg admin page</a>.
+</p>
+
+<form action="" class="user-select" method="POST">{% csrf_token %}
+<div class="input-prepend input-append">
+{% if kbsite.settings.volume_display_units == 'metric' %}
+  <input type="hidden" name="units" value="mL">
+  <input class="span4" type="text" name="volume" placeholder="123">
+  <span class="add-on">mL</span>
+{% else %}
+  <input type="hidden" name="units" value="oz">
+  <input class="span4" type="text" name="volume" placeholder="1.23">
+  <span class="add-on">oz</span>
+{% endif %}
+<button class="btn btn-info" name="submit_record_spill" type="submit">
+  <i class="icon-plus-sign icon-white"></i> Record
+</button>
+</div>
+</form>
+
 {% else %}
 <h2>Empty Tap, Activate Keg</h2>
 {% crispy activate_keg_form %}
@@ -63,4 +88,21 @@
 {% crispy delete_tap_form %}
 
 
+{% endblock %}
+
+{% block kb-extrajs %}
+<script type="text/javascript">
+$(document).ready(function () {
+	$('#div_id_full_volume_ml').hide();
+    $('#id_keg_size').change(function () {
+    	var choice = $(this).val();
+    	if (choice=='other') {
+        	$('#div_id_full_volume_ml').show();
+        }
+        else {
+        	$('#div_id_full_volume_ml').hide();
+        }
+    })
+});
+</script>
 {% endblock %}

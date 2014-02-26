@@ -18,6 +18,8 @@ class ChangeKegForm(forms.Form):
         initial=keg_sizes.HALF_BARREL,
         required=True)
 
+    full_volume_ml = forms.FloatField(label='Initial Volume (mL)', initial=0.0, 
+        required=False, help_text='Keg\'s Initial Volume in milliliters')
 
     beer_name = forms.CharField(required=False)  # legacy
     brewer_name = forms.CharField(required=False)  # legacy
@@ -38,6 +40,7 @@ class ChangeKegForm(forms.Form):
         Field('producer_id', type='hidden'),
         Field('style_name', css_class='input-xlarge'),
         Field('keg_size', css_class='input-xlarge'),
+        Field('full_volume_ml'),
         FormActions(
             Submit('submit_change_keg_form', 'Activate Keg', css_class='btn-primary'),
         )
@@ -69,10 +72,20 @@ class ChangeKegForm(forms.Form):
         if tap.is_active():
             b.end_keg(tap)
 
+        keg_size = self.cleaned_data.get('keg_size')
+        full_volume_ml = self.cleaned_data.get('full_volume_ml')
+        
+        if keg_size != 'other':
+            full_volume_ml = None
+        else:
+            full_volume_ml = full_volume_ml
+
+
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
         keg = b.start_keg(tap, beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
-            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'])
+            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'], 
+            full_volume_ml=full_volume_ml)
 
         if cd.get('description'):
             keg.description = cd['description']

@@ -30,6 +30,30 @@
          </form>
     </div>
 </div>
+
+<div id="spillModal" class="modal hide fade" tabindex="-1"
+    role="dialog" aria-labelledby="cancelDialogLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="cancelDialogLabel">Mark Drink {{ drink.id }} as Spilled?</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            Are you sure you want to spill <b>Drink {{ drink.id }}</b>{% if drink.user %} by <b>{{ drink.user }}</b>{% endif %}?
+        </p>
+        <p>
+            Spilling the drink will <b>immediately delete the drink and all data about it</b>, including
+            any pictures recorded during the pour.  This action cannot be undone.
+        </p>
+    </div>
+    <div class="modal-footer">
+         <form action="{% url "kegadmin-edit-drink" drink.id %}" method="POST">{% csrf_token %}
+         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+             <input type="submit" name="submit_spill"
+                class="btn btn-warning" value="Spill Drink"/>
+         </form>
+    </div>
+</div>
 {% endif %}
 
 <div class="row-fluid">
@@ -113,6 +137,8 @@
           <button class="btn" type="submit" name="submit_reassign">
             <i class="icon-user"></i> {% if drink.user %}Reassign{% else %}Assign{% endif %}
           </button>
+          <a href="#spillModal" role="button" class="btn btn-warning" data-toggle="modal">
+            <i class="icon-minus icon-white"></i> Spill</a>
           <a href="#cancelModal" role="button" class="btn btn-danger" data-toggle="modal">
             <i class="icon-trash icon-white"></i> Delete</a>
         </div>

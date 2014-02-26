@@ -145,7 +145,7 @@ class KegbotBackend:
     @transaction.atomic
     def record_drink(self, tap, ticks, volume_ml=None, username=None,
         pour_time=None, duration=0, shout='', tick_time_series='', photo=None,
-        do_postprocess=True):
+        do_postprocess=True, spilled=False):
         """Records a new drink against a given tap.
 
         The tap must have a Keg assigned to it (KegTap.current_keg), and the keg
@@ -168,6 +168,8 @@ class KegbotBackend:
             tick_time_series: Vector of flow update data, used for diagnostic
                 purposes.
             do_postprocess: Set to False during bulk inserts.
+            spilled: If drink is recorded as spill, the volume is added to spilled_ml
+                and the "drink" is not saved as an event.
 
         Returns:
             The newly-created Drink instance.
@@ -203,33 +205,38 @@ class KegbotBackend:
                 self._logger.warning('Time series invalid, ignoring. Error was: %s' % e)
                 tick_time_series = ''
 
-        d = models.Drink(ticks=ticks, keg=keg, user=user,
-            volume_ml=volume_ml, time=pour_time, duration=duration,
-            shout=shout, tick_time_series=tick_time_series)
-        models.DrinkingSession.AssignSessionForDrink(d)
-        d.save()
+        if spilled:
+            keg.spilled_ml += volume_ml
+            keg.save(update_fields=['spilled_ml'])
 
-        keg.served_volume_ml += volume_ml
-        keg.save(update_fields=['served_volume_ml'])
-
-        self.cache.update_generation()
-
-        if photo:
-            pic = models.Picture.objects.create(
-                image=photo,
-                user=d.user,
-                keg=d.keg,
-                session=d.session
-            )
-            d.picture = pic
+        else:
+            d = models.Drink(ticks=ticks, keg=keg, user=user,
+                volume_ml=volume_ml, time=pour_time, duration=duration,
+                shout=shout, tick_time_series=tick_time_series)
+            models.DrinkingSession.AssignSessionForDrink(d)
             d.save()
 
-        if do_postprocess:
-            stats.generate(d)
-            events = models.SystemEvent.build_events_for_drink(d)
-            tasks.schedule_tasks(events)
+            keg.served_volume_ml += volume_ml
+            keg.save(update_fields=['served_volume_ml'])
 
-        return d
+            self.cache.update_generation()
+
+            if photo:
+                pic = models.Picture.objects.create(
+                    image=photo,
+                    user=d.user,
+                    keg=d.keg,
+                    session=d.session
+                )
+                d.picture = pic
+                d.save()
+
+            if do_postprocess:
+                stats.generate(d)
+                events = models.SystemEvent.build_events_for_drink(d)
+                tasks.schedule_tasks(events)
+
+            return d
 
 
     @transaction.atomic
@@ -489,6 +496,8 @@ class KegbotBackend:
             raise ValueError('Unrecognized keg type: %s' % keg_type)
         if full_volume_ml is None:
             full_volume_ml = keg_sizes.VOLUMES_ML[keg_type]
+        else:
+            full_volume_ml = full_volume_ml
 
         if not when:
             when = timezone.now()

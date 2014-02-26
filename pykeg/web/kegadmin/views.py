@@ -98,13 +98,11 @@ def tap_list(request):
 @staff_member_required
 def add_tap(request):
     context = RequestContext(request)
-    form = forms.TapForm(site=request.kbsite)
+    form = forms.TapForm()
     if request.method == 'POST':
-        form = forms.TapForm(request.POST, site=request.kbsite)
+        form = forms.TapForm(request.POST)
         if form.is_valid():
-            new_tap = form.save(commit=False)
-            new_tap.site = request.kbsite
-            new_tap.save()
+            new_tap = form.save()
             messages.success(request, 'Tap created.')
             return redirect('kegadmin-taps')
     context['form'] = form
@@ -116,7 +114,7 @@ def tap_detail(request, tap_id):
 
     record_drink_form = forms.RecordDrinkForm()
     activate_keg_form = forms.ChangeKegForm()
-    tap_settings_form = forms.TapForm(instance=tap, site=request.kbsite)
+    tap_settings_form = forms.TapForm(instance=tap)
 
     if request.method == 'POST':
         if 'submit_change_keg_form' in request.POST:
@@ -127,11 +125,11 @@ def tap_detail(request, tap_id):
                 return redirect('kegadmin-taps')
 
         elif 'submit_tap_form' in request.POST:
-            tap_settings_form = forms.TapForm(request.POST, instance=tap, site=request.kbsite)
+            tap_settings_form = forms.TapForm(request.POST, instance=tap)
             if tap_settings_form.is_valid():
                 tap_settings_form.save()
                 messages.success(request, 'Tap settings saved.')
-                tap_settings_form = forms.TapForm(instance=tap, site=request.kbsite)
+                tap_settings_form = forms.TapForm(instance=tap)
 
         elif 'submit_delete_tap_form' in request.POST:
             delete_form = forms.DeleteTapForm(request.POST)
@@ -393,7 +391,6 @@ def add_token(request):
         if form.is_valid():
             instance = form.save(commit=False)
             instance.user = form.cleaned_data['user']
-            instance.site = request.kbsite
             instance.save()
             messages.success(request, 'Token created.')
             return redirect('kegadmin-tokens')

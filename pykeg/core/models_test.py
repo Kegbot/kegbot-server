@@ -205,3 +205,10 @@ class CoreModelsTestCase(TestCase):
         self.assertEqual(all_groups[1].start_time, base_time + td_390m)
         self.assertEqual(all_groups[1].end_time, base_time + td_400m + SESSION_DELTA)
         self.assertEqual(all_groups[1].user_chunks.all().count(), 2)
+
+    def test_pic_filename(self):
+        basename = '1/2/3-4567 89.jpg'
+        now = datetime.datetime(2011, 02, 03)
+        uuid_str = 'abcdef'
+        uploaded_name = models._pics_file_name(None, basename, now, uuid_str)
+        self.assertEqual('pics/20110203000000-abcdef.jpg', uploaded_name)

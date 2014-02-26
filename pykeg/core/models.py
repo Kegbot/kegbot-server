@@ -1089,11 +1089,14 @@ class SystemEvent(models.Model):
         return events
 
 
-def _pics_file_name(instance, filename):
-    date_str = timezone.now().strftime('%Y%m%d%H%M%S')
-    uuid_str = str(uuid4()).replace('-', '')
-    ext = os.path.basename(filename)[1]
-    new_filename = '%s-%s.%s' % (date_str, uuid_str, ext)
+def _pics_file_name(instance, filename, now=None, uuid_str=None):
+    if not now:
+        now = timezone.now()
+    if not uuid_str:
+        uuid_str = str(uuid4()).replace('-', '')
+    date_str = now.strftime('%Y%m%d%H%M%S')
+    ext = os.path.splitext(filename)[1]
+    new_filename = '%s-%s%s' % (date_str, uuid_str, ext)
 
     return os.path.join('pics', new_filename)
 

@@ -193,19 +193,19 @@ def keg_list(request):
 
 @staff_member_required
 def keg_detail(request, keg_id):
-    btype = get_object_or_404(models.Keg, id=keg_id)
+    keg = get_object_or_404(models.Keg, id=keg_id)
 
-    form = forms.KegForm(instance=btype)
+    form = forms.KegForm(instance=keg)
     if request.method == 'POST':
-        form = forms.KegForm(request.POST, instance=btype)
+        form = forms.KegForm(request.POST, instance=keg)
         if form.is_valid():
-            btype = form.save()
+            keg = form.save()
 
             messages.success(request, 'Keg updated.')
             return redirect('kegadmin-kegs')
 
     context = RequestContext(request)
-    context['keg'] = btype
+    context['keg'] = keg
     context['form'] = form
     return render_to_response('kegadmin/keg_detail.html', context_instance=context)
 

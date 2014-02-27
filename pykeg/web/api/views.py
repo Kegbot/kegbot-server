@@ -90,6 +90,24 @@ def get_drink(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
     return protolib.ToProto(drink, full=True)
 
+@auth_required
+def all_controllers(request):
+    return models.Controller.objects.all()
+
+@auth_required
+def get_controller(request, contoller_id):
+    controller = get_object_or_404(models.Controller, id=contoller_id)
+    return protolib.ToProto(controller, full=True)
+
+@auth_required
+def all_flow_meters(request):
+    return models.FlowMeter.objects.all()
+
+@auth_required
+def get_flow_meter(request, flow_meter_id):
+    meter = get_object_or_404(models.Controller, id=flow_meter_id)
+    return protolib.ToProto(meter, full=True)
+
 @csrf_exempt
 @auth_required
 def pictures(request, drink_id):

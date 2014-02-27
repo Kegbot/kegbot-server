@@ -11,17 +11,23 @@
 <table class="table table-hover table-bordered">
 <thead>
     <tr>
+        <th>#</th>
         <th>Beverage</th>
+        <th>Size</th>
         <th>Status</th>
     </tr>
 </thead>
 <tbody>
 {% for keg in kegs %}
 <tr class="clickable" data-href="{% url 'kegadmin-edit-keg' keg.id %}">
+    <td>{{ keg.id }}</td>
     <td>
         <div class="form-horizontal">
             <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-keg' keg.id %}">Edit</a>&nbsp;&nbsp;
             <span>{{ keg.type }}</span>
+    </td>
+    <td>
+        {{ keg.keg_type_description }}
     </td>
     <td>
         {% include 'kegadmin/includes/keg-status-label.html' %}
@@ -29,7 +35,7 @@
 </tr>
 {% endfor %}
 <tr class="info">
-    <td colspan="3" style="text-align:right;">
+    <td colspan="4" style="text-align:right;">
         <a class="btn btn-small btn-success"
             href="{% url 'kegadmin-add-keg' %}"><i class="icon-plus icon-white"></i> Add Keg</a>
     </td>

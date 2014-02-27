@@ -510,6 +510,9 @@ class Keg(models.Model):
             end = self.end_time
         return end - self.start_time
 
+    def keg_type_description(self):
+        return keg_sizes.get_description(self.keg_type)
+
     def is_empty(self):
         return float(self.remaining_volume_ml()) <= 0
 

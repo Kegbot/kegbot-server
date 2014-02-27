@@ -59,3 +59,6 @@ def find_closest_keg_size(volume_ml, tolerance_ml=100.0):
         if diff <= tolerance_ml:
             return size_name
     return OTHER
+
+def get_description(keg_type):
+    return DESCRIPTIONS.get(keg_type, 'Unknown')

@@ -30,6 +30,7 @@ from django.views.decorators.cache import never_cache
 
 from pykeg.core import defaults
 from pykeg.core import checkin
+from pykeg.core import models
 
 from .forms import AdminUserForm
 from .forms import CreateOrImportForm
@@ -54,44 +55,21 @@ def start(request):
 
 @setup_view
 @never_cache
-def create_or_import(request):
-    context = RequestContext(request)
-
-    if request.method == 'GET':
-        # Check for updates.
-        try:
-            context['checkin'] = checkin.checkin(timeout=3.0)
-        except (checkin.CheckinError, Exception):
-            context['checkin'] = {}
-
-    form = CreateOrImportForm(initial={'mode': 'create'})
-    if request.method == 'POST':
-        form = CreateOrImportForm(request.POST)
-        if form.is_valid():
-            if form.cleaned_data['mode'] == 'create':
-                try:
-                    defaults.set_defaults()
-                    messages.success(request, 'Started new site!')
-                except defaults.AlreadyInstalledError:
-                    messages.warning(request, 'Site already installed, proceeding.')
-                return redirect('setup_site_settings')
-            else:
-                messages.error(request, 'Sorry, imports are not yet supported.')
-    context['form'] = form
-    print ' '.join(str(type(d)) for d in context.dicts)
-    return render_to_response('setup_wizard/create_or_import.html', context_instance=context)
-
-@setup_view
-@never_cache
 def site_settings(request):
     context = RequestContext(request)
-    form = MiniSiteSettingsForm(instance=request.kbsite.settings)
     if request.method == 'POST':
         form = MiniSiteSettingsForm(request.POST, instance=request.kbsite.settings)
         if form.is_valid():
             form.save()
             messages.success(request, 'Settings saved!')
             return redirect('setup_admin')
+    else:
+        try:
+            defaults.set_defaults()
+            messages.success(request, 'Started new site!')
+        except defaults.AlreadyInstalledError:
+            messages.warning(request, 'Site already installed, proceeding.')
+        form = MiniSiteSettingsForm(instance=models.SiteSettings.get())
     context['form'] = form
     return render_to_response('setup_wizard/site_settings.html', context_instance=context)
 

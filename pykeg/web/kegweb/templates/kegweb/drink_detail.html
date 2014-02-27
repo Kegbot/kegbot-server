@@ -133,7 +133,7 @@
 <h3>Manager Controls</h3>
       <form action="{% url "kegadmin-edit-drink" drink.id %}" class="user-select" method="POST">{% csrf_token %}
         <div class="input-append">
-          <input class="span8" name="username" type="text" placeholder="username" />
+          <input class="span6" name="username" type="text" placeholder="username" />
           <button class="btn" type="submit" name="submit_reassign">
             <i class="icon-user"></i> {% if drink.user %}Reassign{% else %}Assign{% endif %}
           </button>

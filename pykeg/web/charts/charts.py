@@ -109,19 +109,14 @@ def chart_volume_by_weekday(stats):
         volmap[int(weekday)] += to_pints(vol)
     return _weekday_chart_common(volmap)
 
-def chart_user_session_by_weekday(user):
-    """Shows a user's total session by volume by day of week."""
-    if not isinstance(user, models.User):
-        raise ChartError('Bad value for user')
-    chunks = user.user_session_chunks.all()
+def chart_sessions_by_weekday(stats):
+    data = stats.get('volume_by_day_of_week', {})
     weekdays = [0] * 7
-    for chunk in chunks:
-        # Convert from Sunday = 6 to Sunday = 0
-        weekday = (chunk.start_time.weekday() + 1) % 7
-        weekdays[weekday] += to_pints(chunk.volume_ml)
+    for weekday, volume_ml in data.iteritems():
+        weekdays[int(weekday)] += to_pints(volume_ml)
     return _weekday_chart_common(weekdays)
 
-def chart_sessions_by_volume(sessions):
+def chart_sessions_by_volume(stats):
     buckets = [0]*6
     labels = [
       '<1',
@@ -131,8 +126,9 @@ def chart_sessions_by_volume(sessions):
       '4.0-4.9',
       '5+'
     ]
-    for sess in sessions:
-        pints = round(to_pints(sess.volume_ml), 1)
+    volmap = stats.get('volume_by_session', {})
+    for session_volume in volmap.values():
+        pints = round(to_pints(session_volume), 1)
         intval = int(pints)
         if intval >= len(buckets):
             buckets[-1] += 1

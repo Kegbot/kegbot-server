@@ -63,6 +63,7 @@ class StatsTestCase(TransactionTestCase):
             u'volume_by_day_of_week': {u'1': 100.0},
             u'greatest_volume_id': d.id,
             u'volume_by_drinker': {u'user1': 100.0},
+            u'volume_by_session': {u'1': 100.0},
             u'last_drink_id': d.id,
             u'sessions_count': 1,
             u'average_volume_ml': 100.0,
@@ -86,10 +87,28 @@ class StatsTestCase(TransactionTestCase):
         expected.volume_by_day_of_week[u'2'] = 200.0
         expected.volume_by_year[u'2012'] = 300.0
         expected.sessions_count = 2
-        print 'EXPECTED'
+        expected.volume_by_session = {u'1': 100.0, u'2': 200.0}
+
+        self.assertDictEqual(expected, stats)
+
+        d = self.backend.record_drink('kegboard.flow0', ticks=300,
+            volume_ml=300, username='user2', pour_time=now)
+
+        stats = site.GetStats()
+        expected.total_pours = 3
+        expected.greatest_volume_ml = 300.0
+        expected.greatest_volume_id = d.id
+        expected.volume_by_drinker[u'user2'] = 500.0
+        expected.last_drink_id = d.id
+        expected.average_volume_ml = 200.0
+        expected.total_volume_ml = 600.0
+        expected.volume_by_day_of_week[u'2'] = 500.0
+        expected.volume_by_year[u'2012'] = 600.0
+        expected.sessions_count = 2
+        expected.volume_by_session = {u'1': 100.0, u'2': 500.0}
+
         import pprint
-        pprint.pprint(expected)
-        print '----'
         print 'ACTUAL'
         pprint.pprint(stats)
+
         self.assertDictEqual(expected, stats)

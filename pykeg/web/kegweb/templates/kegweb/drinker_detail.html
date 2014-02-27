@@ -104,12 +104,12 @@
     <div class="kb-contentbox">
       <p>
         <b>total pints, by day of week</b><br>
-        {% chart sessions_weekday drinker 350 100 %}
+        {% chart sessions_by_weekday stats 350 100 %}
       </p>
 
       <p>
         <b>all sessions, by pints per session</b><br>
-        {% chart sessions_by_volume chunks 350 100 %}
+        {% chart sessions_by_volume stats 350 100 %}
       </p>
       {% endif %}
     </div>

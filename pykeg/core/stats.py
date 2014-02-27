@@ -203,6 +203,19 @@ class StatsBuilder:
             previous[u] = float(orig + self.drink.volume_ml)
             return previous
 
+    @stat('volume_by_session')
+    def VolumeBySession(self, previous):
+        if not previous:
+            volmap = {}
+            for drink in self.drinks:
+                session_id = str(drink.session.id)
+                volmap[session_id] = volmap.get(session_id, 0) + drink.volume_ml
+            return volmap
+        else:
+            session_id = str(self.drink.session.id)
+            previous[session_id] = previous.get(session_id, 0) + self.drink.volume_ml
+            return previous
+
 
 def invalidate(drink):
     """Clears all statistics.

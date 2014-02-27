@@ -175,6 +175,9 @@ class KegForm(forms.ModelForm):
 
 
 class SiteSettingsForm(forms.ModelForm):
+    guest_image = forms.ImageField(required=False,
+        help_text='Custom image for the "guest" user.')
+
     class Meta:
         model = models.SiteSettings
         fields = (
@@ -188,7 +191,6 @@ class SiteSettingsForm(forms.ModelForm):
             'session_timeout_minutes',
             'google_analytics_id',
             'guest_name',
-            'guest_image',
             'default_user',
             'registration_allowed',
             'registration_confirmation',

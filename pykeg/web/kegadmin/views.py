@@ -86,6 +86,14 @@ def general_settings(request):
         form = forms.SiteSettingsForm(request.POST, instance=settings)
         if form.is_valid():
             form.save()
+            guest_image = request.FILES.get('guest_image')
+            if guest_image:
+                pic = models.Picture.objects.create()
+                pic.image.save(guest_image.name, guest_image)
+                pic.save()
+                settings = models.SiteSettings.get()
+                settings.guest_image = pic
+                settings.save()
             messages.success(request, 'Site settings were successfully updated.')
     context['settings_form'] = form
     return render_to_response('kegadmin/index.html', context_instance=context)

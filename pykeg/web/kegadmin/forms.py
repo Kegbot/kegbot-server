@@ -188,12 +188,10 @@ class KegForm(forms.Form):
     style_name = forms.CharField(required=True, label='Style',
       help_text='Example: Pale Ale, Stout, etc.')
 
-    TEXTAREA = forms.Textarea()
-
     description = forms.CharField(max_length=256, label='Description', 
-        widget=TEXTAREA, required=False, 
+        widget=forms.Textarea(), required=False, 
         help_text='User-visible description of the Keg.')
-    notes = forms.CharField(label='Notes', required=False, widget=TEXTAREA,
+    notes = forms.CharField(label='Notes', required=False, widget=forms.Textarea(),
         help_text='Private notes about this keg, viewable only by admins.')
 
     helper = FormHelper()
@@ -235,26 +233,22 @@ class KegForm(forms.Form):
         if not self.is_valid():
             raise ValueError('Form is not valid.')
         b = backend.KegbotBackend()
-
         keg_size = self.cleaned_data.get('keg_size')
-        full_volume_ml = self.cleaned_data.get('full_volume_ml')
         notes = self.cleaned_data.get('notes')
         description = self.cleaned_data.get('description')
-        
         if keg_size != 'other':
             full_volume_ml = None
         else:
-            full_volume_ml = full_volume_ml
-
-
+            full_volume_ml = self.cleaned_data.get('full_volume_ml')
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
         keg = b.add_keg(beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
             beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'], 
             full_volume_ml=full_volume_ml, notes=cd['notes'], description=cd['description'])
+        return keg
 
 
-class KegFormSubset(forms.ModelForm):
+class EditKegForm(forms.ModelForm):
     class Meta:
         model = models.Keg
         fields = ('spilled_ml', 'description', 'notes',)

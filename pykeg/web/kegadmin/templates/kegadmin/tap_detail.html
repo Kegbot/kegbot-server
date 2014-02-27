@@ -76,7 +76,7 @@
 
 {% else %}
   <h2>Empty Tap, Activate Keg</h2>
-  {% if keg_list %}
+  {% if available_kegs %}
     <button id="show_create" class="btn btn-info">Create New Keg</button>
     <button id="show_list" class="btn btn-info">Choose Untapped Keg</button>
 
@@ -89,7 +89,7 @@
       <form action="" class="user-select" method="POST">{% csrf_token %}
         <input type="hidden" name="tap_id" value="{{tap.id}}">
         <select name="keg_id" style="width:400px;">
-          {% for keg in keg_list %}
+          {% for keg in available_kegs %}
             <option value="{{keg.id}}">{{keg}}</option>
           {% endfor %}
         </select>

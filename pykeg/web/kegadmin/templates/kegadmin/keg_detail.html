@@ -8,13 +8,7 @@
 {% block kegadmin-main %}
 
 <h2>Edit Keg #{{keg.id}}: {{keg.type.name}}
-    {% if not keg.online and not keg.finished %}
-        <button class="btn btn-success">Untapped</button>
-    {% elif keg.online and not keg.finished %}
-        <button class="btn btn-info">Online</button>
-    {% else %}
-        <button class="btn btn-danger">Kicked</button>
-    {% endif %}
+{% include 'kegadmin/includes/keg-status-label.html' %}
 </h2>
 <table class="table table-striped table-bordered">
 <tbody>

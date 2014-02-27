@@ -24,13 +24,7 @@
             <span>{{ keg.type }}</span>
     </td>
     <td>
-        {% if not keg.online and not keg.finished %}
-            <button class="btn btn-small btn-success">Untapped</button>
-        {% elif keg.online and not keg.finished %}
-            <button class="btn btn-small btn-info">Online</button>
-        {% else %}
-            <button class="btn btn-small btn-danger">Kicked</button>
-        {% endif %}
+        {% include 'kegadmin/includes/keg-status-label.html' %}
     </td>
 </tr>
 {% endfor %}

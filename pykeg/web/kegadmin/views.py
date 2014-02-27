@@ -120,7 +120,7 @@ def add_tap(request):
 @staff_member_required
 def tap_detail(request, tap_id):
     tap = get_object_or_404(models.KegTap, id=tap_id)
-    keg_list = models.Keg.objects.filter(online=False, finished=False).order_by('id')
+    available_kegs = models.Keg.objects.filter(online=False, finished=False).order_by('id')
 
     record_drink_form = forms.RecordDrinkForm()
     activate_keg_form = forms.ChangeKegForm()
@@ -193,7 +193,7 @@ def tap_detail(request, tap_id):
     context = RequestContext(request)
     context['tap'] = tap
     context['current_keg'] = tap.current_keg
-    context['keg_list'] = keg_list
+    context['available_kegs'] = available_kegs
     context['activate_keg_form'] = activate_keg_form
     context['record_drink_form'] = record_drink_form
     context['end_keg_form'] = end_keg_form
@@ -222,9 +222,9 @@ def keg_list(request):
 def keg_detail(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
 
-    form = forms.KegFormSubset(instance=keg)
+    form = forms.EditKegForm(instance=keg)
     if request.method == 'POST':
-        form = forms.KegFormSubset(request.POST, instance=keg)
+        form = forms.EditKegForm(request.POST, instance=keg)
         if form.is_valid():
             keg = form.save()
 
@@ -248,7 +248,7 @@ def keg_add(request):
                 return redirect('kegadmin-kegs')
 
     context = RequestContext(request)
-    context['keg'] = "new"
+    context['keg'] = 'new'
     context['form'] = add_keg_form
     return render_to_response('kegadmin/keg_add.html', context_instance=context)
 
@@ -517,7 +517,7 @@ def beverage_add(request):
             return redirect('kegadmin-beverages')
 
     context = RequestContext(request)
-    context['beer_type'] = "new"
+    context['beer_type'] = 'new'
     context['form'] = form
     return render_to_response('kegadmin/beer_type_add.html', context_instance=context)
 
@@ -575,7 +575,7 @@ def beverage_producer_add(request):
             return redirect('kegadmin-beverage-producers')
 
     context = RequestContext(request)
-    context['brewer'] = "new"
+    context['brewer'] = 'new'
     context['form'] = form
     return render_to_response('kegadmin/brewer_add.html', context_instance=context)
 

@@ -496,8 +496,6 @@ class KegbotBackend:
             raise ValueError('Unrecognized keg type: %s' % keg_type)
         if full_volume_ml is None:
             full_volume_ml = keg_sizes.VOLUMES_ML[keg_type]
-        else:
-            full_volume_ml = full_volume_ml
 
         if not when:
             when = timezone.now()
@@ -505,6 +503,35 @@ class KegbotBackend:
         keg = models.Keg.objects.create(type=beverage, keg_type=keg_type,
                 online=True, full_volume_ml=full_volume_ml,
                 start_time=when)
+
+        return self.attach_keg(tap, keg)
+
+    @transaction.atomic
+    def attach_keg(self, tap, keg):
+        """Activates a new keg at the given tap (with existing choices).
+
+        The tap must be inactive (tap.current_keg == None), otherwise a
+        ValueError will be thrown.
+
+        Since the keg already exists in the database, it is assumed that
+        "add_keg" took care of all the error conditions and checking.
+
+        Args:
+            tap: The KegTap or meter name to tap against.
+            keg_id: The Keg ID to map to tap.
+
+        Returns:
+            The new keg instance.
+        """
+
+        tap = self._get_tap(tap)
+
+        if tap.is_active():
+            raise ValueError('Tap is already active, must end keg first.')
+
+        keg.start_time = timezone.now()
+        keg.online = True
+        keg.save()
 
         old_keg = tap.current_keg
         if old_keg:
@@ -517,6 +544,7 @@ class KegbotBackend:
         tasks.schedule_tasks(events)
 
         return keg
+
 
     @transaction.atomic
     def end_keg(self, tap):
@@ -548,6 +576,71 @@ class KegbotBackend:
 
         events = models.SystemEvent.build_events_for_keg(keg)
         tasks.schedule_tasks(events)
+
+        return keg
+
+    @transaction.atomic
+    def add_keg(self, beverage=None, keg_type=keg_sizes.HALF_BARREL,
+            full_volume_ml=None, beverage_name=None, beverage_type=None,
+            producer_name=None, style_name=None, notes=None, description=None):
+        """Adds a new keg to the keg room (queue).
+
+        A beverage must be specified, either by providing an existing
+        Beverage instance as `beverage`, or by specifying values for
+        `beverage_type`, `beverage_name`, `producer_name`,
+        and `style_name`.
+
+        When using the latter form, the system will attempt to match
+        the string type parameters against an already-existing Beverage.
+        Otherwise, a new Beverage will be created.
+
+        Args:
+            beverage: The type of beverage, as a Beverage object.
+            keg_type: The type of physical keg, from keg_sizes.
+            full_volume_ml: The keg's original unserved volume.  If unspecified,
+                will be interpreted from keg_type.  It is an error to omit this
+                parameter when keg_type is OTHER.
+            beverage_name: The keg's beverage name.  Must be given with
+                `producer_name` and `style_name`;
+                `beverage` must be None.
+            beverage_type: The keg beverage type.
+            producer_name: The brewer or producer of this beverage.
+            style_name: The style of this beverage.
+            notes: Notes about this keg.
+            description: The keg description (private)
+
+        Returns:
+            The new keg instance.
+        """
+        if beverage:
+            if beverage_type or beverage_name or producer_name or style_name:
+                raise ValueError(
+                    'Cannot give beverage_type, beverage_name, producer_name, or style_name with beverage')
+        else:
+            if not beverage_type:
+                raise ValueError('Must supply beverage_type when beverage is None')
+            if not beverage_name:
+                raise ValueError('Must supply beverage_name when beverage is None')
+            if not producer_name:
+                raise ValueError('Must supply producer_name when beverage is None')
+            if not style_name:
+                raise ValueError('Must supply style_name when beverage is None')
+            producer = models.BeverageProducer.objects.get_or_create(name=producer_name)[0]
+            beverage = models.Beverage.objects.get_or_create(name=beverage_name, beverage_type=beverage_type,
+                    producer=producer, style=style_name)[0]
+
+        if keg_type not in keg_sizes.DESCRIPTIONS:
+            raise ValueError('Unrecognized keg type: %s' % keg_type)
+        if full_volume_ml is None:
+            full_volume_ml = keg_sizes.VOLUMES_ML[keg_type]
+        else:
+            full_volume_ml = full_volume_ml
+
+        when = timezone.now()
+
+        keg = models.Keg.objects.create(type=beverage, keg_type=keg_type,
+                online=False, finished=False, full_volume_ml=full_volume_ml,
+                start_time=when, end_time=when, notes=notes, description=description)
 
         return keg
 

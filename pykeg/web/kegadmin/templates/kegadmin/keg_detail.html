@@ -7,33 +7,23 @@
 
 {% block kegadmin-main %}
 
-<h2>Edit Keg #{{keg.id}}: {{keg.type.name}}</h2>
+<h2>Edit Keg #{{keg.id}}: {{keg.type.name}}
+{% include 'kegadmin/includes/keg-status-label.html' %}
+</h2>
 <table class="table table-striped table-bordered">
 <tbody>
-    <tr>
-        <th>Start Time</th>
-        <td>{{keg.start_time}}</td>
-    </tr>
-    <tr>
-        <th>End Time</th>
-        <td>
-        {% if keg.online %}
-            Online
-        {% else %}
-            {{ keg.end_time }}
-        {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <th>Online</th>
-        <td>
-        {{ keg.online }}
-        </td>
-    </tr>
-    <tr>
-        <th>Finished</th>
-        <td>{{keg.finished}}</td>
-    </tr>
+    {% if keg.online or keg.finished %}
+        <tr>
+            <th>Start Time</th>
+            <td>{{keg.start_time}}</td>
+        </tr>
+    {% endif %}
+    {% if not keg.online and keg.finished %}
+        <tr>
+            <th>End Time</th>
+            <td>{{keg.end_time}}</td>
+        </tr>
+    {% endif %}
     <tr>
         <th>Type</th>
         <td>{{keg.keg_type}}</td>

@@ -257,14 +257,16 @@ class RequiredLibraries(SetupStep):
 
 
 class SettingsDir(ConfigurationSetupStep):
-  """Select the settings file location.
+  """Set the settings file directory.
 
-  Kegbot's master settings file for this system (local_settings.py) should live
-  in one of two places on the filesystem:
+  Kegbot will automatically search these locations for its settings file:
 
-    ~/.kegbot/            (local to this user, recommended)
-    /etc/kegbot/          (global to all users, requires root access)
-    /usr/local/etc/kegbot (same as above, for FreeBSD)
+    ~/.kegbot/             (local to this user, recommended)
+    /etc/kegbot/           (global to all users, requires root access)
+    /usr/local/etc/kegbot  (same as above, for FreeBSD)
+
+  If you use another directory, you will need to set the environment variable
+  KEGBOT_SETTINGS_DIR when running Kegbot. 
 
   If in doubt, use the default.
   """
@@ -439,8 +441,8 @@ class ConfigureDatabase(ConfigurationSetupStep):
 STEPS = [
     RequiredLibraries(),
     SettingsDir(),
-    Memcached(),
     KegbotDataRoot(),
+    Memcached(),
     ConfigureDatabase(),
 ]
 
@@ -528,6 +530,20 @@ class SetupApp(app.App):
     outfd.close()
 
     print 'Finishing setup ...'
+    settings_dir = os.path.expanduser(os.path.dirname(settings_file))
+    env_str = ''
+    if settings_dir not in [os.path.expanduser(p) for p in SettingsDir.CHOICES]:
+      env_str = 'KEGBOT_SETTINGS_DIR=%s ' % settings_dir
+      print ''
+      print 'Notice: You are using a non-standard settings directory (%s)' % settings_dir
+      print 'You must export KEGBOT_SETTINGS_DIR in order for Kegbot to use it:'
+      print ''
+      print '  export %s' % env_str
+      print ''
+
+      # Set it so load_existing works.
+      os.environ['KEGBOT_SETTINGS_DIR'] = settings_dir
+
     existing = load_existing()
     if not existing:
       raise ValueError('Could not import local_settings.')
@@ -543,7 +559,7 @@ class SetupApp(app.App):
 
     if FLAGS.interactive:
       try:
-        self.run_command('kegbot collectstatic --noinput')
+        self.run_command('kegbot collectstatic --noinput -v 0')
       except FatalError, e:
         print 'WARNING: Collecting static files failed: %s' % e
         print ''
@@ -555,7 +571,7 @@ class SetupApp(app.App):
     print 'Done!'
     print ''
     print 'You may now run the built-in web server:'
-    print '  $ kegbot runserver'
+    print '  $ %skegbot runserver' % env_str
 
   def run_command(self, s, allow_fail=False):
     print 'Running command: %s' % s

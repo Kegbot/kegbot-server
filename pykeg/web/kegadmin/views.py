@@ -297,29 +297,45 @@ def add_user(request):
 
 @staff_member_required
 def user_detail(request, user_id):
-    user = get_object_or_404(models.User, id=user_id)
+    edit_user = get_object_or_404(models.User, id=user_id)
 
     if request.method == 'POST':
         if 'submit_enable' in request.POST:
-            if user.is_active:
+            if edit_user.is_active:
                 messages.error(request, 'User is already enabled.')
             else:
-                user.is_active = True
-                user.save()
-                messages.success(request, 'User %s was enabled.' % user.username)
+                edit_user.is_active = True
+                edit_user.save()
+                messages.success(request, 'User %s was enabled.' % edit_user.username)
 
         elif 'submit_disable' in request.POST:
-            if not user.is_active:
+            if not edit_user.is_active:
                 messages.error(request, 'User is already disabled.')
             else:
-                user.is_active = False
-                user.save()
-                messages.success(request, 'User %s was disabled.' % user.username)
+                edit_user.is_active = False
+                edit_user.save()
+                messages.success(request, 'User %s was disabled.' % edit_user.username)
+
+        elif 'submit_add_staff' in request.POST:
+            if edit_user.is_staff:
+                messages.error(request, 'User is already staff.')
+            else:
+                edit_user.is_staff = True
+                edit_user.save()
+                messages.success(request, 'User %s staff status enabled.' % edit_user.username)
+
+        elif 'submit_remove_staff' in request.POST:
+            if not edit_user.is_staff:
+                messages.error(request, 'User is not currently staff.')
+            else:
+                edit_user.is_staff = False
+                edit_user.save()
+                messages.success(request, 'User %s staff status disabled.' % edit_user.username)
 
     context = RequestContext(request)
-    context['user'] = user
+    context['edit_user'] = edit_user
 
-    context['tokens'] = user.tokens.all().order_by('created_time')
+    context['tokens'] = edit_user.tokens.all().order_by('created_time')
 
     return render_to_response('kegadmin/user_detail.html', context_instance=context)
 

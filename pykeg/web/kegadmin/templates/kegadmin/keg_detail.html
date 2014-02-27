@@ -29,12 +29,12 @@
         <td>{{ keg.keg_type_description }}</td>
     </tr>
     <tr>
-        <th>Initial Volume (mL)</th>
-        <td>{{keg.full_volume_ml}}</td>
+        <th>Initial Volume</th>
+        <td>{% volume keg.full_volume_ml %}</td>
     </tr>
     <tr>
-        <th>Served Volume (mL)</th>
-        <td>{{keg.served_volume_ml}}</td>
+        <th>Served Volume</th>
+        <td>{% volume keg.served_volume_ml %}</td>
     </tr>
 </table>
     

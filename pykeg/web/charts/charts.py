@@ -23,17 +23,19 @@ from kegbot.util import units
 
 from pykeg.core import models
 
-def to_pints(volume):
-    return float(units.Quantity(volume).InPints())
-
 class ChartError(Exception):
     """Base chart exception."""
 
-def TemperatureSensorChart(sensor):
+
+def to_pints(volume):
+    return float(units.Quantity(volume).InPints())
+
+
+def chart_temp_sensor(sensor):
     """ Shows a simple line plot of a specific temperature sensor.
 
     Syntax:
-      {% chart sensor <sensorname> width height %}
+      {% chart temp_sensor <sensorname> width height %}
     Args:
       sensorname - the nice_name of a ThermoSensor
     """
@@ -90,11 +92,11 @@ def TemperatureSensorChart(sensor):
     }
     return res
 
-def VolumeByWeekday(stats):
+def chart_volume_by_weekday(stats):
     """ Shows a histogram of volume by day of the week.
 
     Syntax:
-      {% chart volume_by_day <stats> width height %}
+      {% chart volume_by_weekday <stats> width height %}
     Args:
       stats - a stats object containing volume_by_day_of_week
     """
@@ -105,9 +107,9 @@ def VolumeByWeekday(stats):
 
     for weekday, vol in vols.iteritems():
         volmap[int(weekday)] += to_pints(vol)
-    return _DayOfWeekChart(volmap)
+    return _weekday_chart_common(volmap)
 
-def UserSessionsByWeekday(user):
+def chart_user_session_by_weekday(user):
     """Shows a user's total session by volume by day of week."""
     if not isinstance(user, models.User):
         raise ChartError('Bad value for user')
@@ -117,9 +119,9 @@ def UserSessionsByWeekday(user):
         # Convert from Sunday = 6 to Sunday = 0
         weekday = (chunk.start_time.weekday() + 1) % 7
         weekdays[weekday] += to_pints(chunk.volume_ml)
-    return _DayOfWeekChart(weekdays)
+    return _weekday_chart_common(weekdays)
 
-def SessionVolumes(sessions):
+def chart_sessions_by_volume(sessions):
     buckets = [0]*6
     labels = [
       '<1',
@@ -153,7 +155,7 @@ def SessionVolumes(sessions):
     }
     return res
 
-def UsersByVolume(stats):
+def chart_users_by_volume(stats):
     vols = stats.get('volume_by_drinker')
     if not vols:
         raise ChartError('no data')
@@ -201,7 +203,7 @@ def UsersByVolume(stats):
     }
     return res
 
-def _DayOfWeekChart(vals):
+def _weekday_chart_common(vals):
     labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
     # convert from 0=Monday to 0=Sunday

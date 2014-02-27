@@ -322,10 +322,7 @@ class ChartNode(Node):
         self._height = height
         self._args = args
 
-        try:
-            self._chart_fn = getattr(self, 'chart_%s' % (self._charttype,))
-        except AttributeError:
-            raise TemplateSyntaxError('unknown chart type: %s' % self._charttype)
+        self._chart_fn = getattr(charts, 'chart_%s' % (self._charttype,), None)
 
     def _get_chart_id(self, context):
         # TODO(mikey): Is there a better way to store _CHART_ID?
@@ -334,18 +331,28 @@ class ChartNode(Node):
         context._CHART_ID += 1
         return context._CHART_ID
 
+    def show_error(self, error_str):
+        chart_id = 0
+        width = self._width
+        height = self._height
+        return ChartNode.ERROR_TMPL % vars()
+
     def render(self, context):
+        if not self._chart_fn:
+            return self.show_error("Unknown chart type: %s" % self._charttype)
+
         chart_id = self._get_chart_id(context)
 
         width = self._width
         height = self._height
 
         obj = Variable(self._args[0]).resolve(context)
+
         try:
             chart_result = self._chart_fn(obj)
         except charts.ChartError, e:
-            error_str = 'chart error: %s' % (e,)
-            return ChartNode.ERROR_TMPL % vars()
+            return self.show_error(str(e))
+
         chart_base = {
           'chart': {
             'borderColor': '#eeeeff',
@@ -382,48 +389,6 @@ class ChartNode(Node):
                 chart_data[k] = v
         chart_data = kbjson.dumps(chart_data, indent=None)
         return ChartNode.CHART_TMPL % vars()
-
-    def chart_sensor(self, obj):
-        """Shows a simple line plot of a specific temperature sensor.
-
-        Args:
-          obj - the models.ThermoSensor to plot
-        """
-        return charts.TemperatureSensorChart(obj)
-
-    def chart_volume_by_day(self, obj):
-        """Shows keg or session usage by day of the week.
-
-        Args:
-          obj - the stats instance to chart
-        """
-        return charts.VolumeByWeekday(obj)
-
-    def chart_sessions_weekday(self, obj):
-        """Vertical bar chart showing session volume by day of week.
-
-        Args:
-          obj - an iterable of models.DrinkingSession or
-                models.UserDrinkingSessionPart instances
-        """
-        return charts.UserSessionsByWeekday(obj)
-
-    def chart_sessions_volume(self, obj):
-        """Line chart showing session volumes.
-
-        Args:
-          obj - an iterable of models.DrinkingSession or
-                models.UserDrinkingSessionPart instances
-        """
-        return charts.SessionVolumes(obj)
-
-    def chart_users_by_volume(self, obj):
-        """Pie chart showing users by volume.
-
-        Args:
-          obj - the stats instance to chart
-        """
-        return charts.UsersByVolume(obj)
 
 
 @register.filter

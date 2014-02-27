@@ -12,8 +12,7 @@
 <thead>
     <tr>
         <th>Beverage</th>
-        <th>Start</th>
-        <th>End</th>
+        <th>Status</th>
     </tr>
 </thead>
 <tbody>
@@ -24,17 +23,17 @@
             <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-keg' keg.id %}">Edit</a>&nbsp;&nbsp;
             <span>{{ keg.type }}</span>
     </td>
-    <td>{{ keg.start_time }}</td>
     <td>
-        {% if keg.online %}
-        Online
-        {% else %}
-        {{ keg.end_time }}
-        {% endif %}
+        {% include 'kegadmin/includes/keg-status-label.html' %}
     </td>
 </tr>
 {% endfor %}
-
+<tr class="info">
+    <td colspan="3" style="text-align:right;">
+        <a class="btn btn-small btn-success"
+            href="{% url 'kegadmin-add-keg' %}"><i class="icon-plus icon-white"></i> Add Keg</a>
+    </td>
+</tr>
 </tbody>
 </table>
 {% bootstrap_paginate kegs %}

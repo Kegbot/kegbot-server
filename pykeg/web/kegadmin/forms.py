@@ -170,7 +170,85 @@ class DeleteTapForm(forms.Form):
         )
     )
 
-class KegForm(forms.ModelForm):
+class KegForm(forms.Form):
+    keg_size = forms.ChoiceField(choices=keg_sizes.CHOICES,
+        initial=keg_sizes.HALF_BARREL,
+        required=True)
+
+    full_volume_ml = forms.FloatField(label='Initial Volume (mL)', initial=0.0, 
+        required=False, help_text='Keg\'s Initial Volume in milliliters')
+
+    beer_name = forms.CharField(required=False)  # legacy
+    brewer_name = forms.CharField(required=False)  # legacy
+
+    beverage_name = forms.CharField(label='Beer Name', required=False)
+    beverage_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    producer_name = forms.CharField(label='Brewer', required=False)
+    producer_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    style_name = forms.CharField(required=True, label='Style',
+      help_text='Example: Pale Ale, Stout, etc.')
+
+    description = forms.CharField(max_length=256, label='Description', 
+        widget=forms.Textarea(), required=False, 
+        help_text='User-visible description of the Keg.')
+    notes = forms.CharField(label='Notes', required=False, widget=forms.Textarea(),
+        help_text='Private notes about this keg, viewable only by admins.')
+
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal beer-select'
+    helper.layout = Layout(
+        Field('beverage_name', css_class='input-xlarge'),
+        Field('beverage_id', type='hidden'),
+        Field('producer_name', css_class='input-xlarge'),
+        Field('producer_id', type='hidden'),
+        Field('style_name', css_class='input-xlarge'),
+        Field('keg_size', css_class='input-xlarge'),
+        Field('full_volume_ml'),
+        Field('description'),
+        Field('notes'),
+        FormActions(
+            Submit('submit_add_keg', 'Save', css_class='btn-primary'),
+        )
+    )
+
+    def clean_beverage_name(self):
+        beverage_name = self.cleaned_data.get('beverage_name')
+        if not beverage_name:
+            beverage_name = self.cleaned_data.get('beer_name')
+            if not beverage_name:
+                raise forms.ValidationError('Must specify a beverage name')
+            self.cleaned_data['beverage_name'] = beverage_name
+        return beverage_name
+
+    def clean_producer_name(self):
+        producer_name = self.cleaned_data.get('producer_name')
+        if not producer_name:
+            producer_name = self.cleaned_data.get('brewer_name')
+            if not producer_name:
+                raise forms.ValidationError('Must specify a producer name')
+            self.cleaned_data['producer_name'] = producer_name
+        return producer_name
+
+    def save(self):
+        if not self.is_valid():
+            raise ValueError('Form is not valid.')
+        b = backend.KegbotBackend()
+        keg_size = self.cleaned_data.get('keg_size')
+        notes = self.cleaned_data.get('notes')
+        description = self.cleaned_data.get('description')
+        if keg_size != 'other':
+            full_volume_ml = None
+        else:
+            full_volume_ml = self.cleaned_data.get('full_volume_ml')
+        # TODO(mikey): Support non-beer beverage types.
+        cd = self.cleaned_data
+        keg = b.add_keg(beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
+            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'], 
+            full_volume_ml=full_volume_ml, notes=cd['notes'], description=cd['description'])
+        return keg
+
+
+class EditKegForm(forms.ModelForm):
     class Meta:
         model = models.Keg
         fields = ('spilled_ml', 'description', 'notes',)

@@ -12,6 +12,7 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^beers/(?P<beer_id>\d+)/$', 'beverage_detail', name='kegadmin-edit-beverage'),
 
     url(r'^kegs/$', 'keg_list', name='kegadmin-kegs'),
+    url(r'^kegs/add/$', 'keg_add', name='kegadmin-add-keg'),
     url(r'^kegs/(?P<keg_id>\d+)/$', 'keg_detail', name='kegadmin-edit-keg'),
 
     url(r'^brewers/$', 'beverage_producer_list', name='kegadmin-beverage-producers'),

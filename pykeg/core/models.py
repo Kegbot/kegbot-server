@@ -467,9 +467,9 @@ class Keg(models.Model):
         help_text='Computed served volume.')
     full_volume_ml = models.FloatField(default=0, editable=False,
         help_text='Full volume of this Keg; usually set automatically from keg_type.')
-    start_time = models.DateTimeField(default=timezone.now,
+    start_time = models.DateTimeField(default=timezone.now, 
         help_text='Time the Keg was first tapped.')
-    end_time = models.DateTimeField(default=timezone.now,
+    end_time = models.DateTimeField(default=timezone.now, 
         help_text='Time the Keg was finished or disconnected.')
     online = models.BooleanField(default=True, editable=False,
         help_text='True if the keg is currently assigned to a tap.')

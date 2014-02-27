@@ -120,6 +120,7 @@ def add_tap(request):
 @staff_member_required
 def tap_detail(request, tap_id):
     tap = get_object_or_404(models.KegTap, id=tap_id)
+    keg_list = models.Keg.objects.filter(online=False, finished=False).order_by('id')
 
     record_drink_form = forms.RecordDrinkForm()
     activate_keg_form = forms.ChangeKegForm()
@@ -132,6 +133,13 @@ def tap_detail(request, tap_id):
                 activate_keg_form.save(tap)
                 messages.success(request, 'The new keg was activated. Bottoms up!')
                 return redirect('kegadmin-taps')
+
+        if 'submit_keg_choice' in request.POST:
+            keg_id = request.POST.get('keg_id')
+            keg = models.Keg.objects.get(id=keg_id)
+            d = request.backend.attach_keg(tap, keg)
+            messages.success(request, 'The new keg was activated. Bottoms up!')
+            return redirect('kegadmin-taps')
 
         elif 'submit_tap_form' in request.POST:
             tap_settings_form = forms.TapForm(request.POST, instance=tap)
@@ -185,6 +193,7 @@ def tap_detail(request, tap_id):
     context = RequestContext(request)
     context['tap'] = tap
     context['current_keg'] = tap.current_keg
+    context['keg_list'] = keg_list
     context['activate_keg_form'] = activate_keg_form
     context['record_drink_form'] = record_drink_form
     context['end_keg_form'] = end_keg_form
@@ -211,21 +220,37 @@ def keg_list(request):
 
 @staff_member_required
 def keg_detail(request, keg_id):
-    btype = get_object_or_404(models.Keg, id=keg_id)
+    keg = get_object_or_404(models.Keg, id=keg_id)
 
-    form = forms.KegForm(instance=btype)
+    form = forms.KegFormSubset(instance=keg)
     if request.method == 'POST':
-        form = forms.KegForm(request.POST, instance=btype)
+        form = forms.KegFormSubset(request.POST, instance=keg)
         if form.is_valid():
-            btype = form.save()
+            keg = form.save()
 
             messages.success(request, 'Keg updated.')
             return redirect('kegadmin-kegs')
 
     context = RequestContext(request)
-    context['keg'] = btype
+    context['keg'] = keg
     context['form'] = form
     return render_to_response('kegadmin/keg_detail.html', context_instance=context)
+
+@staff_member_required
+def keg_add(request):
+    add_keg_form = forms.KegForm()
+    if request.method == 'POST':
+        if 'submit_add_keg' in request.POST:
+            add_keg_form = forms.KegForm(request.POST)
+            if add_keg_form.is_valid():
+                add_keg_form.save()
+                messages.success(request, 'New keg added.')
+                return redirect('kegadmin-kegs')
+
+    context = RequestContext(request)
+    context['keg'] = "new"
+    context['form'] = add_keg_form
+    return render_to_response('kegadmin/keg_add.html', context_instance=context)
 
 @staff_member_required
 def user_list(request):

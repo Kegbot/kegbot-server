@@ -1,0 +1,30 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Add Keg | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Add Keg {% endblock %}
+
+{% block kegadmin-main %}
+
+<h2>Add Keg</h2>
+
+{% crispy form %}
+
+{% endblock %}
+
+{% block kb-extrajs %}
+<script type="text/javascript">
+$(document).ready(function () {
+  $('#div_id_full_volume_ml').hide();
+    $('#id_keg_size').change(function () {
+      var choice = $(this).val();
+      if (choice =='other') {
+          $('#div_id_full_volume_ml').show();
+        } else {
+          $('#div_id_full_volume_ml').hide();
+        }
+    })
+});
+</script>
+{% endblock %}

@@ -10,48 +10,54 @@
 <div class="row-fluid">
 
 <div class="span3">
-    {% mugshot_box edit_user %}
+    {% with edit_user as user %}
+        {% mugshot_box user %}
+    {% endwith %}
     <p>
     <form action="" method="POST">{% csrf_token %}
 
-    {% if edit_user.is_active %}
-    <button class="btn btn-large btn-block disabled">Account Enabled</button>
+        {% if edit_user.is_active %}
+        <button class="btn btn-large btn-block disabled">Account Enabled</button>
         {% if not edit_user.is_superuser %}
-        <input type="submit" name="submit_disable"
-            class="btn btn-large btn-block btn-danger" value="Disable Account"/>
+            <input type="submit" name="submit_disable"
+                class="btn btn-large btn-block btn-danger" value="Disable Account"/>
         {% endif %}
-    {% else %}
-    <input type="submit" name="submit_enable"
-        class="btn btn-large btn-block btn-success" value="Enable Account"/>
-    <button class="btn btn-large btn-block disabled">Account Disabled</button>
-    {% endif %}
+        {% else %}
+        <input type="submit" name="submit_enable"
+            class="btn btn-large btn-block btn-success" value="Enable Account"/>
+        <button class="btn btn-large btn-block disabled">Account Disabled</button>
+        {% endif %}
 
     </form>
     </p>
 
+    {% if user.is_superuser %}
     <p>
     <form action="" method="POST">{% csrf_token %}
 
-    {% if request.user.is_superuser %}
         {% if edit_user.is_staff %}
         <button class="btn btn-large btn-block disabled">Staff Status Enabled</button>
-        <input type="submit" name="submit_remove_staff"
+        {% if not edit_user.is_superuser %}
+            <input type="submit" name="submit_remove_staff"
             class="btn btn-large btn-block btn-danger" value="Disable Staff Status"/>
+        {% endif %}
         {% else %}
         <input type="submit" name="submit_add_staff"
             class="btn btn-large btn-block btn-success" value="Enable Staff Status"/>
         <button class="btn btn-large btn-block disabled">Staff Status Disabled</button>
         {% endif %}
-    {% endif %}
 
     </form>
     </p>
+    {% endif %}
 </div>
 
 <div class="span9">
 
 <h2>Account Details
-    {% include 'kegadmin/includes/user-status-label.html' %}
+    {% with edit_user as user %}
+        {% include 'kegadmin/includes/user-status-label.html' %}
+    {% endwith %}
 </h2>
 
 <table class="table table-bordered">

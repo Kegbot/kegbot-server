@@ -35,7 +35,9 @@
     </td>
     <td>{{ edit_user.date_joined }}</td>
     <td>
-        {% include 'kegadmin/includes/user-status-label.html' %}
+        {% with edit_user as user %}
+            {% include 'kegadmin/includes/user-status-label.html' %}
+        {% endwith %}
     </td>
 </tr>
 {% endfor %}

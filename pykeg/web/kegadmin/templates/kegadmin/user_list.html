@@ -26,18 +26,18 @@
     </tr>
 </thead>
 <tbody>
-{% for user in users %}
+{% for edit_user in users %}
 <tr>
     <td>
         <div class="form-horizontal">
-            <a class="btn btn-small btn-primary" href="{% url "kegadmin-edit-user" user.id %}">Edit</a>&nbsp;&nbsp;
-            <span>{{ user.username }}</span>
+            <a class="btn btn-small btn-primary" href="{% url "kegadmin-edit-user" edit_user.id %}">Edit</a>&nbsp;&nbsp;
+            <span>{{ edit_user.username }}</span>
     </td>
-    <td>{{ user.date_joined }}</td>
+    <td>{{ edit_user.date_joined }}</td>
     <td>
-        {% if user.is_active %}<span class="label label-success">Active</span>{% else %}<span class="label">Disabled</span>{% endif %}
-        {% if user.is_staff %}<span class="label label-warning">Staff</span>{% endif %}
-        {% if user.is_superuser %}<span class="label label-important">Superuser</span>{% endif %}
+        {% with edit_user as user %}
+            {% include 'kegadmin/includes/user-status-label.html' %}
+        {% endwith %}
     </td>
 </tr>
 {% endfor %}

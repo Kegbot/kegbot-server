@@ -2,53 +2,81 @@
 {% load kegweblib %}
 {% load crispy_forms_tags %}
 
-{% block title %}Kegbot Admin: Edit User: {{ user.username }} | {{ block.super }}{% endblock %}
-{% block pagetitle %}Kegbot Admin: Edit User: {{ user.username }}{% endblock %}
+{% block title %}Kegbot Admin: Edit User: {{ edit_user.username }} | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Edit User: {{ edit_user.username }}{% endblock %}
 
 {% block kegadmin-main %}
 
 <div class="row-fluid">
 
 <div class="span3">
-    {% mugshot_box user %}
+    {% with edit_user as user %}
+        {% mugshot_box user %}
+    {% endwith %}
     <p>
     <form action="" method="POST">{% csrf_token %}
 
-    {% if user.is_active %}
-    <button class="btn btn-large btn-block disabled">Enabled</button>
-        <input type="submit" name="submit_disable"
-            class="btn btn-large btn-block btn-danger" value="Disable"/>
-    {% else %}
-    <input type="submit" name="submit_enable"
-        class="btn btn-large btn-block btn-success" value="Enable"/>
-    <button class="btn btn-large btn-block disabled">Disabled</button>
-    {% endif %}
+        {% if edit_user.is_active %}
+        <button class="btn btn-large btn-block disabled">Account Enabled</button>
+        {% if not edit_user.is_superuser %}
+            <input type="submit" name="submit_disable"
+                class="btn btn-large btn-block btn-danger" value="Disable Account"/>
+        {% endif %}
+        {% else %}
+        <input type="submit" name="submit_enable"
+            class="btn btn-large btn-block btn-success" value="Enable Account"/>
+        <button class="btn btn-large btn-block disabled">Account Disabled</button>
+        {% endif %}
 
     </form>
     </p>
+
+    {% if user.is_superuser %}
+    <p>
+    <form action="" method="POST">{% csrf_token %}
+
+        {% if edit_user.is_staff %}
+        <button class="btn btn-large btn-block disabled">Staff Status Enabled</button>
+        {% if not edit_user.is_superuser %}
+            <input type="submit" name="submit_remove_staff"
+            class="btn btn-large btn-block btn-danger" value="Disable Staff Status"/>
+        {% endif %}
+        {% else %}
+        <input type="submit" name="submit_add_staff"
+            class="btn btn-large btn-block btn-success" value="Enable Staff Status"/>
+        <button class="btn btn-large btn-block disabled">Staff Status Disabled</button>
+        {% endif %}
+
+    </form>
+    </p>
+    {% endif %}
 </div>
 
 <div class="span9">
 
-<h2>Account Details</h2>
+<h2>Account Details
+    {% with edit_user as user %}
+        {% include 'kegadmin/includes/user-status-label.html' %}
+    {% endwith %}
+</h2>
 
 <table class="table table-bordered">
 <tbody>
 <tr>
     <th>Name</th>
-    <td>{{ user.username }} <span class="muted">(#{{user.id }})</span></td>
+    <td>{{ edit_user.username }} <span class="muted">(#{{edit_user.id }})</span></td>
 </tr>
 <tr>
     <th>E-Mail</th>
-    <td>{{ user.email }}</td>
+    <td>{{ edit_user.email }}</td>
 </tr>
 <tr>
     <th>Date Joined</th>
-    <td>{{ user.date_joined }}</td>
+    <td>{{ edit_user.date_joined }}</td>
 </tr>
 <tr>
     <th>Last Login</th>
-    <td>{{ user.last_login }}</td>
+    <td>{{ edit_user.last_login }}</td>
 </tr>
 
 </table>

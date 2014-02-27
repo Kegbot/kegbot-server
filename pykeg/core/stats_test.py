@@ -67,7 +67,8 @@ class StatsTestCase(TransactionTestCase):
             u'last_drink_id': d.id,
             u'sessions_count': 1,
             u'average_volume_ml': 100.0,
-            u'total_volume_ml': 100.0
+            u'total_volume_ml': 100.0,
+            u'largest_session': {u'session_id': 1, u'volume_ml': 100},
         })
         stats = site.GetStats()
         self.assertDictEqual(expected, stats)
@@ -88,6 +89,7 @@ class StatsTestCase(TransactionTestCase):
         expected.volume_by_year[u'2012'] = 300.0
         expected.sessions_count = 2
         expected.volume_by_session = {u'1': 100.0, u'2': 200.0}
+        expected.largest_session = {u'session_id': 2, u'volume_ml': 200.0}
 
         self.assertDictEqual(expected, stats)
 
@@ -106,6 +108,7 @@ class StatsTestCase(TransactionTestCase):
         expected.volume_by_year[u'2012'] = 600.0
         expected.sessions_count = 2
         expected.volume_by_session = {u'1': 100.0, u'2': 500.0}
+        expected.largest_session = {u'session_id': 2, u'volume_ml': 500.0}
 
         import pprint
         print 'ACTUAL'

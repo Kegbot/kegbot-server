@@ -68,6 +68,18 @@
   </div> <!-- span8 -->
 </div> <!-- row -->
 
+{% if largest_session %}
+<div class="row">
+<div class="span10">
+
+<h2>Largest Session</h2>
+{% with largest_session as session %}
+  {% include "kegweb/keg-session.html" %}
+{% endwith %}
+</div>
+</div>
+{% endif %}
+
 {% if chunks %}
 <div class="row">
   <div class="span10">
@@ -97,21 +109,24 @@
 {% endwith %}
 
 <div class="row">
-    <h2>Drinker Stats</h2>
-    {% if not stats.total_pours %}
-    Looks like {{ drinker }} has never poured a drink. Boo!
-    {% else %}
-    <div class="kb-contentbox">
-      <p>
-        <b>total pints, by day of week</b><br>
-        {% chart sessions_by_weekday stats 350 100 %}
-      </p>
 
-      <p>
-        <b>all sessions, by pints per session</b><br>
-        {% chart sessions_by_volume stats 350 100 %}
-      </p>
-      {% endif %}
-    </div>
+<h2>Drinker Stats</h2>
+{% if not stats.total_pours %}
+Looks like {{ drinker }} has never poured a drink. Boo!
+{% else %}
+<div class="kb-contentbox">
+  <p>
+    <b>total pints, by day of week</b><br>
+    {% chart sessions_by_weekday stats 350 100 %}
+  </p>
+
+  <p>
+    <b>all sessions, by pints per session</b><br>
+    {% chart sessions_by_volume stats 350 100 %}
+  </p>
+</div>
+
+{% endif %}
+
 </div>
 {% endblock col-2 %}

@@ -70,6 +70,10 @@ def system_stats(request):
         top_drinkers.append((vol, user))
     top_drinkers.sort(reverse=True)
 
+    largest_session_id = stats.get('largest_session', {}).get('session_id', None)
+    if largest_session_id:
+        context['largest_session'] = models.DrinkingSession.objects.get(pk=largest_session_id)
+
     context['top_drinkers'] = top_drinkers[:10]
 
     return render_to_response('kegweb/system-stats.html', context_instance=context)
@@ -91,6 +95,11 @@ def user_detail(request, username):
         'chunks': chunks,
         'stats': stats,
         'drinker': user})
+
+    largest_session_id = stats.get('largest_session', {}).get('session_id', None)
+    if largest_session_id:
+        context['largest_session'] = models.DrinkingSession.objects.get(pk=largest_session_id)
+
     return render_to_response('kegweb/drinker_detail.html', context_instance=context)
 
 class KegListView(ListView):

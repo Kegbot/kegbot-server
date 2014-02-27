@@ -22,6 +22,14 @@
     {% include "kegweb/basic-stats.html" %}
   </tbody>
 </table>
+
+{% if largest_session %}
+<h2>Largest Session</h2>
+  {% with largest_session as session %}
+    {% include "kegweb/keg-session.html" %}
+  {% endwith %}
+{% endif %}
+
 {% endif %}
 {% endblock col-1 %}
 

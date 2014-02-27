@@ -216,6 +216,23 @@ class StatsBuilder:
             previous[session_id] = previous.get(session_id, 0) + self.drink.volume_ml
             return previous
 
+    @stat('largest_session')
+    def LargestSession(self, previous):
+        session = self.drink.session
+        if not previous:
+            return {
+                'session_id': session.id,
+                'volume_ml': session.volume_ml,
+            }
+        else:
+            previous_volume = previous.get('volume_ml', 0)
+            if session.volume_ml >= previous_volume:
+                return {
+                    'session_id': session.id,
+                    'volume_ml': session.volume_ml,
+                }
+            return previous
+
 
 def invalidate(drink):
     """Clears all statistics.

@@ -349,8 +349,12 @@ class ChartNode(Node):
 
         obj = Variable(self._args[0]).resolve(context)
 
+        metric_volumes = context.get('metric_volumes', False)
+        temperature_units = context.get('temperature_display_units', 'f')
+
         try:
-            chart_result = self._chart_fn(obj)
+            chart_result = self._chart_fn(obj, metric_volumes=metric_volumes,
+                temperature_unts=temperature_units)
         except charts.ChartError, e:
             return self.show_error(str(e))
 

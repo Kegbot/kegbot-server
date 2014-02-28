@@ -20,6 +20,7 @@ import datetime
 
 from django.utils import timezone
 from kegbot.util import units
+from kegbot.util import util
 
 from pykeg.core import models
 
@@ -27,11 +28,23 @@ class ChartError(Exception):
     """Base chart exception."""
 
 
-def to_pints(volume):
-    return float(units.Quantity(volume).InPints())
+def format_volume(volume_ml, chart_kwargs):
+    metric_volumes = chart_kwargs.get('metric_volumes', False)
+    if metric_volumes:
+      return volume_ml / 1000.0, 'L'
+    else:
+      return units.Quantity(volume_ml).InPints(), 'pints'
 
 
-def chart_temp_sensor(sensor):
+def format_temperature(temp_c, chart_kwargs):
+  use_c = chart_kwargs.get('temperature_units', None) == 'c'
+  if use_c:
+    return temp_c
+  else:
+    return util.CtoF(temp_c)
+
+
+def chart_temp_sensor(sensor, *args, **kwargs):
     """ Shows a simple line plot of a specific temperature sensor.
 
     Syntax:
@@ -53,12 +66,13 @@ def chart_temp_sensor(sensor):
     temps = []
     have_temps = False
     for point in points:
+        temp = format_temperature(point.temp, kwargs)
         while curr <= point.time:
             curr += datetime.timedelta(minutes=1)
             if curr < point.time:
                 temps.append(None)
             else:
-                temps.append(point.temp)
+                temps.append(temp)
                 have_temps = True
 
     if not have_temps:
@@ -92,7 +106,7 @@ def chart_temp_sensor(sensor):
     }
     return res
 
-def chart_volume_by_weekday(stats):
+def chart_volume_by_weekday(stats, *args, **kwargs):
     """ Shows a histogram of volume by day of the week.
 
     Syntax:
@@ -105,18 +119,18 @@ def chart_volume_by_weekday(stats):
     if not volmap:
         raise ChartError('Daily volumes unavailable')
 
-    for weekday, vol in vols.iteritems():
-        volmap[int(weekday)] += to_pints(vol)
+    for weekday, volume_ml in vols.iteritems():
+        volmap[int(weekday)] += format_volume(volume_ml, kwargs)[0]
     return _weekday_chart_common(volmap)
 
-def chart_sessions_by_weekday(stats):
+def chart_sessions_by_weekday(stats, *args, **kwargs):
     data = stats.get('volume_by_day_of_week', {})
     weekdays = [0] * 7
     for weekday, volume_ml in data.iteritems():
-        weekdays[int(weekday)] += to_pints(volume_ml)
+        weekdays[int(weekday)] += format_volume(volume_ml, kwargs)[0]
     return _weekday_chart_common(weekdays)
 
-def chart_sessions_by_volume(stats):
+def chart_sessions_by_volume(stats, *args, **kwargs):
     buckets = [0]*6
     labels = [
       '<1',
@@ -128,8 +142,8 @@ def chart_sessions_by_volume(stats):
     ]
     volmap = stats.get('volume_by_session', {})
     for session_volume in volmap.values():
-        pints = round(to_pints(session_volume), 1)
-        intval = int(pints)
+        volume = round(format_volume(session_volume, kwargs), 1)[0]
+        intval = int(volume)
         if intval >= len(buckets):
             buckets[-1] += 1
         else:
@@ -151,7 +165,7 @@ def chart_sessions_by_volume(stats):
     }
     return res
 
-def chart_users_by_volume(stats):
+def chart_users_by_volume(stats, *args, **kwargs):
     vols = stats.get('volume_by_drinker')
     if not vols:
         raise ChartError('no data')
@@ -160,9 +174,9 @@ def chart_users_by_volume(stats):
     for username, volume in vols.iteritems():
         if not username:
           username = 'Guest'
-        pints = to_pints(volume)
-        label = '<b>%s</b> (%.1f)' % (username, pints)
-        data.append((label, pints))
+        volume, units = format_volume(volume, kwargs)
+        label = '<b>%s</b> (%.1f %s)' % (username, volume, units)
+        data.append((label, volume))
 
     other_vol = 0
     for username, pints in data[10:]:

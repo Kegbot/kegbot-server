@@ -33,5 +33,6 @@ def kbsite(request):
         ret['HAVE_SESSIONS'] = models.DrinkingSession.objects.all().count() > 0
         ret['GOOGLE_ANALYTICS_ID'] = kbsite.settings.google_analytics_id
         ret['metric_volumes'] = (kbsite.settings.volume_display_units == 'metric')
+        ret['temperature_display_units'] = kbsite.settings.temperature_display_units
 
     return ret

@@ -128,3 +128,59 @@ class ApiClientTestCase(BaseApiTestCase):
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'error')
         self.assertEquals(data.error.code, 'NoAuthTokenError')
+
+    def test_controllers_and_meters(self):
+        site = create_site()
+        user = models.User.objects.create(username='testuser', is_staff=True)
+        api_key_obj = models.ApiKey.objects.create(user=user, key='123')
+        api_key = api_key_obj.key
+
+        for endpoint in ('controllers', 'flow-meters'):
+            response, data = self.get(endpoint)
+            self.assertEquals(data.meta.result, 'error')
+            self.assertEquals(data.error.code, 'NoAuthTokenError')
+
+        response, data = self.get('controllers', HTTP_X_KEGBOT_API_KEY='123')
+        self.assertEquals(data.meta.result, 'ok')
+        expected = {
+            'objects': [
+                {
+                    'id': 1,
+                    'name': 'kegboard',
+                }
+            ],
+            'meta': {
+                'result': 'ok',
+            }
+        }
+        self.assertEquals(expected, data)
+
+        response, data = self.get('flow-meters', HTTP_X_KEGBOT_API_KEY='123')
+        self.assertEquals(data.meta.result, 'ok')
+        expected = {
+            'objects': [
+                {
+                    'id': 1,
+                    'ticks_per_ml': 5.4,
+                    'port_name': 'flow0',
+                    'controller': {
+                        'id': 1,
+                        'name': 'kegboard',
+                    },
+                    'name': 'kegboard.flow0'
+                },
+                {
+                    'id': 2,
+                    'ticks_per_ml': 5.4,
+                    'port_name': 'flow1',
+                    'controller': {
+                        'id': 1,
+                        'name': 'kegboard'
+                    },
+                    'name': 'kegboard.flow1'
+                },
+            ],
+            'meta': { 'result': 'ok'}
+        }
+        self.assertEquals(expected, data)
+

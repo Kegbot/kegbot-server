@@ -43,6 +43,8 @@ from pykeg.proto import protolib
 from pykeg.web.api import forms
 from pykeg.web.api import util
 from pykeg.web.kegadmin.forms import ChangeKegForm
+from pykeg.web.kegadmin.forms import ControllerForm
+from pykeg.web.kegadmin.forms import FlowMeterForm
 
 from pykeg.web import tasks
 
@@ -90,22 +92,66 @@ def get_drink(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
     return protolib.ToProto(drink, full=True)
 
+@csrf_exempt
 @auth_required
 def all_controllers(request):
+    if request.method == 'POST':
+        form = ControllerForm(request.POST)
+        if form.is_valid():
+            return form.save()
+        else:
+            errors = _form_errors(form)
+            raise kbapi.BadRequestError(errors)
+
     return models.Controller.objects.all()
 
+@csrf_exempt
 @auth_required
-def get_controller(request, contoller_id):
-    controller = get_object_or_404(models.Controller, id=contoller_id)
+def get_controller(request, controller_id):
+    controller = get_object_or_404(models.Controller, id=controller_id)
+
+    if request.method == 'DELETE':
+        controller.delete()
+
+    elif request.method == 'POST':
+        form = ControllerForm(request.POST, instance=controller)
+        if form.is_valid():
+            controller = form.save()
+        else:
+            errors = _form_errors(form)
+            raise kbapi.BadRequestError(errors)
+
     return protolib.ToProto(controller, full=True)
 
+@csrf_exempt
 @auth_required
 def all_flow_meters(request):
+    if request.method == 'POST':
+        form = FlowMeterForm(request.POST)
+        if form.is_valid():
+            return form.save()
+        else:
+            errors = _form_errors(form)
+            raise kbapi.BadRequestError(errors)
+
     return models.FlowMeter.objects.all()
 
+@csrf_exempt
 @auth_required
 def get_flow_meter(request, flow_meter_id):
-    meter = get_object_or_404(models.Controller, id=flow_meter_id)
+    meter = get_object_or_404(models.FlowMeter, id=flow_meter_id)
+
+    if request.method == 'DELETE':
+        meter.delete()
+
+    elif request.method == 'POST':
+        form = FlowMeterForm(request.POST, instance=meter)
+        if form.is_valid():
+            meter = form.save()
+        else:
+            errors = _form_errors(form)
+            raise kbapi.BadRequestError(errors)
+
     return protolib.ToProto(meter, full=True)
 
 @csrf_exempt

@@ -502,3 +502,24 @@ class RecordDrinkForm(forms.Form):
             self.cleaned_data['volume_ml'] = volume
         return volume
 
+
+class FlowMeterForm(forms.ModelForm):
+    class Meta:
+        model = models.FlowMeter
+        fields = ('port_name', 'ticks_per_ml')
+
+
+class DeleteControllerForm(forms.Form):
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal user-select'
+    helper.layout = Layout(
+        FormActions(
+            Submit('delete', 'Delete Controller', css_class='btn-primary'),
+        )
+    )
+
+
+class ControllerForm(forms.ModelForm):
+    class Meta:
+        model = models.Controller
+        fields = ('name', 'model_name', 'serial_number')

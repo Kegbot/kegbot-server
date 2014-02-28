@@ -1,3 +1,4 @@
+{% load staticfiles %}
 {% spaceless %}
 <div>
 
@@ -17,7 +18,7 @@
   {% if guest_info.image %}
       src="{{ guest_info.image.thumbnail.url }}"
   {% else %}
-      src="{{STATIC_URL}}images/unknown-drinker.png"
+      src="{% static 'images/unknown-drinker.png' %}"
   {% endif %}
 {% endif %}
     />

@@ -41,14 +41,15 @@ register = Library()
 
 @register.inclusion_tag('kegweb/mugshot_box.html', takes_context=True)
 def mugshot_box(context, user, boxsize=0):
-    c = copy.copy(context)
-    c['user'] = user
-    c['boxsize'] = boxsize
-    return c
+    return {
+        'user': user,
+        'boxsize': boxsize,
+        'guest_info': context.get('guest_info', None),
+    }
 
-@register.inclusion_tag('kegweb/picture-gallery.html', takes_context=True)
-def gallery(context, picture_or_pictures, thumb_size='span2', gallery_id=''):
-    c = copy.copy(context)
+@register.inclusion_tag('kegweb/picture-gallery.html')
+def gallery(picture_or_pictures, thumb_size='span2', gallery_id=''):
+    c = {}
     if not hasattr(picture_or_pictures, '__iter__'):
         c['gallery_pictures'] = [picture_or_pictures]
     else:
@@ -69,9 +70,9 @@ def badge(amount, caption, style='', is_volume=False, do_pluralize=False):
         'badge_style': style,
     }
 
-@register.inclusion_tag('kegweb/includes/progress_bar.html', takes_context=True)
-def progress_bar(context, progress_int, extra_css=''):
-    c = copy.copy(context)
+@register.inclusion_tag('kegweb/includes/progress_bar.html')
+def progress_bar(progress_int, extra_css=''):
+    c = {}
     try:
         progress_int = max(int(progress_int), 0)
     except ValueError:

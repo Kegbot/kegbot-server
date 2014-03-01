@@ -49,7 +49,7 @@ class CheckinError(Exception):
     """Base exception."""
 
 
-def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None):
+def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None, quiet=False):
     """Issue a single checkin to the checkin server.
 
     No-op if settings.check_for_updates is False.
@@ -87,12 +87,14 @@ def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None):
             site.registration_id = new_reg_id
             site.save()
         LOGGER.debug('Checkin result: %s' % str(result))
-        LOGGER.info('Checkin complete, reg_id=%s' % (reg_id,))
+        if not quiet:
+            LOGGER.info('Checkin complete, reg_id=%s' % (reg_id,))
         site.last_checkin_response = result
         site.last_checkin_time = timezone.now()
         site.save()
         return result
     except (ValueError, requests.RequestException) as e:
-        LOGGER.warning('Checkin error: %s' % str(e))
+        if not quiet:
+            LOGGER.warning('Checkin error: %s' % str(e))
         raise CheckinError(e)
 

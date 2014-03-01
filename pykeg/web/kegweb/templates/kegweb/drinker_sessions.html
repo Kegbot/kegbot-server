@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load kegweblib %}
+{% load bootstrap_pagination %}
+
+{% block title %}Drinker Sessions: {{ drinker.username }} | {{ block.super }}{% endblock %}
+{% block pagetitle %}Drinker Sessions: {{ drinker.username }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="span4">
+    {% with drinker as user %}
+        {% mugshot_box user %}
+    {% endwith %}
+    <BR>
+    <a href="{% url 'kb-drinker' drinker.username %}"
+      class="btn btn-info" style="width:90%">Back to Drinker Details</a>
+    <BR><BR><BR>
+  </div>
+
+  <div class="span8">
+    {% if chunks %}
+      {% for chunk in chunks %}
+        {% with chunk.session as session %}
+          {% include "kegweb/keg-session.html" %}
+        {% endwith %}
+      {% endfor %}
+      {% bootstrap_paginate chunks %}
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+

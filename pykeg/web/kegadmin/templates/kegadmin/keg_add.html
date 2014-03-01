@@ -16,13 +16,13 @@
 {% block kb-extrajs %}
 <script type="text/javascript">
 $(document).ready(function () {
-  $('#div_id_full_volume_ml').hide();
+  $('#div_id_initial_volume').hide();
     $('#id_keg_size').change(function () {
       var choice = $(this).val();
       if (choice =='other') {
-          $('#div_id_full_volume_ml').show();
+          $('#div_id_initial_volume').show();
         } else {
-          $('#div_id_full_volume_ml').hide();
+          $('#div_id_initial_volume').hide();
         }
     })
 });

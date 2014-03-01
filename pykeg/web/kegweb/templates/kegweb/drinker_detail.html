@@ -1,132 +1,143 @@
-{% extends "page-twocol.html" %}
+{% extends "base.html" %}
 {% load kegweblib %}
 
 {% block title %}Drinker Details: {{ drinker.username }} | {{ block.super }}{% endblock %}
 {% block pagetitle %}Drinker Details: {{ drinker.username }}{% endblock %}
 
-{% block sidebar %}
-  <div class="well">
-    {% mugshot_box drinker %}
-  </div>
-{% endblock sidebar %}
-
-{% block col-1 %}
+{% block content %}
 <div class="row">
+  <div class="span4">
+    {% mugshot_box drinker %}
+    <BR>
+    <a href="{% url 'kb-drinker-sessions' drinker.username %}"
+      class="btn btn-info" style="width:90%">See All Drinker Sessions</a>
+    <BR><BR><BR>
+  </div>
+
   <div class="span8">
-    <h2>Summary</h2>
-    <table class="table table-condensed">
-      {% if stats %}
-       <tr>
-          <th>Total Volume</th>
-          <td> {% volume stats.total_volume_ml %}</td>
-       </tr>
+    <ul class="nav nav-tabs" id="drinkerDetails">
+      <li><a href="#1" data-toggle="tab">Summary</a></li>
+      <li><a href="#2" data-toggle="tab">Charts</a></li>
+      {% if chunk %}
+      <li><a href="#3" data-toggle="tab">Last Session</a></li>
+      {% endif %}
+      {% if largest_session %}
+      <li><a href="#4" data-toggle="tab">Largest Session</a></li>
+      {% endif %}
+    </ul>
 
-       <tr>
-          <th>Total Pours</th>
-          <td>{{ stats.total_pours }}</td>
-       </tr>
+    <div class="tab-content">
+      <div class="tab-pane" id="1">
+        <table class="table table-condensed table-striped">
+          {% if stats %}
+           <tr>
+              <th>Total Volume</th>
+              <td> {% volume stats.total_volume_ml %}</td>
+           </tr>
 
-       <tr>
-         <th>Total Sessions</td>
-         <td>{{ stats.sessions_count }}</td>
-       </tr>
+           <tr>
+              <th>Total Pours</th>
+              <td>{{ stats.total_pours }}</td>
+           </tr>
 
-       {% if stats.total_pours %}
-       <tr>
-          <th>Average Pour</th>
-          <td>{% volume stats.average_volume_ml %}</td>
-       </tr>
+           <tr>
+             <th>Total Sessions</td>
+             <td>{{ stats.sessions_count }}</td>
+           </tr>
 
-       <tr>
-          <th>Largest Pour</th>
-          <td>{% volume stats.greatest_volume_ml %}</td>
-       </tr>
-       {% endif %}
-       {% endif %}
+           {% if stats.total_pours %}
+           <tr>
+              <th>Average Pour</th>
+              <td>{% volume stats.average_volume_ml %}</td>
+           </tr>
 
-       <tr>
-          <th>Member Since</th>
-          <td>
-            {{ drinker.date_joined|date:"l, F j Y" }}<br>
-            <i>({% timeago drinker.date_joined %})</i>
-          </td>
-       </tr>
+           <tr>
+              <th>Largest Pour</th>
+              <td>{% volume stats.greatest_volume_ml %}</td>
+           </tr>
+           {% endif %}
+           {% endif %}
 
-       {% with drinker.drinks.latest as last_drink %}
-       {% if last_drink %}
-       <tr>
-          <th>Last Drink</th>
-          <td>
-            {{ last_drink.time|date:"l, F j Y" }}<br>
-            <i>({% timeago last_drink.time%})</i>
-          </td>
-       </tr>
-       {% endif %}
-       {% endwith %}
+           <tr>
+              <th>Member Since</th>
+              <td>
+                {{ drinker.date_joined|date:"l, F j Y" }}<br>
+                <i>({% timeago drinker.date_joined %})</i>
+              </td>
+           </tr>
 
-    </table>
-  </div> <!-- span8 -->
+           {% with drinker.drinks.latest as last_drink %}
+           {% if last_drink %}
+           <tr>
+              <th>Last Drink</th>
+              <td>
+                {{ last_drink.time|date:"l, F j Y" }}<br>
+                <i>({% timeago last_drink.time%})</i>
+              </td>
+           </tr>
+           {% endif %}
+           {% endwith %}
+
+        </table>
+      </div> <!-- tab-pane -->
+
+      <div class="tab-pane" id="2">
+        {% if not stats.total_pours %}
+        Looks like {{ drinker }} has never poured a drink. Boo!
+        {% else %}
+        <table class="table table-condensed">
+          <tr>
+            {% if kbsite.settings.volume_display_units == 'metric' %}
+              <th>total liters, by day of week</th>
+            {% else %}
+              <th>total pints, by day of week</th>
+            {% endif %}
+            <td>{% chart sessions_by_weekday stats 350 100 %}</td>
+          </tr>
+
+          <tr>
+            {% if kbsite.settings.volume_display_units == 'metric' %}
+              <th>all sessions, by liter per session</th>
+            {% else %}
+              <th>all sessions, by pints per session</th>
+            {% endif %}
+            <td>{% chart sessions_by_volume stats 350 100 %}</td>
+          </tr>
+        </table>
+        {% endif %}
+      </div>
+
+      {% if chunk %}
+      <div class="tab-pane" id="3">
+
+        {% with chunk.session as session %}
+          {% include "kegweb/keg-session.html" %}
+        {% endwith %}
+
+      </div>
+      {% endif %}
+
+      {% if largest_session %}
+      <div class="tab-pane" id="4">
+
+          {% with largest_session as session %}
+            {% include "kegweb/keg-session.html" %}
+          {% endwith %}
+
+      </div>
+      {% endif %}
+
+    </div> <!-- tab-content -->
+  </div>
 </div> <!-- row -->
 
-{% if largest_session %}
-<div class="row">
-<div class="span10">
+{% endblock %}
 
-<h2>Largest Session</h2>
-{% with largest_session as session %}
-  {% include "kegweb/keg-session.html" %}
-{% endwith %}
-</div>
-</div>
-{% endif %}
 
-{% if chunks %}
-<div class="row">
-  <div class="span10">
-  <h2>Recent Sessions</h2>
-    {% for chunk in chunks %}
-      {% with chunk.session as session %}
-        {% include "kegweb/keg-session.html" %}
-      {% endwith %}
-    {% endfor %}
-  </div>
-</div>
-{% endif %}
-
-{% endblock col-1 %}
-
-{% block col-2 %}
-{% with drinker.mugshot as mugshot %}
-{% if mugshot %}
-<div class="row-fluid">
-<div class="span12">
-<div class="well">
-<img src="{{ mugshot.resized.url }}" /><br/>
-</div>
-</div>
-</div>
-{% endif %}
-{% endwith %}
-
-<div class="row">
-
-<h2>Drinker Stats</h2>
-{% if not stats.total_pours %}
-Looks like {{ drinker }} has never poured a drink. Boo!
-{% else %}
-<div class="kb-contentbox">
-  <p>
-    <b>total pints, by day of week</b><br>
-    {% chart sessions_by_weekday stats 350 100 %}
-  </p>
-
-  <p>
-    <b>all sessions, by pints per session</b><br>
-    {% chart sessions_by_volume stats 350 100 %}
-  </p>
-</div>
-
-{% endif %}
-
-</div>
-{% endblock col-2 %}
+{% block kb-extrajs %}
+<script type="text/javascript">
+$(document).ready(function () {
+  $('#drinkerDetails a:first').tab('show');
+});
+</script>
+{% endblock %}

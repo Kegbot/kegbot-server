@@ -142,7 +142,7 @@ def chart_sessions_by_volume(stats, *args, **kwargs):
     ]
     volmap = stats.get('volume_by_session', {})
     for session_volume in volmap.values():
-        volume = round(format_volume(session_volume, kwargs), 1)[0]
+        volume = round(format_volume(session_volume, kwargs)[0], 1)
         intval = int(volume)
         if intval >= len(buckets):
             buckets[-1] += 1

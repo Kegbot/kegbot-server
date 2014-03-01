@@ -1,100 +1,140 @@
-{% extends "page-twocol.html" %}
+{% extends "base.html" %}
 {% load kegweblib %}
 
 {% block title %}Keg {{ keg.id }} | {{ block.super }}{% endblock %}
 {% block pagetitle %}Keg {{ keg.id }}{% endblock %}
 
-{% block col-1 %}
-<div class="well well-small">
+{% block content %}
+<div class="row">
+  <div class="span8">
+    <ul class="nav nav-tabs" id="kegDetails">
+      <li><a href="#1" data-toggle="tab">Vitals</a></li>
+      <li><a href="#2" data-toggle="tab">Summary</a></li>
+      <li><a href="#3" data-toggle="tab">Charts</a></li>
+      {% if last_session %}
+      <li><a href="#4" data-toggle="tab">Last Session</a></li>
+      {% endif %}
+    </ul>
 
-  <h2>
-    {{keg.type.name}}
-    {% if keg.type.producer %}
-    <small>{{keg.type.producer}}</small>
-    {% if user.is_staff %}
-    <small>(<a href="{% url 'kegadmin-edit-beverage' keg.type.id %}">edit beer</a>)</small>
+    <div class="tab-content">
+      <div class="tab-pane" id="1">
+        <div class="well well-small">
+
+          <h2>
+            {{keg.type.name}}
+            {% if keg.type.producer %}
+            <small>{{keg.type.producer}}</small>
+            {% if user.is_staff %}
+            <small>(<a href="{% url 'kegadmin-edit-beverage' keg.type.id %}">edit beer</a>)</small>
+            {% endif %}
+            {% endif %}
+          </h2>
+
+          {% if keg.online %}
+          {% progress_bar keg.percent_full %} 
+          {% endif %}
+          
+          {% include "kegweb/basic-badges.html" %}
+
+          {% if keg.description %}
+          <blockquote>
+            <p>{{ keg.description}}</p>
+          </blockquote>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="tab-pane" id="2">
+        <table class="table table-condensed table-striped">
+          <tbody>
+            <tr>
+              <th>Status</th>
+              <td>
+                {% if keg.online %}
+                Keg is <b>online</b>, and is {{ keg.keg_age.days }}
+                day{{keg.keg_age.days|pluralize}} old.
+                <span class="muted">
+                {% if keg.is_empty %}
+                  (<i>empty</i>)
+                {% else %}
+                  ({{ keg.percent_full|floatformat:2 }}% full</i>)
+                {% endif %}
+                </span>
+                {% else %}
+                Keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
+                day{{keg.keg_age.days|pluralize}}.
+                {% endif %}
+              </td>
+            </tr>
+
+            {% include "kegweb/basic-stats.html" %}
+
+            {% if keg.spilled_volume > 0 %}
+            <tr>
+              <th>Total Spilled/Lost</th>
+              <td>{% volume keg.spilled_volume %}</td>
+            </tr>
+            {% endif %}
+
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tab-pane" id="3">
+        <table class="table table-condensed">
+          <tbody>
+            <tr>
+              <th>Volume by Weekday</th>
+              <td>{% chart volume_by_weekday stats 340 100 %}</td>
+            </tr>
+
+            {% with keg.current_tap as tap %}
+            {% if tap and tap.temperature_sensor %}
+            <tr>
+              <th>Temperature</th>
+              <td>
+                {{ tap.Temperature.TempC|floatformat:1}}&deg;C / 
+                {{ tap.Temperature.TempF|floatformat:1}}&deg;F<br/>
+                {% chart temp_sensor tap.temperature_sensor 340 60 %}
+              </td>
+            </tr>
+            {% endif %}
+            {% endwith %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if last_session %}
+      <div class="tab-pane" id="4">
+        {% for session in last_session %}
+          {% include "kegweb/keg-session.html" %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="span4">
+    {% if stats %}
+    <h2>Top Drinkers</h2>
+    {% chart users_by_volume stats 280 220 %}<br/>
+
+    {% with keg.TopDrinkers as ranked_drinkers %}
+      {% include "kegweb/drinker-rank.html" %}
+    {% endwith %}
+    <a href="{% url 'kb-keg-sessions' keg.id %}"
+      class="btn btn-info" style="width:90%">See All Keg Sessions</a>
     {% endif %}
-    {% endif %}
-  </h2>
-
-  {% if keg.online %}
-  {% progress_bar keg.percent_full %} 
-  {% endif %}
-  
-  {% include "kegweb/basic-badges.html" %}
-
+  </div>
 </div>
 
-<table class="table table-hover">
-  <tbody>
-    <tr>
-      <th>Status</th>
-      <td>
-        {% if keg.online %}
-        Keg is <b>online</b>, and is {{ keg.keg_age.days }}
-        day{{keg.keg_age.days|pluralize}} old.
-        <span class="muted">
-        {% if keg.is_empty %}
-          (<i>empty</i>)
-        {% else %}
-          ({{ keg.percent_full|floatformat:2 }}% full</i>)
-        {% endif %}
-        </span>
-        {% else %}
-        Keg is <b>offline</b>; it lasted {{ keg.keg_age.days }}
-        day{{keg.keg_age.days|pluralize}}.
-        {% endif %}
-      </td>
-    </tr>
+{% endblock %}
 
-    {% include "kegweb/basic-stats.html" %}
-
-    {% with keg.current_tap as tap %}
-    {% if tap and tap.temperature_sensor %}
-    <tr>
-      <th>Temperature</th>
-      <td>
-        {{ tap.Temperature.TempC|floatformat:1}}&deg;C / 
-        {{ tap.Temperature.TempF|floatformat:1}}&deg;F<br/>
-        {% chart temp_sensor tap.temperature_sensor 340 60 %}
-      </td>
-    </tr>
-    {% endif %}
-    {% endwith %}
-
-    {% if keg.spilled_volume > 0 %}
-    <tr>
-      <th>Total Spilled/Lost</th>
-      <td>{% volume keg.spilled_volume %}</td>
-    </tr>
-    {% endif %}
-
-  </tbody>
-</table>
-
-{% if keg.description %}
-<blockquote>
-  <p>{{ keg.description}}</p>
-</blockquote>
-{% endif %}
-<hr/>
-
-{% if sessions %}
-{% for session in sessions %}
-  {% include "kegweb/keg-session.html" %}
-{% endfor %}
-{% endif %}
-
-{% endblock col-1 %}
-
-{% block col-2 %}
-<h2>Top Drinkers</h2>
-
-{% chart users_by_volume stats 280 220 %}<br/>
-
-{% with keg.TopDrinkers as ranked_drinkers %}
-  {% include "kegweb/drinker-rank.html" %}
-{% endwith %}
-
-{% endblock col-2 %}
-
+{% block kb-extrajs %}
+<script type="text/javascript">
+$(document).ready(function () {
+  $('#kegDetails a:first').tab('show');
+});
+</script>
+{% endblock %}

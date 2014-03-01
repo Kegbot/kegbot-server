@@ -354,7 +354,7 @@ class ChartNode(Node):
 
         try:
             chart_result = self._chart_fn(obj, metric_volumes=metric_volumes,
-                temperature_unts=temperature_units)
+                temperature_units=temperature_units)
         except charts.ChartError, e:
             return self.show_error(str(e))
 

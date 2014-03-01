@@ -13,10 +13,10 @@
       style="width:100%;"
     {% endif %}
 {% if user and user.mugshot %}
-      src="{{ user.mugshot.thumbnail.url }}"
+      src="{{ user.mugshot.resized.url }}"
 {% else %}
   {% if guest_info.image %}
-      src="{{ guest_info.image.thumbnail.url }}"
+      src="{{ guest_info.image.resized.url }}"
   {% else %}
       src="{% static 'images/unknown-drinker.png' %}"
   {% endif %}

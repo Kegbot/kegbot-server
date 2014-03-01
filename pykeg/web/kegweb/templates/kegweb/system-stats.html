@@ -1,10 +1,10 @@
-{% extends "page-twocol.html" %}
+{% extends "base.html" %}
 {% load kegweblib %}
 
 {% block title %}System Stats | {{ block.super }}{% endblock %}
 {% block pagetitle %}System Stats{% endblock %}
 
-{% block col-1 %}
+{% block content%}
 {% if not stats %}
 <div class="alert alert-info">
   <h2>No Stats.. yet.</h2>
@@ -14,31 +14,51 @@
   </p>
 </div>
 {% else %}
-<h2>Summary</h2>
+<div class="row">
+  <div class="span8">
+    <ul class="nav nav-tabs" id="systemDetails">
+      <li><a href="#1" data-toggle="tab">Summary</a></li>
+      <li><a href="#2" data-toggle="tab">Largest Session</a></li>
+    </ul>
 
-{% include "kegweb/basic-badges.html" %}
-<table class="table table-condensed">
-  <tbody>
-    {% include "kegweb/basic-stats.html" %}
-  </tbody>
-</table>
+    <div class="tab-content">
+      <div class="tab-pane" id="1">
+        {% include "kegweb/basic-badges.html" %}
+        <table class="table table-condensed table-striped">
+          <tbody>
+            {% include "kegweb/basic-stats.html" %}
+          </tbody>
+        </table>
+      </div>
 
-{% if largest_session %}
-<h2>Largest Session</h2>
-  {% with largest_session as session %}
-    {% include "kegweb/keg-session.html" %}
-  {% endwith %}
+      {% if largest_session %}
+      <div class="tab-pane" id="2">
+        {% with largest_session as session %}
+          {% include "kegweb/keg-session.html" %}
+        {% endwith %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
 {% endif %}
 
-{% endif %}
-{% endblock col-1 %}
+  <div class="span4">
+    {% if stats %}
+    <h2>Top Drinkers</h2>
+    {% chart users_by_volume stats 280 220 %}<br/>
+    {% with top_drinkers as ranked_drinkers %}
+    {% include "kegweb/drinker-rank.html" %}
+    {% endwith %}
+    {% endif %}
+  </div>
 
-{% block col-2 %}
-{% if stats %}
-<h2>Top Drinkers</h2>
-{% chart users_by_volume stats 280 220 %}<br/>
-{% with top_drinkers as ranked_drinkers %}
-{% include "kegweb/drinker-rank.html" %}
-{% endwith %}
-{% endif %}
-{% endblock col-2 %}
+</div>
+{% endblock %}
+
+{% block kb-extrajs %}
+<script type="text/javascript">
+$(document).ready(function () {
+  $('#systemDetails a:first').tab('show');
+});
+</script>
+{% endblock %}

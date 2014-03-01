@@ -196,6 +196,37 @@ def get_session_stats(request, session_id):
     session = get_object_or_404(models.DrinkingSession, id=session_id)
     return session.GetStats()
 
+@auth_required
+def get_status(request):
+    try:
+        session = current_session(request)
+    except Http404:
+        session = None
+    taps = models.KegTap.objects.all()
+    drinks = models.Drink.objects.all()[:5]
+    kegs = models.Keg.objects.all().filter(online=True)
+    controllers = models.Controller.objects.all()
+    meters = models.FlowMeter.objects.all()
+
+    current_users = []
+    if session:
+        current_users = [protolib.ToDict(c.user) for c in session.user_chunks.all() if c.user]
+
+    settings = models.SiteSettings.get()
+    site = {
+        'title': settings.title,
+    }
+
+    result = {
+        'site': site,
+        'session': protolib.ToDict(session) if session else None,
+        'taps': [protolib.ToDict(t) for t in taps],
+        'drinks': [protolib.ToDict(d) for d in drinks],
+        'kegs': [protolib.ToDict(k) for k in kegs],
+        'users': current_users,
+    }
+    return result
+
 def get_keg(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
     return protolib.ToProto(keg, full=True)

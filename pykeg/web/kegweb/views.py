@@ -29,6 +29,7 @@ from django.views.generic.dates import DayArchiveView
 from django.views.generic.dates import MonthArchiveView
 from django.views.generic.dates import YearArchiveView
 from django.views.generic.list import ListView
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from kegbot.util import kbjson
 
@@ -84,15 +85,16 @@ def system_stats(request):
 def user_detail(request, username):
     user = get_object_or_404(models.User, username=username, is_active=True)
     stats = user.get_stats()
-
-    # TODO(mikey): Limit to "recent" sessions for now.
-    # Bug: https://github.com/Kegbot/kegbot/issues/37
-    chunks = models.UserSessionChunk.objects.filter(user=user).select_related(depth=1)[:10]
     drinks = user.drinks.all()
+
+    try:
+        chunk = models.UserSessionChunk.objects.filter(user=user).select_related(depth=1).latest()
+    except models.UserSessionChunk.DoesNotExist:
+        chunk = None
 
     context = RequestContext(request, {
         'drinks': drinks,
-        'chunks': chunks,
+        'chunk': chunk,
         'stats': stats,
         'drinker': user})
 
@@ -120,10 +122,13 @@ def fullscreen(request):
 def keg_detail(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
     sessions = keg.Sessions()
+    last_session = keg.Sessions()[:1]
+
     context = RequestContext(request, {
       'keg': keg,
       'stats': keg.GetStats(),
-      'sessions': sessions})
+      'sessions': sessions,
+      'last_session': last_session})
     return render_to_response('kegweb/keg_detail.html', context_instance=context)
 
 def short_drink_detail(request, drink_id):
@@ -147,6 +152,49 @@ def session_detail(request, year, month, day, id, slug):
     })
     return render_to_response('kegweb/session_detail.html', context_instance=context)
 
+def drinker_sessions(request, username):
+    user = get_object_or_404(models.User, username=username, is_active=True)
+    stats = user.get_stats()
+    drinks = user.drinks.all()
+    chunks = models.UserSessionChunk.objects.filter(user=user).select_related(depth=1)
+
+    paginator = Paginator(chunks, 5)
+
+    page = request.GET.get('page')
+    try:
+        chunks = paginator.page(page)
+    except PageNotAnInteger:
+        chunks = paginator.page(1)
+    except EmptyPage:
+        chunks = paginator.page(paginator.num_pages)
+
+    context = RequestContext(request, {
+        'drinks': drinks,
+        'chunks': chunks,
+        'stats': stats,
+        'drinker': user})
+
+    return render_to_response('kegweb/drinker_sessions.html', context_instance=context)
+
+def keg_sessions(request, keg_id):
+    keg = get_object_or_404(models.Keg, id=keg_id)
+    sessions = keg.Sessions()
+
+    paginator = Paginator(sessions, 5)
+
+    page = request.GET.get('page')
+    try:
+        sessions = paginator.page(page)
+    except PageNotAnInteger:
+        sessions = paginator.page(1)
+    except EmptyPage:
+        sessions = paginator.page(paginator.num_pages)
+
+    context = RequestContext(request, {
+      'keg': keg,
+      'stats': keg.GetStats(),
+      'sessions': sessions})
+    return render_to_response('kegweb/keg_sessions.html', context_instance=context)
 
 class SessionArchiveIndexView(ArchiveIndexView):
     model = models.DrinkingSession

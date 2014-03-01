@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load kegweblib %}
+{% load bootstrap_pagination %}
+
+{% block title %}Keg {{ keg.id }}: Sessions | {{ block.super }}{% endblock %}
+{% block pagetitle %}Keg {{ keg.id }}: Sessions{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="span8">
+    {% if sessions %}
+    {% for session in sessions %}
+      {% include "kegweb/keg-session.html" %}
+    {% endfor %}
+    {% bootstrap_paginate sessions %}
+    {% endif %}
+  </div>
+
+  <div class="span4">
+  <h2>Top Drinkers</h2>
+  {% chart users_by_volume stats 280 220 %}<br/>
+
+  {% with keg.TopDrinkers as ranked_drinkers %}
+    {% include "kegweb/drinker-rank.html" %}
+  {% endwith %}
+  <a href="{% url 'kb-keg' keg.id %}"
+    class="btn btn-info" style="width:90%">Back to Keg Detail</a>
+</div>
+
+</div>
+
+{% endblock %}
+

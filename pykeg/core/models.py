@@ -63,6 +63,9 @@ class User(AbstractUser):
     activation_key = models.CharField(max_length=128, blank=True,
         null=True)
 
+    def is_guest(self):
+        return self.username == 'guest'
+
     def get_absolute_url(self):
         return reverse('kb-drinker', kwargs={'username': self.username})
 
@@ -608,8 +611,7 @@ class Drink(models.Model):
       help_text='Date and time of pour.')
     duration = models.PositiveIntegerField(blank=True, default=0, editable=False,
         help_text='Time in seconds taken to pour this Drink.')
-    user = models.ForeignKey(User, null=True, blank=True, related_name='drinks',
-        editable=False,
+    user = models.ForeignKey(User, related_name='drinks', editable=False,
         help_text='User responsible for this Drink, or None if anonymous/unknown.')
     keg = models.ForeignKey(Keg, null=True, blank=True, related_name='drinks',
         on_delete=models.PROTECT, editable=False,
@@ -625,6 +627,9 @@ class Drink(models.Model):
     picture = models.OneToOneField('Picture', blank=True, null=True,
         on_delete=models.SET_NULL,
         help_text='Picture snapped with this drink.')
+
+    def is_guest_pour(self):
+        return self.user is None or self.user.is_guest()
 
     def get_absolute_url(self):
         return reverse('kb-drink', args=(str(self.id),))
@@ -923,10 +928,8 @@ class SessionChunk(_AbstractChunk):
         ordering = ('-start_time',)
 
     session = models.ForeignKey(DrinkingSession, related_name='chunks')
-    user = models.ForeignKey(User, related_name='session_chunks', blank=True,
-        null=True)
-    keg = models.ForeignKey(Keg, related_name='session_chunks', blank=True,
-        null=True, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, related_name='session_chunks')
+    keg = models.ForeignKey(Keg, related_name='session_chunks')
 
 
 class UserSessionChunk(_AbstractChunk):
@@ -937,8 +940,7 @@ class UserSessionChunk(_AbstractChunk):
         ordering = ('-start_time',)
 
     session = models.ForeignKey(DrinkingSession, related_name='user_chunks')
-    user = models.ForeignKey(User, related_name='user_session_chunks', blank=True,
-        null=True)
+    user = models.ForeignKey(User, related_name='user_session_chunks')
 
     def GetTitle(self):
         return self.session.GetTitle()
@@ -956,8 +958,7 @@ class KegSessionChunk(_AbstractChunk):
 
     objects = managers.SessionManager()
     session = models.ForeignKey(DrinkingSession, related_name='keg_chunks')
-    keg = models.ForeignKey(Keg, related_name='keg_session_chunks', blank=True,
-        null=True)
+    keg = models.ForeignKey(Keg, related_name='keg_session_chunks')
 
     def GetTitle(self):
         return self.session.GetTitle()
@@ -1014,8 +1015,7 @@ class SystemStats(_StatsModel):
     pass
 
 class UserStats(_StatsModel):
-    user = models.ForeignKey(User, blank=True, null=True,
-        related_name='stats')
+    user = models.ForeignKey(User, related_name='stats')
 
     class Meta:
         unique_together = ('drink', 'user')

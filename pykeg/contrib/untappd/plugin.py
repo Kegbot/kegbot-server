@@ -60,7 +60,7 @@ class UntappdPlugin(plugin.Plugin):
             self.logger.info('Ignoring event: not session_joined.')
             return
 
-        if not user:
+        if user.is_guest():
             self.logger.info('Ignoring event: anonymous.')
             return
 

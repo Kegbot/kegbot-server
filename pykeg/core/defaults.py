@@ -42,6 +42,8 @@ def set_defaults(force=False, set_is_setup=False):
         site.is_setup = True
         site.save()
 
+    guest = models.User.objects.create_user('guest')
+
     controller = models.Controller.objects.create(name='kegboard')
 
     tap_0 = models.KegTap.objects.create(name='Main Tap')

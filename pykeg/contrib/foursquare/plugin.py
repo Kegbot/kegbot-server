@@ -62,8 +62,8 @@ class FoursquarePlugin(plugin.Plugin):
             self.logger.info('Ignoring event: not %s.' % event.DRINK_POURED)
             return
 
-        if not user:
-            self.logger.info('Ignoring event: anonymous.')
+        if user.is_guest():
+            self.logger.info('Ignoring event: guest.')
             return
 
         if util.is_stale(event.time):

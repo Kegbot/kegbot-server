@@ -179,9 +179,12 @@ class StatsBuilder:
     @stat('has_guest_pour')
     def HasGuestPour(self, previous):
         if not previous:
-            return self.drinks.filter(user_id=None).count() > 0
+            for d in self.drinks:
+                if d.is_guest_pour():
+                    return True
+            return False
         else:
-            return bool(previous or self.drink.user is None)
+            return bool(previous or self.drink.is_guest_pour())
 
     @stat('volume_by_drinker')
     def VolumeByDrinker(self, previous):

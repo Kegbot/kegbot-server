@@ -15,7 +15,7 @@
     </div>
     <div class="modal-body">
         <p>
-            Are you sure you want to cancel <b>Drink {{ drink.id }}</b>{% if drink.user %} by <b>{{ drink.user }}</b>{% endif %}?
+            Are you sure you want to cancel <b>Drink {{ drink.id }}</b>{% if not drink.is_guest_pour %} by <b>{{ drink.user }}</b>{% endif %}?
         </p>
         <p>
             Deleting the drink will <b>immediately delete the drink and all data about it</b>, including
@@ -39,7 +39,7 @@
     </div>
     <div class="modal-body">
         <p>
-            Are you sure you want to spill <b>Drink {{ drink.id }}</b>{% if drink.user %} by <b>{{ drink.user }}</b>{% endif %}?
+            Are you sure you want to spill <b>Drink {{ drink.id }}</b>{% if not drink.is_guest_pour %} by <b>{{ drink.user }}</b>{% endif %}?
         </p>
         <p>
             Spilling the drink will <b>immediately delete the drink and all data about it</b>, including
@@ -135,7 +135,7 @@
         <div class="input-append">
           <input class="span6" name="username" type="text" placeholder="username" />
           <button class="btn" type="submit" name="submit_reassign">
-            <i class="icon-user"></i> {% if drink.user %}Reassign{% else %}Assign{% endif %}
+            <i class="icon-user"></i> {% if not drink.is_guest_pour %}Reassign{% else %}Assign{% endif %}
           </button>
           <a href="#spillModal" role="button" class="btn btn-warning" data-toggle="modal">
             <i class="icon-minus icon-white"></i> Spill</a>

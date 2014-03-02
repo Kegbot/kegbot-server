@@ -315,7 +315,7 @@ def all_taps(request):
 
 @auth_required
 def user_list(request):
-    return models.User.objects.filter(is_active=True).order_by('username')
+    return models.User.objects.filter(is_active=True).exclude(username='guest').order_by('username')
 
 def get_user(request, username):
     user = get_object_or_404(models.User, username=username)

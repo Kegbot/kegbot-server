@@ -143,9 +143,10 @@ class BaseApiTestCase(TestCase):
         drink = self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100,
             photo='foo')
 
-        self.assertEquals(None, drink.user)
+        self.assertTrue(drink.is_guest_pour())
+        self.assertTrue(drink.user.is_guest())
         self.assertIsNotNone(drink.picture)
-        self.assertEquals(None, drink.picture.user)
+        self.assertTrue(drink.picture.user.is_guest())
 
         user = self.backend.create_new_user('blort', email='blort@example.com')
         updated_drink = self.backend.assign_drink(drink, user)

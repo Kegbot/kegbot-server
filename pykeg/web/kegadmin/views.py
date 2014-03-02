@@ -53,8 +53,8 @@ from pykeg.web.tasks import do_checkin
 def dashboard(request):
     context = RequestContext(request)
     recent_time = timezone.now() - datetime.timedelta(days=30)
-    active_users = models.User.objects.filter(is_active=True)
-    new_users = models.User.objects.filter(date_joined__gte=recent_time)
+    active_users = models.User.objects.filter(is_active=True).exclude(username='guest')
+    new_users = models.User.objects.filter(date_joined__gte=recent_time).exclude(username='guest')
 
     # Hack: Schedule an update checkin if it looks like it's been a while.
     # This works around sites that are not running celerybeat.
@@ -266,7 +266,7 @@ def user_list(request):
             except models.User.DoesNotExist:
                 messages.error(request, 'User "%s" does not exist.' % username)
 
-    users = models.User.objects.all().order_by('-id')
+    users = models.User.objects.exclude(username='guest').order_by('-id')
     paginator = Paginator(users, 25)
 
     page = request.GET.get('page')

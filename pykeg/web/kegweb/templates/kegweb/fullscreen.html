@@ -1,18 +1,19 @@
 {% extends "skel.html" %}
 {% load kegweblib %}
+{% load crispy_forms_tags %}
 
 {% block title %}{{ kbsite.settings.title }} (Fullscreen Mode){% endblock %}
 
 {% block kb-extracss %}
 <style>
 .bodyfaux {
-	height: 100%;
-	min-height: 100%;
-	width:100%;
-	padding:0;
-	margin:0;
-	overflow:hidden;
-	}
+  height: 100%;
+  min-height: 100%;
+  width:100%;
+  padding:0;
+  margin:0;
+  overflow:hidden;
+  }
 
 .fullscreen-wrapper {
     display:block;
@@ -27,104 +28,170 @@
     z-index:1;
     min-width:100%;
     min-height:100%;
-    background:transparent url('{{ STATIC_URL }}images/chalkboard-bg.jpg') center center no-repeat;
+    background:transparent url('{{ STATIC_URL }}images/{{background}}') center center no-repeat;
     background-size:cover;
 }
 .fullscreen-content {
-	display:block;
-	position:relative;
-	z-index:2;
+  display:block;
+  position:relative;
+  z-index:2;
     height:100%;
     width:100%;
 }
 
 .taplist-header {
-	padding-top:15px;
-	height:15%;
-	min-height:15%;
-	max-height:15%;
-	width:100%;
+  padding-top:15px;
+  height:15%;
+  min-height:15%;
+  max-height:15%;
+  width:100%;
 }
 
 img.taplist-logo {
-	display:block;
-	margin-left:auto;
-	margin-right:auto;
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
 }
 
 .taplist-body {
-	height:68%;
-	min-height:68%;
-	max-height:68%;
-	width:100%;
+  height:68%;
+  min-height:68%;
+  max-height:68%;
+  width:100%;
 }
 
 .cycle-slideshow {
-	width:100%;
-	height:100%;
+  width:100%;
+  height:100%;
 }
 
 .cycle-slideshow .cycle-wrap {
-	width:85%;
-	margin: 0 auto;
-	height:100%;
+  width:85%;
+  margin: 0 auto;
+  height:100%;
 }
 
 .cycle-slideshow .cycle-keg-image {
-	float:left;
-	padding-right:30px;
-	height:100%;
+  float:left;
+  padding-right:30px;
+  height:100%;
 }
 
 .cycle-slideshow .cycle-keg-details {
-	margin-left:100px;
-	margin-top:10px;
-	background-color: rgba(0, 0, 0, 0.5);
-	-webkit-border-radius: 20px;
-	-moz-border-radius: 20px;
-	border-radius: 20px;
-		color:#ffffff;
-		padding-top:10px;
-		padding-bottom:10px;
+  margin-left:100px;
+  margin-top:10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+    color:#ffffff;
+    padding-top:10px;
+    padding-bottom:10px;
+}
+
+.cycle-slideshow .cycle-keg-text {
+  margin-right:30px;
 }
 
 img.fullscreen-keg {
-	height:100%;
-	min-height:100%;
-	max-height:100%;
+  height:100%;
+  min-height:100%;
+  max-height:100%;
 }
 
 .establishment-logo {
-	position:fixed;
-	bottom:0;
-	left:0;
-	margin-left:15px;
-	height:7%;
-	min-height:7%;
-	max-height:7%;
-	width:100%;
-	color:#ffffff;
-	font-size:48px;
+  position:fixed;
+  bottom:0;
+  left:0;
+  margin-left:15px;
+  height:7%;
+  min-height:7%;
+  max-height:7%;
+  width:100%;
+  color:#ffffff;
+  font-size:48px;
 }
 
 .kegbot-logo {
-	position:fixed;
-	bottom:0;
-	right:0;
-	height:7%;
-	min-height:7%;
-	max-height:7%;
-	width:100%;
-	margin-right:15px;
-	margin-bottom:15px;
+  position:fixed;
+  bottom:0;
+  right:0;
+  height:7%;
+  min-height:7%;
+  max-height:7%;
+  width:100%;
+  margin-right:15px;
+  margin-bottom:15px;
 }
 
 img.taplist-foot-logos {
-	height:100%;
-	min-height:100%;
-	max-height:100%;
+  height:100%;
+  min-height:100%;
+  max-height:100%;
 }
 </style>
+{% endblock %}
+
+{% block body %}
+{% if not template %}
+<div class="row-fluid">
+  <div class="span2"></div>
+  <div class="span8">
+    <h2>Fullscreen Experience Settings</h2>
+    <a id="fullscreen_launcher" class="btn btn-primary">
+      Launch Fullscreen Mode</a>
+    {% crispy form %}
+  </div>
+  <div class="span2"></div>
+</div>
+
+{% elif template == 'taplist_carousel' %}
+<div class="fullscreen-wrapper">
+  <div class="fullscreen-img"></div>
+  <div class="fullscreen-content">
+    <div class="taplist-header">
+      <img class="taplist-logo" src="{{ STATIC_URL }}images/whats-on-tap.png">
+    </div>
+
+    <div class="taplist-body">
+      <div class="cycle-slideshow composite-example" 
+          data-cycle-fx="scrollHorz" 
+          data-cycle-slides="> div"
+          data-cycle-timeout="{{slide_rate}}"
+          data-cycle-center-horz="true"
+          data-cycle-center-vert="true">
+        {% for tap in taps %}
+        {% with tap.current_keg as keg %}
+        {% if keg %}
+        <div class="cycle-wrap">
+          <div class="cycle-keg-image">
+            {% if keg.type.picture %}
+                <img class="fullscreen-keg" src="{{ keg.type.picture.resized_png.url }}">
+            {% else %}
+                <img class="fullscreen-keg" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
+            {% endif %}
+          </div>
+          <div class="cycle-keg-details">
+            <div class="cycle-keg-text">
+              <h1>{{ keg.type.name }}
+              <small>{{ tap.name }}</small></h1>
+              {% progress_bar keg.percent_full %}
+              <h3>{{ tap.description }}</h3>
+            </div>
+          </div>
+          <div style="clear:both;"></div>
+        </div>
+        {% endif %}
+        {% endwith %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="establishment-logo">{% if kbsite.settings.title %}{{ kbsite.settings.title }}{% else %}Kegbot{% endif %}</div>
+    <div class="kegbot-logo pull-right"><img class="taplist-foot-logos pull-right" src="{{ STATIC_URL }}images/kegbot-logo-full-white.png"></div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 
@@ -133,110 +200,68 @@ img.taplist-foot-logos {
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cycle2.center.min.js"></script>
 
 <script type="text/javascript">
-	$(document).ready(function() {
+  $(document).ready(function() {
+    $('html,body').addClass('bodyfaux');
+    var root = location.protocol + '//' + location.host;
 
-			//This currently does nothing as endpoint URL can't run this without user interaction
-			launchFullscreen(document.documentElement);
-			//
-		$('html,body').addClass('bodyfaux');
-		var root = location.protocol + '//' + location.host;
-		
-		$('.taplist-foot-logos').click(function() {
-			$('html,body').removeClass('bodyfaux');
-			window.location=root;
-			exitFullscreen();
-		});
-		$(document).keyup(function(e) {
-  			if (e.keyCode == 27) { // (Escape Key)
-  				$('html,body').removeClass('bodyfaux');
-				window.location=root;
-				exitFullscreen();
-  			}
-		});
+    $('#fullscreen_launcher').click(function() {
+      launchFullscreen(document.documentElement);
+    });
+    
+    $('.taplist-foot-logos').click(function() {
+      $('html,body').removeClass('bodyfaux');
+      window.location=root;
+      exitFullscreen();
+    });
+    
+    $(document).keyup(function(e) {
+        if (e.keyCode == 27) { // (Escape Key)
+          $('html,body').removeClass('bodyfaux');
+        window.location=root;
+        exitFullscreen();
+        }
+    });
 
-		function launchFullscreen(element) {
-		  if(element.requestFullscreen) {
-			element.requestFullscreen();
-		  } else if(element.mozRequestFullScreen) {
-			element.mozRequestFullScreen();
-		  } else if(element.webkitRequestFullscreen) {
-			element.webkitRequestFullscreen();
-		  } else if(element.msRequestFullscreen) {
-			element.msRequestFullscreen();
-		  }
-		}
+    function launchFullscreen(element) {
+      if(element.requestFullscreen) {
+      element.requestFullscreen();
+      } else if(element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+      } else if(element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen();
+      } else if(element.msRequestFullscreen) {
+      element.msRequestFullscreen();
+      }
+    }
 
-		function exitFullscreen() {
-		  if(document.exitFullscreen) {
-			document.exitFullscreen();
-		  } else if(document.mozCancelFullScreen) {
-			document.mozCancelFullScreen();
-		  } else if(document.webkitExitFullscreen) {
-			document.webkitExitFullscreen();
-		  }
-		}
+    function exitFullscreen() {
+      if(document.exitFullscreen) {
+      document.exitFullscreen();
+      } else if(document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+      } else if(document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+      }
+    }
 
-		function dumpFullscreen() {
-		  console.log("document.fullscreenElement is: ", document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-		  console.log("document.fullscreenEnabled is: ", document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled);
-		}
+    function dumpFullscreen() {
+      console.log("document.fullscreenElement is: ", document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+      console.log("document.fullscreenEnabled is: ", document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled);
+    }
 
-		document.addEventListener("fullscreenchange", function(e) {
-		  console.log("fullscreenchange event! ", e);
-		});
-		document.addEventListener("mozfullscreenchange", function(e) {
-		  console.log("mozfullscreenchange event! ", e);
-		});
-		document.addEventListener("webkitfullscreenchange", function(e) {
-		  console.log("webkitfullscreenchange event! ", e);
-		});
-		document.addEventListener("msfullscreenchange", function(e) {
-		  console.log("msfullscreenchange event! ", e);
-		});
-	});
+    document.addEventListener("fullscreenchange", function(e) {
+      console.log("fullscreenchange event! ", e);
+    });
+    document.addEventListener("mozfullscreenchange", function(e) {
+      console.log("mozfullscreenchange event! ", e);
+    });
+    document.addEventListener("webkitfullscreenchange", function(e) {
+      console.log("webkitfullscreenchange event! ", e);
+    });
+    document.addEventListener("msfullscreenchange", function(e) {
+      console.log("msfullscreenchange event! ", e);
+    });
+  });
 </script>
 {% endblock %}
 
-{% block body %}
-<div class="fullscreen-wrapper">
-	<div class="fullscreen-img"></div>
-	<div class="fullscreen-content">
-		<div class="taplist-header">
-			<img class="taplist-logo" src="{{ STATIC_URL }}images/whats-on-tap.png">
-		</div>
-
-		<div class="taplist-body">
-			<div class="cycle-slideshow composite-example" 
-			    data-cycle-fx="scrollHorz" 
-			    data-cycle-slides="> div"
-			    data-cycle-timeout="7500"
-			    data-cycle-center-horz="true"
-    			data-cycle-center-vert="true">
-    		{% for tap in taps %}
-    		{% with tap.current_keg as keg %}
-    		{% if keg %}
-    		<div class="cycle-wrap">
-    			<div class="cycle-keg-image">
-						{% if keg.type.picture %}
-				        <img class="fullscreen-keg" src="{{ keg.type.picture.resized_png.url }}">
-				    {% else %}
-				        <img class="fullscreen-keg" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
-				    {% endif %}
-					</div>
-					<div class="cycle-keg-details">
-						<h1>{{ keg.type.name }}: {{ tap.name }}</h1>
-						<h2>{{ tap.description }}</h2>
-					</div>
-					<div style="clear:both;"></div>
-				</div>
-				{% endif %}
-				{% endwith %}
-				{% endfor %}
-			</div>
-		</div>
-
-		<div class="establishment-logo">{% if kbsite.settings.title %}{{ kbsite.settings.title }}{% else %}Kegbot{% endif %}</div>
-		<div class="kegbot-logo pull-right"><img class="taplist-foot-logos pull-right" src="{{ STATIC_URL }}images/kegbot-logo-full-white.png"></div>
-	</div>
-</div>
-{% endblock %}

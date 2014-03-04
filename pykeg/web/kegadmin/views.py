@@ -298,6 +298,8 @@ def add_user(request):
 @staff_member_required
 def user_detail(request, user_id):
     edit_user = get_object_or_404(models.User, id=user_id)
+    context = RequestContext(request)
+    update_email_form = forms.EditUserForm(instance=edit_user)
 
     if request.method == 'POST':
         if 'submit_enable' in request.POST:
@@ -332,9 +334,14 @@ def user_detail(request, user_id):
                 edit_user.save()
                 messages.success(request, 'User %s staff status disabled.' % edit_user.username)
 
-    context = RequestContext(request)
-    context['edit_user'] = edit_user
+        else:
+            update_email_form = forms.EditUserForm(request.POST, instance=edit_user)
+            if update_email_form.is_valid():
+                update_email_form.save()
+                messages.success(request, 'User %s e-mail changed successfully' % edit_user.username)
 
+    context['update_email_form'] = update_email_form
+    context['edit_user'] = edit_user
     context['tokens'] = edit_user.tokens.all().order_by('created_time')
 
     return render_to_response('kegadmin/user_detail.html', context_instance=context)

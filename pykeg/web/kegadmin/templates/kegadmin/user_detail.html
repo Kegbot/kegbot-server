@@ -8,109 +8,138 @@
 {% block kegadmin-main %}
 
 <div class="row-fluid">
-
-<div class="span3">
+<div class="span4">
     {% with edit_user as user %}
         {% mugshot_box user %}
     {% endwith %}
-    <p>
-    <form action="" method="POST">{% csrf_token %}
-
-        {% if edit_user.is_active %}
-        <button class="btn btn-large btn-block disabled">Account Enabled</button>
-        {% if not edit_user.is_superuser %}
-            <input type="submit" name="submit_disable"
-                class="btn btn-large btn-block btn-danger" value="Disable Account"/>
+</div>
+<div class="span8">
+    <ul class="nav nav-tabs" id="userDetails">
+        <li><a href="#1" data-toggle="tab">Overview</a></li>
+        {% if tokens %}
+        <li><a href="#2" data-toggle="tab">Tokens</a></li>
         {% endif %}
-        {% else %}
-        <input type="submit" name="submit_enable"
-            class="btn btn-large btn-block btn-success" value="Enable Account"/>
-        <button class="btn btn-large btn-block disabled">Account Disabled</button>
+        {% if user.is_staff %}
+        <li><a href="#3" data-toggle="tab">Access Control</a></li>
+        {% endif %}
+        {% if user.is_superuser %}
+        <li><a href="#4" data-toggle="tab">Update E-Mail</a></li>
+        {% endif %}
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane" id="1">
+            <table class="table table-bordered">
+            <tbody>
+            <tr>
+                <th>Name</th>
+                <td>{{ edit_user.username }} <span class="muted">(#{{edit_user.id }})</span></td>
+            </tr>
+            <tr>
+                <th>E-Mail</th>
+                <td>
+                    {{ edit_user.email }}
+                </td>
+            </tr>
+            <tr>
+                <th>Date Joined</th>
+                <td>{{ edit_user.date_joined }}</td>
+            </tr>
+            <tr>
+                <th>Last Login</th>
+                <td>{{ edit_user.last_login }}</td>
+            </tr>
+            <tr>
+                <th>Access Level</th>
+                <td>
+                    {% with edit_user as user %}
+                        {% include 'kegadmin/includes/user-status-label.html' %}
+                    {% endwith %}
+                </td>
+            </tr>
+            </table>
+        </div>
+
+        {% if tokens %}
+        <div class="tab-pane" id="2">
+            <table class="table table-bordered table-hover">
+            <tbody>
+            <tr>
+                <th>Token</th>
+                <th>Status</th>
+            </tr>
+            {% for token in tokens %}
+            <tr>
+                <td>
+                    <a href="{% url "kegadmin-edit-token" token.id %}">
+                    {% if token.auth_device == "core.rfid" %}
+                    RFID
+                    {% elif token.auth_device == "core.onewire" %}
+                    OneWire
+                    {% else %}
+                    {{ token.auth_device }}
+                    {% endif %}
+                    {{ token.token_value }}
+                    </a>
+                </td>
+                <td>{{ token.enabled }}</td>
+            {% endfor %}
+            </table>
+        </div>
         {% endif %}
 
-    </form>
-    </p>
+        {% if user.is_staff %}
+        <div class="tab-pane" id="3">
+            <form action="" method="POST">{% csrf_token %}
 
-    {% if user.is_superuser %}
-    <p>
-    <form action="" method="POST">{% csrf_token %}
+                {% if edit_user.is_active %}
+                <button class="btn btn-large btn-block disabled">Account Enabled</button>
+                {% if not edit_user.is_superuser %}
+                    <input type="submit" name="submit_disable"
+                        class="btn btn-large btn-block btn-danger" value="Disable Account"/>
+                {% endif %}
+                {% else %}
+                <input type="submit" name="submit_enable"
+                    class="btn btn-large btn-block btn-success" value="Enable Account"/>
+                <button class="btn btn-large btn-block disabled">Account Disabled</button>
+                {% endif %}
 
-        {% if edit_user.is_staff %}
-        <button class="btn btn-large btn-block disabled">Staff Status Enabled</button>
-        {% if not edit_user.is_superuser %}
-            <input type="submit" name="submit_remove_staff"
-            class="btn btn-large btn-block btn-danger" value="Disable Staff Status"/>
+            </form>
+
+            {% if user.is_superuser %}
+            <form action="" method="POST">{% csrf_token %}
+
+                {% if edit_user.is_staff %}
+                <button class="btn btn-large btn-block disabled">Staff Status Enabled</button>
+                {% if not edit_user.is_superuser %}
+                    <input type="submit" name="submit_remove_staff"
+                    class="btn btn-large btn-block btn-danger" value="Disable Staff Status"/>
+                {% endif %}
+                {% else %}
+                <input type="submit" name="submit_add_staff"
+                    class="btn btn-large btn-block btn-success" value="Enable Staff Status"/>
+                <button class="btn btn-large btn-block disabled">Staff Status Disabled</button>
+                {% endif %}
+
+            </form>
+            {% endif %}
+        </div>
         {% endif %}
-        {% else %}
-        <input type="submit" name="submit_add_staff"
-            class="btn btn-large btn-block btn-success" value="Enable Staff Status"/>
-        <button class="btn btn-large btn-block disabled">Staff Status Disabled</button>
-        {% endif %}
 
-    </form>
-    </p>
-    {% endif %}
+        {% if user.is_superuser %}
+        <div class="tab-pane" id="4">
+            {% crispy update_email_form %}
+        </div>
+        {% endif %}
+    </div>
 </div>
 
-<div class="span9">
+{% endblock %}
 
-<h2>Account Details
-    {% with edit_user as user %}
-        {% include 'kegadmin/includes/user-status-label.html' %}
-    {% endwith %}
-</h2>
-
-<table class="table table-bordered">
-<tbody>
-<tr>
-    <th>Name</th>
-    <td>{{ edit_user.username }} <span class="muted">(#{{edit_user.id }})</span></td>
-</tr>
-<tr>
-    <th>E-Mail</th>
-    <td>{{ edit_user.email }}</td>
-</tr>
-<tr>
-    <th>Date Joined</th>
-    <td>{{ edit_user.date_joined }}</td>
-</tr>
-<tr>
-    <th>Last Login</th>
-    <td>{{ edit_user.last_login }}</td>
-</tr>
-
-</table>
-
-{% if tokens %}
-<h2>Authentication Tokens</h2>
-
-<table class="table table-bordered table-hover">
-<tbody>
-<tr>
-    <th>Token</th>
-    <th>Status</th>
-</tr>
-{% for token in tokens %}
-<tr>
-    <td>
-        <a href="{% url "kegadmin-edit-token" token.id %}">
-        {% if token.auth_device == "core.rfid" %}
-        RFID
-        {% elif token.auth_device == "core.onewire" %}
-        OneWire
-        {% else %}
-        {{ token.auth_device }}
-        {% endif %}
-        {{ token.token_value }}
-        </a>
-    </td>
-    <td>{{ token.enabled }}</td>
-{% endfor %}
-</table>
-</div>
-{% endif %}
-</div>
-
-
-</div>
+{% block kb-extrajs %}
+<script type="text/javascript">
+$(document).ready(function () {
+  $('#userDetails a:first').tab('show');
+});
+</script>
 {% endblock %}

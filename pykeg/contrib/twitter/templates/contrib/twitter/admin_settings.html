@@ -75,6 +75,17 @@
 </form>
 </div>
 
+<h4>Tweet</h4>
+<div class="well">
+<form method="post" action="">
+   {% csrf_token %}
+   {{ tweet_form|crispy }}
+    <button type="submit" class="btn btn-primary" name="submit-tweet">
+      Send Tweet!</button>
+    </button>
+</form>
+</div>
+
 
 {% else %}
 <p class="muted">

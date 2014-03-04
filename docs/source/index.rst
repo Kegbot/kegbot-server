@@ -19,4 +19,5 @@ Contents:
    extras
    production-server
    upgrade-kegbot
+   troubleshooting
    changelog

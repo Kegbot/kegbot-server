@@ -387,6 +387,22 @@ class UserForm(forms.ModelForm):
         )
     )
 
+class EditUserForm(forms.ModelForm):
+    class Meta:
+        model = models.User
+        fields = (
+            'email',
+        )
+
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
+        Field('email', css_class='input-xlarge'),
+        FormActions(
+            Submit('submit', 'Save', css_class='btn-primary'),
+        )
+    )
+
 class TokenForm(forms.ModelForm):
     class Meta:
         model = models.AuthenticationToken

@@ -62,3 +62,8 @@ class UserSettingsForm(forms.Form):
         help_text='Tweet when you join a session.')
     tweet_drink_events = forms.BooleanField(initial=False, required=False,
         help_text='Tweet every time you pour (caution: potentially annoying).')
+
+class SendTweetForm(forms.Form):
+    tweet_custom = forms.CharField(max_length=140, widget=WIDE_TEXT,
+        label='Tweet',
+        help_text='Send a tweet from the Kegbot system account')

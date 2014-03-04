@@ -29,6 +29,7 @@ from django.template import RequestContext
 from httplib2 import HttpLib2Error
 
 from . import forms
+from . import tasks
 
 # Session keys for temporarily storing oauth client.
 SESSION_KEY_SITE_TWITTER = 'site-twitter'
@@ -47,6 +48,7 @@ def admin_settings(request, plugin):
     credentials_form = forms.CredentialsForm(initial=initial)
     settings_form = forms.SiteSettingsForm()
     plugin.load_form_defaults(settings_form, 'site_settings')
+    tweet_form = forms.SendTweetForm()
 
     if request.method == 'POST':
         if 'submit-keys' in request.POST:
@@ -63,11 +65,27 @@ def admin_settings(request, plugin):
                 plugin.save_form(settings_form, 'site_settings')
                 messages.success(request, 'Settings updated')
 
+        elif 'submit-tweet' in request.POST:
+            tweet_form = forms.SendTweetForm(request.POST)
+            if tweet_form.is_valid():
+                tweet = tweet_form.cleaned_data['tweet_custom']
+                consumer_key, consumer_secret = plugin.get_credentials()
+                profile = plugin.get_site_profile()
+                if consumer_key and consumer_secret and profile:
+                    oauth_token = profile.get('oauth_token')
+                    oauth_token_secret = profile.get('oauth_token_secret')
+                    tasks.send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret, 
+                        tweet, image_url=None)
+                    messages.success(request, 'Tweet sent')
+                else:
+                    messages.error(request, 'There was a problem sending tweet')
+
     context['have_credentials'] = consumer_key and consumer_secret
     context['plugin'] = plugin
     context['site_profile'] = plugin.get_site_profile()
     context['credentials_form'] = credentials_form
     context['settings_form'] = settings_form
+    context['tweet_form'] = tweet_form
 
     return render_to_response('contrib/twitter/admin_settings.html', context_instance=context)
 

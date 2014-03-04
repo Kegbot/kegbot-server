@@ -18,7 +18,7 @@ Launch the web server with the following command::
   Validating models...
 
   0 errors found
-  Django version 1.4, using settings 'pykeg.settings'
+  Django version 1.6.2, using settings 'pykeg.settings'
   Development server is running at http://127.0.0.1:8000/
   Quit the server with CONTROL-C.
 
@@ -63,19 +63,15 @@ non-webserver process to run them in the background.  Kegbot uses `Celery
 Celery is automatically installed with kegbot.  You can try running it in
 the foreground::
 
-  (kb) $ kegbot celeryd -E -v2 -l info
+  (kb) $ celery -A pykeg worker -l info
 
 You should see the Celery welcome banner and some verbose log output.  When a
 drink is poured, you should see Celery log some output a few seconds after the
 drink is saved.
 
-If everything is working correctly, cancel the process and restart celery in the
-background::
-
-  (kb) $ kegbot celeryd_detach -E
-
 Be sure Celery is always running when your server is running.  If it isn't, some
-features will not work.
+features will not work. See :ref:`production-setup` for instructions on
+automatically launching Celery in the background.
 
 Next steps
 ----------

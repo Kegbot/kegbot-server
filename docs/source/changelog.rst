@@ -12,6 +12,7 @@ Current Version (in development)
 * Internal: Better support for non-beer beverage types.
 * Keg sizes are predefined.
 * Bug fix: Issues with migrating on MySQL with v0.9.16.
+* Updated command for launching Celery in `kegbot-supervisor.conf`.
 
 Version 0.9.16 (2014-01-13)
 ---------------------------

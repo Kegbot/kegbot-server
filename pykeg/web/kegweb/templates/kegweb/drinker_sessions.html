@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="row">
-  <div class="span4">
+  <div class="col-md-4">
     {% with drinker as user %}
         {% mugshot_box user %}
     {% endwith %}
@@ -17,7 +17,7 @@
     <BR><BR><BR>
   </div>
 
-  <div class="span8">
+  <div class="col-md-8">
     {% if chunks %}
       {% for chunk in chunks %}
         {% with chunk.session as session %}

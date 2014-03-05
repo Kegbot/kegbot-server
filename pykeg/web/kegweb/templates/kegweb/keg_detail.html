@@ -6,9 +6,9 @@
 
 {% block content %}
 <div class="row">
-  <div class="span8">
+  <div class="col-md-8">
     <ul class="nav nav-tabs" id="kegDetails">
-      <li><a href="#1" data-toggle="tab">Vitals</a></li>
+      <li class="active"><a href="#1" data-toggle="tab">Vitals</a></li>
       <li><a href="#2" data-toggle="tab">Summary</a></li>
       <li><a href="#3" data-toggle="tab">Charts</a></li>
       {% if last_session %}
@@ -17,7 +17,7 @@
     </ul>
 
     <div class="tab-content">
-      <div class="tab-pane" id="1">
+      <div class="tab-pane active" id="1">
         <div class="well well-small">
 
           <h2>
@@ -115,7 +115,7 @@
     </div>
   </div>
 
-  <div class="span4">
+  <div class="col-md-4">
     {% if stats %}
     <h2>Top Drinkers</h2>
     {% chart users_by_volume stats 280 220 %}<br/>

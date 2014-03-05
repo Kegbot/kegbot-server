@@ -2,32 +2,38 @@
 {% load kegweblib %}
 
 {% block content %}
-<div class="row-fluid">
-  <div class="span2">
-    <ul class="nav nav-list">
-      <li class="nav-header">General</a>
-      {% navitem "kb-account-main" "Account Main" exact %}
-      {% navitem "password_change" "Password" %}
-      {% navitem "account-mugshot" "Mugshot" %}
-      {% navitem "account-notifications" "Notifications" %}
+<div class="row">
+  <div class="col-sm-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">General</div>
+      <div class="panel-body list-group" style="padding:0;">
+        {% subnavitem "kb-account-main" "Account Main" exact %}
+        {% subnavitem "password_change" "Password" %}
+        {% subnavitem "account-mugshot" "Mugshot" %}
+        {% subnavitem "account-notifications" "Notifications" %}
+      </div>
+    </div>
 
-      {% if PLUGINS %}
-      <li class="nav-header">Extras</li>
-      {% for plugin in PLUGINS.values %}
-        {% if plugin.get_user_settings_view %}
+    {% if PLUGINS or USE_FACEBOOK %}
+      <div class="panel panel-default">
+        <div class="panel-heading">Extras</div>
+        <div class="panel-body list-group" style="padding:0;">
+        {% for plugin in PLUGINS.values %}
+          {% if plugin.get_user_settings_view %}
           {% url "account-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
-          {% navitem settings_url plugin.get_name %}
-        {% endif %}
+          {% subnavitem settings_url plugin.get_name %}
+          {% endif %}
         {% endfor %}
-      {% endif %}
 
-      {% if USE_FACEBOOK %}
-      {% navitem "fb-account-settings" "Facebook" %}
-      {% endif %}
-    </ul>
+        {% if USE_FACEBOOK %}
+          {% subnavitem "fb-account-settings" "Facebook" %}
+        {% endif %}
+        </div>
+      </div>
+    {% endif %}
   </div>
 
-  <div class="span10">
+  <div class="col-sm-10">
     {% block kb-account-main %}{% endblock %}
   </div>
 </div>

@@ -1,15 +1,14 @@
-<ul class="thumbnails">
+<div class="row">
 
 {% for pic in gallery_pictures %}
 {% with pic.get_caption as caption %}
-<li class="{{ thumb_size }}">
-<a class="gallery-image" rel="gallery-{{ gallery_id}}" href="{{ pic.resized.url }}"
+<div class="{{ thumb_size }}">
+<a class="thumbnail gallery-image" rel="gallery-{{ gallery_id}}" href="{{ pic.resized.url }}"
     {% if caption %} title="{{ caption }}" {% endif %}>
-    <img class="thumbnail" src="{{ pic.thumbnail.url }}" alt="{{ caption }}" />
+    <img src="{{ pic.thumbnail.url }}" alt="{{ caption }}" />
   </a>
-</li>
+</div>
 {% endwith %}
 {% endfor %}
-</script>
 
-</ul>
+</div>

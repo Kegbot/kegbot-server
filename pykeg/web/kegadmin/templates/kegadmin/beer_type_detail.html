@@ -10,9 +10,9 @@
 <h2>Edit Beer Type</h2>
 
 {% if beer_type.picture %}
-<div class="row-fluid">
-<div class="span10">
-<p><img src="{{beer_type.picture.resized.url}}"/></p>
+<div class="row">
+<div class="col-md-10">
+<p><img class="img-responsive" src="{{beer_type.picture.resized.url}}"/></p>
 </div>
 </div>
 {% endif %}

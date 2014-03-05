@@ -3,14 +3,12 @@
 
 {% block content %}
 
-<div class="row-fluid">
-  <div class="span2">
-    <ul class="nav nav-list">
+<div class="row">
+  <div class="col-md-3">
       {% include "kegadmin/nav-items.html" %}
-    </ul>
   </div>
 
-  <div class="span10">
+  <div class="col-md-9">
     {% block kegadmin-main %}{% endblock %}
   </div>
 </div>

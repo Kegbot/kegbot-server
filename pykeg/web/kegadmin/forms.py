@@ -34,14 +34,16 @@ class ChangeKegForm(forms.Form):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal beer-select'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('beverage_name', css_class='input-xlarge'),
+        'beverage_name',
         Field('beverage_id', type='hidden'),
-        Field('producer_name', css_class='input-xlarge'),
+        'producer_name',
         Field('producer_id', type='hidden'),
-        Field('style_name', css_class='input-xlarge'),
-        Field('keg_size', css_class='input-xlarge'),
-        Field('initial_volume'),
+        'style_name',
+        'keg_size',
+        'initial_volume',
         FormActions(
             Submit('submit_change_keg_form', 'Activate Keg', css_class='btn-primary'),
         )
@@ -150,12 +152,14 @@ class TapForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('name', css_class='input-xlarge'),
-        Field('meter', css_class='input-xlarge'),
-        Field('relay_name', css_class='input-xlarge'),
-        Field('temperature_sensor', css_class='input-xlarge'),
-        Field('description', css_class='input-xlarge'),
+        'name',
+        'meter',
+        'relay_name',
+        'temperature_sensor',
+        'description',
         FormActions(
             Submit('submit_tap_form', 'Save Settings', css_class='btn-success'),
         )
@@ -197,16 +201,18 @@ class KegForm(forms.Form):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal beer-select'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('beverage_name', css_class='input-xlarge'),
+        'beverage_name',
         Field('beverage_id', type='hidden'),
-        Field('producer_name', css_class='input-xlarge'),
+        'producer_name',
         Field('producer_id', type='hidden'),
-        Field('style_name', css_class='input-xlarge'),
-        Field('keg_size', css_class='input-xlarge'),
-        Field('initial_volume'),
-        Field('description'),
-        Field('notes'),
+        'style_name',
+        'keg_size',
+        'initial_volume',
+        'description',
+        'notes',
         FormActions(
             Submit('submit_add_keg', 'Save', css_class='btn-primary'),
         )
@@ -258,10 +264,12 @@ class EditKegForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('spilled_ml'),
-        Field('description'),
-        Field('notes'),
+        'spilled_ml',
+        'description',
+        'notes',
         FormActions(
             Submit('submit', 'Save', css_class='btn-primary'),
         )
@@ -294,23 +302,25 @@ class SiteSettingsForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('title', css_class='input-xlarge'),
-        Field('privacy', css_class='input-xlarge'),
-        Field('volume_display_units', css_class='input-xlarge'),
-        Field('temperature_display_units', css_class='input-xlarge'),
-        Field('timezone'),
-        Field('hostname'),
-        Field('use_ssl'),
-        Field('session_timeout_minutes'),
-        Field('google_analytics_id'),
-        Field('guest_name'),
-        Field('guest_image'),
-        Field('default_user'),
-        Field('registration_allowed', css_class='input-xlarge'),
-        Field('registration_confirmation', css_class='input-xlarge'),
-        Field('check_for_updates'),
-        Field('allowed_hosts'),
+        'title',
+        'privacy',
+        'volume_display_units',
+        'temperature_display_units',
+        'timezone',
+        'hostname',
+        'use_ssl',
+        'session_timeout_minutes',
+        'google_analytics_id',
+        'guest_name',
+        'guest_image',
+        'default_user',
+        'registration_allowed',
+        'registration_confirmation',
+        'check_for_updates',
+        'allowed_hosts',
         FormActions(
             Submit('submit', 'Save Settings', css_class='btn-primary'),
         )
@@ -328,16 +338,18 @@ class BeverageForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('name', css_class='input-xlarge'),
-        Field('style', css_class='input-xlarge'),
-        Field('producer'),
-        Field('vintage_year'),
-        Field('abv_percent'),
-        Field('original_gravity'),
-        Field('specific_gravity'),
-        Field('untappd_beer_id'),
-        Field('new_image'),
+        'name',
+        'style',
+        'producer',
+        'vintage_year',
+        'abv_percent',
+        'original_gravity',
+        'specific_gravity',
+        'untappd_beer_id',
+        'new_image',
         FormActions(
             Submit('submit', 'Save', css_class='btn-primary'),
         )
@@ -349,14 +361,16 @@ class BeverageProducerForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('name', css_class='input-xlarge'),
-        Field('country', css_class='input-xlarge'),
-        Field('origin_state', css_class='input-xlarge'),
-        Field('origin_city', css_class='input-xlarge'),
-        Field('is_homebrew'),
-        Field('url'),
-        Field('description'),
+        'name',
+        'country',
+        'origin_state',
+        'origin_city',
+        'is_homebrew',
+        'url',
+        'description',
         FormActions(
             Submit('submit', 'Save', css_class='btn-primary'),
         )
@@ -377,9 +391,11 @@ class UserForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('username', css_class='input-xlarge'),
-        Field('email', css_class='input-xlarge'),
+        'username',
+        'email',
         'password',
         'is_staff',
         FormActions(
@@ -414,9 +430,11 @@ class TokenForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal user-select'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('username', css_class='input-xlarge'),
-        Field('nice_name', css_class='input-xlarge'),
+        'username',
+        'nice_name'
         'enabled',
         FormActions(
             Submit('submit', 'Save', css_class='btn-primary'),
@@ -453,10 +471,12 @@ class AddTokenForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal user-select'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('auth_device', css_class='input-xlarge'),
-        Field('token_value', css_class='input-xlarge'),
-        Field('username', css_class='input-xlarge'),
+        'auth_device',
+        'token_value',
+        'username',
         'enabled',
         FormActions(
             Submit('submit', 'Save', css_class='btn-primary'),

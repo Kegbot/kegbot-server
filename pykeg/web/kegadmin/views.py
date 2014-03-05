@@ -619,6 +619,7 @@ def autocomplete_beverage(request):
           'producer_name': beverage.producer.name,
           'producer_id': beverage.producer.id,
           'style': beverage.style,
+          'tokens': [beverage.name, beverage.producer.name]
       })
     return HttpResponse(kbjson.dumps(values, indent=None),
       mimetype='application/json', status=200)
@@ -639,6 +640,7 @@ def autocomplete_user(request):
           'id': user.id,
           'email': user.email,
           'is_active': user.is_active,
+          'tokens': [user.username, user.email]
       })
     return HttpResponse(kbjson.dumps(values, indent=None),
       mimetype='application/json', status=200)

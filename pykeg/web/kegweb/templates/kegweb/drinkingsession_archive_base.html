@@ -4,14 +4,14 @@
 
 {% block content %}
 <div class="row">
-<div class="span8">
+<div class="col-sm-8">
 {% for session in sessions %}
   {% include "kegweb/keg-session.html" %}
 {% endfor %}
 </div>
 
 {% block session-right-hide %}
-<div class="span4">
+<div class="col-sm-4">
   <div class="well">
   <h4>All Sessions</h4>
   {% block session-right %}
@@ -23,7 +23,7 @@
 </div>
 
 <div class="row">
-<div class="span8">
+<div class="col-sm-8">
 {% bootstrap_paginate page_obj range=10 %}
 </div>
 </div>

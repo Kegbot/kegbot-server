@@ -21,13 +21,13 @@ DEPENDENCIES = [
   'django-imagekit == 3.1',
   'django-registration == 1.0',
   'django-socialregistration == 0.5.10',
-  'django-bootstrap-pagination == 0.1.10',
+  'django-bootstrap-pagination == 1.5.0',
 
   'django-celery == 3.1.1',
   'Celery == 3.1.9',
 
   'South == 0.8.4',
-  'django-crispy-forms == 1.2.8',
+  'django-crispy-forms == 1.4.0',
   'django_nose == 1.2',
   'foursquare == 2014.01.18',
   'gunicorn == 18.0',

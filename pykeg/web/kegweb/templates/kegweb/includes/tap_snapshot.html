@@ -12,11 +12,11 @@
 <div class="well well-small">
 {% endif %}
 
-  <div class="row-fluid">
+  <div class="row">
     {% if keg.type and keg.type.picture %}
-    <div class="span8">
+    <div class="col-md-8">
     {% else %}
-    <div class="span12">
+    <div class="col-md-12">
     {% endif %}
       <h4 style="margin-top: 0px;">
         {% if keg %}
@@ -48,13 +48,13 @@
       </div>
 
       {% if keg.type and keg.type.picture %}
-      <div class="span4">
+      <div class="col-md-4">
         <div style="border: 1px solid #ccc;">
-          <img src="{{ keg.type.picture.resized.url }}"/>
+          <img class="img-responsive" src="{{ keg.type.picture.resized.url }}"/>
         </div>
       </div>
       {% endif %}
 
-  </div> <!-- /row-fluid -->
+  </div> <!-- /row -->
 </div>
 {% endwith %}

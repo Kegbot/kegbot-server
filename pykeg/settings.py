@@ -32,7 +32,7 @@ INSTALLED_APPS = (
 
     'crispy_forms',
     'djcelery',
-    'bootstrap-pagination',
+    'bootstrap_pagination',
     'imagekit',
     'gunicorn',
     'registration',
@@ -161,6 +161,8 @@ CACHES = {
 CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 
 INTERNAL_IPS = ('127.0.0.1',)
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 # Set to true if the database admin module should be enabled.
 KEGBOT_ENABLE_ADMIN = False

@@ -1,34 +1,57 @@
 {% load kegweblib %}
 
-<li class="nav-header">Kegbot Admin</a>
-{% navitem "kegadmin-dashboard" "Dashboard" exact %}
+<div class="panel panel-default">
+  <div class="panel-heading">Kegbot Admin</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% subnavitem "kegadmin-dashboard" "Dashboard" exact %}
+  </div>
+</div>
 
-<li class="nav-header">General</a>
-{% navitem "kegadmin-main" "General Settings" %}
-{% navitem "kegadmin-logs" "Logs" %}
+<div class="panel panel-default">
+  <div class="panel-heading">General</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% subnavitem "kegadmin-main" "General Settings" %}
+    {% subnavitem "kegadmin-logs" "Logs" %}
+  </div>
+</div>
 
-<li class="nav-header">System</li>
-{% navitem "kegadmin-taps" "Taps" %}
-{% navitem "kegadmin-kegs" "Kegs" %}
-{% navitem "kegadmin-drinks" "Drinks" %}
-{% navitem "kegadmin-users" "Users" %}
-{% navitem "kegadmin-tokens" "Tokens" %}
+<div class="panel panel-default">
+  <div class="panel-heading">System</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% subnavitem "kegadmin-taps" "Taps" %}
+    {% subnavitem "kegadmin-kegs" "Kegs" %}
+    {% subnavitem "kegadmin-drinks" "Drinks" %}
+    {% subnavitem "kegadmin-users" "Users" %}
+    {% subnavitem "kegadmin-tokens" "Tokens" %}
+  </div>
+</div>
 
-<li class="nav-header">Beer DB</li>
-{% navitem "kegadmin-beverage-producers" "Brewers" %}
-{% navitem "kegadmin-beverages" "Beer Types" %}
+<div class="panel panel-default">
+  <div class="panel-heading">Beer DB</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% subnavitem "kegadmin-beverage-producers" "Brewers" %}
+    {% subnavitem "kegadmin-beverages" "Beer Types" %}
+  </div>
+</div>
 
 {% if PLUGINS %}
-<li class="nav-header">Plugins</li>
-{% for plugin in PLUGINS.values %}
-{% url "kegadmin-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
-{% navitem settings_url plugin.get_name %}
-{% endfor %}
+<div class="panel panel-default">
+  <div class="panel-heading">Plugins</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% for plugin in PLUGINS.values %}
+    {% url "kegadmin-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
+    {% subnavitem settings_url plugin.get_name %}
+    {% endfor %}
+  </div>
+</div>
 {% endif %}
 
-<li class="divider"></li>
-<li class="nav-header">Other</li>
-{% if HAVE_ADMIN %}
-<li><a href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a></li>
-{% endif %}
-<li><a href='https://github.com/Kegbot/kegbot/issues' target="_blank">Report a Bug &raquo;</a></li>
+<div class="panel panel-default">
+  <div class="panel-heading">Other</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% if HAVE_ADMIN %}
+    <a class="list-group-item" href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a>
+    {% endif %}
+    <a class="list-group-item" href='https://github.com/Kegbot/kegbot/issues' target="_blank">Report a Bug &raquo;</a>
+  </div>
+</div>

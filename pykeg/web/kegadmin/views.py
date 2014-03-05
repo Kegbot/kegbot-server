@@ -226,13 +226,13 @@ def keg_detail(request, keg_id):
     if request.method == 'POST':
         form = forms.EditKegForm(request.POST, instance=keg)
         if form.is_valid():
-            keg = form.save()
-
+            form.save()
             messages.success(request, 'Keg updated.')
             return redirect('kegadmin-kegs')
 
     context = RequestContext(request)
     context['keg'] = keg
+    context['remaining'] = keg.full_volume_ml - keg.served_volume_ml - keg.spilled_ml
     context['form'] = form
     return render_to_response('kegadmin/keg_detail.html', context_instance=context)
 

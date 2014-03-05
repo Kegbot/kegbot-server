@@ -41,7 +41,9 @@ class ChangeKegForm(forms.Form):
         Field('producer_id', type='hidden'),
         Field('style_name', css_class='input-xlarge'),
         Field('keg_size', css_class='input-xlarge'),
-        Field('initial_volume'),
+        Div(
+            Field('initial_volume', css_class='input-volume', type='hidden'),
+            css_class="variable-units"),
         FormActions(
             Submit('submit_change_keg_form', 'Activate Keg', css_class='btn-primary'),
         )
@@ -79,8 +81,7 @@ class ChangeKegForm(forms.Form):
         if keg_size != 'other':
             full_volume_ml = None
         else:
-            initial_volume = self.cleaned_data.get('initial_volume')
-            full_volume_ml = float(units.Quantity(initial_volume, units.UNITS.Liter).InMilliliters())
+            full_volume_ml = self.cleaned_data.get('initial_volume')
 
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
@@ -204,7 +205,9 @@ class KegForm(forms.Form):
         Field('producer_id', type='hidden'),
         Field('style_name', css_class='input-xlarge'),
         Field('keg_size', css_class='input-xlarge'),
-        Field('initial_volume'),
+        Div(
+            Field('initial_volume', css_class='input-volume', type='hidden'),
+            css_class='variable-units'),
         Field('description'),
         Field('notes'),
         FormActions(
@@ -240,8 +243,7 @@ class KegForm(forms.Form):
         if keg_size != 'other':
             full_volume_ml = None
         else:
-            initial_volume = self.cleaned_data.get('initial_volume')
-            full_volume_ml = float(units.Quantity(initial_volume, units.UNITS.Liter).InMilliliters())
+            full_volume_ml = self.cleaned_data.get('initial_volume')
 
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
@@ -255,11 +257,16 @@ class EditKegForm(forms.ModelForm):
     class Meta:
         model = models.Keg
         fields = ('spilled_ml', 'description', 'notes',)
+        labels = {
+            'spilled_ml': ('Spilled Volume'),
+        }
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
     helper.layout = Layout(
-        Field('spilled_ml'),
+        Div(
+            Field('spilled_ml', css_class='input-volume', type='hidden'),
+            css_class="variable-units"),
         Field('description'),
         Field('notes'),
         FormActions(

@@ -32,9 +32,12 @@ import requests
 class CheckinTestCase(TransactionTestCase):
 
     def test_checkin(self):
+
         site = models.KegbotSite.get()
         site.registration_id = 'original-regid'
         site.save()
+
+        version = get_version()
 
         with patch('requests.post') as mock_post:
             mock_post.return_value = mock_response = Mock()
@@ -46,11 +49,11 @@ class CheckinTestCase(TransactionTestCase):
             }
             checkin.checkin('http://example.com/checkin', 'test-product', 1.23)
             mock_post.assert_called_with('http://example.com/checkin',
-                headers={'User-Agent': 'KegbotServer/0.9.17-pre1'},
+                headers={'User-Agent': 'KegbotServer/%s' % version},
                 data={
                     'reg_id': u'original-regid',
                     'product': 'test-product',
-                    'version': get_version(),
+                    'version': version,
                 },
                 timeout=1.23)
 

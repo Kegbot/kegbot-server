@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field, Hidden, Div
 from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
@@ -11,13 +12,14 @@ from pykeg.core import models
 ALL_TAPS = models.KegTap.objects.all()
 ALL_KEGS = models.Keg.objects.all()
 ALL_METERS = models.FlowMeter.objects.all()
+ALL_TOGGLES = models.FlowToggle.objects.all()
+ALL_THERMOS = models.ThermoSensor.objects.all()
 
 
 class ChangeKegForm(forms.Form):
     keg_size = forms.ChoiceField(choices=keg_sizes.CHOICES,
         initial=keg_sizes.HALF_BARREL,
         required=True)
-
 
     initial_volume = forms.FloatField(label='Initial Volume (Liters)', initial=0.0, 
         required=False, help_text='Keg\'s Initial Volume in Liters')
@@ -114,22 +116,44 @@ class TapForm(forms.ModelForm):
             else:
                 return str(meter)
 
+    class FlowToggleModelChoiceField(forms.ModelChoiceField):
+        def label_from_instance(self, toggle):
+            if toggle.tap:
+                return '%s (connected to %s)' % (toggle, toggle.tap.name)
+            else:
+                return str(toggle)
+
+    class ThermoSensorModelChoiceField(forms.ModelChoiceField):
+        def label_from_instance(self, sensor):
+            last_log = sensor.LastLog()
+            if last_log:
+                return '%s (Last report: %s)' % (sensor, naturaltime(last_log.time))
+            else:
+                return str(sensor)
+
     meter = FlowMeterModelChoiceField(queryset=ALL_METERS, required=False,
         empty_label='Not connected.',
-        help_text='Currently-assigned flow meter.')
+        help_text='Tap is routed thorough this flow meter. If unset, reporting is disabled.')
+
+    toggle = FlowToggleModelChoiceField(queryset=ALL_TOGGLES, required=False,
+        empty_label='Not connected.',
+        help_text='Optional flow toggle (usually a relay/valve) connected to this tap.')
+
+    temperature_sensor = ThermoSensorModelChoiceField(queryset=ALL_THERMOS, required=False,
+        empty_label='No sensor.',
+        help_text='Optional sensor monitoring the temperature at this tap.')
 
     class Meta:
         model = models.KegTap
-        fields = ('name', 'relay_name', 'description', 'temperature_sensor')
+        fields = ('name', 'description', 'temperature_sensor')
 
     def __init__(self, *args, **kwargs):
         super(TapForm, self).__init__(*args, **kwargs)
 
         if self.instance:
             self.fields['meter'].initial = self.instance.current_meter()
-
-        self.fields['temperature_sensor'].queryset = models.ThermoSensor.objects.all()
-        self.fields['temperature_sensor'].empty_label = 'No sensor.'
+            self.fields['toggle'].initial = self.instance.current_toggle()
+            self.fields['temperature_sensor'].initial = self.instance.temperature_sensor
 
     def save(self, commit=True):
         if not commit:
@@ -146,6 +170,17 @@ class TapForm(forms.ModelForm):
             if new_meter:
                 new_meter.tap = instance
                 new_meter.save()
+
+        old_toggle = instance.current_toggle()
+        new_toggle = self.cleaned_data['toggle']
+
+        if old_toggle != new_toggle:
+            if old_toggle:
+                old_toggle.tap = None
+                old_toggle.save()
+            if new_toggle:
+                new_toggle.tap = instance
+                new_toggle.save()
         return instance
 
     helper = FormHelper()
@@ -153,7 +188,7 @@ class TapForm(forms.ModelForm):
     helper.layout = Layout(
         Field('name', css_class='input-xlarge'),
         Field('meter', css_class='input-xlarge'),
-        Field('relay_name', css_class='input-xlarge'),
+        Field('toggle', css_class='input-xlarge'),
         Field('temperature_sensor', css_class='input-xlarge'),
         Field('description', css_class='input-xlarge'),
         FormActions(
@@ -525,7 +560,13 @@ class RecordDrinkForm(forms.Form):
 class FlowMeterForm(forms.ModelForm):
     class Meta:
         model = models.FlowMeter
-        fields = ('port_name', 'ticks_per_ml')
+        fields = ('port_name', 'ticks_per_ml', 'controller')
+
+
+class FlowToggleForm(forms.ModelForm):
+    class Meta:
+        model = models.FlowToggle
+        fields = ('port_name', 'controller')
 
 
 class DeleteControllerForm(forms.Form):

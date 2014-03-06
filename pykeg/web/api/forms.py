@@ -45,7 +45,7 @@ class ThermoPostForm(forms.Form):
 class CreateKegTapForm(forms.ModelForm):
     class Meta:
         model = models.KegTap
-        fields = ('name', 'relay_name', 'description')
+        fields = ('name', 'description')
 
 class CalibrateTapForm(forms.Form):
     ml_per_tick = forms.FloatField()

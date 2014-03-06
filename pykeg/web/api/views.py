@@ -156,6 +156,37 @@ def get_flow_meter(request, flow_meter_id):
 
 @csrf_exempt
 @auth_required
+def all_flow_toggles(request):
+    if request.method == 'POST':
+        form = FlowTogleForm(request.POST)
+        if form.is_valid():
+            return form.save()
+        else:
+            errors = _form_errors(form)
+            raise kbapi.BadRequestError(errors)
+
+    return models.FlowToggle.objects.all()
+
+@csrf_exempt
+@auth_required
+def get_flow_toggle(request, flow_toggle_id):
+    toggle = get_object_or_404(models.FlowToggle, id=flow_toggle_id)
+
+    if request.method == 'DELETE':
+        toggle.delete()
+
+    elif request.method == 'POST':
+        form = FlowToggleForm(request.POST, instance=toggle)
+        if form.is_valid():
+            toggle = form.save()
+        else:
+            errors = _form_errors(form)
+            raise kbapi.BadRequestError(errors)
+
+    return protolib.ToProto(toggle, full=True)
+
+@csrf_exempt
+@auth_required
 def pictures(request, drink_id):
     if request.method != 'POST':
         raise Http404('Method not supported')

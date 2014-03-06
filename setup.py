@@ -8,14 +8,14 @@ kegerator.  For more information and documentation, see http://kegbot.org/
 
 from setuptools import setup, find_packages
 
-VERSION = '0.9.17-pre1'
+VERSION = '0.9.17-pre2'
 DOCLINES = __doc__.split('\n')
 
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 DEPENDENCIES = [
   'kegbot-pyutils == 0.1.7',
-  'kegbot-api == 0.1.9',
+  'kegbot-api == 0.1.10',
 
   'Django == 1.6.2',
   'django-imagekit == 3.1',

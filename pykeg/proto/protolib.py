@@ -178,6 +178,16 @@ def FlowMeterToProto(flow_meter, full=False):
     return ret
 
 
+@converts(models.FlowToggle)
+def FlowToggleToProto(flow_toggle, full=False):
+    ret = models_pb2.FlowToggle()
+    ret.id = flow_toggle.id
+    ret.name = flow_toggle.toggle_name()
+    ret.controller.MergeFrom(ToProto(flow_toggle.controller))
+    ret.port_name = flow_toggle.port_name
+    return ret
+
+
 @converts(models.Drink)
 def DrinkToProto(drink, full=False):
     ret = models_pb2.Drink()
@@ -257,7 +267,13 @@ def KegTapToProto(tap, full=False):
         ret.meter_name = 'unknown.%s' % tap.id
         ret.ml_per_tick = 0
 
-    ret.relay_name = tap.relay_name or ''
+    toggle = tap.current_toggle()
+    if toggle:
+        ret.relay_name = toggle.toggle_name()
+        ret.toggle.MergeFrom(ToProto(toggle))
+    else:
+        ret.relay_name = ''
+
     if tap.description is not None:
         ret.description = tap.description
     if tap.current_keg:

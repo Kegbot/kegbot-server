@@ -35,7 +35,7 @@ class KegbotSiteAdmin(admin.ModelAdmin):
 admin.site.register(models.KegbotSite, KegbotSiteAdmin)
 
 class KegTapAdmin(admin.ModelAdmin):
-    list_display = ('name', 'relay_name', 'current_keg')
+    list_display = ('name', 'current_keg')
 admin.site.register(models.KegTap, KegTapAdmin)
 
 class KegAdmin(admin.ModelAdmin):
@@ -94,4 +94,5 @@ admin.site.register(models.BeverageProducer)
 
 admin.site.register(models.Controller)
 admin.site.register(models.FlowMeter)
+admin.site.register(models.FlowToggle)
 

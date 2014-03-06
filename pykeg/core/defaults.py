@@ -53,5 +53,9 @@ def set_defaults(force=False, set_is_setup=False):
         tap=tap_0)
     meter_1 = models.FlowMeter.objects.create(controller=controller, port_name='flow1',
         tap=tap_1)
+    relay_0 = models.FlowToggle.objects.create(controller=controller, port_name='relay0',
+        tap=tap_0)
+    relay_1 = models.FlowToggle.objects.create(controller=controller, port_name='relay1',
+        tap=tap_1)
 
     return site

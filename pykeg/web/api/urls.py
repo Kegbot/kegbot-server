@@ -37,6 +37,9 @@ urlpatterns = patterns('pykeg.web.api.views',
     url(r'^flow-meters/?$', 'all_flow_meters'),
     url(r'^flow-meters/(?P<flow_meter_id>\d+)/?$', 'get_flow_meter'),
 
+    url(r'^flow-toggles/?$', 'all_flow_toggles'),
+    url(r'^flow-toggles/(?P<flow_toggle_id>\d+)/?$', 'get_flow_toggle'),
+
     url(r'^sessions/?$', 'all_sessions'),
     url(r'^sessions/current/?$', 'current_session'),
     url(r'^sessions/(?P<session_id>\d+)/?$', 'get_session'),

@@ -349,8 +349,6 @@ class KegTap(models.Model):
     """A physical tap of beer."""
     name = models.CharField(max_length=128,
         help_text='The display name for this tap, for example, "Main Tap".')
-    relay_name = models.CharField(max_length=128, blank=True, null=True,
-        help_text='Name of relay attached to this tap.')
     description = models.TextField(blank=True, null=True,
         help_text='User-visible description for this tap.')
     current_keg = models.OneToOneField('Keg', blank=True, null=True,
@@ -358,7 +356,7 @@ class KegTap(models.Model):
         help_text='Keg currently connected to this tap.')
     temperature_sensor = models.ForeignKey('ThermoSensor', blank=True, null=True,
         on_delete=models.SET_NULL,
-        help_text='Sensor monitoring the temperature of this Keg.')
+        help_text='Optional sensor monitoring the temperature at this tap.')
 
     def __str__(self):
         return "%s: %s" % (self.name, self.current_keg)
@@ -368,10 +366,17 @@ class KegTap(models.Model):
         return self.current_keg is not None
 
     def current_meter(self):
-        """Returns the currently-assigned meter, or None."""
+        """Returns the currently-assigned FlowMeter, or None."""
         try:
             return self.meter
         except FlowMeter.DoesNotExist:
+            return None
+
+    def current_toggle(self):
+        """Returns the currently-assigned FlowToggle, or None."""
+        try:
+            return self.toggle
+        except FlowToggle.DoesNotExist:
             return None
 
     def Temperature(self):
@@ -448,6 +453,55 @@ class FlowMeter(models.Model):
             raise cls.DoesNotExist('Illegal meter_name: %s' % repr(meter_name))
         controller_name = meter_name[:idx]
         port_name = meter_name[idx+1:]
+
+        try:
+            controller = Controller.objects.get(name=controller_name)
+        except Controller.DoesNotExist:
+            raise cls.DoesNotExist('No such controller: %s' % repr(controller_name))
+
+        return cls.objects.get(controller=controller, port_name=port_name)
+
+
+class FlowToggle(models.Model):
+    class Meta:
+        unique_together = ('controller', 'port_name')
+    controller = models.ForeignKey(Controller, related_name='toggles',
+        help_text='Controller that owns this toggle.')
+    port_name = models.CharField(max_length=128,
+        help_text='Controller-specific data port name for this toggle.')
+    tap = models.OneToOneField(KegTap, blank=True, null=True,
+        related_name='toggle',
+        help_text='Tap to which this toggle is currently bound.')
+
+    def toggle_name(self):
+        return '%s.%s' % (self.controller.name, self.port_name)
+
+    def __str__(self):
+        return self.toggle_name()
+
+    @classmethod
+    def get_or_create_from_toggle_name(cls, toggle_name):
+        try:
+            return cls.get_from_toggle_name(meter_name)
+        except cls.DoesNotExist:
+            pass
+
+        idx = meter_name.find('.')
+        if idx <= 0:
+            raise ValueError('Illegal name')
+
+        controller_name = toggle_name[:idx]
+        port_name = toggle_name[idx+1:]
+        controller = Controller.objects.get_or_create(name=controller_name)[0]
+        return cls.objects.get_or_create(controller=controller, port_name=port_name)[0]
+
+    @classmethod
+    def get_from_toggle_name(cls, toggle_name):
+        idx = toggle_name.find('.')
+        if idx <= 0:
+            raise cls.DoesNotExist('Illegal toggle_name: %s' % repr(toggle_name))
+        controller_name = toggle_name[:idx]
+        port_name = toggle_name[idx+1:]
 
         try:
             controller = Controller.objects.get(name=controller_name)
@@ -991,8 +1045,7 @@ class Thermolog(models.Model):
     time = models.DateTimeField()
 
     def __str__(self):
-        return '%s %.2f C / %.2f F [%s]' % (self.sensor, self.TempC(),
-            self.TempF(), self.time)
+        return '%.2f C / %.2f F [%s]' % (self.TempC(), self.TempF(), self.time)
 
     def TempC(self):
         return self.temp

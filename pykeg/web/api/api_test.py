@@ -129,7 +129,7 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals(data.meta.result, 'error')
         self.assertEquals(data.error.code, 'NoAuthTokenError')
 
-    def test_controllers_and_meters(self):
+    def test_controller_data(self):
         site = create_site()
         user = models.User.objects.create(username='testuser', is_staff=True)
         api_key_obj = models.ApiKey.objects.create(user=user, key='123')
@@ -178,6 +178,33 @@ class ApiClientTestCase(BaseApiTestCase):
                         'name': 'kegboard'
                     },
                     'name': 'kegboard.flow1'
+                },
+            ],
+            'meta': { 'result': 'ok'}
+        }
+        self.assertEquals(expected, data)
+
+        response, data = self.get('flow-toggles', HTTP_X_KEGBOT_API_KEY='123')
+        self.assertEquals(data.meta.result, 'ok')
+        expected = {
+            'objects': [
+                {
+                    'id': 1,
+                    'port_name': 'relay0',
+                    'controller': {
+                        'id': 1,
+                        'name': 'kegboard',
+                    },
+                    'name': 'kegboard.relay0'
+                },
+                {
+                    'id': 2,
+                    'port_name': 'relay1',
+                    'controller': {
+                        'id': 1,
+                        'name': 'kegboard'
+                    },
+                    'name': 'kegboard.relay1'
                 },
             ],
             'meta': { 'result': 'ok'}

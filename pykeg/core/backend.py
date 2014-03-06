@@ -93,14 +93,14 @@ class KegbotBackend:
 
 
     @transaction.atomic
-    def create_tap(self, name, meter_name, relay_name=None, ticks_per_ml=None):
+    def create_tap(self, name, meter_name, toggle_name=None, ticks_per_ml=None):
         """Creates and returns a new KegTap.
 
         Args:
           name: The human-meaningful name for the tap, for instance, "Main Tap".
           meter_name: The unique sensor name for the tap, for instance,
               "kegboard.flow0".
-          relay_name: If the tap is connected to a relay, this specifies its
+          toggle_name: If the tap is connected to a relay, this specifies its
               name, for instance, "kegboard.relay0".
           ticks_per_ml: The number of flow meter ticks per milliliter of fluid
               on this tap's meter.
@@ -108,13 +108,17 @@ class KegbotBackend:
         Returns:
             The new KegTap instance.
         """
-        tap = models.KegTap.objects.create(name=name, relay_name=relay_name)
+        tap = models.KegTap.objects.create(name=name)
         tap.save()
+
         meter = models.FlowMeter.get_or_create_from_meter_name(meter_name)
         meter.tap = tap
         if ticks_per_ml:
             meter.ticks_per_ml = ticks_per_ml
         meter.save()
+
+        if toggle_name:
+            toggle = models.FlowToggle.get_or_create_from_toggle_name(toggle_name)
         return tap
 
     @transaction.atomic

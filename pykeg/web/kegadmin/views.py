@@ -99,6 +99,30 @@ def general_settings(request):
     return render_to_response('kegadmin/index.html', context_instance=context)
 
 @staff_member_required
+def controller_list(request):
+    context = RequestContext(request)
+    context['controllers'] = models.Controller.objects.all()
+    return render_to_response('kegadmin/controller_list.html', context_instance=context)
+
+@staff_member_required
+def controller_detail(request, controller_id):
+    controller = get_object_or_404(models.Controller, id=controller_id)
+    context = RequestContext(request)
+    form = forms.DeleteControllerForm(request.POST)
+
+    if request.method == 'POST':
+        form = forms.DeleteControllerForm(request.POST)
+        if form.is_valid():
+            controller.delete()
+            messages.success(request, 'The controller was deleted.')
+            return redirect('kegadmin-controllers')
+
+
+    context['controller'] = controller
+    context['form'] = form
+    return render_to_response('kegadmin/controller_detail.html', context_instance=context)
+
+@staff_member_required
 def tap_list(request):
     context = RequestContext(request)
     context['taps'] = models.KegTap.objects.all()

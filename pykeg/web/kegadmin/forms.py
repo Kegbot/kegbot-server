@@ -197,6 +197,16 @@ class TapForm(forms.ModelForm):
     )
 
 
+class DeleteControllerForm(forms.Form):
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
+        FormActions(
+            Submit('submit_delete_controller_form', 'Delete Controller', css_class='btn-danger'),
+        )
+    )
+
+
 class DeleteTapForm(forms.Form):
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
@@ -205,6 +215,7 @@ class DeleteTapForm(forms.Form):
             Submit('submit_delete_tap_form', 'Delete Tap', css_class='btn-danger'),
         )
     )
+
 
 class KegForm(forms.Form):
     keg_size = forms.ChoiceField(choices=keg_sizes.CHOICES,

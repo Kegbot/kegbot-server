@@ -1,0 +1,49 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Edit User: {{ edit_user.username }} | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Edit User: {{ edit_user.username }}{% endblock %}
+
+{% block kegadmin-main %}
+
+<div class="row-fluid">
+<div class="span12">
+
+<h3>{{ controller.name }} <small>{{ controller.type }}</small></h3>
+<table class="table table-bordered">
+<tbody>
+
+{% if controller.serial_number %}
+<tr>
+    <th>Serial Number</th>
+    <td>{{ controller.serial_number }}</td>
+</tr>
+{% endif %}
+
+<tr>
+    <th>Flow Meters</th>
+    <td>
+    {% for meter in controller.meters.all %}
+      <li>{{ meter }}</li>
+    {% endfor %}
+    </td>
+</tr>
+<tr>
+    <th>Flow Toggles</th>
+    <td>
+        {% for toggle in controller.toggles.all %}
+        <li>{{ toggle }}</li>
+        {% endfor %}
+    </td>
+</tr>
+</table>
+
+<form action="" method="POST">{% csrf_token %}
+    {% crispy form %}
+</form>
+
+</div>
+</div>
+
+{% endblock %}

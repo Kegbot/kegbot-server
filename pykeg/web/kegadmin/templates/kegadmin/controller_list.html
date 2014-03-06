@@ -1,0 +1,40 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Controllers | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Taps{% endblock %}
+
+{% block kegadmin-main %}
+<div class="alert alert-info">
+  <strong>Note:</strong> Controllers can be created and edited in the Kegbot app.
+</div>
+
+<table class="table table-hover table-bordered">
+<thead>
+  <tr>
+    <th>Controller</th>
+    <th>Meters</th>
+    <th>Toggles</th>
+  </tr>
+</thead>
+<tbody>
+{% for controller in controllers %}
+<tr>
+  <td>
+    <div class="form-horizontal">
+      <a class="btn btn-small btn-primary" href="{% url "kegadmin-edit-controller" controller.id %}">Edit</a>&nbsp;&nbsp;
+      <span>{{ controller.name }}</span>
+  </td>
+  <td>
+    {{ controller.meters.count }}
+  </td>
+  <td>
+    {{ controller.toggles.count }}
+  </td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% endblock %}

@@ -19,6 +19,9 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^brewers/add/$', 'beverage_producer_add', name='kegadmin-add-beverage-producer'),
     url(r'^brewers/(?P<brewer_id>\d+)/$', 'beverage_producer_detail', name='kegadmin-edit-beverage-producer'),
 
+    url(r'^controllers/$', 'controller_list', name='kegadmin-controllers'),
+    url(r'^controllers/(?P<controller_id>\d+)/$', 'controller_detail', name='kegadmin-edit-controller'),
+
     url(r'^taps/$', 'tap_list', name='kegadmin-taps'),
     url(r'^taps/create/$', 'add_tap', name='kegadmin-add-tap'),
     url(r'^taps/(?P<tap_id>\d+)/$', 'tap_detail', name='kegadmin-edit-tap'),

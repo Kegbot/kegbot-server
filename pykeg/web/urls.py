@@ -33,7 +33,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     ### api
-    (r'^api/', include('pykeg.web.api.urls')),
+    (r'^api/(v1/)?', include('pykeg.web.api.urls')),
 
     ### kegbot account
     (r'^account/', include('pykeg.web.account.urls')),

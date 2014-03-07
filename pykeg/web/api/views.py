@@ -233,30 +233,29 @@ def get_status(request):
         session = current_session(request)
     except Http404:
         session = None
-    taps = models.KegTap.objects.all()
-    drinks = models.Drink.objects.all()[:5]
-    kegs = models.Keg.objects.all().filter(online=True)
+
     controllers = models.Controller.objects.all()
+    drinks = models.Drink.objects.all()[:5]
+    events = models.SystemEvent.objects.all()[:5]
+    kegs = models.Keg.objects.all().filter(online=True)
     meters = models.FlowMeter.objects.all()
+    sound_events = soundserver_models.SoundEvent.objects.all()
+    taps = models.KegTap.objects.all()
+    toggles = models.FlowToggle.objects.all()
 
     current_users = []
     if session:
-        current_users = [protolib.ToDict(c.user) for c in session.user_chunks.all() if c.user]
+        current_users = [c.user for c in session.user_chunks.all()]
 
-    settings = models.SiteSettings.get()
-    site = {
-        'title': settings.title,
-    }
+    title = models.SiteSettings.get().title
+    version = core_util.get_version()
 
-    result = {
-        'site': site,
-        'session': protolib.ToDict(session) if session else None,
-        'taps': [protolib.ToDict(t) for t in taps],
-        'drinks': [protolib.ToDict(d) for d in drinks],
-        'kegs': [protolib.ToDict(k) for k in kegs],
-        'users': current_users,
-    }
-    return result
+    response = protolib.GetSyncResponse(
+            active_kegs=kegs, active_session=session, active_users=current_users,
+            controllers=controllers, drinks=drinks, events=events, meters=meters,
+            site_title=title, server_version=version,
+            sound_events=sound_events, taps=taps, toggles=toggles)
+    return response
 
 def get_keg(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)

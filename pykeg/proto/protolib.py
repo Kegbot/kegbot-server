@@ -393,8 +393,36 @@ def SoundEventToProto(record, full=False):
 
 # Composite messages
 
-def GetDrinkDetail(drink):
-    ret = api_pb2.DrinkDetail()
+def GetSyncResponse(active_kegs=[], active_session=[], active_users=[],
+        controllers=[], drinks=[], events=[], meters=[], site_title='',
+        server_version='', sound_events=[], taps=[], toggles=[]):
+    ret = api_pb2.SyncResponse()
+    if active_session:
+        ret.active_session.MergeFrom(ToProto(active_session))
+
+    ret.site_info.title = site_title
+    ret.site_info.server_version = server_version
+
+    for obj in active_kegs:
+        ret.active_kegs.add().MergeFrom(ToProto(obj))
+    for obj in active_users:
+        ret.active_users.add().MergeFrom(ToProto(obj))
+    for obj in controllers:
+        ret.controllers.add().MergeFrom(ToProto(obj))
+    for obj in drinks:
+        ret.drinks.add().MergeFrom(ToProto(obj))
+    for obj in events:
+        ret.events.add().MergeFrom(ToProto(obj))
+    for obj in meters:
+        ret.meters.add().MergeFrom(ToProto(obj))
+    for obj in sound_events:
+        ret.sound_events.add().MergeFrom(ToProto(obj))
+    for obj in taps:
+        ret.taps.add().MergeFrom(ToProto(obj))
+    for obj in toggles:
+        ret.toggles.add().MergeFrom(ToProto(obj))
+    return ret
+
     ret.drink.MergeFrom(ToProto(drink))
     if drink.user_id:
         ret.user.MergeFrom(ToProto(drink.user))

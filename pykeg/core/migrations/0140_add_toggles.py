@@ -9,6 +9,11 @@ class Migration(DataMigration):
     def forwards(self, orm):
         for tap in orm['core.KegTap'].objects.all():
             relay_name = tap.relay_name
+            if relay_name is None:
+                continue
+            relay_name = relay_name.strip()
+            if not relay_name:
+                continue
             idx = relay_name.find('.')
             if idx <= 0:
                 raise ValueError('Unexpected relay name: %s' % relay_name)

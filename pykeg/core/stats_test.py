@@ -32,6 +32,7 @@ class StatsTestCase(TransactionTestCase):
 
     def setUp(self):
         self.backend = backend.KegbotBackend()
+        guest = models.User.objects.create_user('guest')
 
         test_usernames = ('user1', 'user2', 'user3')
         self.users = [self.backend.create_new_user(name, '%s@example.com' % name) for name in test_usernames]
@@ -115,3 +116,10 @@ class StatsTestCase(TransactionTestCase):
         pprint.pprint(stats)
 
         self.assertDictEqual(expected, stats)
+
+        d = self.backend.record_drink('kegboard.flow0', ticks=300,
+            volume_ml=300, pour_time=now)
+
+        stats = site.GetStats()
+        self.assertTrue(stats.has_guest_pour)
+

@@ -158,10 +158,13 @@ class StatsBuilder:
                 all_sessions.add(drink.session.id)
             return len(all_sessions)
         else:
-            first_drink = self.drink.session.drinks.order_by('id')[0]
-            if self.drink.id == first_drink.id:
-                previous += 1
-            return previous
+            # Use volume_by_session, ensuring our session is captured
+            # by injecting a dummy value.
+            prev_sessions = self.previous.get('volume_by_session', {})
+            result = len(prev_sessions.keys())
+            if str(self.drink.session.id) not in prev_sessions:
+                result += 1
+            return result
 
     @stat('volume_by_year')
     def VolumeByYear(self, previous):
@@ -184,7 +187,9 @@ class StatsBuilder:
                     return True
             return False
         else:
-            return bool(previous or self.drink.is_guest_pour())
+            if previous:
+                return True
+            return self.drink.is_guest_pour()
 
     @stat('volume_by_drinker')
     def VolumeByDrinker(self, previous):

@@ -5,13 +5,25 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
-* New site setting: "Check for updates".
+Version 0.9.17 (2014-03-08)
+---------------------------
+* Many improvements to the admin interface.
+* The Django database admin is now disabled by default; set
+  `KEGBOT_ENABLE_ADMIN = True` in local_settings to re-enable.
+* Registration via the API sends an activation e-mail and does not require
+  a password to be set.
+* A new site setting, "Check for updates", can be used to disable the
+  dashboard update check.
+* Kegs can be created and managed without tapping them.
+* Pre-defined keg sizes are now stored as the keg's "shell type";
+  a keg's initial volume can be different from that type's default.
+* Internal: Controllers and flow meters are now first-class objects.
 * Internal: Migrated to Django custom user model.
 * Internal: Better support for non-beer beverage types.
-* Keg sizes are predefined.
+* Internal: Anonymous pours are now assigned to the virtual user "guest". 
 * Bug fix: Issues with migrating on MySQL with v0.9.16.
+* Bug fix: Password reset.
+* Bug fix: Plugin account linking.
 * Updated command for launching Celery in `kegbot-supervisor.conf`.
 
 Version 0.9.16 (2014-01-13)

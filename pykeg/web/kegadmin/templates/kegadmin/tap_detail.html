@@ -135,15 +135,68 @@
 $(document).ready(function () {
   $('#tapDetails a:first').tab('show');
 
-  $('#div_id_initial_volume').hide();
+  var volume_ml = $('.input-volume').val();
+
+  $('.variable-units').append('<div class="control-group"> \
+    <label for="id_converted" class="control-label requiredField"> \
+    Initial Volume<span class="asteriskField">*</span></label> \
+    <div class="controls"> \
+    <input class="numberinput" type="number" step="0.01" id="id_converted" value='+volume_ml+'> \
+    <select id="units-input" class="span2"> \
+    <option value="milliliters">Milliliters</option> \
+    <option value="ounces">Ounces</option> \
+    <option value="liters">Liters</option> \
+    <option value="gallons">Gallons</option> \
+    </select><p class="help-block">Initial volume \
+    for this keg</p></div></div>');
+
+  var units = $('#units-input').val();
+
+  $('#id_converted').change(function() {
+      user_input = $(this).val();
+      if ($('#units-input').val()=='milliliters') {
+        var volume_ml = user_input;
+      } else if ($('#units-input').val()=='ounces') {
+        var volume_ml = user_input * 29.5735;
+      } else if ($('#units-input').val()=='liters') {
+        var volume_ml = user_input * 1000;
+      } else if ($('#units-input').val()=='gallons') {
+        var volume_ml = user_input * 3785.41;
+      }
+      $('.input-volume').val(volume_ml);
+    })
+
+  $('#units-input').change(function () {
+    var choice = $(this).val();
+    var volume_ml = $('.input-volume').val();
+    if (choice == 'milliliters') {
+        $('.input-volume').val(volume_ml);
+        $('#id_converted').val(volume_ml);
+      } else if (choice == 'ounces') {
+        var updated_volume = volume_ml / 29.5735;
+        $('.input-volume').val(volume_ml);
+        $('#id_converted').val(updated_volume);
+      } else if (choice == 'liters') {
+        var updated_volume = volume_ml / 1000;
+        $('.input-volume').val(volume_ml);
+        $('#id_converted').val(updated_volume);
+      } else if (choice == 'gallons') {
+        var updated_volume = volume_ml / 3785.41;
+        $('.input-volume').val(volume_ml);
+        $('#id_converted').val(updated_volume);
+      }
+  })
+
+  $('.variable-units').hide();
     $('#id_keg_size').change(function () {
       var choice = $(this).val();
       if (choice == 'other') {
-          $('#div_id_initial_volume').show();
-        } else {
-          $('#div_id_initial_volume').hide();
-        }
-    })
+        $('.variable-units').show();
+      } else {
+        $('.variable-units').hide();
+      }
+  })
+
 });
 </script>
 {% endblock %}

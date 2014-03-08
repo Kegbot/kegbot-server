@@ -107,19 +107,56 @@ def controller_list(request):
 @staff_member_required
 def controller_detail(request, controller_id):
     controller = get_object_or_404(models.Controller, id=controller_id)
+    delete_controller_form = forms.DeleteControllerForm()
+    add_flow_meter_form = forms.AddFlowMeterForm()
+    add_flow_meter_form.fields['controller'].initial = controller_id
+    add_flow_toggle_form = forms.AddFlowToggleForm()
+    add_flow_toggle_form.fields['controller'].initial = controller_id
     context = RequestContext(request)
-    form = forms.DeleteControllerForm(request.POST)
-
+    
     if request.method == 'POST':
-        form = forms.DeleteControllerForm(request.POST)
-        if form.is_valid():
-            controller.delete()
-            messages.success(request, 'The controller was deleted.')
+        if 'delete_controller' in request.POST:
+            delete_controller_form = forms.DeleteControllerForm(request.POST)
+            if delete_controller_form.is_valid():
+                controller.delete()
+                messages.success(request, 'The controller was deleted.')
+                return redirect('kegadmin-controllers')
+        elif 'add_flow_meter' in request.POST:
+            add_flow_meter_form = forms.AddFlowMeterForm(request.POST)
+            if add_flow_meter_form.is_valid():
+                add_flow_meter_form.save();
+                messages.success(request, 'Flow Meter added successfully.')
+                return redirect('kegadmin-controllers')
+        elif 'edit_flow_meter' in request.POST:
+            flowmeter = models.FlowMeter.objects.filter(id=request.POST.get('flowmeter_id'))
+            flowmeter.update(port_name=request.POST.get('port_name'))
+            flowmeter.update(ticks_per_ml=request.POST.get('ticks_per_ml'))
+            messages.success(request, 'Flow Meter successfully updated.')
+            return redirect('kegadmin-controllers')
+        elif 'delete_flow_meter' in request.POST:
+            flowmeter = models.FlowMeter.objects.filter(id=request.POST.get('flowmeter_id')).delete()
+            messages.success(request, 'Flow Meter removed successfully.')
+            return redirect('kegadmin-controllers')
+        elif 'add_flow_toggle' in request.POST:
+            add_flow_toggle_form = forms.AddFlowToggleForm(request.POST)
+            if add_flow_toggle_form.is_valid():
+                add_flow_toggle_form.save();
+                messages.success(request, 'Flow Toggle added successfully.')
+                return redirect('kegadmin-controllers')
+        elif 'edit_flow_toggle' in request.POST:
+            flowtoggle = models.FlowToggle.objects.filter(id=request.POST.get('flowtoggle_id'))
+            flowtoggle.update(port_name=request.POST.get('port_name'))
+            messages.success(request, 'Flow Toggle successfully updated.')
+            return redirect('kegadmin-controllers')
+        elif 'delete_flow_toggle' in request.POST:
+            flowmeter = models.FlowToggle.objects.filter(id=request.POST.get('flowtoggle_id')).delete()
+            messages.success(request, 'Flow Toggle removed successfully.')
             return redirect('kegadmin-controllers')
 
-
     context['controller'] = controller
-    context['form'] = form
+    context['delete_controller_form'] = delete_controller_form
+    context['add_flow_meter_form'] = add_flow_meter_form
+    context['add_flow_toggle_form'] = add_flow_toggle_form
     return render_to_response('kegadmin/controller_detail.html', context_instance=context)
 
 @staff_member_required

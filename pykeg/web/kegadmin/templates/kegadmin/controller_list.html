@@ -3,13 +3,14 @@
 {% load crispy_forms_tags %}
 
 {% block title %}Kegbot Admin: Controllers | {{ block.super }}{% endblock %}
-{% block pagetitle %}Kegbot Admin: Taps{% endblock %}
+{% block pagetitle %}Kegbot Admin: Controllers{% endblock %}
 
 {% block kegadmin-main %}
 <div class="alert alert-info">
   <strong>Note:</strong> Controllers can be created and edited in the Kegbot app.
 </div>
 
+{% if controllers %}
 <table class="table table-hover table-bordered">
 <thead>
   <tr>
@@ -36,5 +37,6 @@
 {% endfor %}
 </tbody>
 </table>
+{% endif %}
 
 {% endblock %}

@@ -574,10 +574,43 @@ class FlowMeterForm(forms.ModelForm):
         fields = ('port_name', 'ticks_per_ml', 'controller')
 
 
+class AddFlowMeterForm(forms.ModelForm):
+    class Meta:
+        model = models.FlowMeter
+        fields = ('port_name', 'ticks_per_ml', 'controller')
+
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
+        Field('port_name'),
+        Field('ticks_per_ml'),
+        Field('controller', type='hidden'),
+        FormActions(
+            Submit('add_flow_meter', 'Add Flow Meter', css_class='btn-primary'),
+        )
+    )
+
+
 class FlowToggleForm(forms.ModelForm):
     class Meta:
         model = models.FlowToggle
         fields = ('port_name', 'controller')
+
+
+class AddFlowToggleForm(forms.ModelForm):
+    class Meta:
+        model = models.FlowToggle
+        fields = ('port_name', 'controller')
+
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
+        Field('port_name'),
+        Field('controller', type='hidden'),
+        FormActions(
+            Submit('add_flow_toggle', 'Add Flow Toggle', css_class='btn-primary'),
+        )
+    )
 
 
 class DeleteControllerForm(forms.Form):
@@ -585,7 +618,7 @@ class DeleteControllerForm(forms.Form):
     helper.form_class = 'form-horizontal user-select'
     helper.layout = Layout(
         FormActions(
-            Submit('delete', 'Delete Controller', css_class='btn-primary'),
+            Submit('delete_controller', 'Delete Controller', css_class='btn-danger'),
         )
     )
 

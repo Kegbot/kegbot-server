@@ -20,6 +20,7 @@ class Migration(DataMigration):
                 if orm['core.User'].objects.filter(username=new_name).count():
                     continue
                 old_guest.username = new_name 
+                old_guest.save()
                 break
 
         guest = orm['core.User'].objects.create(username='guest')

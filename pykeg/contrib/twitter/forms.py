@@ -35,6 +35,8 @@ class SiteSettingsForm(forms.Form):
         help_text='Tweet whenever a drink is poured (caution: potentially annoying).')
     include_guests = forms.BooleanField(initial=True, required=False,
         help_text='When tweeting drink events, whether to include guest pours.')
+    include_pictures = forms.BooleanField(initial=False, required=False,
+        help_text='Attach photos to tweets when available?')
     append_url = forms.BooleanField(initial=True, required=False,
         help_text='Whether to append drink URLs to tweets.')
     keg_started_template = forms.CharField(max_length=255, widget=WIDE_TEXT,
@@ -62,6 +64,8 @@ class UserSettingsForm(forms.Form):
         help_text='Tweet when you join a session.')
     tweet_drink_events = forms.BooleanField(initial=False, required=False,
         help_text='Tweet every time you pour (caution: potentially annoying).')
+    include_pictures = forms.BooleanField(initial=False, required=False,
+        help_text='Attach photos to tweets when available?')
 
 class SendTweetForm(forms.Form):
     tweet_custom = forms.CharField(max_length=140, widget=WIDE_TEXT,

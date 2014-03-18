@@ -223,14 +223,18 @@ class TwitterPlugin(plugin.Plugin):
                 self.logger.info('Skipping system tweet for event %s: guest pour.' % event.id)
                 return
 
+        image_url = None
+
+        if event.drink and event.drink.picture and settings.get('attach_pictures'):
+            image_url = event.drink.picture.resized.url
+
         tweet = self._compose_tweet(event, template, append_url)
 
-        if tweet:
-            self.logger.info('Scheduling system tweet: %s' % tweet)
-            image_url = None
-            if event.drink and event.drink.picture:
-                image_url = event.drink.picture.resized.url
-            self._schedule_tweet(tweet, site_profile, image_url)
+        if not tweet:
+            return
+
+        self.logger.info('Scheduling system tweet: %s' % tweet)
+        self._schedule_tweet(tweet, site_profile, image_url)
 
     def _issue_user_tweet(self, event, site_settings):
         kind = event.kind
@@ -264,14 +268,17 @@ class TwitterPlugin(plugin.Plugin):
         if event.drink.shout:
             template = event.drink.shout
 
+        image_url = None
+        if event.drink and event.drink.picture and user_settings.get('attach_pictures'):
+            image_url = event.drink.picture.resized.url
+
         tweet = self._compose_tweet(event, template, append_url)
 
-        if tweet:
-            self.logger.info('Scheduling tweet: %s' % tweet)
-            image_url = None
-            if event.drink and event.drink.picture:
-                image_url = event.drink.picture.resized.url
-            self._schedule_tweet(tweet, profile, image_url)
+        if not tweet:
+            return
+
+        self.logger.info('Scheduling tweet: %s' % tweet)
+        self._schedule_tweet(tweet, profile, image_url)
 
     def _compose_tweet(self, event, template, append_url):
         kbvars = self.get_vars(event)

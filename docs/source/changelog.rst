@@ -5,6 +5,11 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* Twitter plugin: A new setting gives control over whether pictures are
+  attached to tweets.
+
 Version 0.9.18 (2014-03-17)
 ---------------------------
 * These order in taps are listed can be changed.

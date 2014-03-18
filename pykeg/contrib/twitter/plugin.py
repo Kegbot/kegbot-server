@@ -225,7 +225,7 @@ class TwitterPlugin(plugin.Plugin):
 
         image_url = None
 
-        if event.drink and event.drink.picture and settings.get('attach_pictures'):
+        if event.drink and event.drink.picture and settings.get('include_pictures'):
             image_url = event.drink.picture.resized.url
 
         tweet = self._compose_tweet(event, template, append_url)
@@ -269,7 +269,7 @@ class TwitterPlugin(plugin.Plugin):
             template = event.drink.shout
 
         image_url = None
-        if event.drink and event.drink.picture and user_settings.get('attach_pictures'):
+        if event.drink and event.drink.picture and user_settings.get('include_pictures'):
             image_url = event.drink.picture.resized.url
 
         tweet = self._compose_tweet(event, template, append_url)

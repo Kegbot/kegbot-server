@@ -5,6 +5,12 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.18 (2014-03-17)
+---------------------------
+* These order in taps are listed can be changed.
+* Bugfix: Fixed an issue that broke `kegbot upgrade` on systems which already
+  had a user named "guest"
+
 Version 0.9.17 (2014-03-08)
 ---------------------------
 * Many improvements to the admin interface.

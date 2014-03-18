@@ -347,6 +347,8 @@ class Beverage(models.Model):
 
 class KegTap(models.Model):
     """A physical tap of beer."""
+    class Meta:
+        ordering = ('sort_order',)
     name = models.CharField(max_length=128,
         help_text='The display name for this tap, for example, "Main Tap".')
     description = models.TextField(blank=True, null=True,
@@ -357,6 +359,8 @@ class KegTap(models.Model):
     temperature_sensor = models.ForeignKey('ThermoSensor', blank=True, null=True,
         on_delete=models.SET_NULL,
         help_text='Optional sensor monitoring the temperature at this tap.')
+    sort_order = models.PositiveIntegerField(default=0,
+        help_text='Position relative to other taps when sorting (0=first).')
 
     def __str__(self):
         return "%s: %s" % (self.name, self.current_keg)

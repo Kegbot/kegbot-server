@@ -28,7 +28,7 @@ The program ``setup-kegbot.py`` will help you:
 
 Run the setup wizard::
 
-	$ setup-kegbot.py
+	(kb) $ setup-kegbot.py
 
 When finished, you should have a settings file in
 ``~/.kegbot/local_settings.py`` that you can examine.

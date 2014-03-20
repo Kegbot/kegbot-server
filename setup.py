@@ -8,7 +8,7 @@ kegerator.  For more information and documentation, see http://kegbot.org/
 
 from setuptools import setup, find_packages
 
-VERSION = '0.9.18'
+VERSION = '0.9.19-pre'
 DOCLINES = __doc__.split('\n')
 
 SHORT_DESCRIPTION = DOCLINES[0]
@@ -28,7 +28,6 @@ DEPENDENCIES = [
 
   'South == 0.8.4',
   'django-crispy-forms == 1.2.8',
-  'django_nose == 1.2',
   'foursquare == 2014.01.18',
   'gunicorn == 18.0',
   'MySQL-python == 1.2.5',
@@ -39,7 +38,6 @@ DEPENDENCIES = [
   'pytz == 2013b',
   'requests == 2.2.1',
   'tweepy == 2.2',
-  'mock == 1.0.1',
   'jsonfield == 0.9.20',
 ]
 

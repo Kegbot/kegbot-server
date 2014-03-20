@@ -16,9 +16,16 @@ class Migration(DataMigration):
             controller_name = meter_name[:idx]
             port_name = meter_name[idx+1:]
 
-            controller = orm['core.Controller'].objects.get_or_create(name=controller_name)[0]
-            meter = orm['core.FlowMeter'].objects.get_or_create(controller=controller,
-                port_name=port_name, defaults={'tap': tap})[0]
+            try:
+                controller = orm['core.Controller'].objects.get(name=controller_name)
+            except orm['core.Controller'].DoesNotExist:
+                controller = orm['core.Controller'].objects.create(name=controller_name)
+
+            try:
+                meter = orm['core.FlowMeter'].objects.get(controller=controller, port_name=port_name)
+            except orm['core.FlowMeter'].DoesNotExist:
+                meter = orm['core.FlowMeter'].objects.create(controller=controller, port_name=port_name,
+                    tap=tap)
 
             print 'Migrated tap: %s -> %s' % (tap.meter_name, meter)
 

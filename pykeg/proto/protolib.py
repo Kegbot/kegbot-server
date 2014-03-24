@@ -115,14 +115,13 @@ def PictureToProto(record, full=False):
         ret.session_id = record.session_id
     return ret
 
-@converts(models.Beverage)
-def BeverageToProto(beverage, full=False):
+def BeverageToBeerType(beverage, full=False):
+    """Deprecated."""
     ret = models_pb2.BeerType()
     ret.id = str(beverage.id)
     ret.name = beverage.name
     ret.brewer_id = str(beverage.producer_id)
     ret.style_id = '0'
-    # TODO(mikey): guarantee this at DB level
     abv = beverage.abv_percent or 0.0
     ret.abv = max(min(abv, 100.0), 0.0)
     if beverage.specific_gravity is not None:
@@ -133,8 +132,8 @@ def BeverageToProto(beverage, full=False):
         ret.image.MergeFrom(ToProto(beverage.picture))
     return ret
 
-@converts(models.BeverageProducer)
-def ProducerToProto(producer, full=False):
+def ProducerToBrewer(producer, full=False):
+    """Deprecated."""
     ret = models_pb2.Brewer()
     ret.id = str(producer.id)
     ret.name = producer.name
@@ -154,6 +153,65 @@ def ProducerToProto(producer, full=False):
         ret.image.MergeFrom(ToProto(producer.picture))
     return ret
 
+@converts(models.Beverage)
+def BeverageToProto(beverage, full=False):
+    ret = models_pb2.Beverage()
+    ret.id = beverage.id
+    ret.name = beverage.name
+    ret.producer.MergeFrom(ToProto(beverage.producer, full))
+    ret.beverage_type = beverage.beverage_type
+
+    if beverage.style:
+        ret.style = beverage.style
+    if beverage.description:
+        ret.description = beverage.description
+
+    if beverage.picture:
+        ret.picture.MergeFrom(ToProto(beverage.picture, full))
+
+    if beverage.vintage_year:
+        ret.vintage_year = beverage.vintage_year
+
+    if beverage.abv_percent is not None:
+        ret.abv_percent = beverage.abv_percent
+    if beverage.calories_per_ml is not None:
+        ret.calories_per_ml = beverage.calories_per_ml
+    if beverage.carbs_per_ml is not None:
+        ret.carbs_per_ml = beverage.carbs_per_ml
+
+    if beverage.original_gravity is not None:
+        ret.original_gravity = beverage.original_gravity
+    if beverage.specific_gravity is not None:
+        ret.specific_gravity = beverage.specific_gravity
+    if beverage.untappd_beer_id is not None:
+        ret.untappd_id = beverage.untappd_beer_id
+
+    if beverage.beverage_backend is not None:
+        ret.beverage_backend = beverage.beverage_backend
+    if beverage.beverage_backend_id is not None:
+        ret.beverage_backend_id = beverage.beverage_backend_id
+
+    return ret
+
+@converts(models.BeverageProducer)
+def ProducerToProto(producer, full=False):
+    ret = models_pb2.BeverageProducer()
+    ret.id = producer.id
+    ret.name = producer.name
+    if producer.country is not None:
+        ret.country = producer.country
+    if producer.origin_state is not None:
+        ret.origin_state = producer.origin_state
+    if producer.origin_city is not None:
+        ret.origin_city = producer.origin_city
+    ret.is_homebrew = bool(producer.is_homebrew)
+    if producer.url is not None:
+        ret.url = producer.url
+    if producer.description is not None:
+        ret.description = producer.description
+    if producer.picture:
+        ret.picture.MergeFrom(ToProto(producer.picture))
+    return ret
 
 @converts(models.Controller)
 def ControllerToProto(controller, full=False):
@@ -222,32 +280,36 @@ def DrinkToProto(drink, full=False):
 def KegToProto(keg, full=False):
     ret = models_pb2.Keg()
     ret.id = keg.id
-    ret.url = keg.get_absolute_url()
-    ret.type_id = str(keg.type_id)
-    ret.size_id = 0
-    ret.size_name = keg.keg_type
-    ret.size_volume_ml = keg.full_volume_ml
-    rem = float(keg.remaining_volume_ml())
-    ret.volume_ml_remain = rem
+    ret.keg_type = keg.keg_type
+
+    ret.remaining_volume_ml = float(keg.remaining_volume_ml())
+    ret.full_volume_ml = keg.full_volume_ml
+    ret.served_volume_ml = keg.served_volume_ml
+    ret.spilled_volume_ml = keg.spilled_ml
     ret.percent_full = keg.percent_full()
+
     ret.start_time = datestr(keg.start_time)
     ret.end_time = datestr(keg.end_time)
-    if hasattr(ret, 'online'):
-        ret.online = keg.online
+    ret.online = keg.online
     if keg.description is not None:
         ret.description = keg.description
-    ret.spilled_ml = keg.spilled_ml
 
-    if full:
-        if keg.type:
-            ret.type.MergeFrom(ToProto(keg.type))
+    ret.beverage.MergeFrom(ToProto(keg.type))
 
-        # Deprecated.
-        s = models_pb2.KegSize()
-        s.id = 0
-        s.name = ret.size_name
-        s.volume_ml = ret.size_volume_ml
-        ret.size.MergeFrom(s)
+    # Deprecated fields.
+    ret.size_id = 0
+    ret.type_id = str(keg.type_id)
+    ret.size_name = keg.keg_type
+    ret.size_volume_ml = keg.full_volume_ml
+    ret.volume_ml_remain = ret.remaining_volume_ml
+    ret.spilled_ml = ret.spilled_volume_ml
+
+    ret.type.MergeFrom(BeverageToBeerType(keg.type))
+    s = models_pb2.KegSize()
+    s.id = 0
+    s.name = ret.size_name
+    s.volume_ml = ret.size_volume_ml
+    ret.size.MergeFrom(s)
 
     return ret
 
@@ -282,6 +344,7 @@ def KegTapToProto(tap, full=False):
             ret.current_keg.MergeFrom(ToProto(tap.current_keg, full=True))
 
     if tap.temperature_sensor:
+        ret.thermo_sensor.MergeFrom(ToProto(tap.temperature_sensor))
         ret.thermo_sensor_id = tap.temperature_sensor_id
         log = tap.temperature_sensor.LastLog()
         if log:
@@ -316,6 +379,11 @@ def ThermoLogToProto(record, full=False):
 def ThermoSensorToProto(record, full=False):
     ret = models_pb2.ThermoSensor()
     ret.id = record.id
+    log = record.LastLog()
+    if log:
+        ret.last_log.MergeFrom(ToProto(log))
+
+    # Deprecated
     ret.sensor_name = record.raw_name
     ret.nice_name = record.nice_name
     return ret

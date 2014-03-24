@@ -9,6 +9,7 @@ Current Version (in development)
 --------------------------------
 * Twitter plugin: A new setting gives control over whether pictures are
   attached to tweets.
+* API: Taps can be looked up by ID instead of meter name.
 
 Version 0.9.18 (2014-03-17)
 ---------------------------

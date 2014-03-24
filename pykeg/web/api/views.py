@@ -458,8 +458,8 @@ def get_api_key(request):
     return {'api_key': api_key}
 
 @csrf_exempt
-def tap_detail(request, meter_name):
-    tap = get_tap_from_meter_name_or_404(meter_name)
+def tap_detail(request, meter_name_or_id):
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     if request.method == 'POST':
         return _tap_detail_post(request, tap)
     elif request.method == 'GET':
@@ -472,11 +472,11 @@ def _tap_detail_get(request, tap):
 
 @csrf_exempt
 @auth_required
-def tap_calibrate(request, meter_name):
+def tap_calibrate(request, meter_name_or_id):
     # TODO(mikey): This would make more semantic sense as PATCH /taps/tap-name/,
     # but Django's support for non-POST verbs is poor (specifically wrt request
     # body/form handling).
-    tap = get_tap_from_meter_name_or_404(meter_name)
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     meter = tap.current_meter()
     if not meter:
         raise kbapi.BadRequestError('Tap does not have a meter!')
@@ -485,15 +485,15 @@ def tap_calibrate(request, meter_name):
     if form.is_valid():
         meter.ticks_per_ml = 1.0 / form.cleaned_data['ml_per_tick']
         meter.save()
-        tap = get_tap_from_meter_name_or_404(meter_name)
+        tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     else:
         raise kbapi.BadRequestError, _form_errors(form)
     return protolib.ToProto(tap, full=True)
 
 @csrf_exempt
 @auth_required
-def tap_spill(request, meter_name):
-    tap = get_tap_from_meter_name_or_404(meter_name)
+def tap_spill(request, meter_name_or_id):
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     if not tap.current_keg:
         raise kbapi.BadRequestError('No keg on tap.')
     form = forms.TapSpillForm(request.POST)
@@ -506,8 +506,8 @@ def tap_spill(request, meter_name):
 
 @csrf_exempt
 @auth_required
-def tap_activate(request, meter_name):
-    tap = get_tap_from_meter_name_or_404(meter_name)
+def tap_activate(request, meter_name_or_id):
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     form = ChangeKegForm(request.POST)
     if form.is_valid():
         form.save(tap)
@@ -634,9 +634,18 @@ def default_handler(request):
     raise Http404, "Not an API endpoint: %s" % request.path[:100]
 
 
-def get_tap_from_meter_name_or_404(meter_name):
+def get_tap_from_meter_name_or_404(meter_name_or_id):
     try:
-        return models.KegTap.get_from_meter_name(meter_name)
+        meter_id = int(meter_name_or_id)
+        try:
+            return models.KegTap.objects.get(pk=meter_id)
+        except models.KegTap.DoesNotExist as e:
+            raise Http404(str(e))
+    except ValueError:
+        pass
+
+    try:
+        return models.KegTap.get_from_meter_name(meter_name_or_id)
     except models.KegTap.DoesNotExist, e:
         raise Http404(str(e))
 

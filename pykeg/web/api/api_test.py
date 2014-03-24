@@ -67,6 +67,15 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals('Second Tap', taps[1].name)
         self.assertEquals('kegboard.flow1', taps[1].meter_name)
 
+        for tap in taps:
+            response1, data1 = self.get('taps/%s' % tap.meter_name)
+            self.assertEquals(data1.meta.result, 'ok')
+            
+            response2, data2 = self.get('taps/%s' % tap.id)
+            self.assertEquals(data2.meta.result, 'ok')
+
+            self.assertEquals(data1, data2)
+
     def testApiAccess(self):
         site = create_site()
 

@@ -56,8 +56,8 @@ class UntappdPlugin(plugin.Plugin):
         self.logger.info('Handling new event: %s' % event.id)
         user = event.user
 
-        if event.kind != 'session_joined':
-            self.logger.info('Ignoring event: not session_joined.')
+        if event.kind != event.DRINK_POURED:
+            self.logger.info('Ignoring event: %s' % event.kind)
             return
 
         if user.is_guest():
@@ -87,8 +87,7 @@ class UntappdPlugin(plugin.Plugin):
         if event.drink.shout:
             shout = event.drink.shout
 
-        from pykeg.core import models
-        timezone_name = models.SiteSettings.get().timezone
+        timezone_name = timezone.get_current_timezone_name()
         tasks.checkin.delay(token, beer_id, timezone_name, shout=shout)
 
     ### Untappd-specific methods

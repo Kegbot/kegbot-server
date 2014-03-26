@@ -10,6 +10,9 @@ Current Version (in development)
 * Twitter plugin: A new setting gives control over whether pictures are
   attached to tweets.
 * API: Taps can be looked up by ID instead of meter name.
+* Bugfix: Fixed an issue that caused registrations to fail when e-mail was
+  not properly configured.
+* Untappd: Checkins are attempted for all pours.
 
 Version 0.9.18 (2014-03-17)
 ---------------------------

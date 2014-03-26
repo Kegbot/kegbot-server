@@ -88,7 +88,8 @@ class KegbotBackend:
             }
 
             message = build_message(email, 'email_new_registration.html', context)
-            message.send()
+            if message:
+                message.send()
         return user
 
 

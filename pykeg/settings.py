@@ -38,7 +38,6 @@ INSTALLED_APPS = (
     'registration',
     'socialregistration',
     'south',
-    'django_nose', # must be after south
 )
 
 LOGIN_REDIRECT_URL = "/account/"
@@ -279,6 +278,10 @@ if HAVE_RAVEN:
 ### django-storages
 if HAVE_STORAGES:
     INSTALLED_APPS += ('storages',)
+
+### django-nose
+if HAVE_DJANGO_NOSE:
+    INSTALLED_APPS += ('django_nose',)
 
 ### django.contrib.messages
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'

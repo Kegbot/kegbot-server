@@ -1,55 +1,57 @@
 """Defines HAVE_* flags for several optional packages."""
 
 import imp
-from django.core.exceptions import ImproperlyConfigured
 
 try:
-    import debug_toolbar
+    imp.find_module('debug_toolbar')
     HAVE_DEBUG_TOOLBAR = True
 except ImportError:
     HAVE_DEBUG_TOOLBAR = False
 
 try:
-    import raven.contrib.django
+    imp.find_module('raven.contrib.django')
     HAVE_RAVEN = True
 except ImportError:
     HAVE_RAVEN = False
 
 try:
-    import django_statsd
-    HAVE_STATSD = True
-except ImproperlyConfigured:
-    # Good enough; statsd is fussy on import.
+    imp.find_module('django_statsd')
     HAVE_STATSD = True
 except ImportError:
     HAVE_STATSD = False
 
 try:
-    import storages
+    imp.find_module('storages')
     HAVE_STORAGES = True
 except ImportError:
     HAVE_STORAGES = False
 
 try:
-    import memcache
+    imp.find_module('memcache')
     HAVE_MEMCACHE = True
 except ImportError:
     HAVE_MEMCACHE = False
 
 try:
-    import pylibmc
+    imp.find_module('pylibmc')
     HAVE_PYLIBMC = True
 except ImportError:
     HAVE_PYLIBMC = False
 
 try:
-    import debug_toolbar_memcache
+    imp.find_module('debug_toolbar_memcache')
     HAVE_MEMCACHE_TOOLBAR = True
 except ImportError:
     HAVE_MEMCACHE_TOOLBAR = False
 
 try:
-    import djcelery_email
+    imp.find_module('djcelery_email')
     HAVE_CELERY_EMAIL = True
 except ImportError:
     HAVE_CELERY_EMAIL = False
+
+try:
+    imp.find_module('django_nose')
+    HAVE_DJANGO_NOSE = True
+except ImportError:
+    HAVE_DJANGO_NOSE = False

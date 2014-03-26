@@ -81,7 +81,9 @@ def dashboard(request):
 def general_settings(request):
     context = RequestContext(request)
     settings = models.SiteSettings.get()
+
     form = forms.SiteSettingsForm(instance=settings)
+
     if request.method == 'POST':
         form = forms.SiteSettingsForm(request.POST, instance=settings)
         if form.is_valid():
@@ -96,6 +98,14 @@ def general_settings(request):
                 settings.save()
             messages.success(request, 'Site settings were successfully updated.')
     context['settings_form'] = form
+
+    using_ssl = request.is_secure()
+    request_host = request.get_host()
+    context['request_host'] = request_host
+    context['settings_host'] = settings.hostname
+    context['request_ssl'] = using_ssl
+    context['settings_ssl'] = settings.use_ssl
+
     return render_to_response('kegadmin/index.html', context_instance=context)
 
 @staff_member_required

@@ -193,9 +193,10 @@ class SiteSettings(models.Model):
         default='UTC',
         help_text='Time zone for this system')
     hostname = models.CharField(max_length=255,
-        help_text='Hostname (and optional port) for this system. Examples: mykegbot.example.com, 192.168.1.100:8000')
+        help_text='Hostname (and optional port) that this system is serving from. Examples: mykegbot.example.com, 192.168.1.100:8000')
     use_ssl = models.BooleanField(default=False,
-        help_text='Use SSL for URLs to this site.')
+        verbose_name='Using SSL',
+        help_text='Select this checkbox if the site is being served with SSL.')
 
     check_for_updates = models.BooleanField(default=True,
         help_text='Periodically check for updates (<a href="https://kegbot.org/about/checkin">more info</a>)')

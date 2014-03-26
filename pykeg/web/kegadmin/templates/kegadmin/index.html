@@ -6,5 +6,43 @@
 {% block pagetitle %}Kegbot Admin: General Settings{% endblock %}
 
 {% block kegadmin-main %}
+
+{% if request_host != settings_host %}
+<div class="alert alert-error">
+  <h4>Warning!</h4>
+  <p>
+    The current hostname setting is <b>{{ settings_host }}</b>, but this page
+    is being served from hostname <b>{{ request_host }}</b>.
+  </p>
+  <p>
+    In most cases, this is an error, and
+    you should update the setting to use <b>{{ request_host }}</b>.
+  </p>
+</div>
+{% endif %}
+
+{% if request_ssl != settings_ssl %}
+<div class="alert alert-error">
+  <h4>Warning!</h4>
+  <p>
+    Current settings say the site is running
+    {% if settings_ssl %}
+     <b>with SSL</b>, but this page was served <b>without SSL</b>.
+    {% else %}
+     <b>without SSL</b>, but this page was served <b>with SSL</b>.
+    {% endif %}
+    This setting is information, and tells Kegbot how to create links back
+    to the site; it does not change how the site is served.
+  </p>
+  <p>
+    In most cases this is an error, and you should
+    {% if request_ssl %}
+    <b>check "Using SSL"</b>.
+    {% else %}
+    <b>uncheck "Using SSL"</b>.
+    {% endif %}
+  </p>
+</div>
+{% endif %}
 {% crispy settings_form %}
 {% endblock %}

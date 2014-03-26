@@ -57,6 +57,10 @@ def start(request):
 @never_cache
 def site_settings(request):
     context = RequestContext(request)
+
+    using_ssl = request.is_secure()
+    request_host = request.get_host()
+
     if request.method == 'POST':
         form = MiniSiteSettingsForm(request.POST, instance=request.kbsite.settings)
         if form.is_valid():
@@ -69,7 +73,11 @@ def site_settings(request):
             messages.success(request, 'Started new site!')
         except defaults.AlreadyInstalledError:
             messages.warning(request, 'Site already installed, proceeding.')
-        form = MiniSiteSettingsForm(instance=models.SiteSettings.get())
+        form = MiniSiteSettingsForm(instance=models.SiteSettings.get(),
+            initial={
+                'hostname': request_host,
+                'use_ssl': using_ssl,
+            })
     context['form'] = form
     return render_to_response('setup_wizard/site_settings.html', context_instance=context)
 

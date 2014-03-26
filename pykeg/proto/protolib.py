@@ -184,7 +184,7 @@ def BeverageToProto(beverage, full=False):
     if beverage.specific_gravity is not None:
         ret.specific_gravity = beverage.specific_gravity
     if beverage.untappd_beer_id is not None:
-        ret.untappd_id = beverage.untappd_beer_id
+        ret.untappd_id = str(beverage.untappd_beer_id)
 
     if beverage.beverage_backend is not None:
         ret.beverage_backend = beverage.beverage_backend

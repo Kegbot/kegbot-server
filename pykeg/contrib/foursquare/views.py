@@ -129,13 +129,18 @@ def auth_callback(request):
         messages.error(request, str(error))
     else:
         plugin = request.plugins.get('foursquare')
-        profile = client.get_user_info()
-        token = client.get_access_token()
-        plugin.save_user_profile(request.user, profile)
-        plugin.save_user_token(request.user, token)
+        api_client = foursquare.Foursquare(access_token=token)
+        profile = api_client.users()
+        if not profile or not profile.get('user'):
+            messages.error(request, 'Unexpected profile response.')
+        else:
+            profile = profile['user']
+            token = client.get_access_token()
+            plugin.save_user_profile(request.user, profile)
+            plugin.save_user_token(request.user, token)
 
-        username = '%s %s' % (profile.get('firstName'), profile.get('lastName'))
-        messages.success(request, 'Successfully linked to foursquare user %s' % username)
+            username = '%s %s' % (profile.get('firstName'), profile.get('lastName'))
+            messages.success(request, 'Successfully linked to foursquare user %s' % username)
 
     return redirect('account-plugin-settings', plugin_name='foursquare')
 

@@ -5,8 +5,8 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.19 (2014-03-26)
+---------------------------
 * Twitter plugin: A new setting gives control over whether pictures are
   attached to tweets.
 * API: Taps can be looked up by ID instead of meter name.

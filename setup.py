@@ -31,7 +31,7 @@ DEPENDENCIES = [
   'foursquare == 2014.01.18',
   'gunicorn == 18.0',
   'MySQL-python == 1.2.5',
-  'pillow == 2.1.0',
+  'pillow == 2.3.1',
   'protobuf == 2.5.0',
   'python-gflags == 2.0',
   'python-memcached == 1.51',

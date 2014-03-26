@@ -17,6 +17,11 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.template import loader
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext_lazy as _
 
 from registration.forms import RegistrationForm as BaseRegistrationForm
@@ -26,6 +31,7 @@ try:
 except ImportError:
     from django.contrib.auth.models import User
 
+from pykeg.core import models
 
 class KegbotRegistrationForm(BaseRegistrationForm):
     def clean_username(self):
@@ -34,3 +40,48 @@ class KegbotRegistrationForm(BaseRegistrationForm):
             raise forms.ValidationError(_("A user with that username already exists."))
         else:
             return self.cleaned_data['username']
+
+
+
+class PasswordResetForm(forms.Form):
+    email = forms.EmailField(label=_("Email"), max_length=254)
+
+    def save(self, domain_override=None,
+             subject_template_name='registration/password_reset_subject.txt',
+             email_template_name='registration/password_reset_email.html',
+             use_https=False, token_generator=default_token_generator,
+             from_email=None, request=None):
+        """
+        Generates a one-use only link for resetting password and sends to the
+        user.
+        """
+        from django.core.mail import send_mail
+        email = self.cleaned_data["email"]
+        active_users = User._default_manager.filter(
+            email__iexact=email, is_active=True)
+        for user in active_users:
+            # Make sure that no email is sent to a user that actually has
+            # a password marked as unusable
+            if not user.has_usable_password():
+                continue
+            from_email = getattr(settings, 'EMAIL_FROM_ADDRESS', from_email)
+
+            site_settings = models.SiteSettings.get()
+            domain = site_settings.hostname
+            site_name = site_settings.title
+            c = {
+                'email': user.email,
+                'domain': domain,
+                'site_name': site_name,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'user': user,
+                'token': token_generator.make_token(user),
+                'protocol': 'https' if site_settings.use_ssl else 'http',
+            }
+            subject = loader.render_to_string(subject_template_name, c)
+            # Email subject *must not* contain newlines
+            subject = ''.join(subject.splitlines())
+            email = loader.render_to_string(email_template_name, c)
+            send_mail(subject, email, from_email, [user.email])
+
+

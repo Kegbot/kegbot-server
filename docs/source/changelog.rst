@@ -13,6 +13,7 @@ Current Version (in development)
 * Bugfix: Fixed an issue that caused registrations to fail when e-mail was
   not properly configured.
 * Untappd: Checkins are attempted for all pours.
+* Bugfix: Password reset e-mails.
 
 Version 0.9.18 (2014-03-17)
 ---------------------------

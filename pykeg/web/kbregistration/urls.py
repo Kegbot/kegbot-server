@@ -5,6 +5,7 @@ from django.contrib.auth import views as auth_views
 
 from django.views.generic.base import TemplateView
 
+from pykeg.web.kbregistration.forms import PasswordResetForm
 from pykeg.web.kbregistration.views import ActivationView
 from pykeg.web.kbregistration.views import RegistrationView
 
@@ -38,6 +39,7 @@ urlpatterns = patterns('',
                                      name='password_change_done'),
                        url(r'^password/reset/$',
                                      auth_views.password_reset,
+                                     kwargs={'password_reset_form': PasswordResetForm},
                                      name='password_reset'),
                        url(r'^password/reset/done/$',
                                      auth_views.password_reset_done,

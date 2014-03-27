@@ -5,8 +5,8 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.20 (2014-03-27)
+---------------------------
 * Security: Fix issue #230.
 
 Version 0.9.19 (2014-03-26)

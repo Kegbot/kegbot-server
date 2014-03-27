@@ -18,6 +18,7 @@
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.utils.cache import add_never_cache_headers
 
 from . import util
 
@@ -55,13 +56,6 @@ class ApiRequestMiddleware:
             if need_auth:
                 util.check_api_key(request)
 
-            if request.method == 'GET':
-                cached = request.kbcache.gen_get(cache_key(request))
-                if cached:
-                    response = util.build_response(request, cached, 200)
-                    response.is_from_cache = True
-                    return response
-
             return None
 
         except Exception, e:
@@ -86,10 +80,7 @@ class ApiResponseMiddleware:
             }
             response = util.build_response(request, data, 200)
 
-            if request.method == 'GET' and response.status_code == 200:
-                if not getattr(response, 'is_from_cache', False):
-                    request.kbcache.gen_set(cache_key(request), data)
-        response['Cache-Control'] = 'max-age=0'
+        add_never_cache_headers(response)
         return response
 
 

@@ -18,7 +18,9 @@
 
 """Unittests for pykeg.web.api"""
 
+from django.core import mail
 from django.test import TransactionTestCase
+from django.test.utils import override_settings
 from pykeg.core import models
 from pykeg.core import defaults
 from kegbot.util import kbjson
@@ -34,7 +36,12 @@ class BaseApiTestCase(TransactionTestCase):
             **extra)
         return response, kbjson.loads(response.content)
 
-class ApiClientTestCase(BaseApiTestCase):
+    def post(self, subpath, data={}, follow=False, **extra):
+        response = self.client.post('/api/%s' % subpath, data=data, follow=follow,
+            **extra)
+        return response, kbjson.loads(response.content)
+
+class ApiClientNoSiteTestCase(BaseApiTestCase):
     def testNotSetUp(self):
         '''Api endpoints should all error out prior to site setup.'''
 
@@ -51,9 +58,22 @@ class ApiClientTestCase(BaseApiTestCase):
             response, data = self.get(endpoint)
             self.assertEquals(data.meta.result, 'ok')
 
-    def testSiteDefaults(self):
-        create_site()
 
+class ApiClientTestCase(BaseApiTestCase):
+    def setUp(self):
+        self.site = create_site()
+        self.admin = models.User.objects.create(username='admin', is_staff=True)
+        self.admin.set_password('testpass')
+        self.admin.save()
+
+        self.normal_user = models.User.objects.create(username='normal_user', is_staff=True)
+        self.normal_user.set_password('testpass')
+        self.normal_user.save()
+
+        self.apikey = models.ApiKey.objects.create(user=self.admin, key='123')
+        self.bad_apikey = models.ApiKey.objects.create(user=self.normal_user, key='456')
+
+    def testSiteDefaults(self):
         empty_endpoints = ('events/', 'kegs/')
         for endpoint in empty_endpoints:
             response, data = self.get(endpoint)
@@ -77,13 +97,7 @@ class ApiClientTestCase(BaseApiTestCase):
             self.assertEquals(data1, data2)
 
     def testApiAccess(self):
-        site = create_site()
-
         protected_get_endpoints = ('users/',)
-
-        user = models.User.objects.create(username='testuser')
-        user.set_password('testpass')
-        user.save()
 
         endpoint = 'users/'
 
@@ -93,22 +107,16 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals(data.error.code, 'NoAuthTokenError')
 
         # Non-existent key.
-        response, data = self.get(endpoint, HTTP_X_KEGBOT_API_KEY='123')
+        response, data = self.get(endpoint, HTTP_X_KEGBOT_API_KEY='foobar')
         self.assertEquals(data.meta.result, 'error')
         self.assertEquals(data.error.code, 'BadApiKeyError')
 
-        api_key_obj = models.ApiKey.objects.create(user=user, key='123')
-
-        # Key exists, but non-superuser.
-        response, data = self.get(endpoint, HTTP_X_KEGBOT_API_KEY='123')
-        self.assertEquals(data.meta.result, 'error')
-        self.assertEquals(data.error.code, 'PermissionDeniedError')
-
-        user.is_staff = True
-        user.save()
+        # Key exists, non-superuser.
+        response, data = self.get(endpoint, HTTP_X_KEGBOT_API_KEY=self.bad_apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
 
         # Finally ok.
-        response, data = self.get(endpoint, HTTP_X_KEGBOT_API_KEY='123')
+        response, data = self.get(endpoint, HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEquals(data.meta.result, 'ok')
 
         endpoint = 'events/'
@@ -116,40 +124,53 @@ class ApiClientTestCase(BaseApiTestCase):
         # Alter privacy and compare.
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'ok')
-        site.settings.privacy = 'members'
-        site.settings.save()
+        self.site.settings.privacy = 'members'
+        self.site.settings.save()
 
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'error')
 
-        self.client.login(username='testuser', password='testpass')
+        self.client.login(username='admin', password='testpass')
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'ok')
 
         # Alert to staff-only.
-        site.settings.privacy = 'staff'
-        site.settings.save()
+        self.site.settings.privacy = 'staff'
+        self.site.settings.save()
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'ok')
 
-        user.is_staff = False
-        user.save()
+        self.client.logout()
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'error')
         self.assertEquals(data.error.code, 'NoAuthTokenError')
 
-    def test_controller_data(self):
-        site = create_site()
-        user = models.User.objects.create(username='testuser', is_staff=True)
-        api_key_obj = models.ApiKey.objects.create(user=user, key='123')
-        api_key = api_key_obj.key
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    def test_registration(self):
+        response, data = self.post('new-user/', data={'username': 'newuser', 'email': 'foo@example.com'})
+        self.assertEquals(data.meta.result, 'error')
+        self.assertEquals(data.error.code, 'NoAuthTokenError')
 
+        self.assertEquals(0, len(mail.outbox))
+
+        response, data = self.post('new-user/', data={'username': 'newuser', 'email': 'foo@example.com'},
+            HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(1, len(mail.outbox))
+
+        msg = mail.outbox[0]
+        self.assertEquals('[My Kegbot] Complete your registration', msg.subject)
+        self.assertEquals(['foo@example.com'], msg.to)
+        self.assertEquals('test-from@example', msg.from_email)
+
+    def test_controller_data(self):
         for endpoint in ('controllers', 'flow-meters'):
             response, data = self.get(endpoint)
             self.assertEquals(data.meta.result, 'error')
             self.assertEquals(data.error.code, 'NoAuthTokenError')
 
-        response, data = self.get('controllers', HTTP_X_KEGBOT_API_KEY='123')
+        response, data = self.get('controllers', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEquals(data.meta.result, 'ok')
         expected = {
             'objects': [
@@ -164,7 +185,7 @@ class ApiClientTestCase(BaseApiTestCase):
         }
         self.assertEquals(expected, data)
 
-        response, data = self.get('flow-meters', HTTP_X_KEGBOT_API_KEY='123')
+        response, data = self.get('flow-meters', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEquals(data.meta.result, 'ok')
         expected = {
             'objects': [
@@ -193,7 +214,7 @@ class ApiClientTestCase(BaseApiTestCase):
         }
         self.assertEquals(expected, data)
 
-        response, data = self.get('flow-toggles', HTTP_X_KEGBOT_API_KEY='123')
+        response, data = self.get('flow-toggles', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEquals(data.meta.result, 'ok')
         expected = {
             'objects': [

@@ -45,7 +45,7 @@ class ApiClientNoSiteTestCase(BaseApiTestCase):
     def testNotSetUp(self):
         '''Api endpoints should all error out prior to site setup.'''
 
-        endpoints = ('events/', 'taps/', 'kegs/')
+        endpoints = ('events/', 'taps/', 'kegs/', 'drinks/')
         for endpoint in endpoints:
             response, data = self.get(endpoint)
             self.assertEquals(data.meta.result, 'error')

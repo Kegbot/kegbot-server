@@ -85,7 +85,6 @@ def all_drinks(request, limit=100):
             pass
     qs = qs.order_by('-id')
     qs = qs[:limit]
-    start = qs[0].id
     return qs
 
 def get_drink(request, drink_id):

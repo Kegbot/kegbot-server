@@ -65,6 +65,7 @@ class KegbotSiteMiddleware:
         try:
             request.kbsite = models.KegbotSite.objects.get(name='default')
             epoch = request.kbsite.epoch
+            request.kbsettings = models.SiteSettings.get()
         except (models.KegbotSite.DoesNotExist, DatabaseError), e:
             request.kbsite = None
 
@@ -78,6 +79,7 @@ class KegbotSiteMiddleware:
 
         request.kbcache = KegbotCache()
         request.backend = KegbotBackend()
+
         return None
 
     def process_view(self, request, view_func, view_args, view_kwargs):

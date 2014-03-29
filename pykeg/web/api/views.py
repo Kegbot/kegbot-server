@@ -186,7 +186,7 @@ def get_flow_toggle(request, flow_toggle_id):
 
 @csrf_exempt
 @auth_required
-def pictures(request, drink_id):
+def pictures(request):
     if request.method != 'POST':
         raise Http404('Method not supported')
     pic = models.Picture.objects.create(

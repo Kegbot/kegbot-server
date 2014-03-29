@@ -25,10 +25,16 @@ from pykeg.core import models
 from pykeg.core import defaults
 from kegbot.util import kbjson
 
+import os
+TESTDATA_DIR = os.path.join(os.path.dirname(__file__), 'testdata/')
+
 ### Helper methods
 
 def create_site():
     return defaults.set_defaults(set_is_setup=True)
+
+def get_filename(f):
+    return os.path.join(TESTDATA_DIR, f)
 
 class BaseApiTestCase(TransactionTestCase):
     def get(self, subpath, data={}, follow=False, **extra):
@@ -163,6 +169,21 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals('[My Kegbot] Complete your registration', msg.subject)
         self.assertEquals(['foo@example.com'], msg.to)
         self.assertEquals('test-from@example', msg.from_email)
+
+    def test_pictures(self):
+        site_settings = models.SiteSettings.get()
+        site_settings.hostname = 'localhost:123'
+        site_settings.use_ssl = True
+        site_settings.save()
+
+        image_data = open(get_filename('test_image_800x600.png'))
+        response, data = self.post('pictures/', data={'photo': image_data}, HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        print data
+        self.assertEquals(data.meta.result, 'ok')
+
+        picture = data['object']
+        picture_url = picture['url']
+        self.assertTrue(picture_url.startswith('https://localhost:123/media/'))
 
     def test_controller_data(self):
         for endpoint in ('controllers', 'flow-meters'):

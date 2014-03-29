@@ -16,13 +16,43 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+import urlparse
+
 from django.conf import settings
-from storages.backends.s3boto import S3BotoStorage
+from django.core.files.storage import FileSystemStorage
 
-S3_STATIC_BUCKET = getattr(settings, 'S3_STATIC_BUCKET')
+try:
+    from storages.backends.s3boto import S3BotoStorage
+except ImportError:
+    S3BotoStorage = None
 
-class S3StaticStorage(S3BotoStorage):
-    """Uses settings.S3_STATIC_BUCKET instead of AWS_STORAGE_BUCKET_NAME."""
-    def __init__(self, *args, **kwargs):
-        kwargs['bucket'] = S3_STATIC_BUCKET
-        super(S3StaticStorage, self).__init__(*args, **kwargs)
+from pykeg.core.util import get_current_request
+
+S3_STATIC_BUCKET = getattr(settings, 'S3_STATIC_BUCKET', None)
+
+class KegbotFileSystemStorage(FileSystemStorage):
+    """Default storage backend that crafts absolute urls from SiteSettings.base_url.
+
+    Since the storage backed is not a singleton within django request
+    processing (and thus there's not a single object we can pre-configure
+    with the base URL), this custom backend seems necessary.
+
+    This class respects settings.MEDIA_URL, and will have no effect if that
+    URL has a netloc (ie MEDIA_URL already specifies an absolute URL).
+    """
+    def url(self, name):
+        if not self.base_url or not urlparse.urlparse(self.base_url).netloc:
+            request = get_current_request()
+            if request and hasattr(request, 'kbsettings'):
+                site_base = request.kbsettings.base_url()
+                media_base = urlparse.urljoin(site_base, self.base_url)
+                self.base_url = media_base
+        return super(KegbotFileSystemStorage, self).url(name)
+
+if S3BotoStorage:
+    class S3StaticStorage(S3BotoStorage):
+        """Uses settings.S3_STATIC_BUCKET instead of AWS_STORAGE_BUCKET_NAME."""
+        def __init__(self, *args, **kwargs):
+            kwargs['bucket'] = S3_STATIC_BUCKET
+            super(S3StaticStorage, self).__init__(*args, **kwargs)
+

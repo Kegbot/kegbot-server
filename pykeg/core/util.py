@@ -21,6 +21,7 @@
 # Note: imports should be limited to python stdlib, since methods here
 # may be used in models.py, settings.py, etc.
 
+import inspect
 import pkgutil
 import os
 import pkg_resources
@@ -54,3 +55,20 @@ def get_plugin_template_dirs(plugin_list):
                 template_dir = template_dir.decode(fs_encoding)
             ret.append(template_dir)
     return ret
+
+def get_current_request():
+    """Walk up the stack, return the nearest first argument named "request".
+
+    Adapted from: http://nedbatchelder.com/blog/201008/global_django_requests.html
+    """
+    frame = None
+    try:
+        for f in inspect.stack()[1:]:
+            frame = f[0]
+            code = frame.f_code
+            if code.co_varnames[:1] == ("request",):
+                return frame.f_locals["request"]
+            elif code.co_varnames[:2] == ("self", "request",):
+                return frame.f_locals["request"]
+    finally:
+        del frame

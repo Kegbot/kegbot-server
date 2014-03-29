@@ -339,6 +339,9 @@ SOUTH_TESTS_MIGRATE = False
 
 ICANHAZ_APP_DIRNAMES = ['static/jstemplates', 'jstemplates']
 
+### Storage
+DEFAULT_FILE_STORAGE = 'pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage'
+
 from pykeg.core import importhacks
 try:
     from local_settings import *

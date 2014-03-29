@@ -8,6 +8,7 @@ Changelog
 Current Version (in development)
 --------------------------------
 * Twitter: Fix issue #232 (image upload failure).
+* Twitter: Fix issue #231 (guest tweet setting not respected).
 * API: Fix issue #233 (drink list error on empty system).
 
 Version 0.9.20 (2014-03-27)

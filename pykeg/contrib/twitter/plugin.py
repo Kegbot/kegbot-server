@@ -110,7 +110,7 @@ class TwitterPlugin(plugin.Plugin):
         site_settings = self.get_saved_form_data(forms.SiteSettingsForm(), 'site_settings')
 
         self._issue_system_tweet(event, site_settings, profile)
-        if event.user:
+        if not event.user.is_guest():
             self._issue_user_tweet(event, site_settings)
 
     ### Twitter-specific methods
@@ -219,7 +219,7 @@ class TwitterPlugin(plugin.Plugin):
             return
 
         if kind in (event.DRINK_POURED, event.SESSION_JOINED):
-            if not event.user and not settings.get('include_guests'):
+            if event.user.is_guest() and not settings.get('include_guests'):
                 self.logger.info('Skipping system tweet for event %s: guest pour.' % event.id)
                 return
 
@@ -304,7 +304,7 @@ class TwitterPlugin(plugin.Plugin):
         settings = SiteSettings.get()
 
         username = settings.guest_name
-        if event.user:
+        if not event.user.is_guest():
             username = event.user.username
 
         url = ''

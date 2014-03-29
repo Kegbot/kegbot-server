@@ -37,10 +37,11 @@ def send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret, t
     api = tweepy.API(auth)
 
     local_media = None
-    try:
-        local_media = download_file(image_url)
-    except requests.exceptions.RequestException as e:
-        logger.warning('Error downloading media url "%s": %s' % (image_url, e))
+    if image_url:
+        try:
+            local_media = download_file(image_url)
+        except requests.exceptions.RequestException as e:
+            logger.warning('Error downloading media url "%s": %s' % (image_url, e))
 
     if not local_media:
         logger.info('Sending text-only tweet: {}'.format(repr(tweet)))
@@ -62,5 +63,5 @@ def download_file(url):
         for chunk in r.iter_content(chunk_size=1024): 
             if chunk:
                 os.write(fd, chunk)
-    return pathname
+    return str(pathname)
 

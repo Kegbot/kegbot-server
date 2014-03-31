@@ -24,13 +24,13 @@ from contextlib import closing
 
 import tweepy
 import requests
-from celery.task import task
+from pykeg.celery import app
 
 from pykeg.plugin import util
 
 logger = util.get_logger(__name__)
 
-@task(expires=60)
+@app.task(expires=60)
 def send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret, tweet, image_url):
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret, secure=True)
     auth.set_access_token(oauth_token, oauth_token_secret)
@@ -60,7 +60,7 @@ def download_file(url):
     fd, pathname = tempfile.mkstemp(suffix=ext)
     logger.info('Downloading file %s to path %s' % (url, pathname))
     with closing(os.fdopen(fd, 'wb')):
-        for chunk in r.iter_content(chunk_size=1024): 
+        for chunk in r.iter_content(chunk_size=1024):
             if chunk:
                 os.write(fd, chunk)
     return str(pathname)

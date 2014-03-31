@@ -23,8 +23,17 @@ import datetime
 from django.conf import settings
 from django.utils import timezone
 
+from django_nose import NoseTestSuiteRunner
+
 def make_datetime(*args):
     if settings.USE_TZ:
         return datetime.datetime(*args, tzinfo=timezone.utc)
     else:
         return datetime.datetime(*args)
+
+
+class KegbotTestSuiteRunner(NoseTestSuiteRunner):
+    def __init__(self, *args, **kwargs):
+        # Run all celery tasks synchronously.
+        settings.CELERY_ALWAYS_EAGER = True
+        super(KegbotTestSuiteRunner, self).__init__(*args, **kwargs)

@@ -18,17 +18,18 @@
 
 """Celery tasks for Webhook plugin."""
 
-from celery.task import task
+from pykeg.celery import app
 from pykeg.plugin import util
 from pykeg.proto import protolib
 from pykeg.core.util import get_version
 from kegbot.util import kbjson
+
 import requests
 import urllib2
 
 logger = util.get_logger(__name__)
 
-@task(expires=180)
+@app.task(expires=180)
 def post_webhook(url, event):
     """Posts an event to the supplied URL.
 
@@ -50,7 +51,7 @@ def post_webhook(url, event):
         'content-type': 'application/json',
         'user-agent': 'Kegbot/%s' % get_version(),
     }
-    
+
     try:
         return requests.post(url, data=kbjson.dumps(hook_dict), headers=headers)
     except requests.exceptions.RequestException, e:

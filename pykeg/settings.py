@@ -334,7 +334,7 @@ UNTAPPD_CLIENT_SECRET = ''
 ### Imagekit
 IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = 'imagekit.imagecache.NonValidatingImageCacheBackend'
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+TEST_RUNNER = 'pykeg.core.testutils.KegbotTestSuiteRunner'
 NOSE_ARGS = ['--exe']
 SKIP_SOUTH_TESTS = True
 SOUTH_TESTS_MIGRATE = False

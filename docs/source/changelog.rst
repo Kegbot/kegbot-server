@@ -7,6 +7,7 @@ Changelog
 
 Current Version (in development)
 --------------------------------
+* Statistics are computed in a background task.
 * Redis is now a required dependency.
 
 Version 0.9.22 (2014-04-07)
@@ -16,6 +17,7 @@ Version 0.9.22 (2014-04-07)
 
 Version 0.9.21 (2014-04-04)
 --------------------------------
+* Supervisor commands have changed; please update your configuration.
 * Twitter: Fix issue #232 (image upload failure).
 * Twitter: Fix issue #231 (guest tweet setting not respected).
 * API: Fix issue #233 (drink list error on empty system).

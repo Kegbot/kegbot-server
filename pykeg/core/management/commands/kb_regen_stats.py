@@ -30,7 +30,7 @@ class Command(NoArgsCommand):
 
     @transaction.atomic
     def handle(self, **options):
-        stats.invalidate(None)
+        stats.invalidate_all()
 
         drinks = models.Drink.objects.all().order_by('id')
         num_drinks = len(drinks)

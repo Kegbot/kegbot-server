@@ -30,7 +30,6 @@ from django.db.utils import IntegrityError
 from pykeg import notification
 from pykeg.core import defaults
 from pykeg.core import keg_sizes
-from pykeg.core import stats
 from pykeg.core.cache import KegbotCache
 from pykeg.util.email import build_message
 from . import kb_common
@@ -147,7 +146,6 @@ class KegbotBackend:
         token.save()
         return token
 
-    @transaction.atomic
     def record_drink(self, tap, ticks, volume_ml=None, username=None,
         pour_time=None, duration=0, shout='', tick_time_series='', photo=None,
         do_postprocess=True, spilled=False):
@@ -180,43 +178,44 @@ class KegbotBackend:
             The newly-created Drink instance.
         """
 
-        tap = self._get_tap(tap)
-        if not tap.is_active or not tap.current_keg:
-            raise BackendError("No active keg at this tap")
+        with transaction.atomic():
+            tap = self._get_tap(tap)
+            if not tap.is_active or not tap.current_keg:
+                raise BackendError("No active keg at this tap")
 
-        if volume_ml is None:
-            meter = tap.current_meter()
-            if not meter:
-                raise BackendError("Tap has no meter, can't compute volume")
-            volume_ml = float(ticks) / meter.ticks_per_ml
+            keg = tap.current_keg
 
-        user = None
-        if username:
-            user = get_user(username)
-        else:
-            user = models.SiteSettings.get().default_user
-            if not user:
-                user = models.User.objects.get(username='guest')
+            if spilled:
+                keg.spilled_ml += volume_ml
+                keg.save(update_fields=['spilled_ml'])
+                return None
 
-        if not pour_time:
-            pour_time = timezone.now()
+            if volume_ml is None:
+                meter = tap.current_meter()
+                if not meter:
+                    raise BackendError("Tap has no meter, can't compute volume")
+                volume_ml = float(ticks) / meter.ticks_per_ml
 
-        keg = tap.current_keg
+            user = None
+            if username:
+                user = get_user(username)
+            else:
+                user = models.SiteSettings.get().default_user
+                if not user:
+                    user = models.User.objects.get(username='guest')
 
-        if tick_time_series:
-            try:
-                # Validate the time series by parsing it; canonicalize it by generating
-                # it again.  If malformed, just junk it; it's non-essential information.
-                tick_time_series = time_series.to_string(time_series.from_string(tick_time_series))
-            except ValueError, e:
-                self._logger.warning('Time series invalid, ignoring. Error was: %s' % e)
-                tick_time_series = ''
+            if not pour_time:
+                pour_time = timezone.now()
 
-        if spilled:
-            keg.spilled_ml += volume_ml
-            keg.save(update_fields=['spilled_ml'])
+            if tick_time_series:
+                try:
+                    # Validate the time series by parsing it; canonicalize it by generating
+                    # it again.  If malformed, just junk it; it's non-essential information.
+                    tick_time_series = time_series.to_string(time_series.from_string(tick_time_series))
+                except ValueError, e:
+                    self._logger.warning('Time series invalid, ignoring. Error was: %s' % e)
+                    tick_time_series = ''
 
-        else:
             d = models.Drink(ticks=ticks, keg=keg, user=user,
                 volume_ml=volume_ml, time=pour_time, duration=duration,
                 shout=shout, tick_time_series=tick_time_series)
@@ -226,9 +225,10 @@ class KegbotBackend:
             keg.served_volume_ml += volume_ml
             keg.save(update_fields=['served_volume_ml'])
 
-            self.cache.update_generation()
+        self.cache.update_generation()
 
-            if photo:
+        if photo:
+            with transaction.atomic():
                 pic = models.Picture.objects.create(
                     image=photo,
                     user=d.user,
@@ -238,15 +238,15 @@ class KegbotBackend:
                 d.picture = pic
                 d.save()
 
-            if do_postprocess:
-                stats.generate(d)
+        if do_postprocess:
+            tasks.generate_stats_since.delay(d.id)
+            with transaction.atomic():
                 events = models.SystemEvent.build_events_for_drink(d)
                 tasks.schedule_tasks(events)
 
-            return d
+        return d
 
 
-    @transaction.atomic
     def cancel_drink(self, drink, spilled=False):
         """Permanently deletes a Drink from the system.
 
@@ -264,36 +264,30 @@ class KegbotBackend:
         Returns:
             The deleted drink.
         """
-        if not isinstance(drink, models.Drink):
-            drink = models.Drink.objects.get(id=drink)
+        with transaction.atomic():
+            if not isinstance(drink, models.Drink):
+                drink = models.Drink.objects.get(id=drink)
 
-        session = drink.session
-        drink_id = drink.id
-        keg = drink.keg
-        volume_ml = drink.volume_ml
+            session = drink.session
+            drink_id = drink.id
+            keg = drink.keg
+            volume_ml = drink.volume_ml
 
-        keg_update_fields = ['served_volume_ml']
-        keg.served_volume_ml -= volume_ml
+            keg_update_fields = ['served_volume_ml']
+            keg.served_volume_ml -= volume_ml
 
-        # Transfer volume to spillage if requested.
-        if spilled and volume_ml and drink.keg:
-            keg.spilled_ml += volume_ml
-            keg_update_fields.append('spilled_ml')
+            # Transfer volume to spillage if requested.
+            if spilled and volume_ml and drink.keg:
+                keg.spilled_ml += volume_ml
+                keg_update_fields.append('spilled_ml')
 
-        keg.save(update_fields=keg_update_fields)
+            keg.save(update_fields=keg_update_fields)
 
-        # Invalidate all statistics.
-        stats.invalidate(drink)
+            # Delete the drink, including any objects related to it.
+            drink.delete()
+            session.Rebuild()
 
-        # Delete the drink, including any objects related to it.
-        drink.delete()
-
-        session.Rebuild()
-
-        # Regenerate stats for any drinks following the just-deleted one.
-        for drink in models.Drink.objects.filter(id__gt=drink_id).order_by('id'):
-            stats.generate(drink)
-
+        tasks.generate_stats_since.delay(drink.id)
         self.cache.update_generation()
 
         return drink
@@ -314,50 +308,46 @@ class KegbotBackend:
         Returns:
             The drink.
         """
-        drink = get_drink(drink)
-        user = get_user(user)
-        if drink.user == user:
-            return drink
+        with transaction.atomic():
+            drink = get_drink(drink)
+            user = get_user(user)
+            if drink.user == user:
+                return drink
 
-        drink.user = user
-        drink.save()
+            drink.user = user
+            drink.save()
 
-        stats.invalidate(drink)
+            for e in drink.events.all():
+                e.user = user
+                e.save()
+            if drink.picture:
+                drink.picture.user = user
+                drink.picture.save()
 
-        for e in drink.events.all():
-            e.user = user
-            e.save()
-        if drink.picture:
-            drink.picture.user = user
-            drink.picture.save()
+            drink.session.Rebuild()
 
-        drink.session.Rebuild()
-        stats.generate(drink)
-
+        tasks.generate_stats_since.delay(drink.id)
         self.cache.update_generation()
+
         return drink
 
-    @transaction.atomic
     def set_drink_volume(self, drink, volume_ml):
         """Updates the drink volume."""
         if volume_ml == drink.volume_ml:
             return
 
-        difference = volume_ml - drink.volume_ml
-        drink.volume_ml = volume_ml
-        drink.save(update_fields=['volume_ml'])
+        with transaction.atomic():
+            difference = volume_ml - drink.volume_ml
+            drink.volume_ml = volume_ml
+            drink.save(update_fields=['volume_ml'])
 
-        keg = drink.keg
-        keg.served_volume_ml += difference
-        keg.save(update_fields=['served_volume_ml'])
+            keg = drink.keg
+            keg.served_volume_ml += difference
+            keg.save(update_fields=['served_volume_ml'])
 
-        stats.invalidate(drink)
-        drink.session.Rebuild()
+            drink.session.Rebuild()
 
-        # Regenerate stats for this drink and all subsequent.
-        for drink in models.Drink.objects.filter(id__gte=drink.id).order_by('id'):
-            stats.generate(drink)
-
+        tasks.generate_stats_since.delay(drink.id)
         self.cache.update_generation()
 
     @transaction.atomic
@@ -440,7 +430,6 @@ class KegbotBackend:
             # TODO(mikey): return None instead of raising.
             raise NoTokenError
 
-    @transaction.atomic
     def start_keg(self, tap, beverage=None, keg_type=keg_sizes.HALF_BARREL,
             full_volume_ml=None, beverage_name=None, beverage_type=None,
             producer_name=None, style_name=None, when=None):
@@ -477,43 +466,43 @@ class KegbotBackend:
         Returns:
             The new keg instance.
         """
-        tap = self._get_tap(tap)
+        with transaction.atomic():
+            tap = self._get_tap(tap)
 
-        if tap.is_active():
-            raise ValueError('Tap is already active, must end keg first.')
+            if tap.is_active():
+                raise ValueError('Tap is already active, must end keg first.')
 
-        if beverage:
-            if beverage_type or beverage_name or producer_name or style_name:
-                raise ValueError(
-                    'Cannot give beverage_type, beverage_name, producer_name, or style_name with beverage')
-        else:
-            if not beverage_type:
-                raise ValueError('Must supply beverage_type when beverage is None')
-            if not beverage_name:
-                raise ValueError('Must supply beverage_name when beverage is None')
-            if not producer_name:
-                raise ValueError('Must supply producer_name when beverage is None')
-            if not style_name:
-                raise ValueError('Must supply style_name when beverage is None')
-            producer = models.BeverageProducer.objects.get_or_create(name=producer_name)[0]
-            beverage = models.Beverage.objects.get_or_create(name=beverage_name, beverage_type=beverage_type,
-                    producer=producer, style=style_name)[0]
+            if beverage:
+                if beverage_type or beverage_name or producer_name or style_name:
+                    raise ValueError(
+                        'Cannot give beverage_type, beverage_name, producer_name, or style_name with beverage')
+            else:
+                if not beverage_type:
+                    raise ValueError('Must supply beverage_type when beverage is None')
+                if not beverage_name:
+                    raise ValueError('Must supply beverage_name when beverage is None')
+                if not producer_name:
+                    raise ValueError('Must supply producer_name when beverage is None')
+                if not style_name:
+                    raise ValueError('Must supply style_name when beverage is None')
+                producer = models.BeverageProducer.objects.get_or_create(name=producer_name)[0]
+                beverage = models.Beverage.objects.get_or_create(name=beverage_name, beverage_type=beverage_type,
+                        producer=producer, style=style_name)[0]
 
-        if keg_type not in keg_sizes.DESCRIPTIONS:
-            raise ValueError('Unrecognized keg type: %s' % keg_type)
-        if full_volume_ml is None:
-            full_volume_ml = keg_sizes.VOLUMES_ML[keg_type]
+            if keg_type not in keg_sizes.DESCRIPTIONS:
+                raise ValueError('Unrecognized keg type: %s' % keg_type)
+            if full_volume_ml is None:
+                full_volume_ml = keg_sizes.VOLUMES_ML[keg_type]
 
-        if not when:
-            when = timezone.now()
+            if not when:
+                when = timezone.now()
 
-        keg = models.Keg.objects.create(type=beverage, keg_type=keg_type,
-                online=True, full_volume_ml=full_volume_ml,
-                start_time=when)
+            keg = models.Keg.objects.create(type=beverage, keg_type=keg_type,
+                    online=True, full_volume_ml=full_volume_ml,
+                    start_time=when)
 
         return self.attach_keg(tap, keg)
 
-    @transaction.atomic
     def attach_keg(self, tap, keg):
         """Activates a new keg at the given tap (with existing choices).
 
@@ -530,30 +519,31 @@ class KegbotBackend:
         Returns:
             The new keg instance.
         """
+        with transaction.atomic():
+            tap = self._get_tap(tap)
 
-        tap = self._get_tap(tap)
+            if tap.is_active():
+                raise ValueError('Tap is already active, must end keg first.')
 
-        if tap.is_active():
-            raise ValueError('Tap is already active, must end keg first.')
+            keg.start_time = timezone.now()
+            keg.online = True
+            keg.save()
 
-        keg.start_time = timezone.now()
-        keg.online = True
-        keg.save()
+            old_keg = tap.current_keg
+            if old_keg:
+                self.end_keg(tap)
 
-        old_keg = tap.current_keg
-        if old_keg:
-            self.end_keg(tap)
+            tap.current_keg = keg
+            tap.save()
 
-        tap.current_keg = keg
-        tap.save()
+            events = models.SystemEvent.build_events_for_keg(keg)
 
-        events = models.SystemEvent.build_events_for_keg(keg)
-        tasks.schedule_tasks(events)
+        with transaction.atomic():
+            tasks.schedule_tasks(events)
 
         return keg
 
 
-    @transaction.atomic
     def end_keg(self, tap):
         """Takes the current Keg offline at the given tap.
 
@@ -567,22 +557,25 @@ class KegbotBackend:
         Raises:
             ValueError: if the tap is missing or already offline.
         """
-        tap = self._get_tap(tap)
+        with transaction.atomic():
+            tap = self._get_tap(tap)
 
-        if not tap.current_keg:
-            raise ValueError('Tap is already offline.')
+            if not tap.current_keg:
+                raise ValueError('Tap is already offline.')
 
-        keg = tap.current_keg
-        keg.online = False
-        keg.end_time = timezone.now()
-        keg.finished = True
-        keg.save()
+            keg = tap.current_keg
+            keg.online = False
+            keg.end_time = timezone.now()
+            keg.finished = True
+            keg.save()
 
-        tap.current_keg = None
-        tap.save()
+            tap.current_keg = None
+            tap.save()
 
-        events = models.SystemEvent.build_events_for_keg(keg)
-        tasks.schedule_tasks(events)
+            events = models.SystemEvent.build_events_for_keg(keg)
+
+        with transaction.atomic():
+            tasks.schedule_tasks(events)
 
         return keg
 

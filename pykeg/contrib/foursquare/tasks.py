@@ -19,15 +19,15 @@
 """Celery tasks for Foursquare."""
 
 import foursquare
-from celery.task import task
 import datetime
+from pykeg.celery import app
 from pykeg.plugin import util
 
 MAX_CHECKIN_AGE = datetime.timedelta(minutes=30)
 
 logger = util.get_logger(__name__)
 
-@task(expires=60)
+@app.task(expires=60)
 def checkin(token, venue_id):
     client = foursquare.Foursquare(access_token=token)
     logger.info('Checkin request: token=%s venue=%s' % (token, venue_id))

@@ -22,8 +22,12 @@ from kegbot.util import util
 from pykeg.plugin import util as plugin_util
 from pykeg import notification
 from pykeg.core import checkin
+from pykeg.core import stats
 
-from celery.decorators import task
+from pykeg.celery import app
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 def schedule_tasks(events):
     """Synchronously schedules tasks related to the given events."""
@@ -33,19 +37,24 @@ def schedule_tasks(events):
     notification.handle_new_system_events(events)
 
 
-@task
+@app.task
 def handle_new_picture(picture_id):
     pass  # TODO(mikey): plugin support
 
 
-@task
+@app.task
 def ping():
     return True
 
 
-@task(bind=True, default_retry_delay=60*60*1, max_retries=3)
+@app.task(bind=True, default_retry_delay=60*60*1, max_retries=3)
 def do_checkin(self):
     try:
         checkin.checkin()
     except checkin.CheckinError as exc:
         self.retry(exc=exc)
+
+@app.task(queue='stats', expires=60*60)
+def generate_stats_since(drink_id):
+    logger.info('generate_stats_since {}'.format(drink_id))
+    stats.rebuild_from_id(drink_id)

@@ -23,12 +23,12 @@ import inspect
 import itertools
 import logging
 
-from django.db import transaction
-
 from pykeg.core import models
 from kegbot.util import util
 
 STAT_MAP = {}
+
+LOGGER = logging.getLogger(__name__)
 
 def stat(statname):
     def decorate(f):
@@ -242,25 +242,6 @@ class StatsBuilder:
             return previous
 
 
-def invalidate(drink):
-    """Clears all statistics.
-
-    Args:
-        drink: The starting point to invalidate; all stats starting from this
-            drink will be deleted.  If None, deletes *all* stats.
-    """
-    with transaction.atomic():
-        if drink:
-            models.SystemStats.objects.filter(drink_id__gte=drink.id).delete()
-            models.KegStats.objects.filter(drink_id__gte=drink.id).delete()
-            models.UserStats.objects.filter(drink_id__gte=drink.id).delete()
-            models.SessionStats.objects.filter(drink_id__gte=drink.id).delete()
-        else:
-            models.SystemStats.objects.all().delete()
-            models.KegStats.objects.all().delete()
-            models.UserStats.objects.all().delete()
-            models.SessionStats.objects.all().delete()
-
 def _get_previous(drink, qs):
     qs = qs.filter(drink_id__lt=drink.id).order_by('-id')[:1]
     if qs.count():
@@ -327,6 +308,29 @@ def generate_session_stats(drink):
         return models.SessionStats.objects.create(drink=drink,
             session=drink.session, stats=stats)
 
+### Public methods
+
+def invalidate(drink_id):
+    """Clears all statistics since (and including) drink_id."""
+    LOGGER.info('--- Invalidating stats since id {}'.format(drink_id))
+    models.SystemStats.objects.filter(drink_id__gte=drink_id).delete()
+    models.KegStats.objects.filter(drink_id__gte=drink_id).delete()
+    models.UserStats.objects.filter(drink_id__gte=drink_id).delete()
+    models.SessionStats.objects.filter(drink_id__gte=drink_id).delete()
+
+def invalidate_all():
+    LOGGER.info('--- Invalidating ALL stats')
+    models.SystemStats.objects.all().delete()
+    models.KegStats.objects.all().delete()
+    models.UserStats.objects.all().delete()
+    models.SessionStats.objects.all().delete()
+
+
+def rebuild_from_id(drink_id):
+    invalidate(drink_id)
+    for drink in models.Drink.objects.filter(id__gte=drink_id).order_by('id'):
+        generate(drink, invalidate_first=False)
+
 def generate(drink, invalidate_first=True):
     """Generate all stats for this drink.
 
@@ -335,14 +339,15 @@ def generate(drink, invalidate_first=True):
         invalidate_first: If True, deletes any existing records for (or after)
             this drink first.
     """
-    with transaction.atomic():
-        if invalidate_first:
-            invalidate(drink)
+    LOGGER.info('>>> Generating stats for drink id {}'.format(drink.id))
+    if invalidate_first:
+        invalidate(drink.id)
 
-        generate_system_stats(drink)
-        generate_keg_stats(drink)
-        generate_user_stats(drink)
-        generate_session_stats(drink)
+    generate_system_stats(drink)
+    generate_keg_stats(drink)
+    generate_user_stats(drink)
+    generate_session_stats(drink)
+    LOGGER.info('<<< Done generating stats for drink id {}'.format(drink.id))
 
 if __name__ == '__main__':
     import cProfile

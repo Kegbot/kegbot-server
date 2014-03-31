@@ -21,12 +21,13 @@
 import requests
 import urllib
 import datetime
+
+from pykeg.celery import app
 from pykeg.plugin import util
-from celery.task import task
 
 logger = util.get_logger(__name__)
 
-@task(expires=60)
+@app.task(expires=60)
 def checkin(token, beer_id, timezone_name, shout=None):
     logger.info('Checking in: token=%s beer_id=%s timezone_name=%s' % (token, beer_id, timezone_name))
 

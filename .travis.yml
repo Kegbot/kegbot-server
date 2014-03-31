@@ -9,6 +9,7 @@ install:
 
 services:
   - memcache
+  - redis-server
 
 before_script:
   - mkdir -p ~/kegbot-data/media

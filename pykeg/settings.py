@@ -31,7 +31,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'crispy_forms',
-    'djcelery',
     'bootstrap-pagination',
     'imagekit',
     'gunicorn',
@@ -176,21 +175,23 @@ KEGBOT_PLUGINS = [
 DEMO_MODE = False
 
 ### Celery
-import djcelery
-djcelery.setup_loader()
-BROKER_URL = "django://"
+
+BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 CELERY_QUEUES = {
   'default' : {
     'exchange': 'default',
     'binding_key': 'default'
   },
+  'stats' : {
+    'exchange': 'default',
+    'binding_key': 'stats'
+  },
 }
-INSTALLED_APPS += ('kombu.transport.django', )
 
 CELERY_DEFAULT_QUEUE = "default"
 CELERYD_CONCURRENCY = 3
-CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 from datetime import timedelta
 CELERYBEAT_SCHEDULE = {
@@ -203,6 +204,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': timedelta(hours=24),
     }
 }
+
 
 ### logging
 

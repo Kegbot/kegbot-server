@@ -23,7 +23,6 @@ DEPENDENCIES = [
   'django-socialregistration == 0.5.10',
   'django-bootstrap-pagination == 0.1.10',
 
-  'django-celery == 3.1.1',
   'Celery == 3.1.9',
 
   'South == 0.8.4',
@@ -36,6 +35,7 @@ DEPENDENCIES = [
   'python-gflags == 2.0',
   'python-memcached == 1.51',
   'pytz == 2014.2',
+  'redis == 2.9.1',
   'requests == 2.2.1',
   'tweepy == 2.2',
   'jsonfield == 0.9.20',

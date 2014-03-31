@@ -5,6 +5,10 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* Redis is now a required dependency.
+
 Version 0.9.22 (2014-04-07)
 ---------------------------
 * Security: Fix issue #243.

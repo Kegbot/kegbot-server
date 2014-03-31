@@ -26,6 +26,7 @@ On Ubuntu or Debian, use ``apt-get`` to install Kegbot's major dependencies::
     python-mysqldb \
     python-pip \
     python-virtualenv \
+    redis \
     virtualenvwrapper
 
 
@@ -53,8 +54,8 @@ virtualenv directory in your user's home directory::
   Installing setuptools............done.
   Installing pip...............done.
 
-Now that the virtualenv home has been created (at ``~/kb/``), there's one step 
-to remember.  Each time you want to use the virtualenv home (either install 
+Now that the virtualenv home has been created (at ``~/kb/``), there's one step
+to remember.  Each time you want to use the virtualenv home (either install
 Kegbot to it, or run Kegbot from it), you need to activate it for the current shell::
 
   $ source ~/kb/bin/activate

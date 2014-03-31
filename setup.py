@@ -35,7 +35,7 @@ DEPENDENCIES = [
   'protobuf == 2.5.0',
   'python-gflags == 2.0',
   'python-memcached == 1.51',
-  'pytz == 2013b',
+  'pytz == 2014.2',
   'requests == 2.2.1',
   'tweepy == 2.2',
   'jsonfield == 0.9.20',

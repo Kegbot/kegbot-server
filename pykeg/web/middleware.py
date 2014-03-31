@@ -28,6 +28,7 @@ from pykeg.plugin import util as plugin_util
 from django.db import DatabaseError
 from django.conf import settings
 from django.contrib import messages
+from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.http import Http404

@@ -36,17 +36,13 @@ class KegbotFileSystemStorage(FileSystemStorage):
     Since the storage backed is not a singleton within django request
     processing (and thus there's not a single object we can pre-configure
     with the base URL), this custom backend seems necessary.
-
-    This class respects settings.MEDIA_URL, and will have no effect if that
-    URL has a netloc (ie MEDIA_URL already specifies an absolute URL).
     """
     def url(self, name):
-        if not self.base_url or not urlparse.urlparse(self.base_url).netloc:
-            request = get_current_request()
-            if request and hasattr(request, 'kbsettings'):
-                site_base = request.kbsettings.base_url()
-                media_base = urlparse.urljoin(site_base, self.base_url)
-                self.base_url = media_base
+        request = get_current_request()
+        if request and hasattr(request, 'kbsettings'):
+            site_base = request.kbsettings.base_url()
+            media_base = urlparse.urljoin(site_base, self.base_url)
+            self.base_url = media_base
         return super(KegbotFileSystemStorage, self).url(name)
 
 if S3BotoStorage:

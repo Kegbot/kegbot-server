@@ -21,7 +21,7 @@ class ChangeKegForm(forms.Form):
         initial=keg_sizes.HALF_BARREL,
         required=True)
 
-    initial_volume = forms.FloatField(label='Initial Volume (Liters)', initial=0.0, 
+    initial_volume = forms.FloatField(label='Initial Volume (Liters)', initial=0.0,
         required=False, help_text='Keg\'s Initial Volume in Liters')
 
     beer_name = forms.CharField(required=False)  # legacy
@@ -79,7 +79,7 @@ class ChangeKegForm(forms.Form):
 
         keg_size = self.cleaned_data.get('keg_size')
         full_volume_ml = self.cleaned_data.get('full_volume_ml')
-        
+
         if keg_size != 'other':
             full_volume_ml = None
         else:
@@ -88,7 +88,7 @@ class ChangeKegForm(forms.Form):
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
         keg = b.start_keg(tap, beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
-            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'], 
+            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'],
             full_volume_ml=full_volume_ml)
 
         if cd.get('description'):
@@ -160,28 +160,9 @@ class TapForm(forms.ModelForm):
         if not commit:
             raise ValueError('TapForm does not support commit=False')
         instance = super(TapForm, self).save(commit=True)
-
-        old_meter = instance.current_meter()
-        new_meter = self.cleaned_data['meter']
-
-        if old_meter != new_meter:
-            if old_meter:
-                old_meter.tap = None
-                old_meter.save()
-            if new_meter:
-                new_meter.tap = instance
-                new_meter.save()
-
-        old_toggle = instance.current_toggle()
-        new_toggle = self.cleaned_data['toggle']
-
-        if old_toggle != new_toggle:
-            if old_toggle:
-                old_toggle.tap = None
-                old_toggle.save()
-            if new_toggle:
-                new_toggle.tap = instance
-                new_toggle.save()
+        b = backend.KegbotBackend()
+        b.connect_meter(instance, self.cleaned_data['meter'])
+        b.connect_toggle(instance, self.cleaned_data['toggle'])
         return instance
 
     helper = FormHelper()
@@ -224,7 +205,7 @@ class KegForm(forms.Form):
         initial=keg_sizes.HALF_BARREL,
         required=True)
 
-    initial_volume = forms.FloatField(label='Initial Volume (Liters)', initial=0.0, 
+    initial_volume = forms.FloatField(label='Initial Volume (Liters)', initial=0.0,
         required=False, help_text='Keg\'s Initial Volume in Liters')
 
     beer_name = forms.CharField(required=False)  # legacy
@@ -237,8 +218,8 @@ class KegForm(forms.Form):
     style_name = forms.CharField(required=True, label='Style',
       help_text='Example: Pale Ale, Stout, etc.')
 
-    description = forms.CharField(max_length=256, label='Description', 
-        widget=forms.Textarea(), required=False, 
+    description = forms.CharField(max_length=256, label='Description',
+        widget=forms.Textarea(), required=False,
         help_text='User-visible description of the Keg.')
     notes = forms.CharField(label='Notes', required=False, widget=forms.Textarea(),
         help_text='Private notes about this keg, viewable only by admins.')
@@ -295,7 +276,7 @@ class KegForm(forms.Form):
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
         keg = b.add_keg(beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
-            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'], 
+            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'],
             full_volume_ml=full_volume_ml, notes=cd['notes'], description=cd['description'])
         return keg
 

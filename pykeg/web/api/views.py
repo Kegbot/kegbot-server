@@ -157,7 +157,7 @@ def get_flow_meter(request, flow_meter_id):
 @auth_required
 def all_flow_toggles(request):
     if request.method == 'POST':
-        form = FlowTogleForm(request.POST)
+        form = FlowToggleForm(request.POST)
         if form.is_valid():
             return form.save()
         else:
@@ -512,6 +512,46 @@ def tap_activate(request, meter_name_or_id):
         form.save(tap)
     else:
         raise kbapi.BadRequestError, _form_errors(form)
+    return protolib.ToProto(tap, full=True)
+
+@require_http_methods(["POST"])
+@csrf_exempt
+@auth_required
+def tap_connect_meter(request, meter_name_or_id):
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
+    form = forms.ConnectMeterForm(request.POST)
+    if form.is_valid():
+        tap = request.backend.connect_meter(tap, form.cleaned_data['meter'])
+    else:
+        raise kbapi.BadRequestError, _form_errors(form)
+    return protolib.ToProto(tap, full=True)
+
+@require_http_methods(["POST"])
+@csrf_exempt
+@auth_required
+def tap_disconnect_meter(request, meter_name_or_id):
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
+    tap = request.backend.connect_meter(tap, None)
+    return protolib.ToProto(tap, full=True)
+
+@require_http_methods(["POST"])
+@csrf_exempt
+@auth_required
+def tap_connect_toggle(request, meter_name_or_id):
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
+    form = forms.ConnectToggleForm(request.POST)
+    if form.is_valid():
+        tap = request.backend.connect_toggle(tap, form.cleaned_data['toggle'])
+    else:
+        raise kbapi.BadRequestError, _form_errors(form)
+    return protolib.ToProto(tap, full=True)
+
+@require_http_methods(["POST"])
+@csrf_exempt
+@auth_required
+def tap_disconnect_toggle(request, meter_name_or_id):
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
+    tap = request.backend.connect_toggle(tap, None)
     return protolib.ToProto(tap, full=True)
 
 @auth_required

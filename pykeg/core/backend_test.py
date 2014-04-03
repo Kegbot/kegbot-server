@@ -215,3 +215,25 @@ class BaseApiTestCase(TestCase):
         self.assertNotEquals(new_keg_3.type.producer, keg.type.producer)
         self.assertEquals(new_keg_3.type.name, keg.type.name)
         self.assertNotEquals(new_keg_3.type, keg.type)
+
+    def test_meters(self):
+        tap = models.KegTap.objects.all()[0]
+        meter = tap.current_meter()
+
+        self.assertIsNotNone(meter)
+        tap = self.backend.connect_meter(tap, None)
+        self.assertIsNone(tap.current_meter())
+
+        tap = self.backend.connect_meter(tap, meter)
+        self.assertIsNotNone(tap.current_meter())
+
+    def test_toggles(self):
+        tap = models.KegTap.objects.all()[0]
+        toggle = tap.current_toggle()
+
+        self.assertIsNotNone(toggle)
+        tap = self.backend.connect_toggle(tap, None)
+        self.assertIsNone(tap.current_toggle())
+
+        tap = self.backend.connect_toggle(tap, toggle)
+        self.assertIsNotNone(tap.current_toggle())

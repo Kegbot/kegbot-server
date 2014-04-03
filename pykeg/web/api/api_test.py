@@ -19,6 +19,7 @@
 """Unittests for pykeg.web.api"""
 
 from django.core import mail
+from django.test import TestCase
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 from pykeg.core import models
@@ -96,7 +97,7 @@ class ApiClientTestCase(BaseApiTestCase):
         for tap in taps:
             response1, data1 = self.get('taps/%s' % tap.meter_name)
             self.assertEquals(data1.meta.result, 'ok')
-            
+
             response2, data2 = self.get('taps/%s' % tap.id)
             self.assertEquals(data2.meta.result, 'ok')
 
@@ -262,3 +263,34 @@ class ApiClientTestCase(BaseApiTestCase):
         }
         self.assertEquals(expected, data)
 
+    def test_add_remove_meters(self):
+        response, data = self.get('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(data.object.meter.id, 1)
+        original_data = data
+
+        response, data = self.post('taps/1/disconnect-meter', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(data.object.get('meter'), None)
+
+        response, data = self.post('taps/1/connect-meter', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
+            data={'meter': 1})
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(data.object.meter.id, 1)
+        self.assertEquals(original_data, data)
+
+    def test_add_remove_toggles(self):
+        response, data = self.get('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(data.object.toggle.id, 1)
+
+        response, data = self.post('taps/1/disconnect-toggle', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(data.object.get('toggle'), None)
+
+        response, data = self.post('taps/1/connect-toggle', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
+            data={'toggle': 1})
+        response, data = self.get('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertIsNotNone(data.object.get('toggle'))
+        self.assertEquals(data.object.toggle.id, 1)

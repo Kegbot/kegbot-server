@@ -73,7 +73,7 @@ class KegbotBackend:
             pic.image.save(photo.name, photo)
             pic.save()
             user.mugshot = pic
-        
+
         user.save()
         if email and not password:
             user.activation_key = str(uuid.uuid4()).replace('-', '')
@@ -650,6 +650,36 @@ class KegbotBackend:
                 start_time=when, end_time=when, notes=notes, description=description)
 
         return keg
+
+    @transaction.atomic
+    def connect_meter(self, tap, new_meter):
+        tap = self._get_tap(tap)
+        old_meter = tap.current_meter()
+
+        if old_meter != new_meter:
+            if old_meter:
+                old_meter.tap = None
+                old_meter.save()
+            if new_meter:
+                new_meter.tap = tap
+                new_meter.save()
+
+        return tap
+
+    @transaction.atomic
+    def connect_toggle(self, tap, new_toggle):
+        tap = self._get_tap(tap)
+        old_toggle = tap.current_toggle()
+
+        if old_toggle != new_toggle:
+            if old_toggle:
+                old_toggle.tap = None
+                old_toggle.save()
+            if new_toggle:
+                new_toggle.tap = tap
+                new_toggle.save()
+
+        return tap
 
     def _get_tap(self, keg_tap_or_meter_name):
         if isinstance(keg_tap_or_meter_name, models.KegTap):

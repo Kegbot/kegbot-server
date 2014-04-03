@@ -63,8 +63,12 @@ urlpatterns = patterns('pykeg.web.api.views',
     url(r'^taps/?$', 'all_taps'),
 
     url(r'^taps/(?P<meter_name_or_id>[\w\.-]+)/activate/?$', 'tap_activate'),
-    url(r'^taps/(?P<meter_name_or_id>[\w\.-]+)/spill/?$', 'tap_spill'),
     url(r'^taps/(?P<meter_name_or_id>[\w\.-]+)/calibrate/?$', 'tap_calibrate'),
+    url(r'^taps/(?P<meter_name_or_id>[\w\.-]+)/spill/?$', 'tap_spill'),
+    url(r'^taps/(?P<meter_name_or_id>[\w\.-]+)/connect-meter/?$', 'tap_connect_meter'),
+    url(r'^taps/(?P<meter_name_or_id>[\w\.-]+)/disconnect-meter/?$', 'tap_disconnect_meter'),
+    url(r'^taps/(?P<meter_name_or_id>[\w\.-]+)/connect-toggle/?$', 'tap_connect_toggle'),
+    url(r'^taps/(?P<meter_name_or_id>[\w\.-]+)/disconnect-toggle/?$', 'tap_disconnect_toggle'),
     url(r'^taps/(?P<meter_name_or_id>[\w\.-]+)/?$', 'tap_detail'),
 
     url(r'^thermo-sensors/?$', 'all_thermo_sensors'),

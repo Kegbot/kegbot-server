@@ -20,6 +20,9 @@ from django import forms
 
 from pykeg.core import models
 
+ALL_METERS = models.FlowMeter.objects.all()
+ALL_TOGGLES = models.FlowToggle.objects.all()
+
 class DrinkPostForm(forms.Form):
     """Form to handle posts to /tap/<tap_id>/"""
     ticks = forms.IntegerField()
@@ -65,3 +68,9 @@ class RegisterForm(forms.Form):
 
 class AssignTokenForm(forms.Form):
     username = forms.RegexField(max_length=30, regex=r"^[\w-]+$")
+
+class ConnectMeterForm(forms.Form):
+    meter = forms.ModelChoiceField(queryset=ALL_METERS, required=True)
+
+class ConnectToggleForm(forms.Form):
+    toggle = forms.ModelChoiceField(queryset=ALL_TOGGLES, required=True)

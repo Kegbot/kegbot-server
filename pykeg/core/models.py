@@ -482,7 +482,7 @@ class FlowToggle(models.Model):
         return '%s.%s' % (self.controller.name, self.port_name)
 
     def __str__(self):
-        return self.toggle_name()
+        return '%s (tap: %s)' % (self.toggle_name(), self.tap)
 
     @classmethod
     def get_or_create_from_toggle_name(cls, toggle_name):
@@ -1179,7 +1179,7 @@ class SystemEvent(models.Model):
                 e = keg.events.create(kind=cls.KEG_ENDED, time=keg.end_time, keg=keg)
                 e.save()
                 events.append(e)
-        
+
         return events
 
     @classmethod

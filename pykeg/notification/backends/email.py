@@ -74,4 +74,4 @@ class EmailNotificationBackend(BaseNotificationBackend):
 
     def send_message(self, message):
         logger.info('Sending message: %s' % message)
-        message.send()
+        message.send(fail_silently=True)

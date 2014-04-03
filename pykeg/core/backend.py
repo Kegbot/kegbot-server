@@ -89,7 +89,7 @@ class KegbotBackend:
 
             message = build_message(email, 'email_new_registration.html', context)
             if message:
-                message.send()
+                message.send(fail_silently=True)
         return user
 
 

@@ -5,11 +5,12 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
+Version 0.9.21 (2014-04-04)
 --------------------------------
 * Twitter: Fix issue #232 (image upload failure).
 * Twitter: Fix issue #231 (guest tweet setting not respected).
 * API: Fix issue #233 (drink list error on empty system).
+* Bugfix: #234 (email misconfiguration causing server errors).
 
 Version 0.9.20 (2014-03-27)
 ---------------------------

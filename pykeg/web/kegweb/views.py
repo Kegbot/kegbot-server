@@ -30,11 +30,13 @@ from django.views.generic.dates import MonthArchiveView
 from django.views.generic.dates import YearArchiveView
 from django.views.generic.list import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.forms import widgets
 
 from kegbot.util import kbjson
 
 from pykeg.core import models
 from pykeg.proto import protolib
+from pykeg.web.kegweb import forms
 
 ### main views
 
@@ -115,7 +117,21 @@ class KegListView(ListView):
 
 def fullscreen(request):
     context = RequestContext(request)
-    context['taps'] = models.KegTap.objects.all()
+    form = forms.FullScreenForm()
+    if request.method == 'POST':
+        form = forms.FullScreenForm(request.POST)
+        if form.is_valid():
+            template = request.POST.get('template')
+            taps_list = request.POST.getlist('taps')
+            taps = models.KegTap.objects.filter(id__in=taps_list).order_by('id')
+            background = request.POST.get('background')
+            slide_rate = float(request.POST.get('slide_rate'))*1000
+            context['template'] = template
+            context['background'] = background
+            context['slide_rate'] =  slide_rate
+            context['taps'] = taps
+        
+    context['form'] = form
     return render_to_response('kegweb/fullscreen.html', context_instance=context)
 
 @cache_page(30)

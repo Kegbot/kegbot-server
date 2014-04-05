@@ -45,6 +45,7 @@ from kegbot.util import units
 from pykeg.core import backend
 from pykeg.core import logger
 from pykeg.core import models
+from pykeg.util.email import build_message
 
 from pykeg.web.kegadmin import forms
 from pykeg.web.tasks import do_checkin
@@ -107,6 +108,31 @@ def general_settings(request):
     context['settings_ssl'] = settings.use_ssl
 
     return render_to_response('kegadmin/index.html', context_instance=context)
+
+@staff_member_required
+def email(request):
+    context = RequestContext(request)
+    site_settings = models.SiteSettings.get()
+
+    email_backend = getattr(settings, 'EMAIL_BACKEND', None)
+    email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
+    email_configured = email_configured and bool(getattr(settings, 'EMAIL_FROM_ADDRESS', None))
+
+    if request.method == 'POST':
+        if 'send_test_email' in request.POST:
+            test_email_form = forms.TestEmailForm(request.POST)
+            if test_email_form.is_valid():
+                address = test_email_form.cleaned_data.get('address')
+                context['site_name'] = site_settings.title
+                context['site_url'] = site_settings.base_url()
+                context['settings_url'] = context['site_url'] + '/account'
+                message = build_message(address, 'notification/email_test.html', context)
+                message.send(fail_silently=True)
+                messages.success(request, 'E-mail successfully sent to %s' % address)
+
+    context['email_configured'] = email_configured
+
+    return render_to_response('kegadmin/email.html', context_instance=context)
 
 @staff_member_required
 def controller_list(request):

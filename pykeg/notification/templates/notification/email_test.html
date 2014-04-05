@@ -1,0 +1,13 @@
+{% extends 'notification/email_base.html' %}
+
+{% block subject %}[{{ site_name }}] Test E-mail{% endblock %}
+
+{% block body_plain %}
+This is a test e-mail from {{ site_name }}.
+{% endblock %}
+
+{% block body_html %}
+<p>
+This is a test e-mail from <b><a href="{{ site_url }}">{{ site_name }}</a></b>.
+</p>
+{% endblock %}

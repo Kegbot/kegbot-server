@@ -21,6 +21,8 @@
 import cStringIO
 import datetime
 
+import redis
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -64,13 +66,23 @@ def dashboard(request):
         now = timezone.now()
         last_checkin_time = request.kbsite.last_checkin_time
         if not last_checkin_time or (now - last_checkin_time) > datetime.timedelta(hours=12):
-            do_checkin.delay()
+            try:
+                do_checkin.delay()
+            except redis.RedisError:
+                pass
 
     email_backend = getattr(settings, 'EMAIL_BACKEND', None)
     email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
     email_configured = email_configured and bool(getattr(settings, 'EMAIL_FROM_ADDRESS', None))
 
     context['email_configured'] = email_configured
+
+    if settings.BROKER_URL.startswith('redis:'):
+        try:
+            r = redis.StrictRedis.from_url(settings.BROKER_URL)
+            r.ping()
+        except redis.RedisError as e:
+            context['redis_error'] = e.message if e.message else "Unknown error."
 
     context['last_checkin_time'] = request.kbsite.last_checkin_time
     context['checkin'] = models.KegbotSite.get().last_checkin_response
@@ -149,7 +161,7 @@ def controller_detail(request, controller_id):
     add_flow_toggle_form = forms.AddFlowToggleForm()
     add_flow_toggle_form.fields['controller'].initial = controller_id
     context = RequestContext(request)
-    
+
     if request.method == 'POST':
         if 'delete_controller' in request.POST:
             delete_controller_form = forms.DeleteControllerForm(request.POST)
@@ -677,7 +689,7 @@ def beverage_producer_detail(request, brewer_id):
 
 @staff_member_required
 def beverage_producer_add(request):
-    
+
     form = forms.BeverageProducerForm()
     if request.method == 'POST':
         form = forms.BeverageProducerForm(request.POST)

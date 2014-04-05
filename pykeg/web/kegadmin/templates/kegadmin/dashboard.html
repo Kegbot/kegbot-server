@@ -11,9 +11,22 @@
 {% badge num_new_users "New User" do_pluralize=True %}
 </ul>
 
-{% if DEBUG %}
+{% if redis_error %}
 <div class="alert alert-error">
-  <h4>Warning!</h4>
+  <h4>Redis Connection Error</h4>
+    <p>
+      Connection to the Redis server failed; some features of Kegbot may
+      not work correctly until it is fixed.
+    </p>
+    <p>
+      Error message was: {{ redis_error }}
+    </p>
+</div>
+{% endif %}
+
+{% if DEBUG %}
+<div class="alert alert-warning">
+  <h4>Warning: Debug Mode</h4>
    Kegbot Server is running in DEBUG mode.  For
    performance and security reasons, you should disable DEBUG mode by
    setting <code>DEBUG = False</code> in <code>local_settings.py</code>.
@@ -21,8 +34,8 @@
 {% endif %}
 
 {% if not email_configured %}
-<div class="alert alert-error">
-  <h4>Warning!</h4>
+<div class="alert alert-warning">
+  <h4>Warning: E-Mail Configuration Problem</h4>
    E-mail is not properly configured; no mails will be sent.  Please
    <a href="https://kegbot.org/docs/server/extras/">read the docs</a>
    for more information (hint: set <code>EMAIL_BACKEND</code> and

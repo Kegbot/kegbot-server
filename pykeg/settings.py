@@ -213,12 +213,12 @@ LOGGING = {
   'disable_existing_loggers': True,
   'root': {
     'level': 'INFO',
-    'handlers': ['console'],  # replaced with sentry later, if available.
+    'handlers': ['console', 'cache'],  # replaced with sentry later, if available.
     'formatter': 'verbose',
   },
   '': {
     'level': 'DEBUG',
-    'handlers': ['console'],  # replaced with sentry later, if available.
+    'handlers': ['console', 'cache'],  # replaced with sentry later, if available.
     'formatter': 'verbose',
   },
   'filters': {

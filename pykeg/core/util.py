@@ -22,10 +22,13 @@
 # may be used in models.py, settings.py, etc.
 
 import inspect
+import logging
 import pkgutil
 import os
 import pkg_resources
 import sys
+
+from redis.exceptions import RedisError
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -72,3 +75,19 @@ def get_current_request():
                 return frame.f_locals["request"]
     finally:
         del frame
+
+class SuppressTaskErrors(object):
+    """Suppresses certain errors that occur while scheduling tasks."""
+    def __init__(self, logger=None):
+        self.logger = logger if logger else logging.getLogger(__name__)
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        exc_info = (exc_type, exc_val, exc_tb)
+        if isinstance(exc_val, RedisError):
+            self.logger.error('Error scheduling task: {}'.format(exc_val),
+                exc_info=exc_info)
+            return True
+        return False

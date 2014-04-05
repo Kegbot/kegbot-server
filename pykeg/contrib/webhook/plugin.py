@@ -19,6 +19,7 @@
 """Webhook plugin for Kegbot."""
 
 from django.conf import settings
+from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.plugin import util
 
@@ -43,7 +44,8 @@ class WebhookPlugin(plugin.Plugin):
         settings = self.get_site_settings()
         urls = settings.get('webhook_urls', '').strip().split()
         for url in urls:
-            tasks.post_webhook.delay(url, event)
+            with SuppressTaskErrors(self.logger):
+                tasks.post_webhook.delay(url, event)
 
     ### Webook-specific methods
 

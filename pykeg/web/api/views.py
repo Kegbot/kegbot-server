@@ -39,6 +39,7 @@ from pykeg.core import backend
 from pykeg.core import keg_sizes
 from pykeg.core import models
 from pykeg.core import util as core_util
+from pykeg.core.util import SuppressTaskErrors
 from pykeg.proto import protolib
 from pykeg.web.api import forms
 from pykeg.web.api import util
@@ -216,7 +217,8 @@ def _save_pour_pic(request, drink):
     drink.picture = pic
     drink.save()
 
-    tasks.handle_new_picture.delay(pic.id)
+    with SuppressTaskErrors(_LOGGER):
+        tasks.handle_new_picture.delay(pic.id)
     return pic
 
 def get_session(request, session_id):

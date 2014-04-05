@@ -20,6 +20,7 @@
 
 from django.conf import settings
 from django.utils import timezone
+from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.plugin import util
 
@@ -88,7 +89,9 @@ class UntappdPlugin(plugin.Plugin):
             shout = event.drink.shout
 
         timezone_name = timezone.get_current_timezone_name()
-        tasks.checkin.delay(token, beer_id, timezone_name, shout=shout)
+
+        with SuppressTaskErrors(self.logger):
+            tasks.checkin.delay(token, beer_id, timezone_name, shout=shout)
 
     ### Untappd-specific methods
 

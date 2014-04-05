@@ -19,6 +19,7 @@
 """Foursquare plugin for Kegbot."""
 
 from django.conf import settings
+from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.plugin import util
 
@@ -85,7 +86,8 @@ class FoursquarePlugin(plugin.Plugin):
             self.logger.info('Ignoring event: no venue id.')
             return
 
-        tasks.checkin.delay(token, venue_id)
+        with SuppressTaskErrors(self.logger):
+            tasks.checkin.delay(token, venue_id)
 
     ### Foursquare-specific methods
 

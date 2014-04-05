@@ -24,6 +24,7 @@ from pykeg.plugin import util
 
 from kegbot.util import kbjson
 from pykeg.core.models import SiteSettings
+from pykeg.core.util import SuppressTaskErrors
 from socialregistration.contrib.twitter.client import Twitter
 import oauth2 as oauth
 
@@ -297,8 +298,10 @@ class TwitterPlugin(plugin.Plugin):
         consumer_key, consumer_secret = self.get_credentials()
         oauth_token = profile.get(KEY_OAUTH_TOKEN)
         oauth_token_secret = profile.get(KEY_OAUTH_TOKEN_SECRET)
-        tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret,
-            tweet, image_url)
+
+        with SuppressTaskErrors(self.logger):
+            tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret,
+                tweet, image_url)
 
     def get_vars(self, event):
         settings = SiteSettings.get()

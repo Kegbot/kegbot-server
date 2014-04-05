@@ -30,6 +30,7 @@ from django.db.utils import IntegrityError
 from pykeg import notification
 from pykeg.core import defaults
 from pykeg.core import keg_sizes
+from pykeg.core.util import SuppressTaskErrors
 from pykeg.core.cache import KegbotCache
 from pykeg.util.email import build_message
 from . import kb_common
@@ -239,7 +240,8 @@ class KegbotBackend:
                 d.save()
 
         if do_postprocess:
-            tasks.generate_stats_since.delay(d.id)
+            with SuppressTaskErrors(self._logger):
+                tasks.generate_stats_since.delay(d.id)
             with transaction.atomic():
                 events = models.SystemEvent.build_events_for_drink(d)
                 tasks.schedule_tasks(events)
@@ -287,7 +289,8 @@ class KegbotBackend:
             drink.delete()
             session.Rebuild()
 
-        tasks.generate_stats_since.delay(drink.id)
+        with SuppressTaskErrors(self._logger):
+            tasks.generate_stats_since.delay(drink.id)
         self.cache.update_generation()
 
         return drink
@@ -326,7 +329,8 @@ class KegbotBackend:
 
             drink.session.Rebuild()
 
-        tasks.generate_stats_since.delay(drink.id)
+        with SuppressTaskErrors(self._logger):
+            tasks.generate_stats_since.delay(drink.id)
         self.cache.update_generation()
 
         return drink
@@ -347,7 +351,8 @@ class KegbotBackend:
 
             drink.session.Rebuild()
 
-        tasks.generate_stats_since.delay(drink.id)
+        with SuppressTaskErrors(self._logger):
+            tasks.generate_stats_since.delay(drink.id)
         self.cache.update_generation()
 
     @transaction.atomic

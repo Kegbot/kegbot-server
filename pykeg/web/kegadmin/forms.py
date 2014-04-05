@@ -575,6 +575,15 @@ class RecordDrinkForm(forms.Form):
             self.cleaned_data['volume_ml'] = volume
         return volume
 
+class TestEmailForm(forms.Form):
+    address = forms.CharField(required=False)
+
+    def clean_address(self):
+        address = self.cleaned_data['address']
+        if address == '':
+            self.cleaned_data['address'] = None
+            return
+        return address
 
 class FlowMeterForm(forms.ModelForm):
     class Meta:

@@ -1,0 +1,37 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: E-Mail | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: E-Mail{% endblock %}
+
+{% block kegadmin-main %}
+{% if not email_configured %}
+<div class="alert alert-error">
+  <h4>Warning!</h4>
+   E-mail is not properly configured; no mails will be sent.  Please
+   <a href="https://kegbot.org/docs/server/extras/">read the docs</a>
+   for more information (hint: set <code>EMAIL_BACKEND</code> and
+   <code>EMAIL_FROM_ADDRESS</code> in <code>local_settings.py</code>).
+</div>
+{% else %}
+<div class="alert alert-info">
+  <h4>Test E-mail Configuration</h4>
+  <br/>
+  <p>
+    Your e-mail address is {{ user.email }}
+  </p>
+  <form action="" class="user-select" method="POST">{% csrf_token %}
+    <input type="hidden" name="address" value={{ user.email }}>
+    <button class="btn btn-info" name="send_test_email" type="submit">
+      Send Test E-mail
+    </button>
+  </form>
+  <p>
+    Please check your inbox at the address above after sending a test E-mail.
+    Be sure to check your spam folder, and add the sender to your whitelist if necessary.
+  </p>
+</div>
+{% endif %}
+
+{% endblock %}

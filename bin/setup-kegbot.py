@@ -33,14 +33,17 @@ import getpass
 import pprint
 import random
 import subprocess
+import textwrap
 
 from kegbot.util import app
 
 from pykeg.core import util
 from pykeg.core import kb_common
 
-gflags.DEFINE_boolean('use_existing', True,
-    'Bootstrap default values from existing local_settings, if available.')
+gflags.DEFINE_string('allow_root', False,
+    'Allows this program to run as root. This is usually not required, '
+    'and acts as a precaution against users unintentionally running the '
+    'program with sudo.')
 
 gflags.DEFINE_boolean('interactive', True,
     'Run in interactive mode.')
@@ -72,10 +75,12 @@ gflags.DEFINE_string('db_database', 'kegbot',
     'MySQL/Postgres database name.  Ignored if using sqlite.')
 
 gflags.DEFINE_string('sqlite_filename', 'kegbot.sqlite',
-    'File name for the Kegbot sqlite database within `data_root`.  Ignored if not using SQLite.')
+    'File name for the Kegbot sqlite database within `data_root`.  '
+    'Ignored if not using SQLite.')
 
 gflags.DEFINE_string('use_memcached', True,
     'Configure Kegbot to use memcached. ')
+
 
 FLAGS = gflags.FLAGS
 
@@ -158,10 +163,11 @@ class SetupStep(object):
   def get(self, interactive, ctx):
     if interactive:
       docs = self.get_docs()
-      print '-'*80
-      print '\n'.join(docs.splitlines()[2:])
-      print ''
-      print ''
+      if docs:
+        print '-'*80
+        print '\n'.join(docs.splitlines()[2:])
+        print ''
+        print ''
 
   def validate(self, ctx):
     """Validates user input.
@@ -236,6 +242,14 @@ class ConfigurationSetupStep(SetupStep):
 
 ### Main Steps
 
+class RootCheck(SetupStep):
+  def validate(self, ctx):
+    if getpass.getuser() == 'root':
+      if not FLAGS.allow_root:
+        raise FatalError('Kegbot should not be installed as the root user.  If you '
+          'are confident this is an error, re-run with the flag --allow_root')
+
+
 class RequiredLibraries(SetupStep):
   def validate(self, ctx):
     try:
@@ -266,7 +280,7 @@ class SettingsDir(ConfigurationSetupStep):
     /usr/local/etc/kegbot  (same as above, for FreeBSD)
 
   If you use another directory, you will need to set the environment variable
-  KEGBOT_SETTINGS_DIR when running Kegbot. 
+  KEGBOT_SETTINGS_DIR when running Kegbot.
 
   If in doubt, use the default.
   """
@@ -439,6 +453,7 @@ class ConfigureDatabase(ConfigurationSetupStep):
 
 
 STEPS = [
+    RootCheck(),
     RequiredLibraries(),
     SettingsDir(),
     KegbotDataRoot(),
@@ -466,8 +481,13 @@ class SetupApp(app.App):
     try:
       self.finish_setup(ctx)
     except (ValueError, FatalError), e:
-      print 'ERROR: %s' % e
+      self.print_error(e)
       sys.exit(1)
+
+  def print_error(self, msg):
+    msg = 'ERROR: {}'.format(msg)
+    msg = textwrap.fill(msg, 72)
+    print>>sys.stderr, msg
 
   def build(self, ctx):
     for step in STEPS:
@@ -475,7 +495,7 @@ class SetupApp(app.App):
         step.get(interactive=False, ctx=ctx)
         step.validate(ctx)
       except (ValueError, FatalError), e:
-        print 'ERROR: %s' % e
+        self.print_error(e)
         sys.exit(1)
 
   def build_interactive(self, ctx):
@@ -497,13 +517,13 @@ class SetupApp(app.App):
           sys.exit(1)
         except FatalError, e:
           print ''
-          print 'ERROR: %s' % e
+          self.print_error(e)
           sys.exit(1)
         except ValueError, e:
           print ''
           print ''
           print ''
-          print 'ERROR: %s' % e
+          self.print_error(e)
 
 
   def finish_setup(self, ctx):

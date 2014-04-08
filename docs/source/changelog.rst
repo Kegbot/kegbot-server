@@ -5,6 +5,11 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* Security: Fix issue #243.
+* API: Support meter and toggle assignment.
+
 Version 0.9.21 (2014-04-04)
 --------------------------------
 * Twitter: Fix issue #232 (image upload failure).

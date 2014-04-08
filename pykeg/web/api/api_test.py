@@ -152,6 +152,35 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals(data.meta.result, 'error')
         self.assertEquals(data.error.code, 'NoAuthTokenError')
 
+    def test_record_drink(self):
+        response, data = self.get('taps/1')
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(data.object.get('current_keg'), None)
+
+        new_keg_data = {
+            'keg_size': 'half-barrel',
+            'beverage_name': 'Test Brew',
+            'producer_name': 'Test Producer',
+            'style_name': 'Test Style,'
+        }
+        response, data = self.post('taps/1/activate', data=new_keg_data)
+        self.assertEquals(data.meta.result, 'error')
+        self.assertEquals(data.error.code, 'NoAuthTokenError')
+
+        response, data = self.post('taps/1/activate', data=new_keg_data,
+            HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertIsNotNone(data.object.get('current_keg'))
+
+        response, data = self.post('taps/1', data={'ticks': 1000})
+        self.assertEquals(data.meta.result, 'error')
+        self.assertEquals(data.error.code, 'NoAuthTokenError')
+
+        response, data = self.post('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
+            data={'ticks': 1000})
+        self.assertEquals(data.meta.result, 'ok')
+
+
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
     @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
     def test_registration(self):

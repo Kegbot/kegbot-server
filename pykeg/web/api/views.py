@@ -461,6 +461,7 @@ def get_api_key(request):
 def tap_detail(request, meter_name_or_id):
     tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     if request.method == 'POST':
+        util.check_api_key(request)
         return _tap_detail_post(request, tap)
     elif request.method == 'GET':
         return _tap_detail_get(request, tap)

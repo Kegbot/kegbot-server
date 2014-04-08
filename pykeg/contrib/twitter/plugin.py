@@ -110,7 +110,7 @@ class TwitterPlugin(plugin.Plugin):
         site_settings = self.get_saved_form_data(forms.SiteSettingsForm(), 'site_settings')
 
         self._issue_system_tweet(event, site_settings, profile)
-        if not event.user.is_guest():
+        if event.user and not event.user.is_guest():
             self._issue_user_tweet(event, site_settings)
 
     ### Twitter-specific methods
@@ -252,7 +252,7 @@ class TwitterPlugin(plugin.Plugin):
             return
 
         user_settings = self.get_user_settings(user)
-        
+
         if kind == event.DRINK_POURED:
             if not user_settings.get('tweet_drink_events'):
                 self.logger.info('Skipping drink tweet for event %s: disabled by user.' % event.id)
@@ -297,14 +297,14 @@ class TwitterPlugin(plugin.Plugin):
         consumer_key, consumer_secret = self.get_credentials()
         oauth_token = profile.get(KEY_OAUTH_TOKEN)
         oauth_token_secret = profile.get(KEY_OAUTH_TOKEN_SECRET)
-        tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret, 
+        tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret,
             tweet, image_url)
 
     def get_vars(self, event):
         settings = SiteSettings.get()
 
         username = settings.guest_name
-        if not event.user.is_guest():
+        if event.user and not event.user.is_guest():
             username = event.user.username
 
         url = ''

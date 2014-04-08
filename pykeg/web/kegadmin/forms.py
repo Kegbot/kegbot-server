@@ -566,10 +566,16 @@ class TestEmailForm(forms.Form):
             return
         return address
 
-class FlowMeterForm(forms.ModelForm):
+class NewFlowMeterForm(forms.ModelForm):
     class Meta:
         model = models.FlowMeter
         fields = ('port_name', 'ticks_per_ml', 'controller')
+
+
+class UpdateFlowMeterForm(forms.ModelForm):
+    class Meta:
+        model = models.FlowMeter
+        fields = ('ticks_per_ml',)
 
 
 class AddFlowMeterForm(forms.ModelForm):

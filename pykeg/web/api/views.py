@@ -44,7 +44,8 @@ from pykeg.web.api import forms
 from pykeg.web.api import util
 from pykeg.web.kegadmin.forms import ChangeKegForm
 from pykeg.web.kegadmin.forms import ControllerForm
-from pykeg.web.kegadmin.forms import FlowMeterForm
+from pykeg.web.kegadmin.forms import NewFlowMeterForm
+from pykeg.web.kegadmin.forms import UpdateFlowMeterForm
 
 from pykeg.web import tasks
 
@@ -126,7 +127,7 @@ def get_controller(request, controller_id):
 @auth_required
 def all_flow_meters(request):
     if request.method == 'POST':
-        form = FlowMeterForm(request.POST)
+        form = NewFlowMeterForm(request.POST)
         if form.is_valid():
             return form.save()
         else:
@@ -144,7 +145,7 @@ def get_flow_meter(request, flow_meter_id):
         meter.delete()
 
     elif request.method == 'POST':
-        form = FlowMeterForm(request.POST, instance=meter)
+        form = UpdateFlowMeterForm(request.POST, instance=meter)
         if form.is_valid():
             meter = form.save()
         else:

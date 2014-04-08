@@ -44,6 +44,7 @@ from django.views.decorators.http import require_POST
 from kegbot.util import kbjson
 from kegbot.util import units
 
+from pykeg.celery import app as celery_app
 from pykeg.core import backend
 from pykeg.core import logger
 from pykeg.core import models
@@ -145,6 +146,37 @@ def email(request):
     context['email_configured'] = email_configured
 
     return render_to_response('kegadmin/email.html', context_instance=context)
+
+@staff_member_required
+def workers(request):
+    context = RequestContext(request)
+    site_settings = models.SiteSettings.get()
+
+    try:
+        inspector = celery_app.control.inspect()
+        pings = inspector.ping()
+        stats = inspector.stats()
+        queues = inspector.active_queues()
+
+        status = {}
+        for k, v in pings.iteritems():
+            status[k] = {
+                'status': 'ok' if v.get('ok') else 'unknown',
+            }
+        for k, v in stats.iteritems():
+            if k in status:
+                status[k]['stats'] = v
+        for k, v in queues.iteritems():
+            if k in status:
+                status[k]['active_queues'] = v
+        context['status'] = status
+    except redis.RedisError as e:
+        context['status'] = {}
+        context['error'] = e
+
+    context['raw_stats'] = kbjson.dumps(context['status'], indent=2)
+
+    return render_to_response('kegadmin/workers.html', context_instance=context)
 
 @staff_member_required
 def controller_list(request):

@@ -7,8 +7,9 @@ Changelog
 
 Current Version (in development)
 --------------------------------
-* Statistics are computed in a background task.
 * Redis is now a required dependency.
+* Statistics are computed in a background task.
+* Supervisor commands have changed; please update your configuration.
 
 Version 0.9.22 (2014-04-07)
 ---------------------------

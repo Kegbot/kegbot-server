@@ -1,0 +1,58 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: E-Mail | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: E-Mail{% endblock %}
+
+{% block kegadmin-main %}
+<p class="lead">Background worker status.</p>
+
+{% if error %}
+<div class="alert alert-error">
+  <h4>Connection Error</h4>
+  <p>
+    Could not retrieve worker status. Error was: {{ error }}
+  </p>
+</div>
+{% endif %}
+
+{% if status %}
+<table class="table table-bordered table-striped">
+<thead>
+<tr>
+  <th>Worker Name</th>
+  <th>Status</th>
+  <th>Tasks &mdash; Run Count</th>
+</tr>
+</thead>
+
+<tbody>
+{% for worker_name, worker_status in status.iteritems %}
+<tr>
+<td><em>{{ worker_name }}</em></td>
+<td><span class="label {% if worker_status.status == "ok" %}label-success{% endif %}">{{ worker_status.status }}</span></td>
+<td>
+  {% for task_name, task_count in worker_status.stats.total.iteritems %}
+    {{ task_name }} &mdash; {{ task_count }}<br/>
+  {% endfor %}
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+
+{% endif %}
+
+<a href="#" class="muted" data-toggle="collapse" data-target="#raw_stats">
+  Show Raw Stats &raquo;
+</a>
+<p></p>
+<div id="raw_stats" class="collapse out">
+<pre>
+{{ raw_stats }}
+</pre>
+</div>
+
+
+{% endblock %}

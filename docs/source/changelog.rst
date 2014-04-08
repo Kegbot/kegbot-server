@@ -5,8 +5,8 @@ Changelog
 
 .. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.22 (2014-04-07)
+---------------------------
 * Security: Fix issue #243.
 * API: Support meter and toggle assignment.
 

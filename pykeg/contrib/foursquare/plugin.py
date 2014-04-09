@@ -81,7 +81,7 @@ class FoursquarePlugin(plugin.Plugin):
             self.logger.info('Ignoring event: not enabled.')
             return
 
-        venue_id = self.get_site_settings().get('venue_id')
+        venue_id = self.get_venue_id()
         if not venue_id:
             self.logger.info('Ignoring event: no venue id.')
             return
@@ -99,6 +99,14 @@ class FoursquarePlugin(plugin.Plugin):
             )
         data = self.get_site_settings()
         return data.get('client_id'), data.get('client_secret')
+
+    def get_foursquare_client(self):
+        client_id, client_secret = self.get_credentials()
+        client = foursquare.Foursquare(client_id=client_id, client_secret=client_secret)
+        return client
+
+    def get_venue_id(self):
+        return self.get_site_settings().get('venue_id')
 
     def get_site_settings_form(self):
         form = forms.SiteSettingsForm()

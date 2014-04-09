@@ -27,6 +27,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 import oauth2 as oauth
 
+from kegbot.util import kbjson
+
 import foursquare
 
 from . import forms
@@ -63,6 +65,17 @@ def admin_settings(request, plugin):
                     plugin.save_site_settings_form(settings_form)
                     plugin.save_venue_detail(venue)
                     messages.success(request, 'Settings updated')
+
+        if 'test-api' in request.POST:
+            plugin = request.plugins['foursquare']
+            client = plugin.get_foursquare_client()
+            venue_id = plugin.get_venue_id() or '49d01698f964a520fd5a1fe3'  # Golden Gate Bridge
+            try:
+                venue_info = client.venues(venue_id)
+                context['test_response'] = kbjson.dumps(venue_info, indent=2)
+                messages.success(request, 'API test successful.')
+            except foursquare.FoursquareException as e:
+                messages.success(request, 'API test failed: {}'.format(e.message))
 
     context['plugin'] = plugin
     context['settings_form'] = settings_form

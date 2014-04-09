@@ -21,4 +21,29 @@
 </form>
 </div>
 
+<h4>API Test</h4>
+<p class="lead">
+Test connection to Foursquare API servers.
+</p>
+
+<form method="post" action="">
+   {% csrf_token %}
+    <button type="submit" class="btn btn-success" name="test-api">
+      Test API
+    </button>
+</form>
+
+{% if test_response %}
+<a href="#" class="muted" data-toggle="collapse" data-target="#api_response">
+  Show API Test Result &raquo;
+</a>
+<p></p>
+<div id="api_response" class="collapse out">
+<pre>
+{{ test_response }}
+</pre>
+</div>
+{% endif %}
+
+
 {% endblock %}

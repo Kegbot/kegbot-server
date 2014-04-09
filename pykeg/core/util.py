@@ -26,11 +26,16 @@ import logging
 import pkgutil
 import os
 import pkg_resources
+import requests
 import sys
+import tempfile
+from contextlib import closing
 
 from redis.exceptions import RedisError
 
 from django.core.exceptions import ImproperlyConfigured
+
+logger = logging.getLogger(__name__)
 
 def get_version():
     try:
@@ -75,6 +80,22 @@ def get_current_request():
                 return frame.f_locals["request"]
     finally:
         del frame
+
+
+def download_to_tempfile(url):
+    try:
+        r = requests.get(url, stream=True)
+        ext = os.path.splitext(url)[1]
+        fd, pathname = tempfile.mkstemp(suffix=ext)
+        logger.info('Downloading file %s to path %s' % (url, pathname))
+        with closing(os.fdopen(fd, 'wb')):
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    os.write(fd, chunk)
+        return str(pathname)
+    except requests.exceptions.RequestException as e:
+        raise IOError('Could not download file: {}'.format(e))
+
 
 class SuppressTaskErrors(object):
     """Suppresses certain errors that occur while scheduling tasks."""

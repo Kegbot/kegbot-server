@@ -20,11 +20,10 @@
 
 import os
 import tempfile
-from contextlib import closing
 
 import tweepy
-import requests
 from pykeg.celery import app
+from pykeg.core.util import download_to_tempfile
 
 from pykeg.plugin import util
 
@@ -39,8 +38,8 @@ def send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret, t
     local_media = None
     if image_url:
         try:
-            local_media = download_file(image_url)
-        except requests.exceptions.RequestException as e:
+            local_media = download_to_tempfile(image_url)
+        except IOError as e:
             logger.warning('Error downloading media url "%s": %s' % (image_url, e))
 
     if not local_media:
@@ -53,15 +52,3 @@ def send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret, t
         finally:
             os.unlink(local_media)
     return result
-
-def download_file(url):
-    r = requests.get(url, stream=True)
-    ext = os.path.splitext(url)[1]
-    fd, pathname = tempfile.mkstemp(suffix=ext)
-    logger.info('Downloading file %s to path %s' % (url, pathname))
-    with closing(os.fdopen(fd, 'wb')):
-        for chunk in r.iter_content(chunk_size=1024):
-            if chunk:
-                os.write(fd, chunk)
-    return str(pathname)
-

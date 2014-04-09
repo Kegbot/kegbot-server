@@ -27,7 +27,7 @@ DEPENDENCIES = [
 
   'South == 0.8.4',
   'django-crispy-forms == 1.2.8',
-  'foursquare == 2014.01.18',
+  'foursquare == 2014.04.02',
   'gunicorn == 18.0',
   'MySQL-python == 1.2.5',
   'pillow == 2.3.1',
@@ -58,6 +58,7 @@ def setup_package():
       install_requires = DEPENDENCIES,
       dependency_links = [
           'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
+          'https://github.com/mik3y/foursquare/archive/photo-content-type.zip#egg=foursquare-2014.04.02'
       ],
       include_package_data = True,
       entry_points = {

@@ -87,7 +87,7 @@ class FoursquarePlugin(plugin.Plugin):
             return
 
         with SuppressTaskErrors(self.logger):
-            tasks.checkin.delay(token, venue_id)
+            tasks.foursquare_checkin.delay(token, venue_id)
 
     ### Foursquare-specific methods
 

@@ -8,8 +8,11 @@ Changelog
 Current Version (in development)
 --------------------------------
 * Redis is now a required dependency.
-* Statistics are computed in a background task.
+* Statistics are computed in a background task (#214).
 * Supervisor commands have changed; please update your configuration.
+* Untappd: Foursquare venue is attached to checkins when available (#178).
+* Foursquare: Photos are attached to checkins when available (#143).
+* improved support for unicode characters (#225).
 
 Version 0.9.22 (2014-04-07)
 ---------------------------

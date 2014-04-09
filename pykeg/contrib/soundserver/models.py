@@ -34,8 +34,8 @@ class SoundFile(models.Model):
     title = models.CharField(max_length=128)
     active = models.BooleanField(default=True)
 
-    def __str__(self):
-        return '%s (%s)' % (self.title, self.sound)
+    def __unicode__(self):
+        return u'{} ({})'.format(self.title, self.sound)
 
 
 class SoundEvent(models.Model):
@@ -48,6 +48,6 @@ class SoundEvent(models.Model):
     def SoundTitle(self):
         return self.soundfile.title
 
-    def __str__(self):
-        return '%s(%s) -> %s' % (self.event_name, self.event_predicate,
+    def __unicode__(self):
+        return u'{}({}) -> {}'.format(self.event_name, self.event_predicate,
             self.soundfile.title)

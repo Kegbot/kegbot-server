@@ -106,7 +106,7 @@ class KegbotSite(models.Model):
     last_checkin_response = JSONField(blank=True, null=True,
         dump_kwargs={'cls': kbjson.JSONEncoder})
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
     @classmethod
@@ -283,7 +283,7 @@ class BeverageProducer(models.Model):
     class Meta:
         ordering = ('name',)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 
@@ -342,8 +342,8 @@ class Beverage(models.Model):
     class Meta:
         ordering = ('name',)
 
-    def __str__(self):
-        return '%s by %s' % (self.name, self.producer)
+    def __unicode__(self):
+        return u'{} by {}'.format(self.name, self.producer)
 
 
 class KegTap(models.Model):
@@ -363,8 +363,8 @@ class KegTap(models.Model):
     sort_order = models.PositiveIntegerField(default=0,
         help_text='Position relative to other taps when sorting (0=first).')
 
-    def __str__(self):
-        return "%s: %s" % (self.name, self.current_keg)
+    def __unicode__(self):
+        return u'{}: {}'.format(self.name, self.current_keg)
 
     def is_active(self):
         """Returns True if the tap has an active Keg."""
@@ -411,8 +411,8 @@ class Controller(models.Model):
     serial_number = models.CharField(max_length=128, blank=True, null=True,
         help_text='Serial number (optional).')
 
-    def __str__(self):
-        return 'Controller: %s' % (self.name,)
+    def __unicode__(self):
+        return u'Controller: {}'.format(self.name)
 
 
 class FlowMeter(models.Model):
@@ -430,9 +430,9 @@ class FlowMeter(models.Model):
         '(SF800), 2.2 (Vision 2000)' % kb_common.DEFAULT_TICKS_PER_ML)
 
     def meter_name(self):
-        return '%s.%s' % (self.controller.name, self.port_name)
+        return '{}.{}'.format(self.controller.name, self.port_name)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.meter_name()
 
     @classmethod
@@ -479,10 +479,10 @@ class FlowToggle(models.Model):
         help_text='Tap to which this toggle is currently bound.')
 
     def toggle_name(self):
-        return '%s.%s' % (self.controller.name, self.port_name)
+        return u'{}.{}'.format(self.controller.name, self.port_name)
 
-    def __str__(self):
-        return '%s (tap: %s)' % (self.toggle_name(), self.tap)
+    def __unicode__(self):
+        return u'{} (tap: {})'.format(self.toggle_name(), self.tap)
 
     @classmethod
     def get_or_create_from_toggle_name(cls, toggle_name):
@@ -630,8 +630,8 @@ class Keg(models.Model):
         ret.sort(reverse=True)
         return ret
 
-    def __str__(self):
-        return "Keg #%s - %s" % (self.id, self.type)
+    def __unicode__(self):
+        return u'Keg #{} - {}'.format(self.id, self.type)
 
 def _keg_pre_save(sender, instance, **kwargs):
     keg = instance
@@ -705,8 +705,8 @@ class Drink(models.Model):
         ounces = self.Volume().InOunces()
         return self.keg.type.calories_oz * ounces
 
-    def __str__(self):
-        return "Drink %i by %s" % (self.id, self.user)
+    def __unicode__(self):
+        return 'Drink {} by {}'.format(self.id, self.user)
 
 
 class AuthenticationToken(models.Model):
@@ -732,16 +732,16 @@ class AuthenticationToken(models.Model):
     expire_time = models.DateTimeField(blank=True, null=True,
         help_text='Date after which token is treated as disabled.')
 
-    def __str__(self):
+    def __unicode__(self):
         auth_device = self.auth_device
         if auth_device == 'core.rfid':
             auth_device = 'RFID'
         elif auth_device == 'core.onewire':
             auth_device = 'OneWire'
 
-        ret = "%s %s" % (auth_device, self.token_value)
+        ret = u'{} {}'.format(auth_device, self.token_value)
         if self.nice_name:
-            ret += " (%s)" % self.nice_name
+            ret += u' ({})'.format(self.nice_name)
         return ret
 
     def get_auth_device(self):
@@ -805,8 +805,8 @@ class DrinkingSession(_AbstractChunk):
     objects = managers.SessionManager()
     name = models.CharField(max_length=256, blank=True, null=True)
 
-    def __str__(self):
-        return "Session #%s: %s" % (self.id, self.start_time)
+    def __unicode__(self):
+        return 'Session #{}: {}'.format(self.id, self.start_time)
 
     def short_url(self):
         return '%s%s' % (SiteSettings.get().base_url(), reverse('kb-session-short',
@@ -1027,9 +1027,9 @@ class ThermoSensor(models.Model):
     raw_name = models.CharField(max_length=256)
     nice_name = models.CharField(max_length=128)
 
-    def __str__(self):
+    def __unicode__(self):
         if self.nice_name:
-            return '%s (%s)' % (self.nice_name, self.raw_name)
+            return u'{} ({})'.format(self.nice_name, self.raw_name)
         return self.raw_name
 
     def LastLog(self):
@@ -1049,8 +1049,8 @@ class Thermolog(models.Model):
     temp = models.FloatField()
     time = models.DateTimeField()
 
-    def __str__(self):
-        return '%.2f C / %.2f F [%s]' % (self.TempC(), self.TempF(), self.time)
+    def __unicode__(self):
+        return u'%.2f C / %.2f F [%s]' % (self.TempC(), self.TempF(), self.time)
 
     def TempC(self):
         return self.temp
@@ -1078,8 +1078,8 @@ class UserStats(_StatsModel):
     class Meta:
         unique_together = ('drink', 'user')
 
-    def __str__(self):
-        return 'UserStats for %s' % self.user
+    def __unicode__(self):
+        return u'UserStats for {}'.format(self.user)
 
 
 class KegStats(_StatsModel):
@@ -1089,8 +1089,8 @@ class KegStats(_StatsModel):
     class Meta:
         unique_together = ('drink', 'keg')
 
-    def __str__(self):
-        return 'KegStats for %s' % self.keg
+    def __unicode__(self):
+        return u'KegStats for {}'.format(self.keg)
 
 
 class SessionStats(_StatsModel):
@@ -1100,8 +1100,8 @@ class SessionStats(_StatsModel):
     class Meta:
         unique_together = ('drink', 'session')
 
-    def __str__(self):
-        return 'SessionStats for %s' % self.session
+    def __unicode__(self):
+        return u'SessionStats for {}'.format(self.session)
 
 
 class SystemEvent(models.Model):
@@ -1143,24 +1143,23 @@ class SystemEvent(models.Model):
 
     objects = managers.SystemEventManager()
 
-    def __str__(self):
+    def __unicode__(self):
         if self.kind == self.DRINK_POURED:
-            ret = 'Drink %i poured' % self.drink.id
+            ret = u'Drink {} poured'.format(self.drink.id)
         elif self.kind == self.SESSION_STARTED:
-            ret = 'Session %s started by drink %s' % (self.session.id,
-                self.drink.id)
+            ret = u'Session {} started by drink {}'.format(self.session.id, self.drink.id)
         elif self.kind == self.SESSION_JOINED:
-            ret = 'Session %s joined by %s (drink %s)' % (self.session.id,
+            ret = u'Session {} joined by {} (drink {})'.format(self.session.id,
                 self.user.username, self.drink.id)
         elif self.kind == self.KEG_TAPPED:
-            ret = 'Keg %s tapped' % self.keg.id
+            ret = u'Keg {} tapped'.format(self.keg.id)
         elif self.kind == self.KEG_VOLUME_LOW:
-            ret = 'Keg %s volume low' % self.keg.id
+            ret = u'Keg {} volume low'.format(self.keg.id)
         elif self.kind == self.KEG_ENDED:
-            ret = 'Keg %s ended' % self.keg.id
+            ret = u'Keg {} ended'.format(self.keg.id)
         else:
-            ret = 'Unknown event type (%s)' % self.kind
-        return 'Event %s: %s' % (self.id, ret)
+            ret = u'Unknown event type ({})'.format(self.kind)
+        return u'Event {}: {}'.format(self.id, ret)
 
     @classmethod
     def build_events_for_keg(cls, keg):
@@ -1291,16 +1290,16 @@ class Picture(models.Model):
         on_delete=models.SET_NULL,
         help_text='Session this picture was taken with, if any.')
 
-    def __str__(self):
-        return 'Picture: %s' % self.image
+    def __unicode__(self):
+        return u'Picture: {}'.format(self.image)
 
     def get_caption(self):
         if self.caption:
             return self.caption
         elif self.drink:
             if self.user:
-                return '%s pouring drink %s' % (self.user.username, self.drink.id)
+                return u'{} pouring drink {}'.format(self.user.username, self.drink.id)
             else:
-                return 'An unknown drinker pouring drink %s' % (self.drink.id,)
+                return u'An unknown drinker pouring drink {}'.format(self.drink.id)
         return ''
 

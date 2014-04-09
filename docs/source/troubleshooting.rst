@@ -38,4 +38,23 @@ For most systems, the following command will fix the issue::
   
   $ mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql
 
+.. _stats-troubleshooting:
 
+Statistics are not regenerated
+------------------------------
+
+Statistics are recomputed in a background task.  In order for this to work,
+the task queue (Celery) must be running.  You can check queue status through
+the *Worker Status* section in the admin console.
+
+
+Tweets (or other plugin events) are not sent
+--------------------------------------------
+
+Plugins that report to external services, such as the Twitter plugin, require
+the task queue to be running.  See :ref:`stats-troubleshooting`.
+
+On Twitter specifically, identical tweets  -- those with the exact same
+message content -- *may* be supressed by Twitter. You can work around this
+by ensuring the message is unique, for example by always including the
+drink URL.

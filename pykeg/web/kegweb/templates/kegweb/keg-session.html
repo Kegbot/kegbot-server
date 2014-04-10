@@ -9,10 +9,12 @@
 {% with session.GetStats as stats %}
 
 {% with session.get_non_highlighted_pictures as pictures %}
-{% if pictures %}
+{% with session.get_highlighted_picture as highlight %}
+
+{% if highlight %}
 <div class="row-fluid">
   <div class="span3 offset1">
-    {% gallery session.get_highlighted_picture "span12" gallery_id=session.id %}
+    {% gallery highlight "span12" gallery_id=session.id %}
   </div>
   <div class="span8">
     <div class="row-fluid">
@@ -34,6 +36,7 @@
   </div>
 </div>
 {% endif %}
+{% endwith %}
 {% endwith %}
 
 <div class="row-fluid">

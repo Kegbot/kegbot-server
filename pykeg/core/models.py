@@ -819,9 +819,7 @@ class DrinkingSession(_AbstractChunk):
         pictures = self.pictures.all().order_by('-time')
         if pictures:
             return pictures[0]
-        chunks = self.user_chunks.filter(user__ne=None).order_by('-volume_ml')
-        if chunks:
-            return chunks[0].user.mugshot
+        return None
 
     def get_non_highlighted_pictures(self):
         pictures = self.pictures.all().order_by('-time')

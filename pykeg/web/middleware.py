@@ -37,6 +37,10 @@ from django.template.response import SimpleTemplateResponse
 from django.template import RequestContext
 from django.utils import timezone
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # TODO(mikey): rename me
 ALLOWED_PATHS = (
     '/api/login/',
@@ -67,7 +71,8 @@ class KegbotSiteMiddleware:
             request.kbsite = models.KegbotSite.objects.get(name='default')
             epoch = request.kbsite.epoch
             request.kbsettings = models.SiteSettings.get()
-        except (models.KegbotSite.DoesNotExist, DatabaseError), e:
+        except (models.KegbotSite.DoesNotExist, DatabaseError) as e:
+            logger.exception('Site needs update.')
             request.kbsite = None
 
         if not request.kbsite or not request.kbsite.is_setup:

@@ -26,8 +26,10 @@ import random
 import re
 from uuid import uuid4
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import UserManager
 from django.core.urlresolvers import reverse
+from django.core import validators
 from django.db import IntegrityError
 from django.db import models
 from django.db.models.signals import post_save
@@ -50,24 +52,83 @@ from kegbot.util import units
 from kegbot.util import util
 
 from pykeg.core.jsonfield import JSONField
+from django.utils.translation import ugettext_lazy as _
 
 """Django models definition for the kegbot database."""
 
 TIMEZONE_CHOICES = ((z, z) for z in pytz.common_timezones)
 
 
-class User(AbstractUser):
+class User(AbstractBaseUser):
+    """A customized User model based on auth.User.
+
+    Differs from (and does not inherit) AbstractUser because this model:
+        - Does not use groups/permissions.
+        - Drops `first_name` and `last_name`.
+    """
+
+    ### Django AbstractUser fields.
+
+    is_superuser = models.BooleanField(_('superuser status'), default=False,
+        help_text=_('Designates that this user has all permissions without '
+                    'explicitly assigning them.'))
+
+    username = models.CharField(_('username'), max_length=30, unique=True,
+        help_text=_('Required. 30 characters or fewer. Letters, numbers and '
+                    '@/./+/-/_ characters'),
+        validators=[
+            validators.RegexValidator(re.compile('^[\w.@+-]+$'), _('Enter a valid username.'), 'invalid')
+        ])
+    email = models.EmailField(_('email address'), blank=True)
+    is_staff = models.BooleanField(_('staff status'), default=False,
+        help_text=_('Designates whether the user can log into this admin '
+                    'site.'))
+    is_active = models.BooleanField(_('active'), default=True,
+        help_text=_('Designates whether this user should be treated as '
+                    'active. Unselect this instead of deleting accounts.'))
+    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+
+    ### Kegbot fields.
+
     mugshot = models.ForeignKey('Picture', blank=True, null=True,
         related_name='user_mugshot',
         on_delete=models.SET_NULL)
     activation_key = models.CharField(max_length=128, blank=True,
         null=True)
 
-    def is_guest(self):
-        return self.username == 'guest'
+    objects = UserManager()
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
+
+    class Meta:
+        verbose_name = _('user')
+        verbose_name_plural = _('users')
+
+    def __unicode__(self):
+        return self.username
+
+    ### Django-required methods.
+
+    def get_full_name(self):
+        return self.username
+
+    def get_short_name(self):
+        return self.username
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
+
+    ### Other methods.
 
     def get_absolute_url(self):
         return reverse('kb-drinker', kwargs={'username': self.username})
+
+    def is_guest(self):
+        return self.username == 'guest'
 
     def get_stats_record(self):
         qs = UserStats.objects.filter(user=self).order_by('-id')

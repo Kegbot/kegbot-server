@@ -146,7 +146,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
+    'pykeg.web.auth.local.LocalAuthBackend',
 )
 
 CACHES = {

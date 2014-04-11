@@ -22,7 +22,6 @@ from __future__ import absolute_import
 
 import datetime
 import logging
-import uuid
 
 from django.db import transaction
 from django.utils import timezone
@@ -32,7 +31,11 @@ from pykeg.core import defaults
 from pykeg.core import keg_sizes
 from pykeg.core.util import SuppressTaskErrors
 from pykeg.core.cache import KegbotCache
+from pykeg.web.auth import get_auth_backend
+from pykeg.web.auth import AuthException
+from pykeg.web.auth import UserExistsException
 from pykeg.util.email import build_message
+
 from . import kb_common
 from . import models
 from . import time_series
@@ -59,39 +62,13 @@ class KegbotBackend:
     def create_new_user(self, username, email, password=None, photo=None):
         """Creates and returns a User for the given username."""
         try:
-            user = models.User.objects.create(username=username, email=email)
-        except IntegrityError, e:
+            user = get_auth_backend().register(username=username, email=email,
+                    password=password, photo=photo)
+            return user
+        except UserExistsException as e:
             raise UserExistsError(e)
-
-        if password is not None:
-            user.set_password(password)
-        else:
-            user.set_unusable_password()
-
-        if photo:
-            pic = models.Picture.objects.create(user=user)
-            pic.image.save(photo.name, photo)
-            pic.save()
-            user.mugshot = pic
-
-        user.save()
-        if email and not password:
-            user.activation_key = str(uuid.uuid4()).replace('-', '')
-            user.save()
-
-            settings = models.SiteSettings.get()
-            url = settings.reverse_full('activate-account', args=(),
-                kwargs={'activation_key': user.activation_key})
-            context = {
-                'site_name': settings.title,
-                'url': url,
-            }
-
-            message = build_message(email, 'email_new_registration.html', context)
-            if message:
-                message.send(fail_silently=True)
-        return user
-
+        except AuthException as e:
+            raise BackendError(e)
 
     @transaction.atomic
     def create_tap(self, name, meter_name, toggle_name=None, ticks_per_ml=None):

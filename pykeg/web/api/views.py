@@ -227,7 +227,7 @@ def get_session(request, session_id):
 
 def get_session_stats(request, session_id):
     session = get_object_or_404(models.DrinkingSession, id=session_id)
-    return session.GetStats()
+    return session.get_stats()
 
 @auth_required
 def get_status(request):
@@ -334,10 +334,10 @@ def get_keg_sessions(request, keg_id):
 
 def get_keg_stats(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
-    return keg.GetStats()
+    return keg.get_stats()
 
 def get_system_stats(request):
-    return models.KegbotSite.get().GetStats()
+    return models.KegbotSite.get().get_stats()
 
 def get_info(request):
     return {'kegbot_server_version': core_util.get_version()}

@@ -6,7 +6,7 @@
 
 <h3>{{ session.GetTitle }}</h3>
 
-{% with session.GetStats as stats %}
+{% with session.get_stats as stats %}
 
 {% with session.get_non_highlighted_pictures as pictures %}
 {% with session.get_highlighted_picture as highlight %}

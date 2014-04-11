@@ -47,7 +47,7 @@ class StatsTestCase(TransactionTestCase):
 
     def testStuff(self):
         site = models.KegbotSite.get()
-        stats = site.GetStats()
+        stats = site.get_stats()
         self.assertEquals(stats, {})
 
         now = make_datetime(2012, 1, 2, 12, 00)
@@ -71,13 +71,13 @@ class StatsTestCase(TransactionTestCase):
             u'total_volume_ml': 100.0,
             u'largest_session': {u'session_id': 1, u'volume_ml': 100},
         })
-        stats = site.GetStats()
+        stats = site.get_stats()
         self.assertDictEqual(expected, stats)
 
         now = make_datetime(2012, 1, 3, 12, 00)
         d = self.backend.record_drink('kegboard.flow0', ticks=200,
             volume_ml=200, username='user2', pour_time=now)
-        stats = site.GetStats()
+        stats = site.get_stats()
         expected.total_pours = 2
         expected.greatest_volume_ml = 200.0
         expected.greatest_volume_id = d.id
@@ -97,7 +97,7 @@ class StatsTestCase(TransactionTestCase):
         d = self.backend.record_drink('kegboard.flow0', ticks=300,
             volume_ml=300, username='user2', pour_time=now)
 
-        stats = site.GetStats()
+        stats = site.get_stats()
         expected.total_pours = 3
         expected.greatest_volume_ml = 300.0
         expected.greatest_volume_id = d.id
@@ -120,6 +120,6 @@ class StatsTestCase(TransactionTestCase):
         d = self.backend.record_drink('kegboard.flow0', ticks=300,
             volume_ml=300, pour_time=now)
 
-        stats = site.GetStats()
+        stats = site.get_stats()
         self.assertTrue(stats.has_guest_pour)
 

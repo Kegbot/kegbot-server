@@ -130,18 +130,8 @@ class User(AbstractBaseUser):
     def is_guest(self):
         return self.username == 'guest'
 
-    def get_stats_record(self):
-        qs = UserStats.objects.filter(user=self).order_by('-id')
-        if len(qs):
-            return qs[0]
-        return None
-
     def get_stats(self):
-        ret = {}
-        record = self.get_stats_record()
-        if record:
-            ret = record.stats
-        return util.AttrDict(ret)
+        return Stats.get_latest_for_view(user=self)
 
     def get_api_key(self):
         api_key, new = ApiKey.objects.get_or_create(user=self,
@@ -176,18 +166,8 @@ class KegbotSite(models.Model):
         return KegbotSite.objects.get_or_create(name='default',
             defaults={'is_setup': False})[0]
 
-    def GetStatsRecord(self):
-        try:
-            return SystemStats.objects.latest()
-        except SystemStats.DoesNotExist:
-            return None
-
-    def GetStats(self):
-        ret = {}
-        record = self.GetStatsRecord()
-        if record:
-            ret = record.stats
-        return util.AttrDict(ret)
+    def get_stats(self):
+        return Stats.get_latest_for_view()
 
 def _kegbotsite_post_save(sender, instance, **kwargs):
     """Creates a SiteSettings object if none already exists."""
@@ -651,18 +631,8 @@ class Keg(models.Model):
             return q[0]
         return None
 
-    def GetStatsRecord(self):
-        qs = KegStats.objects.filter(keg=self).order_by('-id')
-        if len(qs):
-            return qs[0]
-        return None
-
-    def GetStats(self):
-        ret = {}
-        record = self.GetStatsRecord()
-        if record:
-            ret = record.stats
-        return util.AttrDict(ret)
+    def get_stats(self):
+        return Stats.get_latest_for_view(keg=self)
 
     def Sessions(self):
         chunks = SessionChunk.objects.filter(keg=self).order_by('-start_time').select_related(depth=2)
@@ -677,7 +647,7 @@ class Keg(models.Model):
         return sessions
 
     def TopDrinkers(self):
-        stats = self.GetStats()
+        stats = self.get_stats()
         if not stats:
             return []
         ret = []
@@ -896,18 +866,8 @@ class DrinkingSession(_AbstractChunk):
           'day' : dt.day,
           'pk' : self.pk})
 
-    def GetStatsRecord(self):
-        qs = SessionStats.objects.filter(session=self).order_by('-id')
-        if len(qs):
-            return qs[0]
-        return None
-
-    def GetStats(self):
-        ret = {}
-        record = self.GetStatsRecord()
-        if record:
-            ret = record.stats
-        return util.AttrDict(ret)
+    def get_stats(self):
+        return Stats.get_latest_for_view(session=self)
 
     def summarize_drinkers(self):
         def fmt(user):
@@ -1118,49 +1078,46 @@ class Thermolog(models.Model):
         return util.CtoF(self.temp)
 
 
-class _StatsModel(models.Model):
+class Stats(models.Model):
+    """Derived statistics.
+
+    Multiple "views" of statistics are stored in this table, for example,
+    only statistics for a particular user in a particular session.  The view
+    is determined by the columns (user, keg, session), any combination of which
+    may be null.
+
+    Stats are temporal on a per-drink basis: for every drink that is recorded,
+    a new row is generated for each view (2^3 rows total).
+
+    See stats.generate(..) for generation details.
+    """
     time = models.DateTimeField(default=timezone.now)
     stats = JSONField(dump_kwargs={'cls': kbjson.JSONEncoder})
     drink = models.ForeignKey(Drink)
 
+    is_first = models.BooleanField(default=False,
+        help_text='True if this is the most first record for the view.')
+
+    # Any combination of these fields is allowed.
+    user = models.ForeignKey(User, related_name='stats', null=True)
+    keg = models.ForeignKey(Keg, related_name='stats', null=True)
+    session = models.ForeignKey(DrinkingSession, related_name='stats', null=True)
+
     class Meta:
-        abstract = True
         get_latest_by = 'id'
+        unique_together = ('drink', 'user', 'keg', 'session')
 
+    @classmethod
+    def get_latest_for_view(cls, user=None, keg=None, session=None):
+        """Returns the most recent stats data for the (user, keg, session) tuple.
 
-class SystemStats(_StatsModel):
-    pass
-
-class UserStats(_StatsModel):
-    user = models.ForeignKey(User, related_name='stats')
-
-    class Meta:
-        unique_together = ('drink', 'user')
-
-    def __unicode__(self):
-        return u'UserStats for {}'.format(self.user)
-
-
-class KegStats(_StatsModel):
-    keg = models.ForeignKey(Keg, related_name='stats')
-    completed = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ('drink', 'keg')
-
-    def __unicode__(self):
-        return u'KegStats for {}'.format(self.keg)
-
-
-class SessionStats(_StatsModel):
-    session = models.ForeignKey(DrinkingSession, related_name='stats')
-    completed = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ('drink', 'session')
-
-    def __unicode__(self):
-        return u'SessionStats for {}'.format(self.session)
+        Returns an empty dict if no stats available for this view.
+        """
+        try:
+            ret = cls.objects.filter(user=user, keg=keg, session=session).order_by('-id')[0].stats
+        except IndexError:
+            ret = {}
+        return util.AttrDict(ret)
 
 
 class SystemEvent(models.Model):

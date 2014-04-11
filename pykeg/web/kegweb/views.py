@@ -57,7 +57,7 @@ def index(request):
 
 @cache_page(30)
 def system_stats(request):
-    stats = models.KegbotSite.get().GetStats()
+    stats = models.KegbotSite.get().get_stats()
     context = RequestContext(request, {
       'stats': stats,
     })
@@ -126,7 +126,7 @@ def keg_detail(request, keg_id):
 
     context = RequestContext(request, {
       'keg': keg,
-      'stats': keg.GetStats(),
+      'stats': keg.get_stats(),
       'sessions': sessions,
       'last_session': last_session})
     return render_to_response('kegweb/keg_detail.html', context_instance=context)
@@ -148,7 +148,7 @@ def session_detail(request, year, month, day, id, slug):
     session = get_object_or_404(models.DrinkingSession, id=id)
     context = RequestContext(request, {
       'session': session,
-      'stats': session.GetStats(),
+      'stats': session.get_stats(),
     })
     return render_to_response('kegweb/session_detail.html', context_instance=context)
 
@@ -192,7 +192,7 @@ def keg_sessions(request, keg_id):
 
     context = RequestContext(request, {
       'keg': keg,
-      'stats': keg.GetStats(),
+      'stats': keg.get_stats(),
       'sessions': sessions})
     return render_to_response('kegweb/keg_sessions.html', context_instance=context)
 
@@ -240,5 +240,5 @@ class SessionDateDetailView(DateDetailView):
     def get_context_data(self, **kwargs):
         """Adds `stats` to the context."""
         ret = super(SessionDateDetailView, self).get_context_data(**kwargs)
-        ret['stats'] = ret[self.context_object_name].GetStats()
+        ret['stats'] = ret[self.context_object_name].get_stats()
         return ret

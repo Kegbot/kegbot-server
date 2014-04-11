@@ -362,7 +362,7 @@ def SessionToProto(record, full=False):
     ret.name = record.name or ''
 
     if full:
-        #ret.stats.MergeFrom(record.GetStats())
+        #ret.stats.MergeFrom(record.get_stats())
         ret.is_active = record.IsActiveNow()
     return ret
 
@@ -405,11 +405,8 @@ def UserToProto(user, full=False):
         ret.image.MergeFrom(ToProto(user.mugshot))
     return ret
 
-@converts(models.SystemStats)
-@converts(models.UserStats)
-@converts(models.KegStats)
-@converts(models.SessionStats)
-def SystemStatsToProto(record, full=False):
+@converts(models.Stats)
+def StatsToProto(record, full=False):
     return protoutil.DictToProtoMessage(record.stats, models_pb2.Stats())
 
 @converts(models.SystemEvent)

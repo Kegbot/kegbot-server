@@ -97,7 +97,7 @@ class BaseApiTestCase(TestCase):
 
         cancel_drink = drinks[-1]
         session = cancel_drink.session
-        self.assertAlmostEqual(session.GetStats().total_volume_ml, 1000.0, places=3)
+        self.assertAlmostEqual(session.get_stats().total_volume_ml, 1000.0, places=3)
 
         self.backend.cancel_drink(drinks[-1])
         drinks = list(models.Drink.objects.all().order_by('id'))
@@ -105,7 +105,7 @@ class BaseApiTestCase(TestCase):
         self.assertEquals(9, len(drinks))
         self.assertAlmostEqual(900.0, keg.served_volume(), places=3)
         session = models.DrinkingSession.objects.get(id=session.id)
-        self.assertAlmostEqual(session.GetStats().total_volume_ml, 900.0, places=3)
+        self.assertAlmostEqual(session.get_stats().total_volume_ml, 900.0, places=3)
 
         keg = models.Keg.objects.get(pk=keg.id)
         self.assertEquals(0, keg.spilled_ml)

@@ -34,7 +34,6 @@ from django.views.decorators.http import require_http_methods
 
 from kegbot.api import kbapi
 
-from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import backend
 from pykeg.core import keg_sizes
 from pykeg.core import models
@@ -241,7 +240,7 @@ def get_status(request):
     events = models.SystemEvent.objects.all()[:5]
     kegs = models.Keg.objects.all().filter(online=True)
     meters = models.FlowMeter.objects.all()
-    sound_events = soundserver_models.SoundEvent.objects.all()
+    sound_events = []   # deprecated
     taps = models.KegTap.objects.all()
     toggles = models.FlowToggle.objects.all()
 
@@ -328,7 +327,7 @@ def apply_since(request, query):
 
 @auth_required
 def all_sound_events(request):
-    return soundserver_models.SoundEvent.objects.all()
+    return []  # deprecated
 
 def get_keg_sessions(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)

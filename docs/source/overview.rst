@@ -55,8 +55,6 @@ case, these are the main features:
   services this way.
 * **Image Support:** Users can upload profile pictures, and photos can be
   attached to drinks (something the Kegtab Android App does automatically).
-* **Sound Support:** Assign short mp3s to play during certain events,
-  such as when a user taps his RFID or pours more than 16oz.  It's fun!
 * **Twitter, Facebook, Foursquare, and more:** Kegbot has hooks for a growing
   number of external/social sites.  Users can link their Twitter, Facebook,
   Foursquare, or Untappd accounts, and configure automatic posting for each

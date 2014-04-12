@@ -27,7 +27,6 @@ from kegbot.api import models_pb2
 from kegbot.api import protoutil
 from kegbot.util import util
 
-from pykeg.contrib.soundserver import models as soundserver_models
 from pykeg.core import models
 
 _CONVERSION_MAP = {}
@@ -444,16 +443,6 @@ def SystemEventToProto(record, full=False):
 
     return ret
 
-@converts(soundserver_models.SoundEvent)
-def SoundEventToProto(record, full=False):
-    ret = models_pb2.SoundEvent()
-    ret.event_name = record.event_name
-    ret.event_predicate = record.event_predicate
-    ret.sound_url = record.soundfile.sound.url
-    if record.user_id:
-        ret.user = record.user.username
-    return ret
-
 # Composite messages
 
 def GetSyncResponse(active_kegs=[], active_session=[], active_users=[],
@@ -478,8 +467,6 @@ def GetSyncResponse(active_kegs=[], active_session=[], active_users=[],
         ret.events.add().MergeFrom(ToProto(obj))
     for obj in meters:
         ret.meters.add().MergeFrom(ToProto(obj))
-    for obj in sound_events:
-        ret.sound_events.add().MergeFrom(ToProto(obj))
     for obj in taps:
         ret.taps.add().MergeFrom(ToProto(obj))
     for obj in toggles:

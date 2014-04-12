@@ -19,7 +19,6 @@ INSTALLED_APPS = (
     'pykeg.web.setup_wizard',
     'pykeg.notification',
     'pykeg.contrib.demomode',
-    'pykeg.contrib.soundserver',
     'pykeg.plugin',
 
     'django.contrib.auth',

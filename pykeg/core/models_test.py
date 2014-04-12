@@ -174,12 +174,6 @@ class CoreModelsTestCase(TestCase):
         drinks_u1 = u1.drinks.all().order_by('time')
         drinks_u2 = u2.drinks.all().order_by('time')
 
-        u1_chunks = u1.session_chunks.all().order_by('start_time')
-        self.assertEqual(len(u1_chunks), 2)
-
-        u2_chunks = u2.session_chunks.all().order_by('start_time')
-        self.assertEqual(len(u2_chunks), 2)
-
         s1, s2 = models.DrinkingSession.objects.all().order_by('start_time')[:2]
 
         SESSION_DELTA = datetime.timedelta(minutes=kb_common.DRINK_SESSION_TIME_MINUTES)
@@ -196,12 +190,6 @@ class CoreModelsTestCase(TestCase):
         self.assertEqual(s2.drinks.all().filter(user=u1).count(), 1)
         self.assertEqual(s2.drinks.all().filter(user=u2).count(), 2)
 
-        # user2 session2: drinks are added out of order to create this, ensure times
-        # match
-        u2_c2 = u2_chunks[1]
-        self.assertEqual(u2_c2.start_time, base_time + td_390m)
-        self.assertEqual(u2_c2.end_time, base_time + td_400m + SESSION_DELTA)
-
         # Now check DrinkingSessions were created correctly; there should be
         # two groups capturing all 4 sessions.
         all_groups = models.DrinkingSession.objects.all().order_by('start_time')
@@ -209,11 +197,9 @@ class CoreModelsTestCase(TestCase):
 
         self.assertEqual(all_groups[0].start_time, base_time)
         self.assertEqual(all_groups[0].end_time, base_time + td_10m + SESSION_DELTA)
-        self.assertEqual(all_groups[0].user_chunks.all().count(), 2)
 
         self.assertEqual(all_groups[1].start_time, base_time + td_390m)
         self.assertEqual(all_groups[1].end_time, base_time + td_400m + SESSION_DELTA)
-        self.assertEqual(all_groups[1].user_chunks.all().count(), 2)
 
     def test_pic_filename(self):
         basename = '1/2/3-4567 89.jpg'

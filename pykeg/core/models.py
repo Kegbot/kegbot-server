@@ -635,16 +635,9 @@ class Keg(models.Model):
         return Stats.get_latest_for_view(keg=self)
 
     def Sessions(self):
-        chunks = SessionChunk.objects.filter(keg=self).order_by('-start_time').select_related(depth=2)
-        sessions = []
-        sess = None
-        for c in chunks:
-            # Skip same sessions
-            if c.session == sess:
-                continue
-            sess = c.session
-            sessions.append(sess)
-        return sessions
+        sessions_ids = Drink.objects.filter(keg=self.id).values('session').annotate(models.Count('id'))
+        pks = [x.get('session') for x in sessions_ids]
+        return [DrinkingSession.objects.get(pk=pk) for pk in pks]
 
     def TopDrinkers(self):
         stats = self.get_stats()
@@ -799,15 +792,21 @@ def _auth_token_pre_save(sender, instance, **kwargs):
 
 pre_save.connect(_auth_token_pre_save, sender=AuthenticationToken)
 
-class _AbstractChunk(models.Model):
+
+class DrinkingSession(models.Model):
+    """A collection of contiguous drinks. """
     class Meta:
-        abstract = True
         get_latest_by = 'start_time'
         ordering = ('-start_time',)
-
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     volume_ml = models.FloatField(default=0)
+
+    objects = managers.SessionManager()
+    name = models.CharField(max_length=256, blank=True, null=True)
+
+    def __unicode__(self):
+        return 'Session #{}: {}'.format(self.id, self.start_time)
 
     def Duration(self):
         return self.end_time - self.start_time
@@ -825,19 +824,6 @@ class _AbstractChunk(models.Model):
     def AddDrink(self, drink):
         self._AddDrinkNoSave(drink)
         self.save()
-
-
-class DrinkingSession(_AbstractChunk):
-    """A collection of contiguous drinks. """
-    class Meta:
-        get_latest_by = 'start_time'
-        ordering = ('-start_time',)
-
-    objects = managers.SessionManager()
-    name = models.CharField(max_length=256, blank=True, null=True)
-
-    def __unicode__(self):
-        return 'Session #{}: {}'.format(self.id, self.start_time)
 
     def short_url(self):
         return '%s%s' % (SiteSettings.get().base_url(), reverse('kb-session-short',
@@ -870,14 +856,11 @@ class DrinkingSession(_AbstractChunk):
         return Stats.get_latest_for_view(session=self)
 
     def summarize_drinkers(self):
-        def fmt(user):
-            url = '/drinkers/%s/' % (user.username,)
-            return '<a href="%s">%s</a>' % (url, user.username)
-        chunks = self.user_chunks.all().order_by('-volume_ml')
-        users = tuple(c.user for c in chunks)
-        names = tuple(fmt(u) for u in users if u)
+        stats = self.get_stats()
+        volmap = stats.get('volume_by_drinker', {})
+        names = (x[0] for x in reversed(sorted(volmap, key=volmap.get)))
 
-        if None in users:
+        if 'guest' in names:
             guest_trailer = ' (and possibly others)'
         else:
             guest_trailer = ''
@@ -909,34 +892,6 @@ class DrinkingSession(_AbstractChunk):
                 # Not yet saved.
                 return 'New Session'
 
-    def AddDrink(self, drink):
-        super(DrinkingSession, self).AddDrink(drink)
-        session_delta = SiteSettings.get().GetSessionTimeoutDelta()
-
-        defaults = {
-          'start_time': drink.time,
-          'end_time': drink.time + session_delta,
-        }
-
-        # Update or create a SessionChunk.
-        chunk, created = SessionChunk.objects.get_or_create(session=self,
-            user=drink.user, keg=drink.keg, defaults=defaults)
-        chunk.AddDrink(drink)
-
-        # Update or create a UserSessionChunk.
-        chunk, created = UserSessionChunk.objects.get_or_create(session=self,
-            user=drink.user, defaults=defaults)
-        chunk.AddDrink(drink)
-
-        # Update or create a KegSessionChunk.
-        chunk, created = KegSessionChunk.objects.get_or_create(session=self,
-            keg=drink.keg, defaults=defaults)
-        chunk.AddDrink(drink)
-
-    def UserChunksByVolume(self):
-        chunks = self.user_chunks.all().order_by('-volume_ml')
-        return chunks
-
     def IsActiveNow(self):
         return self.IsActive(timezone.now())
 
@@ -944,7 +899,7 @@ class DrinkingSession(_AbstractChunk):
         return self.end_time > now
 
     def Rebuild(self):
-        """Recomputes start and end time, and chunks, based on current drinks.
+        """Recomputes start time, end time, and volume, based on current drinks.
 
         This method should be called after changing the set of drinks
         belonging to this session.
@@ -952,9 +907,6 @@ class DrinkingSession(_AbstractChunk):
         This method has no effect on statistics; see stats module.
         """
         self.volume_ml = 0
-        self.chunks.all().delete()
-        self.user_chunks.all().delete()
-        self.keg_chunks.all().delete()
 
         drinks = self.drinks.all()
         if not drinks:
@@ -996,50 +948,6 @@ class DrinkingSession(_AbstractChunk):
         drink.session = session
         drink.save()
         return session
-
-
-class SessionChunk(_AbstractChunk):
-    """A specific user and keg contribution to a session."""
-    class Meta:
-        unique_together = ('session', 'user', 'keg')
-        get_latest_by = 'start_time'
-        ordering = ('-start_time',)
-
-    session = models.ForeignKey(DrinkingSession, related_name='chunks')
-    user = models.ForeignKey(User, related_name='session_chunks')
-    keg = models.ForeignKey(Keg, related_name='session_chunks')
-
-
-class UserSessionChunk(_AbstractChunk):
-    """A specific user's contribution to a session (spans all kegs)."""
-    class Meta:
-        unique_together = ('session', 'user')
-        get_latest_by = 'start_time'
-        ordering = ('-start_time',)
-
-    session = models.ForeignKey(DrinkingSession, related_name='user_chunks')
-    user = models.ForeignKey(User, related_name='user_session_chunks')
-
-    def GetTitle(self):
-        return self.session.GetTitle()
-
-    def GetDrinks(self):
-        return self.session.drinks.filter(user=self.user).order_by('time')
-
-
-class KegSessionChunk(_AbstractChunk):
-    """A specific keg's contribution to a session (spans all users)."""
-    class Meta:
-        unique_together = ('session', 'keg')
-        get_latest_by = 'start_time'
-        ordering = ('-start_time',)
-
-    objects = managers.SessionManager()
-    session = models.ForeignKey(DrinkingSession, related_name='keg_chunks')
-    keg = models.ForeignKey(Keg, related_name='keg_session_chunks')
-
-    def GetTitle(self):
-        return self.session.GetTitle()
 
 
 class ThermoSensor(models.Model):

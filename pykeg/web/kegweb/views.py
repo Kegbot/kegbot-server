@@ -87,14 +87,8 @@ def user_detail(request, username):
     stats = user.get_stats()
     drinks = user.drinks.all()
 
-    try:
-        chunk = models.UserSessionChunk.objects.filter(user=user).select_related(depth=1).latest()
-    except models.UserSessionChunk.DoesNotExist:
-        chunk = None
-
     context = RequestContext(request, {
         'drinks': drinks,
-        'chunk': chunk,
         'stats': stats,
         'drinker': user})
 
@@ -156,7 +150,10 @@ def drinker_sessions(request, username):
     user = get_object_or_404(models.User, username=username, is_active=True)
     stats = user.get_stats()
     drinks = user.drinks.all()
-    chunks = models.UserSessionChunk.objects.filter(user=user).select_related(depth=1)
+
+    chunks = models.Stats.objects.filter(
+        user=user, keg__isnull=True, session__isnull=False, is_latest=True
+        ).order_by('-id').select_related('session')
 
     paginator = Paginator(chunks, 5)
 

@@ -245,9 +245,12 @@ def get_status(request):
     taps = models.KegTap.objects.all()
     toggles = models.FlowToggle.objects.all()
 
-    current_users = []
+    current_users = set()
     if session:
-        current_users = [c.user for c in session.user_chunks.all()]
+        for stat in models.Stats.objects.filter(session=session):
+            user = stat.user
+            if not user.is_guest():
+                current_users.add(user)
 
     title = models.SiteSettings.get().title
     version = core_util.get_version()
@@ -329,7 +332,7 @@ def all_sound_events(request):
 
 def get_keg_sessions(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
-    sessions = [c.session for c in keg.keg_session_chunks.all()]
+    sessions = keg.Sessions()
     return sessions
 
 def get_keg_stats(request, keg_id):

@@ -696,7 +696,7 @@ class Drink(models.Model):
         help_text='Time in seconds taken to pour this Drink.')
     user = models.ForeignKey(User, related_name='drinks', editable=False,
         help_text='User responsible for this Drink, or None if anonymous/unknown.')
-    keg = models.ForeignKey(Keg, null=True, blank=True, related_name='drinks',
+    keg = models.ForeignKey(Keg, related_name='drinks',
         on_delete=models.PROTECT, editable=False,
         help_text='Keg against which this Drink is accounted.')
     session = models.ForeignKey('DrinkingSession',

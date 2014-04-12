@@ -32,8 +32,6 @@ INSTALLED_APPS = (
     'bootstrap-pagination',
     'imagekit',
     'gunicorn',
-    'registration',
-    'socialregistration',
     'south',
 )
 

@@ -86,13 +86,6 @@ class CoreModelsTestCase(TestCase):
             username='kb_tester2',
         )
 
-    def tearDown(self):
-        self.user.delete()
-        self.user2.delete()
-        self.keg.delete()
-        self.beverage.delete()
-        self.producer.delete()
-
     def testKegStuff(self):
         """Test basic keg relations that should always work."""
         self.assertEqual(self.keg.full_volume_ml,

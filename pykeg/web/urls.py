@@ -41,9 +41,6 @@ urlpatterns = patterns('',
     ### auth account
     (r'^accounts/', include('pykeg.web.kbregistration.urls')),
 
-    ### socialregistration
-    (r'^sr/', include('socialregistration.urls', namespace='socialregistration')),
-
     ### setup
     (r'^setup/', include('pykeg.web.setup_wizard.urls')),
 

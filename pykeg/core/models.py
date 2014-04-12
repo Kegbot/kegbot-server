@@ -30,6 +30,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import UserManager
 from django.core.urlresolvers import reverse
 from django.core import validators
+from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db import models
 from django.db.models.signals import post_save
@@ -121,6 +122,12 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return self.is_superuser
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        """
+        Sends an email to this User.
+        """
+        send_mail(subject, message, from_email, [self.email], **kwargs)
 
     ### Other methods.
 

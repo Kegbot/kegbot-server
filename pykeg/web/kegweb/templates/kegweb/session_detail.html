@@ -28,18 +28,14 @@
     </tr>
   </thead>
   <tbody>
-    {% with session.keg_chunks.all as keg_chunks %}
     <tr>
-      <th>Keg{{keg_chunks.count|pluralize}}</th>
+      <th>Keg{{kegs|pluralize}}</th>
       <td>
-        {% for chunk in keg_chunks %}
-          {% if chunk.keg %}
-            <a href="{% url "kb-keg" chunk.keg.id %}">Keg #{{ chunk.keg.id }} ({{ chunk.keg.type }})</a><br>
-          {% endif %}
+        {% for keg in kegs %}
+            <a href="{% url "kb-keg" keg.id %}">Keg #{{ keg.id }} ({{ keg.type }})</a><br>
         {% endfor %}
       </td>
     </tr>
-    {% endwith %}
 
     <tr>
       <th>Total</th>

@@ -66,6 +66,7 @@ class StatsTestCase(TransactionTestCase):
             u'volume_by_drinker': {u'user1': 100.0},
             u'volume_by_session': {u'1': 100.0},
             u'last_drink_id': d.id,
+            u'keg_ids': [d.keg.id],
             u'sessions_count': 1,
             u'average_volume_ml': 100.0,
             u'total_volume_ml': 100.0,

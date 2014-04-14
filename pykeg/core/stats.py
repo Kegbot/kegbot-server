@@ -57,6 +57,12 @@ class StatsBuilder:
     def last_drink_id(self, drink, previous_stats, previous_value=0):
         return drink.id
 
+    def keg_ids(self, drink, previous_stats, previous_value=[]):
+        ret = copy.copy(previous_value)
+        if drink.keg.id not in ret:
+            ret.append(drink.keg.id)
+        return ret
+
     def total_volume_ml(self, drink, previous_stats, previous_value=0):
         return previous_value + drink.volume_ml
 

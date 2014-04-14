@@ -138,14 +138,6 @@ def drink_detail(request, drink_id):
     context = RequestContext(request, {'drink': drink})
     return render_to_response('kegweb/drink_detail.html', context_instance=context)
 
-def session_detail(request, year, month, day, id, slug):
-    session = get_object_or_404(models.DrinkingSession, id=id)
-    context = RequestContext(request, {
-      'session': session,
-      'stats': session.get_stats(),
-    })
-    return render_to_response('kegweb/session_detail.html', context_instance=context)
-
 def drinker_sessions(request, username):
     user = get_object_or_404(models.User, username=username, is_active=True)
     stats = user.get_stats()
@@ -237,5 +229,7 @@ class SessionDateDetailView(DateDetailView):
     def get_context_data(self, **kwargs):
         """Adds `stats` to the context."""
         ret = super(SessionDateDetailView, self).get_context_data(**kwargs)
-        ret['stats'] = ret[self.context_object_name].get_stats()
+        stats = ret[self.context_object_name].get_stats()
+        ret['stats'] = stats
+        ret['kegs'] = [models.Keg.objects.get(pk=pk) for pk in stats.get('keg_ids', [])]
         return ret

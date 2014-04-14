@@ -194,6 +194,8 @@ class CoreModelsTestCase(TestCase):
         self.assertEqual(all_groups[1].start_time, base_time + td_390m)
         self.assertEqual(all_groups[1].end_time, base_time + td_400m + SESSION_DELTA)
 
+        self.assertEqual("kb_tester2 and kb_tester", s2.summarize_drinkers())
+
     def test_pic_filename(self):
         basename = '1/2/3-4567 89.jpg'
         now = datetime.datetime(2011, 02, 03)

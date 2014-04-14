@@ -865,7 +865,7 @@ class DrinkingSession(models.Model):
     def summarize_drinkers(self):
         stats = self.get_stats()
         volmap = stats.get('volume_by_drinker', {})
-        names = (x[0] for x in reversed(sorted(volmap, key=volmap.get)))
+        names = [x for x in reversed(sorted(volmap, key=volmap.get))]
 
         if 'guest' in names:
             guest_trailer = ' (and possibly others)'
@@ -878,9 +878,9 @@ class DrinkingSession(models.Model):
         elif num == 1:
             ret = names[0]
         elif num == 2:
-            ret = '%s and %s' % names
+            ret = '{} and {}'.format(*names)
         elif num == 3:
-            ret = '%s, %s and %s' % names
+            ret = '{}, {} and {}'.format(*names)
         else:
             if guest_trailer:
                 return '%s, %s and at least %i others' % (names[0], names[1], num-2)

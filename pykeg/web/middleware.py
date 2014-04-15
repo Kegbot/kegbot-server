@@ -45,6 +45,7 @@ logger = logging.getLogger(__name__)
 ALLOWED_PATHS = (
     '/api/login/',
     '/api/get-api-key/',
+    '/account/activate/',
     '/accounts/login/',
     '/admin/',
     '/media/',

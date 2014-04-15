@@ -19,12 +19,15 @@
 """General tests for the web interface."""
 
 from django.test import TransactionTestCase
+from django.core.urlresolvers import reverse
+
 from pykeg.core import backend
 from pykeg.core import models
 from pykeg.core import defaults
 
 class KegwebTestCase(TransactionTestCase):
     def setUp(self):
+        self.client.logout()
         defaults.set_defaults(set_is_setup=True, create_controller=True)
 
     def testBasicEndpoints(self):
@@ -60,3 +63,100 @@ class KegwebTestCase(TransactionTestCase):
         d = b.record_drink('kegboard.flow0', ticks=123, shout='_UNITTEST_')
         response = self.client.get(d.get_absolute_url())
         self.assertContains(response, '<p>_UNITTEST_</p>', status_code=200)
+
+    def test_privacy(self):
+        b = backend.KegbotBackend()
+        keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
+            beverage_type='beer', style_name='Unknown')
+        self.assertIsNotNone(keg)
+        d = b.record_drink('kegboard.flow0', ticks=100)
+        drink_id = d.id
+
+        # URLs to expected contents
+        urls = {
+            '/kegs/': 'Keg List',
+            '/stats/': 'System Stats',
+            '/sessions/': 'All Sessions',
+            '/kegs/{}'.format(keg.id): 'Keg {}'.format(keg.id),
+            '/drinks/{}'.format(d.id): 'Drink {}'.format(d.id),
+        }
+
+        def test_urls(expect_fail, urls=urls):
+            for url, expected_content in urls.iteritems():
+                response = self.client.get(url)
+                if expect_fail:
+                    self.assertNotContains(response, expected_content, status_code=401,
+                            msg_prefix=url)
+                else:
+                    self.assertContains(response, expected_content, status_code=200,
+                            msg_prefix=url)
+
+        b = backend.KegbotBackend()
+        user = b.create_new_user('testuser', 'test@example.com', password='1234')
+
+        settings = models.SiteSettings.get()
+        self.client.logout()
+
+        # Public mode.
+        test_urls(expect_fail=False)
+
+        # Members-only.
+        settings.privacy = 'members'
+        settings.save()
+        test_urls(expect_fail=True)
+        logged_in = self.client.login(username='testuser', password='1234')
+        self.assertTrue(logged_in)
+        test_urls(expect_fail=False)
+
+        # Staff-only
+        settings.privacy = 'staff'
+        settings.save()
+
+        test_urls(expect_fail=True)
+        user.is_staff = True
+        user.save()
+        test_urls(expect_fail=False)
+        self.client.logout()
+        test_urls(expect_fail=True)
+
+    def test_activation(self):
+        b = backend.KegbotBackend()
+        settings = models.SiteSettings.get()
+        self.assertEqual('public', settings.privacy)
+
+        user = b.create_new_user('testuser', 'test@example.com')
+        self.assertIsNotNone(user.activation_key)
+        self.assertFalse(user.has_usable_password())
+
+        activation_key = user.activation_key
+        self.assertIsNotNone(activation_key)
+
+        activation_url = reverse('activate-account', args=(),
+            kwargs={'activation_key': activation_key})
+
+        # Activation works regardless of privacy settings.
+        self.client.logout()
+        response = self.client.get(activation_url)
+        self.assertContains(response, 'Choose a Password', status_code=200)
+
+        settings.privacy = 'staff'
+        settings.save()
+        response = self.client.get(activation_url)
+        self.assertContains(response, 'Choose a Password', status_code=200)
+
+        settings.privacy = 'members'
+        settings.save()
+        response = self.client.get(activation_url)
+        self.assertContains(response, 'Choose a Password', status_code=200)
+
+        # Activate the account.
+        form_data = {
+            'password': '123',
+            'password2': '123',
+        }
+
+        response = self.client.post(activation_url, data=form_data, follow=True)
+        self.assertContains(response, 'Your account has been activated!', status_code=200)
+        user = models.User.objects.get(pk=user.id)
+        self.assertIsNone(user.activation_key)
+

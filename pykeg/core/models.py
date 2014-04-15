@@ -30,6 +30,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import UserManager
 from django.core.urlresolvers import reverse
 from django.core import validators
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db import models
@@ -306,6 +307,11 @@ class ApiKey(models.Model):
     def generate_key(cls):
         """Returns a new random key."""
         return '%032x' % random.randint(0, 2**128 - 1)
+
+def _sitesettings_post_save(sender, instance, **kwargs):
+    # Privacy settings may have changed.
+    cache.clear()
+post_save.connect(_sitesettings_post_save, sender=SiteSettings)
 
 
 class BeverageProducer(models.Model):

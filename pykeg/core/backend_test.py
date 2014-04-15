@@ -34,7 +34,7 @@ FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 class BaseApiTestCase(TestCase):
     def setUp(self):
         self.backend = backend.KegbotBackend()
-        defaults.set_defaults(set_is_setup=True)
+        defaults.set_defaults(set_is_setup=True, create_controller=True)
 
     def test_drink_management(self):
         """Test adding drinks."""

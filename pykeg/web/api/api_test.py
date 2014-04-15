@@ -32,7 +32,7 @@ TESTDATA_DIR = os.path.join(os.path.dirname(__file__), 'testdata/')
 ### Helper methods
 
 def create_site():
-    return defaults.set_defaults(set_is_setup=True)
+    return defaults.set_defaults(set_is_setup=True, create_controller=True)
 
 def get_filename(f):
     return os.path.join(TESTDATA_DIR, f)

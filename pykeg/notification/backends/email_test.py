@@ -37,7 +37,7 @@ from pykeg.notification.backends.base import BaseNotificationBackend
 class EmailNotificationBackendTestCase(TestCase):
     def setUp(self):
         self.backend = backend.KegbotBackend()
-        defaults.set_defaults(set_is_setup=True)
+        defaults.set_defaults(set_is_setup=True, create_controller=True)
 
         self.user = core_models.User.objects.create(username='notification_user',
             email='test@example')
@@ -94,7 +94,7 @@ http:///account.
         self.prefs.session_started = True
         self.prefs.save()
         self.assertEquals(0, len(mail.outbox))
-        
+
         keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
             beverage_type='beer', producer_name='Unknown', style_name='Unknown')
         drink = self.backend.record_drink(defaults.METER_NAME_0, ticks=500)

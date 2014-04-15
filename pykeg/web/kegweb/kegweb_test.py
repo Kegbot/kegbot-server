@@ -25,7 +25,7 @@ from pykeg.core import defaults
 
 class KegwebTestCase(TransactionTestCase):
     def setUp(self):
-        defaults.set_defaults(set_is_setup=True)
+        defaults.set_defaults(set_is_setup=True, create_controller=True)
 
     def testBasicEndpoints(self):
         for endpoint in ('/kegs/', '/stats/'):

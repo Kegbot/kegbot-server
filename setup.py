@@ -33,7 +33,7 @@ DEPENDENCIES = [
   'pillow == 2.3.1',
   'protobuf == 2.5.0',
   'python-gflags == 2.0',
-  'python-memcached == 1.51',
+  'django-redis == 3.6.1',
   'pytz == 2014.2',
   'redis == 2.9.1',
   'requests == 2.2.1',

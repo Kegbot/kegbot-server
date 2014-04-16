@@ -74,9 +74,6 @@ gflags.DEFINE_string('db_password', '',
 gflags.DEFINE_string('db_database', 'kegbot',
     'MySQL/Postgres database name.')
 
-gflags.DEFINE_string('use_memcached', True,
-    'Configure Kegbot to use memcached. ')
-
 
 FLAGS = gflags.FLAGS
 
@@ -331,57 +328,6 @@ class KegbotDataRoot(ConfigurationSetupStep):
       raise FatalError('Could not create directory "%s": %s' % (self.value, e))
 
 
-class Memcached(ConfigurationSetupStep):
-  """Enable memcached caching layer.
-
-  If memcached is installed and available, Kegbot can use it to perform some
-  operations faster.  On Ubuntu, you can install memcached this way:
-    sudo apt-get install memcached
-
-  It's generally a good idea to enable this.
-  """
-  FLAG = 'use_memcached'
-  HOST = '127.0.0.1:11211'  # todo: make configurable
-  CHOICES = ['yes', 'no']
-
-  def get_default(self, ctx):
-    return ('no', 'yes')[super(Memcached, self).get_default(ctx)]
-
-  def validate(self, ctx):
-    if self.value == 'yes':
-      self.value = True
-    if self.value == 'no':
-      self.value = False
-    if self.value not in (True, False):
-      raise ValueError('Please enter "yes" or "no".')
-
-    if not self.value:
-      return
-
-    client = None
-    try:
-      import memcache
-      client = memcache.Client([self.HOST])
-    except ImportError:
-      try:
-        import pylibmc
-        client = pylibmc.Client([self.HOST])
-      except ImportError:
-        pass
-
-    if not client:
-      raise ValueError('Memcache client library is not installed. '
-          '("pip install python-memcached" or "pip install pylibmc")')
-
-    if self.value:
-      ctx['CACHES'] = {
-          'default': {
-            'BACKEND':  'django.core.cache.backends.memcached.MemcachedCache',
-            'LOCATION': self.HOST,
-          }
-      }
-
-
 class ConfigureDatabase(ConfigurationSetupStep):
   """Select database for Kegbot Server backend.
 
@@ -432,7 +378,6 @@ STEPS = [
     RequiredLibraries(),
     SettingsDir(),
     KegbotDataRoot(),
-    Memcached(),
     ConfigureDatabase(),
 ]
 

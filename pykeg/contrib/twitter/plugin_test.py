@@ -18,44 +18,23 @@
 
 """Unittests for Twitter plugin."""
 
-import datetime
-
-from unittest import TestCase
+from django.test import TransactionTestCase
 from pykeg.contrib.twitter import plugin
+from pykeg.plugin.datastore import InMemoryDatastore
 
-TAP_NAME = 'kegboard.flow0'
+from pykeg.core import models
 
-class FakeDatastore:
-    def __init__(self):
-        self.backing_dict = dict()
+class TwitterPluginTestCase(TransactionTestCase):
 
-    def set(self, key, value):
-        self.backing_dict[key] = value
-
-    def get(self, key, default=None):
-        return self.backing_dict.get(key, default)
-
-    def delete(self, key):
-        del self.backing_dict[key]
-
-class TwitterPluginTestCase(TestCase):
     def setUp(self):
-        self.datastore = FakeDatastore()
-        self.backing_dict = self.datastore.backing_dict
-        self.plugin = plugin.TwitterPlugin(self.datastore)
+        self.datastore = InMemoryDatastore(plugin.TwitterPlugin.get_short_name())
+        self.plugin = plugin.TwitterPlugin(datastore=self.datastore)
+        self.user = models.User.objects.create(username='twitter_test')
 
-    def testTruncateTweet(self):
-        msg = 'x'*138 + 'x'
-        truncated = plugin.truncate_tweet(msg)
-        self.assertEquals(msg, truncated)
+    def test_plugin(self):
+        self.assertEqual({}, self.plugin.get_site_profile())
+        self.assertEqual({}, self.plugin.get_user_profile(self.user))
 
-        longer_msg = 'x'*138 + ' xxxx'
-        truncated = plugin.truncate_tweet(longer_msg)
-        self.assertEqual(139, len(truncated))
-        self.assertEqual('x'*138 + plugin.TRUNCATE_STR, truncated)
-
-    def testPluginBasics(self):
-        self.assertEquals({}, self.plugin.get_site_profile())
         fake_profile = {
             plugin.KEY_OAUTH_TOKEN: '1',
             plugin.KEY_OAUTH_TOKEN_SECRET: '2',
@@ -67,6 +46,16 @@ class TwitterPluginTestCase(TestCase):
         self.plugin.remove_site_profile()
         self.assertEquals({}, self.plugin.get_site_profile())
         self.plugin.save_site_profile('1', '2', '3', '4')
+
+    def test_truncate_tweet(self):
+        msg = 'x'*138 + 'x'
+        truncated = plugin.truncate_tweet(msg)
+        self.assertEquals(msg, truncated)
+
+        longer_msg = 'x'*138 + ' xxxx'
+        truncated = plugin.truncate_tweet(longer_msg)
+        self.assertEqual(139, len(truncated))
+        self.assertEqual('x'*138 + plugin.TRUNCATE_STR, truncated)
 
 if __name__ == '__main__':
     unittest.main()

@@ -89,11 +89,11 @@ class Runner(object):
         for command_name, proc in self.watched_procs.iteritems():
             if proc.returncode is None:
                 self.logger.info('Killing {} (pid={})'.format(command_name, proc.pid))
-                proc.kill()
+                proc.terminate()
         self.logger.info('All processes killed.')
 
     def _launch_command(self, command_name, command, dev_null):
-        self.logger.info('Launching command: {}'.format(command_name))
+        self.logger.info('Launching command: {}: {}'.format(command_name, command))
 
         def preexec():
             # Set umask to default to safe file permissions for root.

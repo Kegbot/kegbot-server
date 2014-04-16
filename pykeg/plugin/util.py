@@ -50,8 +50,7 @@ def get_plugins():
         plugins = []
         for name in plugin_names:
             cls = get_plugin_class(name)
-            datastore = plugin.PluginDatastore(cls.get_short_name())
-            plugin_obj = cls(datastore)
+            plugin_obj = cls()
             plugins.append(plugin_obj)
         _CACHED_PLUGINS = plugins
     return _CACHED_PLUGINS

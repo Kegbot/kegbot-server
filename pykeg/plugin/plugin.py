@@ -19,43 +19,10 @@
 """Plugin interface for extending the Kegbot frontend."""
 
 import logging
+from pykeg.plugin.datastore import ModelDatastore
 from pykeg.plugin import models
 from kegbot.util.util import AttrDict
 
-class PluginDatastore:
-    """Interface for plugins to persist plugin-specific data."""
-
-    def __init__(self, plugin_name):
-        self.plugin_name = plugin_name
-
-    def set(self, key, value):
-        """Store plugin-specific data."""
-        if value is None:
-            self.delete(key)
-            return
-        try:
-            row = models.PluginData.objects.get(plugin_name=self.plugin_name, key=key)
-            row.value = value
-            row.save()
-        except models.PluginData.DoesNotExist:
-            models.PluginData.objects.create(plugin_name=self.plugin_name, key=key,
-                value=value)
-
-    def get(self, key, default=None):
-        """Fetch plugin-specific data."""
-        try:
-            row = models.PluginData.objects.get(plugin_name=self.plugin_name,
-                key=key)
-            return row.value
-        except models.PluginData.DoesNotExist:
-            return default
-
-    def delete(self, key):
-        try:
-            models.PluginData.objects.get(plugin_name=self.plugin_name,
-                key=key).delete()
-        except models.PluginData.DoesNotExist:
-            pass
 
 class Plugin:
     """Interface class for plugins."""
@@ -66,9 +33,9 @@ class Plugin:
     VERSION = None
     URL = None
 
-    def __init__(self, datastore):
-        self.datastore = datastore
-        self.logger = logging.getLogger(self.SHORT_NAME)
+    def __init__(self, datastore=None):
+        self.datastore = datastore if datastore else ModelDatastore(self.get_short_name())
+        self.logger = logging.getLogger(self.get_short_name())
 
     @classmethod
     def get_version(cls):
@@ -172,15 +139,17 @@ class Plugin:
         """Called synchronously when a new event is posted.
 
         Plugins should *quickly* perform any work. Long-running work can be
-        performed by scheduling a background task in this method."""
+        performed by scheduling a background task in this method.
+        """
         pass
 
     ### Helpers
 
     def save_form(self, form, prefix):
-        """Helper method to save a form using the specified per-field prefix."""
-        for field_name, value in form.cleaned_data.iteritems():
-            self.datastore.set('%s:%s' % (prefix, field_name), value)
+        return self.datastore.save_form(form, prefix)
+
+    def load_form(self, form_cls, prefix, **form_kwargs):
+        return self.datastore.load_form(form_cls, prefix, **form_kwargs)
 
     def get_saved_form_data(self, form, prefix):
         """Helper method to load a form using the specified per-field prefix."""

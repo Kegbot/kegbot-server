@@ -94,3 +94,8 @@ class Command(NoArgsCommand):
     def to_103(self):
         cursor = connection.cursor()
         cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['untappd'])
+
+    def to_104(self):
+        cursor = connection.cursor()
+        cursor.execute('DROP TABLE IF EXISTS djkombu_message')
+        cursor.execute('DROP TABLE IF EXISTS djkombu_queue')

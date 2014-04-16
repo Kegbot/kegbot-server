@@ -62,21 +62,17 @@ gflags.DEFINE_string('settings_dir', '~/.kegbot',
 gflags.DEFINE_string('data_root', '~/kegbot-data',
     'Data root for Kegbot.')
 
-gflags.DEFINE_string('db_type', 'sqlite',
-    'One of: mysql, sqlite, postgres.')
+gflags.DEFINE_string('db_type', 'mysql',
+    'One of: mysql, postgres.')
 
 gflags.DEFINE_string('db_user', 'root',
-    'MySQL/Postgres username.  Ignored if using sqlite.')
+    'MySQL/Postgres username.')
 
 gflags.DEFINE_string('db_password', '',
-    'MySQL/Postgres password.  Ignored if using sqlite.')
+    'MySQL/Postgres password.')
 
 gflags.DEFINE_string('db_database', 'kegbot',
-    'MySQL/Postgres database name.  Ignored if using sqlite.')
-
-gflags.DEFINE_string('sqlite_filename', 'kegbot.sqlite',
-    'File name for the Kegbot sqlite database within `data_root`.  '
-    'Ignored if not using SQLite.')
+    'MySQL/Postgres database name.')
 
 gflags.DEFINE_string('use_memcached', True,
     'Configure Kegbot to use memcached. ')
@@ -389,65 +385,44 @@ class Memcached(ConfigurationSetupStep):
 class ConfigureDatabase(ConfigurationSetupStep):
   """Select database for Kegbot Server backend.
 
-  Currently only MySQL, Postgres, and sqlite are supported by the setup wizard.
+  Currently only MySQL and Postgres are supported by the setup wizard.
   """
   def get_from_flag(self, ctx):
     self.choice = FLAGS.db_type
-    if self.choice == 'sqlite':
-      return FLAGS.sqlite_filename
-    else:
-      return (FLAGS.db_user, FLAGS.db_password, FLAGS.db_database)
+    return (FLAGS.db_user, FLAGS.db_password, FLAGS.db_database)
 
   def get_from_prompt(self, ctx):
     self.choice = self.do_prompt('Database type',
-        choices=('sqlite', 'mysql', 'postgres'), default=FLAGS.db_type)
+        choices=('mysql', 'postgres'), default=FLAGS.db_type)
 
-    if self.choice == 'sqlite':
-      root = ctx['KEGBOT_ROOT']
-      return self.do_prompt('SQLite database filename to create in %s' % root,
-          default=FLAGS.sqlite_filename)
-    else:
-      user = self.do_prompt('Database user')
-      password = getpass.getpass()
-      database = self.do_prompt('Database name', default='kegbot')
-      return (user, password, database)
+    user = self.do_prompt('Database user')
+    password = getpass.getpass()
+    database = self.do_prompt('Database name', default='kegbot')
+    return (user, password, database)
 
   def validate(self, ctx):
     super(ConfigureDatabase, self).validate(ctx)
-    if self.choice == 'sqlite':
-      root = ctx['KEGBOT_ROOT']
-      path = os.path.join(root, self.value)
-      if os.path.exists(path):
-        raise ValueError('SQLite database file already exists at %s' % path)
-    else:
-      user, password, database = self.value
-      if user == '':
-        raise ValueError('Must give a database username')
-      elif database == '':
-        raise ValueError('Must give a database name')
 
-    if self.choice == 'sqlite':
-      cfg = {
-        'default': {
-          'ENGINE': 'django.db.backends.sqlite3',
-          'NAME': os.path.join(ctx['KEGBOT_ROOT'], self.value),
-        }
+    user, password, database = self.value
+    if user == '':
+      raise ValueError('Must give a database username')
+    elif database == '':
+      raise ValueError('Must give a database name')
+
+    user, password, database = self.value
+    cfg = {
+      'default': {
+        'NAME': database,
+        'USER': user,
+        'PASSWORD': password,
+        'HOST': '',
       }
+    }
+    if self.choice == 'mysql':
+      cfg['default']['ENGINE'] = 'django.db.backends.mysql'
+      cfg['default']['OPTIONS'] = { 'init_command': 'SET storage_engine=INNODB' }
     else:
-      user, password, database = self.value
-      cfg = {
-        'default': {
-          'NAME': database,
-          'USER': user,
-          'PASSWORD': password,
-          'HOST': '',
-        }
-      }
-      if self.choice == 'mysql':
-        cfg['default']['ENGINE'] = 'django.db.backends.mysql'
-        cfg['default']['OPTIONS'] = { 'init_command': 'SET storage_engine=INNODB' }
-      else:
-        cfg['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
+      cfg['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
 
     ctx['DATABASES'] = cfg
 

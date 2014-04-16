@@ -8,29 +8,15 @@ information.  This chapter covers installing and initializing a database for use
 by Kegbot.
 
 At the moment, Kegbot can support either `MySQL <http://www.mysql.org/>`_ or
-`Sqlite <http://sqlite.org/>`_ as the database backend.  We've not tested the
-`other databases supported by Django
+`Postgres <http://www.postgresql.org/>`_ as the database backend.  We do not support
+the `other databases supported by Django
 <http://docs.djangoproject.com/en/dev/ref/databases/>`_, though they might also
 work.
-
-Using SQLite
-------------
-
-Follow this section if you want to use SQLite as the Kegbot database.  SQLite is
-considerably simpler than MySQL to setup and maintain.
-
-Install SQLite
-^^^^^^^^^^^^^^
-
-Since SQLite operates on a flat file database, it is considerably simpler to set
-up.  Be sure you have the necessary libraries and command-line tools::
-
-  $ sudo apt-get install python-sqlite
 
 Using MySQL
 -----------
 
-Follow this section if you prefer to use MySQL as the Kegbot database.
+Follow this section to set up and use a MySQL server as the Kegbot database.
 
 .. note::
   This section is not intended to be a complete guide to installing and

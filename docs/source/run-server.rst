@@ -53,21 +53,17 @@ address when running it::
 
   $ kegbot runserver 0.0.0.0:8000
 
-Run the task queue (Celery)
----------------------------
+Run the task queue workers (Celery)
+-----------------------------------
 
-Certain features, such as Twitter checkins and web hook support, require a
-non-webserver process to run them in the background.  Kegbot uses `Celery
-<http://celeryproject.org/>`_ as its task queue.
+Certain features, such as stats computation, Twitter checkins and web hook
+support, require a non-webserver process in order to run in the background
+ Kegbot uses `Celery<http://celeryproject.org/>`_ as its task queue.
 
 Celery is automatically installed with kegbot.  You can try running it in
 the foreground::
 
-  (kb) $ celery -A pykeg worker -l info
-
-You should see the Celery welcome banner and some verbose log output.  When a
-drink is poured, you should see Celery log some output a few seconds after the
-drink is saved.
+  (kb) $ kegbot run_workers
 
 Be sure Celery is always running when your server is running.  If it isn't, some
 features will not work. See :ref:`production-setup` for instructions on

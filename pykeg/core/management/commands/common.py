@@ -88,13 +88,15 @@ class RunnerCommand(BaseCommand):
         pidfile = os.path.join(options['pidfile_dir'], self.pidfile_name)
         with check_pidfile(pidfile):
             r = Runner()
+
             def exit_fn(signum, frame):
-                os.kill(-os.getpgrp(), signal.SIGKILL)
-            signal.signal(signal.SIGTERM, exit_fn)
-            for command_name, command in self.get_commands(options):
-                r.add_command(command_name, command)
-            try:
-                r.run()
-            except KeyboardInterrupt:
                 r.abort()
                 sys.exit(1)
+
+            signal.signal(signal.SIGTERM, exit_fn)
+            signal.signal(signal.SIGINT, exit_fn)
+
+            for command_name, command in self.get_commands(options):
+                r.add_command(command_name, command)
+
+            r.run()

@@ -246,12 +246,6 @@ LOGGING = {
      },
   },
  'loggers': {
-    'django': {
-      'handlers': ['console', 'cache'],
-    },
-    'pykeg': {
-      'handlers': ['console', 'cache'],
-    },
     'raven': {
       'level': 'DEBUG',
       'handlers': ['console'],

@@ -17,12 +17,14 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
+from kegbot.util import kbjson
+from pykeg.core.jsonfield import JSONField
 
 class PluginData(models.Model):
     plugin_name = models.CharField(max_length=127,
         help_text='Plugin short name')
     key = models.CharField(max_length=127)
-    value = models.TextField()
+    value = JSONField(dump_kwargs={'cls': kbjson.JSONEncoder})
 
     class Meta:
         unique_together = ('plugin_name', 'key')

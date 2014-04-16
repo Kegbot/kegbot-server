@@ -24,8 +24,6 @@ from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.plugin import util
 
-from kegbot.util import kbjson
-
 from . import forms
 from . import tasks
 from . import views
@@ -142,10 +140,10 @@ class UntappdPlugin(plugin.Plugin):
         self.save_form(form, 'user_settings:%s' % user.id)
 
     def get_user_profile(self, user):
-        return kbjson.loads(self.datastore.get('user_detail:%s' % user.id, 'null'))
+        return self.datastore.get('user_detail:%s' % user.id, None)
 
     def save_user_profile(self, user, profile):
-        self.datastore.set('user_detail:%s' % user.id, kbjson.dumps(profile))
+        self.datastore.set('user_detail:%s' % user.id, profile)
 
     def get_user_token(self, user):
         return self.datastore.get('user_token:%s' % user.id)

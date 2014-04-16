@@ -23,8 +23,6 @@ from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.plugin import util
 
-from kegbot.util import kbjson
-
 import foursquare
 
 from . import forms
@@ -131,16 +129,16 @@ class FoursquarePlugin(plugin.Plugin):
         self.save_form(form, 'user_settings:%s' % user.id)
 
     def save_venue_detail(self, detail):
-        self.datastore.set(KEY_VENUE_DETAIL, kbjson.dumps(detail))
+        self.datastore.set(KEY_VENUE_DETAIL, detail)
 
     def get_venue_detail(self):
-        return kbjson.loads(self.datastore.get(KEY_VENUE_DETAIL, 'null'))
+        return self.datastore.get(KEY_VENUE_DETAIL, 'null')
 
     def get_user_profile(self, user):
-        return kbjson.loads(self.datastore.get('user_detail:%s' % user.id, 'null'))
+        return self.datastore.get('user_detail:%s' % user.id, None)
 
     def save_user_profile(self, user, profile):
-        self.datastore.set('user_detail:%s' % user.id, kbjson.dumps(profile))
+        self.datastore.set('user_detail:%s' % user.id, profile)
 
     def get_user_token(self, user):
         return self.datastore.get('user_token:%s' % user.id)

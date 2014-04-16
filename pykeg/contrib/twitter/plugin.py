@@ -22,7 +22,6 @@ from django.conf import settings
 from pykeg.plugin import plugin
 from pykeg.plugin import util
 
-from kegbot.util import kbjson
 from pykeg.core.models import SiteSettings
 from pykeg.core.util import SuppressTaskErrors
 from socialregistration.contrib.twitter.client import Twitter
@@ -123,10 +122,7 @@ class TwitterPlugin(plugin.Plugin):
         return self._get_profile('user_profile:%s' % user.id)
 
     def _get_profile(self, datastore_key):
-        s = self.datastore.get(datastore_key)
-        if s:
-            return kbjson.loads(s)
-        return {}
+        return self.datastore.get(datastore_key, {})
 
     def save_site_profile(self, oauth_token, oauth_token_secret,
             twitter_name, twitter_id):
@@ -146,7 +142,7 @@ class TwitterPlugin(plugin.Plugin):
             KEY_TWITTER_NAME: twitter_name,
             KEY_TWITTER_ID: twitter_id,
         }
-        self.datastore.set(datastore_key, kbjson.dumps(profile))
+        self.datastore.set(datastore_key, profile)
         return profile
 
     def remove_site_profile(self):

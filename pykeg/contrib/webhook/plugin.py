@@ -47,16 +47,14 @@ class WebhookPlugin(plugin.Plugin):
             with SuppressTaskErrors(self.logger):
                 tasks.post_webhook.delay(url, event)
 
-    ### Webook-specific methods
+    ### Webhook-specific methods
 
     def get_site_settings_form(self):
-        form = forms.SiteSettingsForm()
-        self.load_form_defaults(form, KEY_SITE_SETTINGS)
-        return form
+        return self.datastore.load_form(forms.SiteSettingsForm, KEY_SITE_SETTINGS)
 
     def get_site_settings(self):
-        return self.get_saved_form_data(forms.SiteSettingsForm(), KEY_SITE_SETTINGS)
+        return self.get_site_settings_form().initial
 
     def save_site_settings_form(self, form):
-        self.save_form(form, KEY_SITE_SETTINGS)
+        self.datastore.save_form(form, KEY_SITE_SETTINGS)
 

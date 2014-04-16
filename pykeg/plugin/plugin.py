@@ -150,19 +150,3 @@ class Plugin:
 
     def load_form(self, form_cls, prefix, **form_kwargs):
         return self.datastore.load_form(form_cls, prefix, **form_kwargs)
-
-    def get_saved_form_data(self, form, prefix):
-        """Helper method to load a form using the specified per-field prefix."""
-        ret = {}
-        for field_name, field in form.fields.iteritems():
-            initial = self.datastore.get('%s:%s' % (prefix, field_name))
-            if initial is not None:
-                ret[field_name] = field.to_python(initial)
-        return AttrDict(ret)
-
-    def load_form_defaults(self, form, prefix):
-        """Applies defaults to a form using `get_saved_form_data`."""
-        defaults = self.get_saved_form_data(form, prefix)
-        for field_name, value in defaults.iteritems():
-            form.fields[field_name].initial = value
-        return form

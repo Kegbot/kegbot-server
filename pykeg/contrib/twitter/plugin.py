@@ -42,6 +42,8 @@ KEY_OAUTH_TOKEN_SECRET = 'oauth_token_secret'
 KEY_TWITTER_NAME = 'twitter_name'
 KEY_TWITTER_ID = 'twitter_id'
 
+KEY_SITE_SETTINGS = 'site_settings'
+
 TWITTER_LINK_LEN = 22
 TWEET_MAX_LEN = 140
 TWEET_MAX_LEN_WITH_URL = TWEET_MAX_LEN - TWITTER_LINK_LEN - 1
@@ -96,6 +98,9 @@ class TwitterPlugin(plugin.Plugin):
             ('callback/$', 'pykeg.contrib.twitter.views.user_twitter_callback', 'user_twitter_callback'),
         ]
 
+    def get_site_twitter_settings_form(self):
+        return self.datastore.load_form(forms.SiteSettingsForm, KEY_SITE_SETTINGS)
+
     def handle_new_event(self, event):
         self.logger.info('Handling new event: %s' % event.id)
         if util.is_stale(event.time):
@@ -107,7 +112,7 @@ class TwitterPlugin(plugin.Plugin):
             self.logger.info('No site twitter profile, ignoring.')
             return
 
-        site_settings = self.get_saved_form_data(forms.SiteSettingsForm(), 'site_settings')
+        site_settings = self.get_site_twitter_settings_form().initial
 
         self._issue_system_tweet(event, site_settings, profile)
         if event.user and not event.user.is_guest():
@@ -164,17 +169,13 @@ class TwitterPlugin(plugin.Plugin):
         self.datastore.set(KEY_CONSUMER_SECRET, consumer_secret)
 
     def get_user_settings_form(self, user):
-        form = forms.UserSettingsForm()
-        self.load_form_defaults(form, 'user_settings:%s' % user.id)
-        return form
-
-    def save_user_settings_form(self, user, form):
-        self.save_form(form, 'user_settings:%s' % user.id)
+        return self.datastore.load_form(forms.UserSettingsForm, 'user_settings:%s' % user.id)
 
     def get_user_settings(self, user):
-        if not user:
-            return {}
-        return self.get_saved_form_data(forms.UserSettingsForm(), 'user_settings:%s' % user.id)
+        return self.get_user_settings_form(user).initial
+
+    def save_user_settings_form(self, user, form):
+        self.datastore.save_form(form, 'user_settings:%s' % user.id)
 
     def _issue_system_tweet(self, event, settings, site_profile):
         kind = event.kind

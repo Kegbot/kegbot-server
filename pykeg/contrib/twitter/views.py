@@ -46,8 +46,7 @@ def admin_settings(request, plugin):
     }
 
     credentials_form = forms.CredentialsForm(initial=initial)
-    settings_form = forms.SiteSettingsForm()
-    plugin.load_form_defaults(settings_form, 'site_settings')
+    settings_form = plugin.get_site_twitter_settings_form()
     tweet_form = forms.SendTweetForm()
 
     if request.method == 'POST':
@@ -74,7 +73,7 @@ def admin_settings(request, plugin):
                 if consumer_key and consumer_secret and profile:
                     oauth_token = profile.get('oauth_token')
                     oauth_token_secret = profile.get('oauth_token_secret')
-                    tasks.send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret, 
+                    tasks.send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret,
                         tweet, image_url=None)
                     messages.success(request, 'Tweet sent')
                 else:

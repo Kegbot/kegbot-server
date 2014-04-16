@@ -19,6 +19,7 @@
 """Unittests for Twitter plugin."""
 
 from django.test import TransactionTestCase
+from pykeg.contrib.twitter import forms
 from pykeg.contrib.twitter import plugin
 from pykeg.plugin.datastore import InMemoryDatastore
 
@@ -46,6 +47,24 @@ class TwitterPluginTestCase(TransactionTestCase):
         self.plugin.remove_site_profile()
         self.assertEquals({}, self.plugin.get_site_profile())
         self.plugin.save_site_profile('1', '2', '3', '4')
+
+    def test_get_site_twitter_settings_form(self):
+        settings_form = self.plugin.get_site_twitter_settings_form()
+        expected = {
+            'tweet_keg_events': True,
+            'tweet_session_events': True,
+            'tweet_drink_events': False,
+            'include_guests': True,
+            'include_pictures': False,
+            'append_url': True,
+            'keg_started_template': 'Woot! Just tapped a new keg of $BEER!',
+            'keg_ended_template': 'The keg of $BEER has been finished.',
+            'session_started_template': '$DRINKER kicked off a new session on $SITENAME.',
+            'session_joined_template': '$DRINKER joined the session.',
+            'drink_poured_template': '$DRINKER poured $VOLUME of $BEER on $SITENAME.',
+            'user_drink_poured_template': 'Just poured $VOLUME of $BEER on $SITENAME. #kegbot',
+        }
+        self.assertEquals(expected, dict(settings_form.initial))
 
     def test_truncate_tweet(self):
         msg = 'x'*138 + 'x'

@@ -107,26 +107,22 @@ class FoursquarePlugin(plugin.Plugin):
         return self.get_site_settings().get('venue_id')
 
     def get_site_settings_form(self):
-        form = forms.SiteSettingsForm()
-        self.load_form_defaults(form, KEY_SITE_SETTINGS)
-        return form
+        return self.datastore.load_form(forms.SiteSettingsForm, KEY_SITE_SETTINGS)
 
     def get_site_settings(self):
-        return self.get_saved_form_data(forms.SiteSettingsForm(), KEY_SITE_SETTINGS)
+        return self.get_site_settings_form().initial
 
     def save_site_settings_form(self, form):
         self.save_form(form, KEY_SITE_SETTINGS)
 
     def get_user_settings_form(self, user):
-        form = forms.UserSettingsForm()
-        self.load_form_defaults(form, 'user_settings:%s' % user.id)
-        return form
+        return self.datastore.load_form(forms.UserSettingsForm, 'user_settings:%s' % user.id)
 
     def get_user_settings(self, user):
-        return self.get_saved_form_data(forms.UserSettingsForm(), 'user_settings:%s' % user.id)
+        return self.get_user_settings_form(user).initial
 
     def save_user_settings_form(self, user, form):
-        self.save_form(form, 'user_settings:%s' % user.id)
+        self.datastore.save_form(form, 'user_settings:%s' % user.id)
 
     def save_venue_detail(self, detail):
         self.datastore.set(KEY_VENUE_DETAIL, detail)

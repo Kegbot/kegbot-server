@@ -12,21 +12,21 @@
 </p>
 
 {% for error in errors %}
-  <small>{{ error.when }}</small>
   <h4>
     {{ error.summary }}
   </h4>
   {% if error.request_path %}
   <code>{{ error.method }} {{ error.request_path }}</code>
+  <span class="muted">
+  {{ error.when }}
   {% if error.username %}
-  ({{ error.username }})
+  &bull; Remote User: {{ error.username }}
   {% endif %}
+  </span>
   {% endif %}
 
   {% if error.exc_text %}
-  <pre>
-  {{ error.exc_text }}
-  </pre>
+  <pre>{{ error.exc_text }}</pre>
   {% endif %}
   <hr/>
 {% endfor %}

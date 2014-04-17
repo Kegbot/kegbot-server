@@ -3,7 +3,7 @@
 Run Kegbot Server
 =================
 
-By now you have Kegbot and it's database installed; it's now time to run the
+By now you have Kegbot installed; it's now time to run the
 server!
 
 Run the built-in web server
@@ -32,6 +32,7 @@ Kegbot Server is 100% functional when running under this development server, but
 for better performance you'll want to run Kegbot with a "real" HTTP server.
 When you're ready, see :ref:`production-setup` for instructions.
 
+
 Configure Kegbot
 ----------------
 
@@ -44,6 +45,7 @@ them.  If you're only using one tap, don't worry about the second one.
 
 Before you can pour a drink, you should add a new Keg to the tap.
 
+
 Allowing external access
 ------------------------
 
@@ -53,12 +55,13 @@ address when running it::
 
   $ kegbot runserver 0.0.0.0:8000
 
+
 Run the task queue workers (Celery)
 -----------------------------------
 
 Certain features, such as stats computation, Twitter checkins and web hook
 support, require a non-webserver process in order to run in the background
- Kegbot uses `Celery<http://celeryproject.org/>`_ as its task queue.
+Kegbot uses `Celery <http://celeryproject.org/>`_ as its task queue.
 
 Celery is automatically installed with kegbot.  You can try running it in
 the foreground::
@@ -68,6 +71,7 @@ the foreground::
 Be sure Celery is always running when your server is running.  If it isn't, some
 features will not work. See :ref:`production-setup` for instructions on
 automatically launching Celery in the background.
+
 
 Next steps
 ----------

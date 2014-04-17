@@ -7,6 +7,7 @@ Kegbot Server is the web service behind Kegbot.  It serves as both a frontend fo
 visual navigaton of drinking activity, as well as the backend for all Kegbot
 data.
 
+
 Quick Install
 -------------
 
@@ -20,64 +21,27 @@ Ultra-quick install instructions for the experienced and impatient::
   Development server is running at http://127.0.0.1:8000/
 
 
-Features
---------
-
-You're probably already very familiar with what Kegbot Server does. Just in
-case, these are the main features:
-
-* **Keg and Tap Management:** Add and configure taps, assign kegs to taps, track
-  remaining volume on active kegs, and mark empty kegs as finished.
-  Kegbot has been designed with multi-tap systems in mind; a single install can
-  support as many taps as you have.
-* **Account System:** Full username/password account system, supporting
-  registration, login, and password recovery.
-* **Drinker Authentication:** Drinkers can be given physical tokens, such
-  as RFIDs, to authenticate to the server during a pour.
-* **Pour Authorization and Shutoff:** Optionally, your system can require that
-  the server authorize each pour, only allowing access (by opening a valve)
-  after the drinker is approved.
-* **Stats and Charts:** Comprehensive statistics are calculated and recorded at
-  each pour, and the web interface draws colorful charts.
-* **Drinking Sessions:** As each drink is recorded, Kegbot assigns it to a
-  discrete "drinking session" along with nearby drinks, and the server displays
-  these sessions at a stable URL.  Did you throw a party? Share a single URL
-  that shows all the people and activity from that session.
-* **Database Backend:** All Kegbot data, from basic drink information to derived
-  statistics and user accounts, gets stored in a database (MySQL, or any other
-  database supported by Django).
-* **JSON API:** You can build your own frontend or other client interface using
-  the `Kegbot API <http://kegbot.org/docs/api/>`_.  Drinks, tap status, user
-  information, and almost every other interesting object in Kegbot is exposed
-  this way.  The same API is used for recording drinks.
-* **Web Hooks:** The server can notify an arbitrary URL whenever there
-  is activity such as a pour or new keg. You can bridge Kegbot to external
-  services this way.
-* **Image Support:** Users can upload profile pictures, and photos can be
-  attached to drinks (something the Kegtab Android App does automatically).
-* **Twitter, Facebook, Foursquare, and more:** Kegbot has hooks for a growing
-  number of external/social sites.  Users can link their Twitter, Facebook,
-  Foursquare, or Untappd accounts, and configure automatic posting for each
-  drink poured (or just at the start of a new session).
-* **Beer Database:** A built-in database lets tag kegs by brewer and beer type.
-  You can add entries for commercial or homebrew beers.
-* **Open Source:** It's free and open source!  Patches from the
-  growing Kegbot community make Kegbot even better.
-
 Dependencies
 ------------
 
-Kegbot Server is built on a number of excellent open source projects.  The major
+Kegbot Server is built on a number of open source projects.  The major
 dependencies are:
 
-* Python 2.7
-* Django 1.4
-* MySQL, Postgres, or SQLite
-* Python-Imaging 1.7
+* `Python <https://www.python.org/>`_ 2.7
+* `MySQL <http://www.mysql.com/>`_ or `PostgreSQL <http://www.postgresql.org/>`_
+* `Redis <http://redis.io/>`_ 2.8 or newer
 
-In addition, Kegbot Server requires several small python modules which are
-listed in its setup file.  You generally don't need to worry about these: they
-get installed automatically by the Python package manager.
+In addition, Kegbot Server requires several Python modules which are
+installed automatically by the Python package manager.
+
+
+Supported Operating Systems
+---------------------------
+
+Kegbot Server should run on any UNIX-based operating system.  Since there are
+many possible distributions, the examples in this document are
+written for Debian/Ubuntu and Mac OS X
+(`Homebrew <http://brew.sh/>`_) package managers.
 
 
 License

@@ -12,12 +12,10 @@ Contents:
    :maxdepth: 2
 
    overview
-   install-database
-   install-kegbot
-   configure-kegbot
+   install
    run-server
-   extras
    production-server
+   extras
    upgrade-kegbot
    troubleshooting
    changelog

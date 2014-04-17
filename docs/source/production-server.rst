@@ -79,8 +79,8 @@ Restart supervisor so that it reads the Kegbot config::
   
   $ sudo service supervisor restart
 
-Finally, launch the web server (and celery, if installed)::
+Finally, launch the web server and workers::
   
   $ sudo supervisorctl start kegbot:gunicorn
-  $ sudo supervisorctl start kegbot:celery   # optional
+  $ sudo supervisorctl start kegbot:workers
 

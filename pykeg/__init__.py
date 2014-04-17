@@ -1,7 +1,7 @@
 ### Constants
 
 # Internal version number, bumped every time "kegbot upgrade" is needed.
-EPOCH = 104
+EPOCH = 105
 
 try:
     import local_settings

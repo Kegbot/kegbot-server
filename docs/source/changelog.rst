@@ -3,16 +3,22 @@
 Changelog
 =========
 
-.. warning:: Please follow :ref:`upgrading-kegbot` for general upgrade steps.
+**Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
 Current Version (in development)
 --------------------------------
-* Redis is now a required dependency.
+.. warning::
+  Supervisor configuration has changed.  Please update your configuration file
+  to match :ref:`the example <supervisor-conf>`.
+
+* Redis is now a required dependency; memcached is no longer required.
 * Statistics are computed in a background task (#214).
-* Supervisor commands have changed; please update your configuration.
 * Untappd: Foursquare venue is attached to checkins when available (#178).
 * Foursquare: Photos are attached to checkins when available (#143).
-* improved support for unicode characters (#225).
+* Improved support for unicode characters (#225).
+* New commands: `kegbot run_all` and `kegbot run_workers`.
+* SQLite is no longer recommended for new installs.
+* Added worker status dashboard.
 
 Version 0.9.22 (2014-04-07)
 ---------------------------

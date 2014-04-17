@@ -56,6 +56,8 @@ Finally, install it::
   $ sudo ln -s /etc/nginx/sites-available/kegbot-nginx.conf /etc/nginx/sites-enabled/
   $ sudo service nginx restart
 
+.. _supervisor-conf:
+
 supervisord
 -----------
 

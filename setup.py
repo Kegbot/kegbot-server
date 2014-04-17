@@ -8,7 +8,7 @@ kegerator.  For more information and documentation, see http://kegbot.org/
 
 from setuptools import setup, find_packages
 
-VERSION = '0.9.23-pre'
+VERSION = '0.9.23'
 DOCLINES = __doc__.split('\n')
 
 SHORT_DESCRIPTION = DOCLINES[0]

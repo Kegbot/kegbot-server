@@ -5,8 +5,8 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.23 (2014-04-17)
+---------------------------
 .. warning::
   Supervisor configuration has changed.  Please update your configuration file
   to match :ref:`the example <supervisor-conf>`.
@@ -26,7 +26,7 @@ Version 0.9.22 (2014-04-07)
 * API: Support meter and toggle assignment.
 
 Version 0.9.21 (2014-04-04)
---------------------------------
+---------------------------
 * Supervisor commands have changed; please update your configuration.
 * Twitter: Fix issue #232 (image upload failure).
 * Twitter: Fix issue #231 (guest tweet setting not respected).

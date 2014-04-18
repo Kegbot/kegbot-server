@@ -1168,34 +1168,13 @@ class Picture(models.Model):
         processors=[resize.ResizeToFit(1024, 1024)],
         format='JPEG',
         options={'quality': 100})
-    small_resized = ImageSpecField(source='image',
-        processors=[resize.ResizeToFit(256, 256)],
-        format='JPEG',
-        options={'quality': 100})
-    thumbnail = ImageSpecField(source='image',
-        processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(128, 128)],
-        format='JPEG',
-        options={'quality': 90})
-    small_thumbnail = ImageSpecField(source='image',
-        processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(32, 32)],
-        format='JPEG',
-        options={'quality': 90})
-
     resized_png = ImageSpecField(source='image',
         processors=[resize.ResizeToFit(1024, 1024)],
         format='PNG',
         options={'quality': 100})
-    small_resized_png = ImageSpecField(source='image',
-        processors=[resize.ResizeToFit(256, 256)],
-        format='PNG',
-        options={'quality': 100})
-    thumbnail_png = ImageSpecField(source='image',
+    thumbnail = ImageSpecField(source='image',
         processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(128, 128)],
-        format='PNG',
-        options={'quality': 90})
-    small_thumbnail_png = ImageSpecField(source='image',
-        processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(32, 32)],
-        format='PNG',
+        format='JPEG',
         options={'quality': 90})
 
     time = models.DateTimeField(default=timezone.now,

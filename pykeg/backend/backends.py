@@ -209,8 +209,7 @@ class KegbotBackend(object):
                 d.save()
 
         if do_postprocess:
-            with SuppressTaskErrors(self._logger):
-                tasks.build_stats.delay(since_drink_id=d.id)
+            self.build_stats(d)
             with transaction.atomic():
                 events = models.SystemEvent.build_events_for_drink(d)
                 tasks.schedule_tasks(events)
@@ -258,8 +257,7 @@ class KegbotBackend(object):
             drink.delete()
             session.Rebuild()
 
-        with SuppressTaskErrors(self._logger):
-            tasks.build_stats.delay(since_drink_id=drink.id)
+        self.build_stats(drink)
         self.cache.update_generation()
 
         return drink
@@ -298,8 +296,7 @@ class KegbotBackend(object):
 
             drink.session.Rebuild()
 
-        with SuppressTaskErrors(self._logger):
-            tasks.build_stats.delay(since_drink_id=drink.id)
+        self.build_stats(drink)
         self.cache.update_generation()
 
         return drink
@@ -320,8 +317,7 @@ class KegbotBackend(object):
 
             drink.session.Rebuild()
 
-        with SuppressTaskErrors(self._logger):
-            tasks.build_stats.delay(since_drink_id=drink.id)
+        self.build_stats(drink)
         self.cache.update_generation()
 
     @transaction.atomic
@@ -647,6 +643,11 @@ class KegbotBackend(object):
                 new_toggle.save()
 
         return tap
+
+    def build_stats(self, since_drink):
+        """Rebuilds statistics starting with this drink."""
+        with SuppressTaskErrors(self._logger):
+            tasks.build_stats.delay(since_drink_id=since_drink.id)
 
     def _get_tap(self, keg_tap_or_meter_name):
         if isinstance(keg_tap_or_meter_name, models.KegTap):

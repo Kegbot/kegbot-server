@@ -106,7 +106,7 @@ def user_settings(request, plugin):
     return render_to_response('contrib/foursquare/foursquare_user_settings.html', context_instance=context)
 
 
-@staff_member_required
+@login_required
 def auth_redirect(request):
     if 'submit-remove' in request.POST:
         plugin = request.plugins.get('foursquare')
@@ -130,7 +130,7 @@ def auth_redirect(request):
         return redirect('account-plugin-settings', plugin_name='foursquare')
 
 
-@staff_member_required
+@login_required
 def auth_callback(request):
     try:
         client = request.session['foursquare_client']

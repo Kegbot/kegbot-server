@@ -23,6 +23,7 @@ from pykeg.plugin import util as plugin_util
 from pykeg import notification
 from pykeg.core import checkin
 from pykeg.core import stats
+from django.db import transaction
 
 from pykeg.celery import app
 from celery.utils.log import get_task_logger
@@ -46,4 +47,5 @@ def core_checkin(self):
 @app.task(name='build_stats', queue='stats', expires=60*60)
 def build_stats(since_drink_id):
     logger.info('build_stats since_drink_id={}'.format(since_drink_id))
-    stats.rebuild_from_id(since_drink_id)
+    with transaction.atomic():
+        stats.rebuild_from_id(since_drink_id)

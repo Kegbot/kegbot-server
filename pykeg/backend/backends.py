@@ -254,7 +254,6 @@ class KegbotBackend(object):
             keg.save(update_fields=keg_update_fields)
 
             # Delete the drink, including any objects related to it.
-            stats.invalidate(drink_id)
             drink.delete()
             session.Rebuild()
 
@@ -295,7 +294,6 @@ class KegbotBackend(object):
                 drink.picture.user = user
                 drink.picture.save()
 
-            stats.invalidate(drink.id)
             drink.session.Rebuild()
 
         self.build_stats(drink.id)
@@ -317,7 +315,6 @@ class KegbotBackend(object):
             keg.served_volume_ml += difference
             keg.save(update_fields=['served_volume_ml'])
 
-            stats.invalidate(drink.id)
             drink.session.Rebuild()
 
         self.build_stats(drink.id)

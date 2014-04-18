@@ -19,7 +19,9 @@ On Ubuntu or Debian, use ``apt-get``::
     redis-server \
     mysql-client \
     mysql-server \
-    redis
+    redis-server \
+    supervisor \
+    nginx
 
 
 On Mac OS X, we recommend using `Homebrew <http://brew.sh>`_::
@@ -29,7 +31,8 @@ On Mac OS X, we recommend using `Homebrew <http://brew.sh>`_::
     mysql \
     libpng \
     jpeg \
-    redis
+    redis \
+    nginx
 
 Set up an environment
 ---------------------

@@ -38,6 +38,7 @@ from pykeg.util.email import build_message
 
 from pykeg.core import kb_common
 from pykeg.core import models
+from pykeg.core import stats
 from pykeg.core import time_series
 
 from pykeg.backend.exceptions import *
@@ -209,7 +210,7 @@ class KegbotBackend(object):
                 d.save()
 
         if do_postprocess:
-            self.build_stats(d)
+            self.build_stats(d.id)
             with transaction.atomic():
                 events = models.SystemEvent.build_events_for_drink(d)
                 tasks.schedule_tasks(events)
@@ -253,10 +254,11 @@ class KegbotBackend(object):
             keg.save(update_fields=keg_update_fields)
 
             # Delete the drink, including any objects related to it.
+            stats.invalidate(drink_id)
             drink.delete()
             session.Rebuild()
 
-        self.build_stats(drink)
+        self.build_stats(drink_id)
         self.cache.update_generation()
 
         return drink
@@ -293,9 +295,10 @@ class KegbotBackend(object):
                 drink.picture.user = user
                 drink.picture.save()
 
+            stats.invalidate(drink.id)
             drink.session.Rebuild()
 
-        self.build_stats(drink)
+        self.build_stats(drink.id)
         self.cache.update_generation()
 
         return drink
@@ -314,9 +317,10 @@ class KegbotBackend(object):
             keg.served_volume_ml += difference
             keg.save(update_fields=['served_volume_ml'])
 
+            stats.invalidate(drink.id)
             drink.session.Rebuild()
 
-        self.build_stats(drink)
+        self.build_stats(drink.id)
         self.cache.update_generation()
 
     @transaction.atomic
@@ -643,10 +647,11 @@ class KegbotBackend(object):
 
         return tap
 
-    def build_stats(self, since_drink):
+    def build_stats(self, since_drink_id):
         """Rebuilds statistics starting with this drink."""
+        assert since_drink_id is not None, 'No drink id.'
         with SuppressTaskErrors(self._logger):
-            tasks.build_stats.delay(since_drink_id=since_drink.id)
+            tasks.build_stats.delay(since_drink_id=since_drink_id)
 
     def _get_tap(self, keg_tap_or_meter_name):
         if isinstance(keg_tap_or_meter_name, models.KegTap):

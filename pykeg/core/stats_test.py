@@ -26,6 +26,7 @@ from . import models
 from . import stats
 from .testutils import make_datetime
 
+import copy
 from pykeg.backend import get_kegbot_backend
 
 class StatsTestCase(TransactionTestCase):
@@ -113,11 +114,8 @@ class StatsTestCase(TransactionTestCase):
         expected.volume_by_session = {u'1': 100.0, u'2': 500.0}
         expected.largest_session = {u'session_id': 2, u'volume_ml': 500.0}
 
-        import pprint
-        print 'ACTUAL'
-        pprint.pprint(stats)
-
         self.assertDictEqual(expected, stats)
+        previous_stats = copy.copy(stats)
 
         d = self.backend.record_drink('kegboard.flow0', ticks=300,
             volume_ml=300, pour_time=now)
@@ -125,3 +123,55 @@ class StatsTestCase(TransactionTestCase):
         stats = site.get_stats()
         self.assertTrue(stats.has_guest_pour)
 
+        self.backend.cancel_drink(d)
+        stats = site.get_stats()
+
+        self.assertDictEqual(previous_stats, stats)
+
+    def test_cancel_and_reassign(self):
+        drink_data = [
+            (100, self.users[0]),
+            (200, self.users[1]),
+            (200, self.users[2]),
+            (500, self.users[0]),
+        ]
+
+        drinks = []
+
+        now = make_datetime(2012, 1, 2, 12, 00)
+        for volume_ml, user in drink_data:
+            d = self.backend.record_drink('kegboard.flow0', ticks=volume_ml,
+                username=user.username, volume_ml=volume_ml, pour_time=now)
+            drinks.append(d)
+
+        self.assertEquals(600, self.users[0].get_stats().total_volume_ml)
+        self.assertEquals(200, self.users[1].get_stats().total_volume_ml)
+        self.assertEquals(200, self.users[2].get_stats().total_volume_ml)
+
+        self.assertEquals(1000, models.KegbotSite.get().get_stats().total_volume_ml)
+
+        self.backend.cancel_drink(drinks[0])
+        self.assertEquals(500, self.users[0].get_stats().total_volume_ml)
+        self.assertEquals(200, self.users[1].get_stats().total_volume_ml)
+        self.assertEquals(200, self.users[2].get_stats().total_volume_ml)
+        self.assertEquals(900, models.KegbotSite.get().get_stats().total_volume_ml)
+
+        self.backend.assign_drink(drinks[1], self.users[0])
+        self.assertEquals(700, self.users[0].get_stats().total_volume_ml)
+        self.assertEquals({}, self.users[1].get_stats())
+        self.assertEquals(200, self.users[2].get_stats().total_volume_ml)
+        self.assertEquals(900, models.KegbotSite.get().get_stats().total_volume_ml)
+        self.assertEquals(900, drinks[1].session.get_stats().total_volume_ml)
+
+        # Start a new session.
+        now = make_datetime(2013, 1, 2, 12, 00)
+        for volume_ml, user in drink_data:
+            d = self.backend.record_drink('kegboard.flow0', ticks=volume_ml,
+                username=user.username, volume_ml=volume_ml, pour_time=now)
+            drinks.append(d)
+
+        self.assertEquals(1300, self.users[0].get_stats().total_volume_ml)
+        self.assertEquals(200, self.users[1].get_stats().total_volume_ml)
+        self.assertEquals(400, self.users[2].get_stats().total_volume_ml)
+        self.assertEquals(1900, models.KegbotSite.get().get_stats().total_volume_ml)
+        self.assertEquals(1000, drinks[-1].session.get_stats().total_volume_ml)

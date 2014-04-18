@@ -27,7 +27,7 @@ class Command(RunnerCommand):
     pidfile_name = 'kegbot_run_workers.pid'
 
     def get_commands(self, options):
-        default_log = stats_log = ''
+        default_log = stats_log = beat_log = ''
         logs_dir = options.get('logs_dir')
 
         if logs_dir:
@@ -35,6 +35,8 @@ class Command(RunnerCommand):
                 os.path.join(logs_dir, 'celery_default.log'))
             stats_log = ' --logfile="{}"'.format(
                 os.path.join(logs_dir, 'celery_stats.log'))
+            beat_log = ' --logfile="{}"'.format(
+                os.path.join(logs_dir, 'celery_beat.log'))
         ret = []
 
         # Pluck out the app_name.  Typically this is 'pykeg', but may be
@@ -46,5 +48,7 @@ class Command(RunnerCommand):
             base_cmd + '-Q default --hostname="default@%h"' + default_log))
         ret.append(('celery_stats',
             base_cmd + '-Q stats --concurrency=1 --hostname="stats@%h"' + stats_log))
+        ret.append(('celery_beat',
+            'celery -A {} beat -l info {}'.format(app_name, beat_log)))
 
         return ret

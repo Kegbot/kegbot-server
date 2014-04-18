@@ -68,12 +68,14 @@ class KegbotSiteMiddleware:
         request.need_setup = False
         request.need_upgrade = False
 
+        request.kbsite = None
         try:
             request.kbsite = models.KegbotSite.objects.get(name='default')
             epoch = request.kbsite.epoch
-        except (models.KegbotSite.DoesNotExist, DatabaseError) as e:
-            logger.exception('Site needs update.')
-            request.kbsite = None
+        except models.KegbotSite.DoesNotExist:
+            logger.warning('KegbotSite "default" does not exist yet.')
+        except DatabaseError:
+            logger.exception('DatabaseError: Site probably needs update.')
 
         if not request.kbsite or not request.kbsite.is_setup:
             request.need_setup = True

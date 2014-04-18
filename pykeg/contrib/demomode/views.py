@@ -27,7 +27,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from pykeg.core import backend
+from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.contrib.demomode.util import random_item
 
@@ -47,7 +47,7 @@ def summon_drinker(request):
         messages.error(request, 'No drinkers are available!')
         return redirect('kb-home')
 
-    be = backend.KegbotBackend()
+    be = get_kegbot_backend()
 
     # End keg if it's near empty.
     if tap.current_keg and tap.current_keg.remaining_volume_ml() < MIN_KEG_VOLUME_ML:
@@ -69,7 +69,7 @@ def summon_drinker(request):
             user=user)
         drink.picture = new_picture
         drink.save()
-    
+
     message = 'We poked <strong>%s</strong>, who just poured <a href="%s">Drink %s</a>.' % (
         user.username, drink.get_absolute_url(), drink.id)
     messages.success(request, SafeString(message))

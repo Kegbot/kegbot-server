@@ -21,7 +21,7 @@
 from django.test import TransactionTestCase
 from django.core.urlresolvers import reverse
 
-from pykeg.core import backend
+from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.core import defaults
 
@@ -39,7 +39,7 @@ class KegwebTestCase(TransactionTestCase):
             response = self.client.get(endpoint)
             self.assertEquals(404, response.status_code)
 
-        b = backend.KegbotBackend()
+        b = get_kegbot_backend()
         keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
             beverage_type='beer', style_name='Unknown')
         self.assertIsNotNone(keg)
@@ -57,7 +57,7 @@ class KegwebTestCase(TransactionTestCase):
         self.assertRedirects(response, d.session.get_absolute_url(), status_code=301)
 
     def testShout(self):
-        b = backend.KegbotBackend()
+        b = get_kegbot_backend()
         keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
             beverage_type='beer', style_name='Unknown')
         d = b.record_drink('kegboard.flow0', ticks=123, shout='_UNITTEST_')
@@ -65,7 +65,7 @@ class KegwebTestCase(TransactionTestCase):
         self.assertContains(response, '<p>_UNITTEST_</p>', status_code=200)
 
     def test_privacy(self):
-        b = backend.KegbotBackend()
+        b = get_kegbot_backend()
         keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
             beverage_type='beer', style_name='Unknown')
         self.assertIsNotNone(keg)
@@ -91,7 +91,7 @@ class KegwebTestCase(TransactionTestCase):
                     self.assertContains(response, expected_content, status_code=200,
                             msg_prefix=url)
 
-        b = backend.KegbotBackend()
+        b = get_kegbot_backend()
         user = b.create_new_user('testuser', 'test@example.com', password='1234')
 
         settings = models.SiteSettings.get()
@@ -120,7 +120,7 @@ class KegwebTestCase(TransactionTestCase):
         test_urls(expect_fail=True)
 
     def test_activation(self):
-        b = backend.KegbotBackend()
+        b = get_kegbot_backend()
         settings = models.SiteSettings.get()
         self.assertEqual('public', settings.privacy)
 

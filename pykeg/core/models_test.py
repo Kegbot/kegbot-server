@@ -24,17 +24,17 @@ from django.conf import settings
 from django.utils import timezone
 from django.test import TestCase
 
-from . import backend
 from . import kb_common
 from . import models
 from .testutils import make_datetime
 
+from pykeg.backend import get_kegbot_backend
 from kegbot.util import units
 
 class CoreModelsTestCase(TestCase):
     def setUp(self):
         models.KegbotSite.get()  # create the site
-        self.backend = backend.KegbotBackend()
+        self.backend = get_kegbot_backend()
         self.producer = models.BeverageProducer.objects.create(
             name='Moonshine Beers',
             country='USA',

@@ -36,22 +36,14 @@ from pykeg.web.auth import AuthException
 from pykeg.web.auth import UserExistsException
 from pykeg.util.email import build_message
 
-from . import kb_common
-from . import models
-from . import time_series
+from pykeg.core import kb_common
+from pykeg.core import models
+from pykeg.core import time_series
 
+from pykeg.backend.exceptions import *
 from pykeg.web import tasks
 
-class BackendError(Exception):
-    """Base backend error exception."""
-
-class NoTokenError(BackendError):
-    """Token given is unknown."""
-
-class UserExistsError(BackendError):
-    """A user with this username already exists."""
-
-class KegbotBackend:
+class KegbotBackend(object):
     """Provides high-level operations against the Kegbot system."""
 
     def __init__(self):

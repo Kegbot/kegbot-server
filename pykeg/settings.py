@@ -174,6 +174,8 @@ KEGBOT_PLUGINS = [
 DEMO_MODE = False
 EMBEDDED = False
 
+KEGBOT_BACKEND = 'pykeg.backend.backends.KegbotBackend'
+
 ### Celery
 
 BROKER_URL = 'redis://localhost:6379/0'

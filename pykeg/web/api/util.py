@@ -29,7 +29,7 @@ from google.protobuf.message import Message
 from kegbot.api import kbapi
 from kegbot.util import kbjson
 from pykeg.core import models
-from pykeg.core import backend
+from pykeg import backend
 
 from . import validate_jsonp
 

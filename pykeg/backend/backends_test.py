@@ -16,13 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Unittests for backend"""
+"""Unittests for backends module."""
 
 from django.test import TestCase
 from pykeg.core import models
 from pykeg.core import defaults
 
-from . import backend
+from . import backends
 
 METER_NAME = 'kegboard.flow0'
 FAKE_BEER_NAME = 'Testy Beer'
@@ -31,9 +31,9 @@ FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 
 ### Helper methods
 
-class BaseApiTestCase(TestCase):
+class BackendsTestCase(TestCase):
     def setUp(self):
-        self.backend = backend.KegbotBackend()
+        self.backend = backends.KegbotBackend()
         defaults.set_defaults(set_is_setup=True, create_controller=True)
 
     def test_drink_management(self):

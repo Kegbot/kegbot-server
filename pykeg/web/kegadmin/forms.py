@@ -5,7 +5,7 @@ from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field, H
 from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
 from kegbot.util import units
-from pykeg.core import backend
+from pykeg.backend import get_kegbot_backend
 from pykeg.core import keg_sizes
 from pykeg.core import models
 
@@ -72,7 +72,7 @@ class ChangeKegForm(forms.Form):
     def save(self, tap):
         if not self.is_valid():
             raise ValueError('Form is not valid.')
-        b = backend.KegbotBackend()
+        b = get_kegbot_backend()
 
         if tap.is_active():
             b.end_keg(tap)
@@ -160,7 +160,7 @@ class TapForm(forms.ModelForm):
         if not commit:
             raise ValueError('TapForm does not support commit=False')
         instance = super(TapForm, self).save(commit=True)
-        b = backend.KegbotBackend()
+        b = get_kegbot_backend()
         b.connect_meter(instance, self.cleaned_data['meter'])
         b.connect_toggle(instance, self.cleaned_data['toggle'])
         return instance
@@ -264,7 +264,7 @@ class KegForm(forms.Form):
     def save(self):
         if not self.is_valid():
             raise ValueError('Form is not valid.')
-        b = backend.KegbotBackend()
+        b = get_kegbot_backend()
         keg_size = self.cleaned_data.get('keg_size')
         notes = self.cleaned_data.get('notes')
         description = self.cleaned_data.get('description')

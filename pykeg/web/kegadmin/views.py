@@ -45,7 +45,6 @@ from kegbot.util import kbjson
 from kegbot.util import units
 
 from pykeg.celery import app as celery_app
-from pykeg.core import backend
 from pykeg.core import logger
 from pykeg.core import models
 from pykeg.util.email import build_message

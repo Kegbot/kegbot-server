@@ -30,7 +30,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from pykeg.contrib.demomode.views import random_item
-from pykeg.core import backend
+from pykeg.backend import get_kegbot_backend
 from pykeg.core import defaults
 from pykeg.core import models
 
@@ -110,7 +110,7 @@ class LoadDemoDataCommand(BaseCommand):
             print 'Demo data loaded.'
 
     def do_pour(self, user, when, volume_ml, shout, picture_path):
-        be = backend.KegbotBackend()
+        be = get_kegbot_backend()
         tap = random_item(models.KegTap)
 
         # End keg if it's near empty.
@@ -159,7 +159,7 @@ class LoadDemoDataCommand(BaseCommand):
                 subminute = random.randint(0, 15)
                 session_total = random.randint(500, session_max)
                 session_remain = session_total
-        
+
                 while session_remain > 0:
                     if session_remain <= MIN_POUR_ML:
                         drink_volume = session_remain

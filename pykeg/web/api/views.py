@@ -34,7 +34,7 @@ from django.views.decorators.http import require_http_methods
 
 from kegbot.api import kbapi
 
-from pykeg.core import backend
+from pykeg import backend
 from pykeg.core import keg_sizes
 from pykeg.core import models
 from pykeg.core import util as core_util

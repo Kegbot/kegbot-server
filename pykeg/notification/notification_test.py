@@ -22,8 +22,8 @@ from django.core import mail
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.test.utils import override_settings
+from pykeg.backend import get_kegbot_backend
 from pykeg.core import models as core_models
-from pykeg.core import backend
 from pykeg.core import defaults
 
 from pykeg import notification
@@ -61,7 +61,7 @@ class StandaloneNotificationTestCase(TestCase):
 
 class NotificationTestCase(TestCase):
     def setUp(self):
-        self.backend = backend.KegbotBackend()
+        self.backend = get_kegbot_backend()
         defaults.set_defaults(set_is_setup=True)
 
         self.user = core_models.User.objects.create(username='notification_user',

@@ -22,16 +22,17 @@ from kegbot.api import models_pb2
 from kegbot.api.protoutil import ProtoMessageToDict
 from kegbot.util import util
 
-from . import backend
 from . import models
 from . import stats
 from .testutils import make_datetime
+
+from pykeg.backend import get_kegbot_backend
 
 class StatsTestCase(TransactionTestCase):
     reset_sequences = True
 
     def setUp(self):
-        self.backend = backend.KegbotBackend()
+        self.backend = get_kegbot_backend()
         guest = models.User.objects.create_user('guest')
 
         test_usernames = ('user1', 'user2', 'user3')

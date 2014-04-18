@@ -18,8 +18,8 @@
 
 from pykeg import EPOCH
 
+from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
-from pykeg.core.backend import KegbotBackend
 from pykeg.core.cache import KegbotCache
 from pykeg.web.api.util import is_api_request
 
@@ -85,7 +85,7 @@ class KegbotSiteMiddleware:
             request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins())
 
         request.kbcache = KegbotCache()
-        request.backend = KegbotBackend()
+        request.backend = get_kegbot_backend()
 
         return None
 

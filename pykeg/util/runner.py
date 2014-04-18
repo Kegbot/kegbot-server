@@ -16,9 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+import copy
 import errno
 import logging
 import os
+import pwd
+import sys
 import resource
 import subprocess
 import time
@@ -62,8 +65,28 @@ class Runner(object):
         dev_null_name = getattr(os, 'devnull', '/dev/null')
         dev_null = os.open(dev_null_name, os.O_RDWR)
 
+        # Set sensible env defaults, since supervisor won't.
+        path = os.environ.get('PATH', '')
+        if sys.argv[0]:
+            d = os.path.dirname(sys.argv[0])
+            if d not in path.split(':'):
+                path = '{}:{}'.format(d, path)
+
+        user = os.environ.get('USER', '')
+        if not user:
+            try:
+                user = pwd.getpwduid(os.getuid()).pw_name
+            except KeyError:
+                pass
+
+        env = copy.copy(os.environ)
+        env['PATH'] = path
+        env['USER'] = user
+
+        self.logger.debug('env={}'.format(repr(env)))
+
         for command_name, command in self.commands.iteritems():
-            proc = self._launch_command(command_name, command, dev_null)
+            proc = self._launch_command(command_name, command, dev_null, env)
             self.logger.info('... Started {}: pid {}'.format(command_name, proc.pid))
             self.watched_procs[command_name] = proc
 
@@ -92,7 +115,7 @@ class Runner(object):
                 proc.terminate()
         self.logger.info('All processes killed.')
 
-    def _launch_command(self, command_name, command, dev_null):
+    def _launch_command(self, command_name, command, dev_null, env=None):
         self.logger.info('Launching command: {}: {}'.format(command_name, command))
 
         def preexec():
@@ -102,7 +125,8 @@ class Runner(object):
             os.chdir("/")
 
         proc = subprocess.Popen(command, stdin=dev_null, stdout=dev_null, stderr=dev_null,
-                close_fds=True, shell=True, preexec_fn=preexec)
+                close_fds=True, shell=True, preexec_fn=preexec,
+                env=env)
 
         return proc
 

@@ -71,7 +71,6 @@ class KegbotSiteMiddleware:
         try:
             request.kbsite = models.KegbotSite.objects.get(name='default')
             epoch = request.kbsite.epoch
-            request.kbsettings = models.SiteSettings.get()
         except (models.KegbotSite.DoesNotExist, DatabaseError) as e:
             logger.exception('Site needs update.')
             request.kbsite = None
@@ -81,7 +80,7 @@ class KegbotSiteMiddleware:
         else:
             if not epoch or epoch < EPOCH:
                 request.need_upgrade = True
-            timezone.activate(request.kbsite.settings.timezone)
+            timezone.activate(request.kbsite.timezone)
             request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins())
 
         request.kbcache = KegbotCache()
@@ -152,7 +151,7 @@ class HttpHostMiddleware:
             return None
 
         host = request.get_host()
-        allowed_hosts_str = request.kbsite.settings.allowed_hosts
+        allowed_hosts_str = request.kbsite.allowed_hosts
         if allowed_hosts_str:
             host_patterns = allowed_hosts_str.strip().split()
         else:
@@ -212,7 +211,7 @@ class PrivacyMiddleware:
             # api.middleware will enforce access requirements.
             return None
 
-        privacy = request.kbsite.settings.privacy
+        privacy = request.kbsite.privacy
 
         if privacy == 'public':
             return None

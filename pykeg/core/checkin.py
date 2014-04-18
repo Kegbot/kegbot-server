@@ -52,7 +52,7 @@ class CheckinError(Exception):
 def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None, quiet=False):
     """Issue a single checkin to the checkin server.
 
-    No-op if settings.check_for_updates is False.
+    No-op if kbsite.check_for_updates is False.
 
     Returns
         A checkin response dictionary, or None if checkin is disabled.
@@ -61,8 +61,8 @@ def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None, quiet=False):
         ValueError: On malformed reponse.
         requests.RequestException: On error talking to server.
     """
-    settings = models.SiteSettings.get()
-    if not settings.check_for_updates:
+    kbsite = models.KegbotSite.get()
+    if not kbsite.check_for_updates:
         LOGGER.debug('Upgrade check is disabled')
         return
 

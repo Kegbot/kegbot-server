@@ -170,7 +170,7 @@ class KegbotBackend(object):
             if username:
                 user = get_user(username)
             else:
-                user = models.SiteSettings.get().default_user
+                user = models.KegbotSite.get().default_user
                 if not user:
                     user = models.User.objects.get(username='guest')
 
@@ -215,7 +215,6 @@ class KegbotBackend(object):
                 tasks.schedule_tasks(events)
 
         return d
-
 
     def cancel_drink(self, drink, spilled=False):
         """Permanently deletes a Drink from the system.

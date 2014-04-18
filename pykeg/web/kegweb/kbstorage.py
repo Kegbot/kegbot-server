@@ -31,7 +31,7 @@ from pykeg.core.util import get_current_request
 S3_STATIC_BUCKET = getattr(settings, 'S3_STATIC_BUCKET', None)
 
 class KegbotFileSystemStorage(FileSystemStorage):
-    """Default storage backend that crafts absolute urls from SiteSettings.base_url.
+    """Default storage backend that crafts absolute urls from KegbotSite.base_url.
 
     Since the storage backed is not a singleton within django request
     processing (and thus there's not a single object we can pre-configure
@@ -39,8 +39,8 @@ class KegbotFileSystemStorage(FileSystemStorage):
     """
     def url(self, name):
         request = get_current_request()
-        if request and hasattr(request, 'kbsettings'):
-            site_base = request.kbsettings.base_url()
+        if request and hasattr(request, 'kbsite'):
+            site_base = request.kbsite.base_url()
             media_base = urlparse.urljoin(site_base, self.base_url)
             self.base_url = media_base
         return super(KegbotFileSystemStorage, self).url(name)

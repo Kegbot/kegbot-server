@@ -131,8 +131,8 @@ class ApiClientTestCase(BaseApiTestCase):
         # Alter privacy and compare.
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'ok')
-        self.site.settings.privacy = 'members'
-        self.site.settings.save()
+        self.site.privacy = 'members'
+        self.site.save()
 
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'error')
@@ -142,8 +142,8 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals(data.meta.result, 'ok')
 
         # Alert to staff-only.
-        self.site.settings.privacy = 'staff'
-        self.site.settings.save()
+        self.site.privacy = 'staff'
+        self.site.save()
         response, data = self.get(endpoint)
         self.assertEquals(data.meta.result, 'ok')
 
@@ -201,10 +201,10 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals('test-from@example', msg.from_email)
 
     def test_pictures(self):
-        site_settings = models.SiteSettings.get()
-        site_settings.hostname = 'localhost:123'
-        site_settings.use_ssl = True
-        site_settings.save()
+        kbsite = models.KegbotSite.get()
+        kbsite.hostname = 'localhost:123'
+        kbsite.use_ssl = True
+        kbsite.save()
 
         image_data = open(get_filename('test_image_800x600.png'))
         response, data = self.post('pictures/', data={'photo': image_data}, HTTP_X_KEGBOT_API_KEY=self.apikey.key)

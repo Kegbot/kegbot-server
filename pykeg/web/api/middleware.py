@@ -41,7 +41,7 @@ class ApiRequestMiddleware:
                 raise ValueError('Upgrade required')
 
             need_auth = util.needs_auth(view_func)
-            privacy = request.kbsite.settings.privacy
+            privacy = request.kbsite.privacy
             if request.path in ('/api/login/', '/api/get-api-key/'):
                 # API request to whitelisted path.
                 need_auth = False

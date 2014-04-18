@@ -18,9 +18,9 @@ except ImportError:
     datetime_now = datetime.datetime.now
 
 from registration.models import RegistrationManager
-from pykeg.core.models import SiteSettings
+from pykeg.core.models import KegbotSite
 
-class KegbotRegistrationManager(RegistrationManager):    
+class KegbotRegistrationManager(RegistrationManager):
     def create_inactive_user(self, username, email, password,
                              send_email=True):
         new_user = User.objects.create_user(username, email, password)
@@ -34,7 +34,7 @@ class KegbotRegistrationManager(RegistrationManager):
 
         return new_user
     create_inactive_user = transaction.commit_on_success(create_inactive_user)
-        
+
 
 class KegbotRegistrationProfile(models.Model):
     """
@@ -42,19 +42,19 @@ class KegbotRegistrationProfile(models.Model):
     for custom user model.
     """
     ACTIVATED = u"ALREADY_ACTIVATED"
-    
+
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'))
     activation_key = models.CharField(_('activation key'), max_length=40)
-    
+
     objects = KegbotRegistrationManager()
-    
+
     class Meta:
         verbose_name = _('registration profile')
         verbose_name_plural = _('registration profiles')
-    
+
     def __unicode__(self):
         return u"Registration information for %s" % self.user
-    
+
     def activation_key_expired(self):
         expiration_date = datetime.timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS)
         return self.activation_key == self.ACTIVATED or \
@@ -63,7 +63,7 @@ class KegbotRegistrationProfile(models.Model):
 
     def send_activation_email(self):
         """Adds Kegbot-specific context variables."""
-        s = SiteSettings.get()
+        s = KegbotSite.get()
         site_name = s.title
         base_url = s.base_url()
 

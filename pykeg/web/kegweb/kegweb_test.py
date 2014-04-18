@@ -94,23 +94,23 @@ class KegwebTestCase(TransactionTestCase):
         b = get_kegbot_backend()
         user = b.create_new_user('testuser', 'test@example.com', password='1234')
 
-        settings = models.SiteSettings.get()
+        kbsite = models.KegbotSite.get()
         self.client.logout()
 
         # Public mode.
         test_urls(expect_fail=False)
 
         # Members-only.
-        settings.privacy = 'members'
-        settings.save()
+        kbsite.privacy = 'members'
+        kbsite.save()
         test_urls(expect_fail=True)
         logged_in = self.client.login(username='testuser', password='1234')
         self.assertTrue(logged_in)
         test_urls(expect_fail=False)
 
         # Staff-only
-        settings.privacy = 'staff'
-        settings.save()
+        kbsite.privacy = 'staff'
+        kbsite.save()
 
         test_urls(expect_fail=True)
         user.is_staff = True
@@ -121,8 +121,8 @@ class KegwebTestCase(TransactionTestCase):
 
     def test_activation(self):
         b = get_kegbot_backend()
-        settings = models.SiteSettings.get()
-        self.assertEqual('public', settings.privacy)
+        kbsite = models.KegbotSite.get()
+        self.assertEqual('public', kbsite.privacy)
 
         user = b.create_new_user('testuser', 'test@example.com')
         self.assertIsNotNone(user.activation_key)
@@ -139,13 +139,13 @@ class KegwebTestCase(TransactionTestCase):
         response = self.client.get(activation_url)
         self.assertContains(response, 'Choose a Password', status_code=200)
 
-        settings.privacy = 'staff'
-        settings.save()
+        kbsite.privacy = 'staff'
+        kbsite.save()
         response = self.client.get(activation_url)
         self.assertContains(response, 'Choose a Password', status_code=200)
 
-        settings.privacy = 'members'
-        settings.save()
+        kbsite.privacy = 'members'
+        kbsite.save()
         response = self.client.get(activation_url)
         self.assertContains(response, 'Choose a Password', status_code=200)
 

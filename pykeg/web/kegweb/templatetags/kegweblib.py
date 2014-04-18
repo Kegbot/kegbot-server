@@ -186,8 +186,8 @@ class TemperatureNode(Node):
             amount = 'unknown'
 
         unit = 'C'
-        s = models.SiteSettings.get()
-        if s.temperature_display_units == 'f':
+        kbsite = models.KegbotSite.get()
+        if kbsite.temperature_display_units == 'f':
             unit = 'F'
             amount = util.CtoF(amount)
 

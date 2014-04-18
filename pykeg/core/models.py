@@ -148,6 +148,22 @@ class User(AbstractBaseUser):
 
 
 class KegbotSite(models.Model):
+
+    VOLUME_DISPLAY_UNITS_CHOICES = (
+      ('metric', 'Metric (mL, L)'),
+      ('imperial', 'Imperial (oz, pint)'),
+    )
+    TEMPERATURE_DISPLAY_UNITS_CHOICES = (
+      ('f', 'Fahrenheit'),
+      ('c', 'Celsius'),
+    )
+    PRIVACY_CHOICES = (
+      ('public', 'Public: Browsing does not require login'),
+      ('members', 'Members only: Must log in to browse'),
+      ('staff', 'Staff only: Only logged-in staff accounts may browse'),
+    )
+    DEFAULT_PRIVACY = 'public'
+
     name = models.CharField(max_length=64, unique=True, default='default',
         editable=False)
     is_active = models.BooleanField(default=True,
@@ -165,41 +181,6 @@ class KegbotSite(models.Model):
     last_checkin_response = JSONField(blank=True, null=True,
         dump_kwargs={'cls': kbjson.JSONEncoder})
 
-    def __unicode__(self):
-        return self.name
-
-    @classmethod
-    def get(cls):
-        """Gets the default site settings."""
-        return KegbotSite.objects.get_or_create(name='default',
-            defaults={'is_setup': False})[0]
-
-    def get_stats(self):
-        return Stats.get_latest_for_view()
-
-def _kegbotsite_post_save(sender, instance, **kwargs):
-    """Creates a SiteSettings object if none already exists."""
-    settings, _ = SiteSettings.objects.get_or_create(site=instance)
-post_save.connect(_kegbotsite_post_save, sender=KegbotSite)
-
-class SiteSettings(models.Model):
-    """General system-wide settings."""
-    VOLUME_DISPLAY_UNITS_CHOICES = (
-      ('metric', 'Metric (mL, L)'),
-      ('imperial', 'Imperial (oz, pint)'),
-    )
-    TEMPERATURE_DISPLAY_UNITS_CHOICES = (
-      ('f', 'Fahrenheit'),
-      ('c', 'Celsius'),
-    )
-    PRIVACY_CHOICES = (
-      ('public', 'Public: Browsing does not require login'),
-      ('members', 'Members only: Must log in to browse'),
-      ('staff', 'Staff only: Only logged-in staff accounts may browse'),
-    )
-    DEFAULT_PRIVACY = 'public'
-
-    site = models.OneToOneField(KegbotSite, related_name='settings')
     volume_display_units = models.CharField(max_length=64,
         choices=VOLUME_DISPLAY_UNITS_CHOICES, default='imperial',
         help_text='Unit system to use when displaying volumetric data.')
@@ -240,20 +221,31 @@ class SiteSettings(models.Model):
         help_text='List of allowed hostnames. If blank, validation is disabled.')
     timezone = models.CharField(max_length=255, choices=TIMEZONE_CHOICES,
         default='UTC',
-        help_text='Time zone for this system')
+        help_text='Time zone for this system.')
     hostname = models.CharField(max_length=255,
-        help_text='Hostname (and optional port) that this system is serving from. Examples: mykegbot.example.com, 192.168.1.100:8000')
+        help_text='Hostname (and optional port) that this system is serving from. '
+        'Examples: mykegbot.example.com, 192.168.1.100:8000')
     use_ssl = models.BooleanField(default=False,
         verbose_name='Using SSL',
         help_text='Select this checkbox if the site is being served with SSL.')
 
     check_for_updates = models.BooleanField(default=True,
-        help_text='Periodically check for updates (<a href="https://kegbot.org/about/checkin">more info</a>)')
+        help_text='Periodically check for updates '
+        '(<a href="https://kegbot.org/about/checkin">more info</a>)')
 
-    class Meta:
-        verbose_name_plural = "site settings"
+    def __unicode__(self):
+        return self.name
 
-    def GetSessionTimeoutDelta(self):
+    @classmethod
+    def get(cls):
+        """Gets the default site settings."""
+        return KegbotSite.objects.get_or_create(name='default',
+            defaults={'is_setup': False})[0]
+
+    def get_stats(self):
+        return Stats.get_latest_for_view()
+
+    def get_session_timeout_timedelta(self):
         return datetime.timedelta(minutes=self.session_timeout_minutes)
 
     def base_url(self):
@@ -267,17 +259,12 @@ class SiteSettings(models.Model):
         return '%s%s' % (self.base_url(), reverse(*args, **kwargs))
 
     def format_volume(self, volume_ml):
-        if SiteSettings.get().volume_display_units == 'metric':
+        if self.volume_display_units == 'metric':
             if volume_ml < 500:
                 return '%d mL' % int(volume_ml)
             return '%.1f L' % (volume_ml / 1000.0)
         else:
             return '%1.f oz' % units.Quantity(volume_ml).InOunces()
-
-    @classmethod
-    def get(cls):
-        """Gets the default site settings."""
-        return KegbotSite.get().settings
 
 
 class ApiKey(models.Model):
@@ -311,7 +298,7 @@ class ApiKey(models.Model):
 def _sitesettings_post_save(sender, instance, **kwargs):
     # Privacy settings may have changed.
     cache.clear()
-post_save.connect(_sitesettings_post_save, sender=SiteSettings)
+post_save.connect(_sitesettings_post_save, sender=KegbotSite)
 
 
 class BeverageProducer(models.Model):
@@ -602,7 +589,7 @@ class Keg(models.Model):
         return reverse('kb-keg', args=(str(self.id),))
 
     def full_url(self):
-        return '%s%s' % (SiteSettings.get().base_url(), self.get_absolute_url())
+        return '%s%s' % (KegbotSite.get().base_url(), self.get_absolute_url())
 
     def full_volume(self):
         return self.full_volume_ml
@@ -731,7 +718,7 @@ class Drink(models.Model):
         return reverse('kb-drink', args=(str(self.id),))
 
     def short_url(self):
-        return '%s%s' % (SiteSettings.get().base_url(), reverse('kb-drink-short', args=(str(self.id),)))
+        return '%s%s' % (KegbotSite.get().base_url(), reverse('kb-drink-short', args=(str(self.id),)))
 
     def Volume(self):
         return units.Quantity(self.volume_ml)
@@ -825,7 +812,7 @@ class DrinkingSession(models.Model):
         return self.end_time - self.start_time
 
     def _AddDrinkNoSave(self, drink):
-        session_delta = SiteSettings.get().GetSessionTimeoutDelta()
+        session_delta = KegbotSite.get().get_session_timeout_timedelta()
         session_end = drink.time + session_delta
 
         if self.start_time > drink.time:
@@ -839,11 +826,11 @@ class DrinkingSession(models.Model):
         self.save()
 
     def short_url(self):
-        return '%s%s' % (SiteSettings.get().base_url(), reverse('kb-session-short',
+        return '%s%s' % (KegbotSite.get().base_url(), reverse('kb-session-short',
             args=(str(self.id),)))
 
     def full_url(self):
-        return '%s%s' % (SiteSettings.get().base_url(), self.get_absolute_url())
+        return '%s%s' % (KegbotSite.get().base_url(), self.get_absolute_url())
 
     def get_highlighted_picture(self):
         pictures = self.pictures.all().order_by('-time')
@@ -926,7 +913,7 @@ class DrinkingSession(models.Model):
             self.delete()
             return
 
-        session_delta = SiteSettings.get().GetSessionTimeoutDelta()
+        session_delta = KegbotSite.get().get_session_timeout_timedelta()
         min_time = None
         max_time = None
         for d in drinks:

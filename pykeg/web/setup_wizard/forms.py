@@ -44,7 +44,7 @@ class CreateOrImportForm(forms.Form):
 
 class MiniSiteSettingsForm(forms.ModelForm):
     class Meta:
-        model = models.SiteSettings
+        model = models.KegbotSite
         fields = (
             'title',
             'privacy',

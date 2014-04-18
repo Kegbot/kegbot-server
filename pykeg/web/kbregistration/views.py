@@ -51,7 +51,7 @@ class RegistrationView(BaseRegistrationView):
     """
     form_class = KegbotRegistrationForm
     def register(self, request, **cleaned_data):
-        settings = request.kbsite.settings
+        settings = request.kbsite
 
         username, email, password = cleaned_data['username'], cleaned_data['email'], cleaned_data['password1']
 

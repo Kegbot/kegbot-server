@@ -22,7 +22,7 @@ from django.conf import settings
 from pykeg.plugin import plugin
 from pykeg.plugin import util
 
-from pykeg.core.models import SiteSettings
+from pykeg.core.models import KegbotSite
 from pykeg.core.util import SuppressTaskErrors
 from socialregistration.contrib.twitter.client import Twitter
 import oauth2 as oauth
@@ -301,9 +301,9 @@ class TwitterPlugin(plugin.Plugin):
                 tweet, image_url)
 
     def get_vars(self, event):
-        settings = SiteSettings.get()
+        kbsite = KegbotSite.get()
 
-        username = settings.guest_name
+        username = kbsite.guest_name
         if event.user and not event.user.is_guest():
             username = event.user.username
 
@@ -325,10 +325,10 @@ class TwitterPlugin(plugin.Plugin):
 
         volume_str = ''
         if event.drink:
-            volume_str = settings.format_volume(event.drink.volume_ml)
+            volume_str = kbsite.format_volume(event.drink.volume_ml)
 
         kbvars = {
-            'site_name': settings.title,
+            'site_name': kbsite.title,
             'username': username,
             'url': url,
             'volume_str': volume_str,

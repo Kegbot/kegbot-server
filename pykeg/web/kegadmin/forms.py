@@ -308,7 +308,7 @@ class SiteSettingsForm(forms.ModelForm):
         help_text='Custom image for the "guest" user.')
 
     class Meta:
-        model = models.SiteSettings
+        model = models.KegbotSite
         fields = (
             'title',
             'privacy',

@@ -41,9 +41,9 @@ class EmailNotificationBackend(BaseNotificationBackend):
         context = {}
         template_name = None
 
-        site_settings = core_models.SiteSettings.get()
-        context['site_name'] = site_settings.title
-        context['site_url'] = site_settings.base_url()
+        kbsite = core_models.KegbotSite.get()
+        context['site_name'] = kbsite.title
+        context['site_url'] = kbsite.base_url()
         context['settings_url'] = context['site_url'] + '/account'
 
         context['drink'] = event.drink

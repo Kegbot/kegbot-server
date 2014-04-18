@@ -42,11 +42,11 @@ def kbsite(request):
     }
 
     if kbsite:
-        ret['guest_info']['name'] = kbsite.settings.guest_name
-        ret['guest_info']['image'] = kbsite.settings.guest_image
+        ret['guest_info']['name'] = kbsite.guest_name
+        ret['guest_info']['image'] = kbsite.guest_image
         ret['HAVE_SESSIONS'] = models.DrinkingSession.objects.all().count() > 0
-        ret['GOOGLE_ANALYTICS_ID'] = kbsite.settings.google_analytics_id
-        ret['metric_volumes'] = (kbsite.settings.volume_display_units == 'metric')
-        ret['temperature_display_units'] = kbsite.settings.temperature_display_units
+        ret['GOOGLE_ANALYTICS_ID'] = kbsite.google_analytics_id
+        ret['metric_volumes'] = (kbsite.volume_display_units == 'metric')
+        ret['temperature_display_units'] = kbsite.temperature_display_units
 
     return ret

@@ -66,9 +66,9 @@ class PasswordResetForm(forms.Form):
                 continue
             from_email = getattr(settings, 'EMAIL_FROM_ADDRESS', from_email)
 
-            site_settings = models.SiteSettings.get()
-            domain = site_settings.hostname
-            site_name = site_settings.title
+            kbsite = models.KegbotSite.get()
+            domain = kbsite.hostname
+            site_name = kbsite.title
             c = {
                 'email': user.email,
                 'domain': domain,
@@ -76,7 +76,7 @@ class PasswordResetForm(forms.Form):
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'user': user,
                 'token': token_generator.make_token(user),
-                'protocol': 'https' if site_settings.use_ssl else 'http',
+                'protocol': 'https' if kbsite.use_ssl else 'http',
             }
             subject = loader.render_to_string(subject_template_name, c)
             # Email subject *must not* contain newlines

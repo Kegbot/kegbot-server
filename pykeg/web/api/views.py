@@ -248,7 +248,7 @@ def get_status(request):
             if not user.is_guest():
                 current_users.add(user)
 
-    title = models.SiteSettings.get().title
+    title = models.KegbotSite.get().title
     version = core_util.get_version()
 
     response = protolib.GetSyncResponse(

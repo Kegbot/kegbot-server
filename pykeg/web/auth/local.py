@@ -66,11 +66,11 @@ class LocalAuthBackend(ModelBackend, AuthBackend):
             user.activation_key = str(uuid.uuid4()).replace('-', '')
             user.save()
 
-            settings = models.SiteSettings.get()
-            url = settings.reverse_full('activate-account', args=(),
+            kbsite = models.KegbotSite.get()
+            url = kbsite.reverse_full('activate-account', args=(),
                 kwargs={'activation_key': user.activation_key})
             context = {
-                'site_name': settings.title,
+                'site_name': kbsite.title,
                 'url': url,
             }
 

@@ -61,8 +61,8 @@ def dashboard(request):
 
     # Hack: Schedule an update checkin if it looks like it's been a while.
     # This works around sites that are not running celerybeat.
-    site_settings = models.SiteSettings.get()
-    if site_settings.check_for_updates and not settings.EMBEDDED:
+    kbsite = request.kbsite
+    if kbsite.check_for_updates and not settings.EMBEDDED:
         now = timezone.now()
         last_checkin_time = request.kbsite.last_checkin_time
         if not last_checkin_time or (now - last_checkin_time) > datetime.timedelta(hours=12):
@@ -93,12 +93,12 @@ def dashboard(request):
 @staff_member_required
 def general_settings(request):
     context = RequestContext(request)
-    settings = models.SiteSettings.get()
+    kbsite = request.kbsite
 
-    form = forms.SiteSettingsForm(instance=settings)
+    form = forms.SiteSettingsForm(instance=kbsite)
 
     if request.method == 'POST':
-        form = forms.SiteSettingsForm(request.POST, instance=settings)
+        form = forms.SiteSettingsForm(request.POST, instance=kbsite)
         if form.is_valid():
             form.save()
             guest_image = request.FILES.get('guest_image')
@@ -106,25 +106,24 @@ def general_settings(request):
                 pic = models.Picture.objects.create()
                 pic.image.save(guest_image.name, guest_image)
                 pic.save()
-                settings = models.SiteSettings.get()
-                settings.guest_image = pic
-                settings.save()
+                kbsite.guest_image = pic
+                kbsite.save()
             messages.success(request, 'Site settings were successfully updated.')
     context['settings_form'] = form
 
     using_ssl = request.is_secure()
     request_host = request.get_host()
     context['request_host'] = request_host
-    context['settings_host'] = settings.hostname
+    context['settings_host'] = kbsite.hostname
     context['request_ssl'] = using_ssl
-    context['settings_ssl'] = settings.use_ssl
+    context['settings_ssl'] = kbsite.use_ssl
 
     return render_to_response('kegadmin/index.html', context_instance=context)
 
 @staff_member_required
 def email(request):
     context = RequestContext(request)
-    site_settings = models.SiteSettings.get()
+    kbsite = request.kbsite
 
     email_backend = getattr(settings, 'EMAIL_BACKEND', None)
     email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
@@ -135,8 +134,8 @@ def email(request):
             test_email_form = forms.TestEmailForm(request.POST)
             if test_email_form.is_valid():
                 address = test_email_form.cleaned_data.get('address')
-                context['site_name'] = site_settings.title
-                context['site_url'] = site_settings.base_url()
+                context['site_name'] = kbsite.title
+                context['site_url'] = kbsite.base_url()
                 context['settings_url'] = context['site_url'] + '/account'
                 message = build_message(address, 'notification/email_test.html', context)
                 message.send(fail_silently=True)
@@ -149,7 +148,6 @@ def email(request):
 @staff_member_required
 def workers(request):
     context = RequestContext(request)
-    site_settings = models.SiteSettings.get()
 
     try:
         inspector = celery_app.control.inspect()
@@ -175,8 +173,6 @@ def workers(request):
                 status[k]['active_queues'] = v
 
     context['status'] = status
-
-
     context['raw_stats'] = kbjson.dumps(context['status'], indent=2)
 
     return render_to_response('kegadmin/workers.html', context_instance=context)

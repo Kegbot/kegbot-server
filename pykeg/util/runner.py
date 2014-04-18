@@ -75,7 +75,7 @@ class Runner(object):
         user = os.environ.get('USER', '')
         if not user:
             try:
-                user = pwd.getpwduid(os.getuid()).pw_name
+                user = pwd.getpwuid(os.getuid()).pw_name
             except KeyError:
                 pass
 

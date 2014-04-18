@@ -29,7 +29,7 @@ from pykeg.plugin import util
 
 logger = util.get_logger(__name__)
 
-@app.task(expires=60)
+@app.task(name='untappd_checkin', expires=60)
 def untappd_checkin(token, beer_id, timezone_name, shout=None,
     foursquare_client_id=None, foursquare_client_secret=None,
     foursquare_venue_id=None):

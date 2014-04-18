@@ -37,14 +37,14 @@ def schedule_tasks(events):
     notification.handle_new_system_events(events)
 
 
-@app.task(name='checkin', bind=True, default_retry_delay=60*60*1, max_retries=3)
-def do_checkin(self):
+@app.task(name='core_checkin', bind=True, default_retry_delay=60*60*1, max_retries=3)
+def core_checkin(self):
     try:
         checkin.checkin()
     except checkin.CheckinError as exc:
         self.retry(exc=exc)
 
-@app.task(queue='stats', expires=60*60)
-def generate_stats_since(drink_id):
-    logger.info('generate_stats_since {}'.format(drink_id))
-    stats.rebuild_from_id(drink_id)
+@app.task(name='build_stats', queue='stats', expires=60*60)
+def build_stats(since_drink_id):
+    logger.info('build_stats since_drink_id={}'.format(since_drink_id))
+    stats.rebuild_from_id(since_drink_id)

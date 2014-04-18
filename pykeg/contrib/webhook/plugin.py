@@ -45,7 +45,7 @@ class WebhookPlugin(plugin.Plugin):
         urls = settings.get('webhook_urls', '').strip().split()
         for url in urls:
             with SuppressTaskErrors(self.logger):
-                tasks.post_webhook.delay(url, event)
+                tasks.webhook_post.delay(url, event)
 
     ### Webhook-specific methods
 

@@ -29,8 +29,8 @@ import urllib2
 
 logger = util.get_logger(__name__)
 
-@app.task(expires=180)
-def post_webhook(url, event):
+@app.task(name='webhook_post', expires=180)
+def webhook_post(url, event):
     """Posts an event to the supplied URL.
 
     The request body is a JSON dictionary of:

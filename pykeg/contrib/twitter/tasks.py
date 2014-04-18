@@ -29,7 +29,7 @@ from pykeg.plugin import util
 
 logger = util.get_logger(__name__)
 
-@app.task(expires=60)
+@app.task(name='twitter_tweet', expires=60)
 def send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret, tweet, image_url):
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret, secure=True)
     auth.set_access_token(oauth_token, oauth_token_secret)

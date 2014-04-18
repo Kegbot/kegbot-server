@@ -51,7 +51,7 @@ from pykeg.core import models
 from pykeg.util.email import build_message
 
 from pykeg.web.kegadmin import forms
-from pykeg.web.tasks import do_checkin
+from pykeg.web.tasks import core_checkin
 
 @staff_member_required
 def dashboard(request):
@@ -68,7 +68,7 @@ def dashboard(request):
         last_checkin_time = request.kbsite.last_checkin_time
         if not last_checkin_time or (now - last_checkin_time) > datetime.timedelta(hours=12):
             try:
-                do_checkin.delay()
+                core_checkin.delay()
             except redis.RedisError:
                 pass
 

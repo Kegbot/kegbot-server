@@ -218,7 +218,7 @@ class KegbotBackend:
 
         if do_postprocess:
             with SuppressTaskErrors(self._logger):
-                tasks.generate_stats_since.delay(d.id)
+                tasks.build_stats.delay(since_drink_id=d.id)
             with transaction.atomic():
                 events = models.SystemEvent.build_events_for_drink(d)
                 tasks.schedule_tasks(events)
@@ -267,7 +267,7 @@ class KegbotBackend:
             session.Rebuild()
 
         with SuppressTaskErrors(self._logger):
-            tasks.generate_stats_since.delay(drink.id)
+            tasks.build_stats.delay(since_drink_id=drink.id)
         self.cache.update_generation()
 
         return drink
@@ -307,7 +307,7 @@ class KegbotBackend:
             drink.session.Rebuild()
 
         with SuppressTaskErrors(self._logger):
-            tasks.generate_stats_since.delay(drink.id)
+            tasks.build_stats.delay(since_drink_id=drink.id)
         self.cache.update_generation()
 
         return drink
@@ -329,7 +329,7 @@ class KegbotBackend:
             drink.session.Rebuild()
 
         with SuppressTaskErrors(self._logger):
-            tasks.generate_stats_since.delay(drink.id)
+            tasks.build_stats.delay(since_drink_id=drink.id)
         self.cache.update_generation()
 
     @transaction.atomic

@@ -154,11 +154,16 @@ def workers(request):
 
     try:
         inspector = celery_app.control.inspect()
-        pings = inspector.ping()
-        stats = inspector.stats()
-        queues = inspector.active_queues()
+        pings = inspector.ping() or {}
+        stats = inspector.stats() or {}
+        queues = inspector.active_queues() or {}
+    except redis.RedisError as e:
+        context['error'] = e
 
-        status = {}
+    status = {}
+    if not pings and 'error' not in context:
+        context['error'] = 'No response from workers. Not running?'
+    else:
         for k, v in pings.iteritems():
             status[k] = {
                 'status': 'ok' if v.get('ok') else 'unknown',
@@ -169,10 +174,9 @@ def workers(request):
         for k, v in queues.iteritems():
             if k in status:
                 status[k]['active_queues'] = v
-        context['status'] = status
-    except redis.RedisError as e:
-        context['status'] = {}
-        context['error'] = e
+
+    context['status'] = status
+
 
     context['raw_stats'] = kbjson.dumps(context['status'], indent=2)
 

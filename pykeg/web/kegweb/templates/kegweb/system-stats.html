@@ -13,6 +13,7 @@
     poured a drink.
   </p>
 </div>
+
 {% else %}
 <div class="row">
   <div class="span8">
@@ -40,19 +41,19 @@
       {% endif %}
     </div>
   </div>
+</div>
 {% endif %}
 
-  <div class="span4">
-    {% if stats %}
+<div class="span4">
+  {% if stats %}
     <h2>Top Drinkers</h2>
     {% chart users_by_volume stats 280 220 %}<br/>
     {% with top_drinkers as ranked_drinkers %}
     {% include "kegweb/drinker-rank.html" %}
     {% endwith %}
-    {% endif %}
-  </div>
-
+  {% endif %}
 </div>
+
 {% endblock %}
 
 {% block kb-extrajs %}

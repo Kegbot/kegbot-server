@@ -41,12 +41,14 @@ urlpatterns = patterns('',
     ### auth account
     (r'^accounts/', include('pykeg.web.kbregistration.urls')),
 
-    ### setup
-    (r'^setup/', include('pykeg.web.setup_wizard.urls')),
-
     ### kegadmin
     (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 )
+
+if 'pykeg.web.setup_wizard' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+        (r'^setup/', include('pykeg.web.setup_wizard.urls')),
+    )
 
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()

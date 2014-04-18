@@ -39,13 +39,14 @@ class WebhookPlugin(plugin.Plugin):
     def get_admin_settings_view(self):
         return views.admin_settings
 
-    def handle_new_event(self, event):
-        self.logger.info('Handling new event: %s' % event.id)
-        settings = self.get_site_settings()
-        urls = settings.get('webhook_urls', '').strip().split()
-        for url in urls:
-            with SuppressTaskErrors(self.logger):
-                tasks.webhook_post.delay(url, event)
+    def handle_new_events(self, events):
+        for event in events:
+            self.logger.info('Handling new event: %s' % event.id)
+            settings = self.get_site_settings()
+            urls = settings.get('webhook_urls', '').strip().split()
+            for url in urls:
+                with SuppressTaskErrors(self.logger):
+                    tasks.webhook_post.delay(url, event)
 
     ### Webhook-specific methods
 

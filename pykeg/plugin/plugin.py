@@ -135,8 +135,8 @@ class Plugin:
         """
         return []
 
-    def handle_new_event(self, event):
-        """Called synchronously when a new event is posted.
+    def handle_new_events(self, event):
+        """Called synchronously when new events are posted.
 
         Plugins should *quickly* perform any work. Long-running work can be
         performed by scheduling a background task in this method.

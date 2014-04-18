@@ -51,60 +51,61 @@ class UntappdPlugin(plugin.Plugin):
             ('callback/$', 'pykeg.contrib.untappd.views.auth_callback', 'callback'),
         ]
 
-    def handle_new_event(self, event):
-        self.logger.info('Handling new event: %s' % event.id)
-        user = event.user
+    def handle_new_events(self, events):
+        for event in events:
+            self.logger.info('Handling new event: %s' % event.id)
+            user = event.user
 
-        if event.kind != event.DRINK_POURED:
-            self.logger.info('Ignoring event: %s' % event.kind)
-            return
+            if event.kind != event.DRINK_POURED:
+                self.logger.info('Ignoring event: %s' % event.kind)
+                return
 
-        if user.is_guest():
-            self.logger.info('Ignoring event: anonymous.')
-            return
+            if user.is_guest():
+                self.logger.info('Ignoring event: anonymous.')
+                return
 
-        if util.is_stale(event.time):
-            self.logger.info('Ignoring event: stale.')
-            return
+            if util.is_stale(event.time):
+                self.logger.info('Ignoring event: stale.')
+                return
 
-        token = self.get_user_token(user)
-        if not token:
-            self.logger.info('Ignoring event: no token for user %s.' % user.username)
-            return
+            token = self.get_user_token(user)
+            if not token:
+                self.logger.info('Ignoring event: no token for user %s.' % user.username)
+                return
 
-        settings = self.get_user_settings(user)
-        if not settings or not settings.get('enable_checkins'):
-            self.logger.info('Ignoring event: not enabled.')
-            return
+            settings = self.get_user_settings(user)
+            if not settings or not settings.get('enable_checkins'):
+                self.logger.info('Ignoring event: not enabled.')
+                return
 
-        beer_id = event.drink.keg.type.untappd_beer_id
-        if not beer_id:
-            self.logger.info('Ignoring event: no untappd beer id.')
-            return
+            beer_id = event.drink.keg.type.untappd_beer_id
+            if not beer_id:
+                self.logger.info('Ignoring event: no untappd beer id.')
+                return
 
-        shout = None
-        if event.drink.shout:
-            shout = event.drink.shout
+            shout = None
+            if event.drink.shout:
+                shout = event.drink.shout
 
-        foursquare_venue_id = foursquare_client_id = foursquare_client_secret = None
-        foursquare = plugin_util.get_plugins().get('foursquare')
-        if foursquare:
-            foursquare_client_id, foursquare_client_secret = foursquare.get_credentials()
-            foursquare_venue_id = foursquare.get_venue_id()
-            if foursquare_venue_id:
-                self.logger.info('Adding location info, foursquare venue id: {}'.format(foursquare_venue_id))
+            foursquare_venue_id = foursquare_client_id = foursquare_client_secret = None
+            foursquare = plugin_util.get_plugins().get('foursquare')
+            if foursquare:
+                foursquare_client_id, foursquare_client_secret = foursquare.get_credentials()
+                foursquare_venue_id = foursquare.get_venue_id()
+                if foursquare_venue_id:
+                    self.logger.info('Adding location info, foursquare venue id: {}'.format(foursquare_venue_id))
+                else:
+                    self.logger.info('No Foursquare venue id, not adding location info.')
             else:
-                self.logger.info('No Foursquare venue id, not adding location info.')
-        else:
-            self.logger.info('Foursquare not available, not adding location info.')
+                self.logger.info('Foursquare not available, not adding location info.')
 
-        timezone_name = timezone.get_current_timezone_name()
+            timezone_name = timezone.get_current_timezone_name()
 
-        with SuppressTaskErrors(self.logger):
-            tasks.untappd_checkin.delay(token, beer_id, timezone_name, shout=shout,
-                foursquare_client_id=foursquare_client_id,
-                foursquare_client_secret=foursquare_client_secret,
-                foursquare_venue_id=foursquare_venue_id)
+            with SuppressTaskErrors(self.logger):
+                tasks.untappd_checkin.delay(token, beer_id, timezone_name, shout=shout,
+                    foursquare_client_id=foursquare_client_id,
+                    foursquare_client_secret=foursquare_client_secret,
+                    foursquare_venue_id=foursquare_venue_id)
 
     ### Untappd-specific methods
 

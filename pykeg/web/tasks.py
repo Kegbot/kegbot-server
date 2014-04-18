@@ -31,9 +31,8 @@ logger = get_task_logger(__name__)
 
 def schedule_tasks(events):
     """Synchronously schedules tasks related to the given events."""
-    for event in events:
-        for plugin in plugin_util.get_plugins():
-            plugin.handle_new_event(event)
+    for plugin in plugin_util.get_plugins():
+        plugin.handle_new_events(events)
     notification.handle_new_system_events(events)
 
 

@@ -194,12 +194,8 @@ CELERYD_CONCURRENCY = 3
 
 from datetime import timedelta
 CELERYBEAT_SCHEDULE = {
-    'ping-every-60-seconds': {
-        'task': 'pykeg.web.tasks.ping',
-        'schedule': timedelta(seconds=60),
-    },
     'checkin': {
-        'task': 'pykeg.web.tasks.do_checkin',
+        'task': 'checkin',
         'schedule': timedelta(hours=24),
     }
 }

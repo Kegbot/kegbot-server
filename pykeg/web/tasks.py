@@ -37,17 +37,7 @@ def schedule_tasks(events):
     notification.handle_new_system_events(events)
 
 
-@app.task
-def handle_new_picture(picture_id):
-    pass  # TODO(mikey): plugin support
-
-
-@app.task
-def ping():
-    return True
-
-
-@app.task(bind=True, default_retry_delay=60*60*1, max_retries=3)
+@app.task(name='checkin', bind=True, default_retry_delay=60*60*1, max_retries=3)
 def do_checkin(self):
     try:
         checkin.checkin()

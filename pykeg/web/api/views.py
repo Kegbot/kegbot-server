@@ -215,9 +215,6 @@ def _save_pour_pic(request, drink):
     # picture here?
     drink.picture = pic
     drink.save()
-
-    with SuppressTaskErrors(_LOGGER):
-        tasks.handle_new_picture.delay(pic.id)
     return pic
 
 def get_session(request, session_id):

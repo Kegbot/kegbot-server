@@ -21,11 +21,10 @@
 from django import forms
 from django.conf import settings
 
-EMBEDDED = getattr(settings, 'EMBEDDED', False)
 WIDE_TEXT = forms.TextInput(attrs={'class': 'input-block-level'})
 
 class SiteSettingsForm(forms.Form):
-    if not EMBEDDED:
+    if not settings.EMBEDDED:
         client_id = forms.CharField(required=False, widget=WIDE_TEXT,
             help_text='Untappd API Client ID.')
         client_secret = forms.CharField(required=False, widget=WIDE_TEXT,

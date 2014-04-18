@@ -90,7 +90,7 @@ class FoursquarePlugin(plugin.Plugin):
     ### Foursquare-specific methods
 
     def get_credentials(self):
-        if getattr(settings, 'EMBEDDED', False):
+        if settings.EMBEDDED:
             return (
                 getattr(settings, 'FOURSQUARE_CLIENT_ID', ''),
                 getattr(settings, 'FOURSQUARE_CLIENT_SECRET', ''),

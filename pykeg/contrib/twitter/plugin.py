@@ -157,7 +157,7 @@ class TwitterPlugin(plugin.Plugin):
         self.datastore.delete('user_profile:%s' % user.id)
 
     def get_credentials(self):
-        if getattr(settings, 'EMBEDDED', False):
+        if settings.EMBEDDED:
             return (
                 getattr(settings, 'TWITTER_CONSUMER_KEY', ''),
                 getattr(settings, 'TWITTER_CONSUMER_SECRET_KEY', ''),

@@ -172,6 +172,7 @@ KEGBOT_PLUGINS = [
 
 # You probably don't want to turn this on.
 DEMO_MODE = False
+EMBEDDED = False
 
 ### Celery
 

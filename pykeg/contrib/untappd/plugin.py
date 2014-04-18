@@ -109,7 +109,7 @@ class UntappdPlugin(plugin.Plugin):
     ### Untappd-specific methods
 
     def get_credentials(self):
-        if getattr(settings, 'EMBEDDED', False):
+        if settings.EMBEDDED:
             return (
                 getattr(settings, 'UNTAPPD_CLIENT_ID', ''),
                 getattr(settings, 'UNTAPPD_CLIENT_SECRET', ''),

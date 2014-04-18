@@ -63,7 +63,7 @@ def dashboard(request):
     # Hack: Schedule an update checkin if it looks like it's been a while.
     # This works around sites that are not running celerybeat.
     site_settings = models.SiteSettings.get()
-    if site_settings.check_for_updates:
+    if site_settings.check_for_updates and not settings.EMBEDDED:
         now = timezone.now()
         last_checkin_time = request.kbsite.last_checkin_time
         if not last_checkin_time or (now - last_checkin_time) > datetime.timedelta(hours=12):

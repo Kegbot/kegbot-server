@@ -82,7 +82,7 @@ def auth_redirect(request):
         return redirect('account-plugin-settings', plugin_name='untappd')
 
     plugin = request.plugins['untappd']
-    url = request.kbsite.settings.reverse_full('plugin-untappd-callback')
+    url = request.build_absolute_uri(reverse('plugin-untappd-callback'))
     client = get_client(*plugin.get_credentials(), callback_url=url)
 
     request.session['untappd_client'] = client

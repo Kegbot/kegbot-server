@@ -118,7 +118,7 @@ def auth_redirect(request):
     plugin = request.plugins['foursquare']
     client = get_client(*plugin.get_credentials())
 
-    url = request.kbsite.settings.reverse_full('plugin-foursquare-callback')
+    url = request.build_absolute_uri(reverse('plugin-foursquare-callback'))
     client.set_callback_url(url)
 
     request.session['foursquare_client'] = client

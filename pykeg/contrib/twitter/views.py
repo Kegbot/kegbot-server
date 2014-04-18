@@ -124,7 +124,7 @@ def site_twitter_redirect(request):
     plugin = request.plugins['twitter']
 
     client = plugin.get_client()
-    url = request.kbsite.settings.reverse_full('plugin-twitter-site_twitter_callback')
+    url = request.build_absolute_uri(reverse('plugin-twitter-site_twitter_callback'))
     client.set_callback_url(url)
 
     return do_redirect(request, client, 'kegadmin-plugin-settings', SESSION_KEY_SITE_TWITTER)
@@ -165,7 +165,7 @@ def user_twitter_redirect(request):
 
     plugin = request.plugins['twitter']
     client = plugin.get_client()
-    url = request.kbsite.settings.reverse_full('plugin-twitter-user_twitter_callback')
+    url = request.build_absolute_uri(reverse('plugin-twitter-user_twitter_callback'))
     client.set_callback_url(url)
 
     return do_redirect(request, client, 'account-plugin-settings', SESSION_KEY_USER_TWITTER)

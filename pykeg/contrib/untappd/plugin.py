@@ -131,7 +131,7 @@ class UntappdPlugin(plugin.Plugin):
         return self.datastore.load_form(forms.UserSettingsForm, 'user_settings:%s' % user.id)
 
     def get_user_settings(self, user):
-        return self.get_user_settings_form().initial
+        return self.get_user_settings_form(user).initial
 
     def save_user_settings_form(self, user, form):
         self.datastore.save_form(form, 'user_settings:%s' % user.id)

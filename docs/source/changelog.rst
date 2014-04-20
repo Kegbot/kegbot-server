@@ -5,6 +5,13 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.24 (2014-04-20)
+---------------------------
+* Updated `kegbot run_workers` to work without extra environment flags when
+  running under supervisor.
+* Bugfix: #255 (problems activating newly-registered users).
+* Internal cleanups.
+
 Version 0.9.23 (2014-04-17)
 ---------------------------
 .. warning::

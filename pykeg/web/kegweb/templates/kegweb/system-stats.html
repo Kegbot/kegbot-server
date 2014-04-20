@@ -5,17 +5,19 @@
 {% block pagetitle %}System Stats{% endblock %}
 
 {% block content%}
+
+<div class="row">
+
 {% if not stats %}
-<div class="alert alert-info">
-  <h2>No Stats.. yet.</h2>
-  <p>
-    This place will be a lot more interesting once somebody has
-    poured a drink.
-  </p>
-</div>
+  <div class="alert alert-info">
+    <h2>No Stats.. yet.</h2>
+    <p>
+      This place will be a lot more interesting once somebody has
+      poured a drink.
+    </p>
+  </div>
 
 {% else %}
-<div class="row">
   <div class="span8">
     <ul class="nav nav-tabs" id="systemDetails">
       <li><a href="#1" data-toggle="tab">Summary</a></li>
@@ -41,17 +43,18 @@
       {% endif %}
     </div>
   </div>
-</div>
 {% endif %}
 
-<div class="span4">
-  {% if stats %}
-    <h2>Top Drinkers</h2>
-    {% chart users_by_volume stats 280 220 %}<br/>
-    {% with top_drinkers as ranked_drinkers %}
-    {% include "kegweb/drinker-rank.html" %}
-    {% endwith %}
-  {% endif %}
+  <div class="span4">
+    {% if stats %}
+      <h2>Top Drinkers</h2>
+      {% chart users_by_volume stats 280 220 %}<br/>
+      {% with top_drinkers as ranked_drinkers %}
+      {% include "kegweb/drinker-rank.html" %}
+      {% endwith %}
+    {% endif %}
+  </div>
+
 </div>
 
 {% endblock %}

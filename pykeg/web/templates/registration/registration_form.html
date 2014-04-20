@@ -7,11 +7,10 @@
 
 {% block content %}
 <div class="well">
-  <form action="/accounts/register/" method="POST">
+  <form action="" method="POST">
     {% csrf_token %}
     {{ form|crispy }}
-    <button type="submit" class="btn btn-success small"
-        name="tweet-form-submit">Register</button>
+    <button type="submit" class="btn btn-success small">Register</button>
   </form>
 </div>
 

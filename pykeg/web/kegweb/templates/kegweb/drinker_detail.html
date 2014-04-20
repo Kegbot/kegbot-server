@@ -87,7 +87,7 @@
         {% else %}
         <table class="table table-condensed">
           <tr>
-            {% if kbsite.settings.volume_display_units == 'metric' %}
+            {% if kbsite.volume_display_units == 'metric' %}
               <th>total liters, by day of week</th>
             {% else %}
               <th>total pints, by day of week</th>
@@ -96,7 +96,7 @@
           </tr>
 
           <tr>
-            {% if kbsite.settings.volume_display_units == 'metric' %}
+            {% if kbsite.volume_display_units == 'metric' %}
               <th>all sessions, by liter per session</th>
             {% else %}
               <th>all sessions, by pints per session</th>

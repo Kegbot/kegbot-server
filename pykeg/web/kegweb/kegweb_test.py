@@ -18,7 +18,9 @@
 
 """General tests for the web interface."""
 
+from django.core import mail
 from django.test import TransactionTestCase
+from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
 
 from pykeg.backend import get_kegbot_backend
@@ -159,4 +161,44 @@ class KegwebTestCase(TransactionTestCase):
         self.assertContains(response, 'Your account has been activated!', status_code=200)
         user = models.User.objects.get(pk=user.id)
         self.assertIsNone(user.activation_key)
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    def test_registration(self):
+        kbsite = models.KegbotSite.get()
+        self.assertEqual('public', kbsite.privacy)
+        self.assertFalse(kbsite.registration_confirmation)
+
+        response = self.client.get('/accounts/register/')
+        self.assertContains(response, 'New Drinker', status_code=200)
+
+        response = self.client.post('/accounts/register/',
+            data={
+                'username': 'newuser',
+                'password1': '1234',
+                'password2': '1234',
+                'email': 'test@example.com',
+            }, follow=True)
+        self.assertRedirects(response, '/account/')
+        self.assertContains(response, 'Hello, newuser')
+        self.assertEqual(0, len(mail.outbox))
+
+        # Trigger confirmation.
+        kbsite.registration_confirmation = True
+        kbsite.save()
+
+        response = self.client.post('/accounts/register/',
+            data={
+                'username': 'newuser2',
+                'password1': '1234',
+                'password2': '1234',
+                'email': 'test2@example.com',
+            }, follow=True)
+        self.assertRedirects(response, '/accounts/register/complete/')
+        self.assertContains(response, 'Please click the activation link')
+        self.assertEqual(1, len(mail.outbox))
+
+        msg = mail.outbox[0]
+        self.assertEqual(['test2@example.com'], msg.to)
+        self.assertTrue('please click on the following link' in msg.body)
 

@@ -68,7 +68,7 @@
     <td>
       <form action="{% url 'kegadmin-edit-drink' drink.id %}" method="POST">{% csrf_token %}
       <div class="input-prepend input-append">
-        {% if kbsite.settings.volume_display_units == 'metric' %}
+        {% if kbsite.volume_display_units == 'metric' %}
           <input type="hidden" name="units" value="mL">
           <input class="span4" type="text" name="volume" value="{{ drink.volume_ml|floatformat:2 }}">
           <span class="add-on">mL</span>

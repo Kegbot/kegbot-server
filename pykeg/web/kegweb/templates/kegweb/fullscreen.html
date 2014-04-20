@@ -1,7 +1,7 @@
 {% extends "skel.html" %}
 {% load kegweblib %}
 
-{% block title %}{{ kbsite.settings.title }} (Fullscreen Mode){% endblock %}
+{% block title %}{{ kbsite.title }} (Fullscreen Mode){% endblock %}
 
 {% block kb-extracss %}
 <style>
@@ -235,7 +235,7 @@ img.taplist-foot-logos {
 			</div>
 		</div>
 
-		<div class="establishment-logo">{% if kbsite.settings.title %}{{ kbsite.settings.title }}{% else %}Kegbot{% endif %}</div>
+		<div class="establishment-logo">{% if kbsite.title %}{{ kbsite.title }}{% else %}Kegbot{% endif %}</div>
 		<div class="kegbot-logo pull-right"><img class="taplist-foot-logos pull-right" src="{{ STATIC_URL }}images/kegbot-logo-full-white.png"></div>
 	</div>
 </div>

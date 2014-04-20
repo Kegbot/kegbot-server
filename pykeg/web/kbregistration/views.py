@@ -69,12 +69,10 @@ class RegistrationView(BaseRegistrationView):
         return new_user
 
     def registration_allowed(self, request):
-        settings = request.kbsite.settings
-        return settings.registration_allowed
+        return request.kbsite.registration_allowed
 
     def get_success_url(self, request, user):
-        settings = request.kbsite.settings
-        if settings.registration_confirmation:
+        if request.kbsite.registration_confirmation:
             return ('registration_complete', (), {})
         else:
             return 'kb-account-main'

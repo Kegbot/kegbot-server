@@ -15,23 +15,20 @@
    <code>EMAIL_FROM_ADDRESS</code> in <code>local_settings.py</code>).
 </div>
 {% else %}
-<div class="alert alert-info">
-  <h4>Test E-mail Configuration</h4>
-  <br/>
-  <p>
-    Your e-mail address is {{ user.email }}
+  <h2>Test E-mail Configuration</h2>
+  <p class="lead">
+    Use this panel to test your server's e-mail configuration.
   </p>
   <form action="" class="user-select" method="POST">{% csrf_token %}
-    <input type="hidden" name="address" value={{ user.email }}>
+    <input type="hidden" name="address" value="{{ user.email }}">
     <button class="btn btn-info" name="send_test_email" type="submit">
-      Send Test E-mail
+      Send Test E-mail to {{ user.email }}
     </button>
   </form>
-  <p>
+  <p class="muted ">
     Please check your inbox at the address above after sending a test E-mail.
     Be sure to check your spam folder, and add the sender to your whitelist if necessary.
   </p>
-</div>
 {% endif %}
 
 {% endblock %}

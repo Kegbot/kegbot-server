@@ -19,6 +19,7 @@
 """Unittests for pykeg.web.api"""
 
 from django.core import mail
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
@@ -199,6 +200,16 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals('[My Kegbot] Complete your registration', msg.subject)
         self.assertEquals(['foo@example.com'], msg.to)
         self.assertEquals('test-from@example', msg.from_email)
+
+        # Simulate clicking on the activation link.
+        user = models.User.objects.get(username='newuser')
+        self.assertIsNotNone(user.activation_key)
+        activation_url = reverse('activate-account', args=(),
+            kwargs={'activation_key': user.activation_key})
+        self.client.logout()
+        response = self.client.get(activation_url)
+        self.assertContains(response, 'Choose a Password', status_code=200)
+
 
     def test_pictures(self):
         kbsite = models.KegbotSite.get()

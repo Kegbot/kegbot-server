@@ -50,7 +50,7 @@ class LocalAuthBackend(ModelBackend, AuthBackend):
         except IntegrityError, e:
             raise UserExistsError(e)
 
-        if password is not None:
+        if password:
             user.set_password(password)
         else:
             user.set_unusable_password()

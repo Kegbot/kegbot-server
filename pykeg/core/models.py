@@ -48,6 +48,7 @@ from pykeg.core import kb_common
 from pykeg.core import keg_sizes
 from pykeg.core import fields
 from pykeg.core import managers
+from pykeg.core.util import get_version
 
 from kegbot.util import kbjson
 from kegbot.util import units
@@ -166,6 +167,7 @@ class KegbotSite(models.Model):
 
     name = models.CharField(max_length=64, unique=True, default='default',
         editable=False)
+    server_version = models.CharField(max_length=64, null=True, editable=False)
     is_active = models.BooleanField(default=True,
         help_text='On/off switch for this site.')
     is_setup = models.BooleanField(default=False,
@@ -240,7 +242,7 @@ class KegbotSite(models.Model):
     def get(cls):
         """Gets the default site settings."""
         return KegbotSite.objects.get_or_create(name='default',
-            defaults={'is_setup': False})[0]
+            defaults={'is_setup': False, 'server_version': get_version()})[0]
 
     def get_stats(self):
         return Stats.get_latest_for_view()

@@ -19,6 +19,7 @@
 import sys
 
 from pykeg import EPOCH
+from pykeg.core.util import get_version
 
 from django.core.management.base import NoArgsCommand
 from django.db import connection
@@ -49,6 +50,7 @@ class Command(NoArgsCommand):
 
         site = models.KegbotSite.get()
         site.epoch = EPOCH
+        site.server_version = get_version()
         site.save()
 
         # Refresh any news (since we have a new version).

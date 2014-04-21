@@ -67,23 +67,22 @@ class KegbotSiteMiddleware:
         epoch = None
         request.need_setup = False
         request.need_upgrade = False
-
         request.kbsite = None
-        try:
-            request.kbsite = models.KegbotSite.objects.get(name='default')
-            epoch = request.kbsite.epoch
-        except models.KegbotSite.DoesNotExist:
-            logger.warning('KegbotSite "default" does not exist yet.')
-        except DatabaseError:
-            logger.exception('DatabaseError: Site probably needs update.')
 
-        if not request.kbsite or not request.kbsite.is_setup:
+        # Select only the `epoch` column, as pending database migrations could
+        # make a full select crash.
+        rows = models.KegbotSite.objects.filter(name='default').values('epoch')
+        if not rows:
             request.need_setup = True
+        elif rows[0].get('epoch', 0) < EPOCH:
+            request.need_upgrade = True
         else:
-            if not epoch or epoch < EPOCH:
-                request.need_upgrade = True
-            timezone.activate(request.kbsite.timezone)
-            request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins())
+            request.kbsite = models.KegbotSite.objects.get(name='default')
+            if request.kbsite.is_setup:
+                timezone.activate(request.kbsite.timezone)
+                request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins())
+            else:
+                request.need_setup = True
 
         request.kbcache = KegbotCache()
         request.backend = get_kegbot_backend()

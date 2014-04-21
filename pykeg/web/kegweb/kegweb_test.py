@@ -202,3 +202,20 @@ class KegwebTestCase(TransactionTestCase):
         self.assertEqual(['test2@example.com'], msg.to)
         self.assertTrue('please click on the following link' in msg.body)
 
+    def test_upgrade_bouncer(self):
+        kbsite = models.KegbotSite.get()
+        response = self.client.get('/')
+        self.assertContains(response, 'My Kegbot', status_code=200)
+
+        old_epoch = kbsite.epoch
+        kbsite.epoch = 1
+        kbsite.save()
+        response = self.client.get('/')
+        self.assertContains(response, 'Upgrade Required', status_code=403)
+
+        kbsite.epoch = old_epoch
+        kbsite.is_setup = False
+        kbsite.save()
+        response = self.client.get('/')
+        self.assertContains(response, 'Kegbot Offline', status_code=403)
+

@@ -7,7 +7,9 @@
     <ul class="nav nav-list">
       <li class="nav-header">General</a>
       {% navitem "kb-account-main" "Account Main" exact %}
+      {% if not SSO_LOGIN_URL %}
       {% navitem "password_change" "Password" %}
+      {% endif %}
       {% navitem "account-mugshot" "Mugshot" %}
       {% navitem "account-notifications" "Notifications" %}
 
@@ -19,10 +21,6 @@
           {% navitem settings_url plugin.get_name %}
         {% endif %}
         {% endfor %}
-      {% endif %}
-
-      {% if USE_FACEBOOK %}
-      {% navitem "fb-account-settings" "Facebook" %}
       {% endif %}
     </ul>
   </div>

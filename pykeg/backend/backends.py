@@ -650,6 +650,11 @@ class KegbotBackend(object):
         with SuppressTaskErrors(self._logger):
             tasks.build_stats.delay(since_drink_id=since_drink_id)
 
+    def build_backup(self):
+        """Builds backup file for Kegbot Site."""
+        with SuppressTaskErrors(self._logger):
+            tasks.build_backup.delay()
+
     def _get_tap(self, keg_tap_or_meter_name):
         if isinstance(keg_tap_or_meter_name, models.KegTap):
             return keg_tap_or_meter_name

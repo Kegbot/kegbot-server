@@ -1,0 +1,60 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Backup/Export | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Backup/Export{% endblock %}
+
+{% block kegadmin-main %}
+
+<h3>Create a Backup</h3>
+<p>
+  <b>Experimental.</b> Click "Export" to generate a zipfile containing all
+  media and database records.
+</p>
+<form action="" method="POST">{% csrf_token %}
+  <button class="btn btn-info" name="package_backup" type="submit">
+    Export
+  </button>
+</form>
+
+{% if backups %}
+<h3>Saved Backups</h3>
+<table class="table table-hover table-bordered">
+<thead>
+    <tr>
+        <th>Server</th>
+        <th>Version</th>
+        <th>Size</th>
+        <th>Created</th>
+        <th>Download</th>
+        <th>Delete</th>
+    </tr>
+</thead>
+<tbody>
+{% for backup in backups %}
+<tr>
+  <td>{{ backup.server_name }}</td>
+  <td>{{ backup.server_version }}</td>
+  <td>
+    {{ backup.size_bytes|filesizeformat }}
+    ({{ backup.num_tables }} tables, {{ backup.num_media_files }} media files)</td>
+  <td>{% timeago backup.created_time %}</td>
+  <td>
+    <a class="btn btn-success" href="{{ backup.url }}">
+      Download
+    </a>
+  </td>
+  <td>
+  <form action="" method="POST">{% csrf_token %}
+    <input type="hidden" name="backup_name" value="{{ backup.backup_name }}">
+    <button class="btn btn-danger" name="delete_backup" type="submit">
+      Delete
+    </button>
+  </form>
+  </td>
+</tr>
+{% endfor %}
+</table>
+{% endif %}
+{% endblock %}

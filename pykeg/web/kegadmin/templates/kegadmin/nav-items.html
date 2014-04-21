@@ -33,6 +33,7 @@
 <li class="divider"></li>
 <li class="nav-header">Other</li>
 {% navitem "kegadmin-workers" "Worker Status" %}
+{% navitem "kegadmin-export" "Backup/Export" %}
 {% if HAVE_ADMIN and not EMBEDDED %}
 <li><a href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a></li>
 {% endif %}

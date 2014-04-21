@@ -20,8 +20,13 @@
 
 import cStringIO
 import datetime
+import os
+import zipfile
+import json
 
 import redis
+
+from operator import itemgetter
 
 from django.conf import settings
 from django.contrib import messages
@@ -29,6 +34,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
+from django.core.files.storage import get_storage_class
 from django.db.models import Q
 from django.forms import widgets
 from django.http import Http404
@@ -45,12 +51,14 @@ from kegbot.util import kbjson
 from kegbot.util import units
 
 from pykeg.celery import app as celery_app
+from pykeg.core import backup
 from pykeg.core import logger
 from pykeg.core import models
 from pykeg.util.email import build_message
 
 from pykeg.web.kegadmin import forms
 from pykeg.web.tasks import core_checkin
+from pykeg.web.tasks import build_backup
 
 @staff_member_required
 def dashboard(request):
@@ -144,6 +152,44 @@ def email(request):
     context['email_configured'] = email_configured
 
     return render_to_response('kegadmin/email.html', context_instance=context)
+
+@staff_member_required
+def export(request):
+    context = RequestContext(request)
+    backups = []
+    storage = get_storage_class()()
+
+    if request.method == 'POST':
+        if 'package_backup' in request.POST:
+            request.backend.build_backup()
+            messages.success(request, 'The backup is being generated; please reload in a few.')
+
+        elif 'delete_backup' in request.POST:
+            backup_file = os.path.normpath(os.path.basename(request.POST['backup_name']))
+            backup_file = os.path.join(backup.BACKUPS_DIRNAME, backup_file)
+            if storage.exists(backup_file):
+                storage.delete(backup_file)
+                messages.success(request, 'Backup deleted.')
+            else:
+                messages.warning(request, 'Unknown backup file.')
+
+    subdirs, files = storage.listdir(backup.BACKUPS_DIRNAME)
+    for filename in files:
+        if filename[-3:] == 'zip':
+            zip_dir = filename[:-4]
+            storage_filename = os.path.join(backup.BACKUPS_DIRNAME, filename)
+            with storage.open(storage_filename, mode='rb') as backup_file:
+                archive = zipfile.ZipFile(backup_file)
+                metadata = backup.read_metadata(archive)
+                metadata['size_bytes'] = storage.size(storage_filename)
+                metadata['url'] = storage.url(storage_filename)
+                metadata['backup_name'] = filename
+                backups.append(metadata)
+
+    backups.sort(key=itemgetter(backup.META_CREATED_TIME), reverse=True)
+    context['backups'] = backups
+
+    return render_to_response('kegadmin/backup_export.html', context_instance=context)
 
 @staff_member_required
 def workers(request):

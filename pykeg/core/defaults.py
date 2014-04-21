@@ -45,11 +45,11 @@ def set_defaults(force=False, set_is_setup=False, create_controller=False):
     guest = models.User.objects.create_user('guest')
 
     tap_0 = models.KegTap.objects.create(name='Main Tap')
-    tap_1 = models.KegTap.objects.create(name='Second Tap')
 
     # Prior to 0.9.23, controller objects were created automatically.
     # This behavior is available for unittests which request it.
     if create_controller:
+        tap_1 = models.KegTap.objects.create(name='Second Tap')
         controller = models.Controller.objects.create(name='kegboard')
 
         meter_0 = models.FlowMeter.objects.create(controller=controller, port_name='flow0',

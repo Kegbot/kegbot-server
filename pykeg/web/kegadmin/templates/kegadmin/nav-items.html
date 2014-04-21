@@ -5,8 +5,10 @@
 
 <li class="nav-header">General</a>
 {% navitem "kegadmin-main" "General Settings" %}
+{% if not EMBEDDED %}
 {% navitem "kegadmin-email" "E-Mail" %}
 {% navitem "kegadmin-logs" "Error Logs" %}
+{% endif %}
 
 <li class="nav-header">System</li>
 {% navitem "kegadmin-controllers" "Controllers" %}
@@ -31,7 +33,7 @@
 <li class="divider"></li>
 <li class="nav-header">Other</li>
 {% navitem "kegadmin-workers" "Worker Status" %}
-{% if HAVE_ADMIN %}
+{% if HAVE_ADMIN and not EMBEDDED %}
 <li><a href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a></li>
 {% endif %}
 <li><a href='https://github.com/Kegbot/kegbot-server/issues' target="_blank">Report a Bug &raquo;</a></li>

@@ -24,11 +24,10 @@ from django.conf import settings
 WIDE_TEXT = forms.TextInput(attrs={'class': 'input-block-level'})
 
 class SiteSettingsForm(forms.Form):
-    if not settings.EMBEDDED:
-        client_id = forms.CharField(required=False, widget=WIDE_TEXT,
-            help_text='Untappd API Client ID.')
-        client_secret = forms.CharField(required=False, widget=WIDE_TEXT,
-            help_text='Untappd API Client Secret')
+    client_id = forms.CharField(required=False, widget=WIDE_TEXT,
+        help_text='Untappd API Client ID.')
+    client_secret = forms.CharField(required=False, widget=WIDE_TEXT,
+        help_text='Untappd API Client Secret')
 
 class UserSettingsForm(forms.Form):
     enable_checkins = forms.BooleanField(initial=True, required=False,

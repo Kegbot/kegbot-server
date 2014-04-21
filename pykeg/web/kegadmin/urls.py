@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import include
 from django.conf.urls import patterns
 from django.conf.urls import url
@@ -5,7 +6,6 @@ from django.conf.urls import url
 urlpatterns = patterns('pykeg.web.kegadmin.views',
     ### main page
     url(r'^$', 'dashboard', name='kegadmin-dashboard'),
-    url(r'^email/$', 'email', name='kegadmin-email'),
     url(r'^settings/$', 'general_settings', name='kegadmin-main'),
     url(r'^workers/$', 'workers', name='kegadmin-workers'),
 
@@ -39,7 +39,6 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^tokens/create/$', 'add_token', name='kegadmin-add-token'),
     url(r'^tokens/(?P<token_id>\d+)/$', 'token_detail', name='kegadmin-edit-token'),
 
-    url(r'^logs/$', 'logs', name='kegadmin-logs'),
     url(r'^autocomplete/beverage/$', 'autocomplete_beverage',
       name='kegadmin-autocomplete-beverage'),
     url(r'^autocomplete/user/$', 'autocomplete_user',
@@ -49,6 +48,12 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
 
     url(r'^plugin/(?P<plugin_name>\w+)/$', 'plugin_settings', name='kegadmin-plugin-settings'),
 )
+
+if not settings.EMBEDDED:
+    urlpatterns += patterns('pykeg.web.kegadmin.views',
+        url(r'^logs/$', 'logs', name='kegadmin-logs'),
+        url(r'^email/$', 'email', name='kegadmin-email'),
+    )
 
 from pykeg.plugin import util
 if util.get_plugins():

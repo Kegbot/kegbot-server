@@ -40,6 +40,8 @@ class UntappdPlugin(plugin.Plugin):
     VERSION = '0.0.1-pre'
 
     def get_admin_settings_view(self):
+        if settings.EMBEDDED:
+            return None
         return views.admin_settings
 
     def get_user_settings_view(self):

@@ -166,7 +166,7 @@ def create_backup_tree(date):
     for model in all_models:
         table_name = model._meta.db_table
         output_filename = os.path.join(tables_dir, table_name + '.json')
-        logger.info('+++ Creating {}'.format(output_filename))
+        logger.debug('+++ Creating {}'.format(output_filename))
         with open(output_filename, 'w') as out:
             serializers.serialize('json', model.objects.all(), indent=2, stream=out)
 
@@ -185,7 +185,7 @@ def create_backup_tree(date):
                 os.makedirs(output_dirname)
             with storage.open(full_filename, 'r') as srcfile:
                 with open(output_filename, 'w') as dstfile:
-                    logger.info('+++ Creating {}'.format(output_filename))
+                    logger.debug('+++ Creating {}'.format(output_filename))
                     shutil.copyfileobj(srcfile, dstfile)
                     metadata[META_NUM_MEDIA_FILES] += 1
         for subdir in subdirs:
@@ -217,7 +217,7 @@ def create_backup_zip(backup_dir, backup_name):
             rel_path = os.path.relpath(full_path, backup_dir)
             archive_path = os.path.join(backup_name, rel_path)
             zf.write(full_path, archive_path)
-            logger.info('Added to zip: {}'.format(archive_path))
+            logger.debug('Added to zip: {}'.format(archive_path))
 
     zf.close()
     return zipfile_path
@@ -257,7 +257,7 @@ def backup():
 def extract_backup(backup_file):
     assert sys.version_info[:3] >= (2, 7, 4), "Unsafe to extract ZIPs in this Python version"
     backup_dir = tempfile.mkdtemp()
-    logger.info('Extracing backup to {}'.format(backup_dir))
+    logger.debug('Extracting backup to {}'.format(backup_dir))
     zf = zipfile.ZipFile(backup_file, mode='r')
     zf.extractall(path=backup_dir)
     return backup_dir
@@ -278,7 +278,7 @@ def restore_tables(backup_dir):
     """Loads database tables from `backup_dir`."""
     for model in get_models_to_restore():
         if model.objects.all().count() > 0:
-            raise IOError('Table "{}" is not empty, cannot restore. '
+            raise BackupError('Table "{}" is not empty, cannot restore. '
                 'Run "kegbot erase" first.'.format(model._meta.db_table))
     tables_dir = os.path.join(backup_dir, TABLES_DIRNAME)
 
@@ -286,7 +286,7 @@ def restore_tables(backup_dir):
         for model in get_models_to_restore():
             table = tbl(model)
             table_file = os.path.join(tables_dir, table + '.json')
-            logger.info('Restoring table {}'.format(table))
+            logger.debug('Restoring table {}'.format(table))
             with open(table_file, 'r') as table_fp:
                 data = table_fp.read()
                 objects = serializers.deserialize('json', data)
@@ -302,7 +302,7 @@ def restore_media(backup_dir):
             full_path = os.path.join(dirname, filename)
             rel_path = os.path.relpath(full_path, media_dir)
             with open(full_path, 'r') as data:
-                logger.info('+++ Restoring file {}'.format(rel_path))
+                logger.debug('+++ Restoring file {}'.format(rel_path))
                 storage.save(rel_path, data)
 
 def check_app_migrations(app_name, backup_migrations):
@@ -325,7 +325,7 @@ def check_app_migrations(app_name, backup_migrations):
     if latest_db is None:
         raise InvalidBackup('No migrations in database for app "{}"'.format(app_name))
 
-    logger.info('App "{}" migrations: backup={} db={}'.format(
+    logger.debug('App "{}" migrations: backup={} db={}'.format(
         app_name, latest_backup.migration, latest_db.migration))
 
     if latest_backup.migration != latest_db.migration:
@@ -340,7 +340,7 @@ def check_migrations(backup_dir):
         backup_migrations = list(serializers.deserialize('json', migration_fp.read()))
 
     for app_name in APP_NAMES:
-        logger.info('Checking migrations for app {}'.format(app_name))
+        logger.debug('Checking migrations for app {}'.format(app_name))
         check_app_migrations(app_name, backup_migrations)
 
 def restore(backup_file):
@@ -348,6 +348,7 @@ def restore(backup_file):
 
     The site must be erased prior to running restore.
     """
+    logger.info('Restoring from {} ...'.format(backup_file))
     backup_root = extract_backup(backup_file)
     try:
         backup_dir = verify_backup(backup_root)
@@ -355,6 +356,7 @@ def restore(backup_file):
             check_migrations(backup_dir)
             restore_tables(backup_dir)
             restore_media(backup_dir)
+        logger.info('Restore completed successfully.')
     finally:
         shutil.rmtree(backup_root)
 
@@ -365,7 +367,7 @@ def erase():
         with disable_foreign_key_checks(connection):
             for model in get_models_to_erase():
                 table = model._meta.db_table
-                logger.info('--- Erasing {}'.format(table))
+                logger.debug('--- Erasing {}'.format(table))
                 cursor = connection.cursor()
                 if connection.vendor == 'mysql':
                     cursor.execute('TRUNCATE TABLE `{}`'.format(table))
@@ -381,7 +383,7 @@ def erase():
         subdirs, files = storage.listdir(dirname)
         for filename in files:
             full_name = os.path.join(dirname, filename)
-            logger.info('Deleting file: {}'.format(full_name))
+            logger.debug('Deleting file: {}'.format(full_name))
             storage.delete(full_name)
         for subdir in subdirs:
             delete_files(dirname)

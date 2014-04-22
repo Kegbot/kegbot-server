@@ -17,6 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
@@ -33,5 +34,11 @@ class Command(BaseCommand):
         if not os.path.exists(backup_path):
             raise CommandError('Archive does not exist: {}'.format(backup_path))
 
-        print 'Restore in progress ...'
-        backup.restore(backup_path)
+        try:
+            backup.restore(backup_path)
+        except backup.BackupError as e:
+            sys.stderr.write('Error: ')
+            sys.stderr.write(e.message)
+            sys.stderr.write('\n')
+            sys.exit(1)
+

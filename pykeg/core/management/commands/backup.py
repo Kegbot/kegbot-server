@@ -23,6 +23,5 @@ class Command(NoArgsCommand):
     help = u'Creates a zipfile backup of the current Kegbot system.'
 
     def handle(self, **options):
-        print 'Backup in progress ...'
         location = backup.backup()
         print 'Backup complete! Backup file:\n  {}'.format(location)

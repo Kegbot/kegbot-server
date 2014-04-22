@@ -45,6 +45,7 @@ metadata.json consists of backup-related metadata:
 import hashlib
 import logging
 import os
+import sys
 import datetime
 import isodate
 import tempfile
@@ -59,24 +60,39 @@ from kegbot.util import kbjson
 from django.core.files.storage import get_storage_class
 from django.core import serializers
 from django.db import transaction
+from django.db import connection
 from django.db.models import Q, get_app, get_models
 from django.utils import timezone
 from django.utils.text import slugify
+
+from south import models as south_models
 
 logger = logging.getLogger(__name__)
 
 # Tables to ignore when creating/loading backups.
 SKIPPED_TABLE_NAMES = [
-    'django_admin_log',
-    'django_session',
-    'django_content_type',
-    'auth_group',
-    'auth_permission'
+    u'django_admin_log',
+    u'django_session',
+    u'django_content_type',
+    u'auth_group',
+    u'auth_permission'
+]
+
+# App names to back up, needed for south migration.
+APP_NAMES = [
+    u'core',
+    u'plugin',
+    u'notification',
+]
+
+# These tables are allowed to be non-empty on restore.
+ALLOWED_NONEMPTY_TABLE_NAMES = [
+    u'south_migrationhistory',
 ]
 
 # Whitelist of directories to include from storage backend.
 MEDIA_WHITELIST = [
-    'pics'
+    u'pics'
 ]
 
 # Metadata key names.
@@ -90,6 +106,28 @@ META_SERVER_NAME = 'server_name'
 BACKUPS_DIRNAME = 'backups'
 TABLES_DIRNAME = 'tables'
 
+class BackupError(IOError):
+    """Base backup exception."""
+
+class InvalidBackup(IOError):
+    """Backup corrupt or not valid."""
+
+
+class disable_foreign_key_checks(object):
+    def __init__(self, connection):
+        self.connection = connection
+
+    def __enter__(self):
+        if self.connection.vendor == 'mysql':
+            cursor = self.connection.cursor()
+            cursor.execute('SET foreign_key_checks = 0')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.connection.vendor == 'mysql':
+            cursor = self.connection.cursor()
+            cursor.execute('SET foreign_key_checks = 1')
+        return False
+
 def read_metadata(zipfile):
     for info in zipfile.infolist():
         basename = os.path.basename(info.filename)
@@ -97,6 +135,20 @@ def read_metadata(zipfile):
             meta_file = zipfile.read(info.filename)
             return kbjson.loads(meta_file)
     return {}
+
+
+def tbl(model):
+    return unicode(model._meta.db_table)
+
+def get_models_to_backup():
+    """Returns models that should be saved during backup."""
+    return [m for m in get_models() if tbl(m) not in SKIPPED_TABLE_NAMES]
+
+def get_models_to_erase():
+    """Returns models that should be erased [prior to restore]."""
+    return [m for m in get_models_to_backup() if tbl(m) not in ALLOWED_NONEMPTY_TABLE_NAMES]
+
+get_models_to_restore = get_models_to_erase
 
 @transaction.atomic
 def create_backup_tree(date):
@@ -108,7 +160,7 @@ def create_backup_tree(date):
     tables_dir = os.path.join(backup_dir, TABLES_DIRNAME)
     os.makedirs(tables_dir)
 
-    all_models = [m for m in get_models() if m._meta.db_table not in SKIPPED_TABLE_NAMES]
+    all_models = get_models_to_backup()
     metadata[META_NUM_TABLES] = len(all_models)
 
     for model in all_models:
@@ -198,7 +250,144 @@ def backup():
                 ret = storage.save(saved_zip_name, temp_zip_file)
                 return ret
         finally:
-            # Remove temp_zip.
-            pass
+            os.unlink(temp_zip)
     finally:
         shutil.rmtree(backup_dir)
+
+def extract_backup(backup_file):
+    assert sys.version_info[:3] >= (2, 7, 4), "Unsafe to extract ZIPs in this Python version"
+    backup_dir = tempfile.mkdtemp()
+    logger.info('Extracing backup to {}'.format(backup_dir))
+    zf = zipfile.ZipFile(backup_file, mode='r')
+    zf.extractall(path=backup_dir)
+    return backup_dir
+
+def verify_backup(backup_dir):
+    paths = os.listdir(backup_dir)
+    if len(paths) != 1:
+        raise InvalidBackup('Expected 1 directory in archive, found {}'.format(len(paths)))
+    backup_dir = os.path.join(backup_dir, paths[0])
+
+    metadata = os.path.join(backup_dir, METADATA_FILENAME)
+    if not os.path.exists(metadata):
+        raise InvalidBackup('Metadata file does not exist')
+
+    return backup_dir
+
+def restore_tables(backup_dir):
+    """Loads database tables from `backup_dir`."""
+    for model in get_models_to_restore():
+        if model.objects.all().count() > 0:
+            raise IOError('Table "{}" is not empty, cannot restore. '
+                'Run "kegbot erase" first.'.format(model._meta.db_table))
+    tables_dir = os.path.join(backup_dir, TABLES_DIRNAME)
+
+    with disable_foreign_key_checks(connection):
+        for model in get_models_to_restore():
+            table = tbl(model)
+            table_file = os.path.join(tables_dir, table + '.json')
+            logger.info('Restoring table {}'.format(table))
+            with open(table_file, 'r') as table_fp:
+                data = table_fp.read()
+                objects = serializers.deserialize('json', data)
+                for obj in objects:
+                    x = obj.save()
+
+def restore_media(backup_dir):
+    media_dir = os.path.join(backup_dir, 'media')
+    storage = get_storage_class()()
+
+    for dirname, subdirs, files in os.walk(media_dir):
+        for filename in files:
+            full_path = os.path.join(dirname, filename)
+            rel_path = os.path.relpath(full_path, media_dir)
+            with open(full_path, 'r') as data:
+                logger.info('+++ Restoring file {}'.format(rel_path))
+                storage.save(rel_path, data)
+
+def check_app_migrations(app_name, backup_migrations):
+    """Asserts that latest migration for `app_name` match those saved in
+       `backup_migrations`.
+    """
+    latest_backup = latest_db = None
+    for m in backup_migrations:
+        if m.object.app_name == app_name:
+            if not latest_backup or latest_backup.migration < m.object.migration:
+                latest_backup = m.object
+
+    qs = south_models.MigrationHistory.objects.filter(app_name=app_name)
+    qs = qs.order_by('-migration')
+    if qs:
+        latest_db = qs[0]
+
+    if latest_backup is None:
+        raise InvalidBackup('No migrations in backup for app "{}"'.format(app_name))
+    if latest_db is None:
+        raise InvalidBackup('No migrations in database for app "{}"'.format(app_name))
+
+    logger.info('App "{}" migrations: backup={} db={}'.format(
+        app_name, latest_backup.migration, latest_db.migration))
+
+    if latest_backup.migration != latest_db.migration:
+        raise InvalidBackup('Backup migration mismatch (db={}).  Try "kegbot migrate {} {}" first.'.format(
+            latest_db.migration, app_name, latest_backup.migration))
+
+
+def check_migrations(backup_dir):
+    tables_dir = os.path.join(backup_dir, TABLES_DIRNAME)
+    migration_filename = os.path.join(tables_dir, 'south_migrationhistory.json')
+    with open(migration_filename, 'r') as migration_fp:
+        backup_migrations = list(serializers.deserialize('json', migration_fp.read()))
+
+    for app_name in APP_NAMES:
+        logger.info('Checking migrations for app {}'.format(app_name))
+        check_app_migrations(app_name, backup_migrations)
+
+def restore(backup_file):
+    """Restores from a backup zipfile.
+
+    The site must be erased prior to running restore.
+    """
+    backup_root = extract_backup(backup_file)
+    try:
+        backup_dir = verify_backup(backup_root)
+        with transaction.atomic():
+            check_migrations(backup_dir)
+            restore_tables(backup_dir)
+            restore_media(backup_dir)
+    finally:
+        shutil.rmtree(backup_root)
+
+def erase():
+    """Erases ALL site data (database tables, media files)."""
+    logger.info('Erasing tables ...')
+    with transaction.atomic():
+        with disable_foreign_key_checks(connection):
+            for model in get_models_to_erase():
+                table = model._meta.db_table
+                logger.info('--- Erasing {}'.format(table))
+                cursor = connection.cursor()
+                if connection.vendor == 'mysql':
+                    cursor.execute('TRUNCATE TABLE `{}`'.format(table))
+                    cursor.execute('ALTER TABLE `{}` AUTO_INCREMENT = 1'.format(model._meta.db_table))
+                elif connection.vendor == 'sqlite':
+                    cursor.execute('DELETE FROM {}'.format(table))
+                else:
+                    raise ValueError('Database vendor "{}" unsupported'.format(connection.vendor))
+
+    storage = get_storage_class()()
+
+    def delete_files(dirname):
+        subdirs, files = storage.listdir(dirname)
+        for filename in files:
+            full_name = os.path.join(dirname, filename)
+            logger.info('Deleting file: {}'.format(full_name))
+            storage.delete(full_name)
+        for subdir in subdirs:
+            delete_files(dirname)
+
+    logger.info('Erasing media ...')
+    for media_dir in MEDIA_WHITELIST:
+        delete_files(media_dir)
+
+    logger.info('Done.')

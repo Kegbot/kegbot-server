@@ -57,7 +57,7 @@ from pykeg.core import models
 from pykeg.core.util import get_version
 from kegbot.util import kbjson
 
-from django.core.files.storage import get_storage_class
+from django.core.files.storage import default_storage
 from django.core import serializers
 from django.db import transaction
 from django.db import connection
@@ -69,8 +69,9 @@ from south import models as south_models
 
 logger = logging.getLogger(__name__)
 
-# Tables to ignore when creating/loading backups.
-SKIPPED_TABLE_NAMES = [
+# Tables to ignore when creating backups.  These tables will still be erased
+# if they exist, which is important in the case of django_session.
+BACKUP_SKIPPED_TABLE_NAMES = [
     u'django_admin_log',
     u'django_session',
     u'django_content_type',
@@ -78,16 +79,16 @@ SKIPPED_TABLE_NAMES = [
     u'auth_permission'
 ]
 
+# These tables are not wiped on erase (and thus may be non-empty on restore).
+ERASE_SKIPPED_TABLE_NAMES = [
+    u'south_migrationhistory',
+]
+
 # App names to back up, needed for south migration.
 APP_NAMES = [
     u'core',
     u'plugin',
     u'notification',
-]
-
-# These tables are allowed to be non-empty on restore.
-ALLOWED_NONEMPTY_TABLE_NAMES = [
-    u'south_migrationhistory',
 ]
 
 # Whitelist of directories to include from storage backend.
@@ -102,14 +103,22 @@ META_NUM_MEDIA_FILES = 'num_media_files'
 META_NUM_TABLES = 'num_tables'
 META_SERVER_VERSION = 'server_version'
 META_SERVER_NAME = 'server_name'
+META_BACKUP_FORMAT = 'backup_format'
 
 BACKUPS_DIRNAME = 'backups'
 TABLES_DIRNAME = 'tables'
 
+# Current protocol.
+BACKUP_FORMAT = 1
+
+
 class BackupError(IOError):
     """Base backup exception."""
 
-class InvalidBackup(IOError):
+class AlreadyInstalledError(BackupError):
+    """Attempt to restore against a non-pristine system."""
+
+class InvalidBackup(BackupError):
     """Backup corrupt or not valid."""
 
 
@@ -138,20 +147,20 @@ def read_metadata(zipfile):
 
 
 def tbl(model):
-    return unicode(model._meta.db_table)
+    return str(model._meta.db_table)
 
 def get_models_to_backup():
     """Returns models that should be saved during backup."""
-    return [m for m in get_models() if tbl(m) not in SKIPPED_TABLE_NAMES]
+    return [m for m in get_models() if tbl(m) not in BACKUP_SKIPPED_TABLE_NAMES]
 
 def get_models_to_erase():
     """Returns models that should be erased [prior to restore]."""
-    return [m for m in get_models_to_backup() if tbl(m) not in ALLOWED_NONEMPTY_TABLE_NAMES]
+    return [m for m in get_models_to_backup() if tbl(m) not in ERASE_SKIPPED_TABLE_NAMES]
 
 get_models_to_restore = get_models_to_erase
 
 @transaction.atomic
-def create_backup_tree(date):
+def create_backup_tree(date, storage):
     """Creates filesystem tree of backup data."""
     backup_dir = tempfile.mkdtemp()
     metadata = {}
@@ -171,7 +180,6 @@ def create_backup_tree(date):
             serializers.serialize('json', model.objects.all(), indent=2, stream=out)
 
     # Save stored media.
-    storage = get_storage_class()()
     metadata[META_NUM_MEDIA_FILES] = 0
 
     def add_files(storage, dirname, destdir):
@@ -193,17 +201,26 @@ def create_backup_tree(date):
 
     destdir = os.path.join(backup_dir, 'media')
     for media_dir in MEDIA_WHITELIST:
-        add_files(storage, media_dir, destdir)
+        if storage.exists(media_dir):
+            add_files(storage, media_dir, destdir)
 
     # Store metadata file.
     metadata[META_SERVER_NAME] = models.KegbotSite.get().title
     metadata[META_SERVER_VERSION] = get_version()
     metadata[META_CREATED_TIME] = isodate.datetime_isoformat(date)
+    metadata[META_BACKUP_FORMAT] = BACKUP_FORMAT
     metadata_filename = os.path.join(backup_dir, METADATA_FILENAME)
     with open(metadata_filename, 'w') as outfile:
         json.dump(metadata, outfile, sort_keys=True, indent=2)
 
-    return backup_dir
+    valid = False
+    try:
+        verify_backup_directory(backup_dir)
+        valid = True
+        return backup_dir
+    finally:
+        if not valid:
+            shutil.rmtree(backup_dir)
 
 def create_backup_zip(backup_dir, backup_name):
     """Creates a zipfile based on a tree created with `create_backup_tree()`."""
@@ -222,7 +239,7 @@ def create_backup_zip(backup_dir, backup_name):
     zf.close()
     return zipfile_path
 
-def backup():
+def backup(storage=default_storage):
     """Creates a new backup archive.
 
     Returns:
@@ -233,7 +250,7 @@ def backup():
     date_str = date.strftime('%Y%m%d-%H%M%S')
     backup_name = '{site_slug}-{date_str}'.format(**vars())
 
-    backup_dir = create_backup_tree(date=date)
+    backup_dir = create_backup_tree(date=date, storage=storage)
     try:
         temp_zip = create_backup_zip(backup_dir, backup_name)
         try:
@@ -246,7 +263,6 @@ def backup():
             saved_zip_name = os.path.join(BACKUPS_DIRNAME,
                 '{}-{}.zip'.format(backup_name, digest))
             with open(temp_zip, 'r') as temp_zip_file:
-                storage = get_storage_class()()
                 ret = storage.save(saved_zip_name, temp_zip_file)
                 return ret
         finally:
@@ -262,23 +278,26 @@ def extract_backup(backup_file):
     zf.extractall(path=backup_dir)
     return backup_dir
 
-def verify_backup(backup_dir):
-    paths = os.listdir(backup_dir)
-    if len(paths) != 1:
-        raise InvalidBackup('Expected 1 directory in archive, found {}'.format(len(paths)))
-    backup_dir = os.path.join(backup_dir, paths[0])
-
-    metadata = os.path.join(backup_dir, METADATA_FILENAME)
-    if not os.path.exists(metadata):
+def verify_backup_directory(backup_dir):
+    metadata_file = os.path.join(backup_dir, METADATA_FILENAME)
+    if not os.path.exists(metadata_file):
         raise InvalidBackup('Metadata file does not exist')
 
-    return backup_dir
+    metadata = kbjson.loads(open(metadata_file, 'r').read())
+    format = metadata.get(META_BACKUP_FORMAT)
+    if format != BACKUP_FORMAT:
+        raise InvalidBackup('Unsupported backup format: {}'.format(format))
+
+    for model in get_models_to_restore():
+        table_json = os.path.join(backup_dir, TABLES_DIRNAME, tbl(model) + '.json')
+        if not os.path.exists(table_json):
+            raise InvalidBackup('Backup missing file {}'.format(table_json))
 
 def restore_tables(backup_dir):
     """Loads database tables from `backup_dir`."""
     for model in get_models_to_restore():
         if model.objects.all().count() > 0:
-            raise BackupError('Table "{}" is not empty, cannot restore. '
+            raise AlreadyInstalledError('Table "{}" is not empty, cannot restore. '
                 'Run "kegbot erase" first.'.format(model._meta.db_table))
     tables_dir = os.path.join(backup_dir, TABLES_DIRNAME)
 
@@ -293,9 +312,8 @@ def restore_tables(backup_dir):
                 for obj in objects:
                     x = obj.save()
 
-def restore_media(backup_dir):
+def restore_media(backup_dir, storage):
     media_dir = os.path.join(backup_dir, 'media')
-    storage = get_storage_class()()
 
     for dirname, subdirs, files in os.walk(media_dir):
         for filename in files:
@@ -343,24 +361,32 @@ def check_migrations(backup_dir):
         logger.debug('Checking migrations for app {}'.format(app_name))
         check_app_migrations(app_name, backup_migrations)
 
+def restore_from_directory(backup_dir, storage=default_storage):
+    logger.info('Restoring from {} ...'.format(backup_dir))
+    verify_backup_directory(backup_dir)
+    with transaction.atomic():
+        check_migrations(backup_dir)
+        restore_tables(backup_dir)
+        restore_media(backup_dir, storage)
+    logger.info('Restore completed successfully.')
+
 def restore(backup_file):
     """Restores from a backup zipfile.
 
     The site must be erased prior to running restore.
     """
     logger.info('Restoring from {} ...'.format(backup_file))
-    backup_root = extract_backup(backup_file)
+    unzipped_dir = extract_backup(backup_file)
     try:
-        backup_dir = verify_backup(backup_root)
-        with transaction.atomic():
-            check_migrations(backup_dir)
-            restore_tables(backup_dir)
-            restore_media(backup_dir)
-        logger.info('Restore completed successfully.')
+        dirs = os.listdir(unzipped_dir)
+        if len(dirs) != 1:
+            raise InvalidBackup('Expected exactly one directory in archive.')
+        backup_dir = os.path.join(unzipped_dir, dirs[0])
+        restore_from_directory(backup_dir)
     finally:
-        shutil.rmtree(backup_root)
+        shutil.rmtree(unzipped_dir)
 
-def erase():
+def erase(storage=default_storage):
     """Erases ALL site data (database tables, media files)."""
     logger.info('Erasing tables ...')
     with transaction.atomic():
@@ -377,8 +403,6 @@ def erase():
                 else:
                     raise ValueError('Database vendor "{}" unsupported'.format(connection.vendor))
 
-    storage = get_storage_class()()
-
     def delete_files(dirname):
         subdirs, files = storage.listdir(dirname)
         for filename in files:
@@ -390,6 +414,7 @@ def erase():
 
     logger.info('Erasing media ...')
     for media_dir in MEDIA_WHITELIST:
-        delete_files(media_dir)
+        if storage.exists(media_dir):
+            delete_files(media_dir)
 
     logger.info('Done.')

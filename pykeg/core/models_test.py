@@ -19,14 +19,17 @@
 """Unittests for pykeg.core.models"""
 
 import datetime
+import os
 
 from django.test import TestCase
+from django.core.files import File
 
 from . import kb_common
 from . import models
 from .testutils import make_datetime
 
 from pykeg.backend import get_kegbot_backend
+from pykeg.core.testutils import get_filename
 from kegbot.util import units
 
 
@@ -216,3 +219,18 @@ class CoreModelsTestCase(TestCase):
         site.registration_mode = 'staff-invite-only'
         site.save()
         self.assertTrue(site.can_invite(self.user))
+
+    def test_photos(self):
+        picture_file = File(open(get_filename('test_image_800x600.png'), 'rb'))
+        picture_obj = models.Picture.objects.create(image=picture_file)
+
+        paths = []
+        for spec in ('resized', 'resized_png', 'thumbnail', 'thumbnail_png', 'image'):
+            img = getattr(picture_obj, spec)
+            path = img.path
+            self.assertTrue(os.path.exists(path))
+            paths.append(path)
+
+        picture_obj.erase_and_delete()
+        for path in paths:
+            self.assertFalse(os.path.exists(path))

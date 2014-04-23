@@ -19,6 +19,7 @@
 """Utilities for use in tests."""
 
 import datetime
+import os
 
 from pykeg.backend.backends import KegbotBackend
 
@@ -26,6 +27,13 @@ from django.conf import settings
 from django.utils import timezone
 
 from django_nose import NoseTestSuiteRunner
+
+
+TESTDATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../testdata/'))
+
+
+def get_filename(f):
+    return os.path.join(TESTDATA_DIR, f)
 
 
 def make_datetime(*args):

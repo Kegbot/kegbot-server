@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 
+from pykeg.core import models
+ALL_PICTURES = models.Picture.objects.all()
+
 
 class LoginForm(AuthenticationForm):
     next_page = forms.CharField(required=False, widget=forms.HiddenInput)
@@ -29,3 +32,8 @@ class MugshotForm(forms.Form):
 
 class RegenerateApiKeyForm(forms.Form):
     pass
+
+
+class DeletePictureForm(forms.Form):
+    picture = forms.ModelChoiceField(queryset=ALL_PICTURES, required=True,
+         widget=forms.HiddenInput)

@@ -20,6 +20,7 @@
 from __future__ import absolute_import
 
 import datetime
+import logging
 import os
 import pytz
 import random
@@ -32,6 +33,7 @@ from django.contrib.auth.models import UserManager
 from django.core.urlresolvers import reverse
 from django.core import validators
 from django.core.cache import cache
+from django.core.files.storage import default_storage
 from django.core.mail import send_mail
 from django.db import models
 from django.db.models.signals import post_save
@@ -62,6 +64,8 @@ from django.utils.translation import ugettext_lazy as _
 """Django models definition for the kegbot database."""
 
 TIMEZONE_CHOICES = ((z, z) for z in pytz.common_timezones)
+
+logger = logging.getLogger(__name__)
 
 
 class User(AbstractBaseUser):
@@ -1284,3 +1288,28 @@ class Picture(models.Model):
             else:
                 return u'An unknown drinker pouring drink {}'.format(self.drink.id)
         return ''
+
+    def erase_and_delete(self):
+        try:
+            for spec in ('resized', 'resized_png', 'thumbnail', 'thumbnail_png', 'image'):
+                image_file = getattr(self, spec)
+                exists = bool(image_file)
+                if not exists:
+                    logger.debug('erase_and_delete: image.id={} spec={}: does not exist'.format(
+                        self.id, spec))
+                    continue
+                logger.debug('erase_and_delete: image.id={} spec={}: deleting ...'.format(
+                    self.id, spec))
+
+                try:
+                    try:
+                        default_storage.delete(image_file.path)
+                    except NotImplementedError:
+                        default_storage.delete(image_file.name)
+                    logger.debug('erase_and_delete: image.id={} spec={}: deleted'.format(
+                        self.id, spec))
+                except IOError as e:
+                    logger.warning('erase_and_delete: image.id={} spec={}: error: {}'.format(
+                        self.id, spec, e))
+        finally:
+            self.delete()

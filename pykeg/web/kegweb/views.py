@@ -18,6 +18,7 @@
 
 """Kegweb main views."""
 
+from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
 from django.shortcuts import redirect
@@ -32,6 +33,7 @@ from django.views.generic.list import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from pykeg.core import models
+from pykeg.web.kegweb import forms
 
 ### main views
 
@@ -145,6 +147,28 @@ def short_session_detail(request, session_id):
 def drink_detail(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
     context = RequestContext(request, {'drink': drink})
+
+    can_delete = (request.user == drink.user) or request.user.is_staff
+
+    if can_delete:
+        picture_form = forms.DeletePictureForm(initial={'picture': drink.picture})
+    else:
+        picture_form = None
+
+    if request.method == 'POST':
+        if can_delete:
+            picture_form = forms.DeletePictureForm(request.POST)
+            if picture_form.is_valid():
+                drink.picture.erase_and_delete()
+                picture_form = None
+                messages.success(request, 'Erased image.')
+            else:
+                messages.error(request, 'request not valid: ' + str(picture_form.errors))
+        else:
+            messages.error(request, 'No permission to delete picture.')
+        return redirect('kb-drink', drink_id=str(drink_id))
+
+    context['picture_form'] = picture_form
     return render_to_response('kegweb/drink_detail.html', context_instance=context)
 
 

@@ -33,7 +33,7 @@ class KegwebTestCase(TransactionTestCase):
         defaults.set_defaults(set_is_setup=True, create_controller=True)
 
     def testBasicEndpoints(self):
-        for endpoint in ('/kegs/', '/stats/'):
+        for endpoint in ('/kegs/', '/stats/', '/drinkers/guest/', '/drinkers/guest/sessions/'):
             response = self.client.get(endpoint)
             self.assertEquals(200, response.status_code)
 

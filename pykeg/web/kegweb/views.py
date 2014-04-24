@@ -144,7 +144,7 @@ def drinker_sessions(request, username):
     drinks = user.drinks.all()
 
     chunks = models.Stats.objects.filter(
-        user=user, keg__isnull=True, session__isnull=False, is_latest=True
+        user=user, keg__isnull=True, session__isnull=False, is_first=True
         ).order_by('-id').select_related('session')
 
     paginator = Paginator(chunks, 5)

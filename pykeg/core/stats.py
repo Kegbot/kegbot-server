@@ -159,7 +159,7 @@ def rebuild_from_id(drink_id):
 
 def _generate_view(drink, user, session, keg):
     """Generates a single "view" (row) based on `drink`."""
-    logger.info('>>> Building stats for drink={}: user={} session={} keg={}'.format(
+    logger.debug('>>> Building stats for drink={}: user={} session={} keg={}'.format(
         drink.id,
         user.username if user else None,
         session.id if session else None,
@@ -198,12 +198,12 @@ def _generate_view(drink, user, session, keg):
 
     # Build all drinks on the hit list.
     for build_drink in build_list:
-        logger.info('  - operating on drink {}'.format(build_drink.id))
+        logger.debug('  - operating on drink {}'.format(build_drink.id))
         stats = BUILDER.build(drink=build_drink, previous_stats=prior_stats)
         row = models.Stats.objects.create(drink=build_drink, user=user, session=session,
             keg=keg, stats=stats, is_first=(not prior_stats))
         prior_stats = stats
-    logger.info('<<< Done.')
+    logger.debug('<<< Done.')
 
 
 def generate(drink, invalidate_first=True):

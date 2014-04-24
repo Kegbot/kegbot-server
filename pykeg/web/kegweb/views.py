@@ -73,7 +73,11 @@ def system_stats(request):
 
     largest_session_id = stats.get('largest_session', {}).get('session_id', None)
     if largest_session_id:
-        context['largest_session'] = models.DrinkingSession.objects.get(pk=largest_session_id)
+        try:
+            context['largest_session'] = models.DrinkingSession.objects.get(pk=largest_session_id)
+        except models.DrinkingSession.DoesNotExist:
+            # Stats out of date.
+            pass
 
     context['top_drinkers'] = top_drinkers[:10]
 

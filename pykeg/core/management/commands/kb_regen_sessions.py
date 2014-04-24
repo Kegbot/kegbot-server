@@ -17,6 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import connection
+from django.db import transaction
 from django.core.management.base import CommandError
 from django.core.management.base import NoArgsCommand
 
@@ -24,9 +25,10 @@ from pykeg.core import models
 from pykeg.core.management.commands.common import progbar
 
 class Command(NoArgsCommand):
-    help = u'Regenerate all cached stats.'
+    help = u'Regenerate all sessions.'
     args = '<none>'
 
+    @transaction.atomic
     def handle(self, **options):
         drinks = models.Drink.objects.all()
 
@@ -67,9 +69,12 @@ class Command(NoArgsCommand):
         for p in pics:
             pos += 1
             progbar('set image sessions', pos, count)
-            if p.drink:
-                p.session = p.drink.session
-                p.save()
+            try:
+                if p.drink:
+                    p.session = p.drink.session
+                    p.save()
+            except models.Drink.DoesNotExist:
+                pass
         print ''
 
         print 'done!'

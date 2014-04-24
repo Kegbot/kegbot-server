@@ -175,3 +175,16 @@ class StatsTestCase(TransactionTestCase):
         self.assertEquals(400, self.users[2].get_stats().total_volume_ml)
         self.assertEquals(1900, models.KegbotSite.get().get_stats().total_volume_ml)
         self.assertEquals(1000, drinks[-1].session.get_stats().total_volume_ml)
+
+        # Delete all stats for some intermediate drinks.
+        models.Stats.objects.filter(drink=drinks[-1]).delete()
+        models.Stats.objects.filter(drink=drinks[-2]).delete()
+
+        d = self.backend.record_drink('kegboard.flow0', ticks=1111,
+            username=user.username, volume_ml=1111, pour_time=now)
+        drinks.append(d)
+
+        # Intermediate stats are generated.
+        self.assertEquals(3011, models.KegbotSite.get().get_stats().total_volume_ml)
+        self.assertEquals(2111, drinks[-1].session.get_stats().total_volume_ml)
+

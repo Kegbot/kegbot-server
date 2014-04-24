@@ -19,6 +19,7 @@
 """Unittests for pykeg.core.backup"""
 
 import datetime
+import difflib
 import os
 import sys
 import shutil
@@ -145,19 +146,62 @@ class BackupTestCase(TransactionTestCase):
         finally:
             shutil.rmtree(backup_dir)
 
-    def test_restore_with_erase(self):
+    def test_restore_needs_erase(self):
         defaults.set_defaults(set_is_setup=True)
         backup_dir = backup.create_backup_tree(self.now, storage=self.storage)
 
         try:
+            # Restore must fail when something is already installed.
             self.assertRaises(backup.AlreadyInstalledError, backup.restore_from_directory,
                     backup_dir)
 
             # Erase and restore.
             backup.erase(self.storage)
             backup.restore_from_directory(backup_dir, self.storage)
-
-            #backup_dir = backup.create_backup_tree(self.now, storage=self.storage)
         finally:
             shutil.rmtree(backup_dir)
+
+    def test_backup_contents_same(self):
+        defaults.set_defaults(set_is_setup=True)
+        backup_dir = backup.create_backup_tree(self.now, storage=self.storage)
+
+        try:
+            # Verify recursive_diff works with no diffs.
+            self.recursive_diff(backup_dir, backup_dir)
+
+            second_backup_dir = backup.create_backup_tree(self.now, storage=self.storage)
+            try:
+                self.recursive_diff(backup_dir, second_backup_dir)
+            finally:
+                shutil.rmtree(second_backup_dir)
+        finally:
+            shutil.rmtree(backup_dir)
+
+    def recursive_diff(self, dir1, dir2):
+        dir1_files = set()
+        dir2_files = set()
+
+        for dirname, subdirs, files in os.walk(dir1):
+            for filename in files:
+                full_path = os.path.join(dirname, filename)
+                rel_path = os.path.relpath(full_path, dir1)
+                dir1_files.add(rel_path)
+
+        for dirname, subdirs, files in os.walk(dir2):
+            for filename in files:
+                full_path = os.path.join(dirname, filename)
+                rel_path = os.path.relpath(full_path, dir2)
+                dir2_files.add(rel_path)
+
+        self.assertEqual(dir1_files, dir2_files)
+
+        for relfile in dir1_files:
+            f1_full = os.path.join(dir1, relfile)
+            f2_full = os.path.join(dir2, relfile)
+            f1 = open(f1_full).read()
+            f2 = open(f2_full).read()
+            if f1 != f2:
+                message = 'Files not equal: "{}" and "{}" differ.'.format(f1_full, f2_full)
+                message += '\n' + ''.join(difflib.ndiff(f1.splitlines(True), f2.splitlines(True)))
+                self.fail(message)
 

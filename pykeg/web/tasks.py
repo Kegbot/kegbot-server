@@ -33,7 +33,10 @@ logger = get_task_logger(__name__)
 def schedule_tasks(events):
     """Synchronously schedules tasks related to the given events."""
     for plugin in plugin_util.get_plugins():
-        plugin.handle_new_events(events)
+        try:
+            plugin.handle_new_events(events)
+        except Exception as e:
+            logger.exception('Error dispatching events to plugin {}'.format(plugin.get_name()))
     notification.handle_new_system_events(events)
 
 

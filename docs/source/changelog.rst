@@ -5,9 +5,15 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.25 (2014-04-24)
+---------------------------
+* Experimental new commands: ``kegbot backup`` and ``kegbot restore``.
+* Bugfix: #262 (user sessions page).
+* Addressed an issue which could lead to incomplete statistics being shown.
+
 Version 0.9.24 (2014-04-20)
 ---------------------------
-* Updated `kegbot run_workers` to work without extra environment flags when
+* Updated ``kegbot run_workers`` to work without extra environment flags when
   running under supervisor.
 * Bugfix: #255 (problems activating newly-registered users).
 * Internal cleanups.

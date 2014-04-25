@@ -341,8 +341,8 @@ class Beverage(models.Model):
     TYPES = (
         (TYPE_BEER, 'Beer'),
         (TYPE_WINE, 'Wine'),
-        (TYPE_WINE, 'Soda'),
-        (TYPE_WINE, 'Kombucha'),
+        (TYPE_SODA, 'Soda'),
+        (TYPE_KOMBUCHA, 'Kombucha'),
         (TYPE_OTHER, 'Other/Unknown'),
     )
 

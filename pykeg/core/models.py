@@ -1113,7 +1113,7 @@ class SystemEvent(models.Model):
         session = drink.session
         user = drink.user
 
-        events = []
+        events = cls.build_events_for_keg(keg)
 
         if session:
             q = session.events.filter(kind=cls.SESSION_STARTED)
@@ -1137,17 +1137,16 @@ class SystemEvent(models.Model):
         e.save()
         events.append(e)
 
-        if keg:
-            volume_now = keg.remaining_volume_ml()
-            volume_before = volume_now + drink.volume_ml
-            threshold = keg.full_volume_ml * kb_common.KEG_VOLUME_LOW_PERCENT
+        volume_now = keg.remaining_volume_ml()
+        volume_before = volume_now + drink.volume_ml
+        threshold = keg.full_volume_ml * kb_common.KEG_VOLUME_LOW_PERCENT
 
-            if volume_now <= threshold and volume_before > threshold:
-                e = drink.events.create(kind=cls.KEG_VOLUME_LOW,
-                    time=drink.time, drink=drink, user=user, keg=keg,
-                    session=session)
-                e.save()
-                events.append(e)
+        if volume_now <= threshold and volume_before > threshold:
+            e = drink.events.create(kind=cls.KEG_VOLUME_LOW,
+                time=drink.time, drink=drink, user=user, keg=keg,
+                session=session)
+            e.save()
+            events.append(e)
 
         return events
 

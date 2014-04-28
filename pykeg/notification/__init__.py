@@ -25,11 +25,13 @@ from pykeg.notification import models
 
 __all__ = ['get_backends', 'handle_new_system_events']
 
+
 def get_backends():
     """Returns the enabled notification backend(s)."""
     backend_names = settings.NOTIFICATION_BACKENDS
     backends = [import_by_path(n)() for n in backend_names]
     return backends
+
 
 def handle_new_system_events(events):
     """Processes newly-generated system events.
@@ -46,10 +48,11 @@ def handle_new_system_events(events):
     for event in events:
         handle_single_event(event, backends)
 
+
 def handle_single_event(event, backends):
     kind = event.kind
     logger.info('Processing event: %s' % event.kind)
-    
+
     for backend in backends:
         backend_name = str(backend.__class__)
         prefs = models.NotificationSettings.objects.filter(backend=backend_name)
@@ -71,4 +74,3 @@ def handle_single_event(event, backends):
             user = matching_pref.user
             logger.info('Notifying %s for event %s' % (user, kind))
             backend.notify(event, user)
-

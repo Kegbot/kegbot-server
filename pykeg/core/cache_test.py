@@ -22,6 +22,7 @@ from django.test.utils import override_settings
 
 from .cache import KegbotCache
 
+
 class KegbotCacheTest(TransactionTestCase):
 
     def setUp(self):

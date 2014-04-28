@@ -30,6 +30,7 @@ class DemoModeMiddleware:
         '/accounts/logout/',
         '/demo/',
     )
+
     def process_request(self, request):
         if not getattr(settings, 'DEMO_MODE', False):
             return
@@ -45,4 +46,3 @@ class DemoModeMiddleware:
             path_or_url = 'kb-home'
 
         return redirect(path_or_url)
-

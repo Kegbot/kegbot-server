@@ -21,5 +21,6 @@ from django.utils.module_loading import import_by_path
 
 from pykeg.backend.exceptions import *
 
+
 def get_kegbot_backend():
     return import_by_path(settings.KEGBOT_BACKEND)()

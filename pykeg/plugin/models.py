@@ -20,6 +20,7 @@ from django.db import models
 from kegbot.util import kbjson
 from pykeg.core.jsonfield import JSONField
 
+
 class PluginData(models.Model):
     plugin_name = models.CharField(max_length=127,
         help_text='Plugin short name')

@@ -30,13 +30,16 @@ if _CUSTOM_SEARCH_DIR:
 else:
     SEARCH_DIRS = [os.path.expanduser(d) for d in LOCAL_SETTINGS_SEARCH_DIRS]
 
+
 def _Debug(message):
     if _DEBUG:
         sys.stderr.write('importhacks: %s\n' % (message,))
 
+
 def _Warning(message):
     if _DEBUG:
         sys.stderr.write('importhacks: %s\n' % (message,))
+
 
 def _AddToSysPath(paths):
     for path in paths:
@@ -46,6 +49,7 @@ def _AddToSysPath(paths):
             sys.path.append(path)
         else:
             _Debug('Already in sys.path: %s' % path)
+
 
 def _ExtendSysPath():
     """ Add some paths where we'll look for user settings. """
@@ -61,11 +65,13 @@ def _ExtendSysPath():
 
     _AddToSysPath(paths)
 
+
 def _SetDjangoSettingsEnv(settings='pykeg.settings'):
     """ Set django settings if not set. """
     if not os.environ.get('DJANGO_SETTINGS_MODULE'):
         _Debug('Setting DJANGO_SETTINGS_MODULE=%s' % (settings,))
         os.environ['DJANGO_SETTINGS_MODULE'] = settings
+
 
 def _FixAll():
     try:

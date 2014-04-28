@@ -30,8 +30,10 @@ STAT_MAP = {}
 
 logger = logging.getLogger(__name__)
 
+
 class StatsBuilder:
     """Derives statistics from drinks."""
+
     def __init__(self):
         self.functions = []
         for name, fn in inspect.getmembers(self, inspect.ismethod):
@@ -143,19 +145,23 @@ BUILDER = StatsBuilder()
 
 ### Public methods
 
+
 def invalidate(drink_id):
     """Clears all statistics since (and including) drink_id."""
     logger.debug('--- Invalidating stats since id {}'.format(drink_id))
     models.Stats.objects.filter(drink_id__gte=drink_id).delete()
 
+
 def invalidate_all():
     logger.debug('--- Invalidating ALL stats')
     models.Stats.objects.all().delete()
+
 
 def rebuild_from_id(drink_id):
     invalidate(drink_id)
     for drink in models.Drink.objects.filter(id__gte=drink_id).order_by('id'):
         generate(drink, invalidate_first=False)
+
 
 def _generate_view(drink, user, session, keg):
     """Generates a single "view" (row) based on `drink`."""
@@ -220,4 +226,4 @@ def generate(drink, invalidate_first=True):
 if __name__ == '__main__':
     import cProfile
     command = """main()"""
-    cProfile.runctx( command, globals(), locals(), filename="stats.profile" )
+    cProfile.runctx(command, globals(), locals(), filename="stats.profile")

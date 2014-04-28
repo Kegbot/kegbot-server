@@ -68,10 +68,12 @@ EXPECTED_SAVED_TABLES = [
     u'south_migrationhistory',
 ]
 
+
 def run(cmd, args=[]):
     cmdname = cmd.__module__.split('.')[-1]
     arg_str = ' '.join('%s' % a for a in args)
     cmd.run_from_argv([sys.argv[0], cmdname] + args)
+
 
 class BackupTestCase(TransactionTestCase):
     def setUp(self):
@@ -204,4 +206,3 @@ class BackupTestCase(TransactionTestCase):
                 message = 'Files not equal: "{}" and "{}" differ.'.format(f1_full, f2_full)
                 message += '\n' + ''.join(difflib.ndiff(f1.splitlines(True), f2.splitlines(True)))
                 self.fail(message)
-

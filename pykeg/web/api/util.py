@@ -42,14 +42,18 @@ LOGGER = logging.getLogger(__name__)
 
 ATTR_NEED_AUTH = 'api_auth_required'
 
+
 def is_api_request(request):
     return request.path.startswith('/api')
+
 
 def needs_auth(viewfunc):
     return getattr(viewfunc, ATTR_NEED_AUTH, False)
 
+
 def set_needs_auth(viewfunc):
     setattr(viewfunc, ATTR_NEED_AUTH, True)
+
 
 def check_api_key(request):
     """Check a request for an API key."""
@@ -71,6 +75,7 @@ def check_api_key(request):
     if api_key.user and (not api_key.user.is_staff and not api_key.user.is_superuser):
         raise kbapi.PermissionDeniedError('User is not staff/superuser')
 
+
 def to_json_error(e, exc_info):
     """Converts an exception to an API error response."""
     # Wrap some common exception types into kbapi types
@@ -91,14 +96,15 @@ def to_json_error(e, exc_info):
         http_code = 500
         message = 'An internal error occurred: %s' % str(e)
     result = {
-      'error' : {
-        'code' : code,
-        'message' : message
-      }
+        'error': {
+            'code': code,
+            'message': message
+        }
     }
     if settings.DEBUG:
         result['error']['traceback'] = "".join(traceback.format_exception(*exc_info))
     return result, http_code
+
 
 def build_response(request, result_data, response_code=200):
     """Builds an HTTP response for JSON data."""
@@ -133,13 +139,15 @@ def prepare_data(data, inner=False):
         return result
     else:
         return {
-          container: result
+            container: result
         }
+
 
 def to_dict(data):
     if not isinstance(data, Message):
         data = protolib.ToProto(data, full=True)
     return protoutil.ProtoMessageToDict(data)
+
 
 def wrap_exception(request, exception):
     """Returns a HttpResponse with the exception in JSON form."""
@@ -148,9 +156,9 @@ def wrap_exception(request, exception):
     LOGGER.error('%s: %s' % (exception.__class__.__name__, exception),
         exc_info=exc_info,
         extra={
-          'status_code': 500,
-          'request': request,
-        }
+        'status_code': 500,
+        'request': request,
+    }
     )
 
     if settings.DEBUG and settings.HAVE_RAVEN:
@@ -163,6 +171,6 @@ def wrap_exception(request, exception):
 
     result_data, http_code = to_json_error(exception, exc_info)
     result_data['meta'] = {
-      'result': 'error'
+        'result': 'error'
     }
     return build_response(request, result_data, response_code=http_code)

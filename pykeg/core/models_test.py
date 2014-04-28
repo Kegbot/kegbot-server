@@ -31,6 +31,7 @@ from .testutils import make_datetime
 from pykeg.backend import get_kegbot_backend
 from kegbot.util import units
 
+
 class CoreModelsTestCase(TestCase):
     def setUp(self):
         models.KegbotSite.get()  # create the site
@@ -101,7 +102,7 @@ class CoreModelsTestCase(TestCase):
         d = self.backend.record_drink(self.tap,
             ticks=1200,
             username=self.user.username,
-        )
+                                      )
 
         self.assertEqual(d.keg.served_volume(), d.volume_ml)
 
@@ -112,7 +113,7 @@ class CoreModelsTestCase(TestCase):
         vol = units.Quantity(1200)
 
         drinks = {}
-        base_time = make_datetime(2009,1,1,1,0,0)
+        base_time = make_datetime(2009, 1, 1, 1, 0, 0)
 
         ticks = volume = vol.InKbMeterTicks()
 
@@ -128,41 +129,41 @@ class CoreModelsTestCase(TestCase):
             ticks=1200,
             username=u1.username,
             pour_time=base_time,
-        )
+                                  )
         # u=2 t=0
         self.backend.record_drink(self.tap,
             ticks=1200,
             username=u2.username,
             pour_time=base_time,
-        )
+                                  )
 
         # u=1 t=10
         self.backend.record_drink(self.tap,
             ticks=1200,
             username=u1.username,
-            pour_time=base_time+td_10m,
-        )
+            pour_time=base_time + td_10m,
+                                  )
 
         # u=1 t=400
         self.backend.record_drink(self.tap,
             ticks=1200,
             username=u1.username,
-            pour_time=base_time+td_400m,
-        )
+            pour_time=base_time + td_400m,
+                                  )
 
         # u=2 t=490
         self.backend.record_drink(self.tap,
             ticks=1200,
             username=u2.username,
-            pour_time=base_time+td_390m,
-        )
+            pour_time=base_time + td_390m,
+                                  )
 
         # u=2 t=400
         self.backend.record_drink(self.tap,
             ticks=1200,
             username=u2.username,
-            pour_time=base_time+td_400m,
-        )
+            pour_time=base_time + td_400m,
+                                  )
 
         drinks_u1 = u1.drinks.all().order_by('time')
         drinks_u2 = u2.drinks.all().order_by('time')

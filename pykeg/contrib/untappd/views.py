@@ -29,6 +29,7 @@ import oauth2 as oauth
 from . import forms
 from . import oauth_client
 
+
 @staff_member_required
 def admin_settings(request, plugin):
     context = RequestContext(request)

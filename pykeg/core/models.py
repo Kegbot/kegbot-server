@@ -81,7 +81,7 @@ class User(AbstractBaseUser):
                     '@/./+/-/_ characters'),
         validators=[
             validators.RegexValidator(re.compile('^[\w.@+-]+$'), _('Enter a valid username.'), 'invalid')
-        ])
+    ])
     email = models.EmailField(_('email address'), blank=True)
     is_staff = models.BooleanField(_('staff status'), default=False,
         help_text=_('Designates whether the user can log into this admin '
@@ -151,17 +151,17 @@ class User(AbstractBaseUser):
 class KegbotSite(models.Model):
 
     VOLUME_DISPLAY_UNITS_CHOICES = (
-      ('metric', 'Metric (mL, L)'),
-      ('imperial', 'Imperial (oz, pint)'),
+        ('metric', 'Metric (mL, L)'),
+        ('imperial', 'Imperial (oz, pint)'),
     )
     TEMPERATURE_DISPLAY_UNITS_CHOICES = (
-      ('f', 'Fahrenheit'),
-      ('c', 'Celsius'),
+        ('f', 'Fahrenheit'),
+        ('c', 'Celsius'),
     )
     PRIVACY_CHOICES = (
-      ('public', 'Public: Browsing does not require login'),
-      ('members', 'Members only: Must log in to browse'),
-      ('staff', 'Staff only: Only logged-in staff accounts may browse'),
+        ('public', 'Public: Browsing does not require login'),
+        ('members', 'Members only: Must log in to browse'),
+        ('staff', 'Staff only: Only logged-in staff accounts may browse'),
     )
     DEFAULT_PRIVACY = 'public'
 
@@ -200,8 +200,8 @@ class KegbotSite(models.Model):
     session_timeout_minutes = models.PositiveIntegerField(
         default=kb_common.DRINK_SESSION_TIME_MINUTES,
         help_text='Maximum time, in minutes, that a session may be idle (no pours) '
-            'before it is considered to be finished.  '
-            'Recommended value is %s.' % kb_common.DRINK_SESSION_TIME_MINUTES)
+        'before it is considered to be finished.  '
+        'Recommended value is %s.' % kb_common.DRINK_SESSION_TIME_MINUTES)
     privacy = models.CharField(max_length=63, choices=PRIVACY_CHOICES,
         default=DEFAULT_PRIVACY,
         help_text='Whole-system setting for system privacy.')
@@ -295,7 +295,8 @@ class ApiKey(models.Model):
     @classmethod
     def generate_key(cls):
         """Returns a new random key."""
-        return '%032x' % random.randint(0, 2**128 - 1)
+        return '%032x' % random.randint(0, 2 ** 128 - 1)
+
 
 def _sitesettings_post_save(sender, instance, **kwargs):
     # Privacy settings may have changed.
@@ -490,7 +491,7 @@ class FlowMeter(models.Model):
             raise ValueError('Illegal name')
 
         controller_name = meter_name[:idx]
-        port_name = meter_name[idx+1:]
+        port_name = meter_name[idx + 1:]
         controller = Controller.objects.get_or_create(name=controller_name)[0]
         return cls.objects.get_or_create(controller=controller, port_name=port_name)[0]
 
@@ -500,7 +501,7 @@ class FlowMeter(models.Model):
         if idx <= 0:
             raise cls.DoesNotExist('Illegal meter_name: %s' % repr(meter_name))
         controller_name = meter_name[:idx]
-        port_name = meter_name[idx+1:]
+        port_name = meter_name[idx + 1:]
 
         try:
             controller = Controller.objects.get(name=controller_name)
@@ -539,7 +540,7 @@ class FlowToggle(models.Model):
             raise ValueError('Illegal name')
 
         controller_name = toggle_name[:idx]
-        port_name = toggle_name[idx+1:]
+        port_name = toggle_name[idx + 1:]
         controller = Controller.objects.get_or_create(name=controller_name)[0]
         return cls.objects.get_or_create(controller=controller, port_name=port_name)[0]
 
@@ -549,7 +550,7 @@ class FlowToggle(models.Model):
         if idx <= 0:
             raise cls.DoesNotExist('Illegal toggle_name: %s' % repr(toggle_name))
         controller_name = toggle_name[:idx]
-        port_name = toggle_name[idx+1:]
+        port_name = toggle_name[idx + 1:]
 
         try:
             controller = Controller.objects.get(name=controller_name)
@@ -658,6 +659,7 @@ class Keg(models.Model):
 
     def __unicode__(self):
         return u'Keg #{} - {}'.format(self.id, self.type)
+
 
 def _keg_pre_save(sender, instance, **kwargs):
     keg = instance
@@ -788,6 +790,7 @@ class AuthenticationToken(models.Model):
             return True
         return timezone.now() < self.expire_time
 
+
 def _auth_token_pre_save(sender, instance, **kwargs):
     if instance.auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
         instance.token_value = instance.token_value.lower()
@@ -849,10 +852,10 @@ class DrinkingSession(models.Model):
     def get_absolute_url(self):
         dt = timezone.localtime(self.start_time)
         return reverse('kb-session-detail', args=(), kwargs={
-          'year' : dt.year,
-          'month' : dt.month,
-          'day' : dt.day,
-          'pk' : self.pk})
+            'year': dt.year,
+            'month': dt.month,
+            'day': dt.day,
+            'pk': self.pk})
 
     def get_stats(self):
         return Stats.get_latest_for_view(session=self)
@@ -878,9 +881,9 @@ class DrinkingSession(models.Model):
             ret = '{}, {} and {}'.format(*names)
         else:
             if guest_trailer:
-                return '%s, %s and at least %i others' % (names[0], names[1], num-2)
+                return '%s, %s and at least %i others' % (names[0], names[1], num - 2)
             else:
-                return '%s, %s and %i others' % (names[0], names[1], num-2)
+                return '%s, %s and %i others' % (names[0], names[1], num - 2)
 
         return '%s%s' % (ret, guest_trailer)
 
@@ -1162,6 +1165,7 @@ def _pics_file_name(instance, filename, now=None, uuid_str=None):
 
     return os.path.join('pics', new_filename)
 
+
 class Picture(models.Model):
     image = models.ImageField(upload_to=_pics_file_name,
         help_text='The image')
@@ -1206,4 +1210,3 @@ class Picture(models.Model):
             else:
                 return u'An unknown drinker pouring drink {}'.format(self.drink.id)
         return ''
-

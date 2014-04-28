@@ -1,6 +1,7 @@
 import random
 from django.db.models import Count
 
+
 def random_item(model_cls):
     count = model_cls.objects.aggregate(count=Count('id'))['count']
     if count == 0:

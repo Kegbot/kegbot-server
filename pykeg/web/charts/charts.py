@@ -24,6 +24,7 @@ from kegbot.util import util
 
 from pykeg.core import models
 
+
 class ChartError(Exception):
     """Base chart exception."""
 
@@ -31,17 +32,17 @@ class ChartError(Exception):
 def format_volume(volume_ml, chart_kwargs):
     metric_volumes = chart_kwargs.get('metric_volumes', False)
     if metric_volumes:
-      return volume_ml / 1000.0, 'L'
+        return volume_ml / 1000.0, 'L'
     else:
-      return units.Quantity(volume_ml).InPints(), 'pints'
+        return units.Quantity(volume_ml).InPints(), 'pints'
 
 
 def format_temperature(temp_c, chart_kwargs):
-  use_c = chart_kwargs.get('temperature_units', None) == 'c'
-  if use_c:
-    return temp_c
-  else:
-    return util.CtoF(temp_c)
+    use_c = chart_kwargs.get('temperature_units', None) == 'c'
+    if use_c:
+        return temp_c
+    else:
+        return util.CtoF(temp_c)
 
 
 def chart_temp_sensor(sensor, *args, **kwargs):
@@ -79,32 +80,33 @@ def chart_temp_sensor(sensor, *args, **kwargs):
         raise ChartError('Not enough data')
 
     res = {
-      'series': [
-        {
-          'data': temps,
-          'marker': {
-            'enabled': False,
+        'series': [
+          {
+              'data': temps,
+              'marker': {
+                  'enabled': False,
+              },
           },
+        ],
+        'tooltip': {
+            'enabled': False,
         },
-      ],
-      'tooltip': {
-        'enabled': False,
-      },
-      'xAxis': {
-        'categories': ['Temperature'],
-        'labels': {
-          'enabled': False,
+        'xAxis': {
+            'categories': ['Temperature'],
+            'labels': {
+                'enabled': False,
+            },
+            'tickInterval': 0,
         },
-        'tickInterval': 0,
-      },
-      'yAxis': {
-        'labels': {
-          'enabled': False,
+        'yAxis': {
+            'labels': {
+                'enabled': False,
+            },
+            'tickInterval': 1,
         },
-        'tickInterval': 1,
-      },
     }
     return res
+
 
 def chart_volume_by_weekday(stats, *args, **kwargs):
     """ Shows a histogram of volume by day of the week.
@@ -123,6 +125,7 @@ def chart_volume_by_weekday(stats, *args, **kwargs):
         volmap[int(weekday)] += format_volume(volume_ml, kwargs)[0]
     return _weekday_chart_common(volmap)
 
+
 def chart_sessions_by_weekday(stats, *args, **kwargs):
     data = stats.get('volume_by_day_of_week', {})
     weekdays = [0] * 7
@@ -130,15 +133,16 @@ def chart_sessions_by_weekday(stats, *args, **kwargs):
         weekdays[int(weekday)] += format_volume(volume_ml, kwargs)[0]
     return _weekday_chart_common(weekdays)
 
+
 def chart_sessions_by_volume(stats, *args, **kwargs):
-    buckets = [0]*6
+    buckets = [0] * 6
     labels = [
-      '<1',
-      '1.0-1.9',
-      '2.0-2.9',
-      '3.0-3.9',
-      '4.0-4.9',
-      '5+'
+        '<1',
+        '1.0-1.9',
+        '2.0-2.9',
+        '3.0-3.9',
+        '4.0-4.9',
+        '5+'
     ]
     volmap = stats.get('volume_by_session', {})
     for session_volume in volmap.values():
@@ -150,20 +154,21 @@ def chart_sessions_by_volume(stats, *args, **kwargs):
             buckets[intval] += 1
 
     res = {
-      'xAxis': {
-        'categories': labels,
-      },
-      'series': [
-        {'data': buckets},
-      ],
-      'yAxis': {
-        'min': 0,
-      },
-      'chart': {
-        'defaultSeriesType': 'column',
-      }
+        'xAxis': {
+            'categories': labels,
+        },
+        'series': [
+            {'data': buckets},
+        ],
+        'yAxis': {
+            'min': 0,
+        },
+        'chart': {
+            'defaultSeriesType': 'column',
+        }
     }
     return res
+
 
 def chart_users_by_volume(stats, *args, **kwargs):
     vols = stats.get('volume_by_drinker')
@@ -173,7 +178,7 @@ def chart_users_by_volume(stats, *args, **kwargs):
     data = []
     for username, volume in vols.iteritems():
         if not username:
-          username = 'Guest'
+            username = 'Guest'
         volume, units = format_volume(volume, kwargs)
         label = '<b>%s</b> (%.1f %s)' % (username, volume, units)
         data.append((label, volume))
@@ -194,24 +199,25 @@ def chart_users_by_volume(stats, *args, **kwargs):
         data.append((label, other_vol))
 
     res = {
-      'series': [
-        {
-          'type': 'pie',
-          'name': 'Drinkers by Volume',
-          'data': data,
-        }
-      ],
-      'yAxis': {
-        'min': 0,
-      },
-      'chart': {
-        'defaultSeriesType': 'column',
-      },
-      'tooltip': {
-        'enabled': False,
-      },
+        'series': [
+          {
+              'type': 'pie',
+              'name': 'Drinkers by Volume',
+              'data': data,
+          }
+        ],
+        'yAxis': {
+            'min': 0,
+        },
+        'chart': {
+            'defaultSeriesType': 'column',
+        },
+        'tooltip': {
+            'enabled': False,
+        },
     }
     return res
+
 
 def _weekday_chart_common(vals):
     labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -220,20 +226,20 @@ def _weekday_chart_common(vals):
     #vals.insert(0, vals.pop(-1))
 
     res = {
-      'xAxis': {
-        'categories': labels,
-      },
-      'yAxis': {
-        'min': 0,
-      },
-      'series': [
-        {'data': vals},
-      ],
-      'tooltip': {
-        'enabled': False,
-      },
-      'chart': {
-        'defaultSeriesType': 'column',
-      }
+        'xAxis': {
+            'categories': labels,
+        },
+        'yAxis': {
+            'min': 0,
+        },
+        'series': [
+            {'data': vals},
+        ],
+        'tooltip': {
+            'enabled': False,
+        },
+        'chart': {
+            'defaultSeriesType': 'column',
+        }
     }
     return res

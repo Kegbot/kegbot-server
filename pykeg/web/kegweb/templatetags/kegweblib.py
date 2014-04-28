@@ -39,6 +39,7 @@ from pykeg.web.charts import charts
 
 register = Library()
 
+
 @register.inclusion_tag('kegweb/mugshot_box.html', takes_context=True)
 def mugshot_box(context, user, boxsize=0):
     return {
@@ -46,6 +47,7 @@ def mugshot_box(context, user, boxsize=0):
         'boxsize': boxsize,
         'guest_info': context.get('guest_info', None),
     }
+
 
 @register.inclusion_tag('kegweb/picture-gallery.html')
 def gallery(picture_or_pictures, thumb_size='span2', gallery_id=''):
@@ -58,6 +60,7 @@ def gallery(picture_or_pictures, thumb_size='span2', gallery_id=''):
     c['gallery_id'] = gallery_id
     return c
 
+
 @register.inclusion_tag('kegweb/badge.html')
 def badge(amount, caption, style='', is_volume=False, do_pluralize=False):
     if is_volume:
@@ -69,6 +72,7 @@ def badge(amount, caption, style='', is_volume=False, do_pluralize=False):
         'badge_caption': caption,
         'badge_style': style,
     }
+
 
 @register.inclusion_tag('kegweb/includes/progress_bar.html')
 def progress_bar(progress_int, extra_css=''):
@@ -100,6 +104,7 @@ def navitem(parser, token):
     if len(tokens) < 3:
         raise TemplateSyntaxError, '%s requires at least 3 tokens' % tokens[0]
     return NavitemNode(*tokens[1:])
+
 
 class NavitemNode(Node):
     def __init__(self, *args):
@@ -139,6 +144,7 @@ def timeago(parser, token):
         raise TemplateSyntaxError, '%s requires 2 tokens' % tokens[0]
     return TimeagoNode(tokens[1])
 
+
 class TimeagoNode(Node):
     def __init__(self, timestamp_varname):
         self._timestamp_varname = timestamp_varname
@@ -170,6 +176,7 @@ def volumetag(parser, token):
         raise TemplateSyntaxError, '%s requires at least 2 tokens' % tokens[0]
     return TemperatureNode(tokens[1])
 
+
 class TemperatureNode(Node):
     TEMPLATE = "%(amount)s&deg; %(unit)s"
 
@@ -195,6 +202,7 @@ class TemperatureNode(Node):
 
 ### volume
 
+
 @register.tag('volume')
 def volumetag(parser, token):
     """{% volume <amount> %}"""
@@ -202,6 +210,7 @@ def volumetag(parser, token):
     if len(tokens) < 2:
         raise TemplateSyntaxError, '%s requires at least 2 tokens' % tokens[0]
     return VolumeNode(tokens[1], tokens[2:])
+
 
 class VolumeNode(Node):
     TEMPLATE = """
@@ -236,6 +245,7 @@ class VolumeNode(Node):
 
 ### drinker
 
+
 @register.tag('drinker_name')
 def drinker_name_tag(parser, token):
     """{% drinker_name <drink_or_user_obj> [nolink] %}"""
@@ -243,6 +253,7 @@ def drinker_name_tag(parser, token):
     if len(tokens) < 2:
         raise TemplateSyntaxError, '%s requires at least 2 tokens' % tokens[0]
     return DrinkerNameNode(tokens[1], tokens[2:])
+
 
 class DrinkerNameNode(Node):
     def __init__(self, drink_varname, extra_args):
@@ -292,6 +303,7 @@ def chart(parser, tokens):
     args = tokens[2:-2]
     return ChartNode(charttype, width, height, args)
 
+
 class ChartNode(Node):
     CHART_TMPL = '''
     <!-- begin chart %(chart_id)s -->
@@ -317,6 +329,7 @@ class ChartNode(Node):
     </div>
     <!-- end chart %(chart_id)s -->
     '''
+
     def __init__(self, charttype, width, height, args):
         self._charttype = charttype
         self._width = width
@@ -359,29 +372,29 @@ class ChartNode(Node):
             return self.show_error(str(e))
 
         chart_base = {
-          'chart': {
-            'borderColor': '#eeeeff',
-            'borderWidth': 0,
-            'renderTo': 'chart-%s-container' % chart_id,
-          },
-          'credits': {
-            'enabled': False,
-          },
-          'legend': {
-            'enabled': False,
-          },
-          'margin': [0, 0, 0, 0],
-          'title': {
-            'text': None,
-          },
-          'yAxis': {
-            'labels': {
-              'align': 'left'
+            'chart': {
+                'borderColor': '#eeeeff',
+                'borderWidth': 0,
+                'renderTo': 'chart-%s-container' % chart_id,
             },
+            'credits': {
+                'enabled': False,
+            },
+            'legend': {
+                'enabled': False,
+            },
+            'margin': [0, 0, 0, 0],
             'title': {
-              'text': None,
-            }
-          },
+                'text': None,
+            },
+            'yAxis': {
+                'labels': {
+                    'align': 'left'
+                },
+                'title': {
+                    'text': None,
+                }
+            },
         }
 
         chart_data = chart_base

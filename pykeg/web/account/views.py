@@ -39,11 +39,13 @@ from pykeg.web.kegweb import forms
 from pykeg.notification.forms import NotificationSettingsForm
 from pykeg.notification.models import NotificationSettings
 
+
 @login_required
 def account_main(request):
     context = RequestContext(request)
     context['user'] = request.user
     return render_to_response('account/index.html', context_instance=context)
+
 
 @login_required
 def edit_mugshot(request):
@@ -63,6 +65,7 @@ def edit_mugshot(request):
             user.mugshot = pic
             user.save()
     return render_to_response('account/mugshot.html', context_instance=context)
+
 
 @login_required
 def notifications(request):
@@ -128,13 +131,16 @@ def regenerate_api_key(request):
         key.save()
     return redirect('kb-account-main')
 
+
 def password_change(request, *args, **kwargs):
     kwargs['template_name'] = 'account/password_change.html'
     kwargs['post_change_redirect'] = reverse('password_change_done')
     return password_change_orig(request, *args, **kwargs)
 
+
 def password_change_done(request):
     return password_change_done_orig(request, 'account/password_change_done.html')
+
 
 @login_required
 def plugin_settings(request, plugin_name):

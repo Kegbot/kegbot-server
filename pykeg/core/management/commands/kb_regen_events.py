@@ -21,6 +21,7 @@ from django.core.management.base import NoArgsCommand
 from pykeg.core import models
 from pykeg.core.management.commands.common import progbar
 
+
 class Command(NoArgsCommand):
     help = u'Regenerate all system events.'
     args = '<none>'

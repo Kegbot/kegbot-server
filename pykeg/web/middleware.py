@@ -52,6 +52,7 @@ ALLOWED_PATHS = (
     '/setup/',
 )
 
+
 def _path_allowed(path, kbsite):
     for p in ALLOWED_PATHS:
         if path.startswith(p):
@@ -63,6 +64,7 @@ class KegbotSiteMiddleware:
     ALLOWED_VIEW_MODULE_PREFIXES = (
         'pykeg.web.setup_wizard.',
     )
+
     def process_request(self, request):
         epoch = None
         request.need_setup = False
@@ -125,6 +127,7 @@ class KegbotSiteMiddleware:
 
 class SiteActiveMiddleware:
     """Middleware which throws 503s when KegbotSite.is_active is false."""
+
     def process_view(self, request, view_func, view_args, view_kwargs):
         if not hasattr(request, 'kbsite') or not request.kbsite:
             return None
@@ -147,6 +150,7 @@ class SiteActiveMiddleware:
 
 class HttpHostMiddleware:
     """Middleware which checks a dynamic version of settings.ALLOWED_HOSTS."""
+
     def process_request(self, request):
         if not getattr(request, 'kbsite', None):
             return None
@@ -160,7 +164,7 @@ class HttpHostMiddleware:
         valid = HttpHostMiddleware.validate_host(host, host_patterns)
 
         if not valid:
-            message =  "Invalid HTTP_HOST header (you may need to change Kegbot's ALLOWED_HOSTS setting): %s" % host
+            message = "Invalid HTTP_HOST header (you may need to change Kegbot's ALLOWED_HOSTS setting): %s" % host
             if request.user.is_superuser or request.user.is_staff:
                 messages.warning(request, message)
             else:
@@ -188,9 +192,9 @@ class HttpHostMiddleware:
                 pattern == '*' or
                 pattern.startswith('.') and (
                     domain.endswith(pattern) or domain == pattern[1:]
-                    ) or
+                ) or
                 pattern == domain
-                )
+            )
             if match:
                 return True
 
@@ -203,6 +207,7 @@ class PrivacyMiddleware:
     Must be installed after ApiRequestMiddleware (in request order) to
     access is_kb_api_request attribute.
     """
+
     def process_view(self, request, view_func, view_args, view_kwargs):
         if not hasattr(request, 'kbsite'):
             return None

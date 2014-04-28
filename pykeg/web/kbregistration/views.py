@@ -38,6 +38,7 @@ except ImportError:
 
 """Kegbot-aware clone of django-registration default backend views."""
 
+
 class RegistrationView(BaseRegistrationView):
     """Hybrid of backends.default and backends.simple.
 
@@ -50,6 +51,7 @@ class RegistrationView(BaseRegistrationView):
     aware of our custom User.
     """
     form_class = KegbotRegistrationForm
+
     def register(self, request, **cleaned_data):
         settings = request.kbsite
 

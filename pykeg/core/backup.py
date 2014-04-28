@@ -115,8 +115,10 @@ BACKUP_FORMAT = 1
 class BackupError(IOError):
     """Base backup exception."""
 
+
 class AlreadyInstalledError(BackupError):
     """Attempt to restore against a non-pristine system."""
+
 
 class InvalidBackup(BackupError):
     """Backup corrupt or not valid."""
@@ -137,6 +139,7 @@ class disable_foreign_key_checks(object):
             cursor.execute('SET foreign_key_checks = 1')
         return False
 
+
 def read_metadata(zipfile):
     for info in zipfile.infolist():
         basename = os.path.basename(info.filename)
@@ -149,15 +152,18 @@ def read_metadata(zipfile):
 def tbl(model):
     return str(model._meta.db_table)
 
+
 def get_models_to_backup():
     """Returns models that should be saved during backup."""
     return [m for m in get_models() if tbl(m) not in BACKUP_SKIPPED_TABLE_NAMES]
+
 
 def get_models_to_erase():
     """Returns models that should be erased [prior to restore]."""
     return [m for m in get_models_to_backup() if tbl(m) not in ERASE_SKIPPED_TABLE_NAMES]
 
 get_models_to_restore = get_models_to_erase
+
 
 @transaction.atomic
 def create_backup_tree(date, storage):
@@ -222,6 +228,7 @@ def create_backup_tree(date, storage):
         if not valid:
             shutil.rmtree(backup_dir)
 
+
 def create_backup_zip(backup_dir, backup_name):
     """Creates a zipfile based on a tree created with `create_backup_tree()`."""
     zipfile_fileno, zipfile_path = tempfile.mkstemp()
@@ -238,6 +245,7 @@ def create_backup_zip(backup_dir, backup_name):
 
     zf.close()
     return zipfile_path
+
 
 def backup(storage=default_storage):
     """Creates a new backup archive.
@@ -257,7 +265,7 @@ def backup(storage=default_storage):
             # Append sha1sum.
             sha1 = hashlib.sha1()
             with open(temp_zip, 'rb') as f:
-                for chunk in iter(lambda: f.read(2**20), b''):
+                for chunk in iter(lambda: f.read(2 ** 20), b''):
                     sha1.update(chunk)
             digest = sha1.hexdigest()
             saved_zip_name = os.path.join(BACKUPS_DIRNAME,
@@ -270,6 +278,7 @@ def backup(storage=default_storage):
     finally:
         shutil.rmtree(backup_dir)
 
+
 def extract_backup(backup_file):
     assert sys.version_info[:3] >= (2, 7, 4), "Unsafe to extract ZIPs in this Python version"
     backup_dir = tempfile.mkdtemp()
@@ -277,6 +286,7 @@ def extract_backup(backup_file):
     zf = zipfile.ZipFile(backup_file, mode='r')
     zf.extractall(path=backup_dir)
     return backup_dir
+
 
 def verify_backup_directory(backup_dir):
     metadata_file = os.path.join(backup_dir, METADATA_FILENAME)
@@ -292,6 +302,7 @@ def verify_backup_directory(backup_dir):
         table_json = os.path.join(backup_dir, TABLES_DIRNAME, tbl(model) + '.json')
         if not os.path.exists(table_json):
             raise InvalidBackup('Backup missing file {}'.format(table_json))
+
 
 def restore_tables(backup_dir):
     """Loads database tables from `backup_dir`."""
@@ -312,6 +323,7 @@ def restore_tables(backup_dir):
                 for obj in objects:
                     x = obj.save()
 
+
 def restore_media(backup_dir, storage):
     media_dir = os.path.join(backup_dir, 'media')
 
@@ -322,6 +334,7 @@ def restore_media(backup_dir, storage):
             with open(full_path, 'r') as data:
                 logger.debug('+++ Restoring file {}'.format(rel_path))
                 storage.save(rel_path, data)
+
 
 def check_app_migrations(app_name, backup_migrations):
     """Asserts that latest migration for `app_name` match those saved in
@@ -361,6 +374,7 @@ def check_migrations(backup_dir):
         logger.debug('Checking migrations for app {}'.format(app_name))
         check_app_migrations(app_name, backup_migrations)
 
+
 def restore_from_directory(backup_dir, storage=default_storage):
     logger.info('Restoring from {} ...'.format(backup_dir))
     verify_backup_directory(backup_dir)
@@ -369,6 +383,7 @@ def restore_from_directory(backup_dir, storage=default_storage):
         restore_tables(backup_dir)
         restore_media(backup_dir, storage)
     logger.info('Restore completed successfully.')
+
 
 def restore(backup_file):
     """Restores from a backup zipfile.
@@ -385,6 +400,7 @@ def restore(backup_file):
         restore_from_directory(backup_dir)
     finally:
         shutil.rmtree(unzipped_dir)
+
 
 def erase(storage=default_storage):
     """Erases ALL site data (database tables, media files)."""

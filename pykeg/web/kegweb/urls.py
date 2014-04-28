@@ -20,7 +20,7 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
 
       ### drinkers
       url(r'^drinkers/(?P<username>[\w@\.+\-_]+)/?$', 'user_detail', name='kb-drinker'),
-      url(r'^drinkers/(?P<username>[\w@\.+\-_]+)/sessions/?$', 'drinker_sessions', 
+      url(r'^drinkers/(?P<username>[\w@\.+\-_]+)/sessions/?$', 'drinker_sessions',
         name='kb-drinker-sessions'),
 
       ### drinks

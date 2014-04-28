@@ -23,6 +23,7 @@ from django.conf import settings
 
 WIDE_TEXT = forms.TextInput(attrs={'class': 'input-block-level'})
 
+
 class SiteSettingsForm(forms.Form):
     if not settings.EMBEDDED:
         client_id = forms.CharField(required=False, widget=WIDE_TEXT,
@@ -31,6 +32,7 @@ class SiteSettingsForm(forms.Form):
             help_text='Foursquare API Client Secret')
     venue_id = forms.CharField(required=False, widget=WIDE_TEXT,
         help_text='Venue ID for this Kegbot; will be used for checkins.')
+
 
 class UserSettingsForm(forms.Form):
     enable_checkins = forms.BooleanField(initial=True, required=False,

@@ -29,6 +29,7 @@ import logging
 
 logger = logging.getLogger('email-notification')
 
+
 class EmailNotificationBackend(BaseNotificationBackend):
     def notify(self, event, user):
         logger.info('Event %s -> user %s' % (event, user))

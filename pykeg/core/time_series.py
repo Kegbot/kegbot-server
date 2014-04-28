@@ -22,6 +22,7 @@ A Kegbot core may report a time series (Drink.tick_time_series) for the meter
 events that caused a drink.
 """
 
+
 def from_string(s):
     """Converts a time series to a list of (int, int) tuples.
 
@@ -40,6 +41,7 @@ def from_string(s):
             raise ValueError('Time cannot be less than zero: %s' % time)
         ret.append((time, amount))
     return ret
+
 
 def to_string(pairs):
     """Converts a series of (int, int) tuples to a time series string."""

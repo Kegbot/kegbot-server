@@ -104,7 +104,7 @@ class EndKegForm(forms.Form):
     helper.layout = Layout(
         Field('keg', type='hidden'),
         FormActions(
-          Submit('submit_end_keg_form', 'End Keg', css_class='btn-danger'),
+            Submit('submit_end_keg_form', 'End Keg', css_class='btn-danger'),
         )
     )
 
@@ -351,6 +351,7 @@ class SiteSettingsForm(forms.ModelForm):
         )
     )
 
+
 class BeverageForm(forms.ModelForm):
     class Meta:
         model = models.Beverage
@@ -378,6 +379,7 @@ class BeverageForm(forms.ModelForm):
         )
     )
 
+
 class BeverageProducerForm(forms.ModelForm):
     class Meta:
         model = models.BeverageProducer
@@ -397,8 +399,10 @@ class BeverageProducerForm(forms.ModelForm):
         )
     )
 
+
 class FindUserForm(forms.Form):
     username = forms.CharField()
+
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -422,6 +426,7 @@ class UserForm(forms.ModelForm):
         )
     )
 
+
 class EditUserForm(forms.ModelForm):
     class Meta:
         model = models.User
@@ -437,6 +442,7 @@ class EditUserForm(forms.ModelForm):
             Submit('submit', 'Save', css_class='btn-primary'),
         )
     )
+
 
 class TokenForm(forms.ModelForm):
     class Meta:
@@ -479,9 +485,9 @@ class AddTokenForm(forms.ModelForm):
             'enabled',
         )
     CHOICES = (
-      ('core.rfid', 'RFID'),
-      ('core.onewire', 'OneWire/iButton'),
-      ('nfc', 'NFC'),
+        ('core.rfid', 'RFID'),
+        ('core.onewire', 'OneWire/iButton'),
+        ('nfc', 'NFC'),
     )
     auth_device = forms.ChoiceField(choices=CHOICES)
     username = forms.CharField(required=False)
@@ -513,13 +519,15 @@ class AddTokenForm(forms.ModelForm):
 class CancelDrinkForm(forms.Form):
     pass
 
+
 class ReassignDrinkForm(forms.Form):
     username = forms.CharField(required=False)
 
+
 class ChangeDrinkVolumeForm(forms.Form):
     UNIT_CHOICES = (
-      ('mL', 'mL'),
-      ('oz', 'oz')
+        ('mL', 'mL'),
+        ('oz', 'oz')
     )
     units = forms.ChoiceField(required=True, choices=UNIT_CHOICES)
     volume = forms.FloatField(required=True, min_value=0)
@@ -531,6 +539,7 @@ class ChangeDrinkVolumeForm(forms.Form):
         else:
             self.cleaned_data['volume_ml'] = volume
         return volume
+
 
 class RecordDrinkForm(forms.Form):
     units = forms.ChoiceField(required=True, choices=ChangeDrinkVolumeForm.UNIT_CHOICES)
@@ -556,6 +565,7 @@ class RecordDrinkForm(forms.Form):
             self.cleaned_data['volume_ml'] = volume
         return volume
 
+
 class TestEmailForm(forms.Form):
     address = forms.CharField(required=False)
 
@@ -565,6 +575,7 @@ class TestEmailForm(forms.Form):
             self.cleaned_data['address'] = None
             return
         return address
+
 
 class NewFlowMeterForm(forms.ModelForm):
     class Meta:

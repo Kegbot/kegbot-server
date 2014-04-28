@@ -21,6 +21,7 @@ from django.test import TransactionTestCase
 from pykeg.plugin import datastore
 from pykeg.plugin import models
 
+
 class DatastoreTestCase(TransactionTestCase):
 
     def test_model_datastore(self):
@@ -60,4 +61,3 @@ class DatastoreTestCase(TransactionTestCase):
         # Complex types survive.
         ds.set('obj', {'asdf': 123, 'foo': None})
         self.assertEqual({'asdf': 123, 'foo': None}, ds.get('obj'))
-

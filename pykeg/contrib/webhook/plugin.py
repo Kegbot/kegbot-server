@@ -29,6 +29,7 @@ from . import views
 
 KEY_SITE_SETTINGS = 'settings'
 
+
 class WebhookPlugin(plugin.Plugin):
     NAME = 'Web Hooks'
     SHORT_NAME = 'webhook'
@@ -58,4 +59,3 @@ class WebhookPlugin(plugin.Plugin):
 
     def save_site_settings_form(self, form):
         self.datastore.save_form(form, KEY_SITE_SETTINGS)
-

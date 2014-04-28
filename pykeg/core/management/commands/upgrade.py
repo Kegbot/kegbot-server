@@ -32,11 +32,13 @@ from pykeg.core.management.commands import kb_regen_stats
 from pykeg.core import models
 from pykeg.core import checkin
 
+
 def run(cmd, args=[]):
     cmdname = cmd.__module__.split('.')[-1]
     arg_str = ' '.join('%s' % a for a in args)
     print '--- Running command: %s %s' % (cmdname, arg_str)
     cmd.run_from_argv([sys.argv[0], cmdname] + args)
+
 
 class Command(NoArgsCommand):
     help = u'Perform post-upgrade tasks.'

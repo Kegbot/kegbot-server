@@ -29,6 +29,7 @@ from .testutils import make_datetime
 import copy
 from pykeg.backend import get_kegbot_backend
 
+
 class StatsTestCase(TransactionTestCase):
     reset_sequences = True
 
@@ -187,4 +188,3 @@ class StatsTestCase(TransactionTestCase):
         # Intermediate stats are generated.
         self.assertEquals(3011, models.KegbotSite.get().get_stats().total_volume_ml)
         self.assertEquals(2111, drinks[-1].session.get_stats().total_volume_ml)
-

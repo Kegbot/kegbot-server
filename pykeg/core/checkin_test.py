@@ -29,6 +29,7 @@ from pykeg.core.util import get_version
 
 import requests
 
+
 class CheckinTestCase(TransactionTestCase):
 
     def test_checkin(self):

@@ -32,11 +32,14 @@ TESTDATA_DIR = os.path.join(os.path.dirname(__file__), 'testdata/')
 
 ### Helper methods
 
+
 def create_site():
     return defaults.set_defaults(set_is_setup=True, create_controller=True)
 
+
 def get_filename(f):
     return os.path.join(TESTDATA_DIR, f)
+
 
 class BaseApiTestCase(TransactionTestCase):
     def get(self, subpath, data={}, follow=False, **extra):
@@ -48,6 +51,7 @@ class BaseApiTestCase(TransactionTestCase):
         response = self.client.post('/api/%s' % subpath, data=data, follow=follow,
             **extra)
         return response, kbjson.loads(response.content)
+
 
 class ApiClientNoSiteTestCase(BaseApiTestCase):
     def testNotSetUp(self):
@@ -181,7 +185,6 @@ class ApiClientTestCase(BaseApiTestCase):
             data={'ticks': 1000})
         self.assertEquals(data.meta.result, 'ok')
 
-
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
     @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
     def test_registration(self):
@@ -209,7 +212,6 @@ class ApiClientTestCase(BaseApiTestCase):
         self.client.logout()
         response = self.client.get(activation_url)
         self.assertContains(response, 'Choose a Password', status_code=200)
-
 
     def test_pictures(self):
         kbsite = models.KegbotSite.get()
@@ -272,7 +274,7 @@ class ApiClientTestCase(BaseApiTestCase):
                     'name': 'kegboard.flow1'
                 },
             ],
-            'meta': { 'result': 'ok'}
+            'meta': {'result': 'ok'}
         }
         self.assertEquals(expected, data)
 
@@ -299,7 +301,7 @@ class ApiClientTestCase(BaseApiTestCase):
                     'name': 'kegboard.relay1'
                 },
             ],
-            'meta': { 'result': 'ok'}
+            'meta': {'result': 'ok'}
         }
         self.assertEquals(expected, data)
 

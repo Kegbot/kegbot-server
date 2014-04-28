@@ -20,6 +20,7 @@ except ImportError:
 from registration.models import RegistrationManager
 from pykeg.core.models import KegbotSite
 
+
 class KegbotRegistrationManager(RegistrationManager):
     def create_inactive_user(self, username, email, password,
                              send_email=True):
@@ -58,7 +59,7 @@ class KegbotRegistrationProfile(models.Model):
     def activation_key_expired(self):
         expiration_date = datetime.timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS)
         return self.activation_key == self.ACTIVATED or \
-               (self.user.date_joined + expiration_date <= datetime_now())
+            (self.user.date_joined + expiration_date <= datetime_now())
     activation_key_expired.boolean = True
 
     def send_activation_email(self):

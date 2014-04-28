@@ -7,6 +7,7 @@ from pykeg.core import models
 from pykeg.core import util
 from pykeg.web.kegweb.forms import LoginForm
 
+
 def kbsite(request):
     kbsite = getattr(request, 'kbsite', None)
 
@@ -14,31 +15,31 @@ def kbsite(request):
 
     sso_login_url = getattr(settings, 'SSO_LOGIN_URL', '')
     if sso_login_url:
-      sso_login_url = '{}?{}'.format(sso_login_url, redir)
+        sso_login_url = '{}?{}'.format(sso_login_url, redir)
 
     sso_logout_url = getattr(settings, 'SSO_LOGOUT_URL', '')
     if sso_logout_url:
-      sso_logout_url = '{}?{}'.format(sso_logout_url, redir)
+        sso_logout_url = '{}?{}'.format(sso_logout_url, redir)
 
     ret = {
-      'DEBUG': settings.DEBUG,
-      'DEMO_MODE': settings.DEMO_MODE,
-      'EMBEDDED': settings.EMBEDDED,
-      'EPOCH': pykeg.EPOCH,
-      'VERSION': util.get_version(),
-      'HAVE_SESSIONS': False,
-      'HAVE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,
-      'GOOGLE_ANALYTICS_ID': None,
-      'SSO_LOGIN_URL': sso_login_url,
-      'SSO_LOGOUT_URL': sso_logout_url,
-      'kbsite': kbsite,
-      'request_path': request.path,
-      'login_form': LoginForm(initial={'next_page': request.path}),
-      'guest_info': {
-        'name': 'guest',
-        'image': None,
-      },
-      'PLUGINS': getattr(request, 'plugins', {}),
+        'DEBUG': settings.DEBUG,
+        'DEMO_MODE': settings.DEMO_MODE,
+        'EMBEDDED': settings.EMBEDDED,
+        'EPOCH': pykeg.EPOCH,
+        'VERSION': util.get_version(),
+        'HAVE_SESSIONS': False,
+        'HAVE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,
+        'GOOGLE_ANALYTICS_ID': None,
+        'SSO_LOGIN_URL': sso_login_url,
+        'SSO_LOGOUT_URL': sso_logout_url,
+        'kbsite': kbsite,
+        'request_path': request.path,
+        'login_form': LoginForm(initial={'next_page': request.path}),
+        'guest_info': {
+            'name': 'guest',
+            'image': None,
+        },
+        'PLUGINS': getattr(request, 'plugins', {}),
     }
 
     if kbsite:

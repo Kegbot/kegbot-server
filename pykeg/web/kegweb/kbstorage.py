@@ -30,6 +30,7 @@ from pykeg.core.util import get_current_request
 
 S3_STATIC_BUCKET = getattr(settings, 'S3_STATIC_BUCKET', None)
 
+
 class KegbotFileSystemStorage(FileSystemStorage):
     """Default storage backend that crafts absolute urls from KegbotSite.base_url.
 
@@ -37,6 +38,7 @@ class KegbotFileSystemStorage(FileSystemStorage):
     processing (and thus there's not a single object we can pre-configure
     with the base URL), this custom backend seems necessary.
     """
+
     def url(self, name):
         request = get_current_request()
         if request and hasattr(request, 'kbsite'):
@@ -48,7 +50,7 @@ class KegbotFileSystemStorage(FileSystemStorage):
 if S3BotoStorage:
     class S3StaticStorage(S3BotoStorage):
         """Uses settings.S3_STATIC_BUCKET instead of AWS_STORAGE_BUCKET_NAME."""
+
         def __init__(self, *args, **kwargs):
             kwargs['bucket'] = S3_STATIC_BUCKET
             super(S3StaticStorage, self).__init__(*args, **kwargs)
-

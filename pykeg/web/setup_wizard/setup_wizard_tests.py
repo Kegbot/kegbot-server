@@ -25,6 +25,7 @@ from django.test.utils import override_settings
 
 from pykeg.core import defaults
 
+
 class SetupWizardTestCase(TransactionTestCase):
 
     def setUp(self):
@@ -42,7 +43,6 @@ class SetupWizardTestCase(TransactionTestCase):
         response = self.client.get('/setup/')
         self.failUnlessEqual(response.status_code, 404)
 
-
     @override_settings(DEBUG=True)
     def test_settings_debug_true(self):
         """Verify wizard is offered (DEBUG is True)."""
@@ -53,7 +53,6 @@ class SetupWizardTestCase(TransactionTestCase):
 
         response = self.client.get('/setup/')
         self.failUnlessEqual(response.status_code, 200)
-
 
     def test_setup_not_shown(self):
         """Verify wizard is not shown on set-up site."""

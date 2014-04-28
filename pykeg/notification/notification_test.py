@@ -45,8 +45,8 @@ class StandaloneNotificationTestCase(TestCase):
     """Standalone notification tests, no other components involved."""
 
     @override_settings(NOTIFICATION_BACKENDS=[
-      'pykeg.notification.notification_test.TestBackendA',
-      'pykeg.notification.notification_test.TestBackendB',
+        'pykeg.notification.notification_test.TestBackendA',
+        'pykeg.notification.notification_test.TestBackendB',
     ])
     def test_get_backends(self):
         backends = notification.get_backends()
@@ -72,6 +72,7 @@ class NotificationTestCase(TestCase):
         class CaptureBackend(BaseNotificationBackend):
             """Notification backend which captures calls."""
             captured = []
+
             def notify(self, event, user):
                 self.captured.append((event, user))
 
@@ -121,4 +122,3 @@ class NotificationTestCase(TestCase):
         notification.handle_single_event(event, backends)
         self.assertEquals(1, len(captured))
         del captured[:]
-

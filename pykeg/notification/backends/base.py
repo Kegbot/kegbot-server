@@ -18,6 +18,7 @@
 
 """Base notification module."""
 
+
 class BaseNotificationBackend:
     """Base class for notification backend implementations."""
 
@@ -32,4 +33,3 @@ class BaseNotificationBackend:
             True on success, False otherwise.
         """
         raise NotImplementedError('Subclasses must override notify() method')
-        

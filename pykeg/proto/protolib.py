@@ -31,12 +31,14 @@ from pykeg.core import models
 
 _CONVERSION_MAP = {}
 
+
 def converts(kind):
     def decorate(f):
         global _CONVERSION_MAP
         _CONVERSION_MAP[kind] = f
         return f
     return decorate
+
 
 def datestr(dt):
     if settings.USE_TZ:
@@ -48,6 +50,7 @@ def datestr(dt):
     except pytz.UnknownTimeZoneError:
         pass
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+
 
 def ToProto(obj, full=False):
     """Converts the object to protocol format."""
@@ -61,6 +64,7 @@ def ToProto(obj, full=False):
     else:
         raise ValueError, "Unknown object type: %s" % kind
 
+
 def ToDict(obj, full=False):
     res = ToProto(obj, full)
     if hasattr(res, '__iter__'):
@@ -69,6 +73,7 @@ def ToDict(obj, full=False):
         return protoutil.ProtoMessageToDict(res)
 
 ### Model conversions
+
 
 @converts(models.AuthenticationToken)
 def AuthTokenToProto(record, full=False):
@@ -88,6 +93,7 @@ def AuthTokenToProto(record, full=False):
     if record.pin:
         ret.pin = record.pin
     return ret
+
 
 @converts(models.Picture)
 def PictureToProto(record, full=False):
@@ -114,6 +120,7 @@ def PictureToProto(record, full=False):
         ret.session_id = record.session_id
     return ret
 
+
 def BeverageToBeerType(beverage, full=False):
     """Deprecated."""
     ret = models_pb2.BeerType()
@@ -130,6 +137,7 @@ def BeverageToBeerType(beverage, full=False):
     if beverage.picture:
         ret.image.MergeFrom(ToProto(beverage.picture))
     return ret
+
 
 def ProducerToBrewer(producer, full=False):
     """Deprecated."""
@@ -151,6 +159,7 @@ def ProducerToBrewer(producer, full=False):
     if producer.picture:
         ret.image.MergeFrom(ToProto(producer.picture))
     return ret
+
 
 @converts(models.Beverage)
 def BeverageToProto(beverage, full=False):
@@ -192,6 +201,7 @@ def BeverageToProto(beverage, full=False):
 
     return ret
 
+
 @converts(models.BeverageProducer)
 def ProducerToProto(producer, full=False):
     ret = models_pb2.BeverageProducer()
@@ -211,6 +221,7 @@ def ProducerToProto(producer, full=False):
     if producer.picture:
         ret.picture.MergeFrom(ToProto(producer.picture))
     return ret
+
 
 @converts(models.Controller)
 def ControllerToProto(controller, full=False):
@@ -275,6 +286,7 @@ def DrinkToProto(drink, full=False):
             ret.images.add().MergeFrom(ToProto(drink.picture))
     return ret
 
+
 @converts(models.Keg)
 def KegToProto(keg, full=False):
     ret = models_pb2.Keg()
@@ -312,6 +324,7 @@ def KegToProto(keg, full=False):
 
     return ret
 
+
 @converts(models.KegTap)
 def KegTapToProto(tap, full=False):
     ret = models_pb2.KegTap()
@@ -321,7 +334,7 @@ def KegTapToProto(tap, full=False):
 
     if meter:
         ret.meter_name = meter.meter_name()
-        ret.ml_per_tick = 1/meter.ticks_per_ml
+        ret.ml_per_tick = 1 / meter.ticks_per_ml
         ret.meter.MergeFrom(ToProto(meter))
     else:
         # TODO(mikey): Remove compatibility.
@@ -350,6 +363,7 @@ def KegTapToProto(tap, full=False):
             ret.last_temperature.MergeFrom(ToProto(log))
     return ret
 
+
 @converts(models.DrinkingSession)
 def SessionToProto(record, full=False):
     ret = models_pb2.Session()
@@ -365,6 +379,7 @@ def SessionToProto(record, full=False):
         ret.is_active = record.IsActiveNow()
     return ret
 
+
 @converts(models.Thermolog)
 def ThermoLogToProto(record, full=False):
     ret = models_pb2.ThermoLog()
@@ -373,6 +388,7 @@ def ThermoLogToProto(record, full=False):
     ret.temperature_c = record.temp
     ret.time = datestr(record.time)
     return ret
+
 
 @converts(models.ThermoSensor)
 def ThermoSensorToProto(record, full=False):
@@ -386,6 +402,7 @@ def ThermoSensorToProto(record, full=False):
     ret.sensor_name = record.raw_name
     ret.nice_name = record.nice_name
     return ret
+
 
 @converts(models.User)
 def UserToProto(user, full=False):
@@ -404,9 +421,11 @@ def UserToProto(user, full=False):
         ret.image.MergeFrom(ToProto(user.mugshot))
     return ret
 
+
 @converts(models.Stats)
 def StatsToProto(record, full=False):
     return protoutil.DictToProtoMessage(record.stats, models_pb2.Stats())
+
 
 @converts(models.SystemEvent)
 def SystemEventToProto(record, full=False):
@@ -444,6 +463,7 @@ def SystemEventToProto(record, full=False):
     return ret
 
 # Composite messages
+
 
 def GetSyncResponse(active_kegs=[], active_session=[], active_users=[],
         controllers=[], drinks=[], events=[], meters=[], site_title='',

@@ -21,6 +21,7 @@
 from kegbot.util.util import AttrDict
 from pykeg.plugin import models
 
+
 class PluginDatastore(object):
     """Interface for plugins to persist plugin-specific data."""
 

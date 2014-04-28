@@ -38,6 +38,7 @@ from pykeg.proto import protolib
 
 ### main views
 
+
 @cache_page(30)
 def index(request):
     context = RequestContext(request)
@@ -55,11 +56,12 @@ def index(request):
 
     return render_to_response('index.html', context_instance=context)
 
+
 @cache_page(30)
 def system_stats(request):
     stats = models.KegbotSite.get().get_stats()
     context = RequestContext(request, {
-      'stats': stats,
+        'stats': stats,
     })
 
     top_drinkers = []
@@ -102,6 +104,7 @@ def user_detail(request, username):
 
     return render_to_response('kegweb/drinker_detail.html', context_instance=context)
 
+
 class KegListView(ListView):
     model = models.Keg
     template_name = 'kegweb/keg_list.html'
@@ -111,10 +114,12 @@ class KegListView(ListView):
     def get_queryset(self):
         return models.Keg.objects.all().order_by('-id')
 
+
 def fullscreen(request):
     context = RequestContext(request)
     context['taps'] = models.KegTap.objects.all()
     return render_to_response('kegweb/fullscreen.html', context_instance=context)
+
 
 @cache_page(30)
 def keg_detail(request, keg_id):
@@ -123,24 +128,28 @@ def keg_detail(request, keg_id):
     last_session = keg.Sessions()[:1]
 
     context = RequestContext(request, {
-      'keg': keg,
-      'stats': keg.get_stats(),
-      'sessions': sessions,
-      'last_session': last_session})
+        'keg': keg,
+        'stats': keg.get_stats(),
+        'sessions': sessions,
+        'last_session': last_session})
     return render_to_response('kegweb/keg_detail.html', context_instance=context)
+
 
 def short_drink_detail(request, drink_id):
     return redirect('kb-drink', drink_id=str(drink_id), permanent=True)
+
 
 def short_session_detail(request, session_id):
     session = get_object_or_404(models.DrinkingSession, id=session_id)
     url = session.get_absolute_url()
     return redirect(url, permanent=True)
 
+
 def drink_detail(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
     context = RequestContext(request, {'drink': drink})
     return render_to_response('kegweb/drink_detail.html', context_instance=context)
+
 
 def drinker_sessions(request, username):
     user = get_object_or_404(models.User, username=username, is_active=True)
@@ -149,7 +158,7 @@ def drinker_sessions(request, username):
 
     chunks = models.Stats.objects.filter(
         user=user, keg__isnull=True, session__isnull=False, is_first=True
-        ).order_by('-id').select_related('session')
+    ).order_by('-id').select_related('session')
 
     paginator = Paginator(chunks, 5)
 
@@ -169,6 +178,7 @@ def drinker_sessions(request, username):
 
     return render_to_response('kegweb/drinker_sessions.html', context_instance=context)
 
+
 def keg_sessions(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
     sessions = keg.Sessions()
@@ -184,10 +194,11 @@ def keg_sessions(request, keg_id):
         sessions = paginator.page(paginator.num_pages)
 
     context = RequestContext(request, {
-      'keg': keg,
-      'stats': keg.get_stats(),
-      'sessions': sessions})
+        'keg': keg,
+        'stats': keg.get_stats(),
+        'sessions': sessions})
     return render_to_response('kegweb/keg_sessions.html', context_instance=context)
+
 
 class SessionArchiveIndexView(ArchiveIndexView):
     model = models.DrinkingSession

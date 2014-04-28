@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 POLL_INTERVAL_SECONDS = 1.0
 
+
 class Runner(object):
     """Runs several commands together as a process group, acting as a watchdog
     while running.
@@ -41,6 +42,7 @@ class Runner(object):
         the OS's /dev/null fd.
       * A Runner cannot be be reused.
     """
+
     def __init__(self):
         self.commands = {}
         self.watched_procs = {}

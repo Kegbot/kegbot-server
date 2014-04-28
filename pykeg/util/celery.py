@@ -21,8 +21,10 @@ import redis
 
 from celery.beat import PersistentScheduler
 
+
 class RedisShelve(object):
     """Implements the `shelve` interface by pickling to a redis entry."""
+
     def __init__(self, connection, key_prefix='celery:beat:'):
         self.logger = logging.getLogger(__name__)
         self._connection = connection
@@ -45,7 +47,8 @@ class RedisShelve(object):
             self.logger.warning('Empty/corrupt persisted data: {}'.format(e))
             data_dict = {}
 
-        class wrapped(dict): pass
+        class wrapped(dict):
+            pass
         wrapped.sync = self.sync
         wrapped.close = self.close
 
@@ -66,6 +69,7 @@ class RedisShelve(object):
 
 class RedisScheduler(PersistentScheduler):
     """Scheduler that uses a RedisShelve for storage."""
+
     def __init__(self, *args, **kwargs):
         app = kwargs['app']
         self.persistence = RedisShelve(app.backend.client)

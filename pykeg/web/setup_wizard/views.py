@@ -36,6 +36,7 @@ from .forms import AdminUserForm
 from .forms import CreateOrImportForm
 from .forms import MiniSiteSettingsForm
 
+
 def setup_view(f):
     """Decorator for setup views."""
     def new_function(*args, **kwargs):
@@ -47,11 +48,13 @@ def setup_view(f):
         return f(*args, **kwargs)
     return wraps(f)(new_function)
 
+
 @setup_view
 @never_cache
 def start(request):
     context = RequestContext(request)
     return render_to_response('setup_wizard/start.html', context_instance=context)
+
 
 @setup_view
 @never_cache
@@ -77,9 +80,10 @@ def site_settings(request):
             initial={
                 'hostname': request_host,
                 'use_ssl': using_ssl,
-            })
+        })
     context['form'] = form
     return render_to_response('setup_wizard/site_settings.html', context_instance=context)
+
 
 @setup_view
 @never_cache
@@ -97,6 +101,7 @@ def admin(request):
             return redirect('setup_finish')
     context['form'] = form
     return render_to_response('setup_wizard/admin.html', context_instance=context)
+
 
 @setup_view
 @never_cache

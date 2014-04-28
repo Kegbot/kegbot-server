@@ -24,6 +24,7 @@ from django.utils.importlib import import_module
 from django.contrib import auth
 from django.core.exceptions import ImproperlyConfigured
 
+
 def get_auth_backend():
     """Returns the sole authentication backend."""
     backends = auth.get_backends()

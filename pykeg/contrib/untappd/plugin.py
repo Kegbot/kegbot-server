@@ -32,6 +32,7 @@ KEY_SITE_SETTINGS = 'settings'
 KEY_CLIENT_ID = 'client_id'
 KEY_CLIENT_SECRET = 'client_secret'
 
+
 class UntappdPlugin(plugin.Plugin):
     NAME = 'Untappd'
     SHORT_NAME = 'untappd'

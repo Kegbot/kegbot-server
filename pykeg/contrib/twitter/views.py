@@ -35,14 +35,15 @@ from . import tasks
 SESSION_KEY_SITE_TWITTER = 'site-twitter'
 SESSION_KEY_USER_TWITTER = 'user-twitter'
 
+
 @staff_member_required
 def admin_settings(request, plugin):
     context = RequestContext(request)
 
     consumer_key, consumer_secret = plugin.get_credentials()
     initial = {
-      'consumer_key': consumer_key or '',
-      'consumer_secret': consumer_secret or '',
+        'consumer_key': consumer_key or '',
+        'consumer_secret': consumer_secret or '',
     }
 
     credentials_form = forms.CredentialsForm(initial=initial)
@@ -219,4 +220,3 @@ def do_redirect(request, client, next_url_name, session_key):
         # or unreachable.
         messages.error(request, 'Twitter API server not available. Try again later. (%s)' % str(e))
         return redirect(next_url_name, plugin_name='twitter')
-

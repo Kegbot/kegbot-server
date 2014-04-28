@@ -53,6 +53,7 @@ _LOGGER = logging.getLogger(__name__)
 
 ### Decorators
 
+
 def auth_required(view_func):
     def wrapped_view(*args, **kwargs):
         return view_func(*args, **kwargs)
@@ -60,6 +61,7 @@ def auth_required(view_func):
     return wraps(view_func)(wrapped_view)
 
 ### Helpers
+
 
 def _form_errors(form):
     ret = {}
@@ -73,8 +75,10 @@ def _form_errors(form):
 
 ### Endpoints
 
+
 def all_kegs(request):
     return models.Keg.objects.all().order_by('-start_time')
+
 
 def all_drinks(request, limit=100):
     qs = models.Drink.objects.all()
@@ -88,9 +92,11 @@ def all_drinks(request, limit=100):
     qs = qs[:limit]
     return qs
 
+
 def get_drink(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
     return protolib.ToProto(drink, full=True)
+
 
 @csrf_exempt
 @auth_required
@@ -104,6 +110,7 @@ def all_controllers(request):
             raise kbapi.BadRequestError(errors)
 
     return models.Controller.objects.all()
+
 
 @csrf_exempt
 @auth_required
@@ -123,6 +130,7 @@ def get_controller(request, controller_id):
 
     return protolib.ToProto(controller, full=True)
 
+
 @csrf_exempt
 @auth_required
 def all_flow_meters(request):
@@ -135,6 +143,7 @@ def all_flow_meters(request):
             raise kbapi.BadRequestError(errors)
 
     return models.FlowMeter.objects.all()
+
 
 @csrf_exempt
 @auth_required
@@ -154,6 +163,7 @@ def get_flow_meter(request, flow_meter_id):
 
     return protolib.ToProto(meter, full=True)
 
+
 @csrf_exempt
 @auth_required
 def all_flow_toggles(request):
@@ -166,6 +176,7 @@ def all_flow_toggles(request):
             raise kbapi.BadRequestError(errors)
 
     return models.FlowToggle.objects.all()
+
 
 @csrf_exempt
 @auth_required
@@ -185,6 +196,7 @@ def get_flow_toggle(request, flow_toggle_id):
 
     return protolib.ToProto(toggle, full=True)
 
+
 @csrf_exempt
 @auth_required
 def pictures(request):
@@ -195,6 +207,7 @@ def pictures(request):
     )
     return protolib.ToProto(pic, full=True)
 
+
 @csrf_exempt
 @auth_required
 def add_drink_photo(request, drink_id):
@@ -203,6 +216,7 @@ def add_drink_photo(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
     pic = _save_pour_pic(request, drink)
     return protolib.ToProto(pic, full=True)
+
 
 def _save_pour_pic(request, drink):
     pic = models.Picture.objects.create(
@@ -217,13 +231,16 @@ def _save_pour_pic(request, drink):
     drink.save()
     return pic
 
+
 def get_session(request, session_id):
     session = get_object_or_404(models.DrinkingSession, id=session_id)
     return protolib.ToProto(session, full=True)
 
+
 def get_session_stats(request, session_id):
     session = get_object_or_404(models.DrinkingSession, id=session_id)
     return session.get_stats()
+
 
 @auth_required
 def get_status(request):
@@ -252,19 +269,22 @@ def get_status(request):
     version = core_util.get_version()
 
     response = protolib.GetSyncResponse(
-            active_kegs=kegs, active_session=session, active_users=current_users,
-            controllers=controllers, drinks=drinks, events=events, meters=meters,
-            site_title=title, server_version=version,
-            sound_events=sound_events, taps=taps, toggles=toggles)
+        active_kegs=kegs, active_session=session, active_users=current_users,
+        controllers=controllers, drinks=drinks, events=events, meters=meters,
+        site_title=title, server_version=version,
+        sound_events=sound_events, taps=taps, toggles=toggles)
     return response
+
 
 def get_keg(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
     return protolib.ToProto(keg, full=True)
 
+
 def get_keg_drinks(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
     return keg.drinks.all()
+
 
 def get_keg_events(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
@@ -272,18 +292,20 @@ def get_keg_events(request, keg_id):
     events = apply_since(request, events)
     return events
 
+
 def get_keg_sizes(request):
     # Deprecated endpoint.
     ret = []
     fake_id = 0
     for size_name, volume_ml in keg_sizes.VOLUMES_ML.iteritems():
         ret.append({
-                'volume_ml': volume_ml,
-                'id': fake_id,
-                'description': keg_sizes.DESCRIPTIONS[size_name],
-            })
+            'volume_ml': volume_ml,
+            'id': fake_id,
+            'description': keg_sizes.DESCRIPTIONS[size_name],
+        })
         fake_id += 1
     return ret
+
 
 @require_http_methods(["POST"])
 @auth_required
@@ -294,8 +316,10 @@ def end_keg(request, keg_id):
     keg = request.backend.end_keg(tap)
     return protolib.ToProto(keg, full=True)
 
+
 def all_sessions(request):
     return models.DrinkingSession.objects.all()
+
 
 def current_session(request):
     try:
@@ -305,11 +329,13 @@ def current_session(request):
     except models.DrinkingSession.DoesNotExist:
         raise Http404
 
+
 def all_events(request):
     events = models.SystemEvent.objects.all().order_by('-id')
     events = apply_since(request, events)
     events = events[:10]
     return [protolib.ToProto(e, full=True) for e in events]
+
 
 def apply_since(request, query):
     """Restricts the query to `since` events, if given."""
@@ -322,52 +348,65 @@ def apply_since(request, query):
             pass
     return query
 
+
 @auth_required
 def all_sound_events(request):
     return []  # deprecated
+
 
 def get_keg_sessions(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
     sessions = keg.Sessions()
     return sessions
 
+
 def get_keg_stats(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
     return keg.get_stats()
 
+
 def get_system_stats(request):
     return models.KegbotSite.get().get_stats()
+
 
 def get_info(request):
     return {'kegbot_server_version': core_util.get_version()}
 
+
 def all_taps(request):
     return models.KegTap.objects.all().order_by('name')
+
 
 @auth_required
 def user_list(request):
     return models.User.objects.filter(is_active=True).exclude(username='guest').order_by('username')
 
+
 def get_user(request, username):
     user = get_object_or_404(models.User, username=username)
     return protolib.ToProto(user, full=True)
+
 
 def get_user_drinks(request, username):
     user = get_object_or_404(models.User, username=username)
     return user.drinks.all()
 
+
 def get_user_events(request, username):
     user = get_object_or_404(models.User, username=username)
     return user.events.all()
+
 
 def get_user_stats(request, username):
     user = get_object_or_404(models.User, username=username)
     return user.get_stats()
 
+
 @auth_required
 def get_auth_token(request, auth_device, token_value):
     tok = request.backend.get_auth_token(auth_device, token_value)
     return tok
+
 
 @csrf_exempt
 @auth_required
@@ -399,8 +438,10 @@ def assign_auth_token(request, auth_device, token_value):
         tok.save()
     return tok
 
+
 def all_thermo_sensors(request):
     return models.ThermoSensor.objects.all()
+
 
 def _get_sensor_or_404(request, sensor_name):
     try:
@@ -412,12 +453,14 @@ def _get_sensor_or_404(request, sensor_name):
             raise Http404
     return sensor
 
+
 @csrf_exempt
 def get_thermo_sensor(request, sensor_name):
     if request.method == 'POST':
         return _thermo_sensor_post(request, sensor_name)
     else:
         return _thermo_sensor_get(request, sensor_name)
+
 
 def _thermo_sensor_get(request, sensor_name):
     sensor = _get_sensor_or_404(request, sensor_name)
@@ -429,11 +472,12 @@ def _thermo_sensor_get(request, sensor_name):
         last_temp = logs[0].temp
         last_time = logs[0].time
     res = {
-      'sensor': sensor,
-      'last_temp': last_temp,
-      'last_time': last_time,
+        'sensor': sensor,
+        'last_temp': last_temp,
+        'last_time': last_time,
     }
     return res
+
 
 @auth_required
 def _thermo_sensor_post(request, sensor_name):
@@ -445,9 +489,11 @@ def _thermo_sensor_post(request, sensor_name):
     # TODO(mikey): use form fields to compute `when`
     return request.backend.log_sensor_reading(sensor.raw_name, cd['temp_c'])
 
+
 def get_thermo_sensor_logs(request, sensor_name):
     sensor = _get_sensor_or_404(request, sensor_name)
-    return sensor.thermolog_set.all()[:60*2]
+    return sensor.thermolog_set.all()[:60 * 2]
+
 
 def get_api_key(request):
     user = request.user
@@ -457,6 +503,7 @@ def get_api_key(request):
         api_key = models.ApiKey.objects.create(description=description)
         api_key = api_key.key
     return {'api_key': api_key}
+
 
 @csrf_exempt
 def tap_detail(request, meter_name_or_id):
@@ -469,8 +516,10 @@ def tap_detail(request, meter_name_or_id):
     else:
         raise kbapi.BadRequestError('Method not supported')
 
+
 def _tap_detail_get(request, tap):
     return protolib.ToProto(tap, full=True)
+
 
 @csrf_exempt
 @auth_required
@@ -492,6 +541,7 @@ def tap_calibrate(request, meter_name_or_id):
         raise kbapi.BadRequestError, _form_errors(form)
     return protolib.ToProto(tap, full=True)
 
+
 @csrf_exempt
 @auth_required
 def tap_spill(request, meter_name_or_id):
@@ -506,6 +556,7 @@ def tap_spill(request, meter_name_or_id):
         raise kbapi.BadRequestError, _form_errors(form)
     return protolib.ToProto(tap, full=True)
 
+
 @csrf_exempt
 @auth_required
 def tap_activate(request, meter_name_or_id):
@@ -516,6 +567,7 @@ def tap_activate(request, meter_name_or_id):
     else:
         raise kbapi.BadRequestError, _form_errors(form)
     return protolib.ToProto(tap, full=True)
+
 
 @require_http_methods(["POST"])
 @csrf_exempt
@@ -529,6 +581,7 @@ def tap_connect_meter(request, meter_name_or_id):
         raise kbapi.BadRequestError, _form_errors(form)
     return protolib.ToProto(tap, full=True)
 
+
 @require_http_methods(["POST"])
 @csrf_exempt
 @auth_required
@@ -536,6 +589,7 @@ def tap_disconnect_meter(request, meter_name_or_id):
     tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     tap = request.backend.connect_meter(tap, None)
     return protolib.ToProto(tap, full=True)
+
 
 @require_http_methods(["POST"])
 @csrf_exempt
@@ -549,6 +603,7 @@ def tap_connect_toggle(request, meter_name_or_id):
         raise kbapi.BadRequestError, _form_errors(form)
     return protolib.ToProto(tap, full=True)
 
+
 @require_http_methods(["POST"])
 @csrf_exempt
 @auth_required
@@ -556,6 +611,7 @@ def tap_disconnect_toggle(request, meter_name_or_id):
     tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     tap = request.backend.connect_toggle(tap, None)
     return protolib.ToProto(tap, full=True)
+
 
 @auth_required
 def _tap_detail_post(request, tap):
@@ -576,16 +632,17 @@ def _tap_detail_post(request, tap):
     try:
         drink = request.backend.record_drink(tap,
           ticks=cd['ticks'],
-          volume_ml=cd.get('volume_ml'),
-          username=cd.get('username'),
-          pour_time=pour_time,
-          duration=duration,
-          shout=cd.get('shout'),
-          tick_time_series=cd.get('tick_time_series'),
-          photo=request.FILES.get('photo', None))
+            volume_ml=cd.get('volume_ml'),
+            username=cd.get('username'),
+            pour_time=pour_time,
+            duration=duration,
+            shout=cd.get('shout'),
+            tick_time_series=cd.get('tick_time_series'),
+            photo=request.FILES.get('photo', None))
         return protolib.ToProto(drink, full=True)
     except backend.BackendError, e:
         raise kbapi.ServerError(str(e))
+
 
 @csrf_exempt
 @auth_required
@@ -602,6 +659,7 @@ def cancel_drink(request):
     except backend.BackendError, e:
         raise kbapi.ServerError(str(e))
 
+
 @csrf_exempt
 def login(request):
     if request.POST:
@@ -615,9 +673,11 @@ def login(request):
             raise kbapi.PermissionDeniedError('Login failed.')
     raise kbapi.BadRequestError('POST required.')
 
+
 def logout(request):
     auth_logout(request)
     return {'result': 'ok'}
+
 
 @csrf_exempt
 @auth_required
@@ -643,6 +703,7 @@ def register(request):
             errors['username'] = user_errs
     raise kbapi.BadRequestError(errors)
 
+
 @csrf_exempt
 @auth_required
 def user_photo(request, username):
@@ -652,11 +713,13 @@ def user_photo(request, username):
     else:
         return get_user_photo(request, user)
 
+
 def get_user_photo(request, user):
     mugshot = user.mugshot
     if not mugshot:
         return {}
     return mugshot
+
 
 def post_user_photo(request, user):
     photo_file = request.FILES.get('photo')
@@ -690,4 +753,3 @@ def get_tap_from_meter_name_or_404(meter_name_or_id):
         return models.KegTap.get_from_meter_name(meter_name_or_id)
     except models.KegTap.DoesNotExist, e:
         raise Http404(str(e))
-

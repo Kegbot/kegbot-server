@@ -43,6 +43,7 @@ MAXIMUM_POUR_SIZE_ML = 450
 
 """Generates a bunch of fake drinks from a configuration."""
 
+
 class LoadDemoDataCommand(BaseCommand):
     args = '<demo_data_dir>'
     help = 'Inserts demo data into the database'
@@ -153,7 +154,7 @@ class LoadDemoDataCommand(BaseCommand):
             drinkers = random.sample(all_drinkers, num_drinkers)
 
             # Drink a little more when others are joining
-            session_max = 1000 + min(2000, 500*len(drinkers))
+            session_max = 1000 + min(2000, 500 * len(drinkers))
 
             for drinker in drinkers:
                 subminute = random.randint(0, 15)
@@ -207,7 +208,8 @@ class LoadDemoDataCommand(BaseCommand):
                 continue
 
             for picture_name in (p for p in os.listdir(pictures_dir) if not p.startswith('.')):
-                if picture_name == 'mugshot.png': continue
+                if picture_name == 'mugshot.png':
+                    continue
                 picture_path = os.path.join(pictures_dir, picture_name)
                 demo_data['pictures'][drinker_name].append(picture_path)
             random.shuffle(demo_data['pictures'][drinker_name])

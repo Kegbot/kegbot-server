@@ -25,10 +25,12 @@ from collections import deque
 PREFIX = 'pykeg.core.logger:'
 CACHED_LOGS_KEY = PREFIX + 'buffer'
 
+
 class CacheHandler(logging.Handler):
     """An exception log handler that buffers errors in the Django cache for future
     processing.
     """
+
     def __init__(self, max_entries=10):
         logging.Handler.__init__(self)
         self.max_entries = max_entries
@@ -48,6 +50,7 @@ class CacheHandler(logging.Handler):
 
         entries.appendleft(format_record(record))
         cache.set(CACHED_LOGS_KEY, entries)
+
 
 def format_record(record):
     from django.conf import settings
@@ -79,10 +82,12 @@ def format_record(record):
 
     return ret
 
+
 class RequireDebugTrue(logging.Filter):
     def filter(self, record):
         from django.conf import settings
         return settings.DEBUG
+
 
 def get_cached_logs():
     from django.core.cache import cache

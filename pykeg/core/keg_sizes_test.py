@@ -3,6 +3,7 @@
 import unittest
 from pykeg.core import keg_sizes
 
+
 class KegSizesTest(unittest.TestCase):
     def test_match(self):
         match = keg_sizes.find_closest_keg_size

@@ -27,6 +27,7 @@ import sys
 
 LOGGER = logging.getLogger(__name__)
 
+
 class ApiRequestMiddleware:
     def process_view(self, request, view_func, view_args, view_kwargs):
         request.is_kb_api_request = util.is_api_request(request)
@@ -76,7 +77,7 @@ class ApiResponseMiddleware:
         if not isinstance(response, HttpResponse):
             data = util.prepare_data(response)
             data['meta'] = {
-              'result': 'ok'
+                'result': 'ok'
             }
             response = util.build_response(request, data, 200)
 

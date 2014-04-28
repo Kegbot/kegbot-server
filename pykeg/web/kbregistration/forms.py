@@ -33,6 +33,7 @@ except ImportError:
 
 from pykeg.core import models
 
+
 class KegbotRegistrationForm(BaseRegistrationForm):
     def clean_username(self):
         existing = User.objects.filter(username__iexact=self.cleaned_data['username'])
@@ -40,7 +41,6 @@ class KegbotRegistrationForm(BaseRegistrationForm):
             raise forms.ValidationError(_("A user with that username already exists."))
         else:
             return self.cleaned_data['username']
-
 
 
 class PasswordResetForm(forms.Form):
@@ -83,5 +83,3 @@ class PasswordResetForm(forms.Form):
             subject = ''.join(subject.splitlines())
             email = loader.render_to_string(email_template_name, c)
             send_mail(subject, email, from_email, [user.email])
-
-

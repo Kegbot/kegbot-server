@@ -26,6 +26,7 @@ from pykeg.web.auth import UserExistsException
 from django.contrib.auth.backends import ModelBackend
 from pykeg.util.email import build_message
 
+
 class LocalAuthBackend(ModelBackend, AuthBackend):
 
     def is_manager(self, user):
@@ -78,4 +79,3 @@ class LocalAuthBackend(ModelBackend, AuthBackend):
             if message:
                 message.send(fail_silently=True)
         return user
-

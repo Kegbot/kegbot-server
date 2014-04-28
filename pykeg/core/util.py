@@ -37,14 +37,17 @@ from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger(__name__)
 
+
 def get_version():
     try:
         return pkg_resources.get_distribution('kegbot').version
     except pkg_resources.DistributionNotFound:
         return 'unknown'
 
+
 def get_user_agent():
     return 'KegbotServer/%s' % get_version()
+
 
 def get_plugin_template_dirs(plugin_list):
     from django.utils import six
@@ -63,6 +66,7 @@ def get_plugin_template_dirs(plugin_list):
                 template_dir = template_dir.decode(fs_encoding)
             ret.append(template_dir)
     return ret
+
 
 def get_current_request():
     """Walk up the stack, return the nearest first argument named "request".
@@ -99,6 +103,7 @@ def download_to_tempfile(url):
 
 class SuppressTaskErrors(object):
     """Suppresses certain errors that occur while scheduling tasks."""
+
     def __init__(self, logger=None):
         self.logger = logger if logger else logging.getLogger(__name__)
 

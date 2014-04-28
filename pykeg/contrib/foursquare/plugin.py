@@ -34,6 +34,7 @@ KEY_CLIENT_ID = 'client_id'
 KEY_CLIENT_SECRET = 'client_secret'
 KEY_VENUE_DETAIL = 'venue_detail'
 
+
 class FoursquarePlugin(plugin.Plugin):
     NAME = 'Foursquare'
     SHORT_NAME = 'foursquare'

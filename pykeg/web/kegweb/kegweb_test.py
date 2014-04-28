@@ -27,6 +27,7 @@ from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.core import defaults
 
+
 class KegwebTestCase(TransactionTestCase):
     def setUp(self):
         self.client.logout()
@@ -218,4 +219,3 @@ class KegwebTestCase(TransactionTestCase):
         kbsite.save()
         response = self.client.get('/')
         self.assertContains(response, 'Kegbot Offline', status_code=403)
-

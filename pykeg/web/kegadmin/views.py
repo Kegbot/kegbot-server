@@ -60,6 +60,7 @@ from pykeg.web.kegadmin import forms
 from pykeg.web.tasks import core_checkin
 from pykeg.web.tasks import build_backup
 
+
 @staff_member_required
 def dashboard(request):
     context = RequestContext(request)
@@ -98,6 +99,7 @@ def dashboard(request):
     context['num_new_users'] = len(new_users)
     return render_to_response('kegadmin/dashboard.html', context_instance=context)
 
+
 @staff_member_required
 def general_settings(request):
     context = RequestContext(request)
@@ -128,6 +130,7 @@ def general_settings(request):
 
     return render_to_response('kegadmin/index.html', context_instance=context)
 
+
 @staff_member_required
 def email(request):
     context = RequestContext(request)
@@ -152,6 +155,7 @@ def email(request):
     context['email_configured'] = email_configured
 
     return render_to_response('kegadmin/email.html', context_instance=context)
+
 
 @staff_member_required
 def export(request):
@@ -191,6 +195,7 @@ def export(request):
 
     return render_to_response('kegadmin/backup_export.html', context_instance=context)
 
+
 @staff_member_required
 def workers(request):
     context = RequestContext(request)
@@ -223,11 +228,13 @@ def workers(request):
 
     return render_to_response('kegadmin/workers.html', context_instance=context)
 
+
 @staff_member_required
 def controller_list(request):
     context = RequestContext(request)
     context['controllers'] = models.Controller.objects.all()
     return render_to_response('kegadmin/controller_list.html', context_instance=context)
+
 
 @staff_member_required
 def controller_detail(request, controller_id):
@@ -249,7 +256,7 @@ def controller_detail(request, controller_id):
         elif 'add_flow_meter' in request.POST:
             add_flow_meter_form = forms.AddFlowMeterForm(request.POST)
             if add_flow_meter_form.is_valid():
-                add_flow_meter_form.save();
+                add_flow_meter_form.save()
                 messages.success(request, 'Flow Meter added successfully.')
                 return redirect('kegadmin-controllers')
         elif 'edit_flow_meter' in request.POST:
@@ -265,7 +272,7 @@ def controller_detail(request, controller_id):
         elif 'add_flow_toggle' in request.POST:
             add_flow_toggle_form = forms.AddFlowToggleForm(request.POST)
             if add_flow_toggle_form.is_valid():
-                add_flow_toggle_form.save();
+                add_flow_toggle_form.save()
                 messages.success(request, 'Flow Toggle added successfully.')
                 return redirect('kegadmin-controllers')
         elif 'edit_flow_toggle' in request.POST:
@@ -284,11 +291,13 @@ def controller_detail(request, controller_id):
     context['add_flow_toggle_form'] = add_flow_toggle_form
     return render_to_response('kegadmin/controller_detail.html', context_instance=context)
 
+
 @staff_member_required
 def tap_list(request):
     context = RequestContext(request)
     context['taps'] = models.KegTap.objects.all()
     return render_to_response('kegadmin/tap_list.html', context_instance=context)
+
 
 @staff_member_required
 def add_tap(request):
@@ -302,6 +311,7 @@ def add_tap(request):
             return redirect('kegadmin-taps')
     context['form'] = form
     return render_to_response('kegadmin/add_tap.html', context_instance=context)
+
 
 @staff_member_required
 def tap_detail(request, tap_id):
@@ -374,7 +384,7 @@ def tap_detail(request, tap_id):
         else:
             messages.warning(request, 'No form data was found. Bug?')
 
-    end_keg_form = forms.EndKegForm(initial={'keg':tap.current_keg})
+    end_keg_form = forms.EndKegForm(initial={'keg': tap.current_keg})
 
     context = RequestContext(request)
     context['tap'] = tap
@@ -386,6 +396,7 @@ def tap_detail(request, tap_id):
     context['tap_settings_form'] = tap_settings_form
     context['delete_tap_form'] = forms.DeleteTapForm()
     return render_to_response('kegadmin/tap_detail.html', context_instance=context)
+
 
 @staff_member_required
 def keg_list(request):
@@ -403,6 +414,7 @@ def keg_list(request):
 
     context['kegs'] = kegs
     return render_to_response('kegadmin/keg_list.html', context_instance=context)
+
 
 @staff_member_required
 def keg_detail(request, keg_id):
@@ -422,6 +434,7 @@ def keg_detail(request, keg_id):
     context['form'] = form
     return render_to_response('kegadmin/keg_detail.html', context_instance=context)
 
+
 @staff_member_required
 def keg_add(request):
     add_keg_form = forms.KegForm()
@@ -437,6 +450,7 @@ def keg_add(request):
     context['keg'] = 'new'
     context['form'] = add_keg_form
     return render_to_response('kegadmin/keg_add.html', context_instance=context)
+
 
 @staff_member_required
 def user_list(request):
@@ -466,6 +480,7 @@ def user_list(request):
     context['users'] = users
     return render_to_response('kegadmin/user_list.html', context_instance=context)
 
+
 @staff_member_required
 def add_user(request):
     context = RequestContext(request)
@@ -480,6 +495,7 @@ def add_user(request):
             return redirect('kegadmin-users')
     context['form'] = form
     return render_to_response('kegadmin/add_user.html', context_instance=context)
+
 
 @staff_member_required
 def user_detail(request, user_id):
@@ -531,6 +547,7 @@ def user_detail(request, user_id):
     context['tokens'] = edit_user.tokens.all().order_by('created_time')
 
     return render_to_response('kegadmin/user_detail.html', context_instance=context)
+
 
 @staff_member_required
 def drink_list(request):
@@ -647,6 +664,7 @@ def token_detail(request, token_id):
     context['form'] = form
     return render_to_response('kegadmin/token_detail.html', context_instance=context)
 
+
 @staff_member_required
 def add_token(request):
     context = RequestContext(request)
@@ -706,6 +724,7 @@ def beverage_detail(request, beer_id):
     context['form'] = form
     return render_to_response('kegadmin/beer_type_detail.html', context_instance=context)
 
+
 @staff_member_required
 def beverage_add(request):
 
@@ -730,6 +749,7 @@ def beverage_add(request):
     context['form'] = form
     return render_to_response('kegadmin/beer_type_add.html', context_instance=context)
 
+
 @staff_member_required
 def beverage_producer_list(request):
     context = RequestContext(request)
@@ -747,6 +767,7 @@ def beverage_producer_list(request):
     context['brewers'] = brewers
     return render_to_response('kegadmin/brewer_list.html', context_instance=context)
 
+
 @staff_member_required
 def beverage_producer_detail(request, brewer_id):
     brewer = get_object_or_404(models.BeverageProducer, id=brewer_id)
@@ -763,6 +784,7 @@ def beverage_producer_detail(request, brewer_id):
     context['brewer'] = brewer
     context['form'] = form
     return render_to_response('kegadmin/brewer_detail.html', context_instance=context)
+
 
 @staff_member_required
 def beverage_producer_add(request):
@@ -788,6 +810,7 @@ def beverage_producer_add(request):
     context['form'] = form
     return render_to_response('kegadmin/brewer_add.html', context_instance=context)
 
+
 @staff_member_required
 def autocomplete_beverage(request):
     context = RequestContext(request)
@@ -800,14 +823,15 @@ def autocomplete_beverage(request):
     values = []
     for beverage in beverages:
         values.append({
-          'name': beverage.name,
-          'id': beverage.id,
-          'producer_name': beverage.producer.name,
-          'producer_id': beverage.producer.id,
-          'style': beverage.style,
-      })
+            'name': beverage.name,
+            'id': beverage.id,
+            'producer_name': beverage.producer.name,
+            'producer_id': beverage.producer.id,
+            'style': beverage.style,
+        })
     return HttpResponse(kbjson.dumps(values, indent=None),
       mimetype='application/json', status=200)
+
 
 @staff_member_required
 def autocomplete_user(request):
@@ -821,13 +845,14 @@ def autocomplete_user(request):
     values = []
     for user in users:
         values.append({
-          'username': user.username,
-          'id': user.id,
-          'email': user.email,
-          'is_active': user.is_active,
-      })
+            'username': user.username,
+            'id': user.id,
+            'email': user.email,
+            'is_active': user.is_active,
+        })
     return HttpResponse(kbjson.dumps(values, indent=None),
       mimetype='application/json', status=200)
+
 
 @staff_member_required
 def autocomplete_token(request):
@@ -842,14 +867,15 @@ def autocomplete_token(request):
     values = []
     for token in tokens:
         values.append({
-          'username': token.user.username,
-          'id': token.id,
-          'auth_device': token.auth_device,
-          'token_value': token.token_value,
-          'enabled': token.enabled,
-      })
+            'username': token.user.username,
+            'id': token.id,
+            'auth_device': token.auth_device,
+            'token_value': token.token_value,
+            'enabled': token.enabled,
+        })
     return HttpResponse(kbjson.dumps(values, indent=None),
       mimetype='application/json', status=200)
+
 
 @staff_member_required
 def plugin_settings(request, plugin_name):
@@ -863,6 +889,7 @@ def plugin_settings(request, plugin_name):
         raise Http404('No settings for this plugin')
 
     return view(request, plugin)
+
 
 @staff_member_required
 def logs(request):

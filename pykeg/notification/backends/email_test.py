@@ -220,4 +220,3 @@ http:///account.
         self.assertEquals(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])
         self.assertEquals('text/html', msg.alternatives[0][1])
-

@@ -20,6 +20,7 @@
 
 from django.db import models
 
+
 class NotificationSettings(models.Model):
     """Stores a user's notification settings for a specific backend."""
 

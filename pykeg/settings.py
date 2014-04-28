@@ -182,14 +182,14 @@ BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 CELERY_QUEUES = {
-  'default' : {
-    'exchange': 'default',
-    'binding_key': 'default'
-  },
-  'stats' : {
-    'exchange': 'default',
-    'binding_key': 'stats'
-  },
+    'default': {
+        'exchange': 'default',
+        'binding_key': 'default'
+    },
+    'stats': {
+        'exchange': 'default',
+        'binding_key': 'stats'
+    },
 }
 
 CELERY_DEFAULT_QUEUE = "default"
@@ -208,66 +208,66 @@ CELERYBEAT_SCHEDULE = {
 ### logging
 
 LOGGING = {
-  'version': 1,
-  'disable_existing_loggers': True,
-  'root': {
-    'level': 'INFO',
-    'handlers': ['console', 'cache'],  # replaced with sentry later, if available.
-    'formatter': 'verbose',
-  },
-  '': {
-    'level': 'DEBUG',
-    'handlers': ['console', 'cache'],  # replaced with sentry later, if available.
-    'formatter': 'verbose',
-  },
-  'filters': {
-    'require_debug_true': {
-      '()': 'django.utils.log.RequireDebugTrue',
+    'version': 1,
+    'disable_existing_loggers': True,
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console', 'cache'],  # replaced with sentry later, if available.
+        'formatter': 'verbose',
     },
-  },
-  'handlers': {
-    'console': {
-      'level': 'DEBUG',
-      'filters': ['require_debug_true'],
-      'class': 'logging.StreamHandler',
-      'formatter': 'verbose',
+    '': {
+        'level': 'DEBUG',
+        'handlers': ['console', 'cache'],  # replaced with sentry later, if available.
+        'formatter': 'verbose',
     },
-    'null': {
-      'class': 'django.utils.log.NullHandler',
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
     },
-    'cache': {
-      'level': 'ERROR',
-      'class': 'pykeg.core.logger.CacheHandler',
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'null': {
+            'class': 'django.utils.log.NullHandler',
+        },
+        'cache': {
+            'level': 'ERROR',
+            'class': 'pykeg.core.logger.CacheHandler',
+        },
     },
-  },
-  'formatters': {
-     'verbose': {
-        'format': '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'
-     },
-     'simple': {
-        'format': '%(levelname)s %(message)s'
-     },
-  },
- 'loggers': {
-    'raven': {
-      'level': 'DEBUG',
-      'handlers': ['console'],
-      'propagate': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
     },
-  },
+    'loggers': {
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+    },
 }
 
 ### raven
 
 if HAVE_RAVEN:
     INSTALLED_APPS += (
-      'raven.contrib.django.raven_compat',
+        'raven.contrib.django.raven_compat',
     )
 
     LOGGING['root']['handlers'] = ['sentry']
     LOGGING['handlers']['sentry'] = {
-      'level': 'ERROR',
-      'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        'level': 'ERROR',
+        'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
     }
 
 ### django-storages
@@ -292,7 +292,7 @@ KEGBOT_STATSD_TO_TOOLBAR = False
 
 ### Notifications
 NOTIFICATION_BACKENDS = [
-  'pykeg.notification.backends.email.EmailNotificationBackend'
+    'pykeg.notification.backends.email.EmailNotificationBackend'
 ]
 
 ### E-mail
@@ -308,7 +308,7 @@ FACEBOOK_SECRET_KEY = ''
 ### Twitter
 
 TWITTER_CONSUMER_KEY = ''
-TWITTER_CONSUMER_SECRET_KEY =''
+TWITTER_CONSUMER_SECRET_KEY = ''
 TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
 TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
 TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
@@ -371,10 +371,10 @@ if HAVE_CELERY_EMAIL:
 if DEBUG:
     if HAVE_DEBUG_TOOLBAR:
         INSTALLED_APPS += (
-          'debug_toolbar',
+            'debug_toolbar',
         )
         MIDDLEWARE_CLASSES += (
-          'debug_toolbar.middleware.DebugToolbarMiddleware',
+            'debug_toolbar.middleware.DebugToolbarMiddleware',
         )
         DEBUG_TOOLBAR_PANELS = (
             'debug_toolbar.panels.version.VersionDebugPanel',
@@ -410,18 +410,18 @@ STATSD_PATCHES = [
 
 if HAVE_STATSD:
     MIDDLEWARE_CLASSES = (
-      'django_statsd.middleware.GraphiteRequestTimingMiddleware',
-      'django_statsd.middleware.GraphiteMiddleware',
+        'django_statsd.middleware.GraphiteRequestTimingMiddleware',
+        'django_statsd.middleware.GraphiteMiddleware',
     ) + MIDDLEWARE_CLASSES
 
     INSTALLED_APPS += ('django_statsd',)
 
 if DEBUG and HAVE_DEBUG_TOOLBAR and KEGBOT_STATSD_TO_TOOLBAR:
     MIDDLEWARE_CLASSES = (
-      'debug_toolbar.middleware.DebugToolbarMiddleware',
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
     ) + MIDDLEWARE_CLASSES
     DEBUG_TOOLBAR_PANELS = (
-      'django_statsd.panel.StatsdPanel',
+        'django_statsd.panel.StatsdPanel',
     ) + DEBUG_TOOLBAR_PANELS
     STATSD_CLIENT = 'django_statsd.clients.toolbar'
 

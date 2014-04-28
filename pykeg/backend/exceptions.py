@@ -16,11 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+
 class BackendError(Exception):
     """Base backend error exception."""
 
+
 class NoTokenError(BackendError):
     """Token given is unknown."""
+
 
 class UserExistsError(BackendError):
     """A user with this username already exists."""

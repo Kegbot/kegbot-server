@@ -30,6 +30,7 @@ MAX_TASK_AGE = datetime.timedelta(hours=1)
 
 _CACHED_PLUGINS = None
 
+
 def get_plugin_class(name):
     try:
         module_path, member_name = name.rsplit(".", 1)
@@ -43,6 +44,7 @@ def get_plugin_class(name):
 
     return cls
 
+
 def get_plugins():
     global _CACHED_PLUGINS
     if _CACHED_PLUGINS is None:
@@ -55,17 +57,20 @@ def get_plugins():
         _CACHED_PLUGINS = plugins
     return _CACHED_PLUGINS
 
+
 def get_admin_urls():
     urls = []
     for plugin in get_plugins():
         urls += _to_urls(plugin.get_extra_admin_views(), plugin.get_short_name())
     return patterns('', *urls)
 
+
 def get_account_urls():
     urls = []
     for plugin in get_plugins():
         urls += _to_urls(plugin.get_extra_user_views(), plugin.get_short_name())
     return patterns('', *urls)
+
 
 def _to_urls(urllist, short_name):
     urls = []
@@ -75,10 +80,12 @@ def _to_urls(urllist, short_name):
         urls.append(url(regex, fn, name=viewname))
     return urls
 
+
 def is_stale(time, now=None):
     if not now:
         now = timezone.now()
     return (time + MAX_TASK_AGE) <= now
+
 
 def get_logger(name):
     try:

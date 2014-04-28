@@ -24,6 +24,7 @@ from pykeg.core import models
 from pykeg.core import stats
 from pykeg.core.management.commands.common import progbar
 
+
 class Command(NoArgsCommand):
     help = u'Regenerate all cached stats.'
     args = '<none>'

@@ -32,6 +32,7 @@ MAX_CHECKIN_AGE = datetime.timedelta(minutes=30)
 
 logger = util.get_logger(__name__)
 
+
 @app.task(name='foursquare_checkin', expires=60)
 def foursquare_checkin(token, venue_id, image_url=None):
     client = foursquare.Foursquare(access_token=token)

@@ -22,6 +22,7 @@ from django.core.files.storage import get_storage_class
 from django.core.management.base import NoArgsCommand
 from pykeg.core import backup
 
+
 class Command(NoArgsCommand):
     help = u'Creates a zipfile backup of the current Kegbot system.'
 

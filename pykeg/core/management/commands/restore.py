@@ -23,6 +23,7 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 from pykeg.core import backup
 
+
 class Command(BaseCommand):
     help = u'Restores a zipfile backup of the current Kegbot system.'
     args = u'<zipfile>'
@@ -41,4 +42,3 @@ class Command(BaseCommand):
             sys.stderr.write(e.message)
             sys.stderr.write('\n')
             sys.exit(1)
-

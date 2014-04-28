@@ -34,6 +34,7 @@ from pykeg.contrib.demomode.util import random_item
 MIN_KEG_VOLUME_ML = 800
 RANDOM_POUR_RANGE_ML = (100, 500)
 
+
 @csrf_exempt
 @never_cache
 @require_http_methods(["POST"])
@@ -75,4 +76,3 @@ def summon_drinker(request):
     messages.success(request, SafeString(message))
 
     return redirect('kb-home')
-

@@ -45,6 +45,7 @@ CHECKIN_URL = os.getenv('CHECKIN_URL', None) or 'https://kegbotcheckin.appspot.c
 LOGGER = logging.getLogger('checkin')
 logging.getLogger('requests').setLevel(logging.WARNING)
 
+
 class CheckinError(Exception):
     """Base exception."""
 
@@ -97,4 +98,3 @@ def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None, quiet=False):
         if not quiet:
             LOGGER.warning('Checkin error: %s' % str(e))
         raise CheckinError(e)
-

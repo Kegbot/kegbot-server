@@ -29,8 +29,10 @@ METER_NAME_1 = 'kegboard.flow1'
 def db_is_installed():
     return models.KegbotSite.objects.all().count() > 0
 
+
 class AlreadyInstalledError(Exception):
     """Thrown when database is already installed."""
+
 
 def set_defaults(force=False, set_is_setup=False, create_controller=False):
     """Creates a new site and sets defaults, returning that site."""

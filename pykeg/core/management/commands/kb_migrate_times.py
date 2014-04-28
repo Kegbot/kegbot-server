@@ -41,6 +41,7 @@ from django.core.management.base import NoArgsCommand
 from django.utils import timezone
 from pykeg.core import models
 
+
 class Command(NoArgsCommand):
     help = u'Regenerates timestamps due to timezone conversion.'
     args = '<none>'
@@ -106,6 +107,7 @@ class Command(NoArgsCommand):
             print ''
 
         print 'Migration finished.'
+
 
 def migrate(obj, attrs, errors):
     print '  %s' % str(obj)

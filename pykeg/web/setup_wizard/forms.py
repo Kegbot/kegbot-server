@@ -23,13 +23,14 @@ from crispy_forms.bootstrap import FormActions
 
 from pykeg.core import models
 
+
 class CreateOrImportForm(forms.Form):
     CHOICES = (
         ('create', 'Create New System'),
         ('import', 'Import From Backup'),
     )
     mode = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
-    import_file  = forms.FileField(required=False)
+    import_file = forms.FileField(required=False)
 
     helper = FormHelper()
     helper.form_class = 'setup-form span8 offset2'
@@ -78,6 +79,7 @@ class MiniSiteSettingsForm(forms.ModelForm):
             Submit('save_changes', 'Continue', css_class="btn-primary"),
         )
     )
+
 
 class AdminUserForm(forms.Form):
     username = forms.RegexField(

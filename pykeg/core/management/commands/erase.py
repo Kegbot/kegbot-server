@@ -21,6 +21,7 @@ from pykeg.core import backup
 
 import sys
 
+
 class Command(NoArgsCommand):
     help = u'Erases all data in the current Kegbot system.'
 

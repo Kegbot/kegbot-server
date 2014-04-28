@@ -25,6 +25,7 @@ from pykeg.plugin.datastore import InMemoryDatastore
 
 from pykeg.core import models
 
+
 class TwitterPluginTestCase(TransactionTestCase):
 
     def setUp(self):
@@ -67,14 +68,14 @@ class TwitterPluginTestCase(TransactionTestCase):
         self.assertEquals(expected, dict(settings_form.initial))
 
     def test_truncate_tweet(self):
-        msg = 'x'*138 + 'x'
+        msg = 'x' * 138 + 'x'
         truncated = plugin.truncate_tweet(msg)
         self.assertEquals(msg, truncated)
 
-        longer_msg = 'x'*138 + ' xxxx'
+        longer_msg = 'x' * 138 + ' xxxx'
         truncated = plugin.truncate_tweet(longer_msg)
         self.assertEqual(139, len(truncated))
-        self.assertEqual('x'*138 + plugin.TRUNCATE_STR, truncated)
+        self.assertEqual('x' * 138 + plugin.TRUNCATE_STR, truncated)
 
 if __name__ == '__main__':
     unittest.main()

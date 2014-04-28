@@ -33,6 +33,7 @@ import foursquare
 
 from . import forms
 
+
 class FoursquareClient(Foursquare):
     def set_callback_url(self, url):
         self.callback_url = url

@@ -31,6 +31,7 @@ FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 
 ### Helper methods
 
+
 class BackendsTestCase(TestCase):
     def setUp(self):
         self.backend = backends.KegbotBackend()

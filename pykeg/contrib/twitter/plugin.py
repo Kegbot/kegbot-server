@@ -49,9 +49,11 @@ TWEET_MAX_LEN = 140
 TWEET_MAX_LEN_WITH_URL = TWEET_MAX_LEN - TWITTER_LINK_LEN - 1
 TRUNCATE_STR = u'\u2026'
 
+
 def send_tweet(api, contents):
     """Sends a tweet using `api`."""
     return api.update_status(contents)
+
 
 def truncate_tweet(tweet, max_len=TWEET_MAX_LEN, truncate_str=TRUNCATE_STR):
     if len(tweet) <= max_len:

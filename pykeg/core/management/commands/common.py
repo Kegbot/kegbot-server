@@ -24,6 +24,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from pykeg.util.runner import Runner
 
+
 def progbar(title, pos, total, width=40):
     """Prints a progress bar to stdout.
 
@@ -36,9 +37,9 @@ def progbar(title, pos, total, width=40):
     if not total:
         chars = width
     else:
-        chars = int((float(pos)/total)*width)
+        chars = int((float(pos) / total) * width)
     rem = width - chars
-    inner = '+'*chars + ' '*rem
+    inner = '+' * chars + ' ' * rem
     sys.stdout.write('%-30s  [%s] %i/%i\r' % (title, inner, pos, total))
     sys.stdout.flush()
 
@@ -52,8 +53,10 @@ def check_and_create_pid_file(pid_file):
     f.write('{}\n'.format(os.getpid()))
     f.close()
 
+
 class check_pidfile(object):
     """Context manager that creates a pidfile, or fails if it exists."""
+
     def __init__(self, pid_file):
         self.pid_file = pid_file
 
@@ -66,6 +69,7 @@ class check_pidfile(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         os.unlink(self.pid_file)
+
 
 class RunnerCommand(BaseCommand):
     """Command that runs several subcommands as a watched group."""

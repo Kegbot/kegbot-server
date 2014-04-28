@@ -26,6 +26,7 @@ import time
 # Separator
 SEP = ':'
 
+
 class KegbotCache:
     """Wrapper around django cache, supporting Kegbot-specific features.
 

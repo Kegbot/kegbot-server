@@ -22,9 +22,11 @@ from django import forms
 
 WIDE_TEXT = forms.TextInput(attrs={'class': 'input-block-level'})
 
+
 class CredentialsForm(forms.Form):
     consumer_key = forms.CharField(required=False)
     consumer_secret = forms.CharField(required=False)
+
 
 class SiteSettingsForm(forms.Form):
     tweet_keg_events = forms.BooleanField(initial=True, required=False,
@@ -66,6 +68,7 @@ class UserSettingsForm(forms.Form):
         help_text='Tweet every time you pour (caution: potentially annoying).')
     include_pictures = forms.BooleanField(initial=False, required=False,
         help_text='Attach photos to tweets when available?')
+
 
 class SendTweetForm(forms.Form):
     tweet_custom = forms.CharField(max_length=140, widget=WIDE_TEXT,

@@ -44,6 +44,7 @@ from pykeg.core import time_series
 from pykeg.backend.exceptions import *
 from pykeg.web import tasks
 
+
 class KegbotBackend(object):
     """Provides high-level operations against the Kegbot system."""
 
@@ -118,8 +119,8 @@ class KegbotBackend(object):
         return token
 
     def record_drink(self, tap, ticks, volume_ml=None, username=None,
-        pour_time=None, duration=0, shout='', tick_time_series='', photo=None,
-        do_postprocess=True, spilled=False):
+            pour_time=None, duration=0, shout='', tick_time_series='', photo=None,
+            do_postprocess=True, spilled=False):
         """Records a new drink against a given tap.
 
         The tap must have a Keg assigned to it (KegTap.current_keg), and the keg
@@ -513,7 +514,6 @@ class KegbotBackend(object):
 
         return keg
 
-
     def end_keg(self, tap):
         """Takes the current Keg offline at the given tap.
 
@@ -684,6 +684,7 @@ class KegbotBackend(object):
             else:
                 return None
 
+
 def get_user(user_or_username):
     """Returns the User object for the given username, or None."""
     if not user_or_username:
@@ -691,6 +692,7 @@ def get_user(user_or_username):
     if not isinstance(user_or_username, models.User):
         return models.User.objects.get(username=user_or_username)
     return user_or_username
+
 
 def get_drink(drink_or_id):
     if not isinstance(drink_or_id, models.Drink):

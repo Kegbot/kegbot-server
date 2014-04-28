@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 
+
 class LoginForm(AuthenticationForm):
     next_page = forms.CharField(required=False, widget=forms.HiddenInput)
 
@@ -15,6 +16,7 @@ class ActivateAccountForm(forms.Form):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError('Passwords do not match.')
         return password2
+
 
 class MugshotForm(forms.Form):
     new_mugshot = forms.ImageField(required=True)

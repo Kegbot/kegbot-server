@@ -55,4 +55,3 @@ class ForgotPasswordTest(TestCase):
         self.assertEquals('Password reset on My Kegbot', msg.subject)
         self.assertEquals(['test@example.com'], msg.to)
         self.assertEquals('test-from@example', msg.from_email)
-

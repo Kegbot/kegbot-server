@@ -23,6 +23,7 @@ from pykeg.core import models
 ALL_METERS = models.FlowMeter.objects.all()
 ALL_TOGGLES = models.FlowToggle.objects.all()
 
+
 class DrinkPostForm(forms.Form):
     """Form to handle posts to /tap/<tap_id>/"""
     ticks = forms.IntegerField()
@@ -34,10 +35,12 @@ class DrinkPostForm(forms.Form):
     shout = forms.CharField(required=False)
     tick_time_series = forms.CharField(required=False)
 
+
 class CancelDrinkForm(forms.Form):
     """Form to handled posts to /cancel-drink/"""
     id = forms.IntegerField()
     spilled = forms.BooleanField(required=False)
+
 
 class ThermoPostForm(forms.Form):
     """Handles posting new temperature sensor readings."""
@@ -45,20 +48,25 @@ class ThermoPostForm(forms.Form):
     when = forms.IntegerField(required=False)
     now = forms.IntegerField(required=False)
 
+
 class CreateKegTapForm(forms.ModelForm):
     class Meta:
         model = models.KegTap
         fields = ('name', 'description')
 
+
 class CalibrateTapForm(forms.Form):
     ml_per_tick = forms.FloatField()
+
 
 class TapSpillForm(forms.Form):
     volume_ml = forms.FloatField()
 
+
 class DebugLogForm(forms.Form):
     message = forms.CharField()
     client_name = forms.CharField(required=False)
+
 
 class RegisterForm(forms.Form):
     username = forms.RegexField(max_length=30, regex=r"^[\w-]+$")
@@ -66,11 +74,14 @@ class RegisterForm(forms.Form):
     password = forms.CharField(required=False)
     photo = forms.ImageField(required=False)
 
+
 class AssignTokenForm(forms.Form):
     username = forms.RegexField(max_length=30, regex=r"^[\w-]+$")
 
+
 class ConnectMeterForm(forms.Form):
     meter = forms.ModelChoiceField(queryset=ALL_METERS, required=True)
+
 
 class ConnectToggleForm(forms.Form):
     toggle = forms.ModelChoiceField(queryset=ALL_TOGGLES, required=True)

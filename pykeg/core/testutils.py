@@ -25,6 +25,7 @@ from django.utils import timezone
 
 from django_nose import NoseTestSuiteRunner
 
+
 def make_datetime(*args):
     if settings.USE_TZ:
         return datetime.datetime(*args, tzinfo=timezone.utc)

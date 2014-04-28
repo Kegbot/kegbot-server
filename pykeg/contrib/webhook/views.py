@@ -23,6 +23,7 @@ from django.template import RequestContext
 
 from . import forms
 
+
 @staff_member_required
 def admin_settings(request, plugin):
     context = RequestContext(request)
@@ -32,8 +33,8 @@ def admin_settings(request, plugin):
         if 'submit-settings' in request.POST:
             settings_form = forms.SiteSettingsForm(request.POST)
             if settings_form.is_valid():
-                    plugin.save_site_settings_form(settings_form)
-                    messages.success(request, 'Settings updated')
+                plugin.save_site_settings_form(settings_form)
+                messages.success(request, 'Settings updated')
 
     context['plugin'] = plugin
     context['settings_form'] = settings_form

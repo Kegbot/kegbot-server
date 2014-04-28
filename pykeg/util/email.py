@@ -27,6 +27,7 @@ logger = logging.getLogger('util')
 
 SEPARATOR = '---EMAIL-BLOCK---'
 
+
 def build_message(to_address, template_name, context_dict):
     from_address = getattr(settings, 'EMAIL_FROM_ADDRESS', None)
     if not from_address:

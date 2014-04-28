@@ -31,6 +31,7 @@ from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
+
 def schedule_tasks(events):
     """Synchronously schedules tasks related to the given events."""
     for plugin in plugin_util.get_plugins():
@@ -41,18 +42,20 @@ def schedule_tasks(events):
     notification.handle_new_system_events(events)
 
 
-@app.task(name='core_checkin', bind=True, default_retry_delay=60*60*1, max_retries=3)
+@app.task(name='core_checkin', bind=True, default_retry_delay=60 * 60 * 1, max_retries=3)
 def core_checkin(self):
     try:
         checkin.checkin()
     except checkin.CheckinError as exc:
         self.retry(exc=exc)
 
-@app.task(name='build_stats', queue='stats', expires=60*60)
+
+@app.task(name='build_stats', queue='stats', expires=60 * 60)
 def build_stats(since_drink_id):
     logger.info('build_stats since_drink_id={}'.format(since_drink_id))
     with transaction.atomic():
         stats.rebuild_from_id(since_drink_id)
+
 
 @app.task(name='build_backup', bind=True)
 def build_backup(self):

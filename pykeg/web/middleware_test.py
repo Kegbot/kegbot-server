@@ -22,6 +22,7 @@ import unittest
 
 from . import middleware
 
+
 class MiddlewareTestCase(unittest.TestCase):
     def test_validate_host(self):
         allowed_hosts = []

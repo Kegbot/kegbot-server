@@ -31,9 +31,10 @@ class Plugin:
     VERSION = None
     URL = None
 
-    def __init__(self, datastore=None):
+    def __init__(self, datastore=None, plugin_registry=None):
         self.datastore = datastore if datastore else ModelDatastore(self.get_short_name())
         self.logger = logging.getLogger(self.get_short_name())
+        self.plugin_registry = plugin_registry or {}
 
     @classmethod
     def get_version(cls):

@@ -76,7 +76,7 @@ class KegbotSiteMiddleware:
             request.kbsite = models.KegbotSite.objects.get(name='default')
             if request.kbsite.is_setup:
                 timezone.activate(request.kbsite.timezone)
-                request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins())
+                request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins().values())
             else:
                 request.need_setup = True
 

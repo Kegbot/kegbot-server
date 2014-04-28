@@ -91,7 +91,7 @@ class UntappdPlugin(plugin.Plugin):
                 shout = event.drink.shout
 
             foursquare_venue_id = foursquare_client_id = foursquare_client_secret = None
-            foursquare = plugin_util.get_plugins().get('foursquare')
+            foursquare = self.plugin_registry.get('foursquare')
             if foursquare:
                 foursquare_client_id, foursquare_client_secret = foursquare.get_credentials()
                 foursquare_venue_id = foursquare.get_venue_id()

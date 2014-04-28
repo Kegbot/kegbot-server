@@ -46,28 +46,31 @@ def get_plugin_class(name):
 
 
 def get_plugins():
+    """Returns all installed plugins by short name."""
     global _CACHED_PLUGINS
     if _CACHED_PLUGINS is None:
         plugin_names = getattr(settings, 'KEGBOT_PLUGINS', [])
-        plugins = []
+        plugins = {}
         for name in plugin_names:
             cls = get_plugin_class(name)
-            plugin_obj = cls()
-            plugins.append(plugin_obj)
+            plugin_obj = cls(plugin_registry=_CACHED_PLUGINS)
+            short_name = plugin_obj.get_short_name()
+            assert short_name not in plugins, 'Multiple plugins named {}'.format(short_name)
+            plugins[short_name] = plugin_obj
         _CACHED_PLUGINS = plugins
     return _CACHED_PLUGINS
 
 
 def get_admin_urls():
     urls = []
-    for plugin in get_plugins():
+    for plugin in get_plugins().values():
         urls += _to_urls(plugin.get_extra_admin_views(), plugin.get_short_name())
     return patterns('', *urls)
 
 
 def get_account_urls():
     urls = []
-    for plugin in get_plugins():
+    for plugin in get_plugins().values():
         urls += _to_urls(plugin.get_extra_user_views(), plugin.get_short_name())
     return patterns('', *urls)
 

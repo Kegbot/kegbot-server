@@ -56,38 +56,41 @@ class FoursquarePlugin(plugin.Plugin):
 
     def handle_new_events(self, events):
         for event in events:
-            self.logger.info('Handling new event: %s' % event.id)
-            user = event.user
+            self.handle_event(event)
 
-            if event.kind != event.DRINK_POURED:
-                self.logger.info('Ignoring event: not %s.' % event.DRINK_POURED)
-                return
+    def handle_event(self, event):
+        self.logger.info('Handling new event: %s' % event.id)
+        user = event.user
 
-            if user.is_guest():
-                self.logger.info('Ignoring event: guest.')
-                return
+        if event.kind != event.DRINK_POURED:
+            self.logger.info('Ignoring event: not %s.' % event.DRINK_POURED)
+            return
 
-            if util.is_stale(event.time):
-                self.logger.info('Ignoring event: stale.')
-                return
+        if user.is_guest():
+            self.logger.info('Ignoring event: guest.')
+            return
 
-            token = self.get_user_token(user)
-            if not token:
-                self.logger.info('Ignoring event: no token for user %s.' % user.username)
-                return
+        if util.is_stale(event.time):
+            self.logger.info('Ignoring event: stale.')
+            return
 
-            settings = self.get_user_settings(user)
-            if not settings or not settings.get('enable_checkins'):
-                self.logger.info('Ignoring event: not enabled.')
-                return
+        token = self.get_user_token(user)
+        if not token:
+            self.logger.info('Ignoring event: no token for user %s.' % user.username)
+            return
 
-            venue_id = self.get_venue_id()
-            if not venue_id:
-                self.logger.info('Ignoring event: no venue id.')
-                return
+        settings = self.get_user_settings(user)
+        if not settings or not settings.get('enable_checkins'):
+            self.logger.info('Ignoring event: not enabled.')
+            return
 
-            with SuppressTaskErrors(self.logger):
-                tasks.foursquare_checkin.delay(token, venue_id)
+        venue_id = self.get_venue_id()
+        if not venue_id:
+            self.logger.info('Ignoring event: no venue id.')
+            return
+
+        with SuppressTaskErrors(self.logger):
+            tasks.foursquare_checkin.delay(token, venue_id)
 
     ### Foursquare-specific methods
 
@@ -133,7 +136,7 @@ class FoursquarePlugin(plugin.Plugin):
         return self.datastore.get(KEY_VENUE_DETAIL, 'null')
 
     def get_user_profile(self, user):
-        return self.datastore.get('user_detail:%s' % user.id, None)
+        return self.datastore.get('user_detail:%s' % user.id, {})
 
     def save_user_profile(self, user, profile):
         self.datastore.set('user_detail:%s' % user.id, profile)

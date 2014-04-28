@@ -105,21 +105,24 @@ class TwitterPlugin(plugin.Plugin):
 
     def handle_new_events(self, events):
         for event in events:
-            self.logger.info('Handling new event: %s' % event.id)
-            if util.is_stale(event.time):
-                self.logger.info('Event is stale, ignoring: %s' % event.id)
-                return
+            self.handle_event(event)
 
-            profile = self.get_site_profile()
-            if not profile:
-                self.logger.info('No site twitter profile, ignoring.')
-                return
+    def handle_event(self, event):
+        self.logger.info('Handling new event: %s' % event.id)
+        if util.is_stale(event.time):
+            self.logger.info('Event is stale, ignoring: %s' % event.id)
+            return
 
-            site_settings = self.get_site_twitter_settings_form().initial
+        profile = self.get_site_profile()
+        if not profile:
+            self.logger.info('No site twitter profile, ignoring.')
+            return
 
-            self._issue_system_tweet(event, site_settings, profile)
-            if event.user and not event.user.is_guest():
-                self._issue_user_tweet(event, site_settings)
+        site_settings = self.get_site_twitter_settings_form().initial
+
+        self._issue_system_tweet(event, site_settings, profile)
+        if event.user and not event.user.is_guest():
+            self._issue_user_tweet(event, site_settings)
 
     ### Twitter-specific methods
 

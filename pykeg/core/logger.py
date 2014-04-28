@@ -53,7 +53,6 @@ class CacheHandler(logging.Handler):
 
 
 def format_record(record):
-    from django.conf import settings
     ret = {}
 
     ret['when'] = datetime.datetime.now()
@@ -81,12 +80,6 @@ def format_record(record):
         ret['exc_text'] = ''
 
     return ret
-
-
-class RequireDebugTrue(logging.Filter):
-    def filter(self, record):
-        from django.conf import settings
-        return settings.DEBUG
 
 
 def get_cached_logs():

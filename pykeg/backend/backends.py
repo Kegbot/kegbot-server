@@ -25,23 +25,18 @@ import logging
 
 from django.db import transaction
 from django.utils import timezone
-from django.db.utils import IntegrityError
-from pykeg import notification
-from pykeg.core import defaults
 from pykeg.core import keg_sizes
 from pykeg.core.util import SuppressTaskErrors
 from pykeg.core.cache import KegbotCache
 from pykeg.web.auth import get_auth_backend
 from pykeg.web.auth import AuthException
 from pykeg.web.auth import UserExistsException
-from pykeg.util.email import build_message
 
 from pykeg.core import kb_common
 from pykeg.core import models
-from pykeg.core import stats
 from pykeg.core import time_series
 
-from pykeg.backend.exceptions import *
+from pykeg.backend import exceptions
 from pykeg.web import tasks
 
 
@@ -60,9 +55,9 @@ class KegbotBackend(object):
                     password=password, photo=photo)
             return user
         except UserExistsException as e:
-            raise UserExistsError(e)
+            raise exceptions.UserExistsError(e)
         except AuthException as e:
-            raise BackendError(e)
+            raise exceptions.BackendError(e)
 
     @transaction.atomic
     def create_tap(self, name, meter_name, toggle_name=None, ticks_per_ml=None):
@@ -91,6 +86,7 @@ class KegbotBackend(object):
 
         if toggle_name:
             toggle = models.FlowToggle.get_or_create_from_toggle_name(toggle_name)
+            self.connect_toggle(tap, toggle)
         return tap
 
     @transaction.atomic
@@ -153,7 +149,7 @@ class KegbotBackend(object):
         with transaction.atomic():
             tap = self._get_tap(tap)
             if not tap.is_active or not tap.current_keg:
-                raise BackendError("No active keg at this tap")
+                raise exceptions.BackendError("No active keg at this tap")
 
             keg = tap.current_keg
 
@@ -165,7 +161,7 @@ class KegbotBackend(object):
             if volume_ml is None:
                 meter = tap.current_meter()
                 if not meter:
-                    raise BackendError("Tap has no meter, can't compute volume")
+                    raise exceptions.BackendError("Tap has no meter, can't compute volume")
                 volume_ml = float(ticks) / meter.ticks_per_ml
 
             user = None
@@ -184,7 +180,7 @@ class KegbotBackend(object):
                     # Validate the time series by parsing it; canonicalize it by generating
                     # it again.  If malformed, just junk it; it's non-essential information.
                     tick_time_series = time_series.to_string(time_series.from_string(tick_time_series))
-                except ValueError, e:
+                except ValueError as e:
                     self._logger.warning('Time series invalid, ignoring. Error was: %s' % e)
                     tick_time_series = ''
 
@@ -399,7 +395,7 @@ class KegbotBackend(object):
                 token_value=token_value)
         except models.AuthenticationToken.DoesNotExist:
             # TODO(mikey): return None instead of raising.
-            raise NoTokenError
+            raise exceptions.NoTokenError
 
     def start_keg(self, tap, beverage=None, keg_type=keg_sizes.HALF_BARREL,
             full_volume_ml=None, beverage_name=None, beverage_type=None,
@@ -661,7 +657,7 @@ class KegbotBackend(object):
         try:
             return models.KegTap.get_from_meter_name(keg_tap_or_meter_name)
         except models.KegTap.DoesNotExist, e:
-            raise BackendError('Invalid tap: %s: %s' % (repr(keg_tap_or_meter_name), e))
+            raise exceptions.BackendError('Invalid tap: %s: %s' % (repr(keg_tap_or_meter_name), e))
 
     def _get_sensor_from_name(self, name, autocreate=True):
         """Returns the TemperatureSensor with raw_name matching name.

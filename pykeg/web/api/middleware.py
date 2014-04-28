@@ -16,14 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf import settings
 from django.http import HttpResponse
 from django.utils.cache import add_never_cache_headers
 
 from . import util
 
 import logging
-import sys
 
 LOGGER = logging.getLogger(__name__)
 

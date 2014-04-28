@@ -40,7 +40,7 @@ class Command(NoArgsCommand):
         for d in drinks.order_by('time'):
             pos += 1
             progbar('create new events', pos, count)
-            sess = models.SystemEvent.build_events_for_drink(d)
+            models.SystemEvent.build_events_for_drink(d)
         print ''
 
         print 'done!'

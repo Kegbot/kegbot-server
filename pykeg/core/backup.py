@@ -46,7 +46,6 @@ import hashlib
 import logging
 import os
 import sys
-import datetime
 import isodate
 import tempfile
 import shutil
@@ -61,7 +60,7 @@ from django.core.files.storage import default_storage
 from django.core import serializers
 from django.db import transaction
 from django.db import connection
-from django.db.models import Q, get_app, get_models
+from django.db.models import get_models
 from django.utils import timezone
 from django.utils.text import slugify
 
@@ -256,7 +255,7 @@ def backup(storage=default_storage):
     date = timezone.now()
     site_slug = slugify(models.KegbotSite.get().title)
     date_str = date.strftime('%Y%m%d-%H%M%S')
-    backup_name = '{site_slug}-{date_str}'.format(**vars())
+    backup_name = '{slug}-{date}'.format(slug=site_slug, date=date_str)
 
     backup_dir = create_backup_tree(date=date, storage=storage)
     try:
@@ -321,7 +320,7 @@ def restore_tables(backup_dir):
                 data = table_fp.read()
                 objects = serializers.deserialize('json', data)
                 for obj in objects:
-                    x = obj.save()
+                    obj.save()
 
 
 def restore_media(backup_dir, storage):

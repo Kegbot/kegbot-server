@@ -38,16 +38,14 @@ from pykeg import backend
 from pykeg.core import keg_sizes
 from pykeg.core import models
 from pykeg.core import util as core_util
-from pykeg.core.util import SuppressTaskErrors
 from pykeg.proto import protolib
 from pykeg.web.api import forms
 from pykeg.web.api import util
 from pykeg.web.kegadmin.forms import ChangeKegForm
 from pykeg.web.kegadmin.forms import ControllerForm
+from pykeg.web.kegadmin.forms import FlowToggleForm
 from pykeg.web.kegadmin.forms import NewFlowMeterForm
 from pykeg.web.kegadmin.forms import UpdateFlowMeterForm
-
-from pykeg.web import tasks
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -428,7 +426,7 @@ def assign_auth_token(request, auth_device, token_value):
 
     try:
         tok = b.get_auth_token(auth_device, token_value)
-    except backend.NoTokenError:
+    except backend.exceptions.NoTokenError:
         tok = b.create_auth_token(auth_device, token_value, username=username)
 
     if tok.user != user:
@@ -640,7 +638,7 @@ def _tap_detail_post(request, tap):
             tick_time_series=cd.get('tick_time_series'),
             photo=request.FILES.get('photo', None))
         return protolib.ToProto(drink, full=True)
-    except backend.BackendError, e:
+    except backend.exceptions.BackendError, e:
         raise kbapi.ServerError(str(e))
 
 
@@ -656,7 +654,7 @@ def cancel_drink(request):
     try:
         res = request.backend.cancel_drink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
         return protolib.ToProto(res, full=True)
-    except backend.BackendError, e:
+    except backend.exceptions.BackendError, e:
         raise kbapi.ServerError(str(e))
 
 
@@ -697,7 +695,7 @@ def register(request):
             user = request.backend.create_new_user(username, email=email,
                 password=password, photo=photo)
             return protolib.ToProto(user, full=True)
-        except backend.UserExistsError:
+        except backend.exceptions.UserExistsError:
             user_errs = errors.get('username', [])
             user_errs.append('Username not available.')
             errors['username'] = user_errs

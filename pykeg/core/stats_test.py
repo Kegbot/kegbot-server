@@ -18,12 +18,9 @@
 
 from django.test import TransactionTestCase
 
-from kegbot.api import models_pb2
-from kegbot.api.protoutil import ProtoMessageToDict
 from kegbot.util import util
 
 from . import models
-from . import stats
 from .testutils import make_datetime
 
 import copy
@@ -35,7 +32,7 @@ class StatsTestCase(TransactionTestCase):
 
     def setUp(self):
         self.backend = get_kegbot_backend()
-        guest = models.User.objects.create_user('guest')
+        models.User.objects.create_user('guest')
 
         test_usernames = ('user1', 'user2', 'user3')
         self.users = [self.backend.create_new_user(name, '%s@example.com' % name) for name in test_usernames]

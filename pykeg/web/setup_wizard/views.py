@@ -21,7 +21,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.contrib.auth import login
-from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import redirect
 from django.shortcuts import render_to_response
@@ -29,11 +28,9 @@ from django.template import RequestContext
 from django.views.decorators.cache import never_cache
 
 from pykeg.core import defaults
-from pykeg.core import checkin
 from pykeg.core import models
 
 from .forms import AdminUserForm
-from .forms import CreateOrImportForm
 from .forms import MiniSiteSettingsForm
 
 

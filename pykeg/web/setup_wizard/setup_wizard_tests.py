@@ -18,7 +18,6 @@
 
 """Unittests for setup wizard."""
 
-from django.conf import settings
 from django.core.cache import cache
 from django.test import TransactionTestCase
 from django.test.utils import override_settings

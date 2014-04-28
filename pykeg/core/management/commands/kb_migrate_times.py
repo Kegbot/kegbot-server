@@ -31,11 +31,9 @@ WARNING: Back up your data before proceeding.
 HELP_TEXT = __doc__
 
 import pytz
-import sys
 
 from django.db import transaction
 from django.conf import settings
-from django.core.management.base import CommandError
 from django.core.management.base import NoArgsCommand
 
 from django.utils import timezone
@@ -126,8 +124,6 @@ def migrate(obj, attrs, errors):
 
 
 def do_migrate(drinks):
-    LT = timezone.localtime
-
     errors = []
     kegs = set()
     sessions = set()

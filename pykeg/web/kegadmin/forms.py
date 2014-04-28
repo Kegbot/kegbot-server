@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field, Hidden, Div
-from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
+from crispy_forms.layout import Layout, Div, Submit, Field
+from crispy_forms.bootstrap import FormActions
 
 from kegbot.util import units
 from pykeg.backend import get_kegbot_backend
@@ -180,16 +180,6 @@ class TapForm(forms.ModelForm):
     )
 
 
-class DeleteControllerForm(forms.Form):
-    helper = FormHelper()
-    helper.form_class = 'form-horizontal'
-    helper.layout = Layout(
-        FormActions(
-            Submit('submit_delete_controller_form', 'Delete Controller', css_class='btn-danger'),
-        )
-    )
-
-
 class DeleteTapForm(forms.Form):
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
@@ -264,10 +254,7 @@ class KegForm(forms.Form):
     def save(self):
         if not self.is_valid():
             raise ValueError('Form is not valid.')
-        b = get_kegbot_backend()
         keg_size = self.cleaned_data.get('keg_size')
-        notes = self.cleaned_data.get('notes')
-        description = self.cleaned_data.get('description')
         if keg_size != 'other':
             full_volume_ml = None
         else:
@@ -275,6 +262,7 @@ class KegForm(forms.Form):
 
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
+        b = get_kegbot_backend()
         keg = b.add_keg(beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
             beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'],
             full_volume_ml=full_volume_ml, notes=cd['notes'], description=cd['description'])

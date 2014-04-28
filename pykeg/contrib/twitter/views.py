@@ -20,7 +20,6 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from socialregistration.clients.oauth import OAuthError
-from socialregistration.contrib.twitter.client import Twitter
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response

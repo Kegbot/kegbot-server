@@ -31,10 +31,7 @@ from django.views.generic.dates import YearArchiveView
 from django.views.generic.list import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from kegbot.util import kbjson
-
 from pykeg.core import models
-from pykeg.proto import protolib
 
 ### main views
 

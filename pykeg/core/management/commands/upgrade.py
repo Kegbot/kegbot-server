@@ -58,7 +58,7 @@ class Command(NoArgsCommand):
         # Refresh any news (since we have a new version).
         try:
             checkin.checkin(timeout=5.0, quiet=True)
-        except (checkin.CheckinError, Exception) as e:
+        except (checkin.CheckinError, Exception):
             pass
 
         print ''

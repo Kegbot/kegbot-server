@@ -50,7 +50,6 @@ class DatastoreTestCase(TransactionTestCase):
         self.assertEqual(0, len(ds.data))
 
         ds.set('foo', 'bar')
-        q = models.PluginData.objects.all()
         self.assertEqual(1, len(ds.data))
         self.assertEqual('bar', ds.data['test:foo'])
 

@@ -24,7 +24,6 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-import oauth2 as oauth
 
 from . import forms
 from . import oauth_client
@@ -39,8 +38,6 @@ def admin_settings(request, plugin):
         if 'submit-settings' in request.POST:
             settings_form = forms.SiteSettingsForm(request.POST)
             if settings_form.is_valid():
-                client_id = settings_form.cleaned_data['client_id']
-                client_secret = settings_form.cleaned_data['client_secret']
                 plugin.save_site_settings_form(settings_form)
                 messages.success(request, 'Settings updated')
 

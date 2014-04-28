@@ -18,10 +18,8 @@
 
 """Webhook plugin for Kegbot."""
 
-from django.conf import settings
 from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
-from pykeg.plugin import util
 
 from . import forms
 from . import tasks

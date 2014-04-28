@@ -18,7 +18,6 @@
 
 """Tasks for the Kegbot core."""
 
-from kegbot.util import util
 from pykeg.plugin import util as plugin_util
 from pykeg import notification
 from pykeg.core import checkin
@@ -37,7 +36,7 @@ def schedule_tasks(events):
     for plugin in plugin_util.get_plugins():
         try:
             plugin.handle_new_events(events)
-        except Exception as e:
+        except Exception:
             logger.exception('Error dispatching events to plugin {}'.format(plugin.get_name()))
     notification.handle_new_system_events(events)
 

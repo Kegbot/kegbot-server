@@ -19,7 +19,6 @@
 """Untappd plugin forms."""
 
 from django import forms
-from django.conf import settings
 
 WIDE_TEXT = forms.TextInput(attrs={'class': 'input-block-level'})
 

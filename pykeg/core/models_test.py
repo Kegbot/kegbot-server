@@ -20,8 +20,6 @@
 
 import datetime
 
-from django.conf import settings
-from django.utils import timezone
 from django.test import TestCase
 
 from . import kb_common
@@ -97,25 +95,19 @@ class CoreModelsTestCase(TestCase):
         self.assertEqual(2000, self.keg.remaining_volume_ml())
 
     def testDrinkAccounting(self):
-        vol = units.Quantity(1200)
-
         d = self.backend.record_drink(self.tap,
             ticks=1200,
             username=self.user.username,
                                       )
-
         self.assertEqual(d.keg.served_volume(), d.volume_ml)
 
     def testDrinkSessions(self):
         """ Checks for the DrinkingSession records. """
         u1 = self.user
         u2 = self.user2
-        vol = units.Quantity(1200)
+        units.Quantity(1200)
 
-        drinks = {}
         base_time = make_datetime(2009, 1, 1, 1, 0, 0)
-
-        ticks = volume = vol.InKbMeterTicks()
 
         td_10m = datetime.timedelta(minutes=10)
         td_400m = datetime.timedelta(minutes=400)
@@ -166,7 +158,6 @@ class CoreModelsTestCase(TestCase):
                                   )
 
         drinks_u1 = u1.drinks.all().order_by('time')
-        drinks_u2 = u2.drinks.all().order_by('time')
 
         s1, s2 = models.DrinkingSession.objects.all().order_by('start_time')[:2]
 

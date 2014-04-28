@@ -17,12 +17,10 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
-import errno
 import logging
 import os
 import pwd
 import sys
-import resource
 import subprocess
 import time
 

@@ -16,10 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import uuid
-
-from kegbot.util import units
-
 from . import models
 
 METER_NAME_0 = 'kegboard.flow0'
@@ -44,7 +40,7 @@ def set_defaults(force=False, set_is_setup=False, create_controller=False):
         site.is_setup = True
         site.save()
 
-    guest = models.User.objects.create_user('guest')
+    models.User.objects.create_user('guest')
 
     tap_0 = models.KegTap.objects.create(name='Main Tap')
 
@@ -54,13 +50,13 @@ def set_defaults(force=False, set_is_setup=False, create_controller=False):
         tap_1 = models.KegTap.objects.create(name='Second Tap')
         controller = models.Controller.objects.create(name='kegboard')
 
-        meter_0 = models.FlowMeter.objects.create(controller=controller, port_name='flow0',
+        models.FlowMeter.objects.create(controller=controller, port_name='flow0',
             tap=tap_0)
-        meter_1 = models.FlowMeter.objects.create(controller=controller, port_name='flow1',
+        models.FlowMeter.objects.create(controller=controller, port_name='flow1',
             tap=tap_1)
-        relay_0 = models.FlowToggle.objects.create(controller=controller, port_name='relay0',
+        models.FlowToggle.objects.create(controller=controller, port_name='relay0',
             tap=tap_0)
-        relay_1 = models.FlowToggle.objects.create(controller=controller, port_name='relay1',
+        models.FlowToggle.objects.create(controller=controller, port_name='relay1',
             tap=tap_1)
 
     return site

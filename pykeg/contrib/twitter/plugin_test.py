@@ -19,7 +19,6 @@
 """Unittests for Twitter plugin."""
 
 from django.test import TransactionTestCase
-from pykeg.contrib.twitter import forms
 from pykeg.contrib.twitter import plugin
 from pykeg.plugin.datastore import InMemoryDatastore
 
@@ -76,6 +75,3 @@ class TwitterPluginTestCase(TransactionTestCase):
         truncated = plugin.truncate_tweet(longer_msg)
         self.assertEqual(139, len(truncated))
         self.assertEqual('x' * 138 + plugin.TRUNCATE_STR, truncated)
-
-if __name__ == '__main__':
-    unittest.main()

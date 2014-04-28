@@ -199,7 +199,6 @@ class LoadDemoDataCommand(BaseCommand):
         demo_data = json.loads(open(demo_data_file).read())
         demo_data['pictures'] = {}
 
-        drinkers_dir = os.path.join(path, 'drinkers')
         for drinker_name in demo_data['drinkers']:
             demo_data['pictures'][drinker_name] = deque()
 

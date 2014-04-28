@@ -25,14 +25,9 @@ from pykeg.web.api.util import is_api_request
 
 from pykeg.plugin import util as plugin_util
 
-from django.db import DatabaseError
-from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import SuspiciousOperation
-from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.http import Http404
-from django.shortcuts import get_object_or_404
 from django.template.response import SimpleTemplateResponse
 from django.template import RequestContext
 from django.utils import timezone
@@ -66,7 +61,6 @@ class KegbotSiteMiddleware:
     )
 
     def process_request(self, request):
-        epoch = None
         request.need_setup = False
         request.need_upgrade = False
         request.kbsite = None

@@ -19,7 +19,6 @@
 """Celery tasks for Twitter."""
 
 import os
-import tempfile
 
 import tweepy
 from pykeg.celery import app

@@ -144,7 +144,6 @@ def password_change_done(request):
 
 @login_required
 def plugin_settings(request, plugin_name):
-    context = RequestContext(request)
     plugin = request.plugins.get(plugin_name, None)
     if not plugin:
         raise Http404('Plugin "%s" not loaded' % plugin_name)

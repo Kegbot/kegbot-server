@@ -24,7 +24,7 @@ from django.conf.urls import patterns
 from django.conf.urls import url
 from django.conf import settings
 
-from . import plugin
+from .plugin import Plugin
 
 MAX_TASK_AGE = datetime.timedelta(hours=1)
 
@@ -39,7 +39,7 @@ def get_plugin_class(name):
     except (ValueError, ImportError, AttributeError), e:
         raise ImproperlyConfigured("Could not import plugin %s: %s" % (name, e))
 
-    if not issubclass(cls, plugin.Plugin):
+    if not issubclass(cls, Plugin):
         raise ImproperlyConfigured('%s does not subclass plugin.Plugin', name)
 
     return cls

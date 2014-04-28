@@ -18,7 +18,6 @@
 
 """Unittests for notification module."""
 
-from django.core import mail
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.test.utils import override_settings

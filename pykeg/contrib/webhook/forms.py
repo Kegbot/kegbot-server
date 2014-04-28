@@ -19,7 +19,6 @@
 """Webhook plugin forms."""
 
 from django import forms
-from django.conf import settings
 
 TEXTAREA = forms.Textarea(attrs={'class': 'input-block-level'})
 

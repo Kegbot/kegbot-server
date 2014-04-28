@@ -19,8 +19,6 @@
 """Celery tasks for Untappd."""
 
 import requests
-import urllib
-import datetime
 
 import foursquare
 

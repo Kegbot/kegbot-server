@@ -20,7 +20,6 @@
 
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 from pykeg.core import models
@@ -109,8 +108,6 @@ class ApiClientTestCase(BaseApiTestCase):
             self.assertEquals(data1, data2)
 
     def testApiAccess(self):
-        protected_get_endpoints = ('users/',)
-
         endpoint = 'users/'
 
         # No API key.

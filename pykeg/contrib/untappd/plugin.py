@@ -22,7 +22,7 @@ from django.conf import settings
 from django.utils import timezone
 from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
-from pykeg.plugin import util
+from pykeg.plugin import util as plugin_util
 
 from . import forms
 from . import tasks
@@ -67,7 +67,7 @@ class UntappdPlugin(plugin.Plugin):
                 self.logger.info('Ignoring event: anonymous.')
                 return
 
-            if util.is_stale(event.time):
+            if plugin_util.is_stale(event.time):
                 self.logger.info('Ignoring event: stale.')
                 return
 

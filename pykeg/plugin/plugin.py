@@ -20,8 +20,6 @@
 
 import logging
 from pykeg.plugin.datastore import ModelDatastore
-from pykeg.plugin import models
-from kegbot.util.util import AttrDict
 
 
 class Plugin:

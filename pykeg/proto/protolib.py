@@ -492,14 +492,3 @@ def GetSyncResponse(active_kegs=[], active_session=[], active_users=[],
     for obj in toggles:
         ret.toggles.add().MergeFrom(ToProto(obj))
     return ret
-
-    ret.drink.MergeFrom(ToProto(drink))
-    if drink.user_id:
-        ret.user.MergeFrom(ToProto(drink.user))
-    if drink.keg_id:
-        ret.keg.MergeFrom(ToProto(drink.keg))
-    if drink.session_id:
-        ret.session.MergeFrom(ToProto(drink.session))
-    for i in drink.pictures.all().iterator():
-        ret.images.add().MergeFrom(ToProto(i))
-    return ret

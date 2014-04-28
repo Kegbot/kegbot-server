@@ -20,7 +20,6 @@
 
 import copy
 import inspect
-import itertools
 import logging
 
 from pykeg.core import models
@@ -206,7 +205,7 @@ def _generate_view(drink, user, session, keg):
     for build_drink in build_list:
         logger.debug('  - operating on drink {}'.format(build_drink.id))
         stats = BUILDER.build(drink=build_drink, previous_stats=prior_stats)
-        row = models.Stats.objects.create(drink=build_drink, user=user, session=session,
+        models.Stats.objects.create(drink=build_drink, user=user, session=session,
             keg=keg, stats=stats, is_first=(not prior_stats))
         prior_stats = stats
     logger.debug('<<< Done.')

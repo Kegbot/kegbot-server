@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import copy
 import pytz
 
 from django.conf import settings
@@ -169,7 +168,7 @@ class TimeagoNode(Node):
 ### temperature
 
 @register.tag('temperature')
-def volumetag(parser, token):
+def temperature_tag(parser, token):
     """{% temperature <temp_c> %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
@@ -184,7 +183,6 @@ class TemperatureNode(Node):
         self.varname = varname
 
     def render(self, context):
-
         v = Variable(self.varname)
         try:
             amount = v.resolve(context)
@@ -198,7 +196,7 @@ class TemperatureNode(Node):
             unit = 'F'
             amount = util.CtoF(amount)
 
-        return self.TEMPLATE % vars()
+        return self.TEMPLATE % {'amount': amount, 'unit': unit}
 
 ### volume
 
@@ -237,11 +235,13 @@ class VolumeNode(Node):
     def format(cls, amount, units, make_badge=False):
         if amount < 0:
             amount = 0
-        title = '%s %s' % (amount, units)
-        extra_css = ''
-        if make_badge:
-            extra_css = 'badge '
-        return cls.TEMPLATE % vars()
+        ctx = {
+            'units': units,
+            'amount': amount,
+            'title': '%s %s' % (amount, units),
+            'extra_css': 'badge ' if make_badge else '',
+        }
+        return cls.TEMPLATE % ctx
 
 ### drinker
 
@@ -279,11 +279,6 @@ class DrinkerNameNode(Node):
             else:
                 return '<a href="%s">%s</a>' % (reverse('kb-drinker', args=[user.username]), user.username)
         return context['guest_info']['name']
-
-    @classmethod
-    def format(cls, amount, units):
-        title = '%s %s' % (amount, units)
-        return cls.TEMPLATE % vars()
 
 
 ### chart
@@ -346,20 +341,18 @@ class ChartNode(Node):
         return context._CHART_ID
 
     def show_error(self, error_str):
-        chart_id = 0
-        width = self._width
-        height = self._height
-        return ChartNode.ERROR_TMPL % vars()
+        ctx = {
+            'chart_id': 0,
+            'width': self._width,
+            'height': self._height,
+        }
+        return ChartNode.ERROR_TMPL % ctx
 
     def render(self, context):
         if not self._chart_fn:
             return self.show_error("Unknown chart type: %s" % self._charttype)
 
         chart_id = self._get_chart_id(context)
-
-        width = self._width
-        height = self._height
-
         obj = Variable(self._args[0]).resolve(context)
 
         metric_volumes = context.get('metric_volumes', False)
@@ -406,7 +399,15 @@ class ChartNode(Node):
             else:
                 chart_data[k] = v
         chart_data = kbjson.dumps(chart_data, indent=None)
-        return ChartNode.CHART_TMPL % vars()
+
+        ctx = {
+            'chart_id': chart_id,
+            'width': self._width,
+            'height': self._height,
+            'chart_data': chart_data,
+        }
+
+        return ChartNode.CHART_TMPL % ctx
 
 
 @register.filter

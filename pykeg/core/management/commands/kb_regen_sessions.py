@@ -16,9 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.db import connection
 from django.db import transaction
-from django.core.management.base import CommandError
 from django.core.management.base import NoArgsCommand
 
 from pykeg.core import models
@@ -61,7 +59,7 @@ class Command(NoArgsCommand):
         for d in drinks.order_by('time'):
             pos += 1
             progbar('calc new sessions', pos, count)
-            sess = models.DrinkingSession.AssignSessionForDrink(d)
+            models.DrinkingSession.AssignSessionForDrink(d)
         print ''
 
         pics = models.Picture.objects.all()

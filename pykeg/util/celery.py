@@ -17,7 +17,6 @@ __author__ = 'opensource@hoho.com'
 
 import logging
 import pickle
-import redis
 
 from celery.beat import PersistentScheduler
 

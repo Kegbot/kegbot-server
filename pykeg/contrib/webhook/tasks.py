@@ -25,7 +25,6 @@ from pykeg.core.util import get_version
 from kegbot.util import kbjson
 
 import requests
-import urllib2
 
 logger = util.get_logger(__name__)
 

@@ -23,10 +23,6 @@ from django.conf.urls import include
 from django.conf.urls import patterns
 from django.conf.urls import url
 from django.contrib import admin
-from django.contrib.auth.views import password_reset
-from django.contrib.auth.views import password_reset_complete
-from django.contrib.auth.views import password_reset_confirm
-from django.contrib.auth.views import password_reset_done
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 admin.autodiscover()

@@ -16,17 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login
-from django.http import Http404
-from django.template.loader import render_to_string
 
 from registration import signals
 from registration.views import ActivationView as BaseActivationView
 from registration.views import RegistrationView as BaseRegistrationView
 
-from pykeg.core import models
 from pykeg.web.kbregistration.forms import KegbotRegistrationForm
 from pykeg.web.kbregistration.models import KegbotRegistrationProfile
 

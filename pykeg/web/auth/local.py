@@ -20,10 +20,12 @@
 
 import uuid
 
+from django.db import IntegrityError
+from django.contrib.auth.backends import ModelBackend
+
 from pykeg.core import models
 from pykeg.web.auth import AuthBackend
 from pykeg.web.auth import UserExistsException
-from django.contrib.auth.backends import ModelBackend
 from pykeg.util.email import build_message
 
 
@@ -48,8 +50,8 @@ class LocalAuthBackend(ModelBackend, AuthBackend):
     def register(self, email, username, password=None, photo=None):
         try:
             user = models.User.objects.create(username=username, email=email)
-        except IntegrityError, e:
-            raise UserExistsError(e)
+        except IntegrityError as e:
+            raise UserExistsException(e)
 
         if password:
             user.set_password(password)

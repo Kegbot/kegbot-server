@@ -24,25 +24,6 @@ from crispy_forms.bootstrap import FormActions
 from pykeg.core import models
 
 
-class CreateOrImportForm(forms.Form):
-    CHOICES = (
-        ('create', 'Create New System'),
-        ('import', 'Import From Backup'),
-    )
-    mode = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
-    import_file = forms.FileField(required=False)
-
-    helper = FormHelper()
-    helper.form_class = 'setup-form span8 offset2'
-    helper.layout = Layout(
-        Field('mode', css_class='input-xlarge'),
-        Field('import_file', css_class='input-xlarge'),
-        FormActions(
-            Submit('save_changes', 'Continue', css_class="btn-primary"),
-        )
-    )
-
-
 class MiniSiteSettingsForm(forms.ModelForm):
     class Meta:
         model = models.KegbotSite

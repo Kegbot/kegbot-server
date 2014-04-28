@@ -20,7 +20,6 @@ import random
 
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Count
 from django.shortcuts import redirect
 from django.utils.safestring import SafeString
 from django.views.decorators.cache import never_cache

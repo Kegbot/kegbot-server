@@ -32,7 +32,6 @@ from django.core.urlresolvers import reverse
 from django.core import validators
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db import IntegrityError
 from django.db import models
 from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
@@ -531,11 +530,11 @@ class FlowToggle(models.Model):
     @classmethod
     def get_or_create_from_toggle_name(cls, toggle_name):
         try:
-            return cls.get_from_toggle_name(meter_name)
+            return cls.get_from_toggle_name(toggle_name)
         except cls.DoesNotExist:
             pass
 
-        idx = meter_name.find('.')
+        idx = toggle_name.find('.')
         if idx <= 0:
             raise ValueError('Illegal name')
 

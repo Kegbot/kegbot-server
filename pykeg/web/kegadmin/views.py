@@ -18,11 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import cStringIO
 import datetime
 import os
 import zipfile
-import json
 
 import redis
 
@@ -31,12 +29,9 @@ from operator import itemgetter
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.urlresolvers import reverse
 from django.core.files.storage import get_storage_class
 from django.db.models import Q
-from django.forms import widgets
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -45,10 +40,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.http import require_POST
 
 from kegbot.util import kbjson
-from kegbot.util import units
 
 from pykeg.celery import app as celery_app
 from pykeg.core import backup
@@ -58,7 +51,6 @@ from pykeg.util.email import build_message
 
 from pykeg.web.kegadmin import forms
 from pykeg.web.tasks import core_checkin
-from pykeg.web.tasks import build_backup
 
 
 @staff_member_required
@@ -180,7 +172,6 @@ def export(request):
     subdirs, files = storage.listdir(backup.BACKUPS_DIRNAME)
     for filename in files:
         if filename[-3:] == 'zip':
-            zip_dir = filename[:-4]
             storage_filename = os.path.join(backup.BACKUPS_DIRNAME, filename)
             with storage.open(storage_filename, mode='rb') as backup_file:
                 archive = zipfile.ZipFile(backup_file)
@@ -306,7 +297,7 @@ def add_tap(request):
     if request.method == 'POST':
         form = forms.TapForm(request.POST)
         if form.is_valid():
-            new_tap = form.save()
+            form.save()
             messages.success(request, 'Tap created.')
             return redirect('kegadmin-taps')
     context['form'] = form
@@ -620,7 +611,7 @@ def drink_edit(request, drink_id):
             messages.error(request, 'Please provide a valid volume.')
         return redirect(drink.get_absolute_url())
 
-    message.error(request, 'Unknown action.')
+    messages.error(request, 'Unknown action.')
     return redirect(drink.get_absolute_url())
 
 
@@ -788,7 +779,6 @@ def beverage_producer_detail(request, brewer_id):
 
 @staff_member_required
 def beverage_producer_add(request):
-
     form = forms.BeverageProducerForm()
     if request.method == 'POST':
         form = forms.BeverageProducerForm(request.POST)
@@ -813,7 +803,6 @@ def beverage_producer_add(request):
 
 @staff_member_required
 def autocomplete_beverage(request):
-    context = RequestContext(request)
     search = request.GET.get('q')
     if search:
         beverages = models.Beverage.objects.filter(Q(name__icontains=search) | Q(producer__name__icontains=search))
@@ -835,7 +824,6 @@ def autocomplete_beverage(request):
 
 @staff_member_required
 def autocomplete_user(request):
-    context = RequestContext(request)
     search = request.GET.get('q')
     if search:
         users = models.User.objects.filter(Q(username__icontains=search) | Q(email__icontains=search))
@@ -856,7 +844,6 @@ def autocomplete_user(request):
 
 @staff_member_required
 def autocomplete_token(request):
-    context = RequestContext(request)
     search = request.GET.get('q')
     if search:
         tokens = models.AuthenticationToken.objects.filter(
@@ -879,7 +866,6 @@ def autocomplete_token(request):
 
 @staff_member_required
 def plugin_settings(request, plugin_name):
-    context = RequestContext(request)
     plugin = request.plugins.get(plugin_name, None)
     if not plugin:
         raise Http404('Plugin "%s" not loaded' % plugin_name)

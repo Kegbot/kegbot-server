@@ -16,11 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
-from django.template import Context
-from django.template.loader import get_template
-
 from pykeg.util.email import build_message
 from pykeg.core import models as core_models
 from pykeg.notification.backends.base import BaseNotificationBackend

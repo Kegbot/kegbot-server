@@ -29,7 +29,7 @@ from google.protobuf.message import Message
 from kegbot.api import kbapi
 from kegbot.util import kbjson
 from pykeg.core import models
-from pykeg import backend
+from pykeg.backend.exceptions import NoTokenError
 
 from . import validate_jsonp
 
@@ -83,7 +83,7 @@ def to_json_error(e, exc_info):
         e = kbapi.NotFoundError(e.message)
     elif isinstance(e, ValueError):
         e = kbapi.BadRequestError(str(e))
-    elif isinstance(e, backend.NoTokenError):
+    elif isinstance(e, NoTokenError):
         e = kbapi.NotFoundError(e.message)
 
     # Now determine the response based on the exception type.

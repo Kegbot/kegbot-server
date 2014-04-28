@@ -27,8 +27,6 @@ from pykeg.core import checkin
 from pykeg.core import models
 from pykeg.core.util import get_version
 
-import requests
-
 
 class CheckinTestCase(TransactionTestCase):
 

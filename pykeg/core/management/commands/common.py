@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import atexit
 import os
 import signal
 import sys

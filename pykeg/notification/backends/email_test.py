@@ -19,7 +19,6 @@
 """Unittests for email notification backend ."""
 
 from django.core import mail
-from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.test.utils import override_settings
 from pykeg.backend import get_kegbot_backend
@@ -27,9 +26,7 @@ from pykeg.core import models as core_models
 from pykeg.core import defaults
 from pykeg.core import kb_common
 
-from pykeg import notification
 from pykeg.notification import models
-from pykeg.notification.backends.base import BaseNotificationBackend
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
@@ -95,7 +92,7 @@ http:///account.
         self.prefs.save()
         self.assertEquals(0, len(mail.outbox))
 
-        keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
+        self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
             beverage_type='beer', producer_name='Unknown', style_name='Unknown')
         drink = self.backend.record_drink(defaults.METER_NAME_0, ticks=500)
         self.assertEquals(1, len(mail.outbox))
@@ -140,7 +137,7 @@ http:///account.
 
         keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
             beverage_type='beer', producer_name='Unknown', style_name='Unknown')
-        drink = self.backend.record_drink(defaults.METER_NAME_0, ticks=500,
+        self.backend.record_drink(defaults.METER_NAME_0, ticks=500,
             volume_ml=keg.full_volume_ml * (1 - kb_common.KEG_VOLUME_LOW_PERCENT))
         self.assertEquals(1, len(mail.outbox))
 

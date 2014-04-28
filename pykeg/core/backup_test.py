@@ -18,7 +18,6 @@
 
 """Unittests for pykeg.core.backup"""
 
-import datetime
 import difflib
 import os
 import sys
@@ -32,13 +31,10 @@ from django.core import serializers
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.test import TransactionTestCase
-from django.test.utils import override_settings
 
 from . import backup
-from . import models
 from .testutils import make_datetime
 from pykeg.core.util import get_version
-from django.core.files.storage import default_storage
 from south.management.commands import migrate
 
 from kegbot.util import kbjson
@@ -71,7 +67,6 @@ EXPECTED_SAVED_TABLES = [
 
 def run(cmd, args=[]):
     cmdname = cmd.__module__.split('.')[-1]
-    arg_str = ' '.join('%s' % a for a in args)
     cmd.run_from_argv([sys.argv[0], cmdname] + args)
 
 

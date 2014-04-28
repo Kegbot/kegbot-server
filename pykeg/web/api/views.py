@@ -736,7 +736,7 @@ def post_user_photo(request, user):
 
 
 def default_handler(request):
-    raise Http404, "Not an API endpoint: %s" % request.path[:100]
+    raise Http404('Not an API endpoint: %s' % request.path[:100])
 
 
 def get_tap_from_meter_name_or_404(meter_name_or_id):

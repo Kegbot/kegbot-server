@@ -102,7 +102,7 @@ def navitem(parser, token):
     """{% navitem <viewname> <title> [exact] %}"""
     tokens = token.split_contents()
     if len(tokens) < 3:
-        raise TemplateSyntaxError, '%s requires at least 3 tokens' % tokens[0]
+        raise TemplateSyntaxError('%s requires at least 3 tokens' % tokens[0])
     return NavitemNode(*tokens[1:])
 
 
@@ -141,7 +141,7 @@ def timeago(parser, token):
     """{% timeago <timestamp> %}"""
     tokens = token.contents.split()
     if len(tokens) != 2:
-        raise TemplateSyntaxError, '%s requires 2 tokens' % tokens[0]
+        raise TemplateSyntaxError('%s requires 2 tokens' % tokens[0])
     return TimeagoNode(tokens[1])
 
 
@@ -173,7 +173,7 @@ def volumetag(parser, token):
     """{% temperature <temp_c> %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise TemplateSyntaxError, '%s requires at least 2 tokens' % tokens[0]
+        raise TemplateSyntaxError('%s requires at least 2 tokens' % tokens[0])
     return TemperatureNode(tokens[1])
 
 
@@ -208,7 +208,7 @@ def volumetag(parser, token):
     """{% volume <amount> %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise TemplateSyntaxError, '%s requires at least 2 tokens' % tokens[0]
+        raise TemplateSyntaxError('%s requires at least 2 tokens' % tokens[0])
     return VolumeNode(tokens[1], tokens[2:])
 
 
@@ -251,7 +251,7 @@ def drinker_name_tag(parser, token):
     """{% drinker_name <drink_or_user_obj> [nolink] %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise TemplateSyntaxError, '%s requires at least 2 tokens' % tokens[0]
+        raise TemplateSyntaxError('%s requires at least 2 tokens' % tokens[0])
     return DrinkerNameNode(tokens[1], tokens[2:])
 
 
@@ -401,7 +401,7 @@ class ChartNode(Node):
         for k, v in chart_result.iteritems():
             if k not in chart_data:
                 chart_data[k] = v
-            elif type(v) == type({}):
+            elif isinstance(v, dict):
                 chart_data[k].update(v)
             else:
                 chart_data[k] = v
@@ -428,5 +428,5 @@ def volume(text, fmt='pints'):
     elif fmt == 'halfbarrels':
         res = vol.InHalfBarrelKegs()
     else:
-        raise TemplateSyntaxError, 'Unknown volume format: %s' % fmt
+        raise TemplateSyntaxError('Unknown volume format: %s' % fmt)
     return float(res)

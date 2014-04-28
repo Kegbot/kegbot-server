@@ -125,7 +125,7 @@ def build_response(request, result_data, response_code=200):
 
 
 def prepare_data(data, inner=False):
-    if isinstance(data, QuerySet) or type(data) == types.ListType:
+    if isinstance(data, QuerySet) or isinstance(data, types.ListType):
         result = [prepare_data(d, True) for d in data]
         container = 'objects'
     elif isinstance(data, dict):

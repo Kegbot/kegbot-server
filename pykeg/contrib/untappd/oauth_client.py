@@ -36,9 +36,8 @@ class Untappd(OAuth2):
         Untappd returns JSON instead of url encoded data.
         """
         response = json.loads(content)
-        print 'HERE!', response
         if not response or not response.get('response'):
-            raise ValueError, "Malformed response: %s" % str(response)
+            raise ValueError('Malformed response: %s' % str(response))
 
         return response.get('response', {})
 
@@ -47,7 +46,6 @@ class Untappd(OAuth2):
         del params['redirect_uri']
         params['response_type'] = 'code'
         url = '%s?%s' % (self.access_token_url, urllib.urlencode(params))
-        print 'URL:', url
         return self.request(url, method="GET")
 
     def get_user_info(self):

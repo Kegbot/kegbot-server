@@ -40,7 +40,7 @@ def handle_new_system_events(events):
         events: an iterable of models.SystemEvent objects
 
     Returns:
-        None 
+        None
     """
     backends = get_backends()
     logger.info('Handling %s event(s)' % len(events))

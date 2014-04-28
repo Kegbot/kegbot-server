@@ -61,7 +61,7 @@ class Runner(object):
         assert not self.is_running(), "Already running!"
         self.running = True
 
-        self.logger.info('Starting commands:')
+        self.logger.info('Starting commands from pid={}'.format(os.getpid()))
         dev_null_name = getattr(os, 'devnull', '/dev/null')
         dev_null = os.open(dev_null_name, os.O_RDWR)
 
@@ -87,7 +87,7 @@ class Runner(object):
 
         for command_name, command in self.commands.iteritems():
             proc = self._launch_command(command_name, command, dev_null, env)
-            self.logger.info('... Started {}: pid {}'.format(command_name, proc.pid))
+            self.logger.info('Started {} (pid={})'.format(command_name, proc.pid))
             self.watched_procs[command_name] = proc
 
         self.watch_commands()
@@ -119,6 +119,8 @@ class Runner(object):
         self.logger.info('Launching command: {}: {}'.format(command_name, command))
 
         def preexec():
+            # Set session id.
+            os.setsid()
             # Set umask to default to safe file permissions for root.
             os.umask(0o27)
             # Switch to a "safe" directory.

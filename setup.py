@@ -17,20 +17,20 @@ DEPENDENCIES = [
   'kegbot-pyutils == 0.1.7',
   'kegbot-api == 0.1.14',
 
-  'Django == 1.6.2',
+  'Django == 1.6.4',
   'django-imagekit == 3.1',
   'django-registration == 1.0',
   'django-socialregistration == 0.5.10',
   'django-bootstrap-pagination == 0.1.10',
 
-  'Celery == 3.1.9',
+  'Celery == 3.1.11',
 
   'South == 0.8.4',
   'django-crispy-forms == 1.2.8',
   'foursquare == 2014.04.10',
   'gunicorn == 18.0',
   'MySQL-python == 1.2.5',
-  'pillow == 2.3.1',
+  'pillow == 2.4.0',
   'protobuf == 2.5.0',
   'python-gflags == 2.0',
   'django-redis == 3.6.1',

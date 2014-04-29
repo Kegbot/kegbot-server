@@ -20,7 +20,6 @@ from pykeg import EPOCH
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
-from pykeg.core.cache import KegbotCache
 from pykeg.web.api.util import is_api_request
 
 from pykeg.plugin import util as plugin_util
@@ -80,7 +79,6 @@ class KegbotSiteMiddleware:
             else:
                 request.need_setup = True
 
-        request.kbcache = KegbotCache()
         request.backend = get_kegbot_backend()
 
         return None
@@ -100,13 +98,6 @@ class KegbotSiteMiddleware:
             return self._upgrade_required(request)
 
         return None
-
-    def process_response(self, request, response):
-        if request.method in ('POST', 'PUT', 'PATCH') and response.status_code < 400:
-            # Invalidate cache on any successful change.
-            # TODO(mikey): More granular cache invalidations.
-            request.kbcache.update_generation()
-        return response
 
     def _setup_required(self, request):
         return SimpleTemplateResponse('setup_wizard/setup_required.html',

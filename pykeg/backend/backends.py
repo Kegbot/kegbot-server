@@ -27,7 +27,6 @@ from django.db import transaction
 from django.utils import timezone
 from pykeg.core import keg_sizes
 from pykeg.core.util import SuppressTaskErrors
-from pykeg.core.cache import KegbotCache
 from pykeg.web.auth import get_auth_backend
 from pykeg.web.auth import AuthException
 from pykeg.web.auth import UserExistsException
@@ -45,7 +44,6 @@ class KegbotBackend(object):
 
     def __init__(self):
         self._logger = logging.getLogger('backend')
-        self.cache = KegbotCache()
 
     @transaction.atomic
     def create_new_user(self, username, email, password=None, photo=None):
@@ -193,8 +191,6 @@ class KegbotBackend(object):
             keg.served_volume_ml += volume_ml
             keg.save(update_fields=['served_volume_ml'])
 
-        self.cache.update_generation()
-
         if photo:
             with transaction.atomic():
                 pic = models.Picture.objects.create(
@@ -255,7 +251,6 @@ class KegbotBackend(object):
             session.Rebuild()
 
         self.build_stats(drink_id)
-        self.cache.update_generation()
 
         return drink
 
@@ -294,7 +289,6 @@ class KegbotBackend(object):
             drink.session.Rebuild()
 
         self.build_stats(drink.id)
-        self.cache.update_generation()
 
         return drink
 
@@ -315,7 +309,6 @@ class KegbotBackend(object):
             drink.session.Rebuild()
 
         self.build_stats(drink.id)
-        self.cache.update_generation()
 
     @transaction.atomic
     def log_sensor_reading(self, sensor_name, temperature, when=None):

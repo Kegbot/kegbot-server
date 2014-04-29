@@ -342,6 +342,7 @@ class ChartNode(Node):
 
     def show_error(self, error_str):
         ctx = {
+            'error_str': error_str,
             'chart_id': 0,
             'width': self._width,
             'height': self._height,

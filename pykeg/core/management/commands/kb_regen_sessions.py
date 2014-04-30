@@ -20,6 +20,7 @@ from django.db import transaction
 from django.core.management.base import NoArgsCommand
 
 from pykeg.core import models
+from pykeg.core.backup import erase_model_table
 from pykeg.core.management.commands.common import progbar
 
 
@@ -51,7 +52,7 @@ class Command(NoArgsCommand):
         print ''
 
         print 'deleting old sessions..',
-        models.DrinkingSession.objects.all().delete()
+        erase_model_table(models.DrinkingSession)
         print 'orm delete successful'
 
         pos = 0

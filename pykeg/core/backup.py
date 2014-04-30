@@ -164,6 +164,22 @@ def get_models_to_erase():
 get_models_to_restore = get_models_to_erase
 
 
+def erase_model_table(model, must_truncate=False):
+    table = tbl(model)
+    cursor = connection.cursor()
+    if connection.vendor == 'mysql':
+        with disable_foreign_key_checks(connection):
+            cursor.execute('TRUNCATE TABLE `{}`'.format(table))
+            cursor.execute('ALTER TABLE `{}` AUTO_INCREMENT = 1'.format(table))
+    elif connection.vendor == 'sqlite':
+        cursor.execute('DELETE FROM {}'.format(table))
+    else:
+        if must_truncate:
+            raise ValueError('Truncate on vendor "{}" unsupported'.format(connection.vendor))
+        else:
+            model.objects.all().delete()
+
+
 @transaction.atomic
 def create_backup_tree(date, storage):
     """Creates filesystem tree of backup data."""
@@ -407,16 +423,8 @@ def erase(storage=default_storage):
     with transaction.atomic():
         with disable_foreign_key_checks(connection):
             for model in get_models_to_erase():
-                table = model._meta.db_table
-                logger.debug('--- Erasing {}'.format(table))
-                cursor = connection.cursor()
-                if connection.vendor == 'mysql':
-                    cursor.execute('TRUNCATE TABLE `{}`'.format(table))
-                    cursor.execute('ALTER TABLE `{}` AUTO_INCREMENT = 1'.format(model._meta.db_table))
-                elif connection.vendor == 'sqlite':
-                    cursor.execute('DELETE FROM {}'.format(table))
-                else:
-                    raise ValueError('Database vendor "{}" unsupported'.format(connection.vendor))
+                logger.debug('--- Erasing {}'.format(tbl(model)))
+                erase_model_table(model, must_truncate=True)
 
     def delete_files(dirname):
         subdirs, files = storage.listdir(dirname)

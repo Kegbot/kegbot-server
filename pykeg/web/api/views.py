@@ -629,7 +629,7 @@ def _tap_detail_post(request, tap):
         duration = 0
     try:
         drink = request.backend.record_drink(tap,
-          ticks=cd['ticks'],
+            ticks=cd['ticks'],
             volume_ml=cd.get('volume_ml'),
             username=cd.get('username'),
             pour_time=pour_time,

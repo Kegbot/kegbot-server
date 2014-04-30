@@ -25,7 +25,7 @@ class PluginData(models.Model):
     plugin_name = models.CharField(max_length=127,
         help_text='Plugin short name')
     key = models.CharField(max_length=127)
-    value = JSONField(dump_kwargs={'cls': kbjson.JSONEncoder})
+    value = JSONField()
 
     class Meta:
         unique_together = ('plugin_name', 'key')

@@ -23,7 +23,9 @@ DEPENDENCIES = [
   'django-socialregistration == 0.5.10',
   'django-bootstrap-pagination == 0.1.10',
 
-  'Celery == 3.1.11',
+  # See kegbot-server issue #264
+  'Celery == 3.1.9',
+  'kombu == 3.0.14',
 
   'South == 0.8.4',
   'django-crispy-forms == 1.2.8',

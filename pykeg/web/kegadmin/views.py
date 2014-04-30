@@ -45,12 +45,15 @@ from kegbot.util import kbjson
 
 from pykeg.celery import app as celery_app
 from pykeg.core import backup
-from pykeg.core import logger
 from pykeg.core import models
+from pykeg.logging.handlers import RedisListHandler
 from pykeg.util.email import build_message
 
 from pykeg.web.kegadmin import forms
 from pykeg.web.tasks import core_checkin
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 @staff_member_required
@@ -880,5 +883,14 @@ def plugin_settings(request, plugin_name):
 @staff_member_required
 def logs(request):
     context = RequestContext(request)
-    context['errors'] = logger.get_cached_logs()
+    handlers = logger.parent.handlers
+
+    logs = []
+    for h in handlers:
+        if isinstance(h, RedisListHandler):
+            logs = list(h.get_logs())
+            logs.reverse()
+            break
+
+    context['logs'] = logs
     return render_to_response('kegadmin/logs.html', context_instance=context)

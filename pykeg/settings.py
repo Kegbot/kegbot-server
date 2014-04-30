@@ -5,8 +5,14 @@
 
 # --------------------------------------------------------------------------- #
 
+from __future__ import absolute_import
+
 # Grab flags for optional modules.
 from pykeg.core.optional_modules import *
+
+import logging
+from pykeg.logging.logger import RedisLogger
+logging.setLoggerClass(RedisLogger)
 
 INSTALLED_APPS = (
     'pykeg.core',
@@ -210,16 +216,6 @@ CELERYBEAT_SCHEDULE = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
-    'root': {
-        'level': 'INFO',
-        'handlers': ['console', 'cache'],  # replaced with sentry later, if available.
-        'formatter': 'verbose',
-    },
-    '': {
-        'level': 'DEBUG',
-        'handlers': ['console', 'cache'],  # replaced with sentry later, if available.
-        'formatter': 'verbose',
-    },
     'filters': {
         'require_debug_true': {
             '()': 'django.utils.log.RequireDebugTrue',
@@ -235,9 +231,11 @@ LOGGING = {
         'null': {
             'class': 'django.utils.log.NullHandler',
         },
-        'cache': {
-            'level': 'ERROR',
-            'class': 'pykeg.core.logger.CacheHandler',
+        'redis': {
+            'level': 'INFO',
+            'class': 'pykeg.logging.handlers.RedisListHandler',
+            'key': 'kb:log',
+            'max_messages': 100,
         },
     },
     'formatters': {
@@ -253,6 +251,16 @@ LOGGING = {
             'level': 'DEBUG',
             'handlers': ['console'],
             'propagate': False,
+        },
+        'pykeg': {
+            'level': 'INFO',
+            'handlers': ['console', 'redis'],
+            'propagate': False,
+        },
+        '': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'formatter': 'verbose',
         },
     },
 }

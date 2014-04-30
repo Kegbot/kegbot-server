@@ -68,14 +68,15 @@ def get_plugin_template_dirs(plugin_list):
     return ret
 
 
-def get_current_request():
+def get_current_request(frames=None):
     """Walk up the stack, return the nearest first argument named "request".
 
     Adapted from: http://nedbatchelder.com/blog/201008/global_django_requests.html
     """
+    frames = frames or inspect.stack()[1:]
     frame = None
     try:
-        for f in inspect.stack()[1:]:
+        for f in frames:
             frame = f[0]
             code = frame.f_code
             if code.co_varnames[:1] == ("request",):

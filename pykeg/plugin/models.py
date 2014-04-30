@@ -17,7 +17,6 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
-from kegbot.util import kbjson
 from pykeg.core.jsonfield import JSONField
 
 

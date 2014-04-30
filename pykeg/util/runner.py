@@ -113,7 +113,11 @@ class Runner(object):
             if proc.returncode is None:
                 self.logger.info('Killing {} (pid={})'.format(command_name, proc.pid))
                 proc.terminate()
-        self.logger.info('All processes killed.')
+        for command_name, proc in self.watched_procs.iteritems():
+            self.logger.info('Waiting for {} to exit (pid={}) ...'.format(command_name, proc.pid))
+            proc.wait()
+            self.logger.info('... done.')
+        self.logger.info('All processes exited.')
 
     def _launch_command(self, command_name, command, dev_null, env=None):
         self.logger.info('Launching command: {}: {}'.format(command_name, command))

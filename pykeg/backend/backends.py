@@ -115,7 +115,7 @@ class KegbotBackend(object):
     @transaction.atomic
     def record_drink(self, tap, ticks, volume_ml=None, username=None,
             pour_time=None, duration=0, shout='', tick_time_series='', photo=None,
-            do_postprocess=True, spilled=False):
+            spilled=False):
         """Records a new drink against a given tap.
 
         The tap must have a Keg assigned to it (KegTap.current_keg), and the keg
@@ -137,7 +137,6 @@ class KegbotBackend(object):
             shout: A short comment left by the user about this Drink.  Optional.
             tick_time_series: Vector of flow update data, used for diagnostic
                 purposes.
-            do_postprocess: Set to False during bulk inserts.
             spilled: If drink is recorded as spill, the volume is added to spilled_ml
                 and the "drink" is not saved as an event.
 
@@ -200,10 +199,9 @@ class KegbotBackend(object):
             d.picture = pic
             d.save()
 
-        if do_postprocess:
-            events = models.SystemEvent.build_events_for_drink(d)
-            tasks.schedule_tasks(events)
-            self.build_stats(d.id)
+        events = models.SystemEvent.build_events_for_drink(d)
+        tasks.schedule_tasks(events)
+        self.build_stats(d.id)
 
         return d
 
@@ -247,7 +245,7 @@ class KegbotBackend(object):
         drink.delete()
         session.Rebuild()
 
-        self.build_stats(drink_id)
+        self.rebuild_stats(drink_id)
         return drink
 
     @transaction.atomic
@@ -282,7 +280,7 @@ class KegbotBackend(object):
             drink.picture.save()
 
         drink.session.Rebuild()
-        self.build_stats(drink.id)
+        self.rebuild_stats(drink.id)
 
         return drink
 
@@ -301,7 +299,7 @@ class KegbotBackend(object):
             keg.save(update_fields=['served_volume_ml'])
 
             drink.session.Rebuild()
-            self.build_stats(drink.id)
+            self.rebuild_stats(drink.id)
 
     @transaction.atomic
     def log_sensor_reading(self, sensor_name, temperature, when=None):
@@ -622,11 +620,29 @@ class KegbotBackend(object):
 
         return tap
 
-    def build_stats(self, since_drink_id):
-        """Rebuilds statistics starting with this drink."""
-        assert since_drink_id is not None, 'No drink id.'
+    def build_stats(self, drink_id):
+        """Build statistics for the given drink (or drink), without adjusting
+        any future statistics.
+
+        This method should only be called for new recordings (ie, when the newest
+        drink record is inserted).  Modifications to existing drinks should call
+        `rebuild_stats()`.
+        """
+        assert drink_id is not None, 'No drink id.'
         with SuppressTaskErrors(self._logger):
-            tasks.build_stats.delay(since_drink_id=since_drink_id)
+            tasks.build_stats.delay(drink_id=drink_id, rebuild_following=False)
+
+    def rebuild_stats(self, drink_id):
+        """Rebuild statistics for drink `drink_id`, including statistics for
+        all drinks following it.
+
+        Compared to `build_stats()`, this method should be called whenever an
+        existing drink has been modified (thus potentially affecting the statistics
+        for all later pours).
+        """
+        assert drink_id is not None, 'No drink id.'
+        with SuppressTaskErrors(self._logger):
+            tasks.build_stats.delay(drink_id=drink_id, rebuild_following=True)
 
     def build_backup(self):
         """Builds backup file for Kegbot Site."""

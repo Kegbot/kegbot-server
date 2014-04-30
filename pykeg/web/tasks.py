@@ -50,10 +50,14 @@ def core_checkin(self):
 
 
 @app.task(name='build_stats', queue='stats', expires=60 * 60)
-def build_stats(since_drink_id):
-    logger.info('build_stats since_drink_id={}'.format(since_drink_id))
+def build_stats(drink_id, rebuild_following):
+    logger.info('build_stats drink_id={} rebuild_following={}'.format(
+        drink_id, rebuild_following))
     with transaction.atomic():
-        stats.rebuild_from_id(since_drink_id)
+        if rebuild_following:
+            stats.rebuild_from_id(drink_id)
+        else:
+            stats.build_for_id(drink_id)
 
 
 @app.task(name='build_backup', bind=True)

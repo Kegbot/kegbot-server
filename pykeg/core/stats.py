@@ -146,7 +146,7 @@ BUILDER = StatsBuilder()
 
 
 def invalidate(drink_id):
-    """Clears all statistics since (and including) drink_id."""
+    """Clears all statistics starting from (and including) drink_id."""
     logger.debug('--- Invalidating stats since id {}'.format(drink_id))
     models.Stats.objects.filter(drink_id__gte=drink_id).delete()
 
@@ -156,7 +156,23 @@ def invalidate_all():
     models.Stats.objects.all().delete()
 
 
+def build_for_id(drink_id):
+    """Build stats up to and including this drink id, *without*
+    considering any subsequent drinks.
+    """
+    try:
+        drink = models.Drink.objects.get(pk=drink_id)
+    except models.Drink.DoesNotExist:
+        logger.warning('No drink exists with id={}'.format(drink_id))
+        return
+    generate(drink, invalidate_first=False)
+
+
 def rebuild_from_id(drink_id):
+    """Builds statistics stating from `drink_id`.  Unlike `build_for_id()`,
+    this method computes statistics for any subsequent drinks found in the
+    database.
+    """
     invalidate(drink_id)
     for drink in models.Drink.objects.filter(id__gte=drink_id).order_by('id'):
         generate(drink, invalidate_first=False)

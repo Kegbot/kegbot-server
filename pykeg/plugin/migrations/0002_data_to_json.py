@@ -14,7 +14,6 @@ class Migration(DataMigration):
                 # Do nothing if already valid json.
                 kbjson.loads(row.value)
             except ValueError:
-                print ' ~ {} -> {}'.format(repr(row.value), repr(kbjson.dumps(row.value)))
                 row.value = kbjson.dumps(row.value)
                 row.save()
 

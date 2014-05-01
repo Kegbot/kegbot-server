@@ -20,6 +20,7 @@ import copy
 import logging
 import os
 import pwd
+import signal
 import sys
 import subprocess
 import time
@@ -112,7 +113,7 @@ class Runner(object):
         for command_name, proc in self.watched_procs.iteritems():
             if proc.returncode is None:
                 self.logger.info('Killing {} (pid={})'.format(command_name, proc.pid))
-                proc.terminate()
+                os.killpg(proc.pid, signal.SIGTERM)
         for command_name, proc in self.watched_procs.iteritems():
             self.logger.info('Waiting for {} to exit (pid={}) ...'.format(command_name, proc.pid))
             proc.wait()

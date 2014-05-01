@@ -5,6 +5,10 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.27 (2014-05-01)
+---------------------------
+* Bugfix: #263 (workers not exiting).
+
 Version 0.9.26 (2014-05-01)
 ---------------------------
 .. note::

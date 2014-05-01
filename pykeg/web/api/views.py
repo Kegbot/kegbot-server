@@ -658,18 +658,17 @@ def cancel_drink(request):
         raise kbapi.ServerError(str(e))
 
 
+@require_http_methods(["POST"])
 @csrf_exempt
 def login(request):
-    if request.POST:
-        form = AuthenticationForm(data=request.POST)
-        if form.is_valid():
-            auth_login(request, form.get_user())
-            if request.session.test_cookie_worked():
-                request.session.delete_test_cookie()
-            return {'result': 'ok'}
-        else:
-            raise kbapi.PermissionDeniedError('Login failed.')
-    raise kbapi.BadRequestError('POST required.')
+    form = AuthenticationForm(data=request.POST)
+    if form.is_valid():
+        auth_login(request, form.get_user())
+        if request.session.test_cookie_worked():
+            request.session.delete_test_cookie()
+        return {'result': 'ok'}
+    else:
+        raise kbapi.PermissionDeniedError('Login failed.')
 
 
 def logout(request):

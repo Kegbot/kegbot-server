@@ -25,6 +25,13 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
+WHITELISTED_API_PATHS = (
+    '/api/login',
+    '/api/v1/login',
+    '/api/get-api-key',
+    '/api/v1/get-api-key',
+)
+
 
 class ApiRequestMiddleware:
     def process_view(self, request, view_func, view_args, view_kwargs):
@@ -41,7 +48,7 @@ class ApiRequestMiddleware:
 
             need_auth = util.needs_auth(view_func)
             privacy = request.kbsite.privacy
-            if request.path in ('/api/login/', '/api/get-api-key/'):
+            if request.path.startswith(WHITELISTED_API_PATHS):
                 # API request to whitelisted path.
                 need_auth = False
             else:

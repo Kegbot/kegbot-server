@@ -154,6 +154,11 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals(data.meta.result, 'error')
         self.assertEquals(data.error.code, 'NoAuthTokenError')
 
+        # Login endpoint works despite privacy settings
+        for ep in ('login', 'login/', 'v1/login', 'v1/login/'):
+            response, data = self.post(ep, data={'username': 'admin', 'password': 'testpass'})
+            self.assertEquals(data.meta.result, 'ok')
+
     def test_record_drink(self):
         response, data = self.get('taps/1')
         self.assertEquals(data.meta.result, 'ok')

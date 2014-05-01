@@ -1,0 +1,10 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Link a Device | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Link a Device{% endblock %}
+
+{% block kegadmin-main %}
+{% crispy form %}
+{% endblock %}

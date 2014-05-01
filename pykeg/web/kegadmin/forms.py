@@ -630,3 +630,16 @@ class ControllerForm(forms.ModelForm):
     class Meta:
         model = models.Controller
         fields = ('name', 'model_name', 'serial_number')
+
+
+class LinkDeviceForm(forms.Form):
+    code = forms.CharField(required=True,
+        help_text='Link code shown on device.')
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
+        'code',
+        FormActions(
+            Submit('link_device', 'Link Device', css_class='btn-success'),
+        )
+    )

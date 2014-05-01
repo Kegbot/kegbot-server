@@ -268,10 +268,18 @@ class KegbotSite(models.Model):
             return '%1.f oz' % units.Quantity(volume_ml).InOunces()
 
 
+class Device(models.Model):
+    name = models.CharField(max_length=255, default='Unknown Device')
+    created_time = models.DateTimeField(default=timezone.now,
+        help_text='Time the device was created.')
+
+
 class ApiKey(models.Model):
     """Grants access to certain API endpoints to a user via a secret key."""
     user = models.ForeignKey(User, blank=True, null=True,
         help_text='User receiving API access.')
+    device = models.ForeignKey(Device, null=True,
+        help_text='Device this key is associated with.')
     key = models.CharField(max_length=127, editable=False, unique=True,
         default=lambda: ApiKey.generate_key(),
         help_text='The secret key.')

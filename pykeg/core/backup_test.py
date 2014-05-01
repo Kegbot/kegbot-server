@@ -45,6 +45,7 @@ EXPECTED_SAVED_TABLES = [
     u'core_beverage',
     u'core_beverageproducer',
     u'core_controller',
+    u'core_device',
     u'core_drink',
     u'core_drinkingsession',
     u'core_flowmeter',

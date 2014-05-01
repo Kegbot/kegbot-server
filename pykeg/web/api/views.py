@@ -39,6 +39,7 @@ from pykeg.core import keg_sizes
 from pykeg.core import models
 from pykeg.core import util as core_util
 from pykeg.proto import protolib
+from pykeg.web.api import devicelink
 from pykeg.web.api import forms
 from pykeg.web.api import util
 from pykeg.web.kegadmin.forms import ChangeKegForm
@@ -730,6 +731,25 @@ def post_user_photo(request, user):
     user.mugshot = pic
     user.save()
     return protolib.ToProto(pic)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def link_device_new(request):
+    name = request.POST.get('name', 'Unknown Device')
+    code = devicelink.start_link(name)
+    return {'status': 'ok', 'code': code, 'linked': False}
+
+
+@require_http_methods(["GET"])
+def link_device_status(request, code):
+    try:
+        api_key = devicelink.get_status(code)
+    except devicelink.LinkExpiredException as e:
+        raise Http404(e)
+    if api_key:
+        return {'status': 'ok', 'linked': True, 'api_key': api_key}
+    return {'status': 'ok', 'linked': False}
 
 
 def default_handler(request):

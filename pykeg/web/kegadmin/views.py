@@ -43,6 +43,7 @@ from django.views.decorators.http import require_http_methods
 
 from kegbot.util import kbjson
 
+from pykeg.web.api import devicelink
 from pykeg.celery import app as celery_app
 from pykeg.core import backup
 from pykeg.core import models
@@ -894,3 +895,22 @@ def logs(request):
 
     context['logs'] = logs
     return render_to_response('kegadmin/logs.html', context_instance=context)
+
+
+@staff_member_required
+def link_device(request):
+    context = RequestContext(request)
+    form = forms.LinkDeviceForm()
+    if request.method == 'POST':
+        form = forms.LinkDeviceForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data.get('code')
+            try:
+                status = devicelink.confirm_link(code)
+                name = status.get('name', 'New device')
+                messages.success(request, '{} linked!'.format(name))
+            except devicelink.LinkExpiredException:
+                messages.error(request, 'Code incorrect or expired.')
+            return redirect('kegadmin-link-device')
+    context['form'] = form
+    return render_to_response('kegadmin/link_device.html', context_instance=context)

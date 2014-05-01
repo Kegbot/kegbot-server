@@ -1180,6 +1180,10 @@ class Picture(models.Model):
         processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(128, 128)],
         format='JPEG',
         options={'quality': 90})
+    thumbnail_png = ImageSpecField(source='image',
+        processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(128, 128)],
+        format='PNG',
+        options={'quality': 90})
 
     time = models.DateTimeField(default=timezone.now,
         help_text='Time/date of image capture')

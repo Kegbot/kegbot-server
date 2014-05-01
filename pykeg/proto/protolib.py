@@ -96,11 +96,15 @@ def AuthTokenToProto(record, full=False):
 
 
 @converts(models.Picture)
-def PictureToProto(record, full=False):
+def PictureToProto(record, full=False, use_png=False):
     ret = models_pb2.Image()
-    ret.url = record.resized.url
+    if use_png:
+        ret.url = record.resized_png.url
+        ret.thumbnail_url = record.thumbnail_png.url
+    else:
+        ret.url = record.resized.url
+        ret.thumbnail_url = record.thumbnail.url
     ret.original_url = record.image.url
-    ret.thumbnail_url = record.thumbnail.url
     # TODO(mikey): This can be expensive depending on the storage backend
     # (attempts to fetch image).
     #try:
@@ -175,7 +179,9 @@ def BeverageToProto(beverage, full=False):
         ret.description = beverage.description
 
     if beverage.picture:
-        ret.picture.MergeFrom(ToProto(beverage.picture, full))
+        # Use PNG for beverages.
+        ret.picture.MergeFrom(
+            PictureToProto(beverage.picture, full=full, use_png=True))
 
     if beverage.vintage_year:
         ret.vintage_year = beverage.vintage_year

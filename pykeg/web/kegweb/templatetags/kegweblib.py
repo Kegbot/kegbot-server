@@ -45,6 +45,7 @@ def mugshot_box(context, user, boxsize=0):
         'user': user,
         'boxsize': boxsize,
         'guest_info': context.get('guest_info', None),
+        'STATIC_URL': context.get('STATIC_URL')
     }
 
 

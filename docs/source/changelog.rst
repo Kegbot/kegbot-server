@@ -5,6 +5,21 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.26 (2014-05-01)
+---------------------------
+.. note::
+  Supervisor configuration has changed.  Please update your configuration file
+  to match :ref:`the example <supervisor-conf>`.
+
+* Beverage images are now served as PNGs, preserving transparency.
+* Updated supervisor configuration.
+* Bugfix: #262 (user sessions page).
+* Bugfix: #264 (task failures leading to missing stats).
+* Bugfix: #265 (errors logging in through tablet when site is private).
+* Kegadmin "Logs" tab will now show more logs, not just errors.
+* Foursquare/Untappd bugfixes.
+* Internal: PEP8 cleanup, more unittests.
+
 Version 0.9.25 (2014-04-24)
 ---------------------------
 * Experimental new commands: ``kegbot backup`` and ``kegbot restore``.
@@ -20,7 +35,7 @@ Version 0.9.24 (2014-04-20)
 
 Version 0.9.23 (2014-04-17)
 ---------------------------
-.. warning::
+.. note::
   Supervisor configuration has changed.  Please update your configuration file
   to match :ref:`the example <supervisor-conf>`.
 

@@ -33,8 +33,8 @@
 <li class="divider"></li>
 <li class="nav-header">Other</li>
 {% navitem "kegadmin-export" "Export Data" %}
-{% navitem "kegadmin-workers" "Worker Status" %}
 {% if HAVE_ADMIN and not EMBEDDED %}
+{% navitem "kegadmin-workers" "Worker Status" %}
 <li><a href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a></li>
 {% endif %}
 <li><a href='https://github.com/Kegbot/kegbot-server/issues' target="_blank">Report a Bug &raquo;</a></li>

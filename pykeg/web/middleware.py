@@ -24,9 +24,11 @@ from pykeg.web.api.util import is_api_request
 
 from pykeg.plugin import util as plugin_util
 
+from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse
+from django.http import HttpResponseServerError
 from django.template.response import SimpleTemplateResponse
 from django.template import RequestContext
 from django.utils import timezone
@@ -100,10 +102,14 @@ class KegbotSiteMiddleware:
         return None
 
     def _setup_required(self, request):
+        if settings.EMBEDDED:
+            return HttpResponseServerError('Site is not set up.', content_type='text/plain')
         return SimpleTemplateResponse('setup_wizard/setup_required.html',
             context=RequestContext(request), status=403)
 
     def _upgrade_required(self, request, current_epoch=None):
+        if settings.EMBEDDED:
+            return HttpResponseServerError('Site needs upgrade.', content_type='text/plain')
         context = RequestContext(request)
         context['current_epoch'] = current_epoch
         return SimpleTemplateResponse('setup_wizard/upgrade_required.html',

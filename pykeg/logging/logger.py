@@ -117,7 +117,7 @@ class RedisLogRecord(logging.LogRecord):
     def _request_info(self, request):
         """Extracts loggable information from a request."""
         ret = {}
-        if not request:
+        if not request or not hasattr(request, 'META'):
             return ret
         ret['addr'] = request.META.get('REMOTE_ADDR')
         ret['request_path'] = request.path

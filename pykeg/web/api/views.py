@@ -275,6 +275,10 @@ def get_status(request):
     return response
 
 
+def get_version(request):
+    return {'server_version': core_util.get_version()}
+
+
 def get_keg(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
     return protolib.ToProto(keg, full=True)

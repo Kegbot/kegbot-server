@@ -28,6 +28,8 @@ LOGGER = logging.getLogger(__name__)
 WHITELISTED_API_PATHS = (
     '/api/login',
     '/api/v1/login',
+    '/api/version',
+    '/api/v1/version',
     '/api/get-api-key',
     '/api/v1/get-api-key',
 )

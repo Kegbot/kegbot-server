@@ -49,6 +49,7 @@ urlpatterns = patterns('pykeg.web.api.views',
     url(r'^sessions/(?P<session_id>\d+)/stats/?$', 'get_session_stats'),
 
     url(r'^status/?$', 'get_status'),
+    url(r'^version/?$', 'get_version'),
 
     url(r'^events/?$', 'all_events'),
     url(r'^sound-events/?$', 'all_sound_events'),

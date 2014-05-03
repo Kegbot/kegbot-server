@@ -24,6 +24,7 @@ from django.test import TransactionTestCase
 from django.test.utils import override_settings
 from pykeg.core import models
 from pykeg.core import defaults
+from pykeg.core.util import get_version
 from kegbot.util import kbjson
 
 import os
@@ -157,6 +158,10 @@ class ApiClientTestCase(BaseApiTestCase):
         # Login endpoint works despite privacy settings
         for ep in ('login', 'login/', 'v1/login', 'v1/login/'):
             response, data = self.post(ep, data={'username': 'admin', 'password': 'testpass'})
+            self.assertEquals(data.meta.result, 'ok')
+
+        for ep in ('version/', 'v1/version/'):
+            response, data = self.get(ep)
             self.assertEquals(data.meta.result, 'ok')
 
     def test_record_drink(self):
@@ -338,3 +343,8 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals(data.meta.result, 'ok')
         self.assertIsNotNone(data.object.get('toggle'))
         self.assertEquals(data.object.toggle.id, 1)
+
+    def test_get_version(self):
+        response, data = self.get('version')
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(data.object.get('server_version'), get_version())

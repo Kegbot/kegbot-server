@@ -348,3 +348,16 @@ class ApiClientTestCase(BaseApiTestCase):
         response, data = self.get('version')
         self.assertEquals(data.meta.result, 'ok')
         self.assertEquals(data.object.get('server_version'), get_version())
+
+    def test_auth_tokens(self):
+        response, data = self.get('auth-tokens/nfc/deadbeef', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'error')
+        self.assertEquals(response.status_code, 404)
+
+        response, data = self.post('auth-tokens/nfc/deadbeef/assign', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
+            data={'username': self.normal_user.username})
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(data.object.auth_device, 'nfc')
+        self.assertEquals(data.object.token_value, 'deadbeef')
+        self.assertEquals(data.object.username, 'normal_user')
+        self.assertEquals(response.status_code, 200)

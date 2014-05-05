@@ -425,7 +425,7 @@ def assign_auth_token(request, auth_device, token_value):
     b = request.backend
     username = form.cleaned_data['username']
 
-    user = backend.get_user(username)
+    user = b.get_user(username)
     if not user:
         raise kbapi.BadRequestError("User does not exist")
 

@@ -107,7 +107,7 @@ class KegbotBackend(object):
         token = models.AuthenticationToken.objects.create(
             auth_device=auth_device, token_value=token_value)
         if username:
-            user = get_user(username)
+            user = self.get_user(username)
             token.user = user
         token.save()
         return token
@@ -162,7 +162,7 @@ class KegbotBackend(object):
 
         user = None
         if username:
-            user = get_user(username)
+            user = self.get_user(username)
         else:
             user = models.KegbotSite.get().default_user
             if not user:
@@ -264,8 +264,8 @@ class KegbotBackend(object):
         Returns:
             The drink.
         """
-        drink = get_drink(drink)
-        user = get_user(user)
+        drink = self.get_drink(drink)
+        user = self.get_user(user)
         if drink.user == user:
             return drink
 
@@ -678,17 +678,15 @@ class KegbotBackend(object):
             else:
                 return None
 
+    def get_user(self, user_or_username):
+        """Returns the User object for the given username, or None."""
+        if not user_or_username:
+            return None
+        if not isinstance(user_or_username, models.User):
+            return models.User.objects.get(username=user_or_username)
+        return user_or_username
 
-def get_user(user_or_username):
-    """Returns the User object for the given username, or None."""
-    if not user_or_username:
-        return None
-    if not isinstance(user_or_username, models.User):
-        return models.User.objects.get(username=user_or_username)
-    return user_or_username
-
-
-def get_drink(drink_or_id):
-    if not isinstance(drink_or_id, models.Drink):
-        return models.Drink.objects.get(pk=drink_or_id)
-    return drink_or_id
+    def get_drink(self, drink_or_id):
+        if not isinstance(drink_or_id, models.Drink):
+            return models.Drink.objects.get(pk=drink_or_id)
+        return drink_or_id

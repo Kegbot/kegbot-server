@@ -104,7 +104,7 @@ class RedisLogRecord(logging.LogRecord):
             'level': levelAsString(lvl),
             'filename': fn,
             'line_no': self.lineno,
-            'msg': str(msg),
+            'msg': unicode(msg),
             'args': list(args),
             'time': datetime.datetime.utcnow(),
             'username': self.username,

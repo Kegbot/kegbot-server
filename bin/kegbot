@@ -21,6 +21,7 @@
 import os
 import sys
 from django.core import management
+from pykeg.core.util import get_version
 
 if sys.version_info < (2, 7):
   sys.stderr.write('Error: Kegbot needs Python 2.7 or newer.\n\n'
@@ -29,4 +30,10 @@ if sys.version_info < (2, 7):
 
 if __name__ == "__main__":
   os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pykeg.settings")
+
+  # Hack: Django's `version` command cannot be overridden the usual way.
+  if len(sys.argv) > 1 and sys.argv[1] == 'version':
+    print 'kegbot-server {}'.format(get_version())
+    sys.exit(0)
+
   management.execute_from_command_line()

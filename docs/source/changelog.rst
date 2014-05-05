@@ -5,6 +5,13 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.28 (2014-05-05)
+---------------------------
+* ``kegbot version`` now correctly reports the installed version.
+* API: Added ``version/`` endpoint
+* Bugfix: #268 (NFC token assigment).
+* Bugfix: #269 (error during upgrade).
+
 Version 0.9.27 (2014-05-01)
 ---------------------------
 * Bugfix: #263 (workers not exiting).

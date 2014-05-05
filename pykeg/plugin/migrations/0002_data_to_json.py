@@ -4,7 +4,7 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
-from kegbot.util import kbjson
+import json
 
 class Migration(DataMigration):
 
@@ -12,9 +12,9 @@ class Migration(DataMigration):
         for row in orm['plugin.PluginData'].objects.all():
             try:
                 # Do nothing if already valid json.
-                kbjson.loads(row.value)
+                json.loads(row.value)
             except ValueError:
-                row.value = kbjson.dumps(row.value)
+                row.value = json.dumps(row.value)
                 row.save()
 
     def backwards(self, orm):

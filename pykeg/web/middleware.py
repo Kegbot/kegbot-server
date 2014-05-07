@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 
 # TODO(mikey): rename me
 ALLOWED_PATHS = (
+    '/api/devices/link'
     '/api/login/',
     '/api/get-api-key/',
     '/account/activate/',

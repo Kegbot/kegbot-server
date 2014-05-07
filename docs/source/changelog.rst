@@ -5,6 +5,12 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.29 (2014-05-07)
+---------------------------
+* API: Support for adding and removing taps.
+* New command-line tool ``kegbot rename_user`` allows admins to rename users (#271).
+* Bugfix: #270 (linking devices failed in restricted privacy mode).
+
 Version 0.9.28 (2014-05-05)
 ---------------------------
 * ``kegbot version`` now correctly reports the installed version.

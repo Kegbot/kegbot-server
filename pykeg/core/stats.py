@@ -94,9 +94,9 @@ class StatsBuilder:
     def registered_drinkers(self, drink, previous_stats, previous_value=[]):
         ret = copy.copy(previous_value)
         if drink.user:
-            username = str(drink.user.username)
-            if username not in ret:
-                ret.append(username)
+            user_id = str(drink.user.id)
+            if user_id not in ret:
+                ret.append(user_id)
         return ret
 
     def sessions_count(self, drink, previous_stats, previous_value=0):
@@ -121,9 +121,9 @@ class StatsBuilder:
 
     def volume_by_drinker(self, drink, previous_stats, previous_value={}):
         ret = copy.copy(previous_value)
-        u = drink.user.username
-        orig = ret.get(u, 0)
-        ret[u] = float(orig + drink.volume_ml)
+        user_id = str(drink.user.id)
+        orig = ret.get(user_id, 0)
+        ret[user_id] = float(orig + drink.volume_ml)
         return ret
 
     def volume_by_session(self, drink, previous_stats, previous_value={}):

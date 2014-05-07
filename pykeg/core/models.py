@@ -1026,16 +1026,34 @@ class Stats(models.Model):
         unique_together = ('drink', 'user', 'keg', 'session')
 
     @classmethod
+    def apply_usernames(cls, stats):
+        """Given a stats dictionary, translate numeric user ids to usernames."""
+        def safe_get_user(pk):
+            try:
+                return User.objects.get(pk=pk)
+            except User.DoesNotExist:
+                return None
+        orig = stats.get('registered_drinkers', [])
+        if orig:
+            stats['registered_drinkers'] = [safe_get_user(pk).username for pk in orig if safe_get_user(pk)]
+
+        orig = stats.get('volume_by_drinker', util.AttrDict())
+        if orig:
+            stats['volume_by_drinker'] = util.AttrDict(
+                (safe_get_user(pk).username, val) for pk, val in orig.iteritems() if safe_get_user(pk))
+
+    @classmethod
     def get_latest_for_view(cls, user=None, keg=None, session=None):
         """Returns the most recent stats data for the (user, keg, session) tuple.
 
         Returns an empty dict if no stats available for this view.
         """
         try:
-            ret = cls.objects.filter(user=user, keg=keg, session=session).order_by('-id')[0].stats
+            stats = cls.objects.filter(user=user, keg=keg, session=session).order_by('-id')[0].stats
         except IndexError:
-            ret = {}
-        return util.AttrDict(ret)
+            stats = {}
+        cls.apply_usernames(stats)
+        return util.AttrDict(stats)
 
 
 class SystemEvent(models.Model):

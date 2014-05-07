@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.utils.cache import add_never_cache_headers
 
@@ -25,7 +26,11 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
+# These paths are allowed without authorization, regardless of
+# site privacy settings.
 WHITELISTED_API_PATHS = (
+    '/api/devices/link',
+    '/api/v1/devices/link',
     '/api/login',
     '/api/v1/login',
     '/api/version',
@@ -33,6 +38,8 @@ WHITELISTED_API_PATHS = (
     '/api/get-api-key',
     '/api/v1/get-api-key',
 )
+
+WHITELISTED_API_PATHS += getattr(settings, 'KEGBOT_EXTRA_WHITELISTED_API_PATHS', ())
 
 
 class ApiRequestMiddleware:

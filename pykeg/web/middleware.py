@@ -37,21 +37,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# TODO(mikey): rename me
-ALLOWED_PATHS = (
-    '/api/devices/link'
-    '/api/login/',
-    '/api/get-api-key/',
+# Requests are always allowed for these path prefixes.
+PRIVACY_EXEMPT_PATHS = (
     '/account/activate/',
     '/accounts/login/',
     '/admin/',
     '/media/',
     '/setup/',
+    '/sso/login',
+    '/sso/logout',
 )
+
+PRIVACY_EXEMPT_PATHS += getattr(settings, 'KEGBOT_EXTRA_PRIVACY_EXEMPT_PATHS', ())
 
 
 def _path_allowed(path, kbsite):
-    for p in ALLOWED_PATHS:
+    for p in PRIVACY_EXEMPT_PATHS:
         if path.startswith(p):
             return True
     return False

@@ -43,6 +43,8 @@ INSTALLED_APPS = (
 
 LOGIN_REDIRECT_URL = "/account/"
 
+KEGBOT_ADMIN_LOGIN_URL = 'admin:login'
+
 AUTH_USER_MODEL = 'core.User'
 
 # List of finder classes that know how to find static files in

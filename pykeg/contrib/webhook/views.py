@@ -17,7 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
+from pykeg.web.decorators import staff_member_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 

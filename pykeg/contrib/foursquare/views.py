@@ -21,11 +21,11 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from socialregistration.clients.oauth import OAuthError
 from socialregistration.contrib.foursquare.client import Foursquare
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from pykeg.web.decorators import staff_member_required
 from kegbot.util import kbjson
 
 import foursquare

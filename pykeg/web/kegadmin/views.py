@@ -28,7 +28,7 @@ from operator import itemgetter
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
+from pykeg.web.decorators import staff_member_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.storage import get_storage_class
 from django.db.models import Q

@@ -58,7 +58,7 @@ class KegbotBackend(object):
             raise exceptions.BackendError(e)
 
     @transaction.atomic
-    def create_tap(self, name, meter_name, toggle_name=None, ticks_per_ml=None):
+    def create_tap(self, name, meter_name=None, toggle_name=None, ticks_per_ml=None):
         """Creates and returns a new KegTap.
 
         Args:
@@ -76,15 +76,17 @@ class KegbotBackend(object):
         tap = models.KegTap.objects.create(name=name)
         tap.save()
 
-        meter = models.FlowMeter.get_or_create_from_meter_name(meter_name)
-        meter.tap = tap
-        if ticks_per_ml:
-            meter.ticks_per_ml = ticks_per_ml
-        meter.save()
+        if meter_name:
+            meter = models.FlowMeter.get_or_create_from_meter_name(meter_name)
+            meter.tap = tap
+            if ticks_per_ml:
+                meter.ticks_per_ml = ticks_per_ml
+            meter.save()
 
         if toggle_name:
             toggle = models.FlowToggle.get_or_create_from_toggle_name(toggle_name)
             self.connect_toggle(tap, toggle)
+
         return tap
 
     @transaction.atomic

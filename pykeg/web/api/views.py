@@ -50,6 +50,8 @@ from pykeg.web.kegadmin.forms import UpdateFlowMeterForm
 
 _LOGGER = logging.getLogger(__name__)
 
+RESULT_OK = {'result': 'ok'}
+
 ### Decorators
 
 
@@ -118,6 +120,7 @@ def get_controller(request, controller_id):
 
     if request.method == 'DELETE':
         controller.delete()
+        return RESULT_OK
 
     elif request.method == 'POST':
         form = ControllerForm(request.POST, instance=controller)
@@ -151,6 +154,7 @@ def get_flow_meter(request, flow_meter_id):
 
     if request.method == 'DELETE':
         meter.delete()
+        return RESULT_OK
 
     elif request.method == 'POST':
         form = UpdateFlowMeterForm(request.POST, instance=meter)
@@ -184,6 +188,7 @@ def get_flow_toggle(request, flow_toggle_id):
 
     if request.method == 'DELETE':
         toggle.delete()
+        return RESULT_OK
 
     elif request.method == 'POST':
         form = FlowToggleForm(request.POST, instance=toggle)
@@ -330,7 +335,9 @@ def current_session(request):
         if latest.IsActiveNow():
             return latest
     except models.DrinkingSession.DoesNotExist:
-        raise Http404
+        pass
+
+    raise Http404('There is no active session.')
 
 
 def all_events(request):
@@ -372,12 +379,19 @@ def get_system_stats(request):
     return models.KegbotSite.get().get_stats()
 
 
-def get_info(request):
-    return {'kegbot_server_version': core_util.get_version()}
-
-
+@require_http_methods(['GET', 'POST'])
 def all_taps(request):
+    if request.method == 'POST':
+        util.check_api_key(request)
+        return create_tap(request)
     return models.KegTap.objects.all().order_by('name')
+
+
+def create_tap(request):
+    form = forms.TapCreateForm(request.POST)
+    if form.is_valid():
+        return request.backend.create_tap(name=form.cleaned_data['name'])
+    raise kbapi.BadRequestError(_form_errors(form))
 
 
 @auth_required
@@ -516,8 +530,12 @@ def tap_detail(request, meter_name_or_id):
         return _tap_detail_post(request, tap)
     elif request.method == 'GET':
         return _tap_detail_get(request, tap)
-    else:
-        raise kbapi.BadRequestError('Method not supported')
+    elif request.method == 'DELETE':
+        util.check_api_key(request)
+        tap.delete()
+        return RESULT_OK
+
+    raise kbapi.BadRequestError('Method not supported')
 
 
 def _tap_detail_get(request, tap):
@@ -671,14 +689,14 @@ def login(request):
         auth_login(request, form.get_user())
         if request.session.test_cookie_worked():
             request.session.delete_test_cookie()
-        return {'result': 'ok'}
+        return RESULT_OK
     else:
         raise kbapi.PermissionDeniedError('Login failed.')
 
 
 def logout(request):
     auth_logout(request)
-    return {'result': 'ok'}
+    return RESULT_OK
 
 
 @csrf_exempt
@@ -749,8 +767,8 @@ def link_device_new(request):
 def link_device_status(request, code):
     try:
         api_key = devicelink.get_status(code)
-    except devicelink.LinkExpiredException as e:
-        raise Http404(e)
+    except devicelink.LinkExpiredException:
+        raise Http404('Code expired or does not exist.')
     if api_key:
         return {'status': 'ok', 'linked': True, 'api_key': api_key}
     return {'status': 'ok', 'linked': False}

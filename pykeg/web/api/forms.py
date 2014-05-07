@@ -59,6 +59,10 @@ class CalibrateTapForm(forms.Form):
     ml_per_tick = forms.FloatField()
 
 
+class TapCreateForm(forms.Form):
+    name = forms.CharField()
+
+
 class TapSpillForm(forms.Form):
     volume_ml = forms.FloatField()
 

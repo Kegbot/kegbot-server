@@ -117,29 +117,6 @@ class KegbotSiteMiddleware:
             context=context, status=403)
 
 
-class SiteActiveMiddleware:
-    """Middleware which throws 503s when KegbotSite.is_active is false."""
-
-    def process_view(self, request, view_func, view_args, view_kwargs):
-        if not hasattr(request, 'kbsite') or not request.kbsite:
-            return None
-        kbsite = request.kbsite
-
-        # We have a KegbotSite, and that site is active: nothing to do.
-        if kbsite.is_active:
-            return None
-
-        # If the request is for a whitelisted path, allow it.
-        if _path_allowed(request.path, kbsite):
-            return None
-
-        # Allow staff/superusers access if inactive.
-        if request.user.is_staff or request.user.is_superuser:
-            return None
-
-        return HttpResponse('Site temporarily unavailable', status=503)
-
-
 class HttpHostMiddleware:
     """Middleware which checks a dynamic version of settings.ALLOWED_HOSTS."""
 

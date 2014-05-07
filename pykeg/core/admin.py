@@ -31,8 +31,7 @@ admin.site.register(models.User, UserAdmin)
 
 
 class KegbotSiteAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_active')
-    list_filter = ('is_active',)
+    list_display = ('name',)
 admin.site.register(models.KegbotSite, KegbotSiteAdmin)
 
 

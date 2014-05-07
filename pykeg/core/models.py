@@ -167,8 +167,6 @@ class KegbotSite(models.Model):
     name = models.CharField(max_length=64, unique=True, default='default',
         editable=False)
     server_version = models.CharField(max_length=64, null=True, editable=False)
-    is_active = models.BooleanField(default=True,
-        help_text='On/off switch for this site.')
     is_setup = models.BooleanField(default=False,
         help_text='True if the site has completed setup.',
         editable=False)

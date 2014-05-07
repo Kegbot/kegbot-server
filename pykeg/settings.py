@@ -132,7 +132,6 @@ MIDDLEWARE_CLASSES = (
 
     'pykeg.web.middleware.KegbotSiteMiddleware',
     'pykeg.web.middleware.HttpHostMiddleware',
-    'pykeg.web.middleware.SiteActiveMiddleware',
     'pykeg.contrib.demomode.middleware.DemoModeMiddleware',
     'pykeg.web.api.middleware.ApiRequestMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',

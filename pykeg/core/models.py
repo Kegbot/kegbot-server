@@ -1031,7 +1031,7 @@ class Stats(models.Model):
         def safe_get_user(pk):
             try:
                 return User.objects.get(pk=pk)
-            except User.DoesNotExist:
+            except (User.DoesNotExist, ValueError):
                 return None
         orig = stats.get('registered_drinkers', [])
         if orig:

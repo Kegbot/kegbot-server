@@ -20,7 +20,6 @@
 
 from pykeg.celery import app
 from pykeg.plugin import util
-from pykeg.proto import protolib
 from pykeg.core.util import get_version
 from kegbot.util import kbjson
 
@@ -30,18 +29,17 @@ logger = util.get_logger(__name__)
 
 
 @app.task(name='webhook_post', expires=180)
-def webhook_post(url, event):
+def webhook_post(url, event_dict):
     """Posts an event to the supplied URL.
 
     The request body is a JSON dictionary of:
       * type: webhook message type (currently always 'event')
-      * data: webhook data (the event payload)
+      * event_dict: webhook data (the event payload)
 
     Event payloads are in the same format as the /api/events/ endpoint.
     """
-    logger.info('Posting webhook: url=%s event=%s' % (url, event))
+    logger.info('Posting webhook: url=%s event=%s' % (url, event_dict))
 
-    event_dict = protolib.ToDict(event)
     hook_dict = {
         'type': 'event',
         'data': event_dict,

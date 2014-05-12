@@ -21,7 +21,6 @@
 # Note: imports should be limited to python stdlib, since methods here
 # may be used in models.py, settings.py, etc.
 
-import inspect
 import logging
 import pkgutil
 import os
@@ -29,6 +28,7 @@ import pkg_resources
 import requests
 import sys
 import tempfile
+from threading import current_thread
 from contextlib import closing
 
 from redis.exceptions import RedisError
@@ -36,6 +36,8 @@ from redis.exceptions import RedisError
 from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger(__name__)
+
+_REQUESTS = {}
 
 
 def get_version():
@@ -68,23 +70,21 @@ def get_plugin_template_dirs(plugin_list):
     return ret
 
 
-def get_current_request(frames=None):
-    """Walk up the stack, return the nearest first argument named "request".
+def get_current_request():
+    """Retrieve the current request.
 
     Adapted from: http://nedbatchelder.com/blog/201008/global_django_requests.html
     """
-    frames = frames or inspect.stack()[1:]
-    frame = None
-    try:
-        for f in frames:
-            frame = f[0]
-            code = frame.f_code
-            if code.co_varnames[:1] == ("request",):
-                return frame.f_locals["request"]
-            elif code.co_varnames[:2] == ("self", "request",):
-                return frame.f_locals["request"]
-    finally:
-        del frame
+    return _REQUESTS.get(current_thread())
+
+
+def set_current_request(request):
+    thr = current_thread()
+    if request:
+        _REQUESTS[thr] = request
+    else:
+        if thr in _REQUESTS:
+            del _REQUESTS[thr]
 
 
 def download_to_tempfile(url):

@@ -75,7 +75,7 @@ def _getCallingContext():
     else:
         funcname = ""
 
-    request = get_current_request(frames[1:])
+    request = get_current_request()
 
     # python docs say you don't want references to
     # frames lying around.  Bad things can happen.

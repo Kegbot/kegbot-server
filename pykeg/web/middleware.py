@@ -20,6 +20,7 @@ from pykeg import EPOCH
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
+from pykeg.core.util import set_current_request
 from pykeg.web.api.util import is_api_request
 
 from pykeg.plugin import util as plugin_util
@@ -56,6 +57,17 @@ def _path_allowed(path, kbsite):
         if path.startswith(p):
             return True
     return False
+
+
+class CurrentRequestMiddleware:
+    """Set/clear the current request."""
+    def process_request(self, request):
+        set_current_request(request)
+
+    def process_response(self, request, response):
+        request.kb = None
+        set_current_request(None)
+        return response
 
 
 class KegbotSiteMiddleware:

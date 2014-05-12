@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+import urlparse
+
 from django import forms
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
@@ -32,6 +34,7 @@ except ImportError:
     from django.contrib.auth.models import User
 
 from pykeg.core import models
+from pykeg.backend import get_kegbot_backend
 
 
 class KegbotRegistrationForm(BaseRegistrationForm):
@@ -66,17 +69,22 @@ class PasswordResetForm(forms.Form):
                 continue
             from_email = getattr(settings, 'EMAIL_FROM_ADDRESS', from_email)
 
+            be = get_kegbot_backend()
+            base_url = be.get_base_url()
+            parsed = urlparse.urlparse(base_url)
+            domain = parsed.netloc
+            protocol = parsed.scheme
+
             kbsite = models.KegbotSite.get()
-            domain = kbsite.hostname
             site_name = kbsite.title
             c = {
                 'email': user.email,
-                'domain': domain,
                 'site_name': site_name,
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'user': user,
                 'token': token_generator.make_token(user),
-                'protocol': 'https' if kbsite.use_ssl else 'http',
+                'domain': domain,
+                'protocol': protocol,
             }
             subject = loader.render_to_string(subject_template_name, c)
             # Email subject *must not* contain newlines

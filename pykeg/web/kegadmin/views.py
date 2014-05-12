@@ -117,13 +117,6 @@ def general_settings(request):
             messages.success(request, 'Site settings were successfully updated.')
     context['settings_form'] = form
 
-    using_ssl = request.is_secure()
-    request_host = request.get_host()
-    context['request_host'] = request_host
-    context['settings_host'] = kbsite.hostname
-    context['request_ssl'] = using_ssl
-    context['settings_ssl'] = kbsite.use_ssl
-
     return render_to_response('kegadmin/index.html', context_instance=context)
 
 

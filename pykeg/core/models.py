@@ -222,12 +222,6 @@ class KegbotSite(models.Model):
     timezone = models.CharField(max_length=255, choices=TIMEZONE_CHOICES,
         default='UTC',
         help_text='Time zone for this system.')
-    hostname = models.CharField(max_length=255,
-        help_text='Hostname (and optional port) that this system is serving from. '
-        'Examples: mykegbot.example.com, 192.168.1.100:8000')
-    use_ssl = models.BooleanField(default=False,
-        verbose_name='Using SSL',
-        help_text='Select this checkbox if the site is being served with SSL.')
 
     check_for_updates = models.BooleanField(default=True,
         help_text='Periodically check for updates '

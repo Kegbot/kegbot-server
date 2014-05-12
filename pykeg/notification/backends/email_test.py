@@ -29,6 +29,7 @@ from pykeg.core import kb_common
 from pykeg.notification import models
 
 
+@override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
 class EmailNotificationBackendTestCase(TestCase):
@@ -61,26 +62,26 @@ class EmailNotificationBackendTestCase(TestCase):
 
         expected_body_plain = '''A new keg of Unknown by Unknown was just tapped on My Kegbot!
 
-Track it here: http:///kegs/%s
+Track it here: http://localhost:1234/kegs/%s
 
 You are receiving this e-mail because you have notifications enabled
-on My Kegbot.  To change your settings, visit http:///account.''' % (keg.id,)
+on My Kegbot.  To change your settings, visit http://localhost:1234/account.''' % (keg.id,)
 
         self.assertMultiLineEqual(expected_body_plain, msg.body)
 
         expected_body_html = '''<p>
 A new keg of <b>Unknown by Unknown</b> was just tapped on
-<b><a href="http://">My Kegbot</a></b>!
+<b><a href="http://localhost:1234">My Kegbot</a></b>!
 </p>
 
 <p>
-Track it <a href="http:///kegs/%s">here</a>.
+Track it <a href="http://localhost:1234/kegs/%s">here</a>.
 </p>
 
 <p>
 You are receiving this e-mail because you have notifications enabled
-on <a href="http://">My Kegbot</a>.  To change your settings, visit
-http:///account.
+on <a href="http://localhost:1234">My Kegbot</a>.  To change your settings, visit
+http://localhost:1234/account.
 </p>''' % (keg.id,)
 
         self.assertEquals(1, len(msg.alternatives))
@@ -105,25 +106,25 @@ http:///account.
 
         expected_body_plain = '''A new session was just kicked off on My Kegbot.
 
-You can follow the session here: http:///s/%s/
+You can follow the session here: http://localhost:1234/s/%s/
 
 You are receiving this e-mail because you have notifications enabled
-on My Kegbot.  To change your settings, visit http:///account.''' % (drink.session.id,)
+on My Kegbot.  To change your settings, visit http://localhost:1234/account.''' % (drink.session.id,)
 
         self.assertMultiLineEqual(expected_body_plain, msg.body)
 
         expected_body_html = '''<p>
-A new session was just kicked off on <a href="http://">My Kegbot</a>.
+A new session was just kicked off on <a href="http://localhost:1234">My Kegbot</a>.
 </p>
 
 <p>
-You can follow the session <a href="http:///s/%s/">here</a>.
+You can follow the session <a href="http://localhost:1234/s/%s/">here</a>.
 </p>
 
 <p>
 You are receiving this e-mail because you have notifications enabled
-on <a href="http://">My Kegbot</a>.  To change your settings, visit
-http:///account.
+on <a href="http://localhost:1234">My Kegbot</a>.  To change your settings, visit
+http://localhost:1234/account.
 </p>''' % (drink.session.id,)
 
         self.assertEquals(1, len(msg.alternatives))
@@ -149,10 +150,10 @@ http:///account.
 
         expected_body_plain = '''Keg %s (Unknown by Unknown) is 15.0%% full.
 
-See full statistics here: http:///kegs/%s
+See full statistics here: http://localhost:1234/kegs/%s
 
 You are receiving this e-mail because you have notifications enabled
-on My Kegbot.  To change your settings, visit http:///account.''' % (keg.id, keg.id)
+on My Kegbot.  To change your settings, visit http://localhost:1234/account.''' % (keg.id, keg.id)
 
         self.assertMultiLineEqual(expected_body_plain, msg.body)
 
@@ -161,13 +162,13 @@ Keg %s (Unknown by Unknown) is <b>15.0</b>%% full.
 </p>
 
 <p>
-See full statistics <a href="http:///kegs/%s">here</a>.
+See full statistics <a href="http://localhost:1234/kegs/%s">here</a>.
 </p>
 
 <p>
 You are receiving this e-mail because you have notifications enabled
-on <a href="http://">My Kegbot</a>.  To change your settings, visit
-http:///account.
+on <a href="http://localhost:1234">My Kegbot</a>.  To change your settings, visit
+http://localhost:1234/account.
 </p>''' % (keg.id, keg.id)
 
         self.assertEquals(1, len(msg.alternatives))
@@ -192,26 +193,26 @@ http:///account.
 
         expected_body_plain = '''Keg %s of Unknown by Unknown was just finished on My Kegbot.
 
-See final statistics here: http:///kegs/%s
+See final statistics here: http://localhost:1234/kegs/%s
 
 You are receiving this e-mail because you have notifications enabled
-on My Kegbot.  To change your settings, visit http:///account.''' % (keg.id, keg.id)
+on My Kegbot.  To change your settings, visit http://localhost:1234/account.''' % (keg.id, keg.id)
 
         self.assertMultiLineEqual(expected_body_plain, msg.body)
 
         expected_body_html = '''<p>
 Keg %s (Unknown by Unknown) was just finished on
-<b><a href="http://">My Kegbot</a></b>.
+<b><a href="http://localhost:1234">My Kegbot</a></b>.
 </p>
 
 <p>
-See final statistics <a href="http:///kegs/%s">here</a>.
+See final statistics <a href="http://localhost:1234/kegs/%s">here</a>.
 </p>
 
 <p>
 You are receiving this e-mail because you have notifications enabled
-on <a href="http://">My Kegbot</a>.  To change your settings, visit
-http:///account.
+on <a href="http://localhost:1234">My Kegbot</a>.  To change your settings, visit
+http://localhost:1234/account.
 </p>''' % (keg.id, keg.id)
 
         self.assertEquals(1, len(msg.alternatives))

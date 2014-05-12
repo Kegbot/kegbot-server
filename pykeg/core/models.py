@@ -43,6 +43,7 @@ from imagekit.processors import resize
 
 from pykeg import EPOCH
 
+from pykeg.backend import get_kegbot_backend
 from pykeg.core import kb_common
 from pykeg.core import keg_sizes
 from pykeg.core import fields
@@ -248,10 +249,7 @@ class KegbotSite(models.Model):
         return datetime.timedelta(minutes=self.session_timeout_minutes)
 
     def base_url(self):
-        protocol = 'http'
-        if self.use_ssl:
-            protocol = 'https'
-        return '%s://%s' % (protocol, self.hostname)
+        return get_kegbot_backend().get_base_url()
 
     def reverse_full(self, *args, **kwargs):
         """Calls reverse, and returns a full URL (includes base_url())."""

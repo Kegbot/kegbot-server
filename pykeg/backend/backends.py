@@ -23,6 +23,7 @@ from __future__ import absolute_import
 import datetime
 import logging
 
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from pykeg.core import keg_sizes
@@ -34,6 +35,7 @@ from pykeg.web.auth import UserExistsException
 from pykeg.core import kb_common
 from pykeg.core import models
 from pykeg.core import time_series
+from pykeg.core.util import get_current_request
 
 from pykeg.backend import exceptions
 from pykeg.web import tasks
@@ -44,6 +46,20 @@ class KegbotBackend(object):
 
     def __init__(self):
         self._logger = logging.getLogger('backend')
+
+    def get_base_url(self):
+        """Returns the base URL of the site.
+
+        Result is used primarily in constructing absolute links back to the
+        site, eg in notifications.
+        """
+        static_url = getattr(settings, 'KEGBOT_BASE_URL', None)
+        if static_url:
+            return static_url
+        r = get_current_request()
+        if not r:
+            raise RuntimeError('Cannot determine current request')
+        return r.build_absolute_uri('/')
 
     @transaction.atomic
     def create_new_user(self, username, email, password=None, photo=None):

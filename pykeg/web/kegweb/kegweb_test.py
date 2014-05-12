@@ -28,6 +28,7 @@ from pykeg.core import models
 from pykeg.core import defaults
 
 
+@override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
 class KegwebTestCase(TransactionTestCase):
     def setUp(self):
         self.client.logout()

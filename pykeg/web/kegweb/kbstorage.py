@@ -26,7 +26,7 @@ try:
 except ImportError:
     S3BotoStorage = None
 
-from pykeg.core.util import get_current_request
+from pykeg.backend import get_kegbot_backend
 
 S3_STATIC_BUCKET = getattr(settings, 'S3_STATIC_BUCKET', None)
 
@@ -40,11 +40,10 @@ class KegbotFileSystemStorage(FileSystemStorage):
     """
 
     def url(self, name):
-        request = get_current_request()
-        if request and hasattr(request, 'kbsite'):
-            site_base = request.kbsite.base_url()
-            media_base = urlparse.urljoin(site_base, self.base_url)
-            self.base_url = media_base
+        be = get_kegbot_backend()
+        base_url = be.get_base_url()
+        if not self.base_url.startswith(base_url):
+            self.base_url = urlparse.urljoin(base_url, self.base_url)
         return super(KegbotFileSystemStorage, self).url(name)
 
 if S3BotoStorage:

@@ -20,6 +20,8 @@
 
 import datetime
 
+from pykeg.backend.backends import KegbotBackend
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -31,6 +33,11 @@ def make_datetime(*args):
         return datetime.datetime(*args, tzinfo=timezone.utc)
     else:
         return datetime.datetime(*args)
+
+
+class TestBackend(KegbotBackend):
+    def get_base_url(self):
+        return 'http://localhost:1234'
 
 
 class KegbotTestSuiteRunner(NoseTestSuiteRunner):

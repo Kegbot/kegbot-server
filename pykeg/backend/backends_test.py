@@ -21,6 +21,7 @@
 from django.test import TestCase
 from pykeg.core import models
 from pykeg.core import defaults
+from django.test.utils import override_settings
 
 from . import backends
 
@@ -32,6 +33,7 @@ FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 ### Helper methods
 
 
+@override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
 class BackendsTestCase(TestCase):
     def setUp(self):
         self.backend = backends.KegbotBackend()

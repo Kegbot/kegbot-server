@@ -18,4 +18,5 @@ Contents:
    extras
    upgrade-kegbot
    troubleshooting
+   settings
    changelog

@@ -17,6 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.test import TransactionTestCase
+from django.test.utils import override_settings
 
 from kegbot.util import util
 
@@ -27,6 +28,7 @@ import copy
 from pykeg.backend import get_kegbot_backend
 
 
+@override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
 class StatsTestCase(TransactionTestCase):
     reset_sequences = True
 

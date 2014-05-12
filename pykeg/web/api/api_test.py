@@ -76,6 +76,7 @@ class ApiClientNoSiteTestCase(BaseApiTestCase):
             self.assertEquals(data.meta.result, 'ok')
 
 
+@override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
 class ApiClientTestCase(BaseApiTestCase):
     def setUp(self):
         self.site = create_site()
@@ -226,18 +227,13 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertContains(response, 'Choose a Password', status_code=200)
 
     def test_pictures(self):
-        kbsite = models.KegbotSite.get()
-        kbsite.hostname = 'localhost:123'
-        kbsite.use_ssl = True
-        kbsite.save()
-
         image_data = open(get_filename('test_image_800x600.png'))
         response, data = self.post('pictures/', data={'photo': image_data}, HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEquals(data.meta.result, 'ok')
 
         picture = data['object']
         picture_url = picture['url']
-        self.assertTrue(picture_url.startswith('https://localhost:123/media/'))
+        self.assertTrue(picture_url.startswith('http://localhost:1234/media/'))
 
     def test_controller_data(self):
         for endpoint in ('controllers', 'flow-meters'):

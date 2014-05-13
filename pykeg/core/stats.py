@@ -30,6 +30,47 @@ STAT_MAP = {}
 logger = logging.getLogger(__name__)
 
 
+class StatsView:
+    def __init__(self, user=None, session=None, keg=None):
+        self.user = user
+        self.session = session
+        self.keg = keg
+
+    def __str__(self):
+        ret = 'view: '
+        if not self.user and not self.keg and not self.session:
+            ret += 'system'
+        if self.user:
+            ret += 'user={} '.format(self.user.username)
+        if self.session:
+            ret += 'session={} '.format(self.session.id)
+        if self.keg:
+            ret += 'keg={}'.format(self.keg.id)
+        return ret
+
+    def as_tuple(self):
+        return (
+            self.user.id if self.user else None,
+            self.session.id if self.session else None,
+            self.keg.id if self.keg else None
+        )
+
+    def get_prior_drinks(self, drink):
+        """Returns the queryset of prior drinks occurring in this view.
+
+        The result can be empty, which implies the drink is the first drink
+        for the given {user, session, keg}.
+        """
+        qs = models.Drink.objects.filter(id__lt=drink.id)
+        if self.user:
+            qs = qs.filter(user=self.user.id)
+        if self.session:
+            qs = qs.filter(session=self.session.id)
+        if self.keg:
+            qs = qs.filter(keg=self.keg.id)
+        return qs.order_by('-id')
+
+
 class StatsBuilder:
     """Derives statistics from drinks."""
 
@@ -168,80 +209,85 @@ def build_for_id(drink_id):
     except models.Drink.DoesNotExist:
         logger.warning('No drink exists with id={}'.format(drink_id))
         return
-    generate(drink, invalidate_first=False)
+    _build_all_views(drink)
 
 
-def rebuild_from_id(drink_id):
+def rebuild_from_id(drink_id, cb=None):
     """Builds statistics stating from `drink_id`.  Unlike `build_for_id()`,
     this method computes statistics for any subsequent drinks found in the
     database.
     """
     invalidate(drink_id)
+    results_cache = {}
     for drink in models.Drink.objects.filter(id__gte=drink_id).order_by('id'):
-        generate(drink, invalidate_first=False)
+        _build_all_views(drink, results_cache=results_cache)
+        if cb:
+            cb(results_cache)
 
 
-def _generate_view(drink, user, session, keg):
-    """Generates a single "view" (row) based on `drink`."""
-    logger.debug('>>> Building stats for drink={}: user={} session={} keg={}'.format(
-        drink.id,
-        user.username if user else None,
-        session.id if session else None,
-        keg.id if keg else None))
+def _build_single_view(drink, view, prior_stats=None):
+    """Generates all stats for a drink in the specified view.
 
-    # Determine previous drinks in the same view.  This *may* be empty if this
-    # is the first drink for the view (first pour on the system, drink, etc.)
-    prior_drinks_in_view = models.Drink.objects.filter(id__lt=drink.id)
-    if user:
-        prior_drinks_in_view = prior_drinks_in_view.filter(user=user.id)
-    if session:
-        prior_drinks_in_view = prior_drinks_in_view.filter(session=session.id)
-    if keg:
-        prior_drinks_in_view = prior_drinks_in_view.filter(keg=keg.id)
+    Args:
+        drink: The target drink.
+        view: The view.
+        prior_stats: Dictionary of previous stats for this view.  If None,
+            indicates that the prior stats are unknown.  When prior stats
+            are unknown, they will be queried or generated as needed.
+    """
+    logger.debug('>>> Building stats for {}'.format(view))
 
-    prior_drinks_in_view = prior_drinks_in_view.order_by('-id')
-
-    prior_stats = util.AttrDict()
     build_list = [drink]
-    if prior_drinks_in_view.count():
-        # Starting with the most recent prior drink, get its stats row.
-        # If stats don't exist, add drink to build list and continue
-        # until a stats row is found or all drinks are exhausted.
-        # N.B. we avoid a recursive algorithm due to potentially large recursion
-        # depth in certain cases.
-        for prior_drink in prior_drinks_in_view:
-            try:
-                prior_stats = util.AttrDict(
-                    models.Stats.objects.get(drink=prior_drink, user=user,
-                        session=session, keg=keg).stats
-                )
-                break
-            except models.Stats.DoesNotExist:
-                prior_stats = util.AttrDict()
-                build_list.insert(0, prior_drink)
+    if prior_stats is None:
+        prior_stats = util.AttrDict()
+        prior_drinks_in_view = view.get_prior_drinks(drink)
+        if prior_drinks_in_view.count():
+            # Starting with the most recent prior drink, get its stats row.
+            # If stats don't exist, add drink to build list and continue
+            # until a stats row is found or all drinks are exhausted.
+            # N.B. we avoid a recursive algorithm due to potentially large recursion
+            # depth in certain cases.
+            for prior_drink in prior_drinks_in_view:
+                try:
+                    prior_stats = util.AttrDict(
+                        models.Stats.objects.get(drink=prior_drink, user=view.user,
+                            session=view.session, keg=view.keg).stats
+                    )
+                    break
+                except models.Stats.DoesNotExist:
+                    build_list.insert(0, prior_drink)
 
     # Build all drinks on the hit list.
     for build_drink in build_list:
         logger.debug('  - operating on drink {}'.format(build_drink.id))
         stats = BUILDER.build(drink=build_drink, previous_stats=prior_stats)
-        models.Stats.objects.create(drink=build_drink, user=user, session=session,
-            keg=keg, stats=stats, is_first=(not prior_stats))
+        models.Stats.objects.create(drink=build_drink, user=view.user,
+            session=view.session, keg=view.keg, stats=stats, is_first=(not prior_stats))
         prior_stats = stats
     logger.debug('<<< Done.')
+    return stats
 
 
-def generate(drink, invalidate_first=True):
-    """Generates all stats "views" based on `drink`."""
-    if invalidate_first:
-        invalidate(drink.id)
+def _build_all_views(drink, results_cache=None):
+    """Generates all stats "views" based on `drink`.
 
-    # Create an entry for each stats "view".
+    Args:
+        drink: The target drink.
+        invalidate_first: If True, all statistics starting for and following
+            this drink will be deleted first.  Typically this is True when the
+            target drink was modified, and False when it is a new (newest) Drink.
+        results_cache: A cache mapping view.as_tuple() -> stats.  Will be modified
+            with the results of this method.
+    """
+    if results_cache is None:
+        results_cache = {}
+
     for user in (None, drink.user):
         for session in (None, drink.session):
             for keg in (None, drink.keg):
-                _generate_view(drink, user, session, keg)
+                view = StatsView(user, session, keg)
+                cache_key = view.as_tuple()
 
-if __name__ == '__main__':
-    import cProfile
-    command = """main()"""
-    cProfile.runctx(command, globals(), locals(), filename="stats.profile")
+                prior_stats = results_cache.get(cache_key)
+                stats = _build_single_view(drink, view, prior_stats=prior_stats)
+                results_cache[cache_key] = stats

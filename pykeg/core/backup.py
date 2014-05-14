@@ -181,7 +181,7 @@ def erase_model_table(model, must_truncate=False):
 
 
 @transaction.atomic
-def create_backup_tree(date, storage):
+def create_backup_tree(date, storage, include_media=True):
     """Creates filesystem tree of backup data."""
     backup_dir = tempfile.mkdtemp()
     metadata = {}
@@ -220,10 +220,13 @@ def create_backup_tree(date, storage):
         for subdir in subdirs:
             add_files(storage, os.path.join((dirname, subdir)), destdir)
 
-    destdir = os.path.join(backup_dir, 'media')
-    for media_dir in MEDIA_WHITELIST:
-        if storage.exists(media_dir):
-            add_files(storage, media_dir, destdir)
+    if include_media:
+        destdir = os.path.join(backup_dir, 'media')
+        for media_dir in MEDIA_WHITELIST:
+            if storage.exists(media_dir):
+                add_files(storage, media_dir, destdir)
+    else:
+        logger.warning('Not including media.')
 
     # Store metadata file.
     metadata[META_SERVER_NAME] = models.KegbotSite.get().title
@@ -262,7 +265,7 @@ def create_backup_zip(backup_dir, backup_name):
     return zipfile_path
 
 
-def backup(storage=default_storage):
+def backup(storage=default_storage, include_media=True):
     """Creates a new backup archive.
 
     Returns:
@@ -273,7 +276,7 @@ def backup(storage=default_storage):
     date_str = date.strftime('%Y%m%d-%H%M%S')
     backup_name = '{slug}-{date}'.format(slug=site_slug, date=date_str)
 
-    backup_dir = create_backup_tree(date=date, storage=storage)
+    backup_dir = create_backup_tree(date=date, storage=storage, include_media=include_media)
     try:
         temp_zip = create_backup_zip(backup_dir, backup_name)
         try:

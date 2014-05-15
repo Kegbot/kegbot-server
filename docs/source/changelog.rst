@@ -5,6 +5,13 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* Optional settings are :ref:`now documented <settings>`.
+* It is no longer necessary to configure the site's hostname.
+* The "allowed hosts" setting is no longer stored in the database
+  (see :ref:`settings`.)
+
 Version 0.9.29 (2014-05-07)
 ---------------------------
 * API: Support for adding and removing taps.

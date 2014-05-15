@@ -3,20 +3,38 @@
 Appendix: Extra Settings
 ========================
 
-This section lists settings that may be added to `local_settings.py`.
+This section lists settings that may be added to ``local_settings.py``.
 Most of these options serve uncommon needs.
+
+In addition to settings described here, any of
+`Django's built-in settings <https://docs.djangoproject.com/en/dev/topics/settings/>`_
+may be listed in ``local_settings.py``.
+
+.. data:: ALLOWED_HOSTS
+    :noindex:
+
+    Lists allowed hostnames that the server will respond to.  See the
+    `Django documentation for ALLOWED_HOSTS <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ALLOWED_HOSTS>`_
+    for more information.
+
+    Default is ``['*']`` (any hostname accepted).
+
+    ::
+
+        ALLOWED_HOSTS = ['kegbot.example.com']
+
 
 .. data:: KEGBOT_BASE_URL
     :noindex:
 
-    Ordinarily, Kegbot will infer your site's hostname from
-    incoming requests.  This hostnamename is used to compose full URLs, for example
-    when generating the links contained in outgoing e-mails and plugin posts.
+    Ordinarily, Kegbot will infer your site's hostname and base URL from
+    incoming requests.  This hostname is used to compose full URLs, for example
+    when generating the links in outgoing e-mails and plugin posts.
 
     In some situations you may want to set this value explicitly, for example
     if your server is available on multiple hostnames.
 
-    Default is unset.
+    Default is unset (automatic mode).
 
     ::
 
@@ -26,7 +44,7 @@ Most of these options serve uncommon needs.
 .. data:: KEGBOT_ENABLE_ADMIN
     :noindex:
 
-    When set to ``true``, the `Django Admin Site <https://docs.djangoproject.com/en/dev/ref/contrib/admin/>`
+    When set to ``true``, the `Django Admin Site <https://docs.djangoproject.com/en/dev/ref/contrib/admin/>`_
     will be enabled, allowing you to browse and edit raw Kegbot data through a web
     interface.
 

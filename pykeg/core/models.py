@@ -217,8 +217,6 @@ class KegbotSite(models.Model):
         help_text='Whether to allow new user registration.')
     registration_confirmation = models.BooleanField(default=False,
         help_text='Whether registration requires e-mail confirmation.')
-    allowed_hosts = models.TextField(blank=True, null=True, default='',
-        help_text='List of allowed hostnames. If blank, validation is disabled.')
     timezone = models.CharField(max_length=255, choices=TIMEZONE_CHOICES,
         default='UTC',
         help_text='Time zone for this system.')

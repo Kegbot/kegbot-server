@@ -26,8 +26,6 @@ from pykeg.web.api.util import is_api_request
 from pykeg.plugin import util as plugin_util
 
 from django.conf import settings
-from django.contrib import messages
-from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse
 from django.http import HttpResponseServerError
 from django.template.response import SimpleTemplateResponse
@@ -128,59 +126,6 @@ class KegbotSiteMiddleware:
         context['current_epoch'] = current_epoch
         return SimpleTemplateResponse('setup_wizard/upgrade_required.html',
             context=context, status=403)
-
-
-class HttpHostMiddleware:
-    """Middleware which checks a dynamic version of settings.ALLOWED_HOSTS."""
-
-    def process_request(self, request):
-        if not getattr(request, 'kbsite', None):
-            return None
-
-        host = request.get_host()
-        allowed_hosts_str = request.kbsite.allowed_hosts
-        if allowed_hosts_str:
-            host_patterns = allowed_hosts_str.strip().split()
-        else:
-            host_patterns = []
-        valid = HttpHostMiddleware.validate_host(host, host_patterns)
-
-        if not valid:
-            message = "Invalid HTTP_HOST header (you may need to change Kegbot's ALLOWED_HOSTS setting): %s" % host
-            if request.user.is_superuser or request.user.is_staff:
-                messages.warning(request, message)
-            else:
-                raise SuspiciousOperation(message)
-
-    @classmethod
-    def validate_host(cls, host, allowed_hosts):
-        """Clone of django.http.request.validate_host.
-
-        Local differences: treats an empty `allowed_hosts` list as a pass.
-        """
-        # Validate only the domain part.
-        if not allowed_hosts:
-            return True
-
-        if host[-1] == ']':
-                # It's an IPv6 address without a port.
-            domain = host
-        else:
-            domain = host.rsplit(':', 1)[0]
-
-        for pattern in allowed_hosts:
-            pattern = pattern.lower()
-            match = (
-                pattern == '*' or
-                pattern.startswith('.') and (
-                    domain.endswith(pattern) or domain == pattern[1:]
-                ) or
-                pattern == domain
-            )
-            if match:
-                return True
-
-        return False
 
 
 class PrivacyMiddleware:

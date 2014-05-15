@@ -310,7 +310,6 @@ class SiteSettingsForm(forms.ModelForm):
             'registration_allowed',
             'registration_confirmation',
             'check_for_updates',
-            'allowed_hosts',
         )
 
     helper = FormHelper()
@@ -329,7 +328,6 @@ class SiteSettingsForm(forms.ModelForm):
         Field('registration_allowed', css_class='input-xlarge'),
         Field('registration_confirmation', css_class='input-xlarge'),
         Field('check_for_updates'),
-        Field('allowed_hosts'),
         FormActions(
             Submit('submit', 'Save Settings', css_class='btn-primary'),
         )

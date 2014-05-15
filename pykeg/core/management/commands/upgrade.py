@@ -16,12 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from optparse import make_option
 import sys
 
 from pykeg import EPOCH
 from pykeg.core.util import get_version
 
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 from django.db import connection
 
 from django.contrib.staticfiles.management.commands import collectstatic
@@ -40,15 +41,25 @@ def run(cmd, args=[]):
     cmd.run_from_argv([sys.argv[0], cmdname] + args)
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = u'Perform post-upgrade tasks.'
+    option_list = BaseCommand.option_list + (
+        make_option('--skip_static', action='store_true', dest='skip_static', default=False,
+            help='Skip `kegbot collectstatic` during upgrade. (Not recommended.)'),
+        make_option('--skip_stats', action='store_true', dest='skip_stats', default=False,
+            help='Skip `kegbot kb_regen_stats` during upgrade. (Not recommended.)'),
+    )
 
-    def handle(self, **options):
+    def handle(self, *args, **options):
         self.do_epoch_upgrades()
         run(syncdb.Command(), args=['--noinput', '-v', '0'])
         run(migrate.Command(), args=['-v', '0'])
-        run(kb_regen_stats.Command())
-        run(collectstatic.Command(), args=['--noinput'])
+
+        if not options.get('skip_stats'):
+            run(kb_regen_stats.Command())
+
+        if not options.get('skip_static'):
+            run(collectstatic.Command(), args=['--noinput'])
 
         site = models.KegbotSite.get()
         site.epoch = EPOCH

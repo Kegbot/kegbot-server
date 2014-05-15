@@ -5,8 +5,8 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.30 (2014-05-14)
+---------------------------
 * Optional settings are :ref:`now documented <settings>`.
 * It is no longer necessary to configure the site's hostname.
 * The "allowed hosts" setting is no longer stored in the database

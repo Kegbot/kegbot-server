@@ -30,6 +30,7 @@ from django.views.generic.dates import MonthArchiveView
 from django.views.generic.dates import YearArchiveView
 from django.views.generic.list import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.files.storage import get_storage_class
 
 from pykeg.core import models
 
@@ -144,6 +145,14 @@ def short_session_detail(request, session_id):
 
 def drink_detail(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
+    if request.method == 'POST':
+        if 'confirm_delete_photo' in request.POST:
+            requestor_name = request.POST['requestor_name']
+            if requestor_name == drink.user.username:
+                storage = get_storage_class()()
+                storage.delete(drink.picture.image)
+                drink.picture.delete()
+                return redirect('kb-drink', drink_id=str(drink_id))
     context = RequestContext(request, {'drink': drink})
     return render_to_response('kegweb/drink_detail.html', context_instance=context)
 

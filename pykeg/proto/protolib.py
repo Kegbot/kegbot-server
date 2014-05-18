@@ -184,7 +184,7 @@ def BeverageToProto(beverage, full=False):
             PictureToProto(beverage.picture, full=full, use_png=True))
 
     if beverage.vintage_year:
-        ret.vintage_year = beverage.vintage_year
+        ret.vintage_year = beverage.vintage_year.year
 
     if beverage.abv_percent is not None:
         ret.abv_percent = beverage.abv_percent

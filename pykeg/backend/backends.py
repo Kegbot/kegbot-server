@@ -48,18 +48,18 @@ class KegbotBackend(object):
         self._logger = logging.getLogger('backend')
 
     def get_base_url(self):
-        """Returns the base URL of the site.
+        """Returns the base URL of the site without a trailing slash.
 
         Result is used primarily in constructing absolute links back to the
         site, eg in notifications.
         """
         static_url = getattr(settings, 'KEGBOT_BASE_URL', None)
         if static_url:
-            return static_url
+            return static_url.rstrip('/')
         r = get_current_request()
         if not r:
             raise RuntimeError('Cannot determine current request')
-        return r.build_absolute_uri('/')
+        return r.build_absolute_uri('/').rstrip('/')
 
     @transaction.atomic
     def create_new_user(self, username, email, password=None, photo=None):

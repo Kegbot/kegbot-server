@@ -19,11 +19,10 @@
 """Unittests for backends module."""
 
 from django.test import TestCase
+from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.core import defaults
 from django.test.utils import override_settings
-
-from . import backends
 
 METER_NAME = 'kegboard.flow0'
 FAKE_BEER_NAME = 'Testy Beer'
@@ -36,7 +35,7 @@ FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 @override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
 class BackendsTestCase(TestCase):
     def setUp(self):
-        self.backend = backends.KegbotBackend()
+        self.backend = get_kegbot_backend()
         defaults.set_defaults(set_is_setup=True, create_controller=True)
 
     def test_drink_management(self):
@@ -240,3 +239,23 @@ class BackendsTestCase(TestCase):
 
         tap = self.backend.connect_toggle(tap, toggle)
         self.assertIsNotNone(tap.current_toggle())
+
+    @override_settings(KEGBOT_BASE_URL='http://example.com:8000//')
+    def test_urls(self):
+        self.assertEquals('http://example.com:8000', self.backend.get_base_url())
+
+        keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
+                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                style_name=FAKE_BEER_STYLE)
+        self.assertEquals('http://example.com:8000/kegs/{}'.format(keg.id), keg.full_url())
+
+        drink = self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100,
+            photo='foo')
+        self.assertEquals('http://example.com:8000/d/{}'.format(drink.id), drink.short_url())
+        self.assertEquals('http://example.com:8000/s/{}'.format(drink.session.id),
+            drink.session.short_url())
+
+        start = drink.session.start_time
+        datepart = '{}/{}/{}'.format(start.year, start.month, start.day)
+        self.assertEquals('http://example.com:8000/sessions/{}/{}'.format(datepart, drink.session.id),
+            drink.session.full_url())

@@ -29,8 +29,8 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
       url(r'^d/(?P<drink_id>\d+)/?$', 'short_drink_detail', name='kb-drink-short'),
 
       ### sessions
-      url(r'^session/(?P<session_id>\d+)/$', 'short_session_detail'),
-      url(r'^s/(?P<session_id>\d+)/$', 'short_session_detail', name='kb-session-short'),
+      url(r'^session/(?P<session_id>\d+)/?$', 'short_session_detail'),
+      url(r'^s/(?P<session_id>\d+)/?$', 'short_session_detail', name='kb-session-short'),
 
       url(r'^sessions/$', views.SessionArchiveIndexView.as_view(), name='kb-sessions'),
       url(r'^sessions/(?P<year>\d{4})/$', views.SessionYearArchiveView.as_view(), name='kb-sessions-year'),
@@ -40,7 +40,7 @@ urlpatterns = patterns('pykeg.web.kegweb.views',
       url(r'^sessions/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$',
           views.SessionDayArchiveView.as_view(month_format='%m'),
           name='kb-sessions-day'),
-      url(r'^sessions/(?P<year>\d+)/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$',
+      url(r'^sessions/(?P<year>\d+)/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/?$',
           views.SessionDateDetailView.as_view(month_format='%m'),
           name='kb-session-detail'),
 

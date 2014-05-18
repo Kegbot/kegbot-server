@@ -106,7 +106,7 @@ http://localhost:1234/account.
 
         expected_body_plain = '''A new session was just kicked off on My Kegbot.
 
-You can follow the session here: http://localhost:1234/s/%s/
+You can follow the session here: http://localhost:1234/s/%s
 
 You are receiving this e-mail because you have notifications enabled
 on My Kegbot.  To change your settings, visit http://localhost:1234/account.''' % (drink.session.id,)
@@ -118,7 +118,7 @@ A new session was just kicked off on <a href="http://localhost:1234">My Kegbot</
 </p>
 
 <p>
-You can follow the session <a href="http://localhost:1234/s/%s/">here</a>.
+You can follow the session <a href="http://localhost:1234/s/%s">here</a>.
 </p>
 
 <p>

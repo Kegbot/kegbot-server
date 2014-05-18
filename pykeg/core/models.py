@@ -24,6 +24,7 @@ import os
 import pytz
 import random
 import re
+import urlparse
 from uuid import uuid4
 
 from django.contrib.auth.models import AbstractBaseUser
@@ -241,11 +242,16 @@ class KegbotSite(models.Model):
         return datetime.timedelta(minutes=self.session_timeout_minutes)
 
     def base_url(self):
+        """Returns the base address of this system."""
         return get_kegbot_backend().get_base_url()
 
+    def full_url(self, path):
+        """Returns an absolute URL to the specified path."""
+        return urlparse.urljoin(self.base_url(), path)
+
     def reverse_full(self, *args, **kwargs):
-        """Calls reverse, and returns a full URL (includes base_url())."""
-        return '%s%s' % (self.base_url(), reverse(*args, **kwargs))
+        """Returns an absolute URL to the path reversed by parameters."""
+        return self.full_url(reverse(*args, **kwargs))
 
     def format_volume(self, volume_ml):
         if self.volume_display_units == 'metric':
@@ -587,7 +593,7 @@ class Keg(models.Model):
         return reverse('kb-keg', args=(str(self.id),))
 
     def full_url(self):
-        return '%s%s' % (KegbotSite.get().base_url(), self.get_absolute_url())
+        return KegbotSite.get().full_url(self.get_absolute_url())
 
     def full_volume(self):
         return self.full_volume_ml
@@ -717,7 +723,7 @@ class Drink(models.Model):
         return reverse('kb-drink', args=(str(self.id),))
 
     def short_url(self):
-        return '%s%s' % (KegbotSite.get().base_url(), reverse('kb-drink-short', args=(str(self.id),)))
+        return KegbotSite.get().reverse_full('kb-drink-short', args=(str(self.id),))
 
     def Volume(self):
         return units.Quantity(self.volume_ml)
@@ -826,11 +832,10 @@ class DrinkingSession(models.Model):
         self.save()
 
     def short_url(self):
-        return '%s%s' % (KegbotSite.get().base_url(), reverse('kb-session-short',
-            args=(str(self.id),)))
+        return KegbotSite.get().reverse_full('kb-session-short', args=(str(self.id),))
 
     def full_url(self):
-        return '%s%s' % (KegbotSite.get().base_url(), self.get_absolute_url())
+        return KegbotSite.get().full_url(self.get_absolute_url())
 
     def get_highlighted_picture(self):
         pictures = self.pictures.all().order_by('-time')

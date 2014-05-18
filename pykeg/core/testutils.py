@@ -37,6 +37,9 @@ def make_datetime(*args):
 
 class TestBackend(KegbotBackend):
     def get_base_url(self):
+        static_url = getattr(settings, 'KEGBOT_BASE_URL', None)
+        if static_url:
+            return static_url.rstrip('/')
         return 'http://localhost:1234'
 
 

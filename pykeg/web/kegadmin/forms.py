@@ -263,7 +263,7 @@ class KegForm(forms.Form):
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
         b = get_kegbot_backend()
-        keg = b.add_keg(beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
+        keg = b.create_keg(beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
             beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'],
             full_volume_ml=full_volume_ml, notes=cd['notes'], description=cd['description'])
         return keg

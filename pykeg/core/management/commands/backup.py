@@ -22,6 +22,7 @@ from django.core.files.storage import get_storage_class
 from django.core.management.base import BaseCommand
 from pykeg.core import backup
 from optparse import make_option
+from pykeg.backend.backends import UnknownBaseUrlException
 
 
 class Command(BaseCommand):
@@ -42,5 +43,5 @@ class Command(BaseCommand):
         print 'Path: {}'.format(path)
         try:
             print 'URL: {}'.format(storage.url(location))
-        except NotImplementedError:
+        except (NotImplementedError, UnknownBaseUrlException):
             pass

@@ -43,6 +43,10 @@ from pykeg.web import tasks
 from . import signals
 
 
+class UnknownBaseUrlException(Exception):
+    pass
+
+
 class KegbotBackend(object):
     """Provides high-level operations against the Kegbot system."""
 
@@ -60,7 +64,7 @@ class KegbotBackend(object):
             return static_url.rstrip('/')
         r = get_current_request()
         if not r:
-            raise RuntimeError('Cannot determine current request')
+            raise UnknownBaseUrlException('Cannot determine current request')
         return r.build_absolute_uri('/').rstrip('/')
 
     @transaction.atomic

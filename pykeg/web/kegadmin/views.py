@@ -525,10 +525,11 @@ def user_detail(request, user_id):
                 messages.success(request, 'User %s staff status disabled.' % edit_user.username)
 
         else:
-            update_email_form = forms.EditUserForm(request.POST, instance=edit_user)
-            if update_email_form.is_valid():
-                update_email_form.save()
-                messages.success(request, 'User %s e-mail changed successfully' % edit_user.username)
+            if not settings.EMBEDDED:
+                update_email_form = forms.EditUserForm(request.POST, instance=edit_user)
+                if update_email_form.is_valid():
+                    update_email_form.save()
+                    messages.success(request, 'User %s e-mail changed successfully' % edit_user.username)
 
     context['update_email_form'] = update_email_form
     context['edit_user'] = edit_user

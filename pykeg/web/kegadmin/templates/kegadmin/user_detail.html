@@ -22,7 +22,7 @@
         {% if user.is_staff %}
         <li><a href="#3" data-toggle="tab">Access Control</a></li>
         {% endif %}
-        {% if user.is_superuser %}
+        {% if user.is_superuser and not EMBEDDED %}
         <li><a href="#4" data-toggle="tab">Update E-Mail</a></li>
         {% endif %}
     </ul>
@@ -126,7 +126,7 @@
         </div>
         {% endif %}
 
-        {% if user.is_superuser %}
+        {% if user.is_superuser and not EMBEDDED %}
         <div class="tab-pane" id="4">
             {% crispy update_email_form %}
         </div>

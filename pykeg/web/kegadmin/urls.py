@@ -30,7 +30,6 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^taps/(?P<tap_id>\d+)/$', 'tap_detail', name='kegadmin-edit-tap'),
 
     url(r'^users/$', 'user_list', name='kegadmin-users'),
-    url(r'^users/create/$', 'add_user', name='kegadmin-add-user'),
     url(r'^users/(?P<user_id>\d+)/$', 'user_detail', name='kegadmin-edit-user'),
 
     url(r'^drinks/$', 'drink_list', name='kegadmin-drinks'),
@@ -52,8 +51,9 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
 
 if not settings.EMBEDDED:
     urlpatterns += patterns('pykeg.web.kegadmin.views',
-        url(r'^logs/$', 'logs', name='kegadmin-logs'),
         url(r'^email/$', 'email', name='kegadmin-email'),
+        url(r'^logs/$', 'logs', name='kegadmin-logs'),
+        url(r'^users/create/$', 'add_user', name='kegadmin-add-user'),
         url(r'^workers/$', 'workers', name='kegadmin-workers'),
     )
 

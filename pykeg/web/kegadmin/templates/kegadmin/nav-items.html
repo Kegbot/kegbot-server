@@ -25,8 +25,10 @@
 {% if PLUGINS %}
 <li class="nav-header">Plugins</li>
 {% for plugin in PLUGINS.values %}
-{% url "kegadmin-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
-{% navitem settings_url plugin.get_name %}
+  {% if plugin.get_admin_settings_view %}
+    {% url "kegadmin-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
+    {% navitem settings_url plugin.get_name %}
+  {% endif %}
 {% endfor %}
 {% endif %}
 

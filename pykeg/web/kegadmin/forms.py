@@ -300,6 +300,7 @@ class SiteSettingsForm(forms.ModelForm):
         fields = (
             'title',
             'privacy',
+            'registration_mode',
             'volume_display_units',
             'temperature_display_units',
             'timezone',
@@ -317,6 +318,7 @@ class SiteSettingsForm(forms.ModelForm):
     helper.layout = Layout(
         Field('title', css_class='input-xlarge'),
         Field('privacy', css_class='input-xlarge'),
+        Field('registration_mode', css_class='input-xlarge'),
         Field('volume_display_units', css_class='input-xlarge'),
         Field('temperature_display_units', css_class='input-xlarge'),
         Field('timezone'),

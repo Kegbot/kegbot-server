@@ -98,7 +98,8 @@ class User(AbstractBaseUser):
         related_name='user_mugshot',
         on_delete=models.SET_NULL)
     activation_key = models.CharField(max_length=128, blank=True,
-        null=True)
+        null=True,
+        help_text='Unguessable token, used to finish registration.')
 
     objects = UserManager()
 
@@ -149,6 +150,26 @@ class User(AbstractBaseUser):
         return api_key.key
 
 
+class Invitation(models.Model):
+    """A time-sensitive cookie which can be used to create an account."""
+    invite_code = models.CharField(unique=True, max_length=255,
+        help_text='Unguessable token which must be presented to use this invite')
+    for_email = models.EmailField(
+        help_text='Address this invitation was sent to.')
+    invited_date = models.DateTimeField(_('date invited'), auto_now_add=True,
+        help_text='Date and time the invitation was sent')
+    expires_date = models.DateTimeField(_('date expries'),
+        default=lambda: timezone.now() + datetime.timedelta(hours=24),
+        help_text='Date and time after which the invitation is considered expired')
+    invited_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
+        help_text='User that created this invitation, if any.')
+
+    def is_expired(self, now=None):
+        if now is None:
+            now = timezone.now()
+        return now > self.expires_date
+
+
 class KegbotSite(models.Model):
 
     VOLUME_DISPLAY_UNITS_CHOICES = (
@@ -164,7 +185,13 @@ class KegbotSite(models.Model):
         ('members', 'Members only: Must log in to browse'),
         ('staff', 'Staff only: Only logged-in staff accounts may browse'),
     )
+    REGISTRATION_MODE_CHOICES = (
+        ('public', 'Public: Anyone can register.'),
+        ('member-invite-only', 'Member Invite: Must be invited by an existing member.'),
+        ('staff-invite-only', 'Staff Invite Only: Must be invited by a staff member.'),
+    )
     DEFAULT_PRIVACY = 'public'
+    DEFAULT_REGISTRATION_MODE = 'public'
 
     name = models.CharField(max_length=64, unique=True, default='default',
         editable=False)
@@ -203,7 +230,10 @@ class KegbotSite(models.Model):
         'Recommended value is %s.' % kb_common.DRINK_SESSION_TIME_MINUTES)
     privacy = models.CharField(max_length=63, choices=PRIVACY_CHOICES,
         default=DEFAULT_PRIVACY,
-        help_text='Whole-system setting for system privacy.')
+        help_text='Who can view Kegbot data?')
+    registration_mode = models.CharField(max_length=63, choices=REGISTRATION_MODE_CHOICES,
+        default=DEFAULT_REGISTRATION_MODE,
+        help_text='Who can join this Kegbot from the web site?')
     guest_name = models.CharField(max_length=63, default='guest',
         help_text='Name to be shown in various places for unauthenticated pours.')
     guest_image = models.ForeignKey('Picture', blank=True, null=True,

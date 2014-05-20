@@ -18,6 +18,11 @@ class ActivateAccountForm(forms.Form):
         return password2
 
 
+class InvitationForm(forms.Form):
+    email = forms.EmailField(required=True,
+        help_text='E-mail address to invite')
+
+
 class MugshotForm(forms.Form):
     new_mugshot = forms.ImageField(required=True)
 

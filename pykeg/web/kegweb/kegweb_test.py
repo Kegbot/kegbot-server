@@ -168,25 +168,10 @@ class KegwebTestCase(TransactionTestCase):
     def test_registration(self):
         kbsite = models.KegbotSite.get()
         self.assertEqual('public', kbsite.privacy)
-        self.assertFalse(kbsite.registration_confirmation)
+        self.assertEqual('public', kbsite.registration_mode)
 
         response = self.client.get('/accounts/register/')
-        self.assertContains(response, 'New Drinker', status_code=200)
-
-        response = self.client.post('/accounts/register/',
-            data={
-                'username': 'newuser',
-                'password1': '1234',
-                'password2': '1234',
-                'email': 'test@example.com',
-            }, follow=True)
-        self.assertRedirects(response, '/account/')
-        self.assertContains(response, 'Hello, newuser')
-        self.assertEqual(0, len(mail.outbox))
-
-        # Trigger confirmation.
-        kbsite.registration_confirmation = True
-        kbsite.save()
+        self.assertContains(response, 'Register New Account', status_code=200)
 
         response = self.client.post('/accounts/register/',
             data={
@@ -195,13 +180,45 @@ class KegwebTestCase(TransactionTestCase):
                 'password2': '1234',
                 'email': 'test2@example.com',
             }, follow=True)
-        self.assertRedirects(response, '/accounts/register/complete/')
-        self.assertContains(response, 'Please click the activation link')
+        self.assertRedirects(response, '/account/')
+        self.assertContains(response, 'Hello, newuser2')
         self.assertEqual(1, len(mail.outbox))
 
         msg = mail.outbox[0]
         self.assertEqual(['test2@example.com'], msg.to)
-        self.assertTrue('please click on the following link' in msg.body)
+        self.assertTrue('To log in to your account, please click here' in msg.body)
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    def test_registration_with_invite(self):
+        kbsite = models.KegbotSite.get()
+        kbsite.registration_mode = 'staff-invite-online'
+        kbsite.save()
+
+        response = self.client.get('/accounts/register/')
+        self.assertContains(response, 'Invitation Required', status_code=401)
+
+        response = self.client.get('/accounts/register/?invite_code=1234')
+        self.assertContains(response, 'Invitation Expired', status_code=401)
+
+        models.Invitation.objects.create(invite_code='test', for_email='test@example.com')
+        self.assertEqual(1, models.Invitation.objects.all().count())
+
+        response = self.client.get('/accounts/register/?invite_code=test')
+        self.assertContains(response, 'Register New Account', status_code=200)
+        response = self.client.post('/accounts/register/',
+            data={
+                'username': 'newuser2',
+                'password1': '1234',
+                'password2': '1234',
+                'email': 'test2@example.com',
+            }, follow=True)
+        self.assertRedirects(response, '/account/')
+        self.assertContains(response, 'Hello, newuser2')
+        self.assertEqual(0, models.Invitation.objects.all().count())
+
+        response = self.client.get('/accounts/register/?invite_code=test')
+        self.assertContains(response, 'Invitation Expired', status_code=401)
 
     def test_upgrade_bouncer(self):
         kbsite = models.KegbotSite.get()

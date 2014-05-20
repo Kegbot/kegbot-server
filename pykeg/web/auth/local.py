@@ -57,6 +57,7 @@ class LocalAuthBackend(ModelBackend, AuthBackend):
             user.set_password(password)
         else:
             user.set_unusable_password()
+            user.activation_key = str(uuid.uuid4()).replace('-', '')
 
         if photo:
             pic = models.Picture.objects.create(user=user)
@@ -65,19 +66,27 @@ class LocalAuthBackend(ModelBackend, AuthBackend):
             user.mugshot = pic
 
         user.save()
-        if email and not password:
-            user.activation_key = str(uuid.uuid4()).replace('-', '')
-            user.save()
 
-            kbsite = models.KegbotSite.get()
+        kbsite = models.KegbotSite.get()
+        template = None
+
+        if user.activation_key:
+            # Needs further activation: send activation e-mail.
+            template = 'registration/email_activate_registration.html'
             url = kbsite.reverse_full('activate-account', args=(),
                 kwargs={'activation_key': user.activation_key})
+        elif email:
+            # User already activated, send "complete" email.
+            template = 'registration/email_registration_complete.html'
+            url = kbsite.reverse_full('kb-account-main', args=(), kwargs={})
+
+        if template:
             context = {
                 'site_name': kbsite.title,
                 'url': url,
             }
-
-            message = build_message(email, 'email_new_registration.html', context)
+            message = build_message(email, template, context)
             if message:
                 message.send(fail_silently=True)
+
         return user

@@ -26,7 +26,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import ugettext_lazy as _
 
-from registration.forms import RegistrationForm as BaseRegistrationForm
 try:
     from django.contrib.auth import get_user_model
     User = get_user_model()
@@ -37,13 +36,26 @@ from pykeg.core import models
 from pykeg.backend import get_kegbot_backend
 
 
-class KegbotRegistrationForm(BaseRegistrationForm):
+class KegbotRegistrationForm(forms.Form):
+    email = forms.EmailField(required=True)
+    username = forms.CharField(required=True)
+    password1 = forms.CharField(widget=forms.PasswordInput,
+                                label=_("Password"))
+    password2 = forms.CharField(widget=forms.PasswordInput,
+                                label=_("Password (again)"))
+
     def clean_username(self):
         existing = User.objects.filter(username__iexact=self.cleaned_data['username'])
         if existing.exists():
             raise forms.ValidationError(_("A user with that username already exists."))
         else:
             return self.cleaned_data['username']
+
+    def clean(self):
+        if 'password1' in self.cleaned_data and 'password2' in self.cleaned_data:
+            if self.cleaned_data['password1'] != self.cleaned_data['password2']:
+                raise forms.ValidationError(_("The two password fields didn't match."))
+        return self.cleaned_data
 
 
 class PasswordResetForm(forms.Form):

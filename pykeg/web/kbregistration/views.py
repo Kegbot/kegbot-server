@@ -18,72 +18,72 @@
 
 from django.contrib.auth import authenticate
 from django.contrib.auth import login
-
-from registration import signals
-from registration.views import ActivationView as BaseActivationView
-from registration.views import RegistrationView as BaseRegistrationView
+from django.shortcuts import redirect
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 
 from pykeg.web.kbregistration.forms import KegbotRegistrationForm
-from pykeg.web.kbregistration.models import KegbotRegistrationProfile
+from pykeg.backend import get_kegbot_backend
 
-try:
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-except ImportError:
-    from django.contrib.auth.models import User
+from pykeg.core import models
 
-"""Kegbot-aware clone of django-registration default backend views."""
+"""Kegbot-aware registration views."""
 
 
-class RegistrationView(BaseRegistrationView):
-    """Hybrid of backends.default and backends.simple.
+def register(request):
+    context = RequestContext(request)
+    form = KegbotRegistrationForm()
 
-    The register() method considers SiteSettings in deciding whether
-    to immediately activate the new account or send an activation_key
-    email.
-
-    All methods use KegbotRegistrationProfile rather than
-    django-registration's built-in profile since the latter is not
-    aware of our custom User.
-    """
-    form_class = KegbotRegistrationForm
-
-    def register(self, request, **cleaned_data):
-        settings = request.kbsite
-
-        username, email, password = cleaned_data['username'], cleaned_data['email'], cleaned_data['password1']
-
-        if settings.registration_confirmation:
-            new_user = KegbotRegistrationProfile.objects.create_inactive_user(
-                username, email, password)
+    # Check if we need an invitation before processing the request further.
+    invite = None
+    if request.kbsite.registration_mode != 'public':
+        invite_code = None
+        if 'invite_code' in request.GET:
+            invite_code = request.GET['invite_code']
+            request.session['invite_code'] = invite_code
         else:
-            User.objects.create_user(username, email, password)
-            new_user = authenticate(username=username, password=password)
-            login(request, new_user)
+            invite_code = request.session.get('invite_code', None)
 
-        signals.user_registered.send(sender=self.__class__,
-                                     user=new_user,
-                                     request=request)
-        return new_user
+        if not invite_code:
+            r = render_to_response('registration/invitation_required.html',
+                context_instance=context)
+            r.status_code = 401
+            return r
 
-    def registration_allowed(self, request):
-        return request.kbsite.registration_allowed
+        try:
+            invite = models.Invitation.objects.get(invite_code=invite_code)
+        except models.Invitation.DoesNotExist:
+            pass
 
-    def get_success_url(self, request, user):
-        if request.kbsite.registration_confirmation:
-            return ('registration_complete', (), {})
-        else:
-            return 'kb-account-main'
+        if not invite or invite.is_expired():
+            r = render_to_response('registration/invitation_expired.html',
+                context_instance=context)
+            r.status_code = 401
+            return r
 
+    if request.method == 'POST':
+        form = KegbotRegistrationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data.get('password1')
 
-class ActivationView(BaseActivationView):
-    def activate(self, request, activation_key):
-        activated_user = KegbotRegistrationProfile.objects.activate_user(activation_key)
-        if activated_user:
-            signals.user_activated.send(sender=self.__class__,
-                                        user=activated_user,
-                                        request=request)
-        return activated_user
+            backend = get_kegbot_backend()
+            backend.create_new_user(username=username, email=email, password=password)
 
-    def get_success_url(self, request, user):
-        return ('registration_activation_complete', (), {})
+            if invite:
+                invite.delete()
+                if 'invite_code' in request.session:
+                    del request.session['invite_code']
+
+            if password:
+                new_user = authenticate(username=username, password=password)
+                login(request, new_user)
+                return redirect('kb-account-main')
+
+            return render_to_response('registration/registration_complete.html',
+                context_instance=context)
+
+    context['form'] = form
+    return render_to_response('registration/registration_form.html',
+        context_instance=context)

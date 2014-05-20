@@ -68,6 +68,27 @@ def edit_mugshot(request):
 
 
 @login_required
+def invite(request):
+    context = RequestContext(request)
+    form = forms.InvitationForm()
+
+    if not request.kbsite.can_invite(request.user):
+        raise Http404('Cannot invite from this account.')
+
+    if request.method == 'POST':
+        form = forms.InvitationForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            invite = models.Invitation.objects.create(for_email=email,
+                invited_by=request.user)
+            invite.send()
+            messages.success(request, 'Invitation mailed to ' + email)
+
+    context['form'] = form
+    return render_to_response('account/invite.html', context_instance=context)
+
+
+@login_required
 def notifications(request):
     # TODO(mikey): Dynamically add settings forms for other e-mail
     # backends (currently hardcoded to email backend).

@@ -1,0 +1,22 @@
+{% extends 'notification/email_base.html' %}
+
+{% block subject %}[{{ site_name }}] Invitation to join {{ site_name}}{% endblock %}
+
+{% block body_plain %}
+Someone has just invited you to join {{site_name}}.
+
+To accept the invitation and register, please click here:
+  {{ url }}
+
+{% endblock %}
+
+{% block body_html %}
+<p>
+Someone has just invited you to join {{site_name}}
+</p>
+
+<p>
+To accept the invitation and register, please click here:
+<a href="{{ url }}">{{ url }}</a>
+</p>
+{% endblock %}

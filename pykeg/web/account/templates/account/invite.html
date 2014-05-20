@@ -1,0 +1,20 @@
+{% extends "account/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Invite a New User | {{ block.super }}{% endblock %}
+{% block pagetitle %}Invite a New User{% endblock %}
+
+{% block kb-account-main %}
+<h2>Invite a New User</h2>
+<div class="well">
+  <form enctype="multipart/form-data" method="post" action="">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="actions">
+      <button type="submit" class="btn btn-primary">Invite</button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

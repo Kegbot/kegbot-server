@@ -32,6 +32,7 @@ def kbsite(request):
         'GOOGLE_ANALYTICS_ID': None,
         'SSO_LOGIN_URL': sso_login_url,
         'SSO_LOGOUT_URL': sso_logout_url,
+        'CAN_INVITE': kbsite.can_invite(request.user) if kbsite else False,
         'kbsite': kbsite,
         'request_path': request.path,
         'login_form': LoginForm(initial={'next_page': request.path}),

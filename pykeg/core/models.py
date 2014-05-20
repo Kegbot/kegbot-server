@@ -50,6 +50,7 @@ from pykeg.core import keg_sizes
 from pykeg.core import fields
 from pykeg.core import managers
 from pykeg.core.util import get_version
+from pykeg.util.email import build_message
 
 from kegbot.util import kbjson
 from kegbot.util import units
@@ -153,6 +154,7 @@ class User(AbstractBaseUser):
 class Invitation(models.Model):
     """A time-sensitive cookie which can be used to create an account."""
     invite_code = models.CharField(unique=True, max_length=255,
+        default=lambda: str(uuid4()),
         help_text='Unguessable token which must be presented to use this invite')
     for_email = models.EmailField(
         help_text='Address this invitation was sent to.')
@@ -168,6 +170,18 @@ class Invitation(models.Model):
         if now is None:
             now = timezone.now()
         return now > self.expires_date
+
+    def send(self):
+        site = KegbotSite.get()
+        base_url = site.reverse_full('registration_register')
+        url = base_url + '?invite_code=' + self.invite_code
+        context = {
+            'site_name': site.title,
+            'url': url,
+        }
+        message = build_message(self.for_email, 'registration/email_invite.html', context)
+        if message:
+            message.send(fail_silently=True)
 
 
 class KegbotSite(models.Model):
@@ -290,6 +304,15 @@ class KegbotSite(models.Model):
             return '%.1f L' % (volume_ml / 1000.0)
         else:
             return '%1.f oz' % units.Quantity(volume_ml).InOunces()
+
+    def can_invite(self, user):
+        if self.registration_mode == 'public':
+            return True
+        if self.registration_mode == 'member-invite-only':
+            return not user.is_anonymous()
+        if self.registration_mode == 'staff-invite-only':
+            return user.is_staff()
+        return False
 
 
 class Device(models.Model):

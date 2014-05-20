@@ -1,0 +1,19 @@
+{% extends 'notification/email_base.html' %}
+
+{% block subject %}[{{ site_name }}] New account created{% endblock %}
+
+{% block body_plain %}
+You just signed up for an account on {{ site_name }} -- welcome!
+
+To log in to your account, please click here: {{ url }}
+{% endblock %}
+
+{% block body_html %}
+<p>
+You registered for an account on {{ site_name }} -- welcome!
+</p>
+
+<p>
+To log in to your account, please click here: <a href="{{ url }}">{{ url }}</a>
+</p>
+{% endblock %}

@@ -8,10 +8,13 @@
       <li class="nav-header">General</a>
       {% navitem "kb-account-main" "Account Main" exact %}
       {% if not SSO_LOGIN_URL %}
-      {% navitem "password_change" "Password" %}
+        {% navitem "password_change" "Password" %}
       {% endif %}
       {% navitem "account-mugshot" "Mugshot" %}
       {% navitem "account-notifications" "Notifications" %}
+      {% if CAN_INVITE %}
+        {% navitem "account-invite" "Invite a User" %}
+      {% endif %}
 
       {% if PLUGINS %}
       <li class="nav-header">Extras</li>

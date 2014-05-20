@@ -302,12 +302,14 @@ class KegbotSite(models.Model):
             return '%1.f oz' % units.Quantity(volume_ml).InOunces()
 
     def can_invite(self, user):
+        if not user:
+            return False
         if self.registration_mode == 'public':
             return True
         if self.registration_mode == 'member-invite-only':
             return not user.is_anonymous()
         if self.registration_mode == 'staff-invite-only':
-            return user.is_staff()
+            return user.is_staff
         return False
 
 

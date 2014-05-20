@@ -194,3 +194,25 @@ class CoreModelsTestCase(TestCase):
         uuid_str = 'abcdef'
         uploaded_name = models._pics_file_name(None, basename, now, uuid_str)
         self.assertEqual('pics/20110203000000-abcdef.jpg', uploaded_name)
+
+    def test_site_can_invite(self):
+        site = models.KegbotSite.get()
+        self.assertFalse(site.can_invite(None))
+
+        site.registration_mode = 'public'
+        site.save()
+        self.assertTrue(site.can_invite(self.user))
+
+        site.registration_mode = 'member-invite-only'
+        site.save()
+        self.assertTrue(site.can_invite(self.user))
+
+        site.registration_mode = 'staff-invite-only'
+        site.save()
+        self.assertFalse(site.can_invite(self.user))
+
+        self.user.is_staff = True
+        self.user.save()
+        site.registration_mode = 'staff-invite-only'
+        site.save()
+        self.assertTrue(site.can_invite(self.user))

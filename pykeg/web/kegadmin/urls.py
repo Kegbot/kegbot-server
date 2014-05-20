@@ -5,7 +5,10 @@ from django.conf.urls import url
 urlpatterns = patterns('pykeg.web.kegadmin.views',
     ### main page
     url(r'^$', 'dashboard', name='kegadmin-dashboard'),
-    url(r'^settings/$', 'general_settings', name='kegadmin-main'),
+    url(r'^settings/general/$', 'general_settings', name='kegadmin-main'),
+    url(r'^settings/location/$', 'location_settings', name='kegadmin-location-settings'),
+    url(r'^settings/advanced/$', 'advanced_settings', name='kegadmin-advanced-settings'),
+
     url(r'^export/$', 'export', name='kegadmin-export'),
 
     url(r'^beers/$', 'beverages_list', name='kegadmin-beverages'),

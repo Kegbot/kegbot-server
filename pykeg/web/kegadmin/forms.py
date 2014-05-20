@@ -291,26 +291,15 @@ class EditKegForm(forms.ModelForm):
     )
 
 
-class SiteSettingsForm(forms.ModelForm):
-    guest_image = forms.ImageField(required=False,
-        help_text='Custom image for the "guest" user.')
-
+class GeneralSiteSettingsForm(forms.ModelForm):
     class Meta:
         model = models.KegbotSite
         fields = (
             'title',
             'privacy',
             'registration_mode',
-            'volume_display_units',
-            'temperature_display_units',
-            'timezone',
-            'session_timeout_minutes',
-            'google_analytics_id',
-            'guest_name',
-            'default_user',
             'registration_allowed',
             'registration_confirmation',
-            'check_for_updates',
         )
 
     helper = FormHelper()
@@ -319,16 +308,60 @@ class SiteSettingsForm(forms.ModelForm):
         Field('title', css_class='input-xlarge'),
         Field('privacy', css_class='input-xlarge'),
         Field('registration_mode', css_class='input-xlarge'),
+        Field('registration_allowed', css_class='input-xlarge'),
+        Field('registration_confirmation', css_class='input-xlarge'),
+        FormActions(
+            Submit('submit', 'Save Settings', css_class='btn-primary'),
+        )
+    )
+
+
+class LocationSiteSettingsForm(forms.ModelForm):
+    guest_image = forms.ImageField(required=False,
+        help_text='Custom image for the "guest" user.')
+
+    class Meta:
+        model = models.KegbotSite
+        fields = (
+            'volume_display_units',
+            'temperature_display_units',
+            'timezone',
+        )
+
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
         Field('volume_display_units', css_class='input-xlarge'),
         Field('temperature_display_units', css_class='input-xlarge'),
         Field('timezone'),
+        FormActions(
+            Submit('submit', 'Save Settings', css_class='btn-primary'),
+        )
+    )
+
+
+class AdvancedSiteSettingsForm(forms.ModelForm):
+    guest_image = forms.ImageField(required=False,
+        help_text='Custom image for the "guest" user.')
+
+    class Meta:
+        model = models.KegbotSite
+        fields = (
+            'session_timeout_minutes',
+            'google_analytics_id',
+            'guest_name',
+            'default_user',
+            'check_for_updates',
+        )
+
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
         Field('session_timeout_minutes'),
         Field('google_analytics_id'),
         Field('guest_name'),
         Field('guest_image'),
         Field('default_user'),
-        Field('registration_allowed', css_class='input-xlarge'),
-        Field('registration_confirmation', css_class='input-xlarge'),
         Field('check_for_updates'),
         FormActions(
             Submit('submit', 'Save Settings', css_class='btn-primary'),

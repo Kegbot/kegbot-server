@@ -101,10 +101,44 @@ def general_settings(request):
     context = RequestContext(request)
     kbsite = request.kbsite
 
-    form = forms.SiteSettingsForm(instance=kbsite)
+    form = forms.GeneralSiteSettingsForm(instance=kbsite)
 
     if request.method == 'POST':
-        form = forms.SiteSettingsForm(request.POST, instance=kbsite)
+        form = forms.GeneralSiteSettingsForm(request.POST, instance=kbsite)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Settings were updated.')
+    context['settings_form'] = form
+
+    return render_to_response('kegadmin/index.html', context_instance=context)
+
+
+@staff_member_required
+def location_settings(request):
+    context = RequestContext(request)
+    kbsite = request.kbsite
+
+    form = forms.LocationSiteSettingsForm(instance=kbsite)
+
+    if request.method == 'POST':
+        form = forms.LocationSiteSettingsForm(request.POST, instance=kbsite)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Settings were updated.')
+    context['settings_form'] = form
+
+    return render_to_response('kegadmin/index.html', context_instance=context)
+
+
+@staff_member_required
+def advanced_settings(request):
+    context = RequestContext(request)
+    kbsite = request.kbsite
+
+    form = forms.AdvancedSiteSettingsForm(instance=kbsite)
+
+    if request.method == 'POST':
+        form = forms.AdvancedSiteSettingsForm(request.POST, instance=kbsite)
         if form.is_valid():
             form.save()
             guest_image = request.FILES.get('guest_image')
@@ -114,7 +148,7 @@ def general_settings(request):
                 pic.save()
                 kbsite.guest_image = pic
                 kbsite.save()
-            messages.success(request, 'Site settings were successfully updated.')
+            messages.success(request, 'Settings were updated.')
     context['settings_form'] = form
 
     return render_to_response('kegadmin/index.html', context_instance=context)

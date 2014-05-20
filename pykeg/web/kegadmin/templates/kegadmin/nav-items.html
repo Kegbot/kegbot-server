@@ -3,11 +3,12 @@
 <li class="nav-header">Kegbot Admin</a>
 {% navitem "kegadmin-dashboard" "Dashboard" exact %}
 
-<li class="nav-header">General</a>
-{% navitem "kegadmin-main" "General Settings" %}
+<li class="nav-header">Settings</a>
+{% navitem "kegadmin-main" "General" %}
+{% navitem "kegadmin-location-settings" "Location" %}
+{% navitem "kegadmin-advanced-settings" "Advanced" %}
 {% if not EMBEDDED %}
 {% navitem "kegadmin-email" "E-Mail" %}
-{% navitem "kegadmin-logs" "Logs" %}
 {% endif %}
 
 <li class="nav-header">System</li>
@@ -17,6 +18,9 @@
 {% navitem "kegadmin-drinks" "Drinks" %}
 {% navitem "kegadmin-users" "Users" %}
 {% navitem "kegadmin-tokens" "Tokens" %}
+{% if not EMBEDDED %}
+{% navitem "kegadmin-logs" "Logs" %}
+{% endif %}
 
 <li class="nav-header">Beer DB</li>
 {% navitem "kegadmin-beverage-producers" "Brewers" %}

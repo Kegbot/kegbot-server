@@ -5,6 +5,10 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.32 (2014-05-20)
+---------------------------
+* Bugfix: Errors caused in staff-only registration mode.
+
 Version 0.9.31 (2014-05-19)
 ---------------------------
 * New "registration mode" setting allows inviting users to closed systems.

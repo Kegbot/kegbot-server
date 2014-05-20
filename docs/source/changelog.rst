@@ -5,6 +5,12 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.31 (2014-05-19)
+---------------------------
+* New "registration mode" setting allows inviting users to closed systems.
+* Bugfix: #274 (extra slash in external URLs).
+* Bugfix: Error when beverage vintage was set.
+
 Version 0.9.30 (2014-05-14)
 ---------------------------
 * Optional settings are :ref:`now documented <settings>`.

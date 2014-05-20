@@ -33,8 +33,6 @@ class MiniSiteSettingsForm(forms.ModelForm):
             'timezone',
             'volume_display_units',
             'temperature_display_units',
-            'registration_allowed',
-            'registration_confirmation',
         )
         widgets = {
             'privacy': forms.RadioSelect(),
@@ -50,8 +48,6 @@ class MiniSiteSettingsForm(forms.ModelForm):
         Field('timezone', css_class='span12'),
         Field('volume_display_units', css_class='span12'),
         Field('temperature_display_units', css_class='span12'),
-        Field('registration_allowed'),
-        Field('registration_confirmation'),
         FormActions(
             Submit('save_changes', 'Continue', css_class="btn-primary"),
         )

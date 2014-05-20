@@ -298,8 +298,6 @@ class GeneralSiteSettingsForm(forms.ModelForm):
             'title',
             'privacy',
             'registration_mode',
-            'registration_allowed',
-            'registration_confirmation',
         )
 
     helper = FormHelper()
@@ -308,8 +306,6 @@ class GeneralSiteSettingsForm(forms.ModelForm):
         Field('title', css_class='input-xlarge'),
         Field('privacy', css_class='input-xlarge'),
         Field('registration_mode', css_class='input-xlarge'),
-        Field('registration_allowed', css_class='input-xlarge'),
-        Field('registration_confirmation', css_class='input-xlarge'),
         FormActions(
             Submit('submit', 'Save Settings', css_class='btn-primary'),
         )

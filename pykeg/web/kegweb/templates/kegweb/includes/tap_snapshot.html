@@ -48,9 +48,12 @@
       </div>
 
       {% if keg.type and keg.type.picture %}
+      {% url "kb-keg" keg.id as keg_url %}
       <div class="span4">
         <div style="border: 1px solid #ccc;">
-          <img src="{{ keg.type.picture.resized.url }}"/>
+          <a href="{{ keg_url }}">
+            <img src="{{ keg.type.picture.resized.url }}"/>
+          </a>
         </div>
       </div>
       {% endif %}

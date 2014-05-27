@@ -40,6 +40,9 @@ class StatsBuilder:
                 self.functions.append((name, fn))
 
     def build(self, drink, previous_stats):
+        if previous_stats is None:
+            previous_stats = util.AttrDict()
+
         logger.debug('build: drink={}'.format(drink.id))
         stats = util.AttrDict()
 
@@ -214,7 +217,7 @@ def _generate_view(drink, user, session, keg):
                 )
                 break
             except models.Stats.DoesNotExist:
-                prior_stats = None
+                prior_stats = util.AttrDict()
                 build_list.insert(0, prior_drink)
 
     # Build all drinks on the hit list.

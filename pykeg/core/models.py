@@ -445,7 +445,7 @@ class Beverage(models.Model):
 class KegTap(models.Model):
     """A physical tap of beer."""
     class Meta:
-        ordering = ('sort_order',)
+        ordering = ('sort_order', 'id')
     name = models.CharField(max_length=128,
         help_text='The display name for this tap, for example, "Main Tap".')
     description = models.TextField(blank=True, null=True,

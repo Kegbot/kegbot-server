@@ -336,6 +336,7 @@ def KegTapToProto(tap, full=False):
     ret = models_pb2.KegTap()
     ret.id = tap.id
     ret.name = tap.name
+    ret.sort_order = tap.sort_order
     meter = tap.current_meter()
 
     if meter:

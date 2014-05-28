@@ -47,7 +47,7 @@ class WebhookPlugin(plugin.Plugin):
         self.logger.info('Handling new event: %s' % event.id)
         settings = self.get_site_settings()
         urls = settings.get('webhook_urls', '').strip().split()
-        event_dict = protolib.ToProto(event)
+        event_dict = protolib.ToDict(event, full=True)
         for url in urls:
             with SuppressTaskErrors(self.logger):
                 tasks.webhook_post.delay(url, event_dict)

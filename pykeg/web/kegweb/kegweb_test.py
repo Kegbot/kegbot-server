@@ -175,18 +175,49 @@ class KegwebTestCase(TransactionTestCase):
 
         response = self.client.post('/accounts/register/',
             data={
-                'username': 'newuser2',
+                'username': 'newuser',
                 'password1': '1234',
                 'password2': '1234',
                 'email': 'test2@example.com',
             }, follow=True)
         self.assertRedirects(response, '/account/')
-        self.assertContains(response, 'Hello, newuser2')
+        self.assertContains(response, 'Hello, newuser')
         self.assertEqual(1, len(mail.outbox))
 
         msg = mail.outbox[0]
         self.assertEqual(['test2@example.com'], msg.to)
         self.assertTrue('To log in to your account, please click here' in msg.body)
+
+        response = self.client.post('/accounts/register/',
+            data={
+                'username': 'newuser',
+                'password1': '1234',
+                'password2': '1234',
+                'email': 'test2@example.com',
+            }, follow=False)
+        self.assertContains(response, 'User with this Username already exists',
+            status_code=200)
+
+        response = self.client.post('/accounts/register/',
+            data={
+                'username': 'newuser 2',
+                'password1': '1234',
+                'password2': '1234',
+                'email': 'test2@example.com',
+            }, follow=False)
+        self.assertContains(response, 'Enter a valid username',
+            status_code=200)
+
+        response = self.client.post('/accounts/register/',
+            data={
+                'username': 'newuser2',
+                'password1': '1234',
+                'password2': '1235',
+                'email': 'test2@example.com',
+            }, follow=False)
+        print response
+        self.assertContains(response, "The two password fields didn&#39;t match.",
+            status_code=200)
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
     @override_settings(EMAIL_FROM_ADDRESS='test-from@example')

@@ -36,22 +36,18 @@ from pykeg.core import models
 from pykeg.backend import get_kegbot_backend
 
 
-class KegbotRegistrationForm(forms.Form):
-    email = forms.EmailField(required=True)
-    username = forms.CharField(required=True)
+class KegbotRegistrationForm(forms.ModelForm):
+    class Meta:
+        model = models.User
+        fields = ('email', 'username')
+
     password1 = forms.CharField(widget=forms.PasswordInput,
                                 label=_("Password"))
     password2 = forms.CharField(widget=forms.PasswordInput,
                                 label=_("Password (again)"))
 
-    def clean_username(self):
-        existing = User.objects.filter(username__iexact=self.cleaned_data['username'])
-        if existing.exists():
-            raise forms.ValidationError(_("A user with that username already exists."))
-        else:
-            return self.cleaned_data['username']
-
     def clean(self):
+        super(KegbotRegistrationForm, self).clean()
         if 'password1' in self.cleaned_data and 'password2' in self.cleaned_data:
             if self.cleaned_data['password1'] != self.cleaned_data['password2']:
                 raise forms.ValidationError(_("The two password fields didn't match."))

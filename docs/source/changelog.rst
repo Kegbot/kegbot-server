@@ -5,6 +5,12 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* Keg images in the web UI are clickable.
+* Bugfix: Fixed validation of new user registration.
+* Bugfix: Fixed an issue that could lead to empty statistics.
+
 Version 0.9.32 (2014-05-20)
 ---------------------------
 * Bugfix: Errors caused in staff-only registration mode.

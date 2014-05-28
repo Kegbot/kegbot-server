@@ -451,6 +451,7 @@ class KegTap(models.Model):
     description = models.TextField(blank=True, null=True,
         help_text='User-visible description for this tap.')
     current_keg = models.OneToOneField('Keg', blank=True, null=True,
+        on_delete=models.SET_NULL,
         related_name='current_tap',
         help_text='Keg currently connected to this tap.')
     temperature_sensor = models.ForeignKey('ThermoSensor', blank=True, null=True,

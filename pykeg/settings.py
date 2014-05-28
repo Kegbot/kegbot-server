@@ -259,7 +259,7 @@ LOGGING = {
             'propagate': False,
         },
         '': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'handlers': ['console'],
             'formatter': 'verbose',
         },

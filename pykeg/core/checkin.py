@@ -18,6 +18,7 @@
 
 """Checks a central server for updates."""
 
+from django.conf import settings
 from django.utils import timezone
 
 from pykeg.core import models
@@ -62,6 +63,10 @@ def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None, quiet=False):
         ValueError: On malformed reponse.
         requests.RequestException: On error talking to server.
     """
+    if settings.EMBEDDED:
+        LOGGER.debug('Checkin disabled in embedded mode')
+        return
+
     kbsite = models.KegbotSite.get()
     if not kbsite.check_for_updates:
         LOGGER.debug('Upgrade check is disabled')

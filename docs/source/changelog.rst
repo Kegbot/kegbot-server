@@ -5,9 +5,11 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 0.9.33 (2014-05-28)
+---------------------------
+* Photos can be deleted (on the Drink page) by the owner or a staff member.
 * Keg images in the web UI are clickable.
+* Webhooks now post full event data (same as ``/api/events``).
 * Bugfix: Fixed validation of new user registration.
 * Bugfix: Fixed an issue that could lead to empty statistics.
 

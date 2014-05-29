@@ -81,7 +81,7 @@ class Command(BaseCommand):
             print 'v{} or newer.  Please install Kegbot v{} and run `kegbot upgrade` again.'.format(
                 MINIMUM_INSTALLED_VERSION, MINIMUM_INSTALLED_VERSION)
             print ''
-            print 'More help: https://github.com/Kegbot/kegbot-server/wiki/Upgrade-Old-Version'
+            print 'More help: https://github.com/Kegbot/kegbot-server/wiki/Upgrading-Old-Versions'
             print ''
             sys.exit(1)
 

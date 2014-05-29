@@ -27,6 +27,7 @@ import random
 import re
 import urlparse
 from uuid import uuid4
+from distutils.version import StrictVersion
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import UserManager
@@ -43,8 +44,6 @@ from django.utils import timezone
 from imagekit.models import ImageSpecField
 from imagekit.processors import Adjust
 from imagekit.processors import resize
-
-from pykeg import EPOCH
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import kb_common
@@ -217,9 +216,6 @@ class KegbotSite(models.Model):
     is_setup = models.BooleanField(default=False,
         help_text='True if the site has completed setup.',
         editable=False)
-    epoch = models.PositiveIntegerField(default=EPOCH,
-        help_text='Database epoch number.',
-        editable=False)
     registration_id = models.TextField(max_length=128, editable=False,
         blank=True, default='',
         help_text='A unique id for this system.')
@@ -278,6 +274,14 @@ class KegbotSite(models.Model):
         """Gets the default site settings."""
         return KegbotSite.objects.get_or_create(name='default',
             defaults={'is_setup': False, 'server_version': get_version()})[0]
+
+    @classmethod
+    def get_installed_version(cls):
+        """Returns currently-installed version, or None if not installed."""
+        rows = cls.objects.filter(name='default').values('server_version')
+        if not rows:
+            return None
+        return StrictVersion(rows[0].get('server_version', '0.0.0'))
 
     def get_stats(self):
         return Stats.get_latest_for_view()

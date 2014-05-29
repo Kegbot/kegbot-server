@@ -17,13 +17,12 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from optparse import make_option
+from distutils.version import StrictVersion
 import sys
 
-from pykeg import EPOCH
-from pykeg.core.util import get_version
+from pykeg.core.util import get_version_object
 
 from django.core.management.base import BaseCommand
-from django.db import connection
 
 from django.contrib.staticfiles.management.commands import collectstatic
 from south.management.commands import migrate
@@ -32,6 +31,12 @@ from pykeg.core.management.commands import kb_regen_stats
 
 from pykeg.core import models
 from pykeg.core import checkin
+
+
+# Versions earlier than this cannot be upgraded.  Currently
+# set to v0.9.24, first version that stored the installed version
+# in the databases.
+MINIMUM_INSTALLED_VERSION = StrictVersion('0.9.24')
 
 
 def run(cmd, args=[]):
@@ -44,6 +49,8 @@ def run(cmd, args=[]):
 class Command(BaseCommand):
     help = u'Perform post-upgrade tasks.'
     option_list = BaseCommand.option_list + (
+        make_option('--force', action='store_true', dest='force', default=False,
+            help='Run even if installed version is up-to-date.'),
         make_option('--skip_static', action='store_true', dest='skip_static', default=False,
             help='Skip `kegbot collectstatic` during upgrade. (Not recommended.)'),
         make_option('--skip_stats', action='store_true', dest='skip_stats', default=False,
@@ -51,7 +58,35 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        self.do_epoch_upgrades()
+        installed_version = models.KegbotSite.get_installed_version()
+        app_version = get_version_object()
+        force = options.get('force')
+
+        if installed_version is None:
+            print 'Kegbot is not installed; run setup-kegbot.py first.'
+            sys.exit(1)
+
+        if installed_version == app_version and not force:
+            print 'Version {} already installed.'.format(installed_version)
+            return
+
+        if installed_version > app_version:
+            print 'Installed version {} is newer than app version {}'.format(
+                installed_version, app_version)
+            sys.exit(1)
+
+        if installed_version < MINIMUM_INSTALLED_VERSION:
+            print ''
+            print 'ERROR: This version of Kegbot can only upgrade systems running on version'
+            print 'v{} or newer.  Please install Kegbot v{} and run `kegbot upgrade` again.'.format(
+                MINIMUM_INSTALLED_VERSION, MINIMUM_INSTALLED_VERSION)
+            print ''
+            print 'More help: https://github.com/Kegbot/kegbot-server/wiki/Upgrade-Old-Version'
+            print ''
+            sys.exit(1)
+
+        print 'Upgrading from {} to {}'.format(installed_version, app_version)
+
         run(syncdb.Command(), args=['--noinput', '-v', '0'])
         run(migrate.Command(), args=['-v', '0'])
 
@@ -62,8 +97,7 @@ class Command(BaseCommand):
             run(collectstatic.Command(), args=['--noinput'])
 
         site = models.KegbotSite.get()
-        site.epoch = EPOCH
-        site.server_version = get_version()
+        site.server_version = str(app_version)
         site.save()
 
         # Refresh any news (since we have a new version).
@@ -74,43 +108,3 @@ class Command(BaseCommand):
 
         print ''
         print 'Upgrade complete!'
-
-    def get_epoch(self):
-        cursor = connection.cursor()
-        cursor.execute("SELECT epoch FROM core_kegbotsite")
-        row = cursor.fetchone()
-        if not row:
-            return None
-        return int(row[0])
-
-    def do_epoch_upgrades(self):
-        installed = self.get_epoch()
-        print '--- Current epoch: %s' % installed
-        if installed == EPOCH or not installed:
-            return
-
-        print 'Performing epoch upgrades ...'
-        for version in range(installed + 1, EPOCH + 1):
-            fn = getattr(self, 'to_%s' % version, None)
-            if fn:
-                print '  ~ %s' % version
-                fn()
-            else:
-                print '  ~ %s (no-op)' % version
-
-    def to_101(self):
-        cursor = connection.cursor()
-        cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['twitter'])
-
-    def to_102(self):
-        cursor = connection.cursor()
-        cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['foursquare'])
-
-    def to_103(self):
-        cursor = connection.cursor()
-        cursor.execute('DELETE FROM south_migrationhistory WHERE app_name = %s', ['untappd'])
-
-    def to_104(self):
-        cursor = connection.cursor()
-        cursor.execute('DROP TABLE IF EXISTS djkombu_message')
-        cursor.execute('DROP TABLE IF EXISTS djkombu_queue')

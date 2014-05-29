@@ -2,7 +2,6 @@ from django.conf import settings
 
 import urllib
 
-import pykeg
 from pykeg.core import models
 from pykeg.core import util
 from pykeg.web.kegweb.forms import LoginForm
@@ -25,7 +24,6 @@ def kbsite(request):
         'DEBUG': settings.DEBUG,
         'DEMO_MODE': settings.DEMO_MODE,
         'EMBEDDED': settings.EMBEDDED,
-        'EPOCH': pykeg.EPOCH,
         'VERSION': util.get_version(),
         'HAVE_SESSIONS': False,
         'HAVE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,

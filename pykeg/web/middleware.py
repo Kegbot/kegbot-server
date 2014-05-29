@@ -16,10 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from pykeg import EPOCH
-
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
+from pykeg.core.util import get_version_object
 from pykeg.core.util import set_current_request
 from pykeg.web.api.util import is_api_request
 
@@ -79,14 +78,14 @@ class KegbotSiteMiddleware:
         request.need_upgrade = False
         request.kbsite = None
 
-        # Select only the `epoch` column, as pending database migrations could
-        # make a full select crash.
-        rows = models.KegbotSite.objects.filter(name='default').values('epoch')
-        if not rows:
+        installed_version = models.KegbotSite.get_installed_version()
+        if installed_version is None:
             request.need_setup = True
-        elif rows[0].get('epoch', 0) < EPOCH:
-            request.need_upgrade = True
         else:
+            request.installed_version_string = str(installed_version)
+            request.need_upgrade = installed_version < get_version_object()
+
+        if not request.need_setup and not request.need_upgrade:
             request.kbsite = models.KegbotSite.objects.get(name='default')
             if request.kbsite.is_setup:
                 timezone.activate(request.kbsite.timezone)
@@ -120,11 +119,11 @@ class KegbotSiteMiddleware:
         return SimpleTemplateResponse('setup_wizard/setup_required.html',
             context=RequestContext(request), status=403)
 
-    def _upgrade_required(self, request, current_epoch=None):
+    def _upgrade_required(self, request):
         if settings.EMBEDDED:
             return HttpResponseServerError('Site needs upgrade.', content_type='text/plain')
         context = RequestContext(request)
-        context['current_epoch'] = current_epoch
+        context['installed_version'] = getattr(request, 'installed_version_string', None)
         return SimpleTemplateResponse('setup_wizard/upgrade_required.html',
             context=context, status=403)
 

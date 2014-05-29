@@ -30,6 +30,7 @@ import sys
 import tempfile
 from threading import current_thread
 from contextlib import closing
+from distutils.version import StrictVersion
 
 from redis.exceptions import RedisError
 
@@ -44,7 +45,11 @@ def get_version():
     try:
         return pkg_resources.get_distribution('kegbot').version
     except pkg_resources.DistributionNotFound:
-        return 'unknown'
+        return '0.0.0'
+
+
+def get_version_object():
+    return StrictVersion(get_version())
 
 
 def get_user_agent():

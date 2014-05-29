@@ -256,13 +256,13 @@ class KegwebTestCase(TransactionTestCase):
         response = self.client.get('/')
         self.assertContains(response, 'My Kegbot', status_code=200)
 
-        old_epoch = kbsite.epoch
-        kbsite.epoch = 1
+        old_version = kbsite.server_version
+        kbsite.server_version = '0.0.1'
         kbsite.save()
         response = self.client.get('/')
         self.assertContains(response, 'Upgrade Required', status_code=403)
 
-        kbsite.epoch = old_epoch
+        kbsite.server_version = old_version
         kbsite.is_setup = False
         kbsite.save()
         response = self.client.get('/')

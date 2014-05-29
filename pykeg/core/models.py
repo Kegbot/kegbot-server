@@ -1317,3 +1317,35 @@ class Picture(models.Model):
                         self.id, spec, e))
         finally:
             self.delete()
+
+
+class NotificationSettings(models.Model):
+    """Stores a user's notification settings for a notification backend."""
+
+    class Meta:
+        unique_together = ('user', 'backend')
+
+    user = models.ForeignKey(User,
+        help_text='User for these settings.')
+    backend = models.CharField(max_length=255,
+        help_text='Notification backend (dotted path) for these settings.')
+    keg_tapped = models.BooleanField(default=True,
+        help_text='Sent when a keg is activated.')
+    session_started = models.BooleanField(default=False,
+        help_text='Sent when a new drinking session starts.')
+    keg_volume_low = models.BooleanField(default=False,
+        help_text='Sent when a keg becomes low.')
+    keg_ended = models.BooleanField(default=False,
+        help_text='Sent when a keg has been taken offline.')
+
+
+class PluginData(models.Model):
+    """Key/value JSON data store for plugins."""
+
+    class Meta:
+        unique_together = ('plugin_name', 'key')
+
+    plugin_name = models.CharField(max_length=127,
+        help_text='Plugin short name')
+    key = models.CharField(max_length=127)
+    value = JSONField()

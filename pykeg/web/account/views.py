@@ -37,7 +37,6 @@ from django.contrib.auth.views import password_change_done as password_change_do
 from pykeg.core import models
 from pykeg.web.kegweb import forms
 from pykeg.notification.forms import NotificationSettingsForm
-from pykeg.notification.models import NotificationSettings
 
 
 @login_required
@@ -93,7 +92,7 @@ def notifications(request):
     # TODO(mikey): Dynamically add settings forms for other e-mail
     # backends (currently hardcoded to email backend).
     context = RequestContext(request)
-    existing_settings = NotificationSettings.objects.get_or_create(user=request.user,
+    existing_settings = models.NotificationSettings.objects.get_or_create(user=request.user,
         backend='pykeg.notification.backends.email.EmailNotificationBackend')[0]
     if request.method == 'POST':
         form = NotificationSettingsForm(request.POST, instance=existing_settings)

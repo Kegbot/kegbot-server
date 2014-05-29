@@ -1,5 +1,5 @@
 from django import forms
-from . import models
+from pykeg.core import models
 
 
 class NotificationSettingsForm(forms.ModelForm):

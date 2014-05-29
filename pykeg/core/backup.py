@@ -86,8 +86,6 @@ ERASE_SKIPPED_TABLE_NAMES = [
 # App names to back up, needed for south migration.
 APP_NAMES = [
     u'core',
-    u'plugin',
-    u'notification',
 ]
 
 # Whitelist of directories to include from storage backend.

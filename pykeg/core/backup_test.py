@@ -54,14 +54,14 @@ EXPECTED_SAVED_TABLES = [
     u'core_keg',
     u'core_kegbotsite',
     u'core_kegtap',
+    u'core_notificationsettings',
     u'core_picture',
+    u'core_plugindata',
     u'core_stats',
     u'core_systemevent',
     u'core_thermolog',
     u'core_thermosensor',
     u'core_user',
-    u'notification_notificationsettings',
-    u'plugin_plugindata',
     u'south_migrationhistory',
 ]
 

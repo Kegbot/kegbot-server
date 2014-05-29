@@ -16,12 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import logging
 logger = logging.getLogger('notification')
 
 from django.conf import settings
 from django.utils.module_loading import import_by_path
-from pykeg.notification import models
+from pykeg.core import models as core_models
 
 __all__ = ['get_backends', 'handle_new_system_events']
 
@@ -55,7 +57,7 @@ def handle_single_event(event, backends):
 
     for backend in backends:
         backend_name = str(backend.__class__)
-        prefs = models.NotificationSettings.objects.filter(backend=backend_name)
+        prefs = core_models.NotificationSettings.objects.filter(backend=backend_name)
 
         if kind == event.KEG_TAPPED:
             prefs = prefs.filter(keg_tapped=True)

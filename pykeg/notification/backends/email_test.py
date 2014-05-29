@@ -22,11 +22,9 @@ from django.core import mail
 from django.test import TestCase
 from django.test.utils import override_settings
 from pykeg.backend import get_kegbot_backend
-from pykeg.core import models as core_models
+from pykeg.core import models
 from pykeg.core import defaults
 from pykeg.core import kb_common
-
-from pykeg.notification import models
 
 
 @override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
@@ -37,7 +35,7 @@ class EmailNotificationBackendTestCase(TestCase):
         self.backend = get_kegbot_backend()
         defaults.set_defaults(set_is_setup=True, create_controller=True)
 
-        self.user = core_models.User.objects.create(username='notification_user',
+        self.user = models.User.objects.create(username='notification_user',
             email='test@example')
 
         self.prefs = models.NotificationSettings.objects.create(user=self.user,

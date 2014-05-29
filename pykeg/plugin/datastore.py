@@ -19,7 +19,7 @@
 """Data storage interface and implementations for plugins."""
 
 from kegbot.util.util import AttrDict
-from pykeg.plugin import models
+from pykeg.core import models
 
 
 class PluginDatastore(object):

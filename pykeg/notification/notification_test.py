@@ -22,11 +22,10 @@ from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.test.utils import override_settings
 from pykeg.backend import get_kegbot_backend
-from pykeg.core import models as core_models
+from pykeg.core import models
 from pykeg.core import defaults
 
 from pykeg import notification
-from pykeg.notification import models
 from pykeg.notification.backends.base import BaseNotificationBackend
 
 
@@ -63,7 +62,7 @@ class NotificationTestCase(TestCase):
         self.backend = get_kegbot_backend()
         defaults.set_defaults(set_is_setup=True)
 
-        self.user = core_models.User.objects.create(username='notification_user',
+        self.user = models.User.objects.create(username='notification_user',
             email='test@example')
 
     @override_settings(NOTIFICATION_BACKENDS=['pykeg.notification.notification_test.CaptureBackend'])
@@ -75,7 +74,7 @@ class NotificationTestCase(TestCase):
             def notify(self, event, user):
                 self.captured.append((event, user))
 
-        SystemEvent = core_models.SystemEvent
+        SystemEvent = models.SystemEvent
 
         backends = [CaptureBackend()]
         captured = CaptureBackend.captured

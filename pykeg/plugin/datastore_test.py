@@ -19,7 +19,7 @@
 from django.test import TransactionTestCase
 
 from pykeg.plugin import datastore
-from pykeg.plugin import models
+from pykeg.core import models
 
 
 class DatastoreTestCase(TransactionTestCase):

@@ -219,9 +219,6 @@ class KegbotSite(models.Model):
     registration_id = models.TextField(max_length=128, editable=False,
         blank=True, default='',
         help_text='A unique id for this system.')
-    last_checkin_time = models.DateTimeField(blank=True, null=True)
-    last_checkin_response = JSONField(blank=True, null=True,
-        dump_kwargs={'cls': kbjson.JSONEncoder})
 
     volume_display_units = models.CharField(max_length=64,
         choices=VOLUME_DISPLAY_UNITS_CHOICES, default='imperial',

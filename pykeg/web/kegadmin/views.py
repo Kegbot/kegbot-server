@@ -46,12 +46,12 @@ from kegbot.util import kbjson
 from pykeg.web.api import devicelink
 from pykeg.celery import app as celery_app
 from pykeg.core import backup
+from pykeg.core import checkin
 from pykeg.core import models
 from pykeg.logging.handlers import RedisListHandler
 from pykeg.util.email import build_message
 
 from pykeg.web.kegadmin import forms
-from pykeg.web.tasks import core_checkin
 
 import logging
 logger = logging.getLogger(__name__)
@@ -60,21 +60,10 @@ logger = logging.getLogger(__name__)
 @staff_member_required
 def dashboard(request):
     context = RequestContext(request)
-    recent_time = timezone.now() - datetime.timedelta(days=30)
-    active_users = models.User.objects.filter(is_active=True).exclude(username='guest')
-    new_users = models.User.objects.filter(date_joined__gte=recent_time).exclude(username='guest')
 
     # Hack: Schedule an update checkin if it looks like it's been a while.
     # This works around sites that are not running celerybeat.
-    kbsite = request.kbsite
-    if kbsite.check_for_updates and not settings.EMBEDDED:
-        now = timezone.now()
-        last_checkin_time = request.kbsite.last_checkin_time
-        if not last_checkin_time or (now - last_checkin_time) > datetime.timedelta(hours=12):
-            try:
-                core_checkin.delay()
-            except redis.RedisError:
-                pass
+    checkin.schedule_checkin()
 
     email_backend = getattr(settings, 'EMAIL_BACKEND', None)
     email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
@@ -89,10 +78,17 @@ def dashboard(request):
         except redis.RedisError as e:
             context['redis_error'] = e.message if e.message else "Unknown error."
 
-    context['last_checkin_time'] = request.kbsite.last_checkin_time
-    context['checkin'] = models.KegbotSite.get().last_checkin_response
+    checkin_info = checkin.get_last_checkin()
+    context['last_checkin_time'] = checkin_info[0]
+    context['checkin'] = checkin_info[1]
+
+    active_users = models.User.objects.filter(is_active=True).exclude(username='guest')
     context['num_users'] = len(active_users)
+
+    recent_time = timezone.now() - datetime.timedelta(days=30)
+    new_users = models.User.objects.filter(date_joined__gte=recent_time).exclude(username='guest')
     context['num_new_users'] = len(new_users)
+
     return render_to_response('kegadmin/dashboard.html', context_instance=context)
 
 

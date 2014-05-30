@@ -20,7 +20,6 @@
 
 from pykeg.plugin import util as plugin_util
 from pykeg import notification
-from pykeg.core import checkin
 from pykeg.core import stats
 from pykeg.core import backup
 from django.db import transaction
@@ -39,14 +38,6 @@ def schedule_tasks(events):
         except Exception:
             logger.exception('Error dispatching events to plugin {}'.format(plugin.get_name()))
     notification.handle_new_system_events(events)
-
-
-@app.task(name='core_checkin', bind=True, default_retry_delay=60 * 60 * 1, max_retries=3)
-def core_checkin(self):
-    try:
-        checkin.checkin()
-    except checkin.CheckinError as exc:
-        self.retry(exc=exc)
 
 
 @app.task(name='build_stats', queue='stats', expires=60 * 60)

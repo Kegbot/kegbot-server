@@ -5,6 +5,11 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.34 (2014-05-30)
+---------------------------
+* Internal schema changes.
+* Fixed an error on the backups page.
+
 Version 0.9.33 (2014-05-28)
 ---------------------------
 * Photos can be deleted (on the Drink page) by the owner or a staff member.

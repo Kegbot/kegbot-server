@@ -23,7 +23,6 @@ logger = logging.getLogger('notification')
 
 from django.conf import settings
 from django.utils.module_loading import import_by_path
-from pykeg.core import models as core_models
 
 __all__ = ['get_backends', 'handle_new_system_events']
 
@@ -52,6 +51,7 @@ def handle_new_system_events(events):
 
 
 def handle_single_event(event, backends):
+    from pykeg.core import models as core_models
     kind = event.kind
     logger.info('Processing event: %s' % event.kind)
 

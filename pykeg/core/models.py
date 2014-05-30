@@ -384,6 +384,11 @@ class BeverageProducer(models.Model):
     picture = models.ForeignKey('Picture', blank=True, null=True,
         on_delete=models.SET_NULL)
 
+    beverage_backend = models.CharField(max_length=255, blank=True, null=True,
+        help_text='Future use.')
+    beverage_backend_id = models.CharField(max_length=255, blank=True, null=True,
+        help_text='Future use.')
+
     class Meta:
         ordering = ('name',)
 

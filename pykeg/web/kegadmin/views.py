@@ -196,17 +196,18 @@ def export(request):
             else:
                 messages.warning(request, 'Unknown backup file.')
 
-    subdirs, files = storage.listdir(backup.BACKUPS_DIRNAME)
-    for filename in files:
-        if filename[-3:] == 'zip':
-            storage_filename = os.path.join(backup.BACKUPS_DIRNAME, filename)
-            with storage.open(storage_filename, mode='rb') as backup_file:
-                archive = zipfile.ZipFile(backup_file)
-                metadata = backup.read_metadata(archive)
-                metadata['size_bytes'] = storage.size(storage_filename)
-                metadata['url'] = storage.url(storage_filename)
-                metadata['backup_name'] = filename
-                backups.append(metadata)
+    if storage.exists(backup.BACKUPS_DIRNAME):
+        subdirs, files = storage.listdir(backup.BACKUPS_DIRNAME)
+        for filename in files:
+            if filename[-3:] == 'zip':
+                storage_filename = os.path.join(backup.BACKUPS_DIRNAME, filename)
+                with storage.open(storage_filename, mode='rb') as backup_file:
+                    archive = zipfile.ZipFile(backup_file)
+                    metadata = backup.read_metadata(archive)
+                    metadata['size_bytes'] = storage.size(storage_filename)
+                    metadata['url'] = storage.url(storage_filename)
+                    metadata['backup_name'] = filename
+                    backups.append(metadata)
 
     backups.sort(key=itemgetter(backup.META_CREATED_TIME), reverse=True)
     context['backups'] = backups

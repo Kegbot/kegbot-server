@@ -17,6 +17,8 @@ before_script:
   - mkdir -p ~/kegbot-data/static
   - mkdir -p ~/.kegbot/
   - cp deploy/travis/local_settings.py ~/.kegbot/
+  - pip freeze
+  - flake8 --version
 
 script:
   - kegbot test --traverse-namespace --first-package-wins --with-coverage --cover-package=pykeg

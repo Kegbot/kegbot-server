@@ -25,3 +25,13 @@ script:
 
 after_success:
   - coveralls
+
+deploy:
+  provider: pypi
+  user: mikey
+  password:
+    secure: amERhNGbfgTb/1vlWJ8SpDSTUlmx8GlysllFlqIT6H/X2+XiLFRjmH+T6UXWcHurGzwC71/QC0LGlSg69d4wGarXKnDowInjA9NR+s763gcbWIKixAWxiVrHl/LHTd3n+5ZCaYVDjHCX4RCRdunQ3DESELCkJ4U9RCVHtIGki8k=
+  on:
+    tags: true
+    repo: Kegbot/kegbot-server
+    branch: master

@@ -417,6 +417,7 @@ def UserToProto(user, full=False):
     ret.username = user.username
     ret.url = user.get_absolute_url()
     ret.is_active = user.is_active
+    ret.display_name = user.get_full_name()
     if full:
         ret.email = user.email
         ret.is_staff = user.is_staff

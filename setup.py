@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Kegbot Beer Kegerator Server package.
+"""Kegbot Server package.
 
 Kegbot is a hardware and software system to record and monitor access to a beer
 kegerator.  For more information and documentation, see http://kegbot.org/
@@ -8,7 +8,7 @@ kegerator.  For more information and documentation, see http://kegbot.org/
 
 from setuptools import setup, find_packages
 
-VERSION = '0.9.35'
+VERSION = '1.0.0a1'
 DOCLINES = __doc__.split('\n')
 
 SHORT_DESCRIPTION = DOCLINES[0]

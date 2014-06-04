@@ -276,9 +276,9 @@ class DrinkerNameNode(Node):
                 user = obj
         if user:
             if 'nolink' in self._extra_args:
-                return user.username
+                return user.get_full_name()
             else:
-                return '<a href="%s">%s</a>' % (reverse('kb-drinker', args=[user.username]), user.username)
+                return '<a href="%s">%s</a>' % (reverse('kb-drinker', args=[user.username]), user.get_full_name())
         return context['guest_info']['name']
 
 

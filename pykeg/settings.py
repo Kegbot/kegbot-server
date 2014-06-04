@@ -23,9 +23,7 @@ INSTALLED_APPS = (
     'pykeg.web.kegadmin',
     'pykeg.web.kegweb',
     'pykeg.web.setup_wizard',
-    'pykeg.notification',
     'pykeg.contrib.demomode',
-    'pykeg.plugin',
 
     'django.contrib.auth',
     'django.contrib.contenttypes',

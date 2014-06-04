@@ -31,12 +31,12 @@ from pykeg.core.management.commands import kb_regen_stats
 
 from pykeg.core import models
 from pykeg.core import checkin
+from django.utils import timezone
 
 
-# Versions earlier than this cannot be upgraded.  Currently
-# set to v0.9.24, first version that stored the installed version
-# in the databases.
-MINIMUM_INSTALLED_VERSION = StrictVersion('0.9.24')
+# Versions earlier than this cannot be upgraded.  0.9.35 is the last
+# version before migrations were rebased.
+MINIMUM_INSTALLED_VERSION = StrictVersion('0.9.35')
 
 
 def run(cmd, args=[]):
@@ -86,6 +86,7 @@ class Command(BaseCommand):
             sys.exit(1)
 
         print 'Upgrading from {} to {}'.format(installed_version, app_version)
+        self.do_version_upgrades(installed_version)
 
         run(syncdb.Command(), args=['--noinput', '-v', '0'])
         run(migrate.Command(), args=['-v', '0'])
@@ -108,3 +109,29 @@ class Command(BaseCommand):
 
         print ''
         print 'Upgrade complete!'
+
+    def do_version_upgrades(self, installed_version):
+        if installed_version.version < (1, 0, 0):
+            self.reset_migrations()
+
+    def reset_migrations(self):
+        """Rebase south migrations by deleting them and injecting fake 0001."""
+        from south import models
+        print ' ~ resetting migrations'
+
+        core_migrations = models.MigrationHistory.objects.filter(app_name='core').all()
+        core_migrations = core_migrations.order_by('-id')
+        last_migration = core_migrations[0]
+        if last_migration.migration != '0164_add_display_name':
+            print 'Error: Last migration unexpected: ' + last_migration.migration
+            sys.exit(1)
+        core_migrations.delete()
+        models.MigrationHistory.objects.create(app_name='core',
+            migration='0001_initial',
+            applied=timezone.now())
+
+        # Nuke obsolete migrations as well.
+        models.MigrationHistory.objects.filter(app_name='notification').all().delete()
+        models.MigrationHistory.objects.filter(app_name='plugin').all().delete()
+
+        print ' - migrations reset!'

@@ -5,9 +5,9 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Version 1.0.0a1 (2014-06-04)
----------------------------
-* Initial 1.0 release candidate.
+Current Version (in development)
+--------------------------------
+* Initial 1.0 release.
 * Database migrations have been reset; upgrade requires v0.9.35.
 
 Version 0.9.35 (2014-06-04)

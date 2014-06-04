@@ -859,7 +859,7 @@ def autocomplete_beverage(request):
 def autocomplete_user(request):
     search = request.GET.get('q')
     if search:
-        users = models.User.objects.filter(Q(username__icontains=search) | Q(email__icontains=search))
+        users = models.User.objects.filter(Q(username__icontains=search) | Q(email__icontains=search) | Q(display_name__icontains=search))
     else:
         users = models.User.objects.all()
     users = users[:10]  # autocomplete widget limited to 10
@@ -869,6 +869,7 @@ def autocomplete_user(request):
             'username': user.username,
             'id': user.id,
             'email': user.email,
+            'display_name': user.get_full_name(),
             'is_active': user.is_active,
         })
     return HttpResponse(kbjson.dumps(values, indent=None),

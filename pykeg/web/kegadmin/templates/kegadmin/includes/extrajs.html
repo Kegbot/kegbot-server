@@ -46,7 +46,7 @@
             user_mapped = {}
 
             $.each(data, function (i, item) {
-              var name = item.username + " (" + item.email + ")";
+              var name = item.display_name + " (" + item.email + ")";
               user_mapped[name] = item;
               user_labels.push(name);
             })

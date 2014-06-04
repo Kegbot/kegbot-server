@@ -87,6 +87,9 @@ class User(AbstractBaseUser):
         validators=[
             validators.RegexValidator(re.compile('^[\w.@+-]+$'), _('Enter a valid username.'), 'invalid')
     ])
+    display_name = models.CharField(default='', max_length=127,
+        help_text='Full name, will be shown in some places instead of username')
+
     email = models.EmailField(_('email address'), blank=True)
     is_staff = models.BooleanField(_('staff status'), default=False,
         help_text=_('Designates whether the user can log into this admin '
@@ -120,7 +123,7 @@ class User(AbstractBaseUser):
     ### Django-required methods.
 
     def get_full_name(self):
-        return self.username
+        return self.display_name
 
     def get_short_name(self):
         return self.username
@@ -152,6 +155,14 @@ class User(AbstractBaseUser):
         api_key, new = ApiKey.objects.get_or_create(user=self,
             defaults={'key': ApiKey.generate_key()})
         return api_key.key
+
+
+def _user_pre_save(sender, instance, **kwargs):
+    user = instance
+    if not user.display_name:
+        user.display_name = user.username
+
+pre_save.connect(_user_pre_save, sender=User)
 
 
 class Invitation(models.Model):

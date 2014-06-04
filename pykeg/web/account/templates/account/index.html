@@ -21,7 +21,7 @@
 </form>
 
 {% else %}
-<h2>Hello, {{user.username}}!</h2>
+<h2>Hello, {{user.get_full_name}}!</h2>
 {% endif %}
 
 {% endblock %}

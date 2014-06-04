@@ -337,16 +337,11 @@ class LocationSiteSettingsForm(forms.ModelForm):
 
 
 class AdvancedSiteSettingsForm(forms.ModelForm):
-    guest_image = forms.ImageField(required=False,
-        help_text='Custom image for the "guest" user.')
-
     class Meta:
         model = models.KegbotSite
         fields = (
             'session_timeout_minutes',
             'google_analytics_id',
-            'guest_name',
-            'default_user',
             'check_for_updates',
         )
 
@@ -355,9 +350,6 @@ class AdvancedSiteSettingsForm(forms.ModelForm):
     helper.layout = Layout(
         Field('session_timeout_minutes'),
         Field('google_analytics_id'),
-        Field('guest_name'),
-        Field('guest_image'),
-        Field('default_user'),
         Field('check_for_updates'),
         FormActions(
             Submit('submit', 'Save Settings', css_class='btn-primary'),

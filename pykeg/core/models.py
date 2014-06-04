@@ -245,16 +245,6 @@ class KegbotSite(models.Model):
     registration_mode = models.CharField(max_length=63, choices=REGISTRATION_MODE_CHOICES,
         default=DEFAULT_REGISTRATION_MODE,
         help_text='Who can join this Kegbot from the web site?')
-    guest_name = models.CharField(max_length=63, default='guest',
-        help_text='Name to be shown in various places for unauthenticated pours.')
-    guest_image = models.ForeignKey('Picture', blank=True, null=True,
-        related_name='guest_images',
-        on_delete=models.SET_NULL,
-        help_text='Profile picture to be shown for unauthenticated pours.')
-    default_user = models.ForeignKey(User, blank=True, null=True,
-        help_text='Default user to set as owner for unauthenticated drinks. '
-            'When set, the "guest" user will not be used. This is mostly '
-            'useful for closed, single-user systems.')
     timezone = models.CharField(max_length=255, choices=TIMEZONE_CHOICES,
         default='UTC',
         help_text='Time zone for this system.')

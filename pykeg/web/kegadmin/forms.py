@@ -438,12 +438,14 @@ class EditUserForm(forms.ModelForm):
         model = models.User
         fields = (
             'email',
+            'display_name'
         )
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
     helper.layout = Layout(
         Field('email', css_class='input-xlarge'),
+        Field('display_name', css_class='input-xlarge'),
         FormActions(
             Submit('submit', 'Save', css_class='btn-primary'),
         )

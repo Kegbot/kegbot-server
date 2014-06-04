@@ -47,23 +47,25 @@ def account_main(request):
 
 
 @login_required
-def edit_mugshot(request):
+def edit_profile(request):
     context = RequestContext(request)
-    context['mugshot_form'] = forms.MugshotForm()
-
     user = request.user
-    if request.method == 'POST':
-        form = forms.MugshotForm(request.POST, request.FILES)
-        context['mugshot_form'] = form
-        if form.is_valid():
-            pic = models.Picture.objects.create(user=user)
-            image = request.FILES['new_mugshot']
-            pic.image.save(image.name, image)
-            pic.save()
 
-            user.mugshot = pic
+    context['form'] = forms.ProfileForm(initial={'display_name': user.get_full_name()})
+
+    if request.method == 'POST':
+        form = forms.ProfileForm(request.POST, request.FILES)
+        context['form'] = form
+        if form.is_valid():
+            if 'new_mugshot' in request.FILES:
+                pic = models.Picture.objects.create(user=user)
+                image = request.FILES['new_mugshot']
+                pic.image.save(image.name, image)
+                pic.save()
+                user.mugshot = pic
+            user.display_name = form.cleaned_data['display_name']
             user.save()
-    return render_to_response('account/mugshot.html', context_instance=context)
+    return render_to_response('account/profile.html', context_instance=context)
 
 
 @login_required

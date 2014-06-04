@@ -26,8 +26,9 @@ class InvitationForm(forms.Form):
         help_text='E-mail address to invite')
 
 
-class MugshotForm(forms.Form):
-    new_mugshot = forms.ImageField(required=True)
+class ProfileForm(forms.Form):
+    new_mugshot = forms.ImageField(required=False)
+    display_name = forms.CharField(required=True)
 
 
 class RegenerateApiKeyForm(forms.Form):

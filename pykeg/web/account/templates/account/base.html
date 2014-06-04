@@ -7,10 +7,10 @@
     <ul class="nav nav-list">
       <li class="nav-header">General</a>
       {% navitem "kb-account-main" "Account Main" exact %}
+      {% navitem "account-profile" "Profile" %}
       {% if not SSO_LOGIN_URL %}
         {% navitem "password_change" "Password" %}
       {% endif %}
-      {% navitem "account-mugshot" "Mugshot" %}
       {% navitem "account-notifications" "Notifications" %}
       {% if CAN_INVITE %}
         {% navitem "account-invite" "Invite a User" %}

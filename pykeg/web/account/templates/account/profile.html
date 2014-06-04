@@ -2,11 +2,11 @@
 {% load kegweblib %}
 {% load crispy_forms_tags %}
 
-{% block title %}Account: Mugshot | {{ block.super }}{% endblock %}
-{% block pagetitle %}Account: Mugshot{% endblock %}
+{% block title %}Account: Edit Profile | {{ block.super }}{% endblock %}
+{% block pagetitle %}Account: Edit Profile{% endblock %}
 
 {% block kb-account-main %}
-<h2>Change Mugshot</h2>
+<h2>Edit Profile</h2>
 <div class="well">
   <form enctype="multipart/form-data" method="post" action="">
     {% csrf_token %}
@@ -16,7 +16,7 @@
         {% mugshot_box user 100 %}
       </div>
     </div>
-    {{ mugshot_form|crispy }}
+    {{ form|crispy }}
     <div class="actions">
       <button type="submit" class="btn btn-primary">Save Changes</button>
     </div>

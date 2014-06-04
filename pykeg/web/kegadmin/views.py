@@ -532,7 +532,9 @@ def user_detail(request, user_id):
                 messages.success(request, 'User %s was enabled.' % edit_user.username)
 
         elif 'submit_disable' in request.POST:
-            if not edit_user.is_active:
+            if edit_user.is_guest():
+                messages.error(request, 'Cannot disable the guest user.')
+            elif not edit_user.is_active:
                 messages.error(request, 'User is already disabled.')
             else:
                 edit_user.is_active = False
@@ -548,7 +550,9 @@ def user_detail(request, user_id):
                 messages.success(request, 'User %s staff status enabled.' % edit_user.username)
 
         elif 'submit_remove_staff' in request.POST:
-            if not edit_user.is_staff:
+            if edit_user.is_guest():
+                messages.error(request, 'Cannot change staff status on the guest user.')
+            elif not edit_user.is_staff:
                 messages.error(request, 'User is not currently staff.')
             else:
                 edit_user.is_staff = False

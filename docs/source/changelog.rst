@@ -5,6 +5,13 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 0.9.35 (2014-06-04)
+---------------------------
+* Security: Update to Django 1.6.5.
+* Dropped support for default user.
+* Users can set a display name separate from their username.
+* Guest display name can be altered on user detail page.
+
 Version 0.9.34 (2014-05-30)
 ---------------------------
 * Internal schema changes.

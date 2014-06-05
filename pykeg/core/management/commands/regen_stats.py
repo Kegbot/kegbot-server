@@ -33,6 +33,7 @@ class Command(NoArgsCommand):
 
         num_drinks = models.Drink.objects.all().count()
         self.pos = 0
+
         def cb(results, self=self):
             self.pos += 1
             progbar('regenerating stats', self.pos, num_drinks)

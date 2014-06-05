@@ -33,6 +33,8 @@ def progbar(title, pos, total, width=40):
       total: total positions (integer)
       width: width of the progres bar, in characters
     """
+    if not sys.stdout.isatty():
+        return
     if not total:
         chars = width
     else:

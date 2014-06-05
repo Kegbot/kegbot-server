@@ -121,7 +121,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'pykeg.web.middleware.CurrentRequestMiddleware',
+    # CurrentRequest and KegbotSite middlewares added first
 
     'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.gzip.GZipMiddleware',
@@ -131,7 +131,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
 
-    'pykeg.web.middleware.KegbotSiteMiddleware',
     'pykeg.contrib.demomode.middleware.DemoModeMiddleware',
     'pykeg.web.api.middleware.ApiRequestMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',
@@ -432,5 +431,12 @@ if DEBUG and HAVE_DEBUG_TOOLBAR and KEGBOT_STATSD_TO_TOOLBAR:
         'django_statsd.panel.StatsdPanel',
     ) + DEBUG_TOOLBAR_PANELS
     STATSD_CLIENT = 'django_statsd.clients.toolbar'
+
+### First/last middlewares.
+
+MIDDLEWARE_CLASSES = (
+    'pykeg.web.middleware.CurrentRequestMiddleware',
+    'pykeg.web.middleware.KegbotSiteMiddleware',
+) + MIDDLEWARE_CLASSES
 
 MIDDLEWARE_CLASSES += ('pykeg.web.api.middleware.ApiResponseMiddleware',)

@@ -27,7 +27,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.staticfiles.management.commands import collectstatic
 from south.management.commands import migrate
 from south.management.commands import syncdb
-from pykeg.core.management.commands import kb_regen_stats
+from pykeg.core.management.commands import regen_stats
 
 from pykeg.core import models
 from pykeg.core import checkin
@@ -54,7 +54,7 @@ class Command(BaseCommand):
         make_option('--skip_static', action='store_true', dest='skip_static', default=False,
             help='Skip `kegbot collectstatic` during upgrade. (Not recommended.)'),
         make_option('--skip_stats', action='store_true', dest='skip_stats', default=False,
-            help='Skip `kegbot kb_regen_stats` during upgrade. (Not recommended.)'),
+            help='Skip `kegbot regen_stats` during upgrade. (Not recommended.)'),
     )
 
     def handle(self, *args, **options):
@@ -92,7 +92,7 @@ class Command(BaseCommand):
         run(migrate.Command(), args=['-v', '0'])
 
         if not options.get('skip_stats'):
-            run(kb_regen_stats.Command())
+            run(regen_stats.Command())
 
         if not options.get('skip_static'):
             run(collectstatic.Command(), args=['--noinput'])

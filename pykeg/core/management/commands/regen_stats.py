@@ -30,15 +30,15 @@ class Command(NoArgsCommand):
 
     @transaction.atomic
     def handle(self, **options):
-        stats.invalidate_all()
 
-        drinks = models.Drink.objects.all().order_by('id')
-        num_drinks = len(drinks)
-        pos = 0
-        for d in drinks:
-            pos += 1
-            progbar('regenerating stats', pos, num_drinks)
-            stats.generate(d, invalidate_first=False)
+        num_drinks = models.Drink.objects.all().count()
+        self.pos = 0
+        def cb(results, self=self):
+            self.pos += 1
+            progbar('regenerating stats', self.pos, num_drinks)
+
+        stats.invalidate_all()
+        stats.rebuild_from_id(0, cb=cb)
 
         print ''
         print 'done!'

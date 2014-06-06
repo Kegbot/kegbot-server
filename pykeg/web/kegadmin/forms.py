@@ -529,7 +529,7 @@ class CancelDrinkForm(forms.Form):
 
 
 class ReassignDrinkForm(forms.Form):
-    username = forms.CharField(required=False)
+    username = forms.CharField(required=True)
 
 
 class ChangeDrinkVolumeForm(forms.Form):

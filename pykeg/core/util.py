@@ -52,6 +52,15 @@ def get_version_object():
     return StrictVersion(get_version())
 
 
+def must_upgrade(installed_version, new_version):
+    # Compare major and minor (only).
+    return installed_version.version[:2] < new_version.version[:2]
+
+
+def should_upgrade(installed_verison, new_version):
+    return installed_verison < new_version
+
+
 def get_user_agent():
     return 'KegbotServer/%s' % get_version()
 

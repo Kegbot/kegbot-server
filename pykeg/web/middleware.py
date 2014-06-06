@@ -20,6 +20,7 @@ from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.core.util import get_version_object
 from pykeg.core.util import set_current_request
+from pykeg.core.util import must_upgrade
 from pykeg.web.api.util import is_api_request
 
 from pykeg.plugin import util as plugin_util
@@ -83,7 +84,7 @@ class KegbotSiteMiddleware:
             request.need_setup = True
         else:
             request.installed_version_string = str(installed_version)
-            request.need_upgrade = installed_version < get_version_object()
+            request.need_upgrade = must_upgrade(installed_version, get_version_object())
 
         if not request.need_setup and not request.need_upgrade:
             request.kbsite = models.KegbotSite.objects.get(name='default')

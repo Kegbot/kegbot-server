@@ -309,8 +309,8 @@ class TwitterPlugin(plugin.Plugin):
     def get_vars(self, event):
         kbsite = KegbotSite.get()
 
-        username = kbsite.guest_name
-        if event.user and not event.user.is_guest():
+        username = ''
+        if event.user:
             username = event.user.username
 
         url = ''

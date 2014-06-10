@@ -50,21 +50,18 @@ def admin_settings(request, plugin):
         if 'submit-settings' in request.POST:
             settings_form = forms.SiteSettingsForm(request.POST)
             if settings_form.is_valid():
-                client_id = settings_form.cleaned_data['client_id']
-                client_secret = settings_form.cleaned_data['client_secret']
-                venue_id = settings_form.cleaned_data['venue_id']
-                client = foursquare.Foursquare(client_id=client_id, client_secret=client_secret)
+                plugin.save_site_settings_form(settings_form)
+
+                venue_id = settings_form.cleaned_data.get('venue_id')
                 venue = None
-                try:
-                    # Search for the venue. Simultaneous validates all three credentials.
-                    if venue_id:
+                if venue_id:
+                    client = plugin.get_foursquare_client()
+                    try:
                         venue = client.venues(venue_id)
-                except foursquare.FoursquareException, e:
-                    messages.error(request, 'Error testing Foursquare connection: %s' % str(e))
-                else:
-                    plugin.save_site_settings_form(settings_form)
-                    plugin.save_venue_detail(venue)
-                    messages.success(request, 'Settings updated')
+                    except foursquare.FoursquareException, e:
+                        messages.error(request, 'Error fetching venue information: %s' % str(e))
+                plugin.save_venue_detail(venue)
+                messages.success(request, 'Settings updated.')
 
         if 'test-api' in request.POST:
             plugin = request.plugins['foursquare']

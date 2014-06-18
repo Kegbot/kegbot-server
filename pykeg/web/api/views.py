@@ -380,6 +380,7 @@ def get_system_stats(request):
 
 
 @require_http_methods(['GET', 'POST'])
+@csrf_exempt
 def all_taps(request):
     if request.method == 'POST':
         util.check_api_key(request)

@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, Field
@@ -433,23 +434,25 @@ class UserForm(forms.ModelForm):
     )
 
 
-class EditUserForm(forms.ModelForm):
+class UserProfileForm(forms.ModelForm):
     class Meta:
         model = models.User
-        fields = (
-            'email',
-            'display_name'
-        )
+        fields = ('display_name',)
+        if settings.EMBEDDED:
+            fields = ('email', ) + fields
 
-    helper = FormHelper()
-    helper.form_class = 'form-horizontal'
-    helper.layout = Layout(
-        Field('email', css_class='input-xlarge'),
-        Field('display_name', css_class='input-xlarge'),
-        FormActions(
-            Submit('submit', 'Save', css_class='btn-primary'),
-        )
-    )
+    new_mugshot = forms.ImageField(required=False)
+
+    def save(self, *args, **kwargs):
+        user = super(UserProfileForm, self).save(*args, **kwargs)
+        image = self.cleaned_data.get('new_mugshot')
+        if image:
+            pic = models.Picture.objects.create(user=user)
+            pic.image.save(image.name, image)
+            pic.save()
+            user.mugshot = pic
+            user.save()
+        return user
 
 
 class TokenForm(forms.ModelForm):

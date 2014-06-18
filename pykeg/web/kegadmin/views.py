@@ -520,7 +520,7 @@ def add_user(request):
 def user_detail(request, user_id):
     edit_user = get_object_or_404(models.User, id=user_id)
     context = RequestContext(request)
-    update_email_form = forms.EditUserForm(instance=edit_user)
+    profile_form = forms.UserProfileForm(instance=edit_user)
 
     if request.method == 'POST':
         if 'submit_enable' in request.POST:
@@ -559,14 +559,16 @@ def user_detail(request, user_id):
                 edit_user.save()
                 messages.success(request, 'User %s staff status disabled.' % edit_user.username)
 
-        else:
-            if not settings.EMBEDDED:
-                update_email_form = forms.EditUserForm(request.POST, instance=edit_user)
-                if update_email_form.is_valid():
-                    update_email_form.save()
-                    messages.success(request, 'User %s e-mail changed successfully' % edit_user.username)
+        elif 'submit_update_profile' in request.POST:
+            profile_form = forms.UserProfileForm(request.POST, request.FILES, instance=edit_user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'User %s e-profile updated' % edit_user.username)
 
-    context['update_email_form'] = update_email_form
+        else:
+            messages.error(request, 'Unknown form submitted.')
+
+    context['profile_form'] = profile_form
     context['edit_user'] = edit_user
     context['tokens'] = edit_user.tokens.all().order_by('created_time')
 

@@ -19,11 +19,9 @@
         {% if tokens %}
         <li><a href="#2" data-toggle="tab">Tokens</a></li>
         {% endif %}
-        {% if user.is_staff %}
         <li><a href="#3" data-toggle="tab">Access Control</a></li>
-        {% endif %}
         {% if user.is_superuser and not EMBEDDED %}
-        <li><a href="#4" data-toggle="tab">Update E-Mail</a></li>
+        <li><a href="#4" data-toggle="tab">Update Profile</a></li>
         {% endif %}
     </ul>
 
@@ -92,7 +90,6 @@
         </div>
         {% endif %}
 
-        {% if user.is_staff %}
         <div class="tab-pane" id="3">
             <form action="" method="POST">{% csrf_token %}
 
@@ -128,11 +125,14 @@
             </form>
             {% endif %}
         </div>
-        {% endif %}
 
-        {% if user.is_superuser and not EMBEDDED %}
+        {% if user.is_superuser %}
         <div class="tab-pane" id="4">
-            {% crispy update_email_form %}
+            <form enctype="multipart/form-data" action="" method="POST">{% csrf_token %}
+            {{ profile_form.as_table }}
+                <input type="submit" name="submit_update_profile"
+                    class="btn btn-large btn-block btn-success" value="Update Profile"/>
+            </form>
         </div>
         {% endif %}
     </div>

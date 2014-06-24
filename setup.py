@@ -2,13 +2,13 @@
 
 """Kegbot Server package.
 
-Kegbot is a hardware and software system to record and monitor access to a beer
+Kegbot is a hardware and software system to record and monitor access to a
 kegerator.  For more information and documentation, see http://kegbot.org/
 """
 
 from setuptools import setup, find_packages
 
-VERSION = '1.0.0a6'
+VERSION = '1.0.0'
 DOCLINES = __doc__.split('\n')
 
 SHORT_DESCRIPTION = DOCLINES[0]
@@ -50,7 +50,7 @@ def setup_package():
       long_description = LONG_DESCRIPTION,
       author = 'Bevbot LLC',
       author_email = 'info@bevbot.com',
-      url = 'http://kegbot.org/',
+      url = 'https://kegbot.org/',
       packages = find_packages(),
       scripts = [
         'bin/kegbot',

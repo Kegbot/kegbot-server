@@ -41,7 +41,7 @@ INSTALLED_APPS = (
 
 LOGIN_REDIRECT_URL = "/account/"
 
-KEGBOT_ADMIN_LOGIN_URL = 'admin:login'
+KEGBOT_ADMIN_LOGIN_URL = 'auth_login'
 
 AUTH_USER_MODEL = 'core.User'
 

@@ -189,8 +189,15 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals(data.error.code, 'NoAuthTokenError')
 
         response, data = self.post('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
-            data={'ticks': 1000})
+            data={'ticks': 1000, 'username': self.normal_user.username})
         self.assertEquals(data.meta.result, 'ok')
+
+        response, data = self.get('status', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
+        users = data.object.get('active_users', [])
+        self.assertEquals(1, len(users))
+        active_user = users[0]
+        self.assertEquals(self.normal_user.username, active_user.username)
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
     @override_settings(EMAIL_FROM_ADDRESS='test-from@example')

@@ -264,7 +264,7 @@ def get_status(request):
 
     current_users = set()
     if session:
-        for stat in models.Stats.objects.filter(session=session):
+        for stat in models.Stats.objects.filter(session=session, user__isnull=False):
             user = stat.user
             if not user.is_guest():
                 current_users.add(user)

@@ -82,6 +82,12 @@ includes the following fields:
 The system event JSON structure will be identical to those events
 seen at the ``/api/events/`` endpoint.
 
+Yo
+^^
+
+This plugin sends a yo message every time a drink event occurs.
+You can get an api_token here: http://yoapi.justyo.co/
+You can learn more about the api here: https://medium.com/@YoAppStatus/yo-developers-api-e7f2f0ec5c3c
 
 Developer Extras
 ----------------

@@ -5,8 +5,8 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 1.0.1 (2014-07-21)
+--------------------------
 * Bugfix: Issue #302 (api ``status/`` endpoint).
 
 Version 1.0.0 (2014-06-24)

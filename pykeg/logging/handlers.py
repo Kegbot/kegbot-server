@@ -59,8 +59,8 @@ class RedisHandler(logging.Handler):
     """
 
     @classmethod
-    def to(cklass, channel, host='localhost', port=6379, password=None, level=logging.NOTSET):
-        return cklass(channel, redis.Redis(host=host, port=port, password=password), level=level)
+    def to(cklass, channel, url='redis://localhost:6379', level=logging.NOTSET):
+        return cklass(channel, redis.from_url(url), level=level)
 
     def __init__(self, channel, redis_client, level=logging.NOTSET):
         """
@@ -92,11 +92,11 @@ class RedisListHandler(logging.Handler):
     """
 
     @classmethod
-    def to(cklass, key, max_messages=None, host='localhost', port=6379, level=logging.NOTSET):
-        return cklass(key, max_messages, redis.Redis(host=host, port=port), level=level)
+    def to(cklass, key, max_messages=None, url='redis://localhost:6379', level=logging.NOTSET):
+        return cklass(key, max_messages, redis.from_url(url), level=level)
 
     def __init__(self, key, max_messages, redis_client=None,
-            redis_host='localhost', redis_port=6379, redis_db=0,
+            url='redis://localhost:6379', redis_db=0,
             level=logging.NOTSET):
         """
         Create a new logger for the given key and redis_client.
@@ -106,7 +106,7 @@ class RedisListHandler(logging.Handler):
         if redis_client:
             self.redis_client = redis_client
         else:
-            self.redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db)
+            self.redis_client = redis.from_url(url, redis_db)
         self.formatter = RedisFormatter()
         self.max_messages = max_messages
 

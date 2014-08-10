@@ -57,3 +57,10 @@ may be listed in ``local_settings.py``.
 
         KEGBOT_ENABLE_ADMIN = True
 
+.. data:: LOGGING['handlers']['redis']['url']
+    :noindex:
+
+    When specified, this setting gives the URL of a redis instance to
+    use for temporary log data.  The URL is parsed by `redis.from_url`.
+
+    Default is ``redis://localhost:6379``.

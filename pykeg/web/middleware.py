@@ -38,9 +38,8 @@ logger = logging.getLogger(__name__)
 
 # Requests are always allowed for these path prefixes.
 PRIVACY_EXEMPT_PATHS = (
-    '/account/activate/',
-    '/accounts/register',
-    '/accounts/login/',
+    '/account/activate',
+    '/accounts/',
     '/admin/',
     '/media/',
     '/setup/',

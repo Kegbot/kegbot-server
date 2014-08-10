@@ -122,6 +122,19 @@ class KegwebTestCase(TransactionTestCase):
         self.client.logout()
         test_urls(expect_fail=True)
 
+    def test_whitelisted_urls(self):
+        """Verify always-accessible URLs."""
+        urls = (
+            '/accounts/password/reset/',
+            '/accounts/register/',
+            '/accounts/login/',
+        )
+
+        for url in urls:
+            response = self.client.get(url)
+            self.assertNotContains(response, 'denied', status_code=200,
+                    msg_prefix=url)
+
     def test_activation(self):
         b = get_kegbot_backend()
         kbsite = models.KegbotSite.get()

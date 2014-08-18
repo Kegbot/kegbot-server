@@ -42,7 +42,7 @@ urlpatterns = patterns('',
     (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 
     ### Shortcuts
-    (r'link/?$', RedirectView.as_view(pattern_name='kegadmin-link-device'))
+    (r'^link/?$', RedirectView.as_view(pattern_name='kegadmin-link-device'))
 )
 
 if 'pykeg.web.setup_wizard' in settings.INSTALLED_APPS:

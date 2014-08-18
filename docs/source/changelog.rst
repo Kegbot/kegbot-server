@@ -9,6 +9,7 @@ Current Version (in development)
 --------------------------------
 * Bugfix: Issue #309 (cannot reset password on private sites).
 * Redis logging backend is configurable; see :ref:`settings` (thanks Jared).
+* Bugfix: Issue #313 (``link/`` matching on usernames).
 
 Version 1.0.1 (2014-07-21)
 --------------------------

@@ -7,6 +7,7 @@ Changelog
 
 Current Version (in development)
 --------------------------------
+* Fullscreen mode is now exposed on the home page.
 * New beverage fields: IBU, SRM, star rating, and color.
 
 Version 1.0.2 (2014-08-21)

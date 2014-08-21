@@ -4,94 +4,16 @@
 {% block title %}{{ kbsite.title }} (Fullscreen Mode){% endblock %}
 
 {% block kb-extracss %}
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/slick/slick.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/bootstrap-cyborg.css" media="screen" />
+
 <style>
-.bodyfaux {
-	height: 100%;
-	min-height: 100%;
-	width:100%;
-	padding:0;
-	margin:0;
-	overflow:hidden;
-	}
 
-.fullscreen-wrapper {
-    display:block;
-    position:relative;
-    min-width:100%;
-    height:100%;
-    min-height:100%;
-}
-.fullscreen-img {
-    display:block;
-    position:absolute;
-    z-index:1;
-    min-width:100%;
-    min-height:100%;
-    background:transparent url('{{ STATIC_URL }}images/chalkboard-bg.jpg') center center no-repeat;
-    background-size:cover;
-}
-.fullscreen-content {
-	display:block;
-	position:relative;
-	z-index:2;
-    height:100%;
-    width:100%;
-}
-
-.taplist-header {
-	padding-top:15px;
-	height:15%;
-	min-height:15%;
-	max-height:15%;
-	width:100%;
-}
-
-img.taplist-logo {
-	display:block;
-	margin-left:auto;
-	margin-right:auto;
-}
-
-.taplist-body {
-	height:68%;
-	min-height:68%;
-	max-height:68%;
-	width:100%;
-}
-
-.cycle-slideshow {
-	width:100%;
-	height:100%;
-}
-
-.cycle-slideshow .cycle-wrap {
-	width:85%;
-	margin: 0 auto;
-	height:100%;
-}
-
-.cycle-slideshow .cycle-keg-image {
-	float:left;
-	padding-right:30px;
-	height:100%;
-}
-
-.cycle-slideshow .cycle-keg-details {
-	margin-left:100px;
-	margin-top:10px;
-	background-color: rgba(0, 0, 0, 0.5);
-	-webkit-border-radius: 20px;
-	-moz-border-radius: 20px;
-	border-radius: 20px;
-		color:#ffffff;
-		padding-top:10px;
-		padding-bottom:10px;
-}
-
-img.fullscreen-keg {
-	height:100%;
-	min-height:100%;
-	max-height:100%;
+body {
+	background-color: #000;
+	background-image: url('{{ STATIC_URL }}images/chalkboard-bg.jpg') center center no-repeat;
+  background-size: cover;
+  color: #eee;
 }
 
 .establishment-logo {
@@ -124,119 +46,88 @@ img.taplist-foot-logos {
 	min-height:100%;
 	max-height:100%;
 }
+
+
 </style>
 {% endblock %}
 
+{% block body %}
 
-{% block kb-extrajs %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cycle2.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cycle2.center.min.js"></script>
+<div class="main">
+<div class="wrapper">
 
-<script type="text/javascript">
-	$(document).ready(function() {
+  <div class="container">
 
-			//This currently does nothing as endpoint URL can't run this without user interaction
-			launchFullscreen(document.documentElement);
-			//
-		$('html,body').addClass('bodyfaux');
-		var root = location.protocol + '//' + location.host;
-		
-		$('.taplist-foot-logos').click(function() {
-			$('html,body').removeClass('bodyfaux');
-			window.location=root;
-			exitFullscreen();
-		});
-		$(document).keyup(function(e) {
-  			if (e.keyCode == 27) { // (Escape Key)
-  				$('html,body').removeClass('bodyfaux');
-				window.location=root;
-				exitFullscreen();
-  			}
-		});
+    <div class="row-fluid">
+    <div class="span12">
+    	<center>
+    		<img src="{{ STATIC_URL }}images/whats-on-tap.png">
+      </center>
+    </div>
+    </div>
 
-		function launchFullscreen(element) {
-		  if(element.requestFullscreen) {
-			element.requestFullscreen();
-		  } else if(element.mozRequestFullScreen) {
-			element.mozRequestFullScreen();
-		  } else if(element.webkitRequestFullscreen) {
-			element.webkitRequestFullscreen();
-		  } else if(element.msRequestFullscreen) {
-			element.msRequestFullscreen();
-		  }
-		}
+    <div class="tap-carousel">
+      {% for page in pages %}
+        <div class="row-fluid">
+          <table class="table table-striped table-hover">
+          {% for tap in page %}
+            {% with tap.current_keg as keg %}
+            {% with keg.type as beverage %}
+            <tr>
 
-		function exitFullscreen() {
-		  if(document.exitFullscreen) {
-			document.exitFullscreen();
-		  } else if(document.mozCancelFullScreen) {
-			document.mozCancelFullScreen();
-		  } else if(document.webkitExitFullscreen) {
-			document.webkitExitFullscreen();
-		  }
-		}
+            <td>
+              <center>
+              {% if keg.type.picture %}
+                <img class="tap-snapshot-image" src="{{ keg.type.picture.resized.url }}">
+              {% else %}
+                <img class="tap-snapshot-image" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
+              {% endif %}
+              <span class="label label-info">{% volume keg.remaining_volume_ml %} remaining</span>
+              </center>
+            </td>
 
-		function dumpFullscreen() {
-		  console.log("document.fullscreenElement is: ", document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-		  console.log("document.fullscreenEnabled is: ", document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled);
-		}
+            <td>
+              <h2>
+                {{ beverage.name }} <small>by {{ beverage.producer }}</small>
+              </h2>
+              {% if beverage.description %}
+                <p>
+                  <em>{{ beverage.description }}</em>
+                </p>
+              {% endif %}
+            </td>
 
-		document.addEventListener("fullscreenchange", function(e) {
-		  console.log("fullscreenchange event! ", e);
-		});
-		document.addEventListener("mozfullscreenchange", function(e) {
-		  console.log("mozfullscreenchange event! ", e);
-		});
-		document.addEventListener("webkitfullscreenchange", function(e) {
-		  console.log("webkitfullscreenchange event! ", e);
-		});
-		document.addEventListener("msfullscreenchange", function(e) {
-		  console.log("msfullscreenchange event! ", e);
-		});
-	});
-</script>
+            {% endwith %}
+            {% endwith %}
+          </tr> <!-- /row -->
+        {% endfor %} <!-- /tap in row -->
+        </table>
+    
+      </div> <!-- /page -->
+
+    {% endfor %}
+
+    </div> <!-- /tap-carousel -->
+  </div> <!-- /container-fluid -->
+
+</div> <!-- /wrapper -->
+</div> <!-- /main -->
+
 {% endblock %}
 
-{% block body %}
-<div class="fullscreen-wrapper">
-	<div class="fullscreen-img"></div>
-	<div class="fullscreen-content">
-		<div class="taplist-header">
-			<img class="taplist-logo" src="{{ STATIC_URL }}images/whats-on-tap.png">
-		</div>
+{% block kb-extrajs %}
+<script type="text/javascript" src="{{ STATIC_URL }}lib/slick/slick.min.js"></script>
 
-		<div class="taplist-body">
-			<div class="cycle-slideshow composite-example" 
-			    data-cycle-fx="scrollHorz" 
-			    data-cycle-slides="> div"
-			    data-cycle-timeout="7500"
-			    data-cycle-center-horz="true"
-    			data-cycle-center-vert="true">
-    		{% for tap in taps %}
-    		{% with tap.current_keg as keg %}
-    		{% if keg %}
-    		<div class="cycle-wrap">
-    			<div class="cycle-keg-image">
-						{% if keg.type.picture %}
-				        <img class="fullscreen-keg" src="{{ keg.type.picture.resized_png.url }}">
-				    {% else %}
-				        <img class="fullscreen-keg" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
-				    {% endif %}
-					</div>
-					<div class="cycle-keg-details">
-						<h1>{{ keg.type.name }}: {{ tap.name }}</h1>
-						<h2>{{ tap.description }}</h2>
-					</div>
-					<div style="clear:both;"></div>
-				</div>
-				{% endif %}
-				{% endwith %}
-				{% endfor %}
-			</div>
-		</div>
-
-		<div class="establishment-logo">{% if kbsite.title %}{{ kbsite.title }}{% else %}Kegbot{% endif %}</div>
-		<div class="kegbot-logo pull-right"><img class="taplist-foot-logos pull-right" src="{{ STATIC_URL }}images/kegbot-logo-full-white.png"></div>
-	</div>
-</div>
+<script type="text/javascript">
+  $(document).ready(function(){
+      $('.tap-carousel').slick({
+          autoplay: true,
+          autoplaySpeed: 10000,
+          arrows: false,
+          dots: true,
+          infinite: true,
+          pauseOnHover: false,
+      });
+  });
+</script>
 {% endblock %}

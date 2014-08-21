@@ -744,6 +744,8 @@ def beverage_detail(request, beer_id):
 
             messages.success(request, 'Beer type updated.')
             return redirect('kegadmin-beverages')
+        else:
+            messages.error(request, 'Please correct the error(s) below.')
 
     context = RequestContext(request)
     context['beer_type'] = btype

@@ -36,6 +36,7 @@ from django.core import validators
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.core.mail import send_mail
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
@@ -46,6 +47,7 @@ from imagekit.processors import Adjust
 from imagekit.processors import resize
 
 from pykeg.backend import get_kegbot_backend
+from pykeg.core import colors
 from pykeg.core import kb_common
 from pykeg.core import keg_sizes
 from pykeg.core import fields
@@ -434,10 +436,27 @@ class Beverage(models.Model):
     carbs_per_ml = models.FloatField(blank=True, null=True,
         help_text='Carbohydrates per mL of beverage.')
 
+    color_hex = models.CharField(max_length=16, default=colors.DEFAULT_COLOR,
+        validators=[
+            RegexValidator(
+                regex='(^#[0-9a-zA-Z]{3}$)|(^#[0-9a-zA-Z]{6}$)',
+                message='Color must start with "#" and include 3 or 6 hex characters, like #123 or #123456.',
+                code='bad_color',
+            ),
+        ],
+
+        help_text='Approximate beverage color')
     original_gravity = models.FloatField(blank=True, null=True,
         help_text='Original gravity (beer only).')
     specific_gravity = models.FloatField(blank=True, null=True,
-        help_text='Specific/final gravity (beer only).')
+        help_text='Final gravity (beer only).')
+    srm = models.FloatField(blank=True, null=True,
+        help_text='Standard Reference Method value (beer only).')
+    ibu = models.FloatField(blank=True, null=True,
+        help_text='International Bittering Units value (beer only).')
+    star_rating = models.FloatField(blank=True, null=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
+        help_text='Star rating for beverage (0: worst, 5: best)')
     untappd_beer_id = models.IntegerField(blank=True, null=True,
         help_text='Untappd.com resource ID (beer only).')
 

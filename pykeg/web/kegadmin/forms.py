@@ -362,8 +362,8 @@ class BeverageForm(forms.ModelForm):
     class Meta:
         model = models.Beverage
         fields = ('name', 'style', 'producer', 'vintage_year', 'abv_percent',
-            'original_gravity', 'specific_gravity',
-            'untappd_beer_id', 'description')
+            'original_gravity', 'specific_gravity', 'ibu', 'srm', 'color_hex',
+            'star_rating', 'untappd_beer_id', 'description')
 
     new_image = forms.ImageField(required=False,
         help_text='Set/replace image for this beer type.')
@@ -378,6 +378,10 @@ class BeverageForm(forms.ModelForm):
         Field('abv_percent'),
         Field('original_gravity'),
         Field('specific_gravity'),
+        Field('ibu'),
+        Field('srm'),
+        Field('color_hex'),
+        Field('star_rating'),
         Field('untappd_beer_id'),
         Field('description'),
         Field('new_image'),

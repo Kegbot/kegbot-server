@@ -720,6 +720,24 @@ class Keg(models.Model):
     def get_stats(self):
         return Stats.get_latest_for_view(keg=self)
 
+    def get_illustration(self, thumbnail=False):
+        pct = self.percent_full()
+        if pct >= 98.0:
+            level = 5
+        elif pct >= 90.0:
+            level = 4
+        elif pct >= 45.0:
+            level = 3
+        elif pct >= 25.0:
+            level = 2
+        elif pct >= 10.0:
+            level = 1
+        else:
+            level = 0
+        kind = 'thumb' if thumbnail else 'full'
+        img_path = 'images/keg/{}/keg-srm14-{}.png'.format(kind, level)
+        return img_path
+
     def Sessions(self):
         sessions_ids = Drink.objects.filter(keg=self.id).values('session').annotate(models.Count('id'))
         pks = [x.get('session') for x in sessions_ids]

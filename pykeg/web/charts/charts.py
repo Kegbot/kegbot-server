@@ -89,18 +89,18 @@ def chart_temp_sensor(sensor, *args, **kwargs):
           },
         ],
         'tooltip': {
-            'enabled': False,
+            'enabled': True,
         },
         'xAxis': {
             'categories': ['Temperature'],
             'labels': {
                 'enabled': False,
             },
-            'tickInterval': 0,
+            'tickInterval': 60,
         },
         'yAxis': {
             'labels': {
-                'enabled': False,
+                'enabled': True,
             },
             'tickInterval': 1,
         },

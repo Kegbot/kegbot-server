@@ -119,6 +119,8 @@ img.taplist-foot-logos {
 <script type="text/javascript" src="{{ STATIC_URL }}lib/slick/slick.min.js"></script>
 
 <script type="text/javascript">
+
+  // Activate carousel.
   $(document).ready(function(){
       $('.tap-carousel').slick({
           autoplay: true,
@@ -129,5 +131,33 @@ img.taplist-foot-logos {
           pauseOnHover: false,
       });
   });
+
+  // Auto-reload when something happens.
+  var lastEvent = null;
+  var queryInterval = 10000;
+
+  function fetchEvents() {
+    $.getJSON('/api/v1/events/', function(events) {
+      if (events && events.objects && events.objects.length > 0) {
+        var latest = events.objects[0];
+        if (lastEvent == null || lastEvent.id != latest.id) {
+          console.log('Events updated, latest=' + latest.id);
+          var prevLast = lastEvent;
+          lastEvent = latest;
+          if (prevLast != null) {
+            location.reload(true);
+          }
+        }
+      } else {
+        console.log('No events.');
+      }
+    });
+    setTimeout(fetchEvents, queryInterval);
+  }
+
+  $(document).ready(function(){
+    fetchEvents();
+  });
+
 </script>
 {% endblock %}

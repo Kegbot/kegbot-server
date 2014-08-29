@@ -68,25 +68,30 @@ img.taplist-foot-logos {
 
     <div class="tap-carousel">
       {% for page in pages %}
-        <div class="row-fluid">
-          <table class="table table-striped table-hover">
+        <div>
+
           {% for tap in page %}
             {% with tap.current_keg as keg %}
             {% with keg.type as beverage %}
-            <tr>
 
-            <td>
+            <div class="row-fluid">
+    
+            <div class="span2">
+              <img src="{{ STATIC_URL }}{{ keg.get_illustration }}" style="padding-bottom: 20px;">
+            </div>
+
+            <div class="span2">
               <center>
               {% if keg.type.picture %}
-                <img class="tap-snapshot-image" src="{{ STATIC_URL }}{{ keg.get_illustration }}">
+                <img class="tap-snapshot-image" src="{{ keg.type.picture.resized.url }}">
               {% else %}
                 <img class="tap-snapshot-image" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
               {% endif %}
-              <span class="label label-info">{% volume keg.remaining_volume_ml %} remaining</span>
+                <span class="label label-info">{% volume keg.remaining_volume_ml %} remaining</span>
               </center>
-            </td>
+            </div>
 
-            <td>
+            <div class="span8">
               <h2>
                 {{ beverage.name }} <small>by {{ beverage.producer }}</small>
               </h2>
@@ -95,13 +100,12 @@ img.taplist-foot-logos {
                   <em>{{ beverage.description }}</em>
                 </p>
               {% endif %}
-            </td>
+            </div>
+            </div>
 
             {% endwith %}
             {% endwith %}
-          </tr> <!-- /row -->
         {% endfor %} <!-- /tap in row -->
-        </table>
     
       </div> <!-- /page -->
 

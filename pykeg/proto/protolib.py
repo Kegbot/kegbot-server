@@ -199,6 +199,14 @@ def BeverageToProto(beverage, full=False):
         ret.specific_gravity = beverage.specific_gravity
     if beverage.untappd_beer_id is not None:
         ret.untappd_id = str(beverage.untappd_beer_id)
+    if beverage.color_hex:
+        ret.color_hex = beverage.color_hex
+    if beverage.srm:
+        ret.srm = beverage.srm
+    if beverage.ibu:
+        ret.ibu = beverage.ibu
+    if beverage.star_rating is not None:
+        ret.star_rating = beverage.star_rating
 
     if beverage.beverage_backend is not None:
         ret.beverage_backend = beverage.beverage_backend
@@ -312,6 +320,9 @@ def KegToProto(keg, full=False):
         ret.description = keg.description
 
     ret.beverage.MergeFrom(ToProto(keg.type))
+
+    ret.illustration_url = keg.get_illustration(thumbnail=False)
+    ret.illustration_thumbnail_url = keg.get_illustration(thumbnail=True)
 
     # Deprecated fields.
     ret.size_id = 0

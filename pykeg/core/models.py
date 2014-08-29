@@ -29,6 +29,7 @@ import urlparse
 from uuid import uuid4
 from distutils.version import StrictVersion
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import UserManager
 from django.core.urlresolvers import reverse
@@ -736,7 +737,11 @@ class Keg(models.Model):
             level = 0
         kind = 'thumb' if thumbnail else 'full'
         img_path = 'images/keg/{}/keg-srm14-{}.png'.format(kind, level)
-        return img_path
+
+        url = urlparse.urljoin(settings.STATIC_URL, img_path)
+        if not urlparse.urlparse(url).scheme:
+            url = KegbotSite.get().full_url(url)
+        return url
 
     def Sessions(self):
         sessions_ids = Drink.objects.filter(keg=self.id).values('session').annotate(models.Count('id'))

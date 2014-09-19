@@ -5,10 +5,12 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
-* Fullscreen mode is now exposed on the home page.
-* New beverage fields: IBU, SRM, star rating, and color.
+Version 1.1.0 (2014-09-19)
+--------------------------
+* Fullscreen mode.
+* New keg artwork.
+* New internal beverage fields: IBU, SRM, star rating, and color.
+
 
 Version 1.0.2 (2014-08-21)
 --------------------------
@@ -16,9 +18,11 @@ Version 1.0.2 (2014-08-21)
 * Redis logging backend is configurable; see :ref:`settings` (thanks Jared).
 * Bugfix: Issue #313 (``link/`` matching on usernames).
 
+
 Version 1.0.1 (2014-07-21)
 --------------------------
 * Bugfix: Issue #302 (api ``status/`` endpoint).
+
 
 Version 1.0.0 (2014-06-24)
 --------------------------

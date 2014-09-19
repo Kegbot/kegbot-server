@@ -1,4 +1,4 @@
- .. _digitalocean-install:
+.. _digitalocean-install:
 
 HOWTO: Install Kegbot Server on Digital Ocean
 =============================================

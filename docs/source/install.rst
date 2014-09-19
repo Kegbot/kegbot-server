@@ -138,6 +138,7 @@ the *media* and *static files* directories.
   see `Django's documentation for managing static files
   <https://docs.djangoproject.com/en/dev/howto/static-files/>`_.
 
+.. _email-setup::
 
 Configure E-Mail
 ----------------

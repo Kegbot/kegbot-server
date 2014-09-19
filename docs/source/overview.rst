@@ -11,7 +11,11 @@ data.
 Quick Install
 -------------
 
-Ultra-quick install instructions for the experienced and impatient::
+**New:** The easiest way to get going is by following the
+:ref:`Digital Ocean Install Instructions <digitalocean-install>`.
+
+For those already familiar with Linux, these ultra-quick install instructions
+may suffice::
   
   $ virtualenv ~/kb                 # create a new home for kegbot
   $ . ~/kb/bin/activate             # step into it
@@ -20,6 +24,7 @@ Ultra-quick install instructions for the experienced and impatient::
   (kb) $ kegbot runserver           # run the dev web server
   Development server is running at http://127.0.0.1:8000/
 
+Read on for detailed, step-by-step instructions.
 
 Dependencies
 ------------

@@ -20,3 +20,4 @@ Contents:
    troubleshooting
    settings
    changelog
+   install-digital-ocean

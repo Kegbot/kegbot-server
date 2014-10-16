@@ -89,6 +89,10 @@ def dashboard(request):
     new_users = models.User.objects.filter(date_joined__gte=recent_time).exclude(username='guest')
     context['num_new_users'] = len(new_users)
 
+    if settings.DEBUG:
+        import local_settings
+        context['localsettings_path'] = local_settings.__file__.replace('.pyc', '.py')
+
     return render_to_response('kegadmin/dashboard.html', context_instance=context)
 
 

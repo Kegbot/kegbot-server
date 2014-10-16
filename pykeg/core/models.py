@@ -431,6 +431,7 @@ class Beverage(models.Model):
         help_text='Date of production, for wines or special/seasonal editions')
 
     abv_percent = models.FloatField(blank=True, null=True,
+        verbose_name='ABV Percentage',
         help_text='Alcohol by volume, as percentage (0.0-100.0).')
     calories_per_ml = models.FloatField(blank=True, null=True,
         help_text='Calories per mL of beverage.')
@@ -445,15 +446,17 @@ class Beverage(models.Model):
                 code='bad_color',
             ),
         ],
-
+        verbose_name='Color (Hex Value)',
         help_text='Approximate beverage color')
     original_gravity = models.FloatField(blank=True, null=True,
         help_text='Original gravity (beer only).')
     specific_gravity = models.FloatField(blank=True, null=True,
         help_text='Final gravity (beer only).')
     srm = models.FloatField(blank=True, null=True,
+        verbose_name='SRM Value',
         help_text='Standard Reference Method value (beer only).')
     ibu = models.FloatField(blank=True, null=True,
+        verbose_name='IBUs',
         help_text='International Bittering Units value (beer only).')
     star_rating = models.FloatField(blank=True, null=True,
         validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],

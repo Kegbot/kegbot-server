@@ -104,6 +104,7 @@ def general_settings(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Settings were updated.')
+            return redirect('kegadmin-main')
     context['settings_form'] = form
 
     return render_to_response('kegadmin/index.html', context_instance=context)
@@ -121,6 +122,7 @@ def location_settings(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Settings were updated.')
+            return redirect('kegadmin-location-settings')
     context['settings_form'] = form
 
     return render_to_response('kegadmin/index.html', context_instance=context)
@@ -145,6 +147,7 @@ def advanced_settings(request):
                 kbsite.guest_image = pic
                 kbsite.save()
             messages.success(request, 'Settings were updated.')
+            return redirect('kegadmin-advanced-settings')
     context['settings_form'] = form
 
     return render_to_response('kegadmin/index.html', context_instance=context)

@@ -1,0 +1,37 @@
+{% extends "setup_wizard/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="jumbotron">
+
+<h2>Sharing your Kegbot?</h2>
+<p class="lead">
+Should we enable user tracking, which allows you to link pours to individual
+user accounts?
+</p>
+
+<div class="row-fluid">
+  <div class="span8 offset2">
+    <form action="" method="POST">{% csrf_token %}
+
+      <p>
+        <input type="submit" name="enable_users" value="Enable User Tracking »"
+            class="btn btn-primary btn-success btn-block" id="submit-id-enable_users">
+        <span class="muted">Classic mode: Enable tracking.</span>
+      </p>
+      
+      <br/>
+      
+      <p>
+        <input type="submit" name="disable_users" value="Anonymous Mode »"
+            class="btn btn-primary btn-info btn-block" id="submit-id-disable_users">
+        <span class="muted">Tracking features are hidden.</span>
+      </p>
+
+    </form>
+  </div>
+</div>
+
+</div>
+
+{% endblock content %}

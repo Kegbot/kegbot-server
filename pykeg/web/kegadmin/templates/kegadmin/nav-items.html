@@ -12,12 +12,21 @@
 {% endif %}
 
 <li class="nav-header">System</li>
-{% navitem "kegadmin-controllers" "Controllers" %}
+{% if ENABLE_SENSING %}
+  {% navitem "kegadmin-controllers" "Controllers" %}
+{% endif %}
+
 {% navitem "kegadmin-taps" "Taps" %}
 {% navitem "kegadmin-kegs" "Kegs" %}
-{% navitem "kegadmin-drinks" "Drinks" %}
-{% navitem "kegadmin-users" "Users" %}
-{% navitem "kegadmin-tokens" "Tokens" %}
+
+{% if ENABLE_SENSING %}
+  {% navitem "kegadmin-drinks" "Drinks" %}
+{% endif %}
+{% if ENABLE_USERS %}
+  {% navitem "kegadmin-users" "Users" %}
+  {% navitem "kegadmin-tokens" "Tokens" %}
+{% endif %}
+
 {% if not EMBEDDED %}
 {% navitem "kegadmin-logs" "Logs" %}
 {% endif %}

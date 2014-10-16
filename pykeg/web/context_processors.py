@@ -27,6 +27,8 @@ def kbsite(request):
         'VERSION': util.get_version(),
         'HAVE_SESSIONS': False,
         'HAVE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,
+        'ENABLE_SENSING': kbsite.enable_sensing if kbsite else True,
+        'ENABLE_USERS': kbsite.enable_users if kbsite else True,
         'GOOGLE_ANALYTICS_ID': None,
         'SSO_LOGIN_URL': sso_login_url,
         'SSO_LOGOUT_URL': sso_logout_url,

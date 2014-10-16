@@ -49,8 +49,40 @@ def setup_view(f):
 @setup_view
 @never_cache
 def start(request):
+    """ Shows the enable/disable hardware toggle. """
     context = RequestContext(request)
+
+    if request.method == 'POST':
+        if 'enable_sensing' in request.POST:
+            request.session['enable_sensing'] = True
+            return redirect('setup_accounts')
+        elif 'disable_sensing' in request.POST:
+            request.session['enable_sensing'] = False
+            request.session['enable_users'] = False
+            return redirect('setup_site_settings')
+        else:
+            messages.error(request, 'Unknown response.')
+
     return render_to_response('setup_wizard/start.html', context_instance=context)
+
+
+@setup_view
+@never_cache
+def setup_accounts(request):
+    """ Shows the enable/disable accounts toggle. """
+    context = RequestContext(request)
+
+    if request.method == 'POST':
+        if 'enable_users' in request.POST:
+            request.session['enable_users'] = True
+            return redirect('setup_site_settings')
+        elif 'disable_users' in request.POST:
+            request.session['enable_users'] = False
+            return redirect('setup_site_settings')
+        else:
+            messages.error(request, 'Unknown response.')
+
+    return render_to_response('setup_wizard/accounts.html', context_instance=context)
 
 
 @setup_view
@@ -67,10 +99,14 @@ def site_settings(request):
     else:
         try:
             defaults.set_defaults()
-            messages.success(request, 'Started new site!')
         except defaults.AlreadyInstalledError:
-            messages.warning(request, 'Site already installed, proceeding.')
-        form = MiniSiteSettingsForm(instance=models.KegbotSite.get())
+            pass
+
+        site = models.KegbotSite.get()
+        site.enable_sensing = request.session['enable_sensing']
+        site.enable_users = request.session['enable_users']
+        site.save()
+        form = MiniSiteSettingsForm(instance=site)
     context['form'] = form
     return render_to_response('setup_wizard/site_settings.html', context_instance=context)
 

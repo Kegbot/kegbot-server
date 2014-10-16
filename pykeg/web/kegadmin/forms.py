@@ -299,6 +299,8 @@ class GeneralSiteSettingsForm(forms.ModelForm):
         model = models.KegbotSite
         fields = (
             'title',
+            'enable_sensing',
+            'enable_users',
             'privacy',
             'registration_mode',
         )
@@ -307,6 +309,8 @@ class GeneralSiteSettingsForm(forms.ModelForm):
     helper.form_class = 'form-horizontal'
     helper.layout = Layout(
         Field('title', css_class='input-xlarge'),
+        Field('enable_sensing', css_class='input-xlarge'),
+        Field('enable_users', css_class='input-xlarge'),
         Field('privacy', css_class='input-xlarge'),
         Field('registration_mode', css_class='input-xlarge'),
         FormActions(

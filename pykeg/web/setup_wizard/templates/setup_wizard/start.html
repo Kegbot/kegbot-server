@@ -1,15 +1,36 @@
 {% extends "setup_wizard/base.html" %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 <div class="jumbotron">
 
 <h2>Kegbot Setup: Welcome</h2>
 <p class="lead">
-  Just a few more things before you can get started.
+  Before you get started, what kind of Kegbot would you like?<br/>
+  (You can always change settings later.)
 </p>
-<a class="btn btn-large btn-success" href="{% url "setup_site_settings" %}">
-  Continue
-</a>
+
+<div class="row-fluid">
+  <div class="span8 offset2">
+    <form action="" method="POST">{% csrf_token %}
+
+      <p>
+        <input type="submit" name="enable_sensing" value="Enable Sensors, Continue »"
+            class="btn btn-primary btn-success btn-block" id="submit-id-enable_sensing">
+        <span class="muted">Classic mode: Enables features that require flow sensing hardware.</span>
+      </p>
+      
+      <br/>
+      
+      <p>
+        <input type="submit" name="disable_sensing" value="No Sensor Hardware, Continue »"
+            class="btn btn-primary btn-info btn-block" id="submit-id-disable_sensing">
+        <span class="muted">Hides features that require flow sensing hardware.</span>
+      </p>
+
+    </form>
+  </div>
+</div>
 
 </div>
 

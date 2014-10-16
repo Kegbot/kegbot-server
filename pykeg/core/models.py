@@ -276,6 +276,11 @@ class KegbotSite(models.Model):
         default='UTC',
         help_text='Time zone for this system.')
 
+    enable_sensing = models.BooleanField(default=True,
+        help_text='Enable and show features related to volume sensing.')
+    enable_users = models.BooleanField(default=True,
+        help_text='Enable user pour tracking.')
+
     check_for_updates = models.BooleanField(default=True,
         help_text='Periodically check for updates '
         '(<a href="https://kegbot.org/about/checkin">more info</a>)')

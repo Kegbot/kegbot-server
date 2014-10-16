@@ -20,7 +20,8 @@ from django.conf.urls import patterns
 from django.conf.urls import url
 
 urlpatterns = patterns('pykeg.web.setup_wizard.views',
-  url(r'^$', 'start', name='setup_wizard_start'),
+    url(r'^$', 'start', name='setup_wizard_start'),
+    url(r'^setup-accounts/$', 'setup_accounts', name='setup_accounts'),
     url(r'^settings/$', 'site_settings', name='setup_site_settings'),
     url(r'^admin-user/$', 'admin', name='setup_admin'),
     url(r'^finished/$', 'finish', name='setup_finish'),

@@ -12,7 +12,7 @@ Quick Install
 -------------
 
 **New:** The easiest way to get going is by following the
-:ref:`Digital Ocean Install Instructions <digitalocean-install>`.
+`Digital Ocean Install Instructions <https://forum.kegbot.org/t/howto-install-kegbot-server-on-digital-ocean/77>`_.
 
 For those already familiar with Linux, these ultra-quick install instructions
 may suffice::

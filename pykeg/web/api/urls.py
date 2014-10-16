@@ -46,6 +46,7 @@ urlpatterns = patterns('pykeg.web.api.views',
     url(r'^controllers/(?P<controller_id>\d+)/?$', 'get_controller'),
 
     url(r'^drinks/?$', 'all_drinks'),
+    url(r'^drinks/last/?$', 'last_drink'),
     url(r'^drinks/(?P<drink_id>\d+)/?$', 'get_drink'),
     url(r'^drinks/(?P<drink_id>\d+)/add-photo/?$', 'add_drink_photo'),
     url(r'^cancel-drink/?$', 'cancel_drink'),

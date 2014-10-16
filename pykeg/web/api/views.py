@@ -94,6 +94,13 @@ def all_drinks(request, limit=100):
     return qs
 
 
+def last_drink(request):
+    drinks = models.Drink.objects.all().order_by('-id')
+    if not drinks:
+        raise Http404
+    return protolib.ToProto(drinks[0], full=True)
+
+
 def get_drink(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
     return protolib.ToProto(drink, full=True)

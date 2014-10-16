@@ -169,6 +169,10 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEquals(data.meta.result, 'ok')
         self.assertEquals(data.object.get('current_keg'), None)
 
+        response, data = self.get('drinks/last')
+        self.assertEquals(response.status_code, 404)
+        self.assertEquals(data.meta.result, 'error')
+
         new_keg_data = {
             'keg_size': 'half-barrel',
             'beverage_name': 'Test Brew',
@@ -191,6 +195,12 @@ class ApiClientTestCase(BaseApiTestCase):
         response, data = self.post('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
             data={'ticks': 1000, 'username': self.normal_user.username})
         self.assertEquals(data.meta.result, 'ok')
+        drink = data.object
+
+        response, data = self.get('drinks/last')
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(data.meta.result, 'ok')
+        self.assertEquals(data.object.id, drink.id)
 
         response, data = self.get('status', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEquals(data.meta.result, 'ok')

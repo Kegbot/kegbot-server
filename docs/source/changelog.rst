@@ -5,11 +5,12 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 1.1.1 (2014-11-11)
+--------------------------
 * API: New endpoint: `drinks/last`.
 * Newly-created meters now default to FT330-RJ calibration values.
 * Kegadmin: Kegs can be deleted from the "Edit Keg" screen.
+* The `kegbot restore` command can run against an unzipped directory.
 
 
 Version 1.1.0 (2014-09-19)

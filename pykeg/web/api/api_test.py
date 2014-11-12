@@ -273,7 +273,7 @@ class ApiClientTestCase(BaseApiTestCase):
             'objects': [
                 {
                     'id': 1,
-                    'ticks_per_ml': 5.4,
+                    'ticks_per_ml': 2.724,
                     'port_name': 'flow0',
                     'controller': {
                         'id': 1,
@@ -283,7 +283,7 @@ class ApiClientTestCase(BaseApiTestCase):
                 },
                 {
                     'id': 2,
-                    'ticks_per_ml': 5.4,
+                    'ticks_per_ml': 2.724,
                     'port_name': 'flow1',
                     'controller': {
                         'id': 1,

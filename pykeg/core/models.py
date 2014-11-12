@@ -555,7 +555,7 @@ class FlowMeter(models.Model):
         help_text='Tap to which this meter is currently bound.')
     ticks_per_ml = models.FloatField(default=kb_common.DEFAULT_TICKS_PER_ML,
         help_text='Flow meter pulses per mL of fluid.  Common values: %s '
-        '(SF800), 2.2 (Vision 2000)' % kb_common.DEFAULT_TICKS_PER_ML)
+        '(FT330-RJ), 5.4 (SF800)' % kb_common.DEFAULT_TICKS_PER_ML)
 
     def meter_name(self):
         return '{}.{}'.format(self.controller.name, self.port_name)

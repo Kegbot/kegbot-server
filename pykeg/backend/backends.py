@@ -276,6 +276,22 @@ class KegbotBackend(object):
         return drink
 
     @transaction.atomic
+    def cancel_keg(self, keg):
+        """Permanently deletes a keg and ALL drinks."""
+        keg_drinks = keg.drinks.all().order_by('id')
+
+        if keg_drinks:
+            first_drink_id = keg_drinks[0].id
+            sessions = set()
+            for drink in keg_drinks:
+                sessions.add(drink.session)
+                drink.delete()
+            for session in sessions:
+                session.Rebuild()
+            self.rebuild_stats(first_drink_id)
+        keg.delete()
+
+    @transaction.atomic
     def assign_drink(self, drink, user):
         """Assigns, or re-assigns, a previously-recorded Drink.
 

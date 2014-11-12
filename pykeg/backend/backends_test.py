@@ -23,6 +23,7 @@ from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.core import defaults
 from django.test.utils import override_settings
+from django.core import management
 
 METER_NAME = 'kegboard.flow0'
 FAKE_BEER_NAME = 'Testy Beer'
@@ -33,7 +34,41 @@ FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 
 
 @override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
+class BackendsFixtureTestCase(TestCase):
+    """Test backened using fixture (demo) data."""
+
+    @classmethod
+    def setupClass(cls):
+        management.call_command('loaddata', 'testdata/full_demo_site.json', verbosity=0)
+
+    @classmethod
+    def teardownClass(cls):
+        management.call_command('flush', verbosity=0, interactive=False)
+
+    def setUp(self):
+        self.backend = get_kegbot_backend()
+
+    def test_delete_keg(self):
+        site = models.KegbotSite.get()
+        original_stats = site.get_stats()
+        self.assertEquals(667, original_stats['total_pours'])
+
+        keg = models.Keg.objects.get(pk=2)
+        keg_stats = keg.get_stats()
+        keg_drinks = keg.drinks.all()
+        self.assertEquals(188, len(keg_drinks))
+        self.backend.cancel_keg(keg)
+
+        stats = site.get_stats()
+        self.assertEquals(667 - 188, stats['total_pours'])
+        self.assertEquals(original_stats['total_volume_ml'] - keg_stats['total_volume_ml'],
+            stats['total_volume_ml'])
+
+
+@override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
 class BackendsTestCase(TestCase):
+    """Test backend without canned data (legacy tests)."""
+
     def setUp(self):
         self.backend = get_kegbot_backend()
         defaults.set_defaults(set_is_setup=True, create_controller=True)

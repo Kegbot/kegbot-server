@@ -20,6 +20,7 @@ import json
 import os.path
 import random
 import datetime
+from django.conf import settings
 from collections import deque
 from uuid import uuid1
 
@@ -41,6 +42,10 @@ MINUTES_IN_DAY = 60 * 24
 MINIMUM_POUR_SIZE_ML = 100
 MAXIMUM_POUR_SIZE_ML = 450
 
+# Predictably generate same demo data.
+RANDOM_SEED = 42
+START_DATE = datetime.datetime(2014, 10, 1)
+
 """Generates a bunch of fake drinks from a configuration."""
 
 
@@ -55,11 +60,13 @@ class LoadDemoDataCommand(BaseCommand):
         data_dir = os.path.abspath(args[0])
         demo_data = self.load_demo_data(data_dir)
 
+        settings.CELERY_ALWAYS_EAGER = True
+
         with transaction.atomic():
             if models.User.objects.all().count() or models.Drink.objects.all().count():
                 raise CommandError('Database is already loaded.')
 
-            defaults.set_defaults(set_is_setup=True)
+            defaults.set_defaults(set_is_setup=True, create_controller=True)
 
             # Install demo data.
             for username in demo_data['drinkers']:
@@ -82,8 +89,9 @@ class LoadDemoDataCommand(BaseCommand):
                     beer.picture = picture
                     beer.save()
                 else:
-                    raise ValueError('No pic for brewer!')
+                    pass
 
+            random.seed(RANDOM_SEED)
             sessions = self.build_random_sessions(models.User.objects.all(),
                 NUM_SESSIONS, demo_data['shouts'])
 
@@ -91,7 +99,7 @@ class LoadDemoDataCommand(BaseCommand):
             minutes += MINUTES_IN_DAY
             minutes -= (minutes % (MINUTES_IN_DAY))
 
-            session_start = timezone.now()
+            session_start = timezone.make_aware(START_DATE, timezone.utc)
             session_start -= datetime.timedelta(hours=session_start.hour + 4,
                 minutes=session_start.minute,
                 seconds=session_start.second)

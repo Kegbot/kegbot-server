@@ -402,10 +402,14 @@ def restore_from_directory(backup_dir, storage=default_storage):
 
 
 def restore(backup_file):
-    """Restores from a backup zipfile.
+    """Restores from a backup zipfile or directory.
 
     The site must be erased prior to running restore.
     """
+    if os.path.isdir(backup_file):
+        restore_from_directory(backup_file)
+        return
+
     logger.info('Restoring from {} ...'.format(backup_file))
     unzipped_dir = extract_backup(backup_file)
     try:

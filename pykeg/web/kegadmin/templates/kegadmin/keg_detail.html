@@ -42,7 +42,33 @@
     </tr>
 </table>
     
-{% crispy form %}
+{% crispy edit_form %}
+
+
+<div id="cancelModal" class="modal hide fade" tabindex="-1"
+    role="dialog" aria-labelledby="cancelDialogLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="cancelDialogLabel">Really Delete Keg {{ keg.id }}?</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            Are you sure you want to delete <b>Keg {{ keg.id }}</b>?
+        </p>
+        <p>
+            Deleting the keg will <b>immediately and permanently delete all pour data associated with
+            this keg</b>, including any recorded pictures and statistics.  This action cannot be undone.
+        </p>
+    </div>
+    <div class="modal-footer">
+         <form action="{% url "kegadmin-edit-keg" keg.id %}" method="POST">{% csrf_token %}
+         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+             <input type="submit" name="submit_delete_keg"
+                class="btn btn-danger" value="Delete Keg"/>
+         </form>
+    </div>
+</div>
+
 
 {% endblock %}
 

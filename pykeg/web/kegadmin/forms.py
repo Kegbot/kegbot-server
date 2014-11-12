@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit, Field
+from crispy_forms.layout import Layout, Div, Submit, Field, HTML
 from crispy_forms.bootstrap import FormActions
 
 from kegbot.util import units
@@ -287,7 +287,9 @@ class EditKegForm(forms.ModelForm):
         Field('description'),
         Field('notes'),
         FormActions(
-            Submit('submit', 'Save', css_class='btn-primary'),
+            Submit('submit_edit_keg', 'Save Keg', css_class='btn-primary'),
+            HTML("""<a href="#cancelModal" role="button" class="btn btn-danger" data-toggle="modal">
+                    <i class="icon-trash icon-white"></i> Permanently Delete</a>""")
         )
     )
 

@@ -494,8 +494,7 @@ class SetupApp(app.App):
       raise ValueError('Imported settings does not match: imported=%s '
           'expected=%s' % (existing.__file__, settings_file))
 
-    self.run_command('kegbot syncdb --all --noinput -v 0')
-    self.run_command('kegbot migrate --all --fake --noinput -v 0')
+    self.run_command('kegbot syncdb --noinput -v 0')
 
     if FLAGS.interactive:
       try:

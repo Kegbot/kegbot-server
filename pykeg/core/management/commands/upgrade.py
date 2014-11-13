@@ -25,18 +25,18 @@ from pykeg.core.util import get_version_object
 from django.core.management.base import BaseCommand
 
 from django.contrib.staticfiles.management.commands import collectstatic
-from south.management.commands import migrate
-from south.management.commands import syncdb
+from django.core.management.commands import syncdb
 from pykeg.core.management.commands import regen_stats
 
 from pykeg.core import models
 from pykeg.core import checkin
-from django.utils import timezone
 
 
-# Versions earlier than this cannot be upgraded.  0.9.35 is the last
-# version before migrations were rebased.
-MINIMUM_INSTALLED_VERSION = StrictVersion('0.9.35')
+# Versions earlier than this cannot be upgraded. History:
+#  v0.9.35 - migrations rebased to 0001
+#  v1.1.1  - last release with South-based migrations
+#  v1.2.0  - first Django 1.7 migrations
+MINIMUM_INSTALLED_VERSION = StrictVersion('1.1.1')
 
 
 def run(cmd, args=[]):
@@ -80,6 +80,7 @@ class Command(BaseCommand):
             print 'ERROR: This version of Kegbot can only upgrade systems running on version'
             print 'v{} or newer.  Please install Kegbot v{} and run `kegbot upgrade` again.'.format(
                 MINIMUM_INSTALLED_VERSION, MINIMUM_INSTALLED_VERSION)
+            print '(Existing version: {})'.format(installed_version)
             print ''
             print 'More help: https://github.com/Kegbot/kegbot-server/wiki/Upgrading-Old-Versions'
             print ''
@@ -89,7 +90,6 @@ class Command(BaseCommand):
         self.do_version_upgrades(installed_version)
 
         run(syncdb.Command(), args=['--noinput', '-v', '0'])
-        run(migrate.Command(), args=['-v', '0'])
 
         if not options.get('skip_stats'):
             run(regen_stats.Command())
@@ -111,27 +111,5 @@ class Command(BaseCommand):
         print 'Upgrade complete!'
 
     def do_version_upgrades(self, installed_version):
-        if installed_version.version < (1, 0, 0):
-            self.reset_migrations()
-
-    def reset_migrations(self):
-        """Rebase south migrations by deleting them and injecting fake 0001."""
-        from south import models
-        print ' ~ resetting migrations'
-
-        core_migrations = models.MigrationHistory.objects.filter(app_name='core').all()
-        core_migrations = core_migrations.order_by('-id')
-        last_migration = core_migrations[0]
-        if last_migration.migration != '0164_add_display_name':
-            print 'Error: Last migration unexpected: ' + last_migration.migration
-            sys.exit(1)
-        core_migrations.delete()
-        models.MigrationHistory.objects.create(app_name='core',
-            migration='0001_initial',
-            applied=timezone.now())
-
-        # Nuke obsolete migrations as well.
-        models.MigrationHistory.objects.filter(app_name='notification').all().delete()
-        models.MigrationHistory.objects.filter(app_name='plugin').all().delete()
-
-        print ' - migrations reset!'
+        if installed_version.version < (1, 2, 0):
+            print 'Upgrading from v1.1.x'

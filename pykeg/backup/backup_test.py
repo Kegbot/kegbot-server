@@ -27,43 +27,14 @@ import tempfile
 from pykeg.core import defaults
 from pykeg.core import models
 
-from django.core import serializers
-from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.test import TransactionTestCase
 
 from . import backup
-from .testutils import make_datetime
+from pykeg.core.testutils import make_datetime
 from pykeg.core.util import get_version
-from south.management.commands import migrate
 
 from kegbot.util import kbjson
-
-EXPECTED_SAVED_TABLES = [
-    u'core_apikey',
-    u'core_authenticationtoken',
-    u'core_beverage',
-    u'core_beverageproducer',
-    u'core_controller',
-    u'core_device',
-    u'core_drink',
-    u'core_drinkingsession',
-    u'core_flowmeter',
-    u'core_flowtoggle',
-    u'core_invitation',
-    u'core_keg',
-    u'core_kegbotsite',
-    u'core_kegtap',
-    u'core_notificationsettings',
-    u'core_picture',
-    u'core_plugindata',
-    u'core_stats',
-    u'core_systemevent',
-    u'core_thermolog',
-    u'core_thermosensor',
-    u'core_user',
-    u'south_migrationhistory',
-]
 
 
 def run(cmd, args=[]):
@@ -77,21 +48,11 @@ class BackupTestCase(TransactionTestCase):
         self.storage = FileSystemStorage(location=self.temp_storage_location)
         self.now = make_datetime(2014, 4, 1)
 
-        # Backup requires a fully-populated migrations table, so inject
-        # them if the unittest runner isn't actually doing them.
-        if not settings.SOUTH_TESTS_MIGRATE:
-            run(migrate.Command(), args=['-v', '0', '--all', '--fake'])
-
     def tearDown(self):
         shutil.rmtree(self.temp_storage_location)
 
-    def load_table(self, backup_dir, table_name):
-        filename = os.path.join(backup_dir, backup.TABLES_DIRNAME, table_name + '.json')
-        data = open(filename, 'r').read()
-        return list(serializers.deserialize('json', data))
-
     def assertMetadata(self, backup_dir, when=None, site_name='My Kegbot',
-            num_tables=len(EXPECTED_SAVED_TABLES), num_media_files=0):
+            num_media_files=0):
         when = when or self.now
 
         backup.verify_backup_directory(backup_dir)
@@ -100,7 +61,6 @@ class BackupTestCase(TransactionTestCase):
 
         self.assertEqual(when, metadata_json[backup.META_CREATED_TIME])
         self.assertEquals(site_name, metadata_json[backup.META_SERVER_NAME])
-        self.assertEquals(num_tables, metadata_json[backup.META_NUM_TABLES])
         self.assertEquals(num_media_files, metadata_json[backup.META_NUM_MEDIA_FILES])
         self.assertEquals(get_version(), metadata_json[backup.META_SERVER_VERSION])
 
@@ -110,11 +70,6 @@ class BackupTestCase(TransactionTestCase):
 
         try:
             self.assertMetadata(backup_dir)
-
-            for table_name in EXPECTED_SAVED_TABLES:
-                if table_name != 'south_migrationhistory':
-                    objects = self.load_table(backup_dir, table_name)
-                    self.assertEqual(0, len(objects))
         finally:
             shutil.rmtree(backup_dir)
 
@@ -129,18 +84,6 @@ class BackupTestCase(TransactionTestCase):
 
         try:
             self.assertMetadata(backup_dir, site_name='Kegbot Test 2')
-
-            sites = self.load_table(backup_dir, 'core_kegbotsite')
-            self.assertEqual(1, len(sites))
-            self.assertEqual('Kegbot Test 2', sites[0].object.title)
-
-            users = self.load_table(backup_dir, 'core_user')
-            self.assertEqual(1, len(users))
-            self.assertEqual('guest', users[0].object.username)
-
-            taps = self.load_table(backup_dir, 'core_kegtap')
-            self.assertEqual(1, len(taps))
-            self.assertEqual('Main Tap', taps[0].object.name)
         finally:
             shutil.rmtree(backup_dir)
 

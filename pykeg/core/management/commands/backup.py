@@ -20,7 +20,7 @@ import os
 
 from django.core.files.storage import get_storage_class
 from django.core.management.base import BaseCommand
-from pykeg.core import backup
+from pykeg.backup import backup
 from optparse import make_option
 from pykeg.backend.backends import UnknownBaseUrlException
 

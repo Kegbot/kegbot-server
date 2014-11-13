@@ -21,7 +21,7 @@ import sys
 
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
-from pykeg.core import backup
+from pykeg.backup import backup
 
 
 class Command(BaseCommand):
@@ -37,6 +37,10 @@ class Command(BaseCommand):
 
         try:
             backup.restore(backup_path)
+        except backup.AlreadyInstalledError:
+            sys.stderr.write('Error: Kegbot is already installed, run `kegbot erase` first.')
+            sys.stderr.write('\n')
+            sys.exit(1)
         except backup.BackupError as e:
             sys.stderr.write('Error: ')
             sys.stderr.write(e.message)

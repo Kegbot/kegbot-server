@@ -5,6 +5,13 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* Backup file format has changed.
+* Django 1.7 update.
+* Flow sensing and multiuser features can be hidden.
+
+
 Version 1.1.1 (2014-11-11)
 --------------------------
 * API: New endpoint: `drinks/last`.

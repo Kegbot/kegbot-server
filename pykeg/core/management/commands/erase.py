@@ -16,8 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.conf import settings
 from django.core.management.base import NoArgsCommand
-from pykeg.core import backup
+from pykeg.backup import backup
 
 import sys
 
@@ -26,11 +27,19 @@ class Command(NoArgsCommand):
     help = u'Erases all data in the current Kegbot system.'
 
     def handle(self, **options):
-        print 'This command erases ALL tables ad media files in the Kegbot system, and '
-        print 'CANNOT BE UNDONE.'
+        print 'WARNING!'
+        print ''
+        print '  ************************************************************************'
+        print '  This command erases ALL tables and media files in the Kegbot system, and '
+        print '  CANNOT BE UNDONE.'
+        print ''
+        print '    Database: {}'.format(settings.DATABASES['default']['NAME'])
+        print '       Media: {}'.format(settings.MEDIA_ROOT)
+        print '  ************************************************************************'
         print ''
         print 'Are you SURE you want to continue? '
         print ''
+
         try:
             response = raw_input('Type ERASE to continue, anything else to abort: ')
         except KeyboardInterrupt:

@@ -26,7 +26,6 @@ DEPENDENCIES = [
   'Celery == 3.1.11',
   'kombu == 3.0.16',
 
-  'South == 0.8.4',
   'django-crispy-forms == 1.2.8',
   'foursquare == 2014.04.10',
   'gunicorn == 18.0',

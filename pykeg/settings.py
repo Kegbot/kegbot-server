@@ -36,7 +36,6 @@ INSTALLED_APPS = (
     'bootstrap-pagination',
     'imagekit',
     'gunicorn',
-    'south',
 )
 
 LOGIN_REDIRECT_URL = "/account/"
@@ -335,8 +334,6 @@ IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = 'imagekit.imagecache.NonValidatingImageCa
 
 TEST_RUNNER = 'pykeg.core.testutils.KegbotTestSuiteRunner'
 NOSE_ARGS = ['--exe']
-SKIP_SOUTH_TESTS = True
-SOUTH_TESTS_MIGRATE = False
 
 ICANHAZ_APP_DIRNAMES = ['static/jstemplates', 'jstemplates']
 

@@ -70,6 +70,18 @@ TIMEZONE_CHOICES = ((z, z) for z in pytz.common_timezones)
 logger = logging.getLogger(__name__)
 
 
+def get_default_api_key():
+    return ApiKey.generate_key()
+
+
+def get_default_invite_code():
+    return str(uuid4())
+
+
+def get_default_expires_date():
+    return timezone.now() + datetime.timedelta(hours=24)
+
+
 class User(AbstractBaseUser):
     """A customized User model based on auth.User.
 
@@ -170,15 +182,16 @@ pre_save.connect(_user_pre_save, sender=User)
 
 class Invitation(models.Model):
     """A time-sensitive cookie which can be used to create an account."""
+
     invite_code = models.CharField(unique=True, max_length=255,
-        default=lambda: str(uuid4()),
+        default=get_default_invite_code,
         help_text='Unguessable token which must be presented to use this invite')
     for_email = models.EmailField(
         help_text='Address this invitation was sent to.')
     invited_date = models.DateTimeField(_('date invited'), auto_now_add=True,
         help_text='Date and time the invitation was sent')
     expires_date = models.DateTimeField(_('date expries'),
-        default=lambda: timezone.now() + datetime.timedelta(hours=24),
+        default=get_default_expires_date,
         help_text='Date and time after which the invitation is considered expired')
     invited_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
         help_text='User that created this invitation, if any.')
@@ -330,12 +343,13 @@ class Device(models.Model):
 
 class ApiKey(models.Model):
     """Grants access to certain API endpoints to a user via a secret key."""
+
     user = models.ForeignKey(User, blank=True, null=True,
         help_text='User receiving API access.')
     device = models.ForeignKey(Device, null=True,
         help_text='Device this key is associated with.')
     key = models.CharField(max_length=127, editable=False, unique=True,
-        default=lambda: ApiKey.generate_key(),
+        default=get_default_api_key,
         help_text='The secret key.')
     active = models.BooleanField(default=True,
         help_text='Whether access by this key is currently allowed.')

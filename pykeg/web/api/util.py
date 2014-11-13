@@ -119,9 +119,9 @@ def build_response(request, result_data, response_code=200):
 
     if format == 'html' or (settings.DEBUG and debug):
         html = '<html><body><pre>%s</pre></body></html>' % json_str
-        return HttpResponse(html, mimetype='text/html', status=response_code)
+        return HttpResponse(html, content_type='text/html', status=response_code)
     else:
-        return HttpResponse(json_str, mimetype='application/json', status=response_code)
+        return HttpResponse(json_str, content_type='application/json', status=response_code)
 
 
 def prepare_data(data, inner=False):

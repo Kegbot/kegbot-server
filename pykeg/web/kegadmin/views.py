@@ -871,7 +871,7 @@ def autocomplete_beverage(request):
             'style': beverage.style,
         })
     return HttpResponse(kbjson.dumps(values, indent=None),
-      mimetype='application/json', status=200)
+      content_type='application/json', status=200)
 
 
 @staff_member_required
@@ -892,7 +892,7 @@ def autocomplete_user(request):
             'is_active': user.is_active,
         })
     return HttpResponse(kbjson.dumps(values, indent=None),
-      mimetype='application/json', status=200)
+      content_type='application/json', status=200)
 
 
 @staff_member_required
@@ -914,7 +914,7 @@ def autocomplete_token(request):
             'enabled': token.enabled,
         })
     return HttpResponse(kbjson.dumps(values, indent=None),
-      mimetype='application/json', status=200)
+      content_type='application/json', status=200)
 
 
 @staff_member_required

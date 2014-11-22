@@ -58,7 +58,7 @@
         var href = $(this).attr("data-href");
         $(this).click(function(e) {
           var node = e.target.nodeName.toLowerCase();
-          if (node == 'a' || node == 'img') return;
+          if (node == 'a') return;
           window.location = href;
           return false;
         });
@@ -74,6 +74,7 @@
           display_text: 'fill',
           percent_format: function(p) {return p + '% remaining';}
       });
+      $('.keg-popover').popover();
   });
 </script>
 

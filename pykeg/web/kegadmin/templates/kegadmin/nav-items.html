@@ -17,7 +17,7 @@
 {% endif %}
 
 {% navitem "kegadmin-taps" "Taps" %}
-{% navitem "kegadmin-kegs" "Kegs" %}
+{% navitem "kegadmin-kegs" "Keg Room" %}
 
 {% if ENABLE_SENSING %}
   {% navitem "kegadmin-drinks" "Drinks" %}
@@ -25,10 +25,6 @@
 {% if ENABLE_USERS %}
   {% navitem "kegadmin-users" "Users" %}
   {% navitem "kegadmin-tokens" "Tokens" %}
-{% endif %}
-
-{% if not EMBEDDED %}
-{% navitem "kegadmin-logs" "Logs" %}
 {% endif %}
 
 <li class="nav-header">Beer DB</li>
@@ -47,6 +43,9 @@
 
 <li class="divider"></li>
 <li class="nav-header">Other</li>
+{% if not EMBEDDED %}
+{% navitem "kegadmin-logs" "Logs" %}
+{% endif %}
 {% navitem "kegadmin-export" "Export Data" %}
 {% if HAVE_ADMIN and not EMBEDDED %}
 {% navitem "kegadmin-workers" "Worker Status" %}

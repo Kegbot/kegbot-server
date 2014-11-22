@@ -18,6 +18,9 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^devices/link/$', 'link_device', name='kegadmin-link-device'),
 
     url(r'^kegs/$', 'keg_list', name='kegadmin-kegs'),
+    url(r'^kegs/online/$', 'keg_list_online', name='kegadmin-kegs-online'),
+    url(r'^kegs/available/$', 'keg_list_available', name='kegadmin-kegs-available'),
+    url(r'^kegs/kicked/$', 'keg_list_kicked', name='kegadmin-kegs-kicked'),
     url(r'^kegs/add/$', 'keg_add', name='kegadmin-add-keg'),
     url(r'^kegs/(?P<keg_id>\d+)/$', 'keg_detail', name='kegadmin-edit-keg'),
 

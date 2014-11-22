@@ -8,40 +8,34 @@
 
 {% block kegadmin-main %}
 
-<table class="table table-hover table-bordered">
-<thead>
-    <tr>
-        <th>#</th>
-        <th>Beverage</th>
-        <th>Size</th>
-        <th>Status</th>
-    </tr>
-</thead>
-<tbody>
+{% include 'kegadmin/includes/keg_nav.html' %}
+
 {% for keg in kegs %}
-<tr class="clickable" data-href="{% url 'kegadmin-edit-keg' keg.id %}">
-    <td>{{ keg.id }}</td>
-    <td>
-        <div class="form-horizontal">
-            <a class="btn btn-small btn-primary" href="{% url 'kegadmin-edit-keg' keg.id %}">Edit</a>&nbsp;&nbsp;
-            <span>{{ keg.type }}</span>
-    </td>
-    <td>
-        {{ keg.keg_type_description }}
-    </td>
-    <td>
-        {% include 'kegadmin/includes/keg-status-label.html' %}
-    </td>
-</tr>
+
+    {% if forloop.counter0|divisibleby:6 %}
+    <div class="row-fluid">
+    {% endif %}
+
+        <div class="span2 clickable" data-href="{% url 'kegadmin-edit-keg' keg.id %}"
+                style="padding:8px;">
+          <img src="{{ keg.get_illustration_thumb }}" alt="" class="keg-popover"
+                data-title="<b>Keg {{keg.id}}</b> <span class='badge'>{{ keg.percent_full|floatformat:0 }}%</span>" data-trigger="hover" data-placement="bottom"
+                data-html="true"
+                data-content="
+                    {{ keg.type.name }}<br/>
+                    <span class='muted'>{{ keg.type.producer.name }}</span><br/>
+                    <b>{% if keg.current_tap %}Online, {{ keg.current_tap.name }}{% else %}Offline{% endif %}</b>">
+          <center>
+              <h5>{{ keg.type.name }}</h5>
+          </center>
+        </div>
+    
+    {% if forloop.counter|divisibleby:6 or forloop.last %}
+    </div> <!-- /row-fluid -->
+    {% endif %}
+
 {% endfor %}
-<tr class="info">
-    <td colspan="4" style="text-align:right;">
-        <a class="btn btn-small btn-success"
-            href="{% url 'kegadmin-add-keg' %}"><i class="icon-plus icon-white"></i> Add Keg</a>
-    </td>
-</tr>
-</tbody>
-</table>
+
 {% bootstrap_paginate kegs %}
 
 {% endblock %}

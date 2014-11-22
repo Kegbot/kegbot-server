@@ -426,9 +426,31 @@ def tap_detail(request, tap_id):
 
 @staff_member_required
 def keg_list(request):
+    qs = models.Keg.objects.all().order_by('-id')
+    return keg_list_internal(request, qs)
+
+
+@staff_member_required
+def keg_list_available(request):
+    qs = models.Keg.objects.filter(online=False, finished=False).order_by('-id')
+    return keg_list_internal(request, qs)
+
+
+@staff_member_required
+def keg_list_online(request):
+    qs = models.Keg.objects.filter(online=True).order_by('-id')
+    return keg_list_internal(request, qs)
+
+
+@staff_member_required
+def keg_list_kicked(request):
+    qs = models.Keg.objects.filter(finished=True).order_by('-id')
+    return keg_list_internal(request, qs)
+
+
+def keg_list_internal(request, qs):
     context = RequestContext(request)
-    kegs = models.Keg.objects.all().order_by('-id')
-    paginator = Paginator(kegs, 25)
+    paginator = Paginator(qs, 30)
 
     page = request.GET.get('page')
     try:
@@ -476,9 +498,9 @@ def keg_add(request):
         if 'submit_add_keg' in request.POST:
             add_keg_form = forms.KegForm(request.POST)
             if add_keg_form.is_valid():
-                add_keg_form.save()
+                keg = add_keg_form.save()
                 messages.success(request, 'New keg added.')
-                return redirect('kegadmin-kegs')
+                return redirect('kegadmin-edit-keg', keg_id=keg.id)
 
     context = RequestContext(request)
     context['keg'] = 'new'

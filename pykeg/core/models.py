@@ -765,6 +765,9 @@ class Keg(models.Model):
             url = KegbotSite.get().full_url(url)
         return url
 
+    def get_illustration_thumb(self):
+        return self.get_illustration(thumbnail=True)
+
     def Sessions(self):
         sessions_ids = Drink.objects.filter(keg=self.id).values('session').annotate(models.Count('id'))
         pks = [x.get('session') for x in sessions_ids]

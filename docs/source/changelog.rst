@@ -10,6 +10,7 @@ Current Version (in development)
 * Backup file format has changed.
 * Django 1.7 update.
 * Flow sensing and multiuser features can be hidden.
+* The "Keg Room" now allows filtering by keg status.
 
 
 Version 1.1.1 (2014-11-11)

@@ -211,9 +211,13 @@ class KegForm(forms.Form):
 
     description = forms.CharField(max_length=256, label='Description',
         widget=forms.Textarea(), required=False,
-        help_text='User-visible description of the Keg.')
+        help_text='Optional user-visible description of the keg.')
     notes = forms.CharField(label='Notes', required=False, widget=forms.Textarea(),
-        help_text='Private notes about this keg, viewable only by admins.')
+        help_text='Optional private notes about this keg, viewable only by admins.')
+    connect_to = forms.ModelChoiceField(queryset=ALL_TAPS, label='Connect To',
+        help_text='If selected, immediately activates the keg on this tap. '
+            '(Any existing keg will be ended.)')
+
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal beer-select'
@@ -227,8 +231,9 @@ class KegForm(forms.Form):
         Div(
             Field('initial_volume', css_class='input-volume', type='hidden'),
             css_class='variable-units'),
-        Field('description'),
-        Field('notes'),
+        Field('description', css_class='input-block-level', rows='3'),
+        Field('notes', css_class='input-block-level', rows='3'),
+        Field('connect_to', css_class='input-block-level'),
         FormActions(
             Submit('submit_add_keg', 'Save', css_class='btn-primary'),
         )
@@ -267,6 +272,13 @@ class KegForm(forms.Form):
         keg = b.create_keg(beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
             beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'],
             full_volume_ml=full_volume_ml, notes=cd['notes'], description=cd['description'])
+
+        tap = cd['connect_to']
+        if tap:
+            if tap.is_active():
+                b.end_keg(tap)
+            b.attach_keg(tap, keg)
+
         return keg
 
 

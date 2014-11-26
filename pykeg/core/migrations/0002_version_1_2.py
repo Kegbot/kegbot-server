@@ -23,4 +23,10 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=True, help_text=b'Enable user pour tracking.'),
             preserve_default=True,
         ),
+        migrations.AlterField(
+            model_name='keg',
+            name='description',
+            field=models.TextField(help_text=b'User-visible description of the Keg.', null=True, blank=True),
+            preserve_default=True,
+        ),
     ]

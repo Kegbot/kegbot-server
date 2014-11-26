@@ -29,4 +29,15 @@ class Migration(migrations.Migration):
             field=models.TextField(help_text=b'User-visible description of the Keg.', null=True, blank=True),
             preserve_default=True,
         ),
+        migrations.RenameField(
+            model_name='kegtap',
+            old_name='description',
+            new_name='notes',
+        ),
+        migrations.AlterField(
+            model_name='kegtap',
+            name='notes',
+            field=models.TextField(help_text=b'Private notes about this tap.', null=True, blank=True),
+            preserve_default=True,
+        ),
     ]

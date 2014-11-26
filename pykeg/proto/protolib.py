@@ -366,8 +366,6 @@ def KegTapToProto(tap, full=False):
     else:
         ret.relay_name = ''
 
-    if tap.description is not None:
-        ret.description = tap.description
     if tap.current_keg:
         ret.current_keg_id = tap.current_keg_id
         if full:

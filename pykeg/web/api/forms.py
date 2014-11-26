@@ -52,7 +52,7 @@ class ThermoPostForm(forms.Form):
 class CreateKegTapForm(forms.ModelForm):
     class Meta:
         model = models.KegTap
-        fields = ('name', 'description')
+        fields = ('name', 'notes')
 
 
 class CalibrateTapForm(forms.Form):

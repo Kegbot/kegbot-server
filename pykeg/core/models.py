@@ -501,8 +501,8 @@ class KegTap(models.Model):
         ordering = ('sort_order', 'id')
     name = models.CharField(max_length=128,
         help_text='The display name for this tap, for example, "Main Tap".')
-    description = models.TextField(blank=True, null=True,
-        help_text='User-visible description for this tap.')
+    notes = models.TextField(blank=True, null=True,
+        help_text='Private notes about this tap.')
     current_keg = models.OneToOneField('Keg', blank=True, null=True,
         on_delete=models.SET_NULL,
         related_name='current_tap',

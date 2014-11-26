@@ -147,7 +147,7 @@ class TapForm(forms.ModelForm):
 
     class Meta:
         model = models.KegTap
-        fields = ('name', 'description', 'temperature_sensor', 'sort_order')
+        fields = ('name', 'notes', 'temperature_sensor', 'sort_order')
 
     def __init__(self, *args, **kwargs):
         super(TapForm, self).__init__(*args, **kwargs)
@@ -174,7 +174,7 @@ class TapForm(forms.ModelForm):
         Field('toggle', css_class='input-xlarge'),
         Field('temperature_sensor', css_class='input-xlarge'),
         Field('sort_order', css_class='input-xlarge'),
-        Field('description', css_class='input-xlarge'),
+        Field('notes', css_class='input-block-level', rows='3'),
         FormActions(
             Submit('submit_tap_form', 'Save Settings', css_class='btn-success'),
         )
@@ -296,8 +296,8 @@ class EditKegForm(forms.ModelForm):
         Div(
             Field('spilled_ml', css_class='input-volume', type='hidden'),
             css_class="variable-units"),
-        Field('description'),
-        Field('notes'),
+        Field('description', css_class='input-block-level', rows='3'),
+        Field('notes', css_class='input-block-level', rows='3'),
         FormActions(
             Submit('submit_edit_keg', 'Save Keg', css_class='btn-primary'),
             HTML("""<a href="#cancelModal" role="button" class="btn btn-danger" data-toggle="modal">

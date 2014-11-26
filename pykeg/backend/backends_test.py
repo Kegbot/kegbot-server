@@ -56,11 +56,11 @@ class BackendsFixtureTestCase(TestCase):
         keg = models.Keg.objects.get(pk=2)
         keg_stats = keg.get_stats()
         keg_drinks = keg.drinks.all()
-        self.assertEquals(190, len(keg_drinks))
+        self.assertEquals(186, len(keg_drinks))
         self.backend.cancel_keg(keg)
 
         stats = site.get_stats()
-        self.assertEquals(667 - 190, stats['total_pours'])
+        self.assertEquals(667 - 186, stats['total_pours'])
         self.assertEquals(original_stats['total_volume_ml'] - keg_stats['total_volume_ml'],
             stats['total_volume_ml'])
 

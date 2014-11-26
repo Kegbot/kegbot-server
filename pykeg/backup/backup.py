@@ -50,7 +50,6 @@ import shutil
 import json
 import zipfile
 
-from pykeg.core import models
 from pykeg.core.util import get_version
 from kegbot.util import kbjson
 
@@ -58,6 +57,7 @@ from .exceptions import BackupError, InvalidBackup, AlreadyInstalledError
 
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.db import connection
 from django.db import transaction
 from django.utils import timezone
 from django.utils.text import slugify
@@ -98,6 +98,14 @@ elif 'postgres' in settings.DATABASES[DEFAULT_DB]['ENGINE']:
 else:
     from . import unknown_engine as db_impl
 
+
+def get_title():
+    with connection.cursor() as c:
+        c.execute("SELECT title FROM core_kegbotsite WHERE name = 'default'")
+        row = c.fetchone()
+    if row:
+        return row[0]
+    return 'kegbot'
 
 def read_metadata(zipfile):
     """Reads and returns metadata from a backup zipfile."""
@@ -149,7 +157,7 @@ def create_backup_tree(date, storage, include_media=True):
         logger.warning('Not including media.')
 
     # Store metadata file.
-    metadata[META_SERVER_NAME] = models.KegbotSite.get().title
+    metadata[META_SERVER_NAME] = get_title()
     metadata[META_SERVER_VERSION] = get_version()
     metadata[META_CREATED_TIME] = isodate.datetime_isoformat(date)
     metadata[META_DB_ENGINE] = db_impl.engine_name()
@@ -193,7 +201,7 @@ def backup(storage=default_storage, include_media=True):
         A path to the stored zip file, in terms of the current storage class.
     """
     date = timezone.now()
-    site_slug = slugify(models.KegbotSite.get().title)
+    site_slug = slugify(get_title())
     date_str = date.strftime('%Y%m%d-%H%M%S')
     backup_name = '{slug}-{date}'.format(slug=site_slug, date=date_str)
 

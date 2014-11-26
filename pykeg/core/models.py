@@ -668,6 +668,15 @@ class FlowToggle(models.Model):
 
 class Keg(models.Model):
     """Record for each physical Keg."""
+    STATUS_AVAILABLE = 'available'
+    STATUS_ON_TAP = 'on_tap'
+    STATUS_FINISHED = 'finished'
+
+    STATUS_CHOICES = (
+        (STATUS_AVAILABLE, 'Available'),
+        (STATUS_ON_TAP, 'On tap'),
+        (STATUS_FINISHED, 'Finished'),
+    )
     type = models.ForeignKey(Beverage,
         on_delete=models.PROTECT,
         help_text='Beverage in this Keg.')
@@ -683,10 +692,9 @@ class Keg(models.Model):
         help_text='Time the Keg was first tapped.')
     end_time = models.DateTimeField(default=timezone.now,
         help_text='Time the Keg was finished or disconnected.')
-    online = models.BooleanField(default=True, editable=False,
-        help_text='True if the keg is currently assigned to a tap.')
-    finished = models.BooleanField(default=False, editable=False,
-        help_text='True when the Keg has been exhausted or discarded.')
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES,
+        default=STATUS_AVAILABLE,
+        help_text='Current keg state.')
     description = models.TextField(blank=True, null=True,
         help_text='User-visible description of the Keg.')
     spilled_ml = models.FloatField(default=0,
@@ -716,7 +724,7 @@ class Keg(models.Model):
         return result
 
     def keg_age(self):
-        if self.online:
+        if self.status == self.STATUS_ON_TAP:
             end = timezone.now()
         else:
             end = self.end_time
@@ -727,6 +735,15 @@ class Keg(models.Model):
 
     def is_empty(self):
         return float(self.remaining_volume_ml()) <= 0
+
+    def is_available(self):
+        return self.status == self.STATUS_AVAILABLE
+
+    def is_on_tap(self):
+        return self.status == self.STATUS_ON_TAP
+
+    def is_finished(self):
+        return self.status == self.STATUS_FINISHED
 
     def previous(self):
         q = Keg.objects.filter(start_time__lt=self.start_time).order_by('-start_time')
@@ -795,7 +812,7 @@ class Keg(models.Model):
 def _keg_pre_save(sender, instance, **kwargs):
     keg = instance
     # We don't need to do anything if the keg is still online.
-    if keg.online:
+    if keg.status == keg.STATUS_ON_TAP:
         return
 
     # Determine first drink date & set keg start date to it if earlier.
@@ -1242,14 +1259,14 @@ class SystemEvent(models.Model):
     def build_events_for_keg(cls, keg):
         '''Generates and returns system events for the keg.'''
         events = []
-        if keg.online:
+        if keg.status == keg.STATUS_ON_TAP:
             q = keg.events.filter(kind=cls.KEG_TAPPED)
             if q.count() == 0:
                 e = keg.events.create(kind=cls.KEG_TAPPED, time=keg.start_time, keg=keg)
                 e.save()
                 events.append(e)
 
-        if not keg.online:
+        if keg.status == keg.STATUS_FINISHED:
             q = keg.events.filter(kind=cls.KEG_ENDED)
             if q.count() == 0:
                 e = keg.events.create(kind=cls.KEG_ENDED, time=keg.end_time, keg=keg)

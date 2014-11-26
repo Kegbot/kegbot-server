@@ -263,7 +263,7 @@ def get_status(request):
     controllers = models.Controller.objects.all()
     drinks = models.Drink.objects.all()[:5]
     events = models.SystemEvent.objects.all()[:5]
-    kegs = models.Keg.objects.all().filter(online=True)
+    kegs = models.Keg.objects.all().filter(status=models.Keg.STATUS_ON_TAP)
     meters = models.FlowMeter.objects.all()
     sound_events = []   # deprecated
     taps = models.KegTap.objects.all()
@@ -327,8 +327,7 @@ def get_keg_sizes(request):
 @csrf_exempt
 def end_keg(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
-    tap = keg.current_tap
-    keg = request.backend.end_keg(tap)
+    keg = request.backend.end_keg(keg)
     return protolib.ToProto(keg, full=True)
 
 

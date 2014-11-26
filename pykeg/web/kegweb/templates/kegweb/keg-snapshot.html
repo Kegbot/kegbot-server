@@ -23,7 +23,7 @@
           <small>Poured</small>
         </li>
         <li>
-          {% if keg.remaining_volume_ml > 0 and not keg.finished %}
+          {% if keg.remaining_volume_ml > 0 and not keg.is_finished %}
           <h2>{% volume keg.remaining_volume_ml %}</h2>
           {% else %}
           <h2>{% volume 0 %}</h2>

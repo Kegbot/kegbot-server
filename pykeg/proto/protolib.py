@@ -315,7 +315,7 @@ def KegToProto(keg, full=False):
 
     ret.start_time = datestr(keg.start_time)
     ret.end_time = datestr(keg.end_time)
-    ret.online = keg.online
+    ret.online = keg.is_on_tap()
     if keg.description is not None:
         ret.description = keg.description
 

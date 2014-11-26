@@ -41,8 +41,8 @@ admin.site.register(models.KegTap, KegTapAdmin)
 
 
 class KegAdmin(admin.ModelAdmin):
-    list_display = ('id', 'type', 'online')
-    list_filter = ('online', )
+    list_display = ('id', 'type')
+    list_filter = ('status', )
     search_fields = ('id', 'type__name')
 admin.site.register(models.Keg, KegAdmin)
 

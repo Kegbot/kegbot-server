@@ -463,12 +463,12 @@ class KegbotBackend(object):
             raise ValueError('Tap is already active, must end keg first.')
 
         keg.start_time = timezone.now()
-        keg.online = True
+        keg.status = keg.STATUS_ON_TAP
         keg.save()
 
         old_keg = tap.current_keg
         if old_keg:
-            self.end_keg(tap)
+            self.end_keg(old_keg)
 
         tap.current_keg = keg
         tap.save()
@@ -480,32 +480,38 @@ class KegbotBackend(object):
         return keg
 
     @transaction.atomic
-    def end_keg(self, tap):
-        """Takes the current Keg offline at the given tap.
-
-        Args:
-            tap: The KegTap object to tap against, or a string matching
-                the tap's meter name.
-
-        Returns:
-            The old keg.
-
-        Raises:
-            ValueError: if the tap is missing or already offline.
-        """
-        tap = self._get_tap(tap)
-
-        if not tap.current_keg:
-            raise ValueError('Tap is already offline.')
-
-        keg = tap.current_keg
-        keg.online = False
-        keg.end_time = timezone.now()
-        keg.finished = True
+    def disconnect_keg(self, keg):
+        """Disconnects a keg without ending it."""
+        keg.status = keg.STATUS_AVAILABLE
         keg.save()
 
-        tap.current_keg = None
-        tap.save()
+        tap = keg.current_tap
+        if tap:
+            tap.current_keg = None
+            tap.save()
+
+        return keg
+
+    @transaction.atomic
+    def reactivate_keg(self, keg):
+        """Moves a keg to active status."""
+        if keg.status != keg.STATUS_FINISHED:
+            raise ValueError('Keg must be offline.')
+
+        keg.status = keg.STATUS_AVAILABLE
+        keg.save()
+        return keg
+
+    @transaction.atomic
+    def end_keg(self, keg):
+        """Takes the given keg offline."""
+
+        if keg.status == keg.STATUS_ON_TAP:
+            keg = self.disconnect_keg(keg)
+
+        keg.status = keg.STATUS_FINISHED
+        keg.end_time = timezone.now()
+        keg.save()
 
         events = models.SystemEvent.build_events_for_keg(keg)
         tasks.schedule_tasks(events)
@@ -573,7 +579,7 @@ class KegbotBackend(object):
         when = timezone.now()
 
         keg = models.Keg.objects.create(type=beverage, keg_type=keg_type,
-                online=False, finished=False, full_volume_ml=full_volume_ml,
+                full_volume_ml=full_volume_ml,
                 start_time=when, end_time=when, notes=notes, description=description)
         signals.keg_created.send_robust(sender=self.__class__, keg=keg)
         return keg

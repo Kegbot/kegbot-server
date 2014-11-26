@@ -181,7 +181,7 @@ http://localhost:1234/account.
         keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
             beverage_type='beer', producer_name='Unknown', style_name='Unknown')
         self.assertEquals(0, len(mail.outbox))
-        self.backend.end_keg(defaults.METER_NAME_0)
+        self.backend.end_keg(keg)
         self.assertEquals(1, len(mail.outbox))
 
         msg = mail.outbox[0]

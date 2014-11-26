@@ -76,7 +76,7 @@ class ChangeKegForm(forms.Form):
         b = get_kegbot_backend()
 
         if tap.is_active():
-            b.end_keg(tap)
+            b.end_keg(tap.current_keg)
 
         keg_size = self.cleaned_data.get('keg_size')
         full_volume_ml = self.cleaned_data.get('full_volume_ml')
@@ -215,9 +215,9 @@ class KegForm(forms.Form):
     notes = forms.CharField(label='Notes', required=False, widget=forms.Textarea(),
         help_text='Optional private notes about this keg, viewable only by admins.')
     connect_to = forms.ModelChoiceField(queryset=ALL_TAPS, label='Connect To',
+        required=False,
         help_text='If selected, immediately activates the keg on this tap. '
             '(Any existing keg will be ended.)')
-
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal beer-select'
@@ -276,7 +276,7 @@ class KegForm(forms.Form):
         tap = cd['connect_to']
         if tap:
             if tap.is_active():
-                b.end_keg(tap)
+                b.end_keg(tap.current_keg)
             b.attach_keg(tap, keg)
 
         return keg

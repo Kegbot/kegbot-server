@@ -7,10 +7,14 @@ Changelog
 
 Current Version (in development)
 --------------------------------
-* Backup file format has changed.
+* Keg management improvements: The new "Keg Room" view shows kegs by status,
+  and allows kegs to be manually moved between "available" and "finished"
+  states.
+* Fancy keg graphics.
+* Backup file format has changed. Downgrade to v1.1 to restore from an
+  earlier file format.
 * Django 1.7 update.
 * Flow sensing and multiuser features can be hidden.
-* The "Keg Room" now allows filtering by keg status.
 
 
 Version 1.1.1 (2014-11-11)

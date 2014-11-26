@@ -7,41 +7,107 @@
 
 {% block kegadmin-main %}
 
-<h2>Edit Keg #{{keg.id}}: {{keg.type.name}}
+<h2>Keg #{{keg.id}}: {{keg.type.name}}
 {% include 'kegadmin/includes/keg-status-label.html' %}
 </h2>
-<table class="table table-striped table-bordered">
-<tbody>
-    {% if keg.online or keg.finished %}
-        <tr>
-            <th>Start Time</th>
-            <td>{{keg.start_time}}</td>
-        </tr>
-    {% endif %}
-    {% if not keg.online and keg.finished %}
-        <tr>
-            <th>End Time</th>
-            <td>{{keg.end_time}}</td>
-        </tr>
-    {% endif %}
-    <tr>
-        <th>Size</th>
-        <td>{{ keg.keg_type_description }}</td>
-    </tr>
-    <tr>
-        <th>Initial Volume</th>
-        <td>{% volume keg.full_volume_ml %}</td>
-    </tr>
-    <tr>
-        <th>Served Volume</th>
-        <td>{% volume keg.served_volume_ml %}</td>
-    </tr>
-    <tr>
-        <th>Remaining Volume</th>
-        <td>{% volume remaining %}</td>
-    </tr>
-</table>
-    
+
+<div class="well">
+<div class="row-fluid">
+
+<div class="span4">
+
+  <img src="{{ keg.get_illustration }}">
+  <center>
+    <b>{{ keg.percent_full|floatformat:0 }}% full</b>
+  </center>
+
+</div>
+
+<div class="span8">
+
+  <table class="table">
+  <tbody>
+      {% if keg.is_on_tap or keg.is_finished %}
+          <tr>
+              <th>Started</th>
+              <td>{{keg.start_time}}</td>
+          </tr>
+      {% endif %}
+      {% if not keg.is_on_tap and keg.is_finished %}
+          <tr>
+              <th>End Time</th>
+              <td>{{keg.end_time}}</td>
+          </tr>
+      {% endif %}
+      <tr>
+          <th>Size</th>
+          <td>{{ keg.keg_type_description }}</td>
+      </tr>
+      <tr>
+          <th>Initial Volume</th>
+          <td>{% volume keg.full_volume_ml %}</td>
+      </tr>
+      <tr>
+          <th>Served Volume</th>
+          <td>{% volume keg.served_volume_ml %}</td>
+      </tr>
+      <tr>
+          <th>Remaining Volume</th>
+          <td>{% volume remaining %}</td>
+      </tr>
+      </tbody>
+  </table>    
+
+</div>
+
+</div> <!-- /row-fluid -->
+</div>
+
+
+<form action="" method="post">{% csrf_token %}
+  <div class="well">
+
+{% if keg.is_finished %}
+
+    <div class="row-fluid">
+
+      <div class="span4">
+          <button type="submit" class="btn btn-info btn-large btn-block" name="submit_reactivate">
+            <i class="icon-refresh icon-white"></i> Reactivate</button>
+          </button>
+      </div>
+
+      <div class="span8">
+        This keg is marked as finished and cannot be tapped. Click <em>Reactivate</em> to
+        return the keg to active status.
+      </div>
+
+    </div> <!-- /row-fluid -->
+
+{% else %}
+
+    <div class="row-fluid">
+
+      <div class="span4">
+          <button type="submit" class="btn btn-danger btn-large btn-block" name="submit_end">
+            <i class="icon-stop icon-white"></i> End Keg</button>
+          </button>
+      </div>
+
+      <div class="span8">
+        Press <em>End Keg</em> to mark the keg as finished.
+      </div>
+
+    </div> <!-- /row-fluid -->
+
+
+{% endif %}
+
+  </div>
+</form>
+
+
+<h3>Edit Keg</h3>
 {% crispy edit_form %}
 
 

@@ -342,7 +342,7 @@ def add_tap(request):
 @staff_member_required
 def tap_detail(request, tap_id):
     tap = get_object_or_404(models.KegTap, id=tap_id)
-    available_kegs = models.Keg.objects.filter(online=False, finished=False).order_by('id')
+    available_kegs = models.Keg.objects.filter(status=models.Keg.STATUS_AVAILABLE).order_by('id')
 
     record_drink_form = forms.RecordDrinkForm()
     activate_keg_form = forms.ChangeKegForm()
@@ -374,7 +374,7 @@ def tap_detail(request, tap_id):
             delete_form = forms.DeleteTapForm(request.POST)
             if delete_form.is_valid():
                 if tap.current_keg:
-                    request.backend.end_keg(tap)
+                    request.backend.end_keg(tap.current_keg)
                 tap.delete()
                 messages.success(request, 'Tap deleted.')
                 return redirect('kegadmin-taps')
@@ -432,19 +432,19 @@ def keg_list(request):
 
 @staff_member_required
 def keg_list_available(request):
-    qs = models.Keg.objects.filter(online=False, finished=False).order_by('-id')
+    qs = models.Keg.objects.filter(status=models.Keg.STATUS_AVAILABLE).order_by('-id')
     return keg_list_internal(request, qs)
 
 
 @staff_member_required
 def keg_list_online(request):
-    qs = models.Keg.objects.filter(online=True).order_by('-id')
+    qs = models.Keg.objects.filter(status=models.Keg.STATUS_ON_TAP).order_by('-id')
     return keg_list_internal(request, qs)
 
 
 @staff_member_required
 def keg_list_kicked(request):
-    qs = models.Keg.objects.filter(finished=True).order_by('-id')
+    qs = models.Keg.objects.filter(status=models.Keg.STATUS_FINISHED).order_by('-id')
     return keg_list_internal(request, qs)
 
 
@@ -482,6 +482,16 @@ def keg_detail(request, keg_id):
             request.backend.cancel_keg(keg)
             messages.success(request, 'Keg deleted.')
             return redirect('kegadmin-kegs')
+
+        elif 'submit_reactivate' in request.POST:
+            request.backend.reactivate_keg(keg)
+            messages.success(request, 'Keg reactivated.')
+            return redirect('kegadmin-edit-keg', keg_id=keg.id)
+
+        elif 'submit_end' in request.POST:
+            request.backend.end_keg(keg)
+            messages.success(request, 'Keg ended.')
+            return redirect('kegadmin-edit-keg', keg_id=keg.id)
 
     context = RequestContext(request)
     context['keg'] = keg

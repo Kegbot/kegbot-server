@@ -204,7 +204,7 @@ class BackendsTestCase(TestCase):
                 beverage_type='beer', producer_name=FAKE_BREWER_NAME,
                 style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
-        self.assertTrue(keg.online)
+        self.assertTrue(keg.is_on_tap())
 
         self.assertEquals(keg.current_tap, tap, "Tap did not become active.")
         tap = keg.current_tap
@@ -220,23 +220,23 @@ class BackendsTestCase(TestCase):
         self.assertEquals(style, FAKE_BEER_STYLE)
 
         # Now activate a new keg.
-        keg = self.backend.end_keg(tap)
+        keg = self.backend.end_keg(tap.current_keg)
         tap = models.KegTap.get_from_meter_name(METER_NAME)
         self.assertFalse(tap.is_active())
-        self.assertFalse(keg.online)
+        self.assertFalse(keg.is_on_tap())
 
         new_keg = self.backend.start_keg(METER_NAME, beverage=beverage)
         tap = models.KegTap.get_from_meter_name(METER_NAME)
         self.assertIsNotNone(new_keg)
         self.assertNotEquals(new_keg, keg)
         self.assertTrue(tap.is_active())
-        self.assertTrue(new_keg.online)
+        self.assertTrue(new_keg.is_on_tap())
 
         # Ensure the beer type was reused.
         self.assertEquals(new_keg.type, beverage)
 
         # Deactivate, and activate a new keg again by name.
-        self.backend.end_keg(tap)
+        self.backend.end_keg(tap.current_keg)
         new_keg_2 = self.backend.start_keg(METER_NAME, beverage_name='Other Beer',
                 beverage_type='beer', producer_name=FAKE_BREWER_NAME,
                 style_name=FAKE_BEER_STYLE)
@@ -246,7 +246,7 @@ class BackendsTestCase(TestCase):
 
         # New brewer, identical beer name == new beer type.
         tap = models.KegTap.get_from_meter_name(METER_NAME)
-        self.backend.end_keg(tap)
+        self.backend.end_keg(tap.current_keg)
         new_keg_3 = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
                 beverage_type='beer', producer_name='Other Brewer', style_name=FAKE_BEER_STYLE)
         self.assertNotEquals(new_keg_3.type.producer, keg.type.producer)

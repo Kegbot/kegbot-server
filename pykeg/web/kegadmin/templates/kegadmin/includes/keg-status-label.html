@@ -1,7 +1,9 @@
-{% if not keg.online and not keg.finished %}
+{% if keg.is_available %}
     <span class="label label-success">Untapped</span>
-{% elif keg.online and not keg.finished %}
+{% elif keg.is_on_tap %}
     <span class="label label-info">Online</span>
-{% else %}
+{% elif keg.is_finished %}
     <span class="label label-important">Kicked</span>
+{% else %}
+    <span class="label label-important">Unknown</span>
 {% endif %}

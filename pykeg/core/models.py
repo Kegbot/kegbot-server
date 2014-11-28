@@ -745,18 +745,6 @@ class Keg(models.Model):
     def is_finished(self):
         return self.status == self.STATUS_FINISHED
 
-    def previous(self):
-        q = Keg.objects.filter(start_time__lt=self.start_time).order_by('-start_time')
-        if q.count():
-            return q[0]
-        return None
-
-    def next(self):
-        q = Keg.objects.filter(start_time__gt=self.start_time).order_by('start_time')
-        if q.count():
-            return q[0]
-        return None
-
     def get_stats(self):
         return Stats.get_latest_for_view(keg=self)
 
@@ -785,12 +773,12 @@ class Keg(models.Model):
     def get_illustration_thumb(self):
         return self.get_illustration(thumbnail=True)
 
-    def Sessions(self):
+    def get_sessions(self):
         sessions_ids = Drink.objects.filter(keg=self.id).values('session').annotate(models.Count('id'))
         pks = [x.get('session') for x in sessions_ids]
         return [DrinkingSession.objects.get(pk=pk) for pk in pks]
 
-    def TopDrinkers(self):
+    def get_top_users(self):
         stats = self.get_stats()
         if not stats:
             return []

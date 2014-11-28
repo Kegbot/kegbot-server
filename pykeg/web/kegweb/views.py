@@ -127,8 +127,8 @@ def fullscreen(request):
 @cache_page(30)
 def keg_detail(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
-    sessions = keg.Sessions()
-    last_session = keg.Sessions()[:1]
+    sessions = keg.get_sessions()
+    last_session = sessions[:1]
 
     context = RequestContext(request, {
         'keg': keg,
@@ -206,7 +206,7 @@ def drinker_sessions(request, username):
 
 def keg_sessions(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
-    sessions = keg.Sessions()
+    sessions = keg.get_sessions()
 
     paginator = Paginator(sessions, 5)
 

@@ -17,10 +17,10 @@
   </div>
 
   <div class="span4">
-  <h2>Top Drinkers</h2>
+  <h2>Top Users</h2>
   {% chart users_by_volume stats 280 220 %}<br/>
 
-  {% with keg.TopDrinkers as ranked_drinkers %}
+  {% with keg.get_top_users as ranked_drinkers %}
     {% include "kegweb/drinker-rank.html" %}
   {% endwith %}
   <a href="{% url 'kb-keg' keg.id %}"

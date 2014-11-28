@@ -372,7 +372,7 @@ def all_sound_events(request):
 
 def get_keg_sessions(request, keg_id):
     keg = get_object_or_404(models.Keg, id=keg_id)
-    sessions = keg.Sessions()
+    sessions = keg.get_sessions()
     return sessions
 
 

@@ -63,7 +63,6 @@ class CurrentRequestMiddleware:
         set_current_request(request)
 
     def process_response(self, request, response):
-        request.kb = None
         set_current_request(None)
         return response
 

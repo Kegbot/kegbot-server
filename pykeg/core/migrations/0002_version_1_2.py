@@ -21,6 +21,20 @@ def set_initial_status(apps, schema_editor):
             keg.save()
 
 
+def set_initial_time_zone(apps, schema_editor):
+    KegbotSite = apps.get_model("core", "KegbotSite")
+    try:
+        site = KegbotSite.objects.get(name='default')
+    except KegbotSite.DoesNotExist:
+        return
+    timezone = site.timezone
+
+    DrinkingSession = apps.get_model("core", "DrinkingSession")
+    for session in DrinkingSession.objects.all():
+        session.timezone = timezone
+        session.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -72,4 +86,23 @@ class Migration(migrations.Migration):
             model_name='keg',
             name='online',
         ),
+        migrations.AlterField(
+            model_name='keg',
+            name='full_volume_ml',
+            field=models.FloatField(default=0, help_text=b'Full volume of this Keg; usually set automatically from keg_type.'),
+            preserve_default=True,
+        ),
+        migrations.AlterField(
+            model_name='keg',
+            name='keg_type',
+            field=models.CharField(default=b'half-barrel', help_text=b"Keg container type, used to initialize keg's full volume", max_length=32, choices=[(b'corny-2_5-gal', b'Corny Key (2.5 gal)'), (b'other', b'Other'), (b'quarter', b'Quarter Barrel (7.75 gal)'), (b'half-barrel', b'Half Barrel (15.5 gal)'), (b'euro-half', b'European Half Barrel (50 L)'), (b'corny', b'Corny Keg (5 gal)'), (b'sixth', b'Sixth Barrel (5.17 gal)'), (b'corny-3-gal', b'Corny Keg (3.0 gal)'), (b'euro-30-liter', b'European DIN (30 L)'), (b'euro', b'European Full Barrel (100 L)')]),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='drinkingsession',
+            name='timezone',
+            field=models.CharField(default=b'UTC', max_length=256),
+            preserve_default=True,
+        ),
+        migrations.RunPython(set_initial_time_zone),
     ]

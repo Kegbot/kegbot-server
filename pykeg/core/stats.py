@@ -21,7 +21,9 @@
 import copy
 import inspect
 import logging
+import pytz
 
+from django.utils.timezone import localtime
 from pykeg.core import models
 from kegbot.util import util
 
@@ -131,7 +133,9 @@ class StatsBuilder:
 
     def volume_by_day_of_week(self, drink, previous_stats, previous_value={}):
         ret = copy.copy(previous_value)
-        drink_weekday = str(drink.session.start_time.strftime('%w'))
+        tz = pytz.timezone(drink.session.timezone)
+        local_time = localtime(drink.session.start_time, timezone=tz)
+        drink_weekday = str(local_time.strftime('%w'))
         ret[drink_weekday] = ret.get(drink_weekday, 0) + drink.volume_ml
         return ret
 

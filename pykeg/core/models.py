@@ -942,6 +942,7 @@ class DrinkingSession(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     volume_ml = models.FloatField(default=0)
+    timezone = models.CharField(max_length=256, default='UTC')
 
     objects = managers.SessionManager()
     name = models.CharField(max_length=256, blank=True, null=True)
@@ -1081,8 +1082,11 @@ class DrinkingSession(models.Model):
             drink.save()
             return session
 
-        # Create a new session
-        session = cls(start_time=drink.time, end_time=drink.time)
+        # Create a new session.
+        # Record the session's timezone, since this is important for statistical
+        # purposes (eg computing the day of the week).
+        tzname = KegbotSite.get().timezone
+        session = cls(start_time=drink.time, end_time=drink.time, timezone=tzname)
         session.save()
         session.AddDrink(drink)
         drink.session = session

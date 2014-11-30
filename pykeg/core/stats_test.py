@@ -187,3 +187,31 @@ class StatsTestCase(TransactionTestCase):
         # Intermediate stats are generated.
         self.assertEquals(3011, models.KegbotSite.get().get_stats().total_volume_ml)
         self.assertEquals(2111, drinks[-1].session.get_stats().total_volume_ml)
+
+    def test_timezone_awareness(self):
+        site = models.KegbotSite.get()
+        site.timezone = 'US/Pacific'
+        site.save()
+
+        drink_data = [
+            (100, self.users[0]),
+            (200, self.users[1]),
+            (200, self.users[2]),
+            (500, self.users[0]),
+        ]
+
+        drinks = []
+
+        # 1 AM UTC
+        now = make_datetime(2012, 1, 2, 1, 0)
+        for volume_ml, user in drink_data:
+            d = self.backend.record_drink('kegboard.flow0', ticks=volume_ml,
+                username=user.username, volume_ml=volume_ml, pour_time=now)
+            drinks.append(d)
+            self.assertEquals('US/Pacific', d.session.timezone)
+
+        stats = site.get_stats()
+        # Assert that stats are recorded for Sunday (day = 0) rather than
+        # UTC's monday (day = 1).
+        self.assertEquals({'0': 1000.0}, stats.volume_by_day_of_week)
+        self.assertEquals(600, self.users[0].get_stats().total_volume_ml)

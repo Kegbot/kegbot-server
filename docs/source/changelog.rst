@@ -15,6 +15,7 @@ Current Version (in development)
   earlier file format.
 * Django 1.7 update.
 * Flow sensing and multiuser features can be hidden.
+* Statistics now properly consider local timezone (#199).
 * Some new keg sizes are supported (#318).
 * Keg full volume and beverage type can be edited (#279).
 

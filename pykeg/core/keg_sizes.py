@@ -19,8 +19,11 @@
 """Constants about physical keg shell."""
 
 # Most common shell sizes, from smalles to largest.
+CORNY_25 = 'corny-2_5-gal'
+CORNY_30 = 'corny-3-gal'
 CORNY = 'corny'
 SIXTH_BARREL = 'sixth'
+EURO_30_LITER = 'euro-30-liter'
 EURO_HALF_BARREL = 'euro-half'
 QUARTER_BARREL = 'quarter'
 EURO = 'euro'
@@ -28,8 +31,11 @@ HALF_BARREL = 'half-barrel'
 OTHER = 'other'
 
 VOLUMES_ML = {
+    CORNY_25: 9463.53,
+    CORNY_30: 11356.2,
     CORNY: 18927.1,
     SIXTH_BARREL: 19570.6,
+    EURO_30_LITER: 300000.0,
     EURO_HALF_BARREL: 50000.0,
     QUARTER_BARREL: 29336.9,
     EURO: 100000.0,
@@ -38,8 +44,11 @@ VOLUMES_ML = {
 }
 
 DESCRIPTIONS = {
+    CORNY_25: 'Corny Key (2.5 gal)',
+    CORNY_30: 'Corny Keg (3.0 gal)',
     CORNY: 'Corny Keg (5 gal)',
     SIXTH_BARREL: 'Sixth Barrel (5.17 gal)',
+    EURO_30_LITER: 'European DIN (30 L)',
     EURO_HALF_BARREL: 'European Half Barrel (50 L)',
     QUARTER_BARREL: 'Quarter Barrel (7.75 gal)',
     EURO: 'European Full Barrel (100 L)',

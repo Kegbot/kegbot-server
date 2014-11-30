@@ -57,7 +57,9 @@ def is_installed():
     args += ['-e', "'show tables like \"core_kegbotsite\";'"]
 
     cmd = ' '.join(args)
+    logger.info('command: {}'.format(cmd))
     output = subprocess.check_output(cmd, shell=True)
+    logger.info('result: {}'.format(output))
     return 'core_kegbotsite' in output
 
 

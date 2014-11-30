@@ -24,6 +24,7 @@ from django.conf import settings
 from collections import deque
 from uuid import uuid1
 
+from django.contrib.auth.hashers import make_password
 from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
@@ -45,6 +46,7 @@ MAXIMUM_POUR_SIZE_ML = 450
 # Predictably generate same demo data.
 RANDOM_SEED = 42
 START_DATE = datetime.datetime(2014, 10, 1)
+random.seed(RANDOM_SEED)
 
 """Generates a bunch of fake drinks from a configuration."""
 
@@ -71,6 +73,10 @@ class LoadDemoDataCommand(BaseCommand):
             # Install demo data.
             for username in demo_data['drinkers']:
                 user = models.User.objects.create_superuser(username=username, email=None, password=username)
+                pw = make_password(username, salt='demo')
+                user.password = pw
+                user.date_joined = START_DATE
+                user.save()
 
                 picture_path = os.path.join(data_dir, 'pictures', 'drinkers', username, 'mugshot.png')
                 if os.path.exists(picture_path):
@@ -91,7 +97,6 @@ class LoadDemoDataCommand(BaseCommand):
                 else:
                     pass
 
-            random.seed(RANDOM_SEED)
             sessions = self.build_random_sessions(models.User.objects.all(),
                 NUM_SESSIONS, demo_data['shouts'])
 
@@ -124,12 +129,12 @@ class LoadDemoDataCommand(BaseCommand):
 
         # End keg if it's near empty.
         if tap.current_keg and tap.current_keg.remaining_volume_ml() < volume_ml:
-            be.end_keg(tap.current_keg)
+            be.end_keg(tap.current_keg, when=when)
 
         # Start keg if the tap is idle.
         if not tap.current_keg:
             beverage = random_item(models.Beverage)
-            be.start_keg(tap, beverage=beverage)
+            be.start_keg(tap, beverage=beverage, when=when)
 
         drink = be.record_drink(tap, ticks=0, volume_ml=volume_ml,
             username=user.username, pour_time=when, shout=shout)

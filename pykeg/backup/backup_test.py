@@ -69,7 +69,7 @@ class BackupTestCase(TransactionTestCase):
         backup_dir = backup.create_backup_tree(self.now, storage=self.storage)
 
         try:
-            self.assertMetadata(backup_dir)
+            self.assertMetadata(backup_dir, site_name='kegbot')
         finally:
             shutil.rmtree(backup_dir)
 

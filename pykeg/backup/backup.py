@@ -107,6 +107,7 @@ def get_title():
         return row[0]
     return 'kegbot'
 
+
 def read_metadata(zipfile):
     """Reads and returns metadata from a backup zipfile."""
     for info in zipfile.infolist():

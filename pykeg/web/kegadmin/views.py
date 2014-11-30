@@ -44,9 +44,9 @@ from django.views.decorators.http import require_http_methods
 
 from kegbot.util import kbjson
 
+from pykeg.backup import backup
 from pykeg.web.api import devicelink
 from pykeg.celery import app as celery_app
-from pykeg.core import backup
 from pykeg.core import checkin
 from pykeg.core import models
 from pykeg.logging.handlers import RedisListHandler

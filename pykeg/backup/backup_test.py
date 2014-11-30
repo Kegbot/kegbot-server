@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Unittests for pykeg.core.backup"""
+"""Unittests for pykeg.backup.backup"""
 
 import difflib
 import os

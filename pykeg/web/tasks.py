@@ -20,8 +20,8 @@
 
 from pykeg.plugin import util as plugin_util
 from pykeg import notification
+from pykeg.backup import backup
 from pykeg.core import stats
-from pykeg.core import backup
 from django.db import transaction
 
 from pykeg.celery import app

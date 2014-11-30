@@ -440,7 +440,7 @@ class KegbotBackend(object):
         """Creates and attaches a new keg."""
         tap = self._get_tap(tap)
         keg = self.create_keg(beverage, keg_type, full_volume_ml, beverage_name, beverage_type,
-                producer_name, style_name, notes=None, description=None)
+                producer_name, style_name, notes=None, description=None, when=when)
         return self.attach_keg(tap, keg)
 
     @transaction.atomic
@@ -503,14 +503,16 @@ class KegbotBackend(object):
         return keg
 
     @transaction.atomic
-    def end_keg(self, keg):
+    def end_keg(self, keg, when=None):
         """Takes the given keg offline."""
+        if not when:
+            when = timezone.now()
 
         if keg.status == keg.STATUS_ON_TAP:
             keg = self.disconnect_keg(keg)
 
         keg.status = keg.STATUS_FINISHED
-        keg.end_time = timezone.now()
+        keg.end_time = when
         keg.save()
 
         events = models.SystemEvent.build_events_for_keg(keg)
@@ -522,7 +524,8 @@ class KegbotBackend(object):
     @transaction.atomic
     def create_keg(self, beverage=None, keg_type=keg_sizes.HALF_BARREL,
             full_volume_ml=None, beverage_name=None, beverage_type=None,
-            producer_name=None, style_name=None, notes=None, description=None):
+            producer_name=None, style_name=None, notes=None, description=None,
+            when=None):
         """Adds a new keg to the keg room (queue).
 
         A beverage must be specified, either by providing an existing
@@ -576,7 +579,8 @@ class KegbotBackend(object):
         else:
             full_volume_ml = full_volume_ml
 
-        when = timezone.now()
+        if not when:
+            when = timezone.now()
 
         keg = models.Keg.objects.create(type=beverage, keg_type=keg_type,
                 full_volume_ml=full_volume_ml,

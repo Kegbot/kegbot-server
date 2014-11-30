@@ -265,7 +265,7 @@ def _build_single_view(drink, view, prior_stats=None):
     for build_drink in build_list:
         logger.debug('  - operating on drink {}'.format(build_drink.id))
         stats = BUILDER.build(drink=build_drink, previous_stats=prior_stats)
-        models.Stats.objects.create(drink=build_drink, user=view.user,
+        models.Stats.objects.create(drink=build_drink, user=view.user, time=build_drink.time,
             session=view.session, keg=view.keg, stats=stats, is_first=(not prior_stats))
         prior_stats = stats
     logger.debug('<<< Done.')

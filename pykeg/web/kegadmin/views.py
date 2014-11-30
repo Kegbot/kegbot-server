@@ -79,14 +79,16 @@ def dashboard(request):
         except redis.RedisError as e:
             context['redis_error'] = e.message if e.message else "Unknown error."
 
-    checkin_info = checkin.get_last_checkin()
-    context['last_checkin_time'] = checkin_info[0]
-    context['checkin'] = checkin_info[1]
-    for news in checkin_info[1].get('news', []):
-        try:
-            news['date'] = isodate.parse_datetime(news['date'])
-        except (KeyError, ValueError):
-            pass
+    last_checkin_time, last_checkin = checkin.get_last_checkin()
+    context['last_checkin_time'] = last_checkin_time
+    context['checkin'] = last_checkin
+
+    if last_checkin:
+        for news in last_checkin.get('news', []):
+            try:
+                news['date'] = isodate.parse_datetime(news['date'])
+            except (KeyError, ValueError):
+                pass
 
     active_users = models.User.objects.filter(is_active=True).exclude(username='guest')
     context['num_users'] = len(active_users)

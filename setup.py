@@ -23,8 +23,7 @@ DEPENDENCIES = [
   'django-socialregistration == 0.5.10',
   'django-bootstrap-pagination == 0.1.10',
 
-  'Celery == 3.1.11',
-  'kombu == 3.0.16',
+  'Celery == 3.1.17',
 
   'django-crispy-forms == 1.2.8',
   'foursquare == 2014.04.10',
@@ -34,7 +33,7 @@ DEPENDENCIES = [
   'protobuf == 2.5.0',
   'python-gflags == 2.0',
   'django-redis == 3.6.1',
-  'pytz == 2014.2',
+  'pytz',
   'redis == 2.9.1',
   'requests == 2.2.1',
   'tweepy == 2.2',

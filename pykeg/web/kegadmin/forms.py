@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit, Field, HTML
+from crispy_forms.layout import Layout, Submit, Field, HTML
 from crispy_forms.bootstrap import FormActions
 
 from kegbot.util import units
@@ -22,8 +22,8 @@ class ChangeKegForm(forms.Form):
         initial=keg_sizes.HALF_BARREL,
         required=True)
 
-    initial_volume = forms.FloatField(label='Initial Volume (Liters)', initial=0.0,
-        required=False, help_text='Keg\'s Initial Volume in Liters')
+    initial_volume = forms.FloatField(label='Initial Volume', initial=0.0,
+        required=False, help_text='Keg\'s Initial Volume')
 
     beer_name = forms.CharField(required=False)  # legacy
     brewer_name = forms.CharField(required=False)  # legacy
@@ -44,9 +44,7 @@ class ChangeKegForm(forms.Form):
         Field('producer_id', type='hidden'),
         Field('style_name', css_class='input-xlarge'),
         Field('keg_size', css_class='input-xlarge'),
-        Div(
-            Field('initial_volume', css_class='input-volume', type='hidden'),
-            css_class="variable-units"),
+        Field('initial_volume', css_class='input-volume'),
         FormActions(
             Submit('submit_change_keg_form', 'Activate Keg', css_class='btn-primary'),
         )
@@ -196,8 +194,8 @@ class KegForm(forms.Form):
         initial=keg_sizes.HALF_BARREL,
         required=True)
 
-    initial_volume = forms.FloatField(label='Initial Volume (Liters)', initial=0.0,
-        required=False, help_text='Keg\'s Initial Volume in Liters')
+    initial_volume = forms.FloatField(label='Initial Volume', initial=0.0,
+        required=False, help_text='Keg\'s Initial Volume')
 
     beer_name = forms.CharField(required=False)  # legacy
     brewer_name = forms.CharField(required=False)  # legacy
@@ -228,9 +226,7 @@ class KegForm(forms.Form):
         Field('producer_id', type='hidden'),
         Field('style_name', css_class='input-xlarge'),
         Field('keg_size', css_class='input-xlarge'),
-        Div(
-            Field('initial_volume', css_class='input-volume', type='hidden'),
-            css_class='variable-units'),
+        Field('initial_volume', css_class='input-volume'),
         Field('description', css_class='input-block-level', rows='3'),
         Field('notes', css_class='input-block-level', rows='3'),
         Field('connect_to', css_class='input-block-level'),
@@ -285,17 +281,19 @@ class KegForm(forms.Form):
 class EditKegForm(forms.ModelForm):
     class Meta:
         model = models.Keg
-        fields = ('spilled_ml', 'description', 'notes',)
+        fields = ('type', 'keg_type', 'full_volume_ml', 'spilled_ml', 'description', 'notes',)
         labels = {
+            'full_volume_ml': ('Full/Initial Volume'),
             'spilled_ml': ('Spilled Volume'),
         }
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
     helper.layout = Layout(
-        Div(
-            Field('spilled_ml', css_class='input-volume', type='hidden'),
-            css_class="variable-units"),
+        Field('type', css_class='input-block-level', rows='3'),
+        Field('keg_type', css_class='input-block-level', rows='3'),
+        Field('full_volume_ml', css_class='input-volume'),
+        Field('spilled_ml', css_class='input-volume'),
         Field('description', css_class='input-block-level', rows='3'),
         Field('notes', css_class='input-block-level', rows='3'),
         FormActions(

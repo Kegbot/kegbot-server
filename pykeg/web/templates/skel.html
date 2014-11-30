@@ -76,6 +76,76 @@
       });
       $('.keg-popover').popover();
   });
+
+  $(document).ready(function() {
+    $('.input-volume').each(function() {
+      var inputId = this.id;
+      var valueId = inputId + '-value';
+      var unitsId = inputId + '-units';
+
+      var newDiv = '<div class="control-group">';
+      newDiv += '<input type="hidden" id="' + inputId + '" name="' + this.name + '" value="' + $(this).val() + '">';
+      newDiv += '<input class="numberinput" type="number" step="0.01" id="';
+      newDiv += valueId;
+      newDiv += '" value="' + $(this).val() + '">';
+      newDiv += '<select id="' + unitsId + '" class="span2"> \
+      <option value="milliliters">Milliliters</option> \
+      <option value="ounces">Ounces</option> \
+      <option value="liters">Liters</option> \
+      <option value="gallons">Gallons</option> \
+      </select>';
+      newDiv += '</div>';
+
+      $(this).replaceWith(newDiv);
+
+      var hiddenInput = $('#' + inputId);
+      var valueInput = $('#' + valueId);
+      var unitsInput = $('#' + unitsId);
+
+      $(unitsInput).change(function() {
+        var currentUnits = $(this).val();
+        var currentValue = $(hiddenInput).val()
+
+        if (currentUnits == 'milliliters') {
+          var display = currentValue * 1.0;
+        } else if (currentUnits == 'ounces') {
+          var display = currentValue / 29.5735;
+        } else if (currentUnits == 'liters') {
+          var display = currentValue / 1000.0;
+        } else if (currentUnits == 'gallons') {
+          var display = currentValue / 3785.41;
+        }
+
+        display = +display.toFixed(2);
+        $(valueInput).val(display);
+      });
+
+      $(valueInput).change(function() {
+        var currentValue = $(this).val()
+        var currentUnits = $(unitsInput).val();
+
+        if (currentUnits == 'milliliters') {
+          var volume_ml = currentValue * 1.0;
+        } else if (currentUnits == 'ounces') {
+          var volume_ml = currentValue * 29.5735;
+        } else if (currentUnits == 'liters') {
+          var volume_ml = currentValue * 1000.0;
+        } else if (currentUnits == 'gallons') {
+          var volume_ml = currentValue * 3785.41;
+        }
+
+        $(hiddenInput).val(volume_ml);
+      });
+
+      var metric = {% if metric_volumes %}true{% else %}false{% endif %};
+      if (metric) {
+        $(unitsInput).val('liters');
+      } else {
+        $(unitsInput).val('ounces');
+      }
+    });
+
+  });
 </script>
 
 {% if user.is_staff %}

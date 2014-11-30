@@ -686,7 +686,7 @@ class Keg(models.Model):
         help_text='Keg container type, used to initialize keg\'s full volume')
     served_volume_ml = models.FloatField(default=0, editable=False,
         help_text='Computed served volume.')
-    full_volume_ml = models.FloatField(default=0, editable=False,
+    full_volume_ml = models.FloatField(default=0,
         help_text='Full volume of this Keg; usually set automatically from keg_type.')
     start_time = models.DateTimeField(default=timezone.now,
         help_text='Time the Keg was first tapped.')

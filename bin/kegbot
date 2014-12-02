@@ -19,7 +19,9 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import subprocess
 import sys
+
 from django.core import management
 from pykeg.core.util import get_version
 
@@ -31,9 +33,17 @@ if sys.version_info < (2, 7):
 if __name__ == "__main__":
   os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pykeg.settings")
 
-  # Hack: Django's `version` command cannot be overridden the usual way.
-  if len(sys.argv) > 1 and sys.argv[1] == 'version':
-    print 'kegbot-server {}'.format(get_version())
-    sys.exit(0)
+  # Override some special commands.
+  if len(sys.argv) > 1:
+    if sys.argv[1] == 'version':
+        # Hack: Django's `version` command cannot be overridden the usual way.
+        print 'kegbot-server {}'.format(get_version())
+        sys.exit(0)
+    elif sys.argv[1] == 'run_gunicorn':
+        # run_gunicorn was deprecated upstream.
+        cmd = 'gunicorn pykeg.web.wsgi:application {}'.format(' '.join(sys.argv[2:]))
+        sys.stderr.write('Warning: run_gunicorn is deprecated, call `{}` instead.\n'.format(cmd))
+        ret = subprocess.call(cmd, shell=True)
+        sys.exit(ret)
 
   management.execute_from_command_line()

@@ -39,5 +39,5 @@ class Command(RunnerCommand):
         ret.append(('workers', workers_command))
 
         extra_options = options.get('gunicorn_options', '')
-        ret.append(('guincorn', 'kegbot run_gunicorn --settings=pykeg.settings ' + extra_options))
+        ret.append(('guincorn', 'gunicorn pykeg.web.wsgi:application ' + extra_options))
         return ret

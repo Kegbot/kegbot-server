@@ -5,6 +5,10 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Current Version (in development)
+--------------------------------
+* Fixed `run_gunicorn` launcher.
+
 Version 1.2.0 (2014-12-01)
 --------------------------
 * Keg management improvements: The new "Keg Room" view shows kegs by status,

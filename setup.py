@@ -27,7 +27,7 @@ DEPENDENCIES = [
 
   'django-crispy-forms == 1.2.8',
   'foursquare == 2014.04.10',
-  'gunicorn == 18.0',
+  'gunicorn == 19.1.1',
   'MySQL-python == 1.2.5',
   'pillow == 2.4.0',
   'protobuf == 2.5.0',

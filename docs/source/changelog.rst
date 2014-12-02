@@ -5,8 +5,8 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
-Current Version (in development)
---------------------------------
+Version 1.2.1 (2014-12-02)
+--------------------------
 * Fixed `run_gunicorn` launcher.
 
 Version 1.2.0 (2014-12-01)

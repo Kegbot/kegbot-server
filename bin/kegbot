@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+import django
+
 import os
 import subprocess
 import sys
@@ -46,4 +48,5 @@ if __name__ == "__main__":
         ret = subprocess.call(cmd, shell=True)
         sys.exit(ret)
 
+  django.setup()
   management.execute_from_command_line()

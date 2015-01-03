@@ -26,11 +26,10 @@ import requests
 import stat
 import subprocess
 import sys
-import textwrap
 from pykeg.core.util import get_version
 
 
-SEPARATOR = '-'*72 + '\n'
+SEPARATOR = '-' * 72 + '\n'
 
 
 def writeline(fd, data):
@@ -59,7 +58,7 @@ def writelog(fd, log):
 
     traceback = log.get('traceback')
     if traceback:
-        indent = ' '* 6
+        indent = ' ' * 6
         fd.write('    * ')
         # writeline(fd, '    * Traceback')
         traceback = traceback.replace('\n', '\n' + indent)
@@ -126,11 +125,12 @@ def should_prompt():
 
     mode = os.fstat(sys.stdin.fileno()).st_mode
     if stat.S_ISFIFO(mode):
-         return False
+        return False
     elif stat.S_ISREG(mode):
-         return False
+        return False
     else:
-         return True
+        return True
+
 
 def prompt_to_post():
     sys.stderr.write('Bugreport collected!\n\n')

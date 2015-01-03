@@ -5,9 +5,17 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+Version 1.2.2 (2015-01-03)
+--------------------------
+* New command `kegbot bugreport` collects various system information.
+* Bugfix: Crash on end keg button (#326).
+* Bugfix: Unicode error during `kegbot upgrade` (#328).
+
+
 Version 1.2.1 (2014-12-02)
 --------------------------
 * Fixed `run_gunicorn` launcher.
+
 
 Version 1.2.0 (2014-12-01)
 --------------------------

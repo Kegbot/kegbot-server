@@ -390,7 +390,7 @@ def tap_detail(request, tap_id):
         elif 'submit_end_keg_form' in request.POST:
             end_keg_form = forms.EndKegForm(request.POST)
             if end_keg_form.is_valid():
-                old_keg = request.backend.end_keg(tap)
+                old_keg = request.backend.end_keg(tap.current_keg)
                 messages.success(request, 'Keg %s was ended.' % old_keg.id)
 
         elif 'submit_record_drink' in request.POST:

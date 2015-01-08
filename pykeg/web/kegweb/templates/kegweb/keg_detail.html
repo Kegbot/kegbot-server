@@ -30,7 +30,7 @@
             {% endif %}
           </h2>
 
-          {% if keg.is_online %}
+          {% if keg.current_tap %}
           {% progress_bar keg.percent_full %} 
           {% endif %}
           
@@ -50,7 +50,7 @@
             <tr>
               <th>Status</th>
               <td>
-                {% if keg.is_online %}
+                {% if keg.current_tap %}
                 Keg is <b>online</b>, and is {{ keg.keg_age.days }}
                 day{{keg.keg_age.days|pluralize}} old.
                 <span class="muted">

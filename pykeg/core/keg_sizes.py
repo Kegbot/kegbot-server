@@ -44,7 +44,7 @@ VOLUMES_ML = {
 }
 
 DESCRIPTIONS = {
-    CORNY_25: 'Corny Key (2.5 gal)',
+    CORNY_25: 'Corny Keg (2.5 gal)',
     CORNY_30: 'Corny Keg (3.0 gal)',
     CORNY: 'Corny Keg (5 gal)',
     SIXTH_BARREL: 'Sixth Barrel (5.17 gal)',

@@ -19,6 +19,7 @@
 """Constants about physical keg shell."""
 
 # Most common shell sizes, from smalles to largest.
+MINI = 'mini'
 CORNY_25 = 'corny-2_5-gal'
 CORNY_30 = 'corny-3-gal'
 CORNY = 'corny'
@@ -31,6 +32,7 @@ HALF_BARREL = 'half-barrel'
 OTHER = 'other'
 
 VOLUMES_ML = {
+    MINI: 5000,
     CORNY_25: 9463.53,
     CORNY_30: 11356.2,
     CORNY: 18927.1,
@@ -44,6 +46,7 @@ VOLUMES_ML = {
 }
 
 DESCRIPTIONS = {
+    MINI: 'Mini Keg (5 L)',
     CORNY_25: 'Corny Keg (2.5 gal)',
     CORNY_30: 'Corny Keg (3.0 gal)',
     CORNY: 'Corny Keg (5 gal)',

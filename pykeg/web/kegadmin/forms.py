@@ -457,7 +457,7 @@ class UserForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = models.User
-        fields = ('display_name',)
+        fields = ('username', 'display_name', 'email')
         if settings.EMBEDDED:
             fields = ('email', ) + fields
 

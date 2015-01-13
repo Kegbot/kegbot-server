@@ -38,3 +38,7 @@ class RegenerateApiKeyForm(forms.Form):
 class DeletePictureForm(forms.Form):
     picture = forms.ModelChoiceField(queryset=ALL_PICTURES, required=True,
          widget=forms.HiddenInput)
+
+
+class ChangeEmailForm(forms.Form):
+    email = forms.CharField(required=True)

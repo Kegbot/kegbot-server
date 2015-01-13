@@ -2,12 +2,24 @@
 {% load kegweblib %}
 {% load crispy_forms_tags %}
 
-{% block title %}Account: Notifications | {{ block.super }}{% endblock %}
-{% block pagetitle %}Account: Notifications{% endblock %}
+{% block title %}Account: E-Mail &amp; Notifications | {{ block.super }}{% endblock %}
+{% block pagetitle %}Account: E-Mail &amp; Notifications{% endblock %}
 
 {% block kb-account-main %}
 
-<h4>E-Mail Notifications</h4>
+<h4>E-Mail Address</h4>
+<div class="well">
+<form method="post" action="">
+   {% csrf_token %}
+   {{ email_form|crispy }}
+    <button type="submit" class="btn btn-success" name="submit-email">
+      <i class="icon-edit icon-white"></i> Update E-Mail Address</button>
+    </button>
+</form>
+</div>
+
+
+<h4>E-Mail Notification Preferences</h4>
 <div class="well">
 <p class="lead">
   Notify me via e-mail when:
@@ -16,7 +28,7 @@
 <form method="post" action="">
    {% csrf_token %}
    {{ form|crispy }}
-    <button type="submit" class="btn btn-success" name="submit">
+    <button type="submit" class="btn btn-success" name="submit-settings">
       <i class="icon-edit icon-white"></i> Update Settings</button>
     </button>
 </form>

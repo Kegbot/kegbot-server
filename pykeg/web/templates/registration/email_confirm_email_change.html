@@ -1,0 +1,38 @@
+{% extends 'notification/email_base.html' %}
+
+{% block subject %}[{{ site_name }}] Confirm e-mail address{% endblock %}
+
+{% block body_plain %}
+Some has just linked this e-mail address to their Kegbot account.
+
+If you requested this change, please click here:
+
+  {{ url }}
+
+If you did not request this change, you may ignore this message.
+
+{% endblock %}
+
+{% block body_html %}
+<p>
+  Some has just linked this e-mail address to their Kegbot account.
+</p>
+
+<p>
+  If you requested this change, please click here:
+  <a href="{{ url }}">{{ url }}</a>
+</p>
+
+<p>
+  If you did not request this change, you may ignore this message.
+</p>
+{% endblock %}
+
+{% block footer_plain %}
+
+{% endblock %}
+
+
+{% block footer_html %}
+
+{% endblock %}

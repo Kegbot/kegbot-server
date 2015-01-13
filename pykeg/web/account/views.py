@@ -35,6 +35,7 @@ from django.contrib.auth.views import password_change as password_change_orig
 from django.contrib.auth.views import password_change_done as password_change_done_orig
 
 from pykeg.core import models
+from pykeg.util import email
 from pykeg.web.kegweb import forms
 from pykeg.notification.forms import NotificationSettingsForm
 
@@ -93,20 +94,63 @@ def invite(request):
 def notifications(request):
     # TODO(mikey): Dynamically add settings forms for other e-mail
     # backends (currently hardcoded to email backend).
+
     context = RequestContext(request)
     existing_settings = models.NotificationSettings.objects.get_or_create(user=request.user,
         backend='pykeg.notification.backends.email.EmailNotificationBackend')[0]
+
     if request.method == 'POST':
-        form = NotificationSettingsForm(request.POST, instance=existing_settings)
-        if form.is_valid():
-            instance = form.save(commit=False)
-            instance.user = request.user
-            instance.backend = 'pykeg.notification.backends.email.EmailNotificationBackend'
-            instance.save()
-            messages.success(request, 'Settings updated')
-            existing_settings = instance
+        if 'submit-settings' in request.POST:
+            form = NotificationSettingsForm(request.POST, instance=existing_settings)
+            if form.is_valid():
+                instance = form.save(commit=False)
+                instance.user = request.user
+                instance.backend = 'pykeg.notification.backends.email.EmailNotificationBackend'
+                instance.save()
+                messages.success(request, 'Settings updated')
+                existing_settings = instance
+
+        elif 'submit-email' in request.POST:
+            form = forms.ChangeEmailForm(request.POST)
+            if form.is_valid():
+                new_email = form.cleaned_data['email']
+                if new_email == request.user.email:
+                    messages.warning(request, 'E-mail address unchanged.')
+                else:
+                    token = email.build_email_change_token(request.user, new_email)
+                    url = models.KegbotSite.get().reverse_full(
+                        'account-confirm-email', args=(), kwargs={'token': token})
+
+                    message = email.build_message(new_email, 'registration/email_confirm_email_change.html',
+                        {'url': url})
+                    message.send()
+                    messages.success(request, 'An e-mail confirmation has been sent to {}'.format(new_email))
+
+        else:
+            messages.error(request, 'Unknown request.')
+
     context['form'] = NotificationSettingsForm(instance=existing_settings)
+    context['email_form'] = forms.ChangeEmailForm(initial={'email': request.user.email})
+
     return render_to_response('account/notifications.html', context_instance=context)
+
+
+@login_required
+def confirm_email(request, token):
+    try:
+        uid, new_address = email.verify_email_change_token(request.user, token)
+        if uid != request.user.uid:
+            messages.error(request, 'E-mail confirmation does not exist for this account.')
+        elif request.user.email != new_address:
+            request.user.email = new_address
+            request.user.save()
+            messages.success(request, 'E-mail address successfully changed.')
+        else:
+            messages.warning(request, 'E-mail address unchanged.')
+    except ValueError:
+        messages.error(request, 'That token is not valid.')
+
+    return redirect('account-notifications')
 
 
 @never_cache

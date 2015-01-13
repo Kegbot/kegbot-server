@@ -153,7 +153,7 @@ class PrivacyMiddleware:
                     context=RequestContext(request), status=401)
             return None
         elif privacy == 'members':
-            if not request.user.is_authenticated or not request.user.is_active:
+            if not request.user.is_authenticated() or not request.user.is_active:
                 return SimpleTemplateResponse('kegweb/members_only.html',
                     context=RequestContext(request), status=401)
             return None

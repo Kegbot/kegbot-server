@@ -24,6 +24,7 @@ import zipfile
 
 import isodate
 import redis
+import subprocess
 
 from operator import itemgetter
 
@@ -228,6 +229,23 @@ def export(request):
     context['backups'] = backups
 
     return render_to_response('kegadmin/backup_export.html', context_instance=context)
+
+
+@staff_member_required
+def bugreport(request):
+    context = RequestContext(request)
+
+    error = None
+    try:
+        output = subprocess.check_output('kegbot bugreport --noinput', shell=True)
+    except subprocess.CalledProcessError as e:
+        logger.exception('Error running "kegbot bugreport" from admin console.')
+        error = e
+
+    context['bugreport'] = output
+    context['error'] = error
+
+    return render_to_response('kegadmin/bugreport.html', context_instance=context)
 
 
 @staff_member_required

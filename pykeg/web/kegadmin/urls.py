@@ -9,6 +9,7 @@ urlpatterns = patterns('pykeg.web.kegadmin.views',
     url(r'^settings/location/$', 'location_settings', name='kegadmin-location-settings'),
     url(r'^settings/advanced/$', 'advanced_settings', name='kegadmin-advanced-settings'),
 
+    url(r'^bugreport/$', 'bugreport', name='kegadmin-bugreport'),
     url(r'^export/$', 'export', name='kegadmin-export'),
 
     url(r'^beers/$', 'beverages_list', name='kegadmin-beverages'),

@@ -1,0 +1,21 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Bugreport | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Bugreport{% endblock %}
+
+{% block kegadmin-main %}
+
+<h3>Bugreport</h3>
+
+<p>
+  <i>Copy and paste the system information below. <em>Warning:</em> Bugreport
+  output can contain sensitive information.
+</p>
+
+<textarea readonly rows="10" class="input-block-level">
+{{ bugreport }}
+</textarea>
+
+{% endblock %}

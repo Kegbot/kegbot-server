@@ -5,6 +5,14 @@ Changelog
 
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
+
+Version 1.2.3 (2015-01-12)
+--------------------------
+* Allow users to change e-mail addresses.
+* Added "bugreport" admin page.
+* Fix invitation email footer.
+
+
 Version 1.2.2 (2015-01-03)
 --------------------------
 * New command `kegbot bugreport` collects various system information.

@@ -82,7 +82,6 @@ def auth_redirect(request):
     plugin = request.plugins['untappd']
     url = request.build_absolute_uri(reverse('plugin-untappd-callback'))
     url = url[:-18]
-#    url = 'http://jesse-kegbot.herokuapp.com/account/plugin/untappd/callback/'
     client = get_client(*plugin.get_credentials(), callback_url=url)
 
     request.session['untappd_client'] = client

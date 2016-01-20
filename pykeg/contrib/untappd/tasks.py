@@ -66,9 +66,9 @@ def untappd_checkin(token, beer_id, timezone_name, shout=None,
 #        data['geolat'] = geolat
 #        data['geolng'] = geolng
 # Make Changes for checkin testing
-        data['foursquare_id'] = "5686c2b8498e4403d6253246"
-        data['geolat'] = "40.14012231093143"
-        data['geolng'] = "-75.52587747573853"
+    data['foursquare_id'] = "5686c2b8498e4403d6253246"
+    data['geolat'] = "40.14012231093143"
+    data['geolng'] = "-75.52587747573853"
 
     if shout:
         data['shout'] = shout

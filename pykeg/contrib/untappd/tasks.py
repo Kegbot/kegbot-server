@@ -65,8 +65,7 @@ def untappd_checkin(token, beer_id, timezone_name, shout=None,
         data['foursquare_id'] = foursquare_venue_id
         data['geolat'] = geolat
         data['geolng'] = geolng
-    # Make Changes for checkin testing
-    
+
     if shout:
         data['shout'] = shout
 

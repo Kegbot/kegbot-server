@@ -506,6 +506,14 @@ class TokenForm(forms.ModelForm):
             raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
         return username
 
+class DeleteTokenForm(forms.Form):
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal user-select'
+    helper.layout = Layout(
+        FormActions(
+            Submit('delete_token', 'Delete Token', css_class='btn-danger'),
+        )
+    )
 
 class AddTokenForm(forms.ModelForm):
     class Meta:

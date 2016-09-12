@@ -183,14 +183,13 @@ def chart_users_by_volume(stats, *args, **kwargs):
         label = '<b>%s</b> (%.1f %s)' % (username, volume, units)
         data.append((label, volume))
 
-    other_vol = 0
-    for username, pints in data[10:]:
-        other_vol += pints
-
     def _sort_vol_desc(a, b):
         return cmp(b[1], a[1])
 
+    other_vol = 0
     data.sort(_sort_vol_desc)
+    for username, pints in data[10:]:
+        other_vol += pints
     data = data[:10]
     data.reverse()
 

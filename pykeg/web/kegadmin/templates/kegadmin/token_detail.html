@@ -7,10 +7,44 @@
 
 {% block kegadmin-main %}
 
-<h2>Edit Token</h2>
+<div id="deleteModal" class="modal hide fade" tabindex="-1"
+    role="dialog" aria-labelledby="deleteDialogLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteDialogLabel">Delete Token: {{ token.token_value }}?</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            Are you sure you want to delete <b>Token: {{ token.token_value }}</b>?
+            {% crispy delete_token_form %}
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>
 
-<h4>{{ token.token_value }} <small>({{ token.auth_device }})</small></h4>
-    
-{% crispy form %}
+<h3>{{ token.token_value }} <small>({{ token.auth_device }})</small></h3>
+<ul class="nav nav-tabs" id="tokenDetails">
+    <li><a href="#1" data-toggle="tab">Edit</a></li>
+    <li><a href="#deleteModal" data-toggle="modal">Delete Token</a></li>
+</ul>
 
+<div class="row-fluid">
+<div class="span12">
+
+<div class="tab-content">
+    <div class="tab-pane" id="1">
+        {% crispy form %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block kb-extrajs %}
+<script type="text/javascript">
+$(document).ready(function () {
+  $('#tokenDetails a:first').tab('show');
+});
+</script>
 {% endblock %}

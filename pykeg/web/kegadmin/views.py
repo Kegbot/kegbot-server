@@ -744,22 +744,31 @@ def token_list(request):
 @staff_member_required
 def token_detail(request, token_id):
     token = get_object_or_404(models.AuthenticationToken, id=token_id)
+    delete_token_form = forms.DeleteTokenForm()
+    context = RequestContext(request)
 
     username = ''
     if token.user:
         username = token.user.username
 
-    form = forms.TokenForm(instance=token, initial={'username': username})
     if request.method == 'POST':
-        form = forms.TokenForm(request.POST, instance=token)
-        if form.is_valid():
-            instance = form.save(commit=False)
-            instance.user = form.cleaned_data['user']
-            instance.save()
-            messages.success(request, 'Token updated.')
+        if 'delete_token' in request.POST:
+            delete_token_form = forms.DeleteTokenForm(request.POST)
+            if delete_token_form.is_valid():
+                token.delete()
+                messages.success(request, 'The token was deleted.')
+                return redirect('kegadmin-tokens')
+        else:
+            form = forms.TokenForm(request.POST, instance=token)
+            if form.is_valid():
+                instance = form.save(commit=False)
+                instance.user = form.cleaned_data['user']
+                instance.save()
+                messages.success(request, 'Token updated.')
 
-    context = RequestContext(request)
+    form = forms.TokenForm(instance=token, initial={'username': username})
     context['token'] = token
+    context['delete_token_form'] = delete_token_form
     context['form'] = form
     return render_to_response('kegadmin/token_detail.html', context_instance=context)
 

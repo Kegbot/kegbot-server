@@ -24,6 +24,7 @@
       {% if largest_session %}
       <li><a href="#4" data-toggle="tab">Largest Session</a></li>
       {% endif %}
+      <li><a href="#5" data-toggle="tab">Drinks</a></li>
     </ul>
 
     <div class="tab-content">
@@ -126,6 +127,44 @@
 
       </div>
       {% endif %}
+      <div class="tab-pane" id="5">
+
+          {% for drink in drinks %}
+            <div class="row">
+              <div class="span1">
+                {% mugshot_box drink.user 48 %}
+              </div>
+              <div class="span6">
+                <div style="vertical-align: bottom;">
+                  <span>
+                    <strong>{% drinker_name drink.user %}</strong> poured
+                    {% volume drink.volume_ml badge %}
+                    of {{ drink.keg.type.name }}
+                  </span>
+                  <span class="muted pull-right">
+                    <a href="{{ drink.get_absolute_url }}">{% timeago drink.time %}</a>
+                  </span>
+                </div>
+                {% with drink.picture as pic %}
+                {% if pic %}
+                  <p></p>
+                  <a class="gallery-image" rel="gallery-{{ gallery_id }}"
+                      href="{{ pic.resized.url }}"
+                      title="{% drinker_name drink.user nolink %} pouring drink {{ drink.id }}">
+                    <img class="lazy" data-original="{{ pic.resized.url }}" width="1024" height="1024"/>
+                    <noscript><img src="{{ pic.resized.url }}" width="1024" height="1024"/></noscript>
+                  </a>
+                {% endif %}
+                {% endwith %}
+                {% if drink.shout %}
+                  {% include 'kegweb/includes/drink_shout.html' %}
+                {% endif %}
+                <hr/>
+              </div>
+            </div>
+          {% endfor %}
+
+      </div>
 
     </div> <!-- tab-content -->
   </div>

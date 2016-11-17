@@ -559,6 +559,45 @@ class CancelDrinkForm(forms.Form):
     pass
 
 
+class DeleteDrinksForm(forms.Form):
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal user-select'
+    helper.layout = Layout(
+        HTML("""<table class="table table-hover table-bordered">
+<thead>
+    <tr>
+        <th>Select</th>
+        <th>Drink</th>
+        <th>Date</th>
+        <th>Volume</th>
+        <th>User</th>
+        <th>Keg</th>
+        </tr>
+    </thead>
+<tbody>
+{% load kegweblib %}
+{% for drink in drinks %}
+<tr>
+    <td><input type="checkbox" name="delete_ids[]" value="{{ drink.id }}"></td>
+    <td>
+        <div class="form-horizontal">
+            <a class="btn btn-small btn-primary" href="{% url "kb-drink" drink.id %}">Edit</a>&nbsp;&nbsp;
+            <span>{{ drink.id }}</span>
+    </td>
+    <td>{{ drink.time }}</td>
+    <td>{% volume drink.volume_ml %}</td>
+    <td>{{ drink.user }}</td>
+    <td>{{ drink.keg }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>"""),
+        FormActions(
+            Submit('delete_drinks', 'Delete Drinks', css_class='btn-danger'),
+        )
+    )
+
+
 class ReassignDrinkForm(forms.Form):
     username = forms.CharField(required=True)
 

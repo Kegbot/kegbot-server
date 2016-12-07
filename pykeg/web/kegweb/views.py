@@ -88,7 +88,7 @@ def system_stats(request):
 ### object lists and detail (generic views)
 
 def user_detail(request, username):
-    user = get_object_or_404(models.User, username=username, is_active=True)
+    user = get_object_or_404(models.User, username=username)
     stats = user.get_stats()
     drinks = user.drinks.all()
 
@@ -177,7 +177,7 @@ def drink_detail(request, drink_id):
 
 
 def drinker_sessions(request, username):
-    user = get_object_or_404(models.User, username=username, is_active=True)
+    user = get_object_or_404(models.User, username=username)
     stats = user.get_stats()
     drinks = user.drinks.all()
 

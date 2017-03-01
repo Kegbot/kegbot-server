@@ -719,6 +719,8 @@ class Keg(models.Model):
         return self.full_volume_ml - self.served_volume_ml - self.spilled_ml
 
     def percent_full(self):
+        if self.full_volume_ml is None or self.full_volume_ml <= 0:
+            return 0
         result = float(self.remaining_volume_ml()) / float(self.full_volume_ml) * 100
         result = max(min(result, 100), 0)
         return result

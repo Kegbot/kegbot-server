@@ -650,6 +650,25 @@ def user_detail(request, user_id):
 
 @staff_member_required
 def drink_list(request):
+    delete_drinks_form = forms.DeleteDrinksForm()
+
+    if 'delete_drinks' in request.POST:
+        form = forms.DeleteDrinksForm(request.POST)
+        if form.is_valid():
+            delete_ids = request.POST.getlist("delete_ids[]")
+            drinks = models.Drink.objects.filter(Q(id__in=delete_ids))
+            for drink in drinks:
+                drink.delete()
+            delete_ids.reverse()
+            if len(delete_ids) == 1:
+                messages.success(request, 'Drink ' + delete_ids[0] + ' has been deleted.')
+            elif len(delete_ids) == 2:
+                messages.success(request, 'Drinks ' + ' and '.join(delete_ids) +
+		' have been deleted.')
+            else:
+                messages.success(request, 'Drinks ' + ', '.join(delete_ids[:-1]) + ', and ' +
+		delete_ids[-1] + ' have been deleted.')
+
     context = RequestContext(request)
     drinks = models.Drink.objects.all().order_by('-time')
     paginator = Paginator(drinks, 25)
@@ -663,6 +682,7 @@ def drink_list(request):
         drinks = paginator.page(paginator.num_pages)
 
     context['drinks'] = drinks
+    context['delete_drinks_form'] = delete_drinks_form
     return render_to_response('kegadmin/drink_list.html', context_instance=context)
 
 

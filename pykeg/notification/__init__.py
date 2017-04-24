@@ -74,5 +74,8 @@ def handle_single_event(event, backends):
         logger.debug('Matching prefs: %s' % str(prefs))
         for matching_pref in prefs:
             user = matching_pref.user
+            if not user.is_active:
+                logger.info('Skipping notification for inactive user %s' % user)
+                continue
             logger.info('Notifying %s for event %s' % (user, kind))
             backend.notify(event, user)

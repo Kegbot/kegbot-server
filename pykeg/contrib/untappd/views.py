@@ -81,6 +81,8 @@ def auth_redirect(request):
 
     plugin = request.plugins['untappd']
     url = request.build_absolute_uri(reverse('plugin-untappd-callback'))
+    if not url.endswith('/'):
+        url = url[:-18]
     client = get_client(*plugin.get_credentials(), callback_url=url)
 
     request.session['untappd_client'] = client

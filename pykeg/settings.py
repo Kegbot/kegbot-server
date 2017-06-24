@@ -134,8 +134,6 @@ MIDDLEWARE_CLASSES = (
     'pykeg.web.api.middleware.ApiRequestMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',
 
-    'django.middleware.doc.XViewMiddleware',
-
     # Cache middleware should be last, except for ApiResponseMiddleWare,
     # which needs to be after it (in request order) so that it can
     # update the Cache-Control header before it (in reponse order).

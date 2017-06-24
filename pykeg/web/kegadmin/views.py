@@ -38,7 +38,7 @@ from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 
 @staff_member_required
 def dashboard(request):
-    context = RequestContext(request)
+    context = {}
 
     # Hack: Schedule an update checkin if it looks like it's been a while.
     # This works around sites that are not running celerybeat.
@@ -102,12 +102,12 @@ def dashboard(request):
         import local_settings
         context['localsettings_path'] = local_settings.__file__.replace('.pyc', '.py')
 
-    return render_to_response('kegadmin/dashboard.html', context_instance=context)
+    return render(request, 'kegadmin/dashboard.html', context=context)
 
 
 @staff_member_required
 def general_settings(request):
-    context = RequestContext(request)
+    context = {}
     kbsite = request.kbsite
 
     form = forms.GeneralSiteSettingsForm(instance=kbsite)
@@ -120,12 +120,12 @@ def general_settings(request):
             return redirect('kegadmin-main')
     context['settings_form'] = form
 
-    return render_to_response('kegadmin/index.html', context_instance=context)
+    return render(request, 'kegadmin/index.html', context=context)
 
 
 @staff_member_required
 def location_settings(request):
-    context = RequestContext(request)
+    context = {}
     kbsite = request.kbsite
 
     form = forms.LocationSiteSettingsForm(instance=kbsite)
@@ -138,12 +138,12 @@ def location_settings(request):
             return redirect('kegadmin-location-settings')
     context['settings_form'] = form
 
-    return render_to_response('kegadmin/index.html', context_instance=context)
+    return render(request, 'kegadmin/index.html', context=context)
 
 
 @staff_member_required
 def advanced_settings(request):
-    context = RequestContext(request)
+    context = {}
     kbsite = request.kbsite
 
     form = forms.AdvancedSiteSettingsForm(instance=kbsite)
@@ -163,12 +163,12 @@ def advanced_settings(request):
             return redirect('kegadmin-advanced-settings')
     context['settings_form'] = form
 
-    return render_to_response('kegadmin/index.html', context_instance=context)
+    return render(request, 'kegadmin/index.html', context=context)
 
 
 @staff_member_required
 def email(request):
-    context = RequestContext(request)
+    context = {}
     kbsite = request.kbsite
 
     email_backend = getattr(settings, 'EMAIL_BACKEND', None)
@@ -189,12 +189,12 @@ def email(request):
 
     context['email_configured'] = email_configured
 
-    return render_to_response('kegadmin/email.html', context_instance=context)
+    return render(request, 'kegadmin/email.html', context=context)
 
 
 @staff_member_required
 def export(request):
-    context = RequestContext(request)
+    context = {}
     backups = []
     storage = get_storage_class()()
 
@@ -228,12 +228,12 @@ def export(request):
     backups.sort(key=itemgetter(backup.META_CREATED_TIME), reverse=True)
     context['backups'] = backups
 
-    return render_to_response('kegadmin/backup_export.html', context_instance=context)
+    return render(request, 'kegadmin/backup_export.html', context=context)
 
 
 @staff_member_required
 def bugreport(request):
-    context = RequestContext(request)
+    context = {}
 
     error = None
     try:
@@ -245,12 +245,12 @@ def bugreport(request):
     context['bugreport'] = output
     context['error'] = error
 
-    return render_to_response('kegadmin/bugreport.html', context_instance=context)
+    return render(request, 'kegadmin/bugreport.html', context=context)
 
 
 @staff_member_required
 def workers(request):
-    context = RequestContext(request)
+    context = {}
 
     try:
         inspector = celery_app.control.inspect()
@@ -278,14 +278,14 @@ def workers(request):
     context['status'] = status
     context['raw_stats'] = kbjson.dumps(context['status'], indent=2)
 
-    return render_to_response('kegadmin/workers.html', context_instance=context)
+    return render(request, 'kegadmin/workers.html', context=context)
 
 
 @staff_member_required
 def controller_list(request):
-    context = RequestContext(request)
+    context = {}
     context['controllers'] = models.Controller.objects.all()
-    return render_to_response('kegadmin/controller_list.html', context_instance=context)
+    return render(request, 'kegadmin/controller_list.html', context=context)
 
 
 @staff_member_required
@@ -296,7 +296,7 @@ def controller_detail(request, controller_id):
     add_flow_meter_form.fields['controller'].initial = controller_id
     add_flow_toggle_form = forms.AddFlowToggleForm()
     add_flow_toggle_form.fields['controller'].initial = controller_id
-    context = RequestContext(request)
+    context = {}
 
     if request.method == 'POST':
         if 'delete_controller' in request.POST:
@@ -341,19 +341,19 @@ def controller_detail(request, controller_id):
     context['delete_controller_form'] = delete_controller_form
     context['add_flow_meter_form'] = add_flow_meter_form
     context['add_flow_toggle_form'] = add_flow_toggle_form
-    return render_to_response('kegadmin/controller_detail.html', context_instance=context)
+    return render(request, 'kegadmin/controller_detail.html', context=context)
 
 
 @staff_member_required
 def tap_list(request):
-    context = RequestContext(request)
+    context = {}
     context['taps'] = models.KegTap.objects.all()
-    return render_to_response('kegadmin/tap_list.html', context_instance=context)
+    return render(request, 'kegadmin/tap_list.html', context=context)
 
 
 @staff_member_required
 def add_tap(request):
-    context = RequestContext(request)
+    context = {}
     form = forms.TapForm()
     if request.method == 'POST':
         form = forms.TapForm(request.POST)
@@ -362,7 +362,7 @@ def add_tap(request):
             messages.success(request, 'Tap created.')
             return redirect('kegadmin-taps')
     context['form'] = form
-    return render_to_response('kegadmin/add_tap.html', context_instance=context)
+    return render(request, 'kegadmin/add_tap.html', context=context)
 
 
 @staff_member_required
@@ -438,7 +438,7 @@ def tap_detail(request, tap_id):
 
     end_keg_form = forms.EndKegForm(initial={'keg': tap.current_keg})
 
-    context = RequestContext(request)
+    context = {}
     context['tap'] = tap
     context['current_keg'] = tap.current_keg
     context['available_kegs'] = available_kegs
@@ -447,7 +447,7 @@ def tap_detail(request, tap_id):
     context['end_keg_form'] = end_keg_form
     context['tap_settings_form'] = tap_settings_form
     context['delete_tap_form'] = forms.DeleteTapForm()
-    return render_to_response('kegadmin/tap_detail.html', context_instance=context)
+    return render(request, 'kegadmin/tap_detail.html', context=context)
 
 
 @staff_member_required
@@ -475,7 +475,7 @@ def keg_list_kicked(request):
 
 
 def keg_list_internal(request, qs):
-    context = RequestContext(request)
+    context = {}
     paginator = Paginator(qs, 30)
 
     page = request.GET.get('page')
@@ -487,7 +487,7 @@ def keg_list_internal(request, qs):
         kegs = paginator.page(paginator.num_pages)
 
     context['kegs'] = kegs
-    return render_to_response('kegadmin/keg_list.html', context_instance=context)
+    return render(request, 'kegadmin/keg_list.html', context=context)
 
 
 @staff_member_required
@@ -519,12 +519,12 @@ def keg_detail(request, keg_id):
             messages.success(request, 'Keg ended.')
             return redirect('kegadmin-edit-keg', keg_id=keg.id)
 
-    context = RequestContext(request)
+    context = {}
     context['keg'] = keg
     context['remaining'] = keg.remaining_volume_ml()
     context['edit_form'] = edit_form
 
-    return render_to_response('kegadmin/keg_detail.html', context_instance=context)
+    return render(request, 'kegadmin/keg_detail.html', context=context)
 
 
 @staff_member_required
@@ -538,15 +538,15 @@ def keg_add(request):
                 messages.success(request, 'New keg added.')
                 return redirect('kegadmin-edit-keg', keg_id=keg.id)
 
-    context = RequestContext(request)
+    context = {}
     context['keg'] = 'new'
     context['form'] = add_keg_form
-    return render_to_response('kegadmin/keg_add.html', context_instance=context)
+    return render(request, 'kegadmin/keg_add.html', context=context)
 
 
 @staff_member_required
 def user_list(request):
-    context = RequestContext(request)
+    context = {}
 
     if request.method == 'POST':
         form = forms.FindUserForm(request.POST)
@@ -570,12 +570,12 @@ def user_list(request):
         users = paginator.page(paginator.num_pages)
 
     context['users'] = users
-    return render_to_response('kegadmin/user_list.html', context_instance=context)
+    return render(request, 'kegadmin/user_list.html', context=context)
 
 
 @staff_member_required
 def add_user(request):
-    context = RequestContext(request)
+    context = {}
     form = forms.UserForm()
     if request.method == 'POST':
         form = forms.UserForm(request.POST)
@@ -586,13 +586,13 @@ def add_user(request):
             messages.success(request, 'User "%s" created.' % instance.username)
             return redirect('kegadmin-users')
     context['form'] = form
-    return render_to_response('kegadmin/add_user.html', context_instance=context)
+    return render(request, 'kegadmin/add_user.html', context=context)
 
 
 @staff_member_required
 def user_detail(request, user_id):
     edit_user = get_object_or_404(models.User, id=user_id)
-    context = RequestContext(request)
+    context = {}
     profile_form = forms.UserProfileForm(instance=edit_user)
 
     if request.method == 'POST':
@@ -645,7 +645,7 @@ def user_detail(request, user_id):
     context['edit_user'] = edit_user
     context['tokens'] = edit_user.tokens.all().order_by('created_time')
 
-    return render_to_response('kegadmin/user_detail.html', context_instance=context)
+    return render(request, 'kegadmin/user_detail.html', context=context)
 
 
 @staff_member_required
@@ -669,7 +669,7 @@ def drink_list(request):
                 messages.success(request, 'Drinks ' + ', '.join(delete_ids[:-1]) + ', and ' +
 		delete_ids[-1] + ' have been deleted.')
 
-    context = RequestContext(request)
+    context = {}
     drinks = models.Drink.objects.all().order_by('-time')
     paginator = Paginator(drinks, 25)
 
@@ -683,7 +683,7 @@ def drink_list(request):
 
     context['drinks'] = drinks
     context['delete_drinks_form'] = delete_drinks_form
-    return render_to_response('kegadmin/drink_list.html', context_instance=context)
+    return render(request, 'kegadmin/drink_list.html', context=context)
 
 
 @staff_member_required
@@ -745,7 +745,7 @@ def drink_edit(request, drink_id):
 
 @staff_member_required
 def token_list(request):
-    context = RequestContext(request)
+    context = {}
     tokens = models.AuthenticationToken.objects.all().order_by('-created_time')
     paginator = Paginator(tokens, 25)
 
@@ -758,14 +758,14 @@ def token_list(request):
         tokens = paginator.page(paginator.num_pages)
 
     context['tokens'] = tokens
-    return render_to_response('kegadmin/token_list.html', context_instance=context)
+    return render(request, 'kegadmin/token_list.html', context=context)
 
 
 @staff_member_required
 def token_detail(request, token_id):
     token = get_object_or_404(models.AuthenticationToken, id=token_id)
     delete_token_form = forms.DeleteTokenForm()
-    context = RequestContext(request)
+    context = {}
 
     username = ''
     if token.user:
@@ -790,12 +790,12 @@ def token_detail(request, token_id):
     context['token'] = token
     context['delete_token_form'] = delete_token_form
     context['form'] = form
-    return render_to_response('kegadmin/token_detail.html', context_instance=context)
+    return render(request, 'kegadmin/token_detail.html', context=context)
 
 
 @staff_member_required
 def add_token(request):
-    context = RequestContext(request)
+    context = {}
     form = forms.AddTokenForm()
     if request.method == 'POST':
         form = forms.AddTokenForm(request.POST)
@@ -806,12 +806,12 @@ def add_token(request):
             messages.success(request, 'Token created.')
             return redirect('kegadmin-tokens')
     context['form'] = form
-    return render_to_response('kegadmin/add_token.html', context_instance=context)
+    return render(request, 'kegadmin/add_token.html', context=context)
 
 
 @staff_member_required
 def beverages_list(request):
-    context = RequestContext(request)
+    context = {}
     beers = models.Beverage.objects.all().order_by('name')
     paginator = Paginator(beers, 25)
 
@@ -824,7 +824,7 @@ def beverages_list(request):
         beers = paginator.page(paginator.num_pages)
 
     context['beverages'] = beers
-    return render_to_response('kegadmin/beer_type_list.html', context_instance=context)
+    return render(request, 'kegadmin/beer_type_list.html', context=context)
 
 
 @staff_member_required
@@ -849,10 +849,10 @@ def beverage_detail(request, beer_id):
         else:
             messages.error(request, 'Please correct the error(s) below.')
 
-    context = RequestContext(request)
+    context = {}
     context['beer_type'] = btype
     context['form'] = form
-    return render_to_response('kegadmin/beer_type_detail.html', context_instance=context)
+    return render(request, 'kegadmin/beer_type_detail.html', context=context)
 
 
 @staff_member_required
@@ -874,15 +874,15 @@ def beverage_add(request):
             messages.success(request, 'Beer type added.')
             return redirect('kegadmin-beverages')
 
-    context = RequestContext(request)
+    context = {}
     context['beer_type'] = 'new'
     context['form'] = form
-    return render_to_response('kegadmin/beer_type_add.html', context_instance=context)
+    return render(request, 'kegadmin/beer_type_add.html', context=context)
 
 
 @staff_member_required
 def beverage_producer_list(request):
-    context = RequestContext(request)
+    context = {}
     brewers = models.BeverageProducer.objects.all().order_by('name')
     paginator = Paginator(brewers, 25)
 
@@ -895,7 +895,7 @@ def beverage_producer_list(request):
         brewers = paginator.page(paginator.num_pages)
 
     context['brewers'] = brewers
-    return render_to_response('kegadmin/brewer_list.html', context_instance=context)
+    return render(request, 'kegadmin/brewer_list.html', context=context)
 
 
 @staff_member_required
@@ -910,10 +910,10 @@ def beverage_producer_detail(request, brewer_id):
             messages.success(request, 'Brewer updated.')
             return redirect('kegadmin-beverage-producers')
 
-    context = RequestContext(request)
+    context = {}
     context['brewer'] = brewer
     context['form'] = form
-    return render_to_response('kegadmin/brewer_detail.html', context_instance=context)
+    return render(request, 'kegadmin/brewer_detail.html', context=context)
 
 
 @staff_member_required
@@ -934,10 +934,10 @@ def beverage_producer_add(request):
             messages.success(request, 'Brewer added.')
             return redirect('kegadmin-beverage-producers')
 
-    context = RequestContext(request)
+    context = {}
     context['brewer'] = 'new'
     context['form'] = form
-    return render_to_response('kegadmin/brewer_add.html', context_instance=context)
+    return render(request, 'kegadmin/brewer_add.html', context=context)
 
 
 @staff_member_required
@@ -1019,7 +1019,7 @@ def plugin_settings(request, plugin_name):
 
 @staff_member_required
 def logs(request):
-    context = RequestContext(request)
+    context = {}
     handlers = logger.parent.handlers
 
     logs = []
@@ -1030,12 +1030,12 @@ def logs(request):
             break
 
     context['logs'] = logs
-    return render_to_response('kegadmin/logs.html', context_instance=context)
+    return render(request, 'kegadmin/logs.html', context=context)
 
 
 @staff_member_required
 def link_device(request):
-    context = RequestContext(request)
+    context = {}
     form = forms.LinkDeviceForm()
     if request.method == 'POST':
         form = forms.LinkDeviceForm(request.POST)
@@ -1049,4 +1049,4 @@ def link_device(request):
                 messages.error(request, 'Code incorrect or expired.')
             return redirect('kegadmin-link-device')
     context['form'] = form
-    return render_to_response('kegadmin/link_device.html', context_instance=context)
+    return render(request, 'kegadmin/link_device.html', context=context)

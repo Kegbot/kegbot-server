@@ -22,8 +22,7 @@ from django.shortcuts import redirect
 from socialregistration.clients.oauth import OAuthError
 from pykeg.web.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 
 from httplib2 import HttpLib2Error
 
@@ -37,7 +36,7 @@ SESSION_KEY_USER_TWITTER = 'user-twitter'
 
 @staff_member_required
 def admin_settings(request, plugin):
-    context = RequestContext(request)
+    context = {}
 
     consumer_key, consumer_secret = plugin.get_credentials()
     initial = {
@@ -86,12 +85,12 @@ def admin_settings(request, plugin):
     context['settings_form'] = settings_form
     context['tweet_form'] = tweet_form
 
-    return render_to_response('contrib/twitter/admin_settings.html', context_instance=context)
+    return render(request, 'contrib/twitter/admin_settings.html', context=context)
 
 
 @login_required
 def user_settings(request, plugin):
-    context = RequestContext(request)
+    context = {}
     user = request.user
 
     consumer_key, consumer_secret = plugin.get_credentials()
@@ -110,7 +109,7 @@ def user_settings(request, plugin):
     context['profile'] = plugin.get_user_profile(user)
     context['settings_form'] = settings_form
 
-    return render_to_response('contrib/twitter/twitter_user_settings.html', context_instance=context)
+    return render(request, 'contrib/twitter/twitter_user_settings.html', context=context)
 
 
 @staff_member_required
@@ -201,7 +200,7 @@ def do_redirect(request, client, next_url_name, session_key):
 
     Args:
         request: the incoming request
-        client: the TwitterClient context_instance
+        client: the TwitterClient context
         next_url_name: Django URL name to redirect to upon error
 
     Returns:

@@ -20,9 +20,8 @@
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.shortcuts import redirect
-from django.template import RequestContext
 from django.views.decorators.cache import cache_page
 from django.views.generic.dates import ArchiveIndexView
 from django.views.generic.dates import DateDetailView
@@ -40,7 +39,7 @@ from pykeg.web.kegweb import forms
 
 @cache_page(30)
 def index(request):
-    context = RequestContext(request)
+    context = {}
 
     context['taps'] = models.KegTap.objects.all()
     context['events'] = models.SystemEvent.objects.timeline()[:20]
@@ -53,15 +52,15 @@ def index(request):
         if sessions and last_session.IsActiveNow():
             context['current_session'] = last_session
 
-    return render_to_response('index.html', context_instance=context)
+    return render(request, 'index.html', context=context)
 
 
 @cache_page(30)
 def system_stats(request):
     stats = models.KegbotSite.get().get_stats()
-    context = RequestContext(request, {
+    context = {
         'stats': stats,
-    })
+    }
 
     top_drinkers = []
     for username, vol in stats.get('volume_by_drinker', {}).iteritems():
@@ -82,7 +81,7 @@ def system_stats(request):
 
     context['top_drinkers'] = top_drinkers[:10]
 
-    return render_to_response('kegweb/system-stats.html', context_instance=context)
+    return render(request, 'kegweb/system-stats.html', context=context)
 
 
 ### object lists and detail (generic views)
@@ -92,16 +91,17 @@ def user_detail(request, username):
     stats = user.get_stats()
     drinks = user.drinks.all()
 
-    context = RequestContext(request, {
+    context = {
         'drinks': drinks,
         'stats': stats,
-        'drinker': user})
+        'drinker': user,
+    }
 
     largest_session_id = stats.get('largest_session', {}).get('session_id', None)
     if largest_session_id:
         context['largest_session'] = models.DrinkingSession.objects.get(pk=largest_session_id)
 
-    return render_to_response('kegweb/drinker_detail.html', context_instance=context)
+    return render(request, 'kegweb/drinker_detail.html', context=context)
 
 
 class KegListView(ListView):
@@ -115,13 +115,13 @@ class KegListView(ListView):
 
 
 def fullscreen(request):
-    context = RequestContext(request)
+    context = {}
     taps = models.KegTap.objects.all()
     active_taps = [t for t in taps if t.current_keg]
     pages = [active_taps[i:i + 4] for i in range(0, len(active_taps), 4)]
     context['pages'] = pages
 
-    return render_to_response('kegweb/fullscreen.html', context_instance=context)
+    return render(request, 'kegweb/fullscreen.html', context=context)
 
 
 @cache_page(30)
@@ -130,12 +130,13 @@ def keg_detail(request, keg_id):
     sessions = keg.get_sessions()
     last_session = sessions[:1]
 
-    context = RequestContext(request, {
+    context = {
         'keg': keg,
         'stats': keg.get_stats(),
         'sessions': sessions,
-        'last_session': last_session})
-    return render_to_response('kegweb/keg_detail.html', context_instance=context)
+        'last_session': last_session,
+    }
+    return render(request, 'kegweb/keg_detail.html', context=context)
 
 
 def short_drink_detail(request, drink_id):
@@ -150,7 +151,9 @@ def short_session_detail(request, session_id):
 
 def drink_detail(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
-    context = RequestContext(request, {'drink': drink})
+    context = {
+        'drink': drink,
+    }
 
     can_delete = (request.user == drink.user) or request.user.is_staff
 
@@ -173,7 +176,7 @@ def drink_detail(request, drink_id):
         return redirect('kb-drink', drink_id=str(drink_id))
 
     context['picture_form'] = picture_form
-    return render_to_response('kegweb/drink_detail.html', context_instance=context)
+    return render(request, 'kegweb/drink_detail.html', context=context)
 
 
 def drinker_sessions(request, username):
@@ -195,13 +198,14 @@ def drinker_sessions(request, username):
     except EmptyPage:
         chunks = paginator.page(paginator.num_pages)
 
-    context = RequestContext(request, {
+    context = {
         'drinks': drinks,
         'chunks': chunks,
         'stats': stats,
-        'drinker': user})
+        'drinker': user,
+    }
 
-    return render_to_response('kegweb/drinker_sessions.html', context_instance=context)
+    return render(request, 'kegweb/drinker_sessions.html', context=context)
 
 
 def keg_sessions(request, keg_id):
@@ -218,11 +222,12 @@ def keg_sessions(request, keg_id):
     except EmptyPage:
         sessions = paginator.page(paginator.num_pages)
 
-    context = RequestContext(request, {
+    context = {
         'keg': keg,
         'stats': keg.get_stats(),
-        'sessions': sessions})
-    return render_to_response('kegweb/keg_sessions.html', context_instance=context)
+        'sessions': sessions,
+    }
+    return render(request, 'kegweb/keg_sessions.html', context=context)
 
 
 class SessionArchiveIndexView(ArchiveIndexView):

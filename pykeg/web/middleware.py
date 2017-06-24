@@ -28,8 +28,7 @@ from pykeg.plugin import util as plugin_util
 from django.conf import settings
 from django.http import HttpResponse
 from django.http import HttpResponseServerError
-from django.template.response import SimpleTemplateResponse
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils import timezone
 
 import logging
@@ -115,15 +114,15 @@ class KegbotSiteMiddleware:
     def _setup_required(self, request):
         if settings.EMBEDDED:
             return HttpResponseServerError('Site is not set up.', content_type='text/plain')
-        return SimpleTemplateResponse('setup_wizard/setup_required.html',
-            context=RequestContext(request), status=403)
+        return render(request, 'setup_wizard/setup_required.html', status=403)
 
     def _upgrade_required(self, request):
         if settings.EMBEDDED:
             return HttpResponseServerError('Site needs upgrade.', content_type='text/plain')
-        context = RequestContext(request)
-        context['installed_version'] = getattr(request, 'installed_version_string', None)
-        return SimpleTemplateResponse('setup_wizard/upgrade_required.html',
+        context = {
+            'installed_version': getattr(request, 'installed_version_string', None),
+        }
+        return render(request, 'setup_wizard/upgrade_required.html',
             context=context, status=403)
 
 
@@ -149,13 +148,11 @@ class PrivacyMiddleware:
             return None
         elif privacy == 'staff':
             if not request.user.is_staff:
-                return SimpleTemplateResponse('kegweb/staff_only.html',
-                    context=RequestContext(request), status=401)
+                return render(request, 'kegweb/staff_only.html', status=401)
             return None
         elif privacy == 'members':
             if not request.user.is_authenticated() or not request.user.is_active:
-                return SimpleTemplateResponse('kegweb/members_only.html',
-                    context=RequestContext(request), status=401)
+                return render(request, 'kegweb/members_only.html', status=401)
             return None
 
         return HttpResponse('Server misconfigured, unknown privacy setting:%s' % privacy, status=500)

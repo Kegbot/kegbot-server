@@ -23,8 +23,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.http import Http404
 from django.shortcuts import redirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 
 from pykeg.core import defaults
@@ -50,7 +49,7 @@ def setup_view(f):
 @never_cache
 def start(request):
     """ Shows the enable/disable hardware toggle. """
-    context = RequestContext(request)
+    context = {}
 
     if request.method == 'POST':
         if 'enable_sensing' in request.POST:
@@ -63,14 +62,14 @@ def start(request):
         else:
             messages.error(request, 'Unknown response.')
 
-    return render_to_response('setup_wizard/start.html', context_instance=context)
+    return render(request, 'setup_wizard/start.html', context=context)
 
 
 @setup_view
 @never_cache
 def setup_accounts(request):
     """ Shows the enable/disable accounts toggle. """
-    context = RequestContext(request)
+    context = {}
 
     if request.method == 'POST':
         if 'enable_users' in request.POST:
@@ -82,13 +81,13 @@ def setup_accounts(request):
         else:
             messages.error(request, 'Unknown response.')
 
-    return render_to_response('setup_wizard/accounts.html', context_instance=context)
+    return render(request, 'setup_wizard/accounts.html', context=context)
 
 
 @setup_view
 @never_cache
 def site_settings(request):
-    context = RequestContext(request)
+    context = {}
 
     if request.method == 'POST':
         form = MiniSiteSettingsForm(request.POST, instance=request.kbsite)
@@ -108,13 +107,13 @@ def site_settings(request):
         site.save()
         form = MiniSiteSettingsForm(instance=site)
     context['form'] = form
-    return render_to_response('setup_wizard/site_settings.html', context_instance=context)
+    return render(request, 'setup_wizard/site_settings.html', context=context)
 
 
 @setup_view
 @never_cache
 def admin(request):
-    context = RequestContext(request)
+    context = {}
     form = AdminUserForm()
     if request.method == 'POST':
         form = AdminUserForm(request.POST)
@@ -126,16 +125,16 @@ def admin(request):
                 login(request, user)
             return redirect('setup_finish')
     context['form'] = form
-    return render_to_response('setup_wizard/admin.html', context_instance=context)
+    return render(request, 'setup_wizard/admin.html', context=context)
 
 
 @setup_view
 @never_cache
 def finish(request):
-    context = RequestContext(request)
+    context = {}
     if request.method == 'POST':
         request.kbsite.is_setup = True
         request.kbsite.save()
         messages.success(request, 'Tip: Install a new Keg in Admin: Taps')
         return redirect('kegadmin-main')
-    return render_to_response('setup_wizard/finish.html', context_instance=context)
+    return render(request, 'setup_wizard/finish.html', context=context)

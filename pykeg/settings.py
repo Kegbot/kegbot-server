@@ -166,9 +166,9 @@ KEGBOT_ENABLE_ADMIN = False
 
 # Add plugins in local_settings.py
 KEGBOT_PLUGINS = [
-    'pykeg.contrib.foursquare.plugin.FoursquarePlugin',
-    'pykeg.contrib.twitter.plugin.TwitterPlugin',
-    'pykeg.contrib.untappd.plugin.UntappdPlugin',
+    # 'pykeg.contrib.foursquare.plugin.FoursquarePlugin',
+    # 'pykeg.contrib.twitter.plugin.TwitterPlugin',
+    # 'pykeg.contrib.untappd.plugin.UntappdPlugin',
     'pykeg.contrib.webhook.plugin.WebhookPlugin',
 ]
 
@@ -328,7 +328,12 @@ UNTAPPD_CLIENT_SECRET = ''
 IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = 'imagekit.imagecache.NonValidatingImageCacheBackend'
 
 TEST_RUNNER = 'pykeg.core.testutils.KegbotTestSuiteRunner'
-NOSE_ARGS = ['--exe', '--rednose']
+NOSE_ARGS = [
+    '--exe',
+    '--rednose',
+    '--exclude',
+    '.*(foursquare|twitter|untappd).*',
+]
 
 ### Storage
 DEFAULT_FILE_STORAGE = 'pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage'

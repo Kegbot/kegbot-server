@@ -14,30 +14,27 @@ DOCLINES = __doc__.split('\n')
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 DEPENDENCIES = [
-  'kegbot-pyutils == 0.1.7',
-  'kegbot-api == 1.1.0',
-
-  'Django >= 1.8, < 1.9',
-  'django-imagekit == 3.1',
-  'django-registration == 1.0',
-  'django-socialregistration == 0.5.10',
+  'Celery',
   'django-bootstrap-pagination',
-
-  'Celery == 3.1.17',
-
-  'django-crispy-forms == 1.2.8',
-  'foursquare == 2014.04.10',
-  'gunicorn == 19.1.1',
-  'MySQL-python == 1.2.5',
-  'pillow == 2.4.0',
-  'protobuf == 2.5.0',
-  'python-gflags == 2.0',
+  'django-crispy-forms',
+  'django-imagekit',
   'django-redis',
+  'django-registration',
+  'django-socialregistration',
+  'Django',
+  'foursquare',
+  'gunicorn',
+  'jsonfield',
+  'kegbot-api',
+  'kegbot-pyutils',
+  'MySQL-python',
+  'pillow',
+  'protobuf',
+  'python-gflags',
   'pytz',
   'redis',
-  'requests == 2.2.1',
-  'tweepy == 2.2',
-  'jsonfield == 0.9.20',
+  'requests',
+  'tweepy',
 ]
 
 def setup_package():

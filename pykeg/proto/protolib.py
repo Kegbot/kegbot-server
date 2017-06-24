@@ -432,7 +432,7 @@ def UserToProto(user, full=False):
         ret.is_staff = user.is_staff
         ret.is_active = user.is_active
         ret.is_superuser = user.is_superuser
-        ret.last_login = datestr(user.last_login)
+        ret.last_login = datestr(user.last_login or user.date_joined)
         ret.date_joined = datestr(user.date_joined)
     if user.mugshot_id:
         ret.image.MergeFrom(ToProto(user.mugshot))

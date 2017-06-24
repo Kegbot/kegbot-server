@@ -410,6 +410,14 @@ class BeverageForm(forms.ModelForm):
 class BeverageProducerForm(forms.ModelForm):
     class Meta:
         model = models.BeverageProducer
+        fields = (
+            'name',
+            'country',
+            'origin_state',
+            'is_homebrew',
+            'url',
+            'description',
+        )
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'

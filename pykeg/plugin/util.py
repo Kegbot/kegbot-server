@@ -21,7 +21,6 @@ from importlib import import_module
 
 from django.utils import timezone
 from django.core.exceptions import ImproperlyConfigured
-from django.conf.urls import patterns
 from django.conf.urls import url
 from django.conf import settings
 
@@ -66,14 +65,14 @@ def get_admin_urls():
     urls = []
     for plugin in get_plugins().values():
         urls += _to_urls(plugin.get_extra_admin_views(), plugin.get_short_name())
-    return patterns('', *urls)
+    return urls
 
 
 def get_account_urls():
     urls = []
     for plugin in get_plugins().values():
         urls += _to_urls(plugin.get_extra_user_views(), plugin.get_short_name())
-    return patterns('', *urls)
+    return urls
 
 
 def _to_urls(urllist, short_name):

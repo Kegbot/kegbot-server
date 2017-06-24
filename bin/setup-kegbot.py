@@ -366,7 +366,7 @@ class ConfigureDatabase(ConfigurationSetupStep):
     }
     if self.choice == 'mysql':
       cfg['default']['ENGINE'] = 'django.db.backends.mysql'
-      cfg['default']['OPTIONS'] = { 'init_command': 'SET storage_engine=INNODB' }
+      cfg['default']['OPTIONS'] = { 'init_command': 'SET default_storage_engine=INNODB' }
     else:
       cfg['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
 

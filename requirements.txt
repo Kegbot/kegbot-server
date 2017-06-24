@@ -6,7 +6,7 @@ anyjson==0.3.3
 billiard==3.3.0.23
 celery==3.1.17
 django-appconf==1.0.2
-django-bootstrap-pagination==0.1.10
+django-bootstrap-pagination==1.0
 django-crispy-forms==1.2.8
 django-imagekit==3.1
 django-nose==1.4.4

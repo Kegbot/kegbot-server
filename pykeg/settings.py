@@ -33,7 +33,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'crispy_forms',
-    'bootstrap-pagination',
+    'bootstrap_pagination',
     'imagekit',
     'gunicorn',
 )

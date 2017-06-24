@@ -21,7 +21,7 @@ DEPENDENCIES = [
   'django-imagekit == 3.1',
   'django-registration == 1.0',
   'django-socialregistration == 0.5.10',
-  'django-bootstrap-pagination == 0.1.10',
+  'django-bootstrap-pagination',
 
   'Celery == 3.1.17',
 

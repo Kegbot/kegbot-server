@@ -8,7 +8,7 @@ celery==3.1.17
 colorama==0.3.9
 configparser==3.5.0
 django-appconf==1.0.2
-django-bootstrap-pagination==1.0
+django-bootstrap-pagination==1.6.2
 django-crispy-forms==1.6.1
 django-imagekit==4.0.1
 django-nose==1.4.4

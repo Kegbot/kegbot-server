@@ -61,10 +61,6 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 ROOT_URLCONF = 'pykeg.web.urls'
 
-TEMPLATE_DIRS = [
-    'web/templates',
-]
-
 SITE_ID = 1
 
 # Language code for this installation. All choices can be found here:
@@ -101,24 +97,6 @@ ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 # Disable Django's built in host checker.
 ALLOWED_HOSTS = ['*']
-
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-    'django.template.loaders.eggs.Loader',
-)
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.core.context_processors.request',
-    'django.contrib.auth.context_processors.auth',
-    'django.contrib.messages.context_processors.messages',
-    'pykeg.web.context_processors.kbsite',
-)
 
 MIDDLEWARE_CLASSES = (
     # CurrentRequest and KegbotSite middlewares added first
@@ -349,6 +327,28 @@ except ImportError:
     print>>sys.stderr, msg
     sys.exit(1)
 
+from pykeg.core.util import get_plugin_template_dirs
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': ['web/templates'] + get_plugin_template_dirs(KEGBOT_PLUGINS),
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.core.context_processors.debug',
+                'django.core.context_processors.i18n',
+                'django.core.context_processors.media',
+                'django.core.context_processors.static',
+                'django.core.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'pykeg.web.context_processors.kbsite',
+            ],
+            'debug': False,
+        },
+    },
+]
+
 # Override any user-specified timezone: As of Kegbot 0.9.12, this is
 # specified in site settings.
 TIME_ZONE = 'UTC'
@@ -396,10 +396,6 @@ if DEBUG:
                 DEBUG_TOOLBAR_PANELS += ('debug_toolbar_memcache.panels.memcache.MemcachePanel',)
             elif HAVE_PYLIBMC:
                 DEBUG_TOOLBAR_PANELS += ('debug_toolbar_memcache.panels.pylibmc.PylibmcPanel',)
-
-# Add all plugin template dirs to search path.
-from pykeg.core.util import get_plugin_template_dirs
-TEMPLATE_DIRS += get_plugin_template_dirs(KEGBOT_PLUGINS)
 
 ### Statsd
 

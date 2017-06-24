@@ -21,7 +21,6 @@ DEPENDENCIES = [
   'django-nose',
   'django-redis',
   'django-registration',
-  'django-socialregistration',
   'Django',
   'foursquare',
   'gunicorn',

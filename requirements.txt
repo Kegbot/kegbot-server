@@ -14,7 +14,6 @@ django-imagekit==4.0.1
 django-nose==1.4.4
 django-redis==4.8.0
 django-registration==1.0
-django-socialregistration==0.5.10
 enum34==1.1.6
 flake8==3.3.0
 foursquare==2014.4.10

@@ -8,7 +8,7 @@ Changelog
 
 Current Version (in development)
 --------------------------------
-* Internal: Upgraded to Django 1.9.
+* Internal: Upgraded to Django 1.10.
 
 Version 1.2.3 (2015-01-12)
 --------------------------

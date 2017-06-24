@@ -17,8 +17,9 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+from importlib import import_module
+
 from django.utils import timezone
-from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.conf.urls import patterns
 from django.conf.urls import url

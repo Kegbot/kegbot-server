@@ -23,7 +23,7 @@ import unittest
 import subprocess
 
 from django.test import TestCase
-from django.utils.importlib import import_module
+from importlib import import_module
 
 
 def path_for_import(name):

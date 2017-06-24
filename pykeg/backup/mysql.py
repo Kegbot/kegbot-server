@@ -22,7 +22,7 @@ import logging
 import subprocess
 
 from django.conf import settings
-from django.db.models import get_models
+from django.apps import apps
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ def erase():
     args += [PARAMS['db']]
 
     # Build the sql command.
-    tables = [str(model._meta.db_table) for model in get_models()]
+    tables = [str(model._meta.db_table) for model in apps.get_models()]
     query = ["DROP TABLE IF EXISTS {};".format(t) for t in tables]
     query = ["SET FOREIGN_KEY_CHECKS=0;"] + query + ["SET FOREIGN_KEY_CHECKS=1;"]
     query = ' '.join(query)

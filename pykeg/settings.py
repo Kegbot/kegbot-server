@@ -33,6 +33,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'crispy_forms',
+    'django_nose',
     'bootstrap_pagination',
     'imagekit',
     'gunicorn',
@@ -277,10 +278,6 @@ if HAVE_RAVEN:
 if HAVE_STORAGES:
     INSTALLED_APPS += ('storages',)
 
-### django-nose
-if HAVE_DJANGO_NOSE:
-    INSTALLED_APPS += ('django_nose',)
-
 ### django.contrib.messages
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 
@@ -331,9 +328,7 @@ UNTAPPD_CLIENT_SECRET = ''
 IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = 'imagekit.imagecache.NonValidatingImageCacheBackend'
 
 TEST_RUNNER = 'pykeg.core.testutils.KegbotTestSuiteRunner'
-NOSE_ARGS = ['--exe']
-
-ICANHAZ_APP_DIRNAMES = ['static/jstemplates', 'jstemplates']
+NOSE_ARGS = ['--exe', '--rednose']
 
 ### Storage
 DEFAULT_FILE_STORAGE = 'pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage'

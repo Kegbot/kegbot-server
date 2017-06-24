@@ -18,6 +18,7 @@ DEPENDENCIES = [
   'django-bootstrap-pagination',
   'django-crispy-forms',
   'django-imagekit',
+  'django-nose',
   'django-redis',
   'django-registration',
   'django-socialregistration',

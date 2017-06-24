@@ -5,6 +5,7 @@ amqp==1.4.9
 anyjson==0.3.3
 billiard==3.3.0.23
 celery==3.1.17
+colorama==0.3.9
 configparser==3.5.0
 django-appconf==1.0.2
 django-bootstrap-pagination==1.0
@@ -39,6 +40,8 @@ python-gflags==2.0
 python-openid==2.2.5
 pytz==2016.6.1
 redis==2.10.5
+rednose==1.2.2
 requests==2.2.1
 six==1.10.0
+termstyle==0.1.11
 tweepy==2.2

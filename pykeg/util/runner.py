@@ -101,7 +101,9 @@ class Runner(object):
                 self.logger.debug('Pinging {} (pid={})'.format(command_name, proc.pid))
                 proc.poll()
                 if proc.returncode is not None:
-                    self.logger.info('Process "{}" exited with returncode {}'.format(command_name, proc.returncode))
+                    self.logger.info(
+                        'Process "{}" exited with returncode {}'.format(
+                            command_name, proc.returncode))
                     abort = True
             if abort:
                 self.abort()
@@ -132,10 +134,11 @@ class Runner(object):
             os.chdir("/")
 
         proc = subprocess.Popen(command, stdin=dev_null, stdout=dev_null, stderr=dev_null,
-                close_fds=True, shell=True, preexec_fn=preexec,
-                env=env)
+                                close_fds=True, shell=True, preexec_fn=preexec,
+                                env=env)
 
         return proc
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import user_passes_test
 
 
 def staff_member_required(view_func, redirect_field_name=REDIRECT_FIELD_NAME,
-        login_url=settings.KEGBOT_ADMIN_LOGIN_URL):
+                          login_url=settings.KEGBOT_ADMIN_LOGIN_URL):
     """
     Clone of django.contrib.admin.views.decorators.staff_member_required that
     uses `settings.KEGBOT_ADMIN_LOGIN_URL` as the default login URL.

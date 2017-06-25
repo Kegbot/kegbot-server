@@ -52,7 +52,7 @@ class WebhookPlugin(plugin.Plugin):
             with SuppressTaskErrors(self.logger):
                 tasks.webhook_post.delay(url, event_dict)
 
-    ### Webhook-specific methods
+    # Webhook-specific methods
 
     def get_site_settings_form(self):
         return self.datastore.load_form(forms.SiteSettingsForm, KEY_SITE_SETTINGS)

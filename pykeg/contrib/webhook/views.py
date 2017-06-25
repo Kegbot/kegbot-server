@@ -39,4 +39,4 @@ def admin_settings(request, plugin):
     context['settings_form'] = settings_form
 
     return render(request, 'contrib/webhook/webhook_admin_settings.html',
-            context=context)
+                  context=context)

@@ -28,19 +28,19 @@ from django.views.generic.base import RedirectView
 admin.autodiscover()
 
 urlpatterns = [
-    ### api
+    # api
     url(r'^api/(?:v1/)?', include('pykeg.web.api.urls')),
 
-    ### kegbot account
+    # kegbot account
     url(r'^account/', include('pykeg.web.account.urls')),
 
-    ### auth account
+    # auth account
     url(r'^accounts/', include('pykeg.web.kbregistration.urls')),
 
-    ### kegadmin
+    # kegadmin
     url(r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 
-    ### Shortcuts
+    # Shortcuts
     url(r'^link/?$', RedirectView.as_view(pattern_name='kegadmin-link-device')),
 ]
 
@@ -55,15 +55,15 @@ if settings.DEBUG:
 
 if settings.KEGBOT_ENABLE_ADMIN:
     urlpatterns += [
-      url(r'^admin/', include(admin.site.urls)),
+        url(r'^admin/', include(admin.site.urls)),
     ]
 
 if settings.DEMO_MODE:
     urlpatterns += [
-      url(r'^demo/', include('pykeg.contrib.demomode.urls')),
+        url(r'^demo/', include('pykeg.contrib.demomode.urls')),
     ]
 
-### main kegweb urls
+# main kegweb urls
 urlpatterns += [
-  url(r'^', include('pykeg.web.kegweb.urls')),
+    url(r'^', include('pykeg.web.kegweb.urls')),
 ]

@@ -155,7 +155,7 @@ def prompt_to_post():
 
 def post_report(value):
     response = requests.post('http://dpaste.com/api/v2/',
-        data={'content': value}, allow_redirects=False)
+                             data={'content': value}, allow_redirects=False)
     result = response.headers.get('location', 'unknown')
     return result
 

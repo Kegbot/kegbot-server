@@ -26,7 +26,7 @@ class Command(RunnerCommand):
 
     option_list = RunnerCommand.option_list + (
         make_option('--gunicorn_options', action='store', dest='gunicorn_options', default='-w 3',
-            help='Specifies extra options to pass to gunicorn.'),
+                    help='Specifies extra options to pass to gunicorn.'),
     )
 
     def get_commands(self, options):

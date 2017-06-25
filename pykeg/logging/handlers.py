@@ -96,8 +96,8 @@ class RedisListHandler(logging.Handler):
         return cklass(key, max_messages, redis.from_url(url), level=level)
 
     def __init__(self, key, max_messages, redis_client=None,
-            url='redis://localhost:6379', redis_db=0,
-            level=logging.NOTSET):
+                 url='redis://localhost:6379', redis_db=0,
+                 level=logging.NOTSET):
         """
         Create a new logger for the given key and redis_client.
         """

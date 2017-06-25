@@ -73,7 +73,7 @@ class ApiRequestMiddleware:
 
             return None
 
-        except Exception, e:
+        except Exception as e:
             return util.wrap_exception(request, e)
 
 

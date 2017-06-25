@@ -37,8 +37,12 @@ class FoursquareTests(TransactionTestCase):
         self.user = models.User.objects.create(username='foursquare_test')
         self.backend = get_kegbot_backend()
         self.tap = self.backend.create_tap('Test Tap', 'test.flow0')
-        self.keg = self.backend.start_keg(tap=self.tap, beverage_name='Test Beer',
-            beverage_type='beer', producer_name='Test Producer', style_name='Test Style')
+        self.keg = self.backend.start_keg(
+            tap=self.tap,
+            beverage_name='Test Beer',
+            beverage_type='beer',
+            producer_name='Test Producer',
+            style_name='Test Style')
 
         fsq_settings = self.plugin.get_site_settings_form()
         fsq_settings.cleaned_data = {
@@ -62,9 +66,13 @@ class FoursquareTests(TransactionTestCase):
         self.assertEqual('', self.plugin.get_user_token(self.user))
 
         fake_drink = models.Drink.objects.create(keg=self.keg, volume_ml=1000, ticks=1000,
-            user=self.user, time=timezone.now(), shout='Hello')
-        fake_event = models.SystemEvent.objects.create(kind=models.SystemEvent.DRINK_POURED,
-            drink=fake_drink, user=self.user, keg=self.keg, time=fake_drink.time)
+                                                 user=self.user, time=timezone.now(), shout='Hello')
+        fake_event = models.SystemEvent.objects.create(
+            kind=models.SystemEvent.DRINK_POURED,
+            drink=fake_drink,
+            user=self.user,
+            keg=self.keg,
+            time=fake_drink.time)
 
         with patch('pykeg.contrib.foursquare.tasks.foursquare_checkin.delay') as mock_checkin:
             self.assertFalse(mock_checkin.called, 'Checkin should not have been called')

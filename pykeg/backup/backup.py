@@ -217,7 +217,7 @@ def backup(storage=default_storage, include_media=True):
                     sha1.update(chunk)
             digest = sha1.hexdigest()
             saved_zip_name = os.path.join(BACKUPS_DIRNAME,
-                '{}-{}.zip'.format(backup_name, digest))
+                                          '{}-{}.zip'.format(backup_name, digest))
             with open(temp_zip, 'r') as temp_zip_file:
                 ret = storage.save(saved_zip_name, temp_zip_file)
                 return ret
@@ -274,7 +274,9 @@ def restore_from_directory(backup_dir, storage=default_storage):
     current_engine = db_impl.engine_name()
     saved_engine = metadata[META_DB_ENGINE]
     if current_engine != saved_engine:
-        raise BackupError('Current DB is {}; cannot restore from {}'.format(current_engine, db_impl))
+        raise BackupError(
+            'Current DB is {}; cannot restore from {}'.format(
+                current_engine, db_impl))
 
     input_filename = os.path.join(backup_dir, SQL_FILENAME)
     with open(input_filename, 'r') as in_fd:

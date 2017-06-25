@@ -99,7 +99,8 @@ class UntappdPlugin(plugin.Plugin):
             foursquare_client_id, foursquare_client_secret = foursquare.get_credentials()
             foursquare_venue_id = foursquare.get_venue_id()
             if foursquare_venue_id:
-                self.logger.info('Adding location info, foursquare venue id: {}'.format(foursquare_venue_id))
+                self.logger.info(
+                    'Adding location info, foursquare venue id: {}'.format(foursquare_venue_id))
             else:
                 self.logger.info('No Foursquare venue id, not adding location info.')
         else:
@@ -109,11 +110,11 @@ class UntappdPlugin(plugin.Plugin):
 
         with SuppressTaskErrors(self.logger):
             tasks.untappd_checkin.delay(token, beer_id, timezone_name, shout=shout,
-                foursquare_client_id=foursquare_client_id,
-                foursquare_client_secret=foursquare_client_secret,
-                foursquare_venue_id=foursquare_venue_id)
+                                        foursquare_client_id=foursquare_client_id,
+                                        foursquare_client_secret=foursquare_client_secret,
+                                        foursquare_venue_id=foursquare_venue_id)
 
-    ### Untappd-specific methods
+    # Untappd-specific methods
 
     def get_credentials(self):
         if settings.EMBEDDED:

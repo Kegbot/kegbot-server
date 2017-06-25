@@ -44,7 +44,7 @@ def admin_settings(request, plugin):
     context['settings_form'] = settings_form
 
     return render(request, 'contrib/untappd/untappd_admin_settings.html',
-        context=context)
+                  context=context)
 
 
 @login_required
@@ -66,7 +66,7 @@ def user_settings(request, plugin):
     context['settings_form'] = settings_form
 
     return render(request, 'contrib/untappd/untappd_user_settings.html',
-        context=context)
+                  context=context)
 
 
 @login_required
@@ -86,7 +86,7 @@ def auth_redirect(request):
 
     try:
         return redirect(client.get_redirect_url())
-    except OAuthError, error:
+    except OAuthError as error:
         messages.error(request, 'Error: %s' % str(error))
         return redirect('account-plugin-settings', plugin_name='untappd')
 
@@ -99,7 +99,7 @@ def auth_callback(request):
         token = client.complete(dict(request.GET.items()))
     except KeyError:
         messages.error(request, 'Session expired.')
-    except OAuthError, error:
+    except OAuthError as error:
         messages.error(request, str(error))
     else:
         plugin = request.plugins.get('untappd')

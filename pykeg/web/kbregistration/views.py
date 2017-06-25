@@ -45,7 +45,7 @@ def register(request):
 
         if not invite_code:
             r = render(request, 'registration/invitation_required.html',
-                context=context)
+                       context=context)
             r.status_code = 401
             return r
 
@@ -56,7 +56,7 @@ def register(request):
 
         if not invite or invite.is_expired():
             r = render(request, 'registration/invitation_expired.html',
-                context=context)
+                       context=context)
             r.status_code = 401
             return r
 
@@ -81,8 +81,8 @@ def register(request):
                 return redirect('kb-account-main')
 
             return render(request, 'registration/registration_complete.html',
-                context=context)
+                          context=context)
 
     context['form'] = form
     return render(request, 'registration/registration_form.html',
-        context=context)
+                  context=context)

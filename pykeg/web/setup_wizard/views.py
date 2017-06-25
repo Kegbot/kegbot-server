@@ -120,7 +120,7 @@ def admin(request):
         if form.is_valid():
             form.save()
             user = authenticate(username=form.cleaned_data.get('username'),
-                password=form.cleaned_data.get('password'))
+                                password=form.cleaned_data.get('password'))
             if user:
                 login(request, user)
             return redirect('setup_finish')

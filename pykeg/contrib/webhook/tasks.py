@@ -52,6 +52,6 @@ def webhook_post(url, event_dict):
 
     try:
         return requests.post(url, data=kbjson.dumps(hook_dict), headers=headers)
-    except requests.exceptions.RequestException, e:
+    except requests.exceptions.RequestException as e:
         logger.warning('Error posting hook: %s' % e)
         return False

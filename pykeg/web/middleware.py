@@ -58,6 +58,7 @@ def _path_allowed(path, kbsite):
 
 class CurrentRequestMiddleware:
     """Set/clear the current request."""
+
     def process_request(self, request):
         set_current_request(request)
 
@@ -87,7 +88,8 @@ class KegbotSiteMiddleware:
             request.kbsite = models.KegbotSite.objects.get(name='default')
             if request.kbsite.is_setup:
                 timezone.activate(request.kbsite.timezone)
-                request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins().values())
+                request.plugins = dict((p.get_short_name(), p)
+                                       for p in plugin_util.get_plugins().values())
             else:
                 request.need_setup = True
 
@@ -123,7 +125,7 @@ class KegbotSiteMiddleware:
             'installed_version': getattr(request, 'installed_version_string', None),
         }
         return render(request, 'setup_wizard/upgrade_required.html',
-            context=context, status=403)
+                      context=context, status=403)
 
 
 class PrivacyMiddleware:
@@ -155,4 +157,6 @@ class PrivacyMiddleware:
                 return render(request, 'kegweb/members_only.html', status=401)
             return None
 
-        return HttpResponse('Server misconfigured, unknown privacy setting:%s' % privacy, status=500)
+        return HttpResponse(
+            'Server misconfigured, unknown privacy setting:%s' %
+            privacy, status=500)

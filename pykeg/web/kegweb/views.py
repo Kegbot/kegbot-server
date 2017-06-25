@@ -34,7 +34,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from pykeg.core import models
 from pykeg.web.kegweb import forms
 
-### main views
+# main views
 
 
 @cache_page(30)
@@ -84,7 +84,7 @@ def system_stats(request):
     return render(request, 'kegweb/system-stats.html', context=context)
 
 
-### object lists and detail (generic views)
+# object lists and detail (generic views)
 
 def user_detail(request, username):
     user = get_object_or_404(models.User, username=username)

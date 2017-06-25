@@ -318,7 +318,8 @@ def controller_detail(request, controller_id):
             messages.success(request, 'Flow Meter successfully updated.')
             return redirect('kegadmin-controllers')
         elif 'delete_flow_meter' in request.POST:
-            flowmeter = models.FlowMeter.objects.filter(id=request.POST.get('flowmeter_id')).delete()
+            flowmeter = models.FlowMeter.objects.filter(
+                id=request.POST.get('flowmeter_id')).delete()
             messages.success(request, 'Flow Meter removed successfully.')
             return redirect('kegadmin-controllers')
         elif 'add_flow_toggle' in request.POST:
@@ -333,7 +334,8 @@ def controller_detail(request, controller_id):
             messages.success(request, 'Flow Toggle successfully updated.')
             return redirect('kegadmin-controllers')
         elif 'delete_flow_toggle' in request.POST:
-            flowmeter = models.FlowToggle.objects.filter(id=request.POST.get('flowtoggle_id')).delete()
+            flowmeter = models.FlowToggle.objects.filter(
+                id=request.POST.get('flowtoggle_id')).delete()
             messages.success(request, 'Flow Toggle removed successfully.')
             return redirect('kegadmin-controllers')
 
@@ -417,7 +419,7 @@ def tap_detail(request, tap_id):
                 user = record_drink_form.cleaned_data.get('user')
                 volume_ml = record_drink_form.cleaned_data.get('volume_ml')
                 d = request.backend.record_drink(tap, ticks=0, username=user,
-                    volume_ml=volume_ml)
+                                                 volume_ml=volume_ml)
                 messages.success(request, 'Drink %s recorded.' % d.id)
             else:
                 messages.error(request, 'Please enter a valid volume and user.')
@@ -428,7 +430,7 @@ def tap_detail(request, tap_id):
                 user = record_drink_form.cleaned_data.get('user')
                 volume_ml = record_drink_form.cleaned_data.get('volume_ml')
                 d = request.backend.record_drink(tap, ticks=0, username=user,
-                    volume_ml=volume_ml, spilled=True)
+                                                 volume_ml=volume_ml, spilled=True)
                 messages.success(request, 'Spill recorded.')
             else:
                 messages.error(request, 'Please enter a valid volume.')
@@ -664,10 +666,10 @@ def drink_list(request):
                 messages.success(request, 'Drink ' + delete_ids[0] + ' has been deleted.')
             elif len(delete_ids) == 2:
                 messages.success(request, 'Drinks ' + ' and '.join(delete_ids) +
-		' have been deleted.')
+                                 ' have been deleted.')
             else:
                 messages.success(request, 'Drinks ' + ', '.join(delete_ids[:-1]) + ', and ' +
-		delete_ids[-1] + ' have been deleted.')
+                                 delete_ids[-1] + ' have been deleted.')
 
     context = {}
     drinks = models.Drink.objects.all().order_by('-time')
@@ -944,7 +946,8 @@ def beverage_producer_add(request):
 def autocomplete_beverage(request):
     search = request.GET.get('q')
     if search:
-        beverages = models.Beverage.objects.filter(Q(name__icontains=search) | Q(producer__name__icontains=search))
+        beverages = models.Beverage.objects.filter(
+            Q(name__icontains=search) | Q(producer__name__icontains=search))
     else:
         beverages = models.Beverage.objects.all()
     beverages = beverages[:10]  # autocomplete widget limited to 10
@@ -958,14 +961,15 @@ def autocomplete_beverage(request):
             'style': beverage.style,
         })
     return HttpResponse(kbjson.dumps(values, indent=None),
-      content_type='application/json', status=200)
+                        content_type='application/json', status=200)
 
 
 @staff_member_required
 def autocomplete_user(request):
     search = request.GET.get('q')
     if search:
-        users = models.User.objects.filter(Q(username__icontains=search) | Q(email__icontains=search) | Q(display_name__icontains=search))
+        users = models.User.objects.filter(Q(username__icontains=search) | Q(
+            email__icontains=search) | Q(display_name__icontains=search))
     else:
         users = models.User.objects.all()
     users = users[:10]  # autocomplete widget limited to 10
@@ -979,7 +983,7 @@ def autocomplete_user(request):
             'is_active': user.is_active,
         })
     return HttpResponse(kbjson.dumps(values, indent=None),
-      content_type='application/json', status=200)
+                        content_type='application/json', status=200)
 
 
 @staff_member_required
@@ -1001,7 +1005,7 @@ def autocomplete_token(request):
             'enabled': token.enabled,
         })
     return HttpResponse(kbjson.dumps(values, indent=None),
-      content_type='application/json', status=200)
+                        content_type='application/json', status=200)
 
 
 @staff_member_required

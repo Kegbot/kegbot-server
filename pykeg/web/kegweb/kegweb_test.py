@@ -45,7 +45,7 @@ class KegwebTestCase(TransactionTestCase):
 
         b = get_kegbot_backend()
         keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
-            beverage_type='beer', style_name='Unknown')
+                          beverage_type='beer', style_name='Unknown')
         self.assertIsNotNone(keg)
         response = self.client.get('/kegs/')
         self.assertEquals(200, response.status_code)
@@ -63,7 +63,7 @@ class KegwebTestCase(TransactionTestCase):
     def testShout(self):
         b = get_kegbot_backend()
         b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
-            beverage_type='beer', style_name='Unknown')
+                    beverage_type='beer', style_name='Unknown')
         d = b.record_drink('kegboard.flow0', ticks=123, shout='_UNITTEST_')
         response = self.client.get(d.get_absolute_url())
         self.assertContains(response, '<p>_UNITTEST_</p>', status_code=200)
@@ -71,7 +71,7 @@ class KegwebTestCase(TransactionTestCase):
     def test_privacy(self):
         b = get_kegbot_backend()
         keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
-            beverage_type='beer', style_name='Unknown')
+                          beverage_type='beer', style_name='Unknown')
         self.assertIsNotNone(keg)
         d = b.record_drink('kegboard.flow0', ticks=100)
 
@@ -89,10 +89,10 @@ class KegwebTestCase(TransactionTestCase):
                 response = self.client.get(url)
                 if expect_fail:
                     self.assertNotContains(response, expected_content, status_code=401,
-                            msg_prefix=url)
+                                           msg_prefix=url)
                 else:
                     self.assertContains(response, expected_content, status_code=200,
-                            msg_prefix=url)
+                                        msg_prefix=url)
 
         b = get_kegbot_backend()
         user = b.create_new_user('testuser', 'test@example.com', password='1234')
@@ -133,7 +133,7 @@ class KegwebTestCase(TransactionTestCase):
         for url in urls:
             response = self.client.get(url)
             self.assertNotContains(response, 'denied', status_code=200,
-                    msg_prefix=url)
+                                   msg_prefix=url)
 
     def test_activation(self):
         b = get_kegbot_backend()
@@ -148,7 +148,7 @@ class KegwebTestCase(TransactionTestCase):
         self.assertIsNotNone(activation_key)
 
         activation_url = reverse('activate-account', args=(),
-            kwargs={'activation_key': activation_key})
+                                 kwargs={'activation_key': activation_key})
 
         # Activation works regardless of privacy settings.
         self.client.logout()
@@ -187,12 +187,12 @@ class KegwebTestCase(TransactionTestCase):
         self.assertContains(response, 'Register New Account', status_code=200)
 
         response = self.client.post('/accounts/register/',
-            data={
-                'username': 'newuser',
-                'password1': '1234',
-                'password2': '1234',
-                'email': 'test2@example.com',
-            }, follow=True)
+                                    data={
+                                        'username': 'newuser',
+                                        'password1': '1234',
+                                        'password2': '1234',
+                                        'email': 'test2@example.com',
+                                    }, follow=True)
         self.assertRedirects(response, '/account/')
         self.assertContains(response, 'Hello, newuser')
         self.assertEqual(1, len(mail.outbox))
@@ -202,35 +202,35 @@ class KegwebTestCase(TransactionTestCase):
         self.assertTrue('To log in to your account, please click here' in msg.body)
 
         response = self.client.post('/accounts/register/',
-            data={
-                'username': 'newuser',
-                'password1': '1234',
-                'password2': '1234',
-                'email': 'test2@example.com',
-            }, follow=False)
+                                    data={
+                                        'username': 'newuser',
+                                        'password1': '1234',
+                                        'password2': '1234',
+                                        'email': 'test2@example.com',
+                                    }, follow=False)
         self.assertContains(response, 'User with this Username already exists',
-            status_code=200)
+                            status_code=200)
 
         response = self.client.post('/accounts/register/',
-            data={
-                'username': 'newuser 2',
-                'password1': '1234',
-                'password2': '1234',
-                'email': 'test2@example.com',
-            }, follow=False)
+                                    data={
+                                        'username': 'newuser 2',
+                                        'password1': '1234',
+                                        'password2': '1234',
+                                        'email': 'test2@example.com',
+                                    }, follow=False)
         self.assertContains(response, 'Enter a valid username',
-            status_code=200)
+                            status_code=200)
 
         response = self.client.post('/accounts/register/',
-            data={
-                'username': 'newuser2',
-                'password1': '1234',
-                'password2': '1235',
-                'email': 'test2@example.com',
-            }, follow=False)
+                                    data={
+                                        'username': 'newuser2',
+                                        'password1': '1234',
+                                        'password2': '1235',
+                                        'email': 'test2@example.com',
+                                    }, follow=False)
         print response
         self.assertContains(response, "The two password fields didn&#39;t match.",
-            status_code=200)
+                            status_code=200)
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
     @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
@@ -251,12 +251,12 @@ class KegwebTestCase(TransactionTestCase):
         response = self.client.get('/accounts/register/?invite_code=test')
         self.assertContains(response, 'Register New Account', status_code=200)
         response = self.client.post('/accounts/register/',
-            data={
-                'username': 'newuser2',
-                'password1': '1234',
-                'password2': '1234',
-                'email': 'test2@example.com',
-            }, follow=True)
+                                    data={
+                                        'username': 'newuser2',
+                                        'password1': '1234',
+                                        'password2': '1234',
+                                        'email': 'test2@example.com',
+                                    }, follow=True)
         self.assertRedirects(response, '/account/')
         self.assertContains(response, 'Hello, newuser2')
         self.assertEqual(0, models.Invitation.objects.all().count())

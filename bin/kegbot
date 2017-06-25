@@ -29,29 +29,30 @@ from pykeg.core.util import get_version
 from pykeg.util import bugreport
 
 if sys.version_info < (2, 7):
-  sys.stderr.write('Error: Kegbot needs Python 2.7 or newer.\n\n'
-      'Current version: %s\n' % sys.version)
-  sys.exit(1)
+    sys.stderr.write('Error: Kegbot needs Python 2.7 or newer.\n\n'
+                     'Current version: %s\n' % sys.version)
+    sys.exit(1)
 
 if __name__ == "__main__":
-  os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pykeg.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pykeg.settings")
 
-  # Override some special commands.
-  if len(sys.argv) > 1:
-    cmd = sys.argv[1]
-    if cmd == 'version':
-        # Hack: Django's `version` command cannot be overridden the usual way.
-        print 'kegbot-server {}'.format(get_version())
-        sys.exit(0)
-    elif cmd == 'run_gunicorn':
-        # run_gunicorn was deprecated upstream.
-        cmd = 'gunicorn pykeg.web.wsgi:application {}'.format(' '.join(sys.argv[2:]))
-        sys.stderr.write('Warning: run_gunicorn is deprecated, call `{}` instead.\n'.format(cmd))
-        ret = subprocess.call(cmd, shell=True)
-        sys.exit(ret)
-    elif cmd == 'bugreport':
-      ret = bugreport.take_bugreport()
-      sys.exit(ret)
+    # Override some special commands.
+    if len(sys.argv) > 1:
+        cmd = sys.argv[1]
+        if cmd == 'version':
+            # Hack: Django's `version` command cannot be overridden the usual way.
+            print 'kegbot-server {}'.format(get_version())
+            sys.exit(0)
+        elif cmd == 'run_gunicorn':
+            # run_gunicorn was deprecated upstream.
+            cmd = 'gunicorn pykeg.web.wsgi:application {}'.format(' '.join(sys.argv[2:]))
+            sys.stderr.write(
+                'Warning: run_gunicorn is deprecated, call `{}` instead.\n'.format(cmd))
+            ret = subprocess.call(cmd, shell=True)
+            sys.exit(ret)
+        elif cmd == 'bugreport':
+            ret = bugreport.take_bugreport()
+            sys.exit(ret)
 
-  django.setup()
-  management.execute_from_command_line()
+    django.setup()
+    management.execute_from_command_line()

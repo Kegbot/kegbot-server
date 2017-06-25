@@ -30,7 +30,7 @@ FAKE_BEER_NAME = 'Testy Beer'
 FAKE_BREWER_NAME = 'Unittest Brewery'
 FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 
-### Helper methods
+# Helper methods
 
 
 @override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
@@ -56,7 +56,7 @@ class BackendsFixtureTestCase(TestCase):
         stats = site.get_stats()
         self.assertEquals(755 - 185, stats['total_pours'])
         self.assertEquals(original_stats['total_volume_ml'] - keg_stats['total_volume_ml'],
-            stats['total_volume_ml'])
+                          stats['total_volume_ml'])
 
 
 @override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
@@ -75,8 +75,8 @@ class BackendsTestCase(TestCase):
         meter.ticks_per_ml = 2.2
         meter.save()
         keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
-                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
-                style_name=FAKE_BEER_STYLE)
+                                     beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                                     style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
 
         self.assertEquals(0, keg.served_volume())
@@ -113,8 +113,8 @@ class BackendsTestCase(TestCase):
     def test_drink_cancel(self):
         """Tests cancelling drinks."""
         keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
-                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
-                style_name=FAKE_BEER_STYLE)
+                                     beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                                     style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
         self.assertEquals(0, keg.served_volume())
 
@@ -166,13 +166,13 @@ class BackendsTestCase(TestCase):
 
     def test_reassign_drink_with_photo(self):
         keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
-                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
-                style_name=FAKE_BEER_STYLE)
+                                     beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                                     style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
         self.assertEquals(0, keg.served_volume())
 
         drink = self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100,
-            photo='foo')
+                                          photo='foo')
 
         self.assertTrue(drink.is_guest_pour())
         self.assertTrue(drink.user.is_guest())
@@ -195,8 +195,8 @@ class BackendsTestCase(TestCase):
 
         # Tap the keg.
         keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
-                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
-                style_name=FAKE_BEER_STYLE)
+                                     beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                                     style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
         self.assertTrue(keg.is_on_tap())
 
@@ -232,8 +232,8 @@ class BackendsTestCase(TestCase):
         # Deactivate, and activate a new keg again by name.
         self.backend.end_keg(tap.current_keg)
         new_keg_2 = self.backend.start_keg(METER_NAME, beverage_name='Other Beer',
-                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
-                style_name=FAKE_BEER_STYLE)
+                                           beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                                           style_name=FAKE_BEER_STYLE)
         self.assertEquals(new_keg_2.type.producer, keg.type.producer)
         self.assertEquals(new_keg_2.type.style, keg.type.style)
         self.assertNotEquals(new_keg_2.type, keg.type)
@@ -241,8 +241,12 @@ class BackendsTestCase(TestCase):
         # New brewer, identical beer name == new beer type.
         tap = models.KegTap.get_from_meter_name(METER_NAME)
         self.backend.end_keg(tap.current_keg)
-        new_keg_3 = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
-                beverage_type='beer', producer_name='Other Brewer', style_name=FAKE_BEER_STYLE)
+        new_keg_3 = self.backend.start_keg(
+            METER_NAME,
+            beverage_name=FAKE_BEER_NAME,
+            beverage_type='beer',
+            producer_name='Other Brewer',
+            style_name=FAKE_BEER_STYLE)
         self.assertNotEquals(new_keg_3.type.producer, keg.type.producer)
         self.assertEquals(new_keg_3.type.name, keg.type.name)
         self.assertNotEquals(new_keg_3.type, keg.type)
@@ -274,17 +278,17 @@ class BackendsTestCase(TestCase):
         self.assertEquals('http://example.com:8000', self.backend.get_base_url())
 
         keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
-                beverage_type='beer', producer_name=FAKE_BREWER_NAME,
-                style_name=FAKE_BEER_STYLE)
+                                     beverage_type='beer', producer_name=FAKE_BREWER_NAME,
+                                     style_name=FAKE_BEER_STYLE)
         self.assertEquals('http://example.com:8000/kegs/{}'.format(keg.id), keg.full_url())
 
         drink = self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100,
-            photo='foo')
+                                          photo='foo')
         self.assertEquals('http://example.com:8000/d/{}'.format(drink.id), drink.short_url())
         self.assertEquals('http://example.com:8000/s/{}'.format(drink.session.id),
-            drink.session.short_url())
+                          drink.session.short_url())
 
         start = drink.session.start_time
         datepart = '{}/{}/{}'.format(start.year, start.month, start.day)
-        self.assertEquals('http://example.com:8000/sessions/{}/{}'.format(datepart, drink.session.id),
-            drink.session.full_url())
+        self.assertEquals('http://example.com:8000/sessions/{}/{}'.format(datepart,
+                                                                          drink.session.id), drink.session.full_url())

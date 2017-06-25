@@ -52,12 +52,12 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-### Default session serialization.
+# Default session serialization.
 # Note: Twitter plugin requires Pickle (not JSON serializable).
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
-### Kegweb specific stuff
+# Kegweb specific stuff
 
 ROOT_URLCONF = 'pykeg.web.urls'
 
@@ -156,7 +156,7 @@ EMBEDDED = False
 
 KEGBOT_BACKEND = 'pykeg.backend.backends.KegbotBackend'
 
-### Celery
+# Celery
 
 BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
@@ -185,7 +185,7 @@ CELERYBEAT_SCHEDULE = {
 }
 
 
-### logging
+# logging
 
 LOGGING = {
     'version': 1,
@@ -239,7 +239,7 @@ LOGGING = {
     },
 }
 
-### raven
+# raven
 
 if HAVE_RAVEN:
     INSTALLED_APPS += (
@@ -252,28 +252,28 @@ if HAVE_RAVEN:
         'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
     }
 
-### django-storages
+# django-storages
 if HAVE_STORAGES:
     INSTALLED_APPS += ('storages',)
 
-### django.contrib.messages
+# django.contrib.messages
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 
-### django-registration
+# django-registration
 ACCOUNT_ACTIVATION_DAYS = 3
 
-### Statsd
+# Statsd
 STATSD_CLIENT = 'django_statsd.clients.normal'
 
 # Set to true to route statsd pings to the debug toolbar.
 KEGBOT_STATSD_TO_TOOLBAR = False
 
-### Notifications
+# Notifications
 NOTIFICATION_BACKENDS = [
     'pykeg.notification.backends.email.EmailNotificationBackend'
 ]
 
-### E-mail
+# E-mail
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 EMAIL_FROM_ADDRESS = ''
 EMAIL_SUBJECT_PREFIX = ''
@@ -283,7 +283,7 @@ EMAIL_SUBJECT_PREFIX = ''
 FACEBOOK_API_KEY = ''
 FACEBOOK_SECRET_KEY = ''
 
-### Twitter
+# Twitter
 
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET_KEY = ''
@@ -291,18 +291,18 @@ TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
 TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
 TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 
-### Foursquare
+# Foursquare
 
 FOURSQUARE_CLIENT_ID = ''
 FOURSQUARE_CLIENT_SECRET = ''
 FOURSQUARE_REQUEST_PERMISSIONS = ''
 
-### Untappd
+# Untappd
 
 UNTAPPD_CLIENT_ID = ''
 UNTAPPD_CLIENT_SECRET = ''
 
-### Imagekit
+# Imagekit
 IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = 'imagekit.imagecache.NonValidatingImageCacheBackend'
 
 TEST_RUNNER = 'pykeg.core.testutils.KegbotTestSuiteRunner'
@@ -313,7 +313,7 @@ NOSE_ARGS = [
     '.*(foursquare|twitter|untappd).*',
 ]
 
-### Storage
+# Storage
 DEFAULT_FILE_STORAGE = 'pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage'
 
 from pykeg.core import importhacks
@@ -357,19 +357,19 @@ TIME_ZONE = 'UTC'
 # Update email addresses.
 DEFAULT_FROM_EMAIL = EMAIL_FROM_ADDRESS
 
-### socialregistration (after importing common settings)
+# socialregistration (after importing common settings)
 
 if KEGBOT_ENABLE_ADMIN:
     INSTALLED_APPS += ('django.contrib.admin',)
 
-### djcelery_email
+# djcelery_email
 
 if HAVE_CELERY_EMAIL:
     CELERY_EMAIL_BACKEND = EMAIL_BACKEND
     INSTALLED_APPS += ('djcelery_email',)
     EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 
-### debug_toolbar
+# debug_toolbar
 
 if DEBUG:
     if HAVE_DEBUG_TOOLBAR:
@@ -398,7 +398,7 @@ if DEBUG:
             elif HAVE_PYLIBMC:
                 DEBUG_TOOLBAR_PANELS += ('debug_toolbar_memcache.panels.pylibmc.PylibmcPanel',)
 
-### Statsd
+# Statsd
 
 # Needs SECRET_KEY so must be imported after local settings.
 
@@ -424,7 +424,7 @@ if DEBUG and HAVE_DEBUG_TOOLBAR and KEGBOT_STATSD_TO_TOOLBAR:
     ) + DEBUG_TOOLBAR_PANELS
     STATSD_CLIENT = 'django_statsd.clients.toolbar'
 
-### First/last middlewares.
+# First/last middlewares.
 
 MIDDLEWARE_CLASSES = (
     'pykeg.web.middleware.CurrentRequestMiddleware',

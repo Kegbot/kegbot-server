@@ -36,7 +36,7 @@ def get_plugin_class(name):
         module_path, member_name = name.rsplit(".", 1)
         module = import_module(module_path)
         cls = getattr(module, member_name)
-    except (ValueError, ImportError, AttributeError), e:
+    except (ValueError, ImportError, AttributeError) as e:
         raise ImproperlyConfigured("Could not import plugin %s: %s" % (name, e))
 
     if not issubclass(cls, Plugin):

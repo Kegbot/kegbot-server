@@ -154,8 +154,8 @@ def wrap_exception(request, exception):
     exc_info = sys.exc_info()
 
     LOGGER.error('%s: %s' % (exception.__class__.__name__, exception),
-        exc_info=exc_info,
-        extra={
+                 exc_info=exc_info,
+                 extra={
         'status_code': 500,
         'request': request,
     }

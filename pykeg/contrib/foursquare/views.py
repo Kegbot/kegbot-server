@@ -57,7 +57,7 @@ def admin_settings(request, plugin):
                     client = plugin.get_foursquare_client()
                     try:
                         venue = client.venues(venue_id)
-                    except foursquare.FoursquareException, e:
+                    except foursquare.FoursquareException as e:
                         messages.error(request, 'Error fetching venue information: %s' % str(e))
                 plugin.save_venue_detail(venue)
                 messages.success(request, 'Settings updated.')
@@ -121,7 +121,7 @@ def auth_redirect(request):
 
     try:
         return redirect(client.get_redirect_url())
-    except OAuthError, error:
+    except OAuthError as error:
         messages.error(request, 'Error: %s' % str(error))
         return redirect('account-plugin-settings', plugin_name='foursquare')
 
@@ -134,7 +134,7 @@ def auth_callback(request):
         token = client.complete(dict(request.GET.items()))
     except KeyError:
         messages.error(request, 'Session expired.')
-    except OAuthError, error:
+    except OAuthError as error:
         messages.error(request, str(error))
     else:
         plugin = request.plugins.get('foursquare')

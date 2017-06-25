@@ -50,11 +50,11 @@ class Command(BaseCommand):
     help = u'Perform post-upgrade tasks.'
     option_list = BaseCommand.option_list + (
         make_option('--force', action='store_true', dest='force', default=False,
-            help='Run even if installed version is up-to-date.'),
+                    help='Run even if installed version is up-to-date.'),
         make_option('--skip_static', action='store_true', dest='skip_static', default=False,
-            help='Skip `kegbot collectstatic` during upgrade. (Not recommended.)'),
+                    help='Skip `kegbot collectstatic` during upgrade. (Not recommended.)'),
         make_option('--skip_stats', action='store_true', dest='skip_stats', default=False,
-            help='Skip `kegbot regen_stats` during upgrade. (Not recommended.)'),
+                    help='Skip `kegbot regen_stats` during upgrade. (Not recommended.)'),
     )
 
     def handle(self, *args, **options):

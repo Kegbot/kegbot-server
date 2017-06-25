@@ -81,7 +81,7 @@ def invite(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             invite = models.Invitation.objects.create(for_email=email,
-                invited_by=request.user)
+                                                      invited_by=request.user)
             invite.send()
             messages.success(request, 'Invitation mailed to ' + email)
 
@@ -95,8 +95,8 @@ def notifications(request):
     # backends (currently hardcoded to email backend).
 
     context = {}
-    existing_settings = models.NotificationSettings.objects.get_or_create(user=request.user,
-        backend='pykeg.notification.backends.email.EmailNotificationBackend')[0]
+    existing_settings = models.NotificationSettings.objects.get_or_create(
+        user=request.user, backend='pykeg.notification.backends.email.EmailNotificationBackend')[0]
 
     if request.method == 'POST':
         if 'submit-settings' in request.POST:
@@ -120,10 +120,11 @@ def notifications(request):
                     url = models.KegbotSite.get().reverse_full(
                         'account-confirm-email', args=(), kwargs={'token': token})
 
-                    message = email.build_message(new_email, 'registration/email_confirm_email_change.html',
-                        {'url': url})
+                    message = email.build_message(
+                        new_email, 'registration/email_confirm_email_change.html', {'url': url})
                     message.send()
-                    messages.success(request, 'An e-mail confirmation has been sent to {}'.format(new_email))
+                    messages.success(
+                        request, 'An e-mail confirmation has been sent to {}'.format(new_email))
 
         else:
             messages.error(request, 'Unknown request.')

@@ -72,22 +72,25 @@ class LoadDemoDataCommand(BaseCommand):
 
             # Install demo data.
             for username in demo_data['drinkers']:
-                user = models.User.objects.create_superuser(username=username, email=None, password=username)
+                user = models.User.objects.create_superuser(
+                    username=username, email=None, password=username)
                 pw = make_password(username, salt='demo')
                 user.password = pw
                 user.date_joined = START_DATE
                 user.save()
 
-                picture_path = os.path.join(data_dir, 'pictures', 'drinkers', username, 'mugshot.png')
+                picture_path = os.path.join(
+                    data_dir, 'pictures', 'drinkers', username, 'mugshot.png')
                 if os.path.exists(picture_path):
                     p = self.create_picture(picture_path, user=user)
                     user.mugshot = p
                     user.save()
 
             for beverage in demo_data['beverages']:
-                brewer, _ = models.BeverageProducer.objects.get_or_create(name=beverage['brewer_name'])
-                beer, _ = models.Beverage.objects.get_or_create(name=beverage['name'], beverage_type='beer',
-                    producer=brewer, style=beverage['style'])
+                brewer, _ = models.BeverageProducer.objects.get_or_create(
+                    name=beverage['brewer_name'])
+                beer, _ = models.Beverage.objects.get_or_create(
+                    name=beverage['name'], beverage_type='beer', producer=brewer, style=beverage['style'])
 
                 picture_path = beverage.get('image')
                 if picture_path:
@@ -98,7 +101,7 @@ class LoadDemoDataCommand(BaseCommand):
                     pass
 
             sessions = self.build_random_sessions(models.User.objects.all(),
-                NUM_SESSIONS, demo_data['shouts'])
+                                                  NUM_SESSIONS, demo_data['shouts'])
 
             minutes = sessions[-1][0]
             minutes += MINUTES_IN_DAY
@@ -106,8 +109,8 @@ class LoadDemoDataCommand(BaseCommand):
 
             session_start = timezone.make_aware(START_DATE, timezone.utc)
             session_start -= datetime.timedelta(hours=session_start.hour + 4,
-                minutes=session_start.minute,
-                seconds=session_start.second)
+                                                minutes=session_start.minute,
+                                                seconds=session_start.second)
             session_start -= datetime.timedelta(minutes=minutes)
 
             for minute, drinker, volume_ml, shout in sessions:
@@ -137,11 +140,11 @@ class LoadDemoDataCommand(BaseCommand):
             be.start_keg(tap, beverage=beverage, when=when)
 
         drink = be.record_drink(tap, ticks=0, volume_ml=volume_ml,
-            username=user.username, pour_time=when, shout=shout)
+                                username=user.username, pour_time=when, shout=shout)
 
         if picture_path:
             p = self.create_picture(picture_path, user=user,
-                session=drink.session, keg=drink.keg)
+                                    session=drink.session, keg=drink.keg)
             drink.picture = p
             drink.save()
         return drink
@@ -186,7 +189,8 @@ class LoadDemoDataCommand(BaseCommand):
                         shouts.rotate(1)
 
                     session.append((minute + subminute, drinker, drink_volume, shout))
-                    subminute += int(drink_volume / 40) + random.randint(0, 30)  # 40 mL/minute min plus noise
+                    subminute += int(drink_volume / 40) + random.randint(0,
+                                                                         30)  # 40 mL/minute min plus noise
                     session_remain -= drink_volume
 
             # session.sort()
@@ -230,5 +234,6 @@ class LoadDemoDataCommand(BaseCommand):
         random.shuffle(demo_data['shouts'])
 
         return demo_data
+
 
 Command = LoadDemoDataCommand

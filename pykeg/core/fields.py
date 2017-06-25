@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext as _
 
-### CountryField
+# CountryField
 # Source: http://www.djangosnippets.org/snippets/1281/
 
 COUNTRIES = (
@@ -254,6 +254,7 @@ class CountryField(models.CharField):
 
     def get_internal_type(self):
         return "CharField"
+
 
 try:
     from south.modelsinspector import add_introspection_rules

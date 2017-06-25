@@ -4,7 +4,7 @@ from django.conf.urls import url
 from pykeg.web.kegadmin import views
 
 urlpatterns = [
-    ### main page
+    # main page
     url(r'^$', views.dashboard, name='kegadmin-dashboard'),
     url(r'^settings/general/$', views.general_settings, name='kegadmin-main'),
     url(r'^settings/location/$', views.location_settings, name='kegadmin-location-settings'),
@@ -28,10 +28,13 @@ urlpatterns = [
 
     url(r'^brewers/$', views.beverage_producer_list, name='kegadmin-beverage-producers'),
     url(r'^brewers/add/$', views.beverage_producer_add, name='kegadmin-add-beverage-producer'),
-    url(r'^brewers/(?P<brewer_id>\d+)/$', views.beverage_producer_detail, name='kegadmin-edit-beverage-producer'),
+    url(r'^brewers/(?P<brewer_id>\d+)/$',
+        views.beverage_producer_detail,
+        name='kegadmin-edit-beverage-producer'),
 
     url(r'^controllers/$', views.controller_list, name='kegadmin-controllers'),
-    url(r'^controllers/(?P<controller_id>\d+)/$', views.controller_detail, name='kegadmin-edit-controller'),
+    url(r'^controllers/(?P<controller_id>\d+)/$',
+        views.controller_detail, name='kegadmin-edit-controller'),
 
     url(r'^taps/$', views.tap_list, name='kegadmin-taps'),
     url(r'^taps/create/$', views.add_tap, name='kegadmin-add-tap'),
@@ -48,11 +51,11 @@ urlpatterns = [
     url(r'^tokens/(?P<token_id>\d+)/$', views.token_detail, name='kegadmin-edit-token'),
 
     url(r'^autocomplete/beverage/$', views.autocomplete_beverage,
-      name='kegadmin-autocomplete-beverage'),
+        name='kegadmin-autocomplete-beverage'),
     url(r'^autocomplete/user/$', views.autocomplete_user,
-      name='kegadmin-autocomplete-user'),
+        name='kegadmin-autocomplete-user'),
     url(r'^autocomplete/token/$', views.autocomplete_token,
-      name='kegadmin-autocomplete-token'),
+        name='kegadmin-autocomplete-token'),
 
     url(r'^plugin/(?P<plugin_name>\w+)/$', views.plugin_settings, name='kegadmin-plugin-settings'),
 ]

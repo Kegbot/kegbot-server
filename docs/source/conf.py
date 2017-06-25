@@ -14,12 +14,13 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys
+import os
 
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
-#sys.path.append(os.path.abspath('.'))
+# sys.path.append(os.path.abspath('.'))
 
 # General configuration
 # ---------------------
@@ -175,8 +176,8 @@ html_title = 'Kegbot Docs'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'KegbotDocs.tex', ur'Kegbot Documentation',
-   ur'Bevbot LLC', 'manual'),
+    ('index', 'KegbotDocs.tex', ur'Kegbot Documentation',
+     ur'Bevbot LLC', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

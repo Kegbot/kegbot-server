@@ -92,6 +92,7 @@ def _FixAll():
     except ImportError:
         _Warning('Warning: local_settings could not be imported')
 
+
 if __name__ == '__main__' or os.environ.get('DEBUG_IMPORT_HACKS'):
     # When run as a program, or DEBUG_IMPORT_HACKS is set: print debug info
     _DEBUG = True

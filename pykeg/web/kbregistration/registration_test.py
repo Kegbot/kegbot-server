@@ -32,7 +32,7 @@ class ForgotPasswordTest(TestCase):
         defaults.set_defaults(set_is_setup=True)
 
         self.user = core_models.User.objects.create(username='notification_user',
-            email='test@example.com')
+                                                    email='test@example.com')
 
         # Password reset requires a usable password.
         self.user.set_password('1234')
@@ -46,7 +46,7 @@ class ForgotPasswordTest(TestCase):
         self.assertEquals(0, len(mail.outbox))
 
         response = self.client.post('/accounts/password/reset/', data={'email': 'test@example.com'},
-            follow=True)
+                                    follow=True)
         self.assertContains(response, 'E-Mail Sent', status_code=200)
         self.assertEquals(1, len(mail.outbox))
 

@@ -21,12 +21,12 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    ### General endpoints
+    # General endpoints
 
     url(r'^status/?$', views.get_status),
     url(r'^version/?$', views.get_version),
 
-    ### API authorization
+    # API authorization
 
     url(r'^login/?$', views.login),
     url(r'^logout/?$', views.logout),
@@ -35,7 +35,7 @@ urlpatterns = [
     url(r'^devices/link/?$', views.link_device_new),
     url(r'^devices/link/status/(?P<code>[^/]+)?$', views.link_device_status),
 
-    ### Kegbot objects
+    # Kegbot objects
 
     url(r'^auth-tokens/(?P<auth_device>[\w\.]+)/(?P<token_value>\w+)/?$',
         views.get_auth_token),
@@ -99,10 +99,10 @@ urlpatterns = [
 
     url(r'^stats/?$', views.get_system_stats),
 
-    ### Deprecated endpoints
+    # Deprecated endpoints
 
     url(r'^sound-events/?$', views.all_sound_events),
 
-    ### Catch-all
+    # Catch-all
     url(r'', views.default_handler),
 ]

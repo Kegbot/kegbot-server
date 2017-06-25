@@ -73,7 +73,7 @@ def admin_settings(request, plugin):
                     oauth_token = profile.get('oauth_token')
                     oauth_token_secret = profile.get('oauth_token_secret')
                     tasks.send_tweet(consumer_key, consumer_secret, oauth_token, oauth_token_secret,
-                        tweet, image_url=None)
+                                     tweet, image_url=None)
                     messages.success(request, 'Tweet sent')
                 else:
                     messages.error(request, 'There was a problem sending tweet')
@@ -142,13 +142,13 @@ def site_twitter_callback(request):
             token = client.complete(dict(request.GET.items()))
         except KeyError:
             messages.error(request, 'Session expired.')
-        except OAuthError, error:
+        except OAuthError as error:
             messages.error(request, str(error))
         else:
             user_info = client.get_user_info()
             plugin = request.plugins.get('twitter')
             plugin.save_site_profile(token.key, token.secret, user_info['screen_name'],
-                int(user_info['user_id']))
+                                     int(user_info['user_id']))
             messages.success(request, 'Successfully linked to @%s' % user_info['screen_name'])
 
     return redirect('kegadmin-plugin-settings', plugin_name='twitter')
@@ -183,13 +183,13 @@ def user_twitter_callback(request):
             token = client.complete(dict(request.GET.items()))
         except KeyError:
             messages.error(request, 'Session expired.')
-        except OAuthError, error:
+        except OAuthError as error:
             messages.error(request, str(error))
         else:
             user_info = client.get_user_info()
             plugin = request.plugins.get('twitter')
             plugin.save_user_profile(request.user, token.key, token.secret,
-                user_info['screen_name'], int(user_info['user_id']))
+                                     user_info['screen_name'], int(user_info['user_id']))
             messages.success(request, 'Successfully linked to @%s' % user_info['screen_name'])
 
     return redirect('account-plugin-settings', plugin_name='twitter')
@@ -210,10 +210,10 @@ def do_redirect(request, client, next_url_name, session_key):
     request.session[session_key] = client
     try:
         return redirect(client.get_redirect_url())
-    except OAuthError, e:
+    except OAuthError as e:
         messages.error(request, 'Error: %s' % str(e))
         return redirect(next_url_name, plugin_name='twitter')
-    except HttpLib2Error, e:
+    except HttpLib2Error as e:
         # This path can occur when api.twitter.com is unresolvable
         # or unreachable.
         messages.error(request, 'Twitter API server not available. Try again later. (%s)' % str(e))

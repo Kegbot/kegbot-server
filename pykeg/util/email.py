@@ -19,7 +19,6 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core import signing
-from django.template import Context
 from django.template.loader import get_template
 
 import logging
@@ -31,14 +30,13 @@ SEPARATOR = '---EMAIL-BLOCK---'
 EMAIL_CHANGE_MAX_AGE = 60 * 60 * 24
 
 
-def build_message(to_address, template_name, context_dict):
+def build_message(to_address, template_name, context):
     from_address = getattr(settings, 'EMAIL_FROM_ADDRESS', None)
     if not from_address:
         logger.error('EMAIL_FROM_ADDRESS is not available; aborting!')
         return None
 
     template = get_template(template_name)
-    context = Context(context_dict)
     rendered = template.render(context)
 
     parts = (x.strip() for x in rendered.split(SEPARATOR))

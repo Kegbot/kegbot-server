@@ -19,13 +19,11 @@
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
-from socialregistration.clients.oauth import OAuthError
 from pykeg.web.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from . import forms
-from . import oauth_client
 
 
 @staff_member_required
@@ -79,43 +77,25 @@ def auth_redirect(request):
         return redirect('account-plugin-settings', plugin_name='untappd')
 
     plugin = request.plugins['untappd']
-    url = request.build_absolute_uri(reverse('plugin-untappd-callback'))
-    client = get_client(*plugin.get_credentials(), callback_url=url)
-
-    request.session['untappd_client'] = client
-
-    try:
-        return redirect(client.get_redirect_url())
-    except OAuthError as error:
-        messages.error(request, 'Error: %s' % str(error))
-        return redirect('account-plugin-settings', plugin_name='untappd')
+    client = plugin.get_client()
+    callback_url = request.build_absolute_uri(reverse('plugin-untappd-callback'))
+    url, state = client.get_authorization_url(callback_url)
+    return redirect(url)
 
 
 @login_required
 def auth_callback(request):
-    try:
-        client = request.session['untappd_client']
-        del request.session['untappd_client']
-        token = client.complete(dict(request.GET.items()))
-    except KeyError:
-        messages.error(request, 'Session expired.')
-    except OAuthError as error:
-        messages.error(request, str(error))
-    else:
-        plugin = request.plugins.get('untappd')
-        profile = client.get_user_info()
-        token = client.get_access_token()
-        plugin.save_user_profile(request.user, profile)
-        plugin.save_user_token(request.user, token)
+    plugin = request.plugins['untappd']
+    client = plugin.get_client()
 
-        username = '%s %s' % (profile.get('first_name'), profile.get('last_name'))
-        messages.success(request, 'Successfully linked to Untappd user %s' % username)
+    callback_url = request.build_absolute_uri(reverse('plugin-untappd-callback'))
+    result = client.handle_authorization_callback(request.build_absolute_uri(), callback_url)
+    token = result['access_token']
 
+    profile = client.get_user_info(token)
+    username = profile['user_name']
+    plugin.save_user_profile(request.user, profile)
+    plugin.save_user_token(request.user, token)
+
+    messages.success(request, 'Successfully linked to Untappd user %s' % username)
     return redirect('account-plugin-settings', plugin_name='untappd')
-
-
-def get_client(client_id, client_secret, callback_url):
-    client = oauth_client.Untappd(callback_url=callback_url)
-    client.client_id = client_id
-    client.secret = client_secret
-    return client

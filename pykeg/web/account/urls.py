@@ -1,8 +1,8 @@
 from django.conf.urls import url
 
+from pykeg.plugin import util
 from pykeg.web.account.views import password_change
 from pykeg.web.account.views import password_change_done
-
 from pykeg.web.account import views
 
 urlpatterns = [
@@ -18,5 +18,4 @@ urlpatterns = [
     url(r'^plugin/(?P<plugin_name>\w+)/$', views.plugin_settings, name='account-plugin-settings'),
 ]
 
-from pykeg.plugin import util
 urlpatterns += util.get_account_urls()

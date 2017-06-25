@@ -28,8 +28,6 @@ or if you have already run this command, you should NOT proceed.
 WARNING: Back up your data before proceeding.
 """
 
-HELP_TEXT = __doc__
-
 import pytz
 
 from django.db import transaction
@@ -38,6 +36,8 @@ from django.core.management.base import NoArgsCommand
 
 from django.utils import timezone
 from pykeg.core import models
+
+HELP_TEXT = __doc__
 
 
 class Command(NoArgsCommand):

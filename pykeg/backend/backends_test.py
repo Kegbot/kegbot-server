@@ -23,7 +23,6 @@ from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.core import defaults
 from django.test.utils import override_settings
-from django.core import management
 
 METER_NAME = 'kegboard.flow0'
 FAKE_BEER_NAME = 'Testy Beer'

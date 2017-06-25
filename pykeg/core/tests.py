@@ -19,7 +19,6 @@
 """Generic unittests."""
 
 import os
-import unittest
 import subprocess
 
 from django.test import TestCase

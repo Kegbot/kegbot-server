@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.conf.urls import url
 
+from pykeg.plugin import util
 from pykeg.web.kegadmin import views
 
 urlpatterns = [
@@ -68,6 +69,5 @@ if not settings.EMBEDDED:
         url(r'^workers/$', views.workers, name='kegadmin-workers'),
     ]
 
-from pykeg.plugin import util
 if util.get_plugins():
     urlpatterns += util.get_admin_urls()

@@ -19,25 +19,14 @@
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
-from socialregistration.clients.oauth import OAuthError
-from socialregistration.contrib.foursquare.client import Foursquare
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from pykeg.web.decorators import staff_member_required
 from kegbot.util import kbjson
 
-import foursquare
-
 from . import forms
-
-
-class FoursquareClient(Foursquare):
-    def set_callback_url(self, url):
-        self.callback_url = url
-
-    def get_callback_url(self):
-        return self.callback_url
+from . import client
 
 
 @staff_member_required
@@ -54,23 +43,23 @@ def admin_settings(request, plugin):
                 venue_id = settings_form.cleaned_data.get('venue_id')
                 venue = None
                 if venue_id:
-                    client = plugin.get_foursquare_client()
+                    c = plugin.get_client()
                     try:
-                        venue = client.venues(venue_id)
-                    except foursquare.FoursquareException as e:
+                        venue = c.venues(venue_id)
+                    except client.FoursquareClientError as e:
                         messages.error(request, 'Error fetching venue information: %s' % str(e))
                 plugin.save_venue_detail(venue)
                 messages.success(request, 'Settings updated.')
 
         if 'test-api' in request.POST:
             plugin = request.plugins['foursquare']
-            client = plugin.get_foursquare_client()
+            c = plugin.get_client()
             venue_id = plugin.get_venue_id() or '49d01698f964a520fd5a1fe3'  # Golden Gate Bridge
             try:
-                venue_info = client.venues(venue_id)
+                venue_info = c.venues(venue_id)
                 context['test_response'] = kbjson.dumps(venue_info, indent=2)
                 messages.success(request, 'API test successful.')
-            except foursquare.FoursquareException as e:
+            except client.FoursquareClientError as e:
                 messages.success(request, 'API test failed: {}'.format(e.message))
 
     context['plugin'] = plugin
@@ -112,50 +101,29 @@ def auth_redirect(request):
         return redirect('account-plugin-settings', plugin_name='foursquare')
 
     plugin = request.plugins['foursquare']
-    client = get_client(*plugin.get_credentials())
-
-    url = request.build_absolute_uri(reverse('plugin-foursquare-callback'))
-    client.set_callback_url(url)
-
-    request.session['foursquare_client'] = client
-
-    try:
-        return redirect(client.get_redirect_url())
-    except OAuthError as error:
-        messages.error(request, 'Error: %s' % str(error))
-        return redirect('account-plugin-settings', plugin_name='foursquare')
+    client = plugin.get_client()
+    redirect_url = request.build_absolute_uri(reverse('plugin-foursquare-callback'))
+    url = client.get_authorization_url(redirect_url)
+    return redirect(url)
 
 
 @login_required
 def auth_callback(request):
-    try:
-        client = request.session['foursquare_client']
-        del request.session['foursquare_client']
-        token = client.complete(dict(request.GET.items()))
-    except KeyError:
-        messages.error(request, 'Session expired.')
-    except OAuthError as error:
-        messages.error(request, str(error))
-    else:
-        plugin = request.plugins.get('foursquare')
-        api_client = foursquare.Foursquare(access_token=token)
-        profile = api_client.users()
-        if not profile or not profile.get('user'):
-            messages.error(request, 'Unexpected profile response.')
-        else:
-            profile = profile['user']
-            token = client.get_access_token()
-            plugin.save_user_profile(request.user, profile)
-            plugin.save_user_token(request.user, token)
+    plugin = request.plugins['foursquare']
+    client = plugin.get_client()
+    code = request.GET.get('code')
+    redirect_url = request.build_absolute_uri(reverse('plugin-foursquare-callback'))
+    token = client.handle_authorization_callback(code, redirect_url)
 
-            username = '%s %s' % (profile.get('firstName'), profile.get('lastName'))
-            messages.success(request, 'Successfully linked to foursquare user %s' % username)
+    profile = client.users(token)
+    if not profile or not profile.get('user'):
+        messages.error(request, 'Unexpected profile response.')
+    else:
+        profile = profile['user']
+        plugin.save_user_profile(request.user, profile)
+        plugin.save_user_token(request.user, token)
+
+        username = '%s %s' % (profile.get('firstName'), profile.get('lastName'))
+        messages.success(request, 'Successfully linked to foursquare user %s' % username)
 
     return redirect('account-plugin-settings', plugin_name='foursquare')
-
-
-def get_client(client_id, client_secret):
-    client = FoursquareClient()
-    client.client_id = client_id
-    client.secret = client_secret
-    return client

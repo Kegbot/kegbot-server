@@ -37,13 +37,7 @@ FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 class BackendsFixtureTestCase(TestCase):
     """Test backened using fixture (demo) data."""
 
-    @classmethod
-    def setupClass(cls):
-        management.call_command('loaddata', 'testdata/full_demo_site.json', verbosity=0)
-
-    @classmethod
-    def teardownClass(cls):
-        management.call_command('flush', verbosity=0, interactive=False)
+    fixtures = ['testdata/full_demo_site.json']
 
     def setUp(self):
         self.backend = get_kegbot_backend()

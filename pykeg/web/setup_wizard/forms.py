@@ -60,7 +60,10 @@ class AdminUserForm(forms.Form):
         max_length=30,
         regex=r'^[\w-]+$',
         help_text='Your username: 30 characters or fewer. Alphanumeric characters only (letters, digits, hyphens and underscores).',
-        error_message='Must contain only letters, numbers, hyphens and underscores.')
+        error_messages={
+            'invalid': 'Must contain only letters, numbers, hyphens and underscores.',
+            'required': 'Provide a username.',
+        })
 
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(widget=forms.PasswordInput())

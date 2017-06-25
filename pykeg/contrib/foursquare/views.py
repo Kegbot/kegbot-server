@@ -22,8 +22,7 @@ from django.shortcuts import redirect
 from socialregistration.clients.oauth import OAuthError
 from socialregistration.contrib.foursquare.client import Foursquare
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 
 from pykeg.web.decorators import staff_member_required
 from kegbot.util import kbjson
@@ -43,7 +42,7 @@ class FoursquareClient(Foursquare):
 
 @staff_member_required
 def admin_settings(request, plugin):
-    context = RequestContext(request)
+    context = {}
     settings_form = plugin.get_site_settings_form()
 
     if request.method == 'POST':
@@ -58,7 +57,7 @@ def admin_settings(request, plugin):
                     client = plugin.get_foursquare_client()
                     try:
                         venue = client.venues(venue_id)
-                    except foursquare.FoursquareException, e:
+                    except foursquare.FoursquareException as e:
                         messages.error(request, 'Error fetching venue information: %s' % str(e))
                 plugin.save_venue_detail(venue)
                 messages.success(request, 'Settings updated.')
@@ -78,12 +77,12 @@ def admin_settings(request, plugin):
     context['settings_form'] = settings_form
     context['venue_detail'] = plugin.get_venue_detail()
 
-    return render_to_response('contrib/foursquare/foursquare_admin_settings.html', context_instance=context)
+    return render(request, 'contrib/foursquare/foursquare_admin_settings.html', context=context)
 
 
 @login_required
 def user_settings(request, plugin):
-    context = RequestContext(request)
+    context = {}
     user = request.user
 
     settings_form = plugin.get_user_settings_form(user)
@@ -100,7 +99,7 @@ def user_settings(request, plugin):
     context['profile'] = plugin.get_user_profile(user)
     context['settings_form'] = settings_form
 
-    return render_to_response('contrib/foursquare/foursquare_user_settings.html', context_instance=context)
+    return render(request, 'contrib/foursquare/foursquare_user_settings.html', context=context)
 
 
 @login_required
@@ -122,7 +121,7 @@ def auth_redirect(request):
 
     try:
         return redirect(client.get_redirect_url())
-    except OAuthError, error:
+    except OAuthError as error:
         messages.error(request, 'Error: %s' % str(error))
         return redirect('account-plugin-settings', plugin_name='foursquare')
 
@@ -135,7 +134,7 @@ def auth_callback(request):
         token = client.complete(dict(request.GET.items()))
     except KeyError:
         messages.error(request, 'Session expired.')
-    except OAuthError, error:
+    except OAuthError as error:
         messages.error(request, str(error))
     else:
         plugin = request.plugins.get('foursquare')

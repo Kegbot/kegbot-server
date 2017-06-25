@@ -74,7 +74,7 @@ class LocalAuthBackend(ModelBackend, AuthBackend):
             # Needs further activation: send activation e-mail.
             template = 'registration/email_activate_registration.html'
             url = kbsite.reverse_full('activate-account', args=(),
-                kwargs={'activation_key': user.activation_key})
+                                      kwargs={'activation_key': user.activation_key})
         elif email:
             # User already activated, send "complete" email.
             template = 'registration/email_registration_complete.html'

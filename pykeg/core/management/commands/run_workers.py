@@ -45,11 +45,11 @@ class Command(RunnerCommand):
         base_cmd = 'celery -A {} worker -l info '.format(app_name)
 
         ret.append(('celery_default',
-            base_cmd + '-Q default --hostname="default@%h"' + default_log))
+                    base_cmd + '-Q default --hostname="default@%h"' + default_log))
         ret.append(('celery_stats',
-            base_cmd + '-Q stats --concurrency=1 --hostname="stats@%h"' + stats_log))
+                    base_cmd + '-Q stats --concurrency=1 --hostname="stats@%h"' + stats_log))
 
         ret.append(('celery_beat',
-            'celery -A {} beat --pidfile= -l info{}'.format(app_name, beat_log)))
+                    'celery -A {} beat --pidfile= -l info{}'.format(app_name, beat_log)))
 
         return ret

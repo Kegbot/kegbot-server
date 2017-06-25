@@ -29,7 +29,7 @@ class Command(BaseCommand):
     help = u'Creates a zipfile backup of the current Kegbot system.'
     option_list = BaseCommand.option_list + (
         make_option('--no_media', action='store_true', dest='no_media', default=False,
-            help='Skip media during backup.'),
+                    help='Skip media during backup.'),
     )
 
     def handle(self, **options):

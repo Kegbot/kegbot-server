@@ -22,8 +22,7 @@ from django.shortcuts import redirect
 from socialregistration.clients.oauth import OAuthError
 from pykeg.web.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 
 from . import forms
 from . import oauth_client
@@ -31,7 +30,7 @@ from . import oauth_client
 
 @staff_member_required
 def admin_settings(request, plugin):
-    context = RequestContext(request)
+    context = {}
     settings_form = plugin.get_site_settings_form()
 
     if request.method == 'POST':
@@ -44,13 +43,13 @@ def admin_settings(request, plugin):
     context['plugin'] = plugin
     context['settings_form'] = settings_form
 
-    return render_to_response('contrib/untappd/untappd_admin_settings.html',
-        context_instance=context)
+    return render(request, 'contrib/untappd/untappd_admin_settings.html',
+                  context=context)
 
 
 @login_required
 def user_settings(request, plugin):
-    context = RequestContext(request)
+    context = {}
     user = request.user
 
     settings_form = plugin.get_user_settings_form(user)
@@ -66,8 +65,8 @@ def user_settings(request, plugin):
     context['profile'] = plugin.get_user_profile(user)
     context['settings_form'] = settings_form
 
-    return render_to_response('contrib/untappd/untappd_user_settings.html',
-        context_instance=context)
+    return render(request, 'contrib/untappd/untappd_user_settings.html',
+                  context=context)
 
 
 @login_required
@@ -87,7 +86,7 @@ def auth_redirect(request):
 
     try:
         return redirect(client.get_redirect_url())
-    except OAuthError, error:
+    except OAuthError as error:
         messages.error(request, 'Error: %s' % str(error))
         return redirect('account-plugin-settings', plugin_name='untappd')
 
@@ -100,7 +99,7 @@ def auth_callback(request):
         token = client.complete(dict(request.GET.items()))
     except KeyError:
         messages.error(request, 'Session expired.')
-    except OAuthError, error:
+    except OAuthError as error:
         messages.error(request, str(error))
     else:
         plugin = request.plugins.get('untappd')

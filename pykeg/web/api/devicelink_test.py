@@ -45,10 +45,10 @@ class DevicelinkTest(TransactionTestCase):
 
         # Entry has been deleted.
         self.assertRaises(devicelink.LinkExpiredException, devicelink.get_status,
-            code)
+                          code)
 
         self.assertRaises(devicelink.LinkExpiredException, devicelink.get_status,
-            'bogus-code')
+                          'bogus-code')
 
     def test_build_code(self):
         code = devicelink._build_code(6)

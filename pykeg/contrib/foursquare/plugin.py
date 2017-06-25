@@ -92,7 +92,7 @@ class FoursquarePlugin(plugin.Plugin):
         with SuppressTaskErrors(self.logger):
             tasks.foursquare_checkin.delay(token, venue_id)
 
-    ### Foursquare-specific methods
+    # Foursquare-specific methods
 
     def get_credentials(self):
         if settings.EMBEDDED:

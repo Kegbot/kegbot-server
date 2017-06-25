@@ -52,7 +52,7 @@ _LOGGER = logging.getLogger(__name__)
 
 RESULT_OK = {'result': 'ok'}
 
-### Decorators
+# Decorators
 
 
 def auth_required(view_func):
@@ -61,7 +61,7 @@ def auth_required(view_func):
     util.set_needs_auth(wrapped_view)
     return wraps(view_func)(wrapped_view)
 
-### Helpers
+# Helpers
 
 
 def _form_errors(form):
@@ -74,7 +74,7 @@ def _form_errors(form):
                 ret[name].append(error)
     return ret
 
-### Endpoints
+# Endpoints
 
 
 def all_kegs(request):
@@ -507,7 +507,7 @@ def _thermo_sensor_get(request, sensor_name):
 def _thermo_sensor_post(request, sensor_name):
     form = forms.ThermoPostForm(request.POST)
     if not form.is_valid():
-        raise kbapi.BadRequestError, _form_errors(form)
+        raise kbapi.BadRequestError(_form_errors(form))
     cd = form.cleaned_data
     sensor, created = models.ThermoSensor.objects.get_or_create(raw_name=sensor_name)
     # TODO(mikey): use form fields to compute `when`
@@ -566,7 +566,7 @@ def tap_calibrate(request, meter_name_or_id):
         meter.save()
         tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     else:
-        raise kbapi.BadRequestError, _form_errors(form)
+        raise kbapi.BadRequestError(_form_errors(form))
     return protolib.ToProto(tap, full=True)
 
 
@@ -581,7 +581,7 @@ def tap_spill(request, meter_name_or_id):
         tap.current_keg.spilled_ml += form.cleaned_data['volume_ml']
         tap.current_keg.save()
     else:
-        raise kbapi.BadRequestError, _form_errors(form)
+        raise kbapi.BadRequestError(_form_errors(form))
     return protolib.ToProto(tap, full=True)
 
 
@@ -593,7 +593,7 @@ def tap_activate(request, meter_name_or_id):
     if form.is_valid():
         form.save(tap)
     else:
-        raise kbapi.BadRequestError, _form_errors(form)
+        raise kbapi.BadRequestError(_form_errors(form))
     return protolib.ToProto(tap, full=True)
 
 
@@ -606,7 +606,7 @@ def tap_connect_meter(request, meter_name_or_id):
     if form.is_valid():
         tap = request.backend.connect_meter(tap, form.cleaned_data['meter'])
     else:
-        raise kbapi.BadRequestError, _form_errors(form)
+        raise kbapi.BadRequestError(_form_errors(form))
     return protolib.ToProto(tap, full=True)
 
 
@@ -628,7 +628,7 @@ def tap_connect_toggle(request, meter_name_or_id):
     if form.is_valid():
         tap = request.backend.connect_toggle(tap, form.cleaned_data['toggle'])
     else:
-        raise kbapi.BadRequestError, _form_errors(form)
+        raise kbapi.BadRequestError(_form_errors(form))
     return protolib.ToProto(tap, full=True)
 
 
@@ -645,7 +645,7 @@ def tap_disconnect_toggle(request, meter_name_or_id):
 def _tap_detail_post(request, tap):
     form = forms.DrinkPostForm(request.POST)
     if not form.is_valid():
-        raise kbapi.BadRequestError, _form_errors(form)
+        raise kbapi.BadRequestError(_form_errors(form))
     cd = form.cleaned_data
     if cd.get('pour_time') and cd.get('now'):
         pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))
@@ -659,16 +659,16 @@ def _tap_detail_post(request, tap):
         duration = 0
     try:
         drink = request.backend.record_drink(tap,
-            ticks=cd['ticks'],
-            volume_ml=cd.get('volume_ml'),
-            username=cd.get('username'),
-            pour_time=pour_time,
-            duration=duration,
-            shout=cd.get('shout'),
-            tick_time_series=cd.get('tick_time_series'),
-            photo=request.FILES.get('photo', None))
+                                             ticks=cd['ticks'],
+                                             volume_ml=cd.get('volume_ml'),
+                                             username=cd.get('username'),
+                                             pour_time=pour_time,
+                                             duration=duration,
+                                             shout=cd.get('shout'),
+                                             tick_time_series=cd.get('tick_time_series'),
+                                             photo=request.FILES.get('photo', None))
         return protolib.ToProto(drink, full=True)
-    except backend.exceptions.BackendError, e:
+    except backend.exceptions.BackendError as e:
         raise kbapi.ServerError(str(e))
 
 
@@ -679,12 +679,12 @@ def cancel_drink(request):
         raise kbapi.BadRequestError('POST required')
     form = forms.CancelDrinkForm(request.POST)
     if not form.is_valid():
-        raise kbapi.BadRequestError, _form_errors(form)
+        raise kbapi.BadRequestError(_form_errors(form))
     cd = form.cleaned_data
     try:
         res = request.backend.cancel_drink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
         return protolib.ToProto(res, full=True)
-    except backend.exceptions.BackendError, e:
+    except backend.exceptions.BackendError as e:
         raise kbapi.ServerError(str(e))
 
 
@@ -722,7 +722,7 @@ def register(request):
         photo = request.FILES.get('photo', None)
         try:
             user = request.backend.create_new_user(username, email=email,
-                password=password, photo=photo)
+                                                   password=password, photo=photo)
             return protolib.ToProto(user, full=True)
         except backend.exceptions.UserExistsError:
             user_errs = errors.get('username', [])
@@ -797,5 +797,5 @@ def get_tap_from_meter_name_or_404(meter_name_or_id):
 
     try:
         return models.KegTap.get_from_meter_name(meter_name_or_id)
-    except models.KegTap.DoesNotExist, e:
+    except models.KegTap.DoesNotExist as e:
         raise Http404(str(e))

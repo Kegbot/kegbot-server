@@ -29,7 +29,7 @@ class EmailUtilTests(TestCase):
 
     def setUp(self):
         self.user = models.User.objects.create(username='email-test',
-            email='email-test@example.com')
+                                               email='email-test@example.com')
 
     def tearDown(self):
         self.user.delete()

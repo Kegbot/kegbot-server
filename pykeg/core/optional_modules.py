@@ -49,9 +49,3 @@ try:
     HAVE_CELERY_EMAIL = True
 except ImportError:
     HAVE_CELERY_EMAIL = False
-
-try:
-    imp.find_module('django_nose')
-    HAVE_DJANGO_NOSE = True
-except ImportError:
-    HAVE_DJANGO_NOSE = False

@@ -19,11 +19,11 @@ ALL_THERMOS = models.ThermoSensor.objects.all()
 
 class ChangeKegForm(forms.Form):
     keg_size = forms.ChoiceField(choices=keg_sizes.CHOICES,
-        initial=keg_sizes.HALF_BARREL,
-        required=True)
+                                 initial=keg_sizes.HALF_BARREL,
+                                 required=True)
 
     initial_volume = forms.FloatField(label='Initial Volume', initial=0.0,
-        required=False, help_text='Keg\'s Initial Volume')
+                                      required=False, help_text='Keg\'s Initial Volume')
 
     beer_name = forms.CharField(required=False)  # legacy
     brewer_name = forms.CharField(required=False)  # legacy
@@ -33,7 +33,7 @@ class ChangeKegForm(forms.Form):
     producer_name = forms.CharField(label='Brewer', required=False)
     producer_id = forms.CharField(widget=forms.HiddenInput(), required=False)
     style_name = forms.CharField(required=True, label='Style',
-      help_text='Example: Pale Ale, Stout, etc.')
+                                 help_text='Example: Pale Ale, Stout, etc.')
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal beer-select'
@@ -86,8 +86,13 @@ class ChangeKegForm(forms.Form):
 
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
-        keg = b.start_keg(tap, beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
-            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'],
+        keg = b.start_keg(
+            tap,
+            beverage_name=cd['beverage_name'],
+            producer_name=cd['producer_name'],
+            beverage_type='beer',
+            style_name=cd['style_name'],
+            keg_type=cd['keg_size'],
             full_volume_ml=full_volume_ml)
 
         if cd.get('description'):
@@ -131,15 +136,21 @@ class TapForm(forms.ModelForm):
             else:
                 return unicode(sensor)
 
-    meter = FlowMeterModelChoiceField(queryset=ALL_METERS, required=False,
+    meter = FlowMeterModelChoiceField(
+        queryset=ALL_METERS,
+        required=False,
         empty_label='Not connected.',
         help_text='Tap is routed thorough this flow meter. If unset, reporting is disabled.')
 
-    toggle = FlowToggleModelChoiceField(queryset=ALL_TOGGLES, required=False,
+    toggle = FlowToggleModelChoiceField(
+        queryset=ALL_TOGGLES,
+        required=False,
         empty_label='Not connected.',
         help_text='Optional flow toggle (usually a relay/valve) connected to this tap.')
 
-    temperature_sensor = ThermoSensorModelChoiceField(queryset=ALL_THERMOS, required=False,
+    temperature_sensor = ThermoSensorModelChoiceField(
+        queryset=ALL_THERMOS,
+        required=False,
         empty_label='No sensor.',
         help_text='Optional sensor monitoring the temperature at this tap.')
 
@@ -191,11 +202,11 @@ class DeleteTapForm(forms.Form):
 
 class KegForm(forms.Form):
     keg_size = forms.ChoiceField(choices=keg_sizes.CHOICES,
-        initial=keg_sizes.HALF_BARREL,
-        required=True)
+                                 initial=keg_sizes.HALF_BARREL,
+                                 required=True)
 
     initial_volume = forms.FloatField(label='Initial Volume', initial=0.0,
-        required=False, help_text='Keg\'s Initial Volume')
+                                      required=False, help_text='Keg\'s Initial Volume')
 
     beer_name = forms.CharField(required=False)  # legacy
     brewer_name = forms.CharField(required=False)  # legacy
@@ -205,17 +216,19 @@ class KegForm(forms.Form):
     producer_name = forms.CharField(label='Brewer', required=False)
     producer_id = forms.CharField(widget=forms.HiddenInput(), required=False)
     style_name = forms.CharField(required=True, label='Style',
-      help_text='Example: Pale Ale, Stout, etc.')
+                                 help_text='Example: Pale Ale, Stout, etc.')
 
     description = forms.CharField(max_length=256, label='Description',
-        widget=forms.Textarea(), required=False,
-        help_text='Optional user-visible description of the keg.')
-    notes = forms.CharField(label='Notes', required=False, widget=forms.Textarea(),
-        help_text='Optional private notes about this keg, viewable only by admins.')
-    connect_to = forms.ModelChoiceField(queryset=ALL_TAPS, label='Connect To',
+                                  widget=forms.Textarea(), required=False,
+                                  help_text='Optional user-visible description of the keg.')
+    notes = forms.CharField(label='Notes', required=False, widget=forms.Textarea(
+    ), help_text='Optional private notes about this keg, viewable only by admins.')
+    connect_to = forms.ModelChoiceField(
+        queryset=ALL_TAPS,
+        label='Connect To',
         required=False,
         help_text='If selected, immediately activates the keg on this tap. '
-            '(Any existing keg will be ended.)')
+        '(Any existing keg will be ended.)')
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal beer-select'
@@ -265,9 +278,15 @@ class KegForm(forms.Form):
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
         b = get_kegbot_backend()
-        keg = b.create_keg(beverage_name=cd['beverage_name'], producer_name=cd['producer_name'],
-            beverage_type='beer', style_name=cd['style_name'], keg_type=cd['keg_size'],
-            full_volume_ml=full_volume_ml, notes=cd['notes'], description=cd['description'])
+        keg = b.create_keg(
+            beverage_name=cd['beverage_name'],
+            producer_name=cd['producer_name'],
+            beverage_type='beer',
+            style_name=cd['style_name'],
+            keg_type=cd['keg_size'],
+            full_volume_ml=full_volume_ml,
+            notes=cd['notes'],
+            description=cd['description'])
 
         tap = cd['connect_to']
         if tap:
@@ -331,7 +350,7 @@ class GeneralSiteSettingsForm(forms.ModelForm):
 
 class LocationSiteSettingsForm(forms.ModelForm):
     guest_image = forms.ImageField(required=False,
-        help_text='Custom image for the "guest" user.')
+                                   help_text='Custom image for the "guest" user.')
 
     class Meta:
         model = models.KegbotSite
@@ -378,11 +397,11 @@ class BeverageForm(forms.ModelForm):
     class Meta:
         model = models.Beverage
         fields = ('name', 'style', 'producer', 'vintage_year', 'abv_percent',
-            'original_gravity', 'specific_gravity', 'ibu', 'srm', 'color_hex',
-            'star_rating', 'untappd_beer_id', 'description')
+                  'original_gravity', 'specific_gravity', 'ibu', 'srm', 'color_hex',
+                  'star_rating', 'untappd_beer_id', 'description')
 
     new_image = forms.ImageField(required=False,
-        help_text='Set/replace image for this beer type.')
+                                 help_text='Set/replace image for this beer type.')
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
@@ -410,6 +429,14 @@ class BeverageForm(forms.ModelForm):
 class BeverageProducerForm(forms.ModelForm):
     class Meta:
         model = models.BeverageProducer
+        fields = (
+            'name',
+            'country',
+            'origin_state',
+            'is_homebrew',
+            'url',
+            'description',
+        )
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
@@ -503,8 +530,10 @@ class TokenForm(forms.ModelForm):
         try:
             self.cleaned_data['user'] = models.User.objects.get(username=username)
         except models.User.DoesNotExist:
-            raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
+            raise forms.ValidationError(
+                'Invalid username; use a complete user name or leave blank.')
         return username
+
 
 class DeleteTokenForm(forms.Form):
     helper = FormHelper()
@@ -514,6 +543,7 @@ class DeleteTokenForm(forms.Form):
             Submit('delete_token', 'Delete Token', css_class='btn-danger'),
         )
     )
+
 
 class AddTokenForm(forms.ModelForm):
     class Meta:
@@ -551,7 +581,8 @@ class AddTokenForm(forms.ModelForm):
         try:
             self.cleaned_data['user'] = models.User.objects.get(username=username)
         except models.User.DoesNotExist:
-            raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
+            raise forms.ValidationError(
+                'Invalid username; use a complete user name or leave blank.')
         return username
 
 
@@ -613,7 +644,8 @@ class ChangeDrinkVolumeForm(forms.Form):
     def clean_volume(self):
         volume = self.cleaned_data['volume']
         if self.cleaned_data['units'] == 'oz':
-            self.cleaned_data['volume_ml'] = float(units.Quantity(volume, units.UNITS.Ounce).InMilliliters())
+            self.cleaned_data['volume_ml'] = float(
+                units.Quantity(volume, units.UNITS.Ounce).InMilliliters())
         else:
             self.cleaned_data['volume_ml'] = volume
         return volume
@@ -632,13 +664,15 @@ class RecordDrinkForm(forms.Form):
         try:
             self.cleaned_data['user'] = models.User.objects.get(username=username)
         except models.User.DoesNotExist:
-            raise forms.ValidationError('Invalid username; use a complete user name or leave blank.')
+            raise forms.ValidationError(
+                'Invalid username; use a complete user name or leave blank.')
         return username
 
     def clean_volume(self):
         volume = self.cleaned_data['volume']
         if self.cleaned_data['units'] == 'oz':
-            self.cleaned_data['volume_ml'] = float(units.Quantity(volume, units.UNITS.Ounce).InMilliliters())
+            self.cleaned_data['volume_ml'] = float(
+                units.Quantity(volume, units.UNITS.Ounce).InMilliliters())
         else:
             self.cleaned_data['volume_ml'] = volume
         return volume
@@ -724,7 +758,7 @@ class ControllerForm(forms.ModelForm):
 
 class LinkDeviceForm(forms.Form):
     code = forms.CharField(required=True,
-        help_text='Link code shown on device.')
+                           help_text='Link code shown on device.')
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
     helper.layout = Layout(

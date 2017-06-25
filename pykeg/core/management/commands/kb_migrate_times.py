@@ -28,8 +28,6 @@ or if you have already run this command, you should NOT proceed.
 WARNING: Back up your data before proceeding.
 """
 
-HELP_TEXT = __doc__
-
 import pytz
 
 from django.db import transaction
@@ -38,6 +36,8 @@ from django.core.management.base import NoArgsCommand
 
 from django.utils import timezone
 from pykeg.core import models
+
+HELP_TEXT = __doc__
 
 
 class Command(NoArgsCommand):
@@ -114,7 +114,7 @@ def migrate(obj, attrs, errors):
         if old:
             try:
                 new = convert(old)
-            except pytz.exceptions.NonExistentTimeError, e:
+            except pytz.exceptions.NonExistentTimeError as e:
                 print '    - ERR: %s' % e
                 errors.append((obj, attr, e))
                 continue
@@ -163,7 +163,7 @@ def do_migrate(drinks):
 
 def convert(dt):
     return timezone.make_aware(timezone.make_naive(dt, pytz.UTC),
-        pytz.timezone(settings.TIME_ZONE))
+                               pytz.timezone(settings.TIME_ZONE))
 
 
 def confirm(prompt):

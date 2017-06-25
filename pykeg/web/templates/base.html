@@ -79,7 +79,7 @@
               {% if SSO_LOGOUT_URL %}
               <li><a href="{{ SSO_LOGOUT_URL }}">Logout</a></li>
               {% else %}
-              <li><a href="{% url "django.contrib.auth.views.logout" %}">Logout</a></li>
+              <li><a href="{% url "auth_logout" %}">Logout</a></li>
               {% endif %}
             </ul>
           </li>
@@ -128,4 +128,3 @@
     </footer>
   </div> <!-- /container -->
 {% endblock body %}
-

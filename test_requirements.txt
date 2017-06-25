@@ -1,3 +1,0 @@
-django_nose==1.2
-flake8==2.1.0
-mock==1.0.1

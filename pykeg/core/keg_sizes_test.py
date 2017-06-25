@@ -13,5 +13,6 @@ class KegSizesTest(unittest.TestCase):
         self.assertEqual('sixth', match(19470.6))
         self.assertEqual('other', match(19460.6))
 
+
 if __name__ == '__main__':
     unittest.main()

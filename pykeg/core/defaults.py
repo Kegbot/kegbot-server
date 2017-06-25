@@ -51,12 +51,12 @@ def set_defaults(force=False, set_is_setup=False, create_controller=False):
         controller = models.Controller.objects.create(name='kegboard')
 
         models.FlowMeter.objects.create(controller=controller, port_name='flow0',
-            tap=tap_0)
+                                        tap=tap_0)
         models.FlowMeter.objects.create(controller=controller, port_name='flow1',
-            tap=tap_1)
+                                        tap=tap_1)
         models.FlowToggle.objects.create(controller=controller, port_name='relay0',
-            tap=tap_0)
+                                         tap=tap_0)
         models.FlowToggle.objects.create(controller=controller, port_name='relay1',
-            tap=tap_1)
+                                         tap=tap_1)
 
     return site

@@ -37,8 +37,8 @@ class KegbotCache:
     """
 
     def __init__(self, prefix=None, cache=django_cache,
-            generation_fn=lambda: int(time.time()),
-            generation_key_name='drink_generation'):
+                 generation_fn=lambda: int(time.time()),
+                 generation_key_name='drink_generation'):
         """Constructor.
 
         Args:
@@ -84,7 +84,7 @@ class KegbotCache:
         """Wrapper around `self.cache.decr()`."""
         return self.cache.decr(self.keyname(basename), delta)
 
-    ### Generational functions.
+    # Generational functions.
 
     def get_generation(self):
         """Returns the value of the current generation.

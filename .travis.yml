@@ -1,11 +1,9 @@
 language: python
 python:
   - "2.7"
+sudo: false
 
-install:
-  - pip install -r requirements.txt
-  - pip install -r test_requirements.txt
-  - pip install coverage coveralls
+cache: pip
 
 services:
   - redis-server
@@ -17,14 +15,13 @@ before_script:
   - mkdir -p ~/kegbot-data/static
   - mkdir -p ~/.kegbot/
   - cp deploy/travis/local_settings.py ~/.kegbot/
-  - pip freeze
-  - flake8 --version
+
+install:
+  - pip install -r requirements.txt
+  - pip install .
 
 script:
-  - kegbot test --traverse-namespace --first-package-wins --with-coverage --cover-package=pykeg
-
-after_success:
-  - coveralls
+  - kegbot test --traverse-namespace --first-package-wins
 
 deploy:
   provider: pypi

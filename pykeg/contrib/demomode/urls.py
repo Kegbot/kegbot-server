@@ -16,9 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls import patterns
 from django.conf.urls import url
 
-urlpatterns = patterns('pykeg.contrib.demomode.views',
-    url(r'^summon-drinker/', 'summon_drinker'),
-)
+from pykeg.contrib.demomode import views
+
+urlpatterns = [
+    url(r'^summon-drinker/', views.summon_drinker),
+]

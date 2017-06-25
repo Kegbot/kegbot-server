@@ -6,6 +6,10 @@ Changelog
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
 
+Current Version (in development)
+--------------------------------
+* Internal: Upgraded to Django 1.11.
+
 Version 1.2.3 (2015-01-12)
 --------------------------
 * Allow users to change e-mail addresses.

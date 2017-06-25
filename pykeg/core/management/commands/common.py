@@ -78,9 +78,9 @@ class RunnerCommand(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         make_option('--logs_dir', action='store', dest='logs_dir', default='',
-            help='Specifies the directory for log files.  If empty, logging disabled.'),
+                    help='Specifies the directory for log files.  If empty, logging disabled.'),
         make_option('--pidfile_dir', action='store', dest='pidfile_dir', default='/tmp',
-            help='PID file for this program.'),
+                    help='PID file for this program.'),
     )
 
     pidfile_name = None

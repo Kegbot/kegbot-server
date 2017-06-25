@@ -14,55 +14,59 @@ DOCLINES = __doc__.split('\n')
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 DEPENDENCIES = [
-  'kegbot-pyutils == 0.1.7',
-  'kegbot-api == 1.1.0',
-
-  'Django >= 1.7, < 1.8',
-  'django-imagekit == 3.1',
-  'django-registration == 1.0',
-  'django-socialregistration == 0.5.10',
-  'django-bootstrap-pagination == 0.1.10',
-
-  'Celery == 3.1.17',
-
-  'django-crispy-forms == 1.2.8',
-  'foursquare == 2014.04.10',
-  'gunicorn == 19.1.1',
-  'MySQL-python == 1.2.5',
-  'pillow == 2.4.0',
-  'protobuf == 2.5.0',
-  'python-gflags == 2.0',
-  'django-redis == 3.6.1',
-  'pytz',
-  'redis == 2.9.1',
-  'requests == 2.2.1',
-  'tweepy == 2.2',
-  'jsonfield == 0.9.20',
+    'Celery',
+    'django-bootstrap-pagination',
+    'django-crispy-forms',
+    'django-imagekit',
+    'django-nose',
+    'django-redis',
+    'django-registration',
+    'Django',
+    'flake8',
+    'foursquare',
+    'gunicorn',
+    'httplib2',
+    'isodate',
+    'jsonfield',
+    'kegbot-api',
+    'kegbot-pyutils',
+    'mock',
+    'MySQL-python',
+    'pillow',
+    'protobuf',
+    'python-gflags',
+    'pytz',
+    'redis',
+    'rednose',
+    'requests',
+    'tweepy',
 ]
 
+
 def setup_package():
-  setup(
-      name = 'kegbot',
-      version = VERSION,
-      description = SHORT_DESCRIPTION,
-      long_description = LONG_DESCRIPTION,
-      author = 'Bevbot LLC',
-      author_email = 'info@bevbot.com',
-      url = 'https://kegbot.org/',
-      packages = find_packages(),
-      scripts = [
-        'bin/kegbot',
-        'bin/setup-kegbot.py',
-      ],
-      install_requires = DEPENDENCIES,
-      dependency_links = [
-          'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
-      ],
-      include_package_data = True,
-      entry_points = {
-        'console_scripts': ['instance=django.core.management:execute_manager'],
-      },
-  )
+    setup(
+        name='kegbot',
+        version=VERSION,
+        description=SHORT_DESCRIPTION,
+        long_description=LONG_DESCRIPTION,
+        author='Bevbot LLC',
+        author_email='info@bevbot.com',
+        url='https://kegbot.org/',
+        packages=find_packages(),
+        scripts=[
+            'bin/kegbot',
+            'bin/setup-kegbot.py',
+        ],
+        install_requires=DEPENDENCIES,
+        dependency_links=[
+            'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
+        ],
+        include_package_data=True,
+        entry_points={
+            'console_scripts': ['instance=django.core.management:execute_manager'],
+        },
+    )
+
 
 if __name__ == '__main__':
-  setup_package()
+    setup_package()

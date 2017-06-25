@@ -21,6 +21,9 @@ from unittest import TestCase
 from pykeg.core import testutils
 from . import client
 
+import requests
+import requests_mock
+
 vcr = testutils.get_vcr('contrib/twitter')
 
 FAKE_API_KEY = 't47jeS6v2e0QrY7ippyTm4ZQA'
@@ -43,8 +46,11 @@ class TwitterClientTest(TestCase):
     @vcr.use_cassette()
     def test_fetch_request_token_with_no_connection(self):
         c = client.TwitterClient('test', 'test_secret')
+
         with self.assertRaises(client.RequestError):
-            c.fetch_request_token('http://example.com')
+            with requests_mock.Mocker() as m:
+                m.post(client.TwitterClient.REQUEST_TOKEN_URL, exc=requests.exceptions.ConnectTimeout)
+                c.fetch_request_token('http://example.com')
 
     @vcr.use_cassette()
     def test_fetch_request_token_with_valid_keys(self):
@@ -67,3 +73,13 @@ class TwitterClientTest(TestCase):
             FAKE_REQUEST_TOKEN, FAKE_REQUEST_TOKEN_SECRET, uri=FAKE_CALLBACK_URL)
         self.assertEqual(FAKE_OAUTH_TOKEN, token)
         self.assertEqual(FAKE_OAUTH_TOKEN_SECRET, token_secret)
+
+    @vcr.use_cassette()
+    def test_handle_authorization_callback_with_no_connection(self):
+        c = client.TwitterClient(FAKE_API_KEY, FAKE_API_SECRET)
+
+        with self.assertRaises(client.RequestError):
+            with requests_mock.Mocker() as m:
+                m.post(client.TwitterClient.ACCESS_TOKEN_URL, exc=requests.exceptions.ConnectTimeout)
+                c.handle_authorization_callback(
+                    FAKE_REQUEST_TOKEN, FAKE_REQUEST_TOKEN_SECRET, uri=FAKE_CALLBACK_URL)

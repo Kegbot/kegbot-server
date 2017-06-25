@@ -19,6 +19,7 @@
 from django import forms
 
 from pykeg.core import models
+from pykeg.core.kb_common import USERNAME_REGEX
 
 ALL_METERS = models.FlowMeter.objects.all()
 ALL_TOGGLES = models.FlowToggle.objects.all()
@@ -28,7 +29,7 @@ class DrinkPostForm(forms.Form):
     """Form to handle posts to /tap/<tap_id>/"""
     ticks = forms.IntegerField()
     volume_ml = forms.FloatField(required=False)
-    username = forms.RegexField(required=False, max_length=30, regex=r"^[\w-]+$")
+    username = forms.RegexField(required=False, max_length=30, regex=USERNAME_REGEX)
     pour_time = forms.IntegerField(required=False)
     now = forms.IntegerField(required=False)
     duration = forms.IntegerField(required=False)

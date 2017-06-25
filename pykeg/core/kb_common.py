@@ -51,3 +51,6 @@ AUTH_MODULE_NAMES_HEX_VALUES = (AUTH_MODULE_CORE_ONEWIRE, AUTH_MODULE_CORE_RFID)
 
 # Low volume threshold: 15% full
 KEG_VOLUME_LOW_PERCENT = 0.15
+
+# Valid usernames.
+USERNAME_REGEX = '^[\w.@+-]+$'

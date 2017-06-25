@@ -40,6 +40,7 @@ DEPENDENCIES = [
     'rednose',
     'requests',
     'tweepy',
+    'vcrpy',
 ]
 
 

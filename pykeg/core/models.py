@@ -106,7 +106,7 @@ class User(AbstractBaseUser):
             '@/./+/-/_ characters'),
         validators=[
             validators.RegexValidator(
-                re.compile('^[\w.@+-]+$'),
+                re.compile(kb_common.USERNAME_REGEX),
                 _('Enter a valid username.'),
                 'invalid')])
     display_name = models.CharField(

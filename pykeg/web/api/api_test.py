@@ -209,6 +209,22 @@ class ApiClientTestCase(BaseApiTestCase):
         active_user = users[0]
         self.assertEquals(self.normal_user.username, active_user.username)
 
+    def test_record_drink_usernames(self):
+        new_keg_data = {
+            'keg_size': 'half-barrel',
+            'beverage_name': 'Test Brew',
+            'producer_name': 'Test Producer',
+            'style_name': 'Test Style,'
+        }
+        response, data = self.post('taps/1/activate', data=new_keg_data,
+                                   HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        self.assertEquals(data.meta.result, 'ok')
+
+        models.User.objects.create(username='test.123')
+        response, data = self.post('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
+            data={'ticks': 1000, 'username': 'test.123'})
+        self.assertEquals(data.meta.result, 'ok')
+
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
     @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
     def test_registration(self):

@@ -15,7 +15,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': '',
         'OPTIONS': {
-            'init_command': 'SET storage_engine=INNODB'}}}
+            'init_command': 'SET default_storage_engine=INNODB'}}}
 
 KEGBOT_ROOT = HOME + '/kegbot-data'
 

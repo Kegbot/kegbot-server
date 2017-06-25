@@ -24,12 +24,11 @@ from pykeg.plugin import util
 
 from pykeg.core.models import KegbotSite
 from pykeg.core.util import SuppressTaskErrors
-from socialregistration.contrib.twitter.client import Twitter
-import oauth2 as oauth
 
 from . import forms
 from . import tasks
 from . import views
+from .client import TwitterClient
 
 from unicodedata import normalize
 
@@ -67,14 +66,6 @@ def truncate_tweet(tweet, max_len=TWEET_MAX_LEN, truncate_str=TRUNCATE_STR):
         words = words[:-1]
 
 
-class TwitterClient(Twitter):
-    def set_callback_url(self, url):
-        self.callback_url = url
-
-    def get_callback_url(self):
-        return self.callback_url
-
-
 class TwitterPlugin(plugin.Plugin):
     NAME = 'Twitter'
     SHORT_NAME = 'twitter'
@@ -90,14 +81,14 @@ class TwitterPlugin(plugin.Plugin):
 
     def get_extra_admin_views(self):
         return [
-            ('redirect/$', 'pykeg.contrib.twitter.views.site_twitter_redirect', 'site_twitter_redirect'),
-            ('callback/$', 'pykeg.contrib.twitter.views.site_twitter_callback', 'site_twitter_callback'),
+            ('redirect/$', views.site_twitter_redirect, 'site_twitter_redirect'),
+            ('callback/$', views.site_twitter_callback, 'site_twitter_callback'),
         ]
 
     def get_extra_user_views(self):
         return [
-            ('redirect/$', 'pykeg.contrib.twitter.views.user_twitter_redirect', 'user_twitter_redirect'),
-            ('callback/$', 'pykeg.contrib.twitter.views.user_twitter_callback', 'user_twitter_callback'),
+            ('redirect/$', views.user_twitter_redirect, 'user_twitter_redirect'),
+            ('callback/$', views.user_twitter_callback, 'user_twitter_callback'),
         ]
 
     def get_site_twitter_settings_form(self):
@@ -368,6 +359,4 @@ class TwitterPlugin(plugin.Plugin):
 
     def get_client(self):
         consumer_key, consumer_secret = self.get_credentials()
-        client = TwitterClient()
-        client.consumer = oauth.Consumer(consumer_key, consumer_secret)
-        return client
+        return TwitterClient(consumer_key, consumer_secret)

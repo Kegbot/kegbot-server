@@ -309,8 +309,6 @@ TEST_RUNNER = 'pykeg.core.testutils.KegbotTestSuiteRunner'
 NOSE_ARGS = [
     '--exe',
     '--rednose',
-    '--exclude',
-    '.*(foursquare|twitter|untappd).*',
 ]
 
 # Storage

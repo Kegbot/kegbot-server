@@ -28,8 +28,10 @@ from django.utils import timezone
 
 from django_nose import NoseTestSuiteRunner
 
+import vcr
 
 TESTDATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../testdata/'))
+CASSETTE_DIR = os.path.join(TESTDATA_DIR, 'request_fixtures')
 
 
 def get_filename(f):
@@ -41,6 +43,16 @@ def make_datetime(*args):
         return datetime.datetime(*args, tzinfo=timezone.utc)
     else:
         return datetime.datetime(*args)
+
+
+def get_vcr(test_name):
+    cassette_dir = os.path.join(CASSETTE_DIR, test_name)
+    return vcr.VCR(
+        serializer='yaml',
+        cassette_library_dir=cassette_dir,
+        record_mode='none',
+        match_on=['uri', 'method'],
+    )
 
 
 class TestBackend(KegbotBackend):

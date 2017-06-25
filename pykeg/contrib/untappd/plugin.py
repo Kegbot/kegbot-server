@@ -24,6 +24,7 @@ from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.plugin import util as plugin_util
 
+from . import client
 from . import forms
 from . import tasks
 from . import views
@@ -50,8 +51,8 @@ class UntappdPlugin(plugin.Plugin):
 
     def get_extra_user_views(self):
         return [
-            ('redirect/$', 'pykeg.contrib.untappd.views.auth_redirect', 'redirect'),
-            ('callback/$', 'pykeg.contrib.untappd.views.auth_callback', 'callback'),
+            ('redirect/$', views.auth_redirect, 'redirect'),
+            ('callback/$', views.auth_callback, 'callback'),
         ]
 
     def handle_new_events(self, events):
@@ -154,3 +155,6 @@ class UntappdPlugin(plugin.Plugin):
 
     def save_user_token(self, user, token):
         self.datastore.set('user_token:%s' % user.id, token)
+
+    def get_client(self):
+        return client.UntappdClient(*self.get_credentials())

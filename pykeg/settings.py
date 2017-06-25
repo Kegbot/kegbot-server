@@ -144,9 +144,9 @@ KEGBOT_ENABLE_ADMIN = False
 
 # Add plugins in local_settings.py
 KEGBOT_PLUGINS = [
-    # 'pykeg.contrib.foursquare.plugin.FoursquarePlugin',
-    # 'pykeg.contrib.twitter.plugin.TwitterPlugin',
-    # 'pykeg.contrib.untappd.plugin.UntappdPlugin',
+    'pykeg.contrib.foursquare.plugin.FoursquarePlugin',
+    'pykeg.contrib.twitter.plugin.TwitterPlugin',
+    'pykeg.contrib.untappd.plugin.UntappdPlugin',
     'pykeg.contrib.webhook.plugin.WebhookPlugin',
 ]
 
@@ -356,8 +356,6 @@ TIME_ZONE = 'UTC'
 
 # Update email addresses.
 DEFAULT_FROM_EMAIL = EMAIL_FROM_ADDRESS
-
-# socialregistration (after importing common settings)
 
 if KEGBOT_ENABLE_ADMIN:
     INSTALLED_APPS += ('django.contrib.admin',)

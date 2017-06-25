@@ -1,0 +1,50 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Authorization: ['OAuth oauth_nonce="9007758857061457461498410894", oauth_timestamp="1498410894",
+          oauth_version="1.0", oauth_signature_method="HMAC-SHA1", oauth_consumer_key="t47jeS6v2e0QrY7ippyTm4ZQA",
+          oauth_callback="http%3A%2F%2Fexample.com%2Fredirect", oauth_signature="FnlT5nliNEtQLtaJ4DgeRWgXo2U%3D"']
+      Connection: [keep-alive]
+      Content-Length: ['0']
+      User-Agent: [python-requests/2.18.1]
+    method: POST
+    uri: https://api.twitter.com/oauth/request_token
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAMpPLC3JiC/Jz07Ns400dSnzKXcEA8OgMD8g5RTh7xhfEViulo9QF1+cmlyUWmLr
+        5+WeWJIe5VfsHxiUkWkQXhxY5FFUEJBk6W3sFZpslgXVk5yYk5OUmJwdn5yfl5ZZlJuaYltSVJoK
+        AAAA//8DAOYifdJ5AAAA
+    headers:
+      cache-control: ['no-cache, no-store, must-revalidate, pre-check=0, post-check=0']
+      content-encoding: [gzip]
+      content-security-policy: ['default-src ''none''; connect-src ''self''; font-src
+          https://abs.twimg.com https://abs-0.twimg.com data:; frame-src ''self''
+          twitter:; img-src https://abs.twimg.com https://*.twimg.com https://pbs.twimg.com
+          data:; media-src ''none''; object-src ''none''; script-src https://abs.twimg.com
+          https://abs-0.twimg.com https://twitter.com https://mobile.twitter.com;
+          style-src https://abs.twimg.com https://abs-0.twimg.com; report-uri https://twitter.com/i/csp_report?a=NVQWGYLXFVWG6Z3JNY%3D%3D%3D%3D%3D%3D&ro=false;']
+      content-type: [text/html;charset=utf-8]
+      date: ['Sun, 25 Jun 2017 17:14:54 GMT']
+      expires: ['Tue, 31 Mar 1981 05:00:00 GMT']
+      last-modified: ['Sun, 25 Jun 2017 17:14:54 GMT']
+      ml: [A]
+      pragma: [no-cache]
+      server: [tsa_b]
+      set-cookie: ['guest_id=v1%3A149841089458920859; Domain=.twitter.com; Path=/;
+          Expires=Tue, 25-Jun-2019 17:14:54 UTC']
+      status: [200 OK]
+      strict-transport-security: [max-age=631138519]
+      x-connection-hash: [78ea8ab603ea64e1e437d35026e64180]
+      x-content-type-options: [nosniff]
+      x-frame-options: [SAMEORIGIN]
+      x-response-time: ['24']
+      x-transaction: [007d64dc0002fc24]
+      x-twitter-response-tags: [BouncerCompliant]
+      x-ua-compatible: ['IE=edge,chrome=1']
+      x-xss-protection: [1; mode=block]
+    status: {code: 200, message: OK}
+version: 1

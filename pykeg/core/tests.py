@@ -36,7 +36,8 @@ class CoreTests(TestCase):
 
     def test_flake8(self):
         root_path = path_for_import('pykeg')
-        command = 'flake8 {}'.format(root_path)
+        config_file = os.path.join(root_path, 'setup.cfg')
+        command = 'flake8 --config={} {}'.format(config_file, root_path)
         try:
             subprocess.check_output(command.split())
         except subprocess.CalledProcessError as e:

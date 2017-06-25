@@ -16,17 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 
 from pykeg.core import models
 from pykeg.core.management.commands.common import progbar
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = u'Regenerate all system events.'
-    args = '<none>'
 
-    def handle(self, **options):
+    def handle(self, *args, **options):
         events = models.SystemEvent.objects.all()
         num_events = len(events)
         progbar('clear events', 0, num_events)

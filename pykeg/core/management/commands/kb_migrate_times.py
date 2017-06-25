@@ -32,7 +32,7 @@ import pytz
 
 from django.db import transaction
 from django.conf import settings
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 
 from django.utils import timezone
 from pykeg.core import models
@@ -40,11 +40,10 @@ from pykeg.core import models
 HELP_TEXT = __doc__
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = u'Regenerates timestamps due to timezone conversion.'
-    args = '<none>'
 
-    def handle(self, **options):
+    def handle(self, *args, **options):
         print HELP_TEXT
         confirm('Press Y to continue. ')
 

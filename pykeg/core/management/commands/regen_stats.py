@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from pykeg.core import models
@@ -24,13 +24,11 @@ from pykeg.core import stats
 from pykeg.core.management.commands.common import progbar
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = u'Regenerate all cached stats.'
-    args = '<none>'
 
     @transaction.atomic
-    def handle(self, **options):
-
+    def handle(self, *args, **options):
         num_drinks = models.Drink.objects.all().count()
         self.pos = 0
 

@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from optparse import make_option
 from distutils.version import StrictVersion
 import sys
 
@@ -25,7 +24,7 @@ from pykeg.core.util import get_version_object
 from django.core.management.base import BaseCommand
 
 from django.contrib.staticfiles.management.commands import collectstatic
-from django.core.management.commands import syncdb
+from django.core.management.commands import migrate
 from pykeg.core.management.commands import regen_stats
 
 from pykeg.core import models
@@ -48,14 +47,14 @@ def run(cmd, args=[]):
 
 class Command(BaseCommand):
     help = u'Perform post-upgrade tasks.'
-    option_list = BaseCommand.option_list + (
-        make_option('--force', action='store_true', dest='force', default=False,
-                    help='Run even if installed version is up-to-date.'),
-        make_option('--skip_static', action='store_true', dest='skip_static', default=False,
-                    help='Skip `kegbot collectstatic` during upgrade. (Not recommended.)'),
-        make_option('--skip_stats', action='store_true', dest='skip_stats', default=False,
-                    help='Skip `kegbot regen_stats` during upgrade. (Not recommended.)'),
-    )
+
+    def add_arguments(self, parser):
+        parser.add_argument('--force', action='store_true', dest='force', default=False,
+                    help='Run even if installed version is up-to-date.')
+        parser.add_argument('--skip_static', action='store_true', dest='skip_static', default=False,
+                    help='Skip `kegbot collectstatic` during upgrade. (Not recommended.)')
+        parser.add_argument('--skip_stats', action='store_true', dest='skip_stats', default=False,
+                    help='Skip `kegbot regen_stats` during upgrade. (Not recommended.)')
 
     def handle(self, *args, **options):
         installed_version = models.KegbotSite.get_installed_version()
@@ -89,7 +88,7 @@ class Command(BaseCommand):
         print 'Upgrading from {} to {}'.format(installed_version, app_version)
         self.do_version_upgrades(installed_version)
 
-        run(syncdb.Command(), args=['--noinput', '-v', '0'])
+        run(migrate.Command(), args=['--noinput', '-v', '0'])
 
         if not options.get('skip_stats'):
             run(regen_stats.Command())

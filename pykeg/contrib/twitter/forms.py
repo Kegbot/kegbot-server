@@ -33,6 +33,8 @@ class SiteSettingsForm(forms.Form):
                                           help_text='Tweet when a keg is started or ended.')
     tweet_session_events = forms.BooleanField(initial=True, required=False,
                                               help_text='Tweet when a new session is started.')
+    tweet_session_joined_events = forms.BooleanField(initial=False, required=False,
+                                                     help_text='Tweet someone joins a session.')
     tweet_drink_events = forms.BooleanField(
         initial=False,
         required=False,

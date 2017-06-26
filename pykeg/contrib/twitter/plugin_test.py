@@ -53,6 +53,7 @@ class TwitterPluginTestCase(TransactionTestCase):
         expected = {
             'tweet_keg_events': True,
             'tweet_session_events': True,
+            'tweet_session_joined_events': False,
             'tweet_drink_events': False,
             'include_guests': True,
             'include_pictures': False,

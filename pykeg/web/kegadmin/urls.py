@@ -34,6 +34,7 @@ urlpatterns = [
         name='kegadmin-edit-beverage-producer'),
 
     url(r'^controllers/$', views.controller_list, name='kegadmin-controllers'),
+    url(r'^controllers/create/$', views.add_controller, name='kegadmin-add-controller'),
     url(r'^controllers/(?P<controller_id>\d+)/$',
         views.controller_detail, name='kegadmin-edit-controller'),
 

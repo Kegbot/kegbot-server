@@ -288,6 +288,20 @@ def controller_list(request):
 
 
 @staff_member_required
+def add_controller(request):
+    context = {}
+    form = forms.ControllerForm()
+    if request.method == 'POST':
+        form = forms.ControllerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Controller created.')
+            return redirect('kegadmin-controllers')
+    context['form'] = form
+    return render(request, 'kegadmin/add_controller.html', context=context)
+
+
+@staff_member_required
 def controller_detail(request, controller_id):
     controller = get_object_or_404(models.Controller, id=controller_id)
     delete_controller_form = forms.DeleteControllerForm()

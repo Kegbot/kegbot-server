@@ -135,8 +135,6 @@ CACHES = {
     }
 }
 
-CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
-
 INTERNAL_IPS = ('127.0.0.1',)
 
 # Set to true if the database admin module should be enabled.

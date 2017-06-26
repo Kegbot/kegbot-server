@@ -755,6 +755,17 @@ class ControllerForm(forms.ModelForm):
         model = models.Controller
         fields = ('name', 'model_name', 'serial_number')
 
+    helper = FormHelper()
+    helper.form_class = 'form-horizontal'
+    helper.layout = Layout(
+        Field('name', css_class='input-xlarge'),
+        Field('model_name', css_class='input-xlarge'),
+        Field('serial_number', css_class='input-xlarge'),
+        FormActions(
+            Submit('submit_controller_form', 'Save Controller', css_class='btn-success'),
+        )
+    )
+
 
 class LinkDeviceForm(forms.Form):
     code = forms.CharField(required=True,

@@ -23,22 +23,25 @@ from django.contrib import messages
 from django.shortcuts import redirect
 
 
-class DemoModeMiddleware:
+class DemoModeMiddleware(object):
     """Denies non-GET requests when in demo mode.."""
+
     WHITELISTED_PATHS = (
         '/accounts/login/',
         '/accounts/logout/',
         '/demo/',
     )
 
-    def process_request(self, request):
-        if not getattr(settings, 'DEMO_MODE', False):
-            return
-        if request.method == 'GET':
-            return
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if not getattr(settings, 'DEMO_MODE', False) or request.method == 'GET':
+            return self.get_response(request)
+
         for path in self.WHITELISTED_PATHS:
             if request.path.startswith(path):
-                return
+                return self.get_response(request)
 
         messages.error(request, 'Site is in demo mode; changes were not saved.')
         path_or_url = urlparse.urlparse(request.META.get('HTTP_REFERER', '')).path

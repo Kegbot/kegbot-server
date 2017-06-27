@@ -1,17 +1,17 @@
 {% extends "skel.html" %}
-{% load kegweblib %}
+{% load static kegweblib %}
 
 {% block title %}{{ kbsite.title }} (Fullscreen Mode){% endblock %}
 
 {% block kb-extracss %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}lib/slick/slick.css" media="screen" />
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/bootstrap-cyborg.css" media="screen" />
+<link rel="stylesheet" type="text/css" href={% static "lib/slick/slick.css" %} media="screen" />
+<link rel="stylesheet" type="text/css" href={% static "css/bootstrap-cyborg.css" %} media="screen" />
 
 <style>
 
 body {
 	background-color: #000;
-	background-image: url('{{ STATIC_URL }}images/chalkboard-bg.jpg') center center no-repeat;
+	background-image: url({% static "images/chalkboard-bg.jpg" %}) center center no-repeat;
   background-size: cover;
   color: #eee;
 }
@@ -61,7 +61,7 @@ img.taplist-foot-logos {
     <div class="row-fluid">
     <div class="span12">
     	<center>
-    		<img src="{{ STATIC_URL }}images/whats-on-tap.png">
+    		<img src={% static "images/whats-on-tap.png" %}>
       </center>
     </div>
     </div>
@@ -75,7 +75,7 @@ img.taplist-foot-logos {
             {% with keg.type as beverage %}
 
             <div class="row-fluid">
-    
+
             <div class="span2">
               <img src="{{ keg.get_illustration }}" style="padding-bottom: 20px;">
             </div>
@@ -85,7 +85,7 @@ img.taplist-foot-logos {
               {% if keg.type.picture %}
                 <img class="tap-snapshot-image" src="{{ keg.type.picture.resized.url }}">
               {% else %}
-                <img class="tap-snapshot-image" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
+                <img class="tap-snapshot-image" src={% static "images/kegbot-unknown-square.png" %}>
               {% endif %}
                 <span class="label label-info">{% volume keg.remaining_volume_ml %} remaining</span>
               </center>
@@ -106,7 +106,7 @@ img.taplist-foot-logos {
             {% endwith %}
             {% endwith %}
         {% endfor %} <!-- /tap in row -->
-    
+
       </div> <!-- /page -->
 
     {% endfor %}
@@ -120,7 +120,7 @@ img.taplist-foot-logos {
 {% endblock %}
 
 {% block kb-extrajs %}
-<script type="text/javascript" src="{{ STATIC_URL }}lib/slick/slick.min.js"></script>
+<script type="text/javascript" src={% static "lib/slick/slick.min.js" %}></script>
 
 <script type="text/javascript">
 

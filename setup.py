@@ -42,6 +42,7 @@ DEPENDENCIES = [
     'requests_oauthlib',
     'tweepy',
     'vcrpy',
+    'whitenoise',
 ]
 
 

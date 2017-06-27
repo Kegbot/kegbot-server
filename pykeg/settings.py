@@ -10,9 +10,12 @@ from __future__ import absolute_import
 # Grab flags for optional modules.
 from pykeg.core.optional_modules import *
 
+import os
 import logging
 from pykeg.logging.logger import RedisLogger
 logging.setLoggerClass(RedisLogger)
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 INSTALLED_APPS = (
     'pykeg.core',
@@ -52,6 +55,8 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default session serialization.
 # Note: Twitter plugin requires Pickle (not JSON serializable).
 
@@ -84,7 +89,7 @@ MEDIA_URL = '/media/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -99,9 +104,10 @@ ADMIN_MEDIA_PREFIX = '/static/admin/'
 ALLOWED_HOSTS = ['*']
 
 MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'pykeg.web.middleware.CurrentRequestMiddleware',
     'pykeg.web.middleware.KegbotSiteMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.common.CommonMiddleware',

@@ -12,6 +12,7 @@ chardet==3.0.4            # via requests
 colorama==0.3.9           # via rednose
 configparser==3.5.0       # via flake8
 contextlib2==0.5.5        # via vcrpy
+dj-database-url==0.4.2
 django-appconf==1.0.2     # via django-imagekit
 django-bootstrap-pagination==1.6.2
 django-crispy-forms==1.6.1

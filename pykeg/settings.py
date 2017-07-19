@@ -7,14 +7,21 @@
 
 from __future__ import absolute_import
 
-from pykeg.config import *
-
+from pykeg.config import all_values
+import dj_database_url
 import os
 import logging
 from pykeg.logging.logger import RedisLogger
 logging.setLoggerClass(RedisLogger)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+KEGBOT = all_values()
+DEBUG = KEGBOT['KEGBOT_DEBUG']
+SECRET_KEY = KEGBOT['KEGBOT_SECRET_KEY']
+DATABASES = {
+    'default': dj_database_url.parse(KEGBOT['KEGBOT_DATABASE_URL']),
+}
 
 INSTALLED_APPS = (
     'pykeg.core',
@@ -77,7 +84,7 @@ USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = os.path.join(KEGBOT['KEGBOT_DATA_DIR'], 'media')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -293,17 +300,6 @@ NOSE_ARGS = [
 
 # Storage
 DEFAULT_FILE_STORAGE = 'pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage'
-
-from pykeg.core import importhacks
-try:
-    from local_settings import *
-except ImportError:
-    msg = "Could not find local_settings.py; has Kegbot been set up?\n"
-    msg += 'Tried: ' + ' '.join(importhacks.SEARCH_DIRS) + '\n\n'
-    msg += 'Run setup-kegbot.py or set KEGBOT_SETTINGS_DIR to the settings directory.'
-    import sys
-    print>>sys.stderr, msg
-    sys.exit(1)
 
 from pykeg.core.util import get_plugin_template_dirs
 TEMPLATES = [

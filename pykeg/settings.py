@@ -10,9 +10,12 @@ from __future__ import absolute_import
 # Grab flags for optional modules.
 from pykeg.core.optional_modules import *
 
+import os
 import logging
 from pykeg.logging.logger import RedisLogger
 logging.setLoggerClass(RedisLogger)
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 INSTALLED_APPS = (
     'pykeg.core',
@@ -52,6 +55,8 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default session serialization.
 # Note: Twitter plugin requires Pickle (not JSON serializable).
 
@@ -84,7 +89,7 @@ MEDIA_URL = '/media/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -98,28 +103,22 @@ ADMIN_MEDIA_PREFIX = '/static/admin/'
 # Disable Django's built in host checker.
 ALLOWED_HOSTS = ['*']
 
-MIDDLEWARE_CLASSES = (
-    # CurrentRequest and KegbotSite middlewares added first
-
-    'django.middleware.cache.UpdateCacheMiddleware',
-    'django.middleware.gzip.GZipMiddleware',
-    'django.middleware.common.CommonMiddleware',
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'pykeg.web.middleware.CurrentRequestMiddleware',
+    'pykeg.web.middleware.KegbotSiteMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pykeg.contrib.demomode.middleware.DemoModeMiddleware',
     'pykeg.web.api.middleware.ApiRequestMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',
-
-    # Cache middleware should be last, except for ApiResponseMiddleWare,
-    # which needs to be after it (in request order) so that it can
-    # update the Cache-Control header before it (in reponse order).
-    'django.middleware.cache.FetchFromCacheMiddleware',
-
-    # ApiResponseMiddleware added last.
-)
+]
 
 AUTHENTICATION_BACKENDS = (
     'pykeg.web.auth.local.LocalAuthBackend',
@@ -362,67 +361,3 @@ if HAVE_CELERY_EMAIL:
     CELERY_EMAIL_BACKEND = EMAIL_BACKEND
     INSTALLED_APPS += ('djcelery_email',)
     EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-
-# debug_toolbar
-
-if DEBUG:
-    if HAVE_DEBUG_TOOLBAR:
-        INSTALLED_APPS += (
-            'debug_toolbar',
-        )
-        MIDDLEWARE_CLASSES += (
-            'debug_toolbar.middleware.DebugToolbarMiddleware',
-        )
-        DEBUG_TOOLBAR_PANELS = (
-            'debug_toolbar.panels.version.VersionDebugPanel',
-            'debug_toolbar.panels.timer.TimerDebugPanel',
-            'debug_toolbar.panels.settings.SettingsPanel',
-            'debug_toolbar.panels.headers.HeaderDebugPanel',
-            'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
-            'debug_toolbar.panels.template.TemplateDebugPanel',
-            'debug_toolbar.panels.sql.SQLDebugPanel',
-            'debug_toolbar.panels.signals.SignalDebugPanel',
-            'debug_toolbar.panels.logging.LoggingPanel',
-            #'debug_toolbar.panels.profiling.ProfilingDebugPanel',
-        )
-        if HAVE_MEMCACHE_TOOLBAR:
-            INSTALLED_APPS += ('debug_toolbar_memcache',)
-            if HAVE_MEMCACHE:
-                DEBUG_TOOLBAR_PANELS += ('debug_toolbar_memcache.panels.memcache.MemcachePanel',)
-            elif HAVE_PYLIBMC:
-                DEBUG_TOOLBAR_PANELS += ('debug_toolbar_memcache.panels.pylibmc.PylibmcPanel',)
-
-# Statsd
-
-# Needs SECRET_KEY so must be imported after local settings.
-
-STATSD_PATCHES = [
-    'django_statsd.patches.db',
-    'django_statsd.patches.cache',
-]
-
-if HAVE_STATSD:
-    MIDDLEWARE_CLASSES = (
-        'django_statsd.middleware.GraphiteRequestTimingMiddleware',
-        'django_statsd.middleware.GraphiteMiddleware',
-    ) + MIDDLEWARE_CLASSES
-
-    INSTALLED_APPS += ('django_statsd',)
-
-if DEBUG and HAVE_DEBUG_TOOLBAR and KEGBOT_STATSD_TO_TOOLBAR:
-    MIDDLEWARE_CLASSES = (
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    ) + MIDDLEWARE_CLASSES
-    DEBUG_TOOLBAR_PANELS = (
-        'django_statsd.panel.StatsdPanel',
-    ) + DEBUG_TOOLBAR_PANELS
-    STATSD_CLIENT = 'django_statsd.clients.toolbar'
-
-# First/last middlewares.
-
-MIDDLEWARE_CLASSES = (
-    'pykeg.web.middleware.CurrentRequestMiddleware',
-    'pykeg.web.middleware.KegbotSiteMiddleware',
-) + MIDDLEWARE_CLASSES
-
-MIDDLEWARE_CLASSES += ('pykeg.web.api.middleware.ApiResponseMiddleware',)

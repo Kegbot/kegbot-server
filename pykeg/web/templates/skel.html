@@ -1,18 +1,17 @@
 {# Bare-bones skeletal template. #}
-{% load kegweblib %}
-{% load humanize %}
+{% load static humanize kegweblib %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <title>{% block title %}Kegbot{% endblock %}</title>
 
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src={% static "js/jquery-1.9.1.min.js" %}></script>
 
 {% block css %}
-<link rel="icon" type="image/png" href="{{ STATIC_URL}}images/kegbot-icon-72x72.png" />
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/kegweb.css" media="screen"/>
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fancybox/jquery.fancybox.css" media="screen" />
+<link rel="icon" type="image/png" href={% static "images/kegbot-icon-72x72.png" %} />
+<link rel="stylesheet" type="text/css" href={% static "css/kegweb.css" %} media="screen"/>
+<link rel="stylesheet" type="text/css" href={% static "fancybox/jquery.fancybox.css" %} media="screen" />
 {% endblock %}
 
 {% block kb-extracss %}{% endblock %}
@@ -23,17 +22,17 @@
 {% endblock body %}
 
 {% block js %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.timeago.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.autounits.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.scrollstop.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.lazyload.min.js"></script>
+<script type="text/javascript" src={% static "js/jquery.cookie.js" %}></script>
+<script type="text/javascript" src={% static "js/jquery.timeago.js" %}></script>
+<script type="text/javascript" src={% static "js/jquery.autounits.js" %}></script>
+<script type="text/javascript" src={% static "js/jquery.scrollstop.min.js" %}></script>
+<script type="text/javascript" src={% static "js/jquery.lazyload.min.js" %}></script>
 
-<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}lib/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+<script type="text/javascript" src={% static "bootstrap/js/bootstrap.min.js" %}></script>
+<script type="text/javascript" src={% static "lib/bootstrap-progressbar/bootstrap-progressbar.min.js" %}></script>
 
-<script type="text/javascript" src="{{ STATIC_URL }}highcharts/js/highcharts.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript" src={% static "highcharts/js/highcharts.js" %}></script>
+<script type="text/javascript" src={% static "fancybox/jquery.fancybox.pack.js" %}></script>
 
 {% if GOOGLE_ANALYTICS_ID %}
 <script type="text/javascript">

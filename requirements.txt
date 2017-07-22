@@ -19,7 +19,7 @@ django-imagekit==4.0.1
 django-nose==1.4.4
 django-redis==4.8.0
 django-registration==2.2
-django==1.11.2            # via jsonfield
+django==1.11.2
 enum34==1.1.6             # via flake8
 flake8==3.3.0
 foursquare==1!2016.9.12
@@ -49,12 +49,14 @@ pytz==2017.2
 pyyaml==3.12              # via vcrpy
 redis==2.10.5
 rednose==1.2.2
+requests-mock==1.3.0
 requests-oauthlib==0.8.0
 requests==2.18.1
-six==1.10.0               # via django-imagekit, foursquare, mock, protobuf, tweepy, vcrpy
+six==1.10.0               # via django-imagekit, foursquare, mock, protobuf, requests-mock, tweepy, vcrpy
 termstyle==0.1.11         # via rednose
 tweepy==3.5.0
 urllib3==1.21.1           # via requests
 vcrpy==1.11.1
 vine==1.1.3               # via amqp
+whitenoise==3.3.0
 wrapt==1.10.10            # via vcrpy

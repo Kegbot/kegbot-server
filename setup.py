@@ -39,9 +39,11 @@ DEPENDENCIES = [
     'redis',
     'rednose',
     'requests',
+    'requests-mock',
     'requests_oauthlib',
     'tweepy',
     'vcrpy',
+    'whitenoise',
 ]
 
 

@@ -1,4 +1,4 @@
-{% load kegweblib %}
+{% load static kegweblib %}
 {% with keg.current_tap as tap %}
 {% url "kb-keg" keg.id as keg_url %}
 <div class="kb-tapbox clickable" id="keg-snapshot-{{keg.id}}"
@@ -9,7 +9,7 @@
       {% if keg.type.picture %}
         <img class="tap-snapshot-image" src="{{ keg.type.picture.resized.url }}">
       {% else %}
-        <img class="tap-snapshot-image" src="{{ STATIC_URL }}images/kegbot-unknown-square.png">
+        <img class="tap-snapshot-image" src={% static "images/kegbot-unknown-square.png" %}>
       {% endif %}
       </a>
     </div>

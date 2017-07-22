@@ -42,7 +42,25 @@ WHITELISTED_API_PATHS = (
 WHITELISTED_API_PATHS += getattr(settings, 'KEGBOT_EXTRA_WHITELISTED_API_PATHS', ())
 
 
-class ApiRequestMiddleware:
+class ApiRequestMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        if util.is_api_request(request):
+            if not isinstance(response, HttpResponse):
+                data = util.prepare_data(response)
+                data['meta'] = {
+                    'result': 'ok'
+                }
+                response = util.build_response(request, data, 200)
+
+            add_never_cache_headers(response)
+
+        return response
+
     def process_view(self, request, view_func, view_args, view_kwargs):
         request.is_kb_api_request = util.is_api_request(request)
         if not request.is_kb_api_request:
@@ -76,27 +94,11 @@ class ApiRequestMiddleware:
         except Exception as e:
             return util.wrap_exception(request, e)
 
-
-class ApiResponseMiddleware:
     def process_exception(self, request, exception):
         """Wraps exceptions for API requests."""
         if util.is_api_request(request):
             return util.wrap_exception(request, exception)
         return None
-
-    def process_response(self, request, response):
-        if not util.is_api_request(request):
-            return response
-
-        if not isinstance(response, HttpResponse):
-            data = util.prepare_data(response)
-            data['meta'] = {
-                'result': 'ok'
-            }
-            response = util.build_response(request, data, 200)
-
-        add_never_cache_headers(response)
-        return response
 
 
 def cache_key(request):

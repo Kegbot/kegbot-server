@@ -1,6 +1,5 @@
 {% extends "skel.html" %}
-{% load kegweblib %}
-{% load humanize %}
+{% load static humanize kegweblib %}
 
 {% block title %}{% if kbsite.title %}{{ kbsite.title }}{% else %}Kegbot{% endif %}{% endblock %}
 
@@ -11,7 +10,7 @@
 {% if kbsite %}{% if kbsite.background_image %}
     background-image: url({{kbsite.background_image.image.url}});
 {% else %}
-    background-image: url({{ STATIC_URL }}images/background.png);
+    background-image: url({% static "images/background.png" %});
 {% endif %} {% endif %}
     background-repeat: no-repeat;
     background-attachment: fixed;

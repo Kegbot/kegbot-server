@@ -56,23 +56,29 @@ def _path_allowed(path, kbsite):
     return False
 
 
-class CurrentRequestMiddleware:
+class CurrentRequestMiddleware(object):
     """Set/clear the current request."""
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-    def process_request(self, request):
+    def __call__(self, request):
         set_current_request(request)
-
-    def process_response(self, request, response):
-        set_current_request(None)
+        try:
+            response = self.get_response(request)
+        finally:
+            set_current_request(None)
         return response
 
 
-class KegbotSiteMiddleware:
+class KegbotSiteMiddleware(object):
     ALLOWED_VIEW_MODULE_PREFIXES = (
         'pykeg.web.setup_wizard.',
     )
 
-    def process_request(self, request):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         request.need_setup = False
         request.need_upgrade = False
         request.kbsite = None
@@ -92,10 +98,9 @@ class KegbotSiteMiddleware:
                                        for p in plugin_util.get_plugins().values())
             else:
                 request.need_setup = True
+            request.backend = get_kegbot_backend()
 
-        request.backend = get_kegbot_backend()
-
-        return None
+        return self.get_response(request)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
@@ -128,12 +133,17 @@ class KegbotSiteMiddleware:
                       context=context, status=403)
 
 
-class PrivacyMiddleware:
+class PrivacyMiddleware(object):
     """Enforces site privacy settings.
 
     Must be installed after ApiRequestMiddleware (in request order) to
     access is_kb_api_request attribute.
     """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         if not hasattr(request, 'kbsite'):

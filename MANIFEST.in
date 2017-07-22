@@ -1,6 +1,6 @@
 include README.md
 include LICENSE.txt
 include pykeg/setup.cfg
-recursive-include pykeg *.html *.css *.js *.png
+recursive-include pykeg *.html *.css *.js *.png *.gif *.eot *.svg *.ttf *.woff *.ico
 recursive-include deploy *
 recursive-include pykeg/testdata *

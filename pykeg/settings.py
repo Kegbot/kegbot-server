@@ -7,8 +7,7 @@
 
 from __future__ import absolute_import
 
-# Grab flags for optional modules.
-from pykeg.core.optional_modules import *
+from pykeg.config import *
 
 import os
 import logging
@@ -237,23 +236,6 @@ LOGGING = {
     },
 }
 
-# raven
-
-if HAVE_RAVEN:
-    INSTALLED_APPS += (
-        'raven.contrib.django.raven_compat',
-    )
-
-    LOGGING['root']['handlers'] = ['sentry']
-    LOGGING['handlers']['sentry'] = {
-        'level': 'ERROR',
-        'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-    }
-
-# django-storages
-if HAVE_STORAGES:
-    INSTALLED_APPS += ('storages',)
-
 # django.contrib.messages
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 
@@ -355,10 +337,3 @@ DEFAULT_FROM_EMAIL = EMAIL_FROM_ADDRESS
 
 if KEGBOT_ENABLE_ADMIN:
     INSTALLED_APPS += ('django.contrib.admin',)
-
-# djcelery_email
-
-if HAVE_CELERY_EMAIL:
-    CELERY_EMAIL_BACKEND = EMAIL_BACKEND
-    INSTALLED_APPS += ('djcelery_email',)
-    EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'

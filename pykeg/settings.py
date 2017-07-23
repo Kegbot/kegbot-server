@@ -134,7 +134,7 @@ AUTHENTICATION_BACKENDS = (
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': '127.0.0.1:6379:1',
+        'LOCATION': KEGBOT['KEGBOT_REDIS_URL'],
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
@@ -161,8 +161,8 @@ KEGBOT_BACKEND = 'pykeg.backend.backends.KegbotBackend'
 
 # Celery
 
-BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+BROKER_URL = KEGBOT['KEGBOT_REDIS_URL']
+CELERY_RESULT_BACKEND = KEGBOT['KEGBOT_REDIS_URL']
 
 CELERY_QUEUES = {
     'default': {
@@ -212,6 +212,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'pykeg.logging.handlers.RedisListHandler',
             'key': 'kb:log',
+            'url': KEGBOT['KEGBOT_REDIS_URL'],
             'max_messages': 100,
         },
     },

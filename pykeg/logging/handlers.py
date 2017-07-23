@@ -59,8 +59,8 @@ class RedisHandler(logging.Handler):
     """
 
     @classmethod
-    def to(cklass, channel, url='redis://localhost:6379', level=logging.NOTSET):
-        return cklass(channel, redis.from_url(url), level=level)
+    def to(cls, channel, url='redis://localhost:6379/0', level=logging.NOTSET):
+        return cls(channel, redis.from_url(url), level=level)
 
     def __init__(self, channel, redis_client, level=logging.NOTSET):
         """
@@ -92,8 +92,8 @@ class RedisListHandler(logging.Handler):
     """
 
     @classmethod
-    def to(cklass, key, max_messages=None, url='redis://localhost:6379', level=logging.NOTSET):
-        return cklass(key, max_messages, redis.from_url(url), level=level)
+    def to(cls, key, max_messages=None, url='redis://localhost:6379', level=logging.NOTSET):
+        return cls(key, max_messages, redis.from_url(url), level=level)
 
     def __init__(self, key, max_messages, redis_client=None,
                  url='redis://localhost:6379', redis_db=0,

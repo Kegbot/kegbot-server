@@ -265,30 +265,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 EMAIL_FROM_ADDRESS = ''
 EMAIL_SUBJECT_PREFIX = ''
 
-# Bogus default values (to prevent djangofb from choking if unavailable);
-# replace with site-specific values in local_settings.py, if desired.
-FACEBOOK_API_KEY = ''
-FACEBOOK_SECRET_KEY = ''
-
-# Twitter
-
-TWITTER_CONSUMER_KEY = ''
-TWITTER_CONSUMER_SECRET_KEY = ''
-TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
-TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
-TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
-
-# Foursquare
-
-FOURSQUARE_CLIENT_ID = ''
-FOURSQUARE_CLIENT_SECRET = ''
-FOURSQUARE_REQUEST_PERMISSIONS = ''
-
-# Untappd
-
-UNTAPPD_CLIENT_ID = ''
-UNTAPPD_CLIENT_SECRET = ''
-
 # Imagekit
 IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = 'imagekit.imagecache.NonValidatingImageCacheBackend'
 

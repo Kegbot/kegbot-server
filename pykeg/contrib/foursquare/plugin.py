@@ -18,7 +18,6 @@
 
 """Foursquare plugin for Kegbot."""
 
-from django.conf import settings
 from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.plugin import util
@@ -94,11 +93,6 @@ class FoursquarePlugin(plugin.Plugin):
     # Foursquare-specific methods
 
     def get_credentials(self):
-        if settings.EMBEDDED:
-            return (
-                getattr(settings, 'FOURSQUARE_CLIENT_ID', ''),
-                getattr(settings, 'FOURSQUARE_CLIENT_SECRET', ''),
-            )
         data = self.get_site_settings()
         return data.get('client_id'), data.get('client_secret')
 

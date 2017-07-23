@@ -1,7 +1,6 @@
 # Kegbot Server main settings file.
 #
-# YOU SHOULD NOT EDIT THIS FILE.  Instead, run `setup-kegbot.py` and override
-# any settings in the local_settings.py file it installs.
+# YOU SHOULD NOT EDIT THIS FILE.
 
 # --------------------------------------------------------------------------- #
 
@@ -48,7 +47,7 @@ INSTALLED_APPS = (
     'gunicorn',
 )
 
-LOGIN_REDIRECT_URL = "/account/"
+LOGIN_REDIRECT_URL = '/account/'
 
 KEGBOT_ADMIN_LOGIN_URL = 'auth_login'
 
@@ -146,7 +145,6 @@ INTERNAL_IPS = ('127.0.0.1',)
 # Set to true if the database admin module should be enabled.
 KEGBOT_ENABLE_ADMIN = False
 
-# Add plugins in local_settings.py
 KEGBOT_PLUGINS = [
     'pykeg.contrib.foursquare.plugin.FoursquarePlugin',
     'pykeg.contrib.twitter.plugin.TwitterPlugin',
@@ -175,7 +173,7 @@ CELERY_QUEUES = {
     },
 }
 
-CELERY_DEFAULT_QUEUE = "default"
+CELERY_DEFAULT_QUEUE = 'default'
 CELERYD_CONCURRENCY = 3
 
 from datetime import timedelta

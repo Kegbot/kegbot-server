@@ -39,18 +39,7 @@ import sys
 # path), leave it blank.
 VIRTUAL_ENV = '/path/to/virtualenv/kb'
 
-# The local_settings.py config needs to be on the PATH as well. By default,
-# kegbot looks in # $HOME/.kegbot, /etc/kegbot and /usr/local/etc/kegbot.
-# Only change this if you are doing something different.
-EXTRA_PATHS = [
-    os.path.join(os.environ.get('HOME'), '.kegbot'),
-    '/etc/kegbot',
-    '/usr/local/etc/kegbot',
-]
-
 # Main script -- should not need to edit past here.
-
-_orig_sys_path = list(sys.path)
 
 if VIRTUAL_ENV:
     # If we have a VIRTUAL_ENV, add it as a site dir.
@@ -58,15 +47,6 @@ if VIRTUAL_ENV:
     PACKAGES = os.path.join(VIRTUAL_ENV, 'lib', PYTHON_NAME, 'site-packages')
     site.addsitedir(PACKAGES)
 
-# Add the kegbot local_settings.py locations to the path.
-for path in EXTRA_PATHS:
-    sys.path.append(path)
-
-# Adjust so any new dirs are prepended.
-_sys_path_prepend = [p for p in sys.path if p not in _orig_sys_path]
-for item in _sys_path_prepend:
-    sys.path.remove(item)
-sys.path[:0] = _sys_path_prepend
 
 # Import django (which must be done after any path adjustments), and start the
 # handler.

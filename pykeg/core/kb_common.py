@@ -18,13 +18,6 @@
 
 """System constants and defaults."""
 
-# Where to look for local_settings.py
-LOCAL_SETTINGS_SEARCH_DIRS = (
-    '~/.kegbot/',
-    '/etc/kegbot/',
-    '/usr/local/etc/kegbot',
-)
-
 # FT330-RJ default.
 DEFAULT_TICKS_PER_ML = 2.724
 

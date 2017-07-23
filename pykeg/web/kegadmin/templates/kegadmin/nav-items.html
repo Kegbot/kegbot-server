@@ -7,9 +7,7 @@
 {% navitem "kegadmin-main" "General" %}
 {% navitem "kegadmin-location-settings" "Location" %}
 {% navitem "kegadmin-advanced-settings" "Advanced" %}
-{% if not EMBEDDED %}
 {% navitem "kegadmin-email" "E-Mail" %}
-{% endif %}
 
 <li class="nav-header">System</li>
 {% if ENABLE_SENSING %}
@@ -43,12 +41,10 @@
 
 <li class="divider"></li>
 <li class="nav-header">Other</li>
-{% if not EMBEDDED %}
 {% navitem "kegadmin-logs" "Logs" %}
 {% navitem "kegadmin-bugreport" "Bugreport" %}
-{% endif %}
 {% navitem "kegadmin-export" "Export Data" %}
-{% if HAVE_ADMIN and not EMBEDDED %}
+{% if HAVE_ADMIN %}
 {% navitem "kegadmin-workers" "Worker Status" %}
 <li><a href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a></li>
 {% endif %}

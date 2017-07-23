@@ -28,7 +28,6 @@ from pykeg.plugin import util as plugin_util
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.http import HttpResponseServerError
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -135,13 +134,9 @@ class KegbotSiteMiddleware(object):
         return None
 
     def _setup_required(self, request):
-        if settings.EMBEDDED:
-            return HttpResponseServerError('Site is not set up.', content_type='text/plain')
         return render(request, 'setup_wizard/setup_required.html', status=403)
 
     def _upgrade_required(self, request):
-        if settings.EMBEDDED:
-            return HttpResponseServerError('Site needs upgrade.', content_type='text/plain')
         context = {
             'installed_version': getattr(request, 'installed_version_string', None),
         }

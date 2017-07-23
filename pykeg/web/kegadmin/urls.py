@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.conf.urls import url
 
 from pykeg.plugin import util
@@ -60,15 +59,12 @@ urlpatterns = [
         name='kegadmin-autocomplete-token'),
 
     url(r'^plugin/(?P<plugin_name>\w+)/$', views.plugin_settings, name='kegadmin-plugin-settings'),
-]
 
-if not settings.EMBEDDED:
-    urlpatterns += [
-        url(r'^email/$', views.email, name='kegadmin-email'),
-        url(r'^logs/$', views.logs, name='kegadmin-logs'),
-        url(r'^users/create/$', views.add_user, name='kegadmin-add-user'),
-        url(r'^workers/$', views.workers, name='kegadmin-workers'),
-    ]
+    url(r'^email/$', views.email, name='kegadmin-email'),
+    url(r'^logs/$', views.logs, name='kegadmin-logs'),
+    url(r'^users/create/$', views.add_user, name='kegadmin-add-user'),
+    url(r'^workers/$', views.workers, name='kegadmin-workers'),
+]
 
 if util.get_plugins():
     urlpatterns += util.get_admin_urls()

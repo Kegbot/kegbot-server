@@ -11,3 +11,8 @@ docs/build
 ### pykeg
 build
 dist
+
+### various virtualenv names
+venv
+env
+kb

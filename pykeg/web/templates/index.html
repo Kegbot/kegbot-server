@@ -6,10 +6,6 @@
 
 {% block col-1 %}
 
-{% if DEMO_MODE %}
-{% include 'contrib/demomode/demo_notice.html' %}
-{% endif %}
-
 {% block messages %}
 {% for message in messages %}
   <div class="alert {% for tag in message.tags.split %}alert-{{tag}} {% endfor %}">

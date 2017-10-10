@@ -22,7 +22,6 @@ def kbsite(request):
 
     ret = {
         'DEBUG': settings.DEBUG,
-        'DEMO_MODE': settings.DEMO_MODE,
         'VERSION': util.get_version(),
         'HAVE_SESSIONS': False,
         'HAVE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,

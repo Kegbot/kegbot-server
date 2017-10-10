@@ -31,7 +31,6 @@ INSTALLED_APPS = (
     'pykeg.web.kegadmin',
     'pykeg.web.kegweb',
     'pykeg.web.setup_wizard',
-    'pykeg.contrib.demomode',
 
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -121,7 +120,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'pykeg.contrib.demomode.middleware.DemoModeMiddleware',
     'pykeg.web.api.middleware.ApiRequestMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',
 ]
@@ -151,9 +149,6 @@ KEGBOT_PLUGINS = [
     'pykeg.contrib.untappd.plugin.UntappdPlugin',
     'pykeg.contrib.webhook.plugin.WebhookPlugin',
 ]
-
-# You probably don't want to turn this on.
-DEMO_MODE = False
 
 KEGBOT_BACKEND = 'pykeg.backend.backends.KegbotBackend'
 

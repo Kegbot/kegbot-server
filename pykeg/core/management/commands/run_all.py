@@ -24,6 +24,7 @@ class Command(RunnerCommand):
     pidfile_name = 'kegbot_run_all.pid'
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument('--gunicorn_options', action='store', dest='gunicorn_options', default='-w 3',
                     help='Specifies extra options to pass to gunicorn.')
 

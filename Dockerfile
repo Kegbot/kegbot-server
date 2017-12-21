@@ -30,6 +30,8 @@ RUN kegbot collectstatic -v 0 --noinput
 
 ENV KEGBOT_DATA_DIR=/kegbot-data
 ENV KEGBOT_IN_DOCKER=True
+ENV KEGBOT_DEBUG=True
+
 VOLUME  ["/kegbot-data"]
 
 EXPOSE 8000

@@ -15,6 +15,7 @@ SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
 DEPENDENCIES = [
     'Celery',
+    'coloredlogs',
     'dj-database-url',
     'django-bootstrap-pagination',
     'django-crispy-forms',

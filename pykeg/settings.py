@@ -194,9 +194,8 @@ LOGGING = {
     'handlers': {
         'console': {
             'level': 'DEBUG',
-            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'verbosecolor',
         },
         'null': {
             'class': 'logging.NullHandler',
@@ -213,14 +212,18 @@ LOGGING = {
         'verbose': {
             'format': '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'
         },
+        'verbosecolor': {
+            'format': '%(asctime)s %(levelname)-8s (%(name)s) %(message)s',
+            '()': 'coloredlogs.ColoredFormatter',
+        },
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
     },
     'loggers': {
         'raven': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
+            'level': 'INFO',
+            'handlers': ['console', 'redis'],
             'propagate': False,
         },
         'pykeg': {
@@ -228,10 +231,14 @@ LOGGING = {
             'handlers': ['console', 'redis'],
             'propagate': False,
         },
+        'django': {
+            'level': 'INFO' if DEBUG else 'WARNING',
+            'handlers': ['console', 'redis'],
+            'propagate': False,
+        },
         '': {
-            'level': 'INFO',
-            'handlers': ['console'],
-            'formatter': 'verbose',
+            'level': 'INFO' if DEBUG else 'WARNING',
+            'handlers': ['console', 'redis'],
         },
     },
 }

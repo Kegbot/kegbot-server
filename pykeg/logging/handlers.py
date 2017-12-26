@@ -38,6 +38,9 @@ class RedisFormatter(logging.Formatter):
 
         Convert date to iso format, and stringify any exceptions.
         """
+        if not hasattr(record, '_raw'):
+            return None
+
         data = record._raw.copy()
 
         # serialize the datetime date as utc string

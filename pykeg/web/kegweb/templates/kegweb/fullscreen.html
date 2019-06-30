@@ -59,11 +59,9 @@ img.taplist-foot-logos {
   <div class="container">
 
     <div class="row">
-    <div class="col-md-12">
-    	<center>
-    		<img src={% static "images/whats-on-tap.png" %}>
-      </center>
-    </div>
+      <div class="col-md-4 col-md-offset-4">
+        <img class="img-responsive" src={% static "images/whats-on-tap.png" %}>
+      </div>
     </div>
 
     <div class="tap-carousel">
@@ -77,18 +75,16 @@ img.taplist-foot-logos {
             <div class="row">
 
             <div class="col-md-2">
-              <img src="{{ keg.get_illustration }}" style="padding-bottom: 20px;">
+              <img src="{{ keg.get_illustration }}" class="img-responsive" style="padding-bottom: 20px;">
             </div>
 
             <div class="col-md-2">
-              <center>
               {% if keg.type.picture %}
-                <img class="tap-snapshot-image" src="{{ keg.type.picture.resized.url }}">
+                <img class="tap-snapshot-image img-responsive" src="{{ keg.type.picture.resized.url }}">
               {% else %}
-                <img class="tap-snapshot-image" src={% static "images/kegbot-unknown-square.png" %}>
+                <img class="tap-snapshot-image img-responsive" src={% static "images/kegbot-unknown-square.png" %}>
               {% endif %}
                 <span class="label label-info">{% volume keg.remaining_volume_ml %} remaining</span>
-              </center>
             </div>
 
             <div class="col-md-8">

@@ -151,7 +151,7 @@
                   <a class="gallery-image" rel="gallery-{{ gallery_id }}"
                       href="{{ pic.resized.url }}"
                       title="{% drinker_name drink.user nolink %} pouring drink {{ drink.id }}">
-                    <img class="lazy" data-original="{{ pic.resized.url }}" width="1024" height="1024"/>
+                    <img class="lazy img-responsive" data-original="{{ pic.resized.url }}" width="1024" height="1024"/>
                     <noscript><img src="{{ pic.resized.url }}" width="1024" height="1024"/></noscript>
                   </a>
                 {% endif %}

@@ -5,7 +5,7 @@
 <div class="{{ thumb_size }}">
 <a class="thumbnail gallery-image" rel="gallery-{{ gallery_id}}" href="{{ pic.resized.url }}"
     {% if caption %} title="{{ caption }}" {% endif %}>
-    <img src="{{ pic.thumbnail.url }}" alt="{{ caption }}" />
+    <img src="{{ pic.thumbnail.url }}" class="img-responsive" alt="{{ caption }}" />
   </a>
 </div>
 {% endwith %}

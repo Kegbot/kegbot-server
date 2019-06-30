@@ -16,10 +16,8 @@
 
 <div class="col-md-4">
 
-  <img src="{{ keg.get_illustration }}">
-  <center>
-    <b>{{ keg.percent_full|floatformat:0 }}% full</b>
-  </center>
+  <img src="{{ keg.get_illustration }}" class="img-responsive">
+  <p class="text-center"><strong>{{ keg.percent_full|floatformat:0 }}% full</strong></p>
 
 </div>
 

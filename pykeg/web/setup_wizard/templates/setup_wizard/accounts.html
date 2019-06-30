@@ -10,8 +10,8 @@ Should we enable user tracking, which allows you to link pours to individual
 user accounts?
 </p>
 
-<div class="row-fluid">
-  <div class="span8 offset2">
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
     <form action="" method="POST">{% csrf_token %}
 
       <p>
@@ -19,9 +19,9 @@ user accounts?
             class="btn btn-primary btn-success btn-block" id="submit-id-enable_users">
         <span class="muted">Classic mode: Enable tracking.</span>
       </p>
-      
+
       <br/>
-      
+
       <p>
         <input type="submit" name="disable_users" value="Anonymous Mode »"
             class="btn btn-primary btn-info btn-block" id="submit-id-disable_users">

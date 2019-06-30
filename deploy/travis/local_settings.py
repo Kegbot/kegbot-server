@@ -5,7 +5,6 @@ import os
 HOME = os.environ['HOME']
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': {

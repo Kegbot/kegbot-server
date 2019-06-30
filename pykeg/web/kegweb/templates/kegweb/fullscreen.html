@@ -58,8 +58,8 @@ img.taplist-foot-logos {
 
   <div class="container">
 
-    <div class="row-fluid">
-    <div class="span12">
+    <div class="row">
+    <div class="col-md-12">
     	<center>
     		<img src={% static "images/whats-on-tap.png" %}>
       </center>
@@ -74,13 +74,13 @@ img.taplist-foot-logos {
             {% with tap.current_keg as keg %}
             {% with keg.type as beverage %}
 
-            <div class="row-fluid">
+            <div class="row">
 
-            <div class="span2">
+            <div class="col-md-2">
               <img src="{{ keg.get_illustration }}" style="padding-bottom: 20px;">
             </div>
 
-            <div class="span2">
+            <div class="col-md-2">
               <center>
               {% if keg.type.picture %}
                 <img class="tap-snapshot-image" src="{{ keg.type.picture.resized.url }}">
@@ -91,7 +91,7 @@ img.taplist-foot-logos {
               </center>
             </div>
 
-            <div class="span8">
+            <div class="col-md-8">
               <h2>
                 {{ beverage.name }} <small>by {{ beverage.producer }}</small>
               </h2>

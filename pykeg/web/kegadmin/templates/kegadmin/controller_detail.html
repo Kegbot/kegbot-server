@@ -7,52 +7,64 @@
 
 {% block kegadmin-main %}
 
-<div id="deleteModal" class="modal hide fade" tabindex="-1"
+<div id="deleteModal" class="modal fade" tabindex="-1"
     role="dialog" aria-labelledby="deleteDialogLabel" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="deleteDialogLabel">Delete Controller: {{ controller.name }}?</h3>
-    </div>
-    <div class="modal-body">
-        <p>
-            Are you sure you want to delete <b>Controller: {{ controller.name }}</b>?
-            {% crispy delete_controller_form %}
-        </p>
-    </div>
-    <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="deleteDialogLabel">Delete Controller: {{ controller.name }}?</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Are you sure you want to delete <b>Controller: {{ controller.name }}</b>?
+                    {% crispy delete_controller_form %}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<div id="addFlowMeterModal" class="modal hide fade" tabindex="-1"
+<div id="addFlowMeterModal" class="modal fade" tabindex="-1"
     role="dialog" aria-labelledby="addFlowMeterDialogLabel" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="addFlowMeterDialogLabel">Add Flow Meter to Controller: {{ controller.name }}</h3>
-    </div>
-    <div class="modal-body">
-        <p>
-            {% crispy add_flow_meter_form %}
-        </p>
-    </div>
-    <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="addFlowMeterDialogLabel">Add Flow Meter to Controller: {{ controller.name }}</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    {% crispy add_flow_meter_form %}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<div id="addFlowToggleModal" class="modal hide fade" tabindex="-1"
+<div id="addFlowToggleModal" class="modal fade" tabindex="-1"
     role="dialog" aria-labelledby="addFlowToggleDialogLabel" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="addFlowToggleDialogLabel">Add Flow Toggle to Controller: {{ controller.name }}</h3>
-    </div>
-    <div class="modal-body">
-        <p>
-            {% crispy add_flow_toggle_form %}
-        </p>
-    </div>
-    <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="addFlowToggleDialogLabel">Add Flow Toggle to Controller: {{ controller.name }}</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    {% crispy add_flow_toggle_form %}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -65,8 +77,8 @@
     <li><a href="#deleteModal" data-toggle="modal">Delete Controller</a></li>
 </ul>
 
-<div class="row-fluid">
-<div class="span12">
+<div class="row">
+<div class="col-md-12">
 
 <div class="tab-content">
     <div class="tab-pane" id="1">
@@ -82,7 +94,7 @@
         {% else %}
         <div class="alert alert-info">This controller does not have a serial number associated</div>
         {% endif %}
-        
+
     </div>
 
     <div class="tab-pane" id="2">
@@ -102,45 +114,49 @@
                 {{ meter.ticks_per_ml }}
             </td>
         </tr>
-        <div id="editFlowMeterModal{{ meter.id }}" class="modal hide fade" tabindex="-1"
+        <div id="editFlowMeterModal{{ meter.id }}" class="modal fade" tabindex="-1"
             role="dialog" aria-labelledby="editFlowMeterDialogLabel" aria-hidden="true">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="editFlowMeterDialogLabel">Edit {{ meter }} or 
-        <form action="" method="POST" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="flowmeter_id" value="{{ meter.id }}">
-            <input class="btn btn-danger" name="delete_flow_meter" type="submit" value="Delete">
-        </form>
-        </h3>
-        </div>
-        <div class="modal-body">
-        <form class="form-horizontal" action="" method="POST">{% csrf_token %}
-            <div id="div_id_port_name" class="control-group">
-                <label for="id_port_name" class="control-label requiredField">
-                    Port Name<span class="asteriskField">*</span></label>
-                <div class="controls">
-                <input class="input-xlarge textinput textInput" type="text" name="port_name" id="id_port_name" value="{{ meter.port_name }}">
-                <p id="hint_id_port_name" class="help-block">Controller-specific data port name for this meter.</p>
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="editFlowMeterDialogLabel">Edit {{ meter }} or
+                    <form action="" method="POST" style="display:inline;">{% csrf_token %}
+                        <input type="hidden" name="flowmeter_id" value="{{ meter.id }}">
+                        <input class="btn btn-danger" name="delete_flow_meter" type="submit" value="Delete">
+                    </form>
+                    </h3>
+                    </div>
+                    <div class="modal-body">
+                    <form class="form-horizontal" action="" method="POST">{% csrf_token %}
+                        <div id="div_id_port_name" class="control-group">
+                            <label for="id_port_name" class="control-label requiredField">
+                                Port Name<span class="asteriskField">*</span></label>
+                            <div class="controls">
+                            <input class="input-xlarge textinput textInput" type="text" name="port_name" id="id_port_name" value="{{ meter.port_name }}">
+                            <p id="hint_id_port_name" class="help-block">Controller-specific data port name for this meter.</p>
+                            </div>
+                        </div>
+                        <div id="div_id_ticks_per_ml" class="control-group">
+                            <label for="id_ticks_per_ml" class="control-label requiredField">
+                                Ticks per mL<span class="asteriskField">*</span></label>
+                            <div class="controls">
+                            <input class="input-xlarge textinput textInput" type="text" name="ticks_per_ml" id="id_ticks_per_ml" value="{{ meter.ticks_per_ml }}">
+                            <p id="hint_id_ticks_per_ml" class="help-block">Flow meter pulses per mL of fluid.  Common values: 2.724 (FT330-RJ), 5.4 (SF800)</p>
+                            </div>
+                        </div>
+                        <input type="hidden" name="flowmeter_id" value="{{ meter.id }}">
+                        <div class="form-actions">
+                        <input class="btn btn-primary" name="edit_flow_meter" type="submit" value="Update Flow Meter">
+                        </div>
+                    </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                    </div>
                 </div>
             </div>
-            <div id="div_id_ticks_per_ml" class="control-group">
-                <label for="id_ticks_per_ml" class="control-label requiredField">
-                    Ticks per mL<span class="asteriskField">*</span></label>
-                <div class="controls">
-                <input class="input-xlarge textinput textInput" type="text" name="ticks_per_ml" id="id_ticks_per_ml" value="{{ meter.ticks_per_ml }}">
-                <p id="hint_id_ticks_per_ml" class="help-block">Flow meter pulses per mL of fluid.  Common values: 2.724 (FT330-RJ), 5.4 (SF800)</p>
-                </div>
-            </div>
-            <input type="hidden" name="flowmeter_id" value="{{ meter.id }}">
-            <div class="form-actions">
-            <input class="btn btn-primary" name="edit_flow_meter" type="submit" value="Update Flow Meter">
-            </div>
-        </form>
         </div>
-        <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-        </div>
-    </div>
         {% endfor %}
         {% endif %}
         <tr class="info">
@@ -165,37 +181,41 @@
                 <span>{{ toggle }}</span>
             </td>
         </tr>
-        <div id="editFlowToggleModal{{ toggle.id }}" class="modal hide fade" tabindex="-1"
+        <div id="editFlowToggleModal{{ toggle.id }}" class="modal fade" tabindex="-1"
             role="dialog" aria-labelledby="editFlowToggleDialogLabel" aria-hidden="true">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="editFlowToggleDialogLabel">Edit {{ toggle }} or 
-        <form action="" method="POST" style="display:inline;">{% csrf_token %}
-            <input type="hidden" name="flowtoggle_id" value="{{ toggle.id }}">
-            <input class="btn btn-danger" name="delete_flow_toggle" type="submit" value="Delete">
-        </form>
-        </h3>
-        </div>
-        <div class="modal-body">
-        <form class="form-horizontal" action="" method="POST">{% csrf_token %}
-            <div id="div_id_port_name" class="control-group">
-                <label for="id_port_name" class="control-label requiredField">
-                    Port Name<span class="asteriskField">*</span></label>
-                <div class="controls">
-                <input class="input-xlarge textinput textInput" type="text" name="port_name" id="id_port_name" value="{{ toggle.port_name }}">
-                <p id="hint_id_port_name" class="help-block">Controller-specific data port name for this toggle.</p>
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="editFlowToggleDialogLabel">Edit {{ toggle }} or
+                    <form action="" method="POST" style="display:inline;">{% csrf_token %}
+                        <input type="hidden" name="flowtoggle_id" value="{{ toggle.id }}">
+                        <input class="btn btn-danger" name="delete_flow_toggle" type="submit" value="Delete">
+                    </form>
+                    </h3>
+                    </div>
+                    <div class="modal-body">
+                    <form class="form-horizontal" action="" method="POST">{% csrf_token %}
+                        <div id="div_id_port_name" class="control-group">
+                            <label for="id_port_name" class="control-label requiredField">
+                                Port Name<span class="asteriskField">*</span></label>
+                            <div class="controls">
+                            <input class="input-xlarge textinput textInput" type="text" name="port_name" id="id_port_name" value="{{ toggle.port_name }}">
+                            <p id="hint_id_port_name" class="help-block">Controller-specific data port name for this toggle.</p>
+                            </div>
+                        </div>
+                        <input type="hidden" name="flowtoggle_id" value="{{ toggle.id }}">
+                        <div class="form-actions">
+                        <input class="btn btn-primary" name="edit_flow_toggle" type="submit" value="Update Flow Toggle">
+                        </div>
+                    </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                    </div>
                 </div>
             </div>
-            <input type="hidden" name="flowtoggle_id" value="{{ toggle.id }}">
-            <div class="form-actions">
-            <input class="btn btn-primary" name="edit_flow_toggle" type="submit" value="Update Flow Toggle">
-            </div>
-        </form>
         </div>
-        <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-        </div>
-    </div>
         {% endfor %}
         {% endif %}
         <tr class="info">

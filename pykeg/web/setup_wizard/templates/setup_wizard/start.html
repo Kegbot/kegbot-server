@@ -10,8 +10,8 @@
   (You can always change settings later.)
 </p>
 
-<div class="row-fluid">
-  <div class="span8 offset2">
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
     <form action="" method="POST">{% csrf_token %}
 
       <p>
@@ -19,9 +19,9 @@
             class="btn btn-primary btn-success btn-block" id="submit-id-enable_sensing">
         <span class="muted">Classic mode: Enables features that require flow sensing hardware.</span>
       </p>
-      
+
       <br/>
-      
+
       <p>
         <input type="submit" name="disable_sensing" value="No Sensor Hardware, Continue »"
             class="btn btn-primary btn-info btn-block" id="submit-id-disable_sensing">

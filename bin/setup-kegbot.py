@@ -83,7 +83,6 @@ SETTINGS_TEMPLATE = """# Kegbot local settings.
 
 # NEVER set DEBUG to `True` in production.
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 """ % (sys.argv[0], util.get_version())
 

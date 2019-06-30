@@ -7,20 +7,24 @@
 
 {% block kegadmin-main %}
 
-<div id="deleteModal" class="modal hide fade" tabindex="-1"
+<div id="deleteModal" class="modal fade" tabindex="-1"
     role="dialog" aria-labelledby="deleteDialogLabel" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="deleteDialogLabel">Delete Token: {{ token.token_value }}?</h3>
-    </div>
-    <div class="modal-body">
-        <p>
-            Are you sure you want to delete <b>Token: {{ token.token_value }}</b>?
-            {% crispy delete_token_form %}
-        </p>
-    </div>
-    <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="deleteDialogLabel">Delete Token: {{ token.token_value }}?</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Are you sure you want to delete <b>Token: {{ token.token_value }}</b>?
+                    {% crispy delete_token_form %}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -30,8 +34,8 @@
     <li><a href="#deleteModal" data-toggle="modal">Delete Token</a></li>
 </ul>
 
-<div class="row-fluid">
-<div class="span12">
+<div class="row">
+<div class="col-md-12">
 
 <div class="tab-content">
     <div class="tab-pane" id="1">

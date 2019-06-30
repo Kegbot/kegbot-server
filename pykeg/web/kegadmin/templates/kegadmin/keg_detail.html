@@ -12,9 +12,9 @@
 </h2>
 
 <div class="well">
-<div class="row-fluid">
+<div class="row">
 
-<div class="span4">
+<div class="col-md-4">
 
   <img src="{{ keg.get_illustration }}">
   <center>
@@ -23,7 +23,7 @@
 
 </div>
 
-<div class="span8">
+<div class="col-md-8">
 
   <table class="table">
   <tbody>
@@ -56,11 +56,11 @@
           <td>{% volume remaining %}</td>
       </tr>
       </tbody>
-  </table>    
+  </table>
 
 </div>
 
-</div> <!-- /row-fluid -->
+</div> <!-- /row -->
 </div>
 
 
@@ -69,36 +69,36 @@
 
 {% if keg.is_finished %}
 
-    <div class="row-fluid">
+    <div class="row">
 
-      <div class="span4">
+      <div class="col-md-4">
           <button type="submit" class="btn btn-info btn-large btn-block" name="submit_reactivate">
             <i class="icon-refresh icon-white"></i> Reactivate</button>
           </button>
       </div>
 
-      <div class="span8">
+      <div class="col-md-8">
         This keg is marked as finished and cannot be tapped. Click <em>Reactivate</em> to
         return the keg to active status.
       </div>
 
-    </div> <!-- /row-fluid -->
+    </div> <!-- /row -->
 
 {% else %}
 
-    <div class="row-fluid">
+    <div class="row">
 
-      <div class="span4">
+      <div class="col-md-4">
           <button type="submit" class="btn btn-danger btn-large btn-block" name="submit_end">
             <i class="icon-stop icon-white"></i> End Keg</button>
           </button>
       </div>
 
-      <div class="span8">
+      <div class="col-md-8">
         Press <em>End Keg</em> to mark the keg as finished.
       </div>
 
-    </div> <!-- /row-fluid -->
+    </div> <!-- /row -->
 
 
 {% endif %}
@@ -111,27 +111,31 @@
 {% crispy edit_form %}
 
 
-<div id="cancelModal" class="modal hide fade" tabindex="-1"
+<div id="cancelModal" class="modal fade" tabindex="-1"
     role="dialog" aria-labelledby="cancelDialogLabel" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="cancelDialogLabel">Really Delete Keg {{ keg.id }}?</h3>
-    </div>
-    <div class="modal-body">
-        <p>
-            Are you sure you want to delete <b>Keg {{ keg.id }}</b>?
-        </p>
-        <p>
-            Deleting the keg will <b>immediately and permanently delete all pour data associated with
-            this keg</b>, including any recorded pictures and statistics.  This action cannot be undone.
-        </p>
-    </div>
-    <div class="modal-footer">
-         <form action="{% url "kegadmin-edit-keg" keg.id %}" method="POST">{% csrf_token %}
-         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-             <input type="submit" name="submit_delete_keg"
-                class="btn btn-danger" value="Delete Keg"/>
-         </form>
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="cancelDialogLabel">Really Delete Keg {{ keg.id }}?</h3>
+        </div>
+        <div class="modal-body">
+            <p>
+                Are you sure you want to delete <b>Keg {{ keg.id }}</b>?
+            </p>
+            <p>
+                Deleting the keg will <b>immediately and permanently delete all pour data associated with
+                this keg</b>, including any recorded pictures and statistics.  This action cannot be undone.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <form action="{% url "kegadmin-edit-keg" keg.id %}" method="POST">{% csrf_token %}
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <input type="submit" name="submit_delete_keg"
+                    class="btn btn-danger" value="Delete Keg"/>
+            </form>
+        </div>
+      </div>
     </div>
 </div>
 

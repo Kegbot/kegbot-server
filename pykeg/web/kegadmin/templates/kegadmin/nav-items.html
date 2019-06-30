@@ -61,8 +61,8 @@
   <div class="panel-heading">Other</div>
   <div class="panel-body list-group" style="padding:0;">
     {% if not EMBEDDED %}
-      {% navitem "kegadmin-logs" "Logs" %}
-      {% navitem "kegadmin-bugreport" "Bugreport" %}
+      {% subnavitem "kegadmin-logs" "Logs" %}
+      {% subnavitem "kegadmin-bugreport" "Bugreport" %}
     {% endif %}
     {% subnavitem "kegadmin-export" "Export Data" %}
     {% if HAVE_ADMIN and not EMBEDDED %}

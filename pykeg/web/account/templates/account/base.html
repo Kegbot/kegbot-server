@@ -7,14 +7,14 @@
     <div class="panel panel-default">
       <div class="panel-heading">General</div>
       <div class="panel-body list-group" style="padding:0;">
-        {% navitem "kb-account-main" "Account Main" exact %}
-        {% navitem "account-profile" "Profile" %}
+        {% subnavitem "kb-account-main" "Account Main" exact %}
+        {% subnavitem "account-profile" "Profile" %}
         {% if not SSO_LOGIN_URL %}
-          {% navitem "password_change" "Password" %}
+          {% subnavitem "password_change" "Password" %}
         {% endif %}
-        {% navitem "account-notifications" "E-Mail" %}
+        {% subnavitem "account-notifications" "E-Mail" %}
         {% if CAN_INVITE %}
-          {% navitem "account-invite" "Invite a User" %}
+          {% subnavitem "account-invite" "Invite a User" %}
         {% endif %}
       </div>
     </div>

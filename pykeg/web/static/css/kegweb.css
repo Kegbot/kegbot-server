@@ -5976,16 +5976,6 @@ body {
 .container > footer > p {
   text-align: center;
   /* center align it with the container */
-<<<<<<< HEAD
-
-}
-[class^="icon-"] {
-  background-image: url("../bootstrap/img/glyphicons-halflings.png");
-}
-[class*="icon-white"] {
-  background-image: url("../bootstrap/img/glyphicons-halflings-white.png");
-=======
->>>>>>> origin/bootstrap-update
 }
 .page-header {
   background-color: #f5f5f5;
@@ -6185,9 +6175,4 @@ div#content {
   font-size: 16.8px;
   color: #555555;
 }
-<<<<<<< HEAD
-
-/* @end */
-=======
->>>>>>> origin/bootstrap-update
 /* vim sw=2 ts=2 noet */

@@ -28,5 +28,5 @@ urlpatterns = [
     url(r'^password/reset/confirm/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
         auth_views.password_reset_confirm,
         name='password_reset_confirm'),
-    url('', include('registration.auth_urls')),
+    # url('', include('registration.auth_urls')),
 ]

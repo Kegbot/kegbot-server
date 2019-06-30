@@ -673,7 +673,7 @@ def drink_list(request):
             delete_ids = request.POST.getlist("delete_ids[]")
             drinks = models.Drink.objects.filter(Q(id__in=delete_ids))
             for drink in drinks:
-                drink.delete()
+                request.backend.cancel_drink(drink)
             delete_ids.reverse()
             if len(delete_ids) == 1:
                 messages.success(request, 'Drink ' + delete_ids[0] + ' has been deleted.')

@@ -2,12 +2,12 @@
 {% load kegweblib %}
 {% load crispy_forms_tags %}
 
-{% block title %}Kegbot Admin: Edit Beer Type | {{ block.super }}{% endblock %}
-{% block pagetitle %}Kegbot Admin: Edit Beer Type {% endblock %}
+{% block title %}Kegbot Admin: Edit Beer | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Edit Beer {% endblock %}
 
 {% block kegadmin-main %}
 
-<h2>Edit Beer Type</h2>
+<h2>Edit Beer</h2>
 
 {% if beer_type.picture %}
 <div class="row">
@@ -16,7 +16,7 @@
 </div>
 </div>
 {% endif %}
-    
+
 {% crispy form %}
 
 {% endblock %}

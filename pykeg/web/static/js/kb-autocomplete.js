@@ -6,7 +6,6 @@ $(document).ready(function() {
   });
   beverages.initialize();
 
-  var beverage_labels, beverage_mapped;
   $('.beer-select').each(function() {
     var beverage_name = $(this).find('input[name=beverage_name]');
     var beverage_id = $(this).find('input[name=beverage_id]');

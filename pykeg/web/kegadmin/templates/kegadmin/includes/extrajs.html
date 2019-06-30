@@ -1,7 +1,11 @@
 <script type="text/javascript">
+  var beverage_labels, beverage_mapped;
+  var beverage_complete_url = "{% url "kegadmin-autocomplete-beverage" %}";
+
+  var user_labels, user_mapped;
+  var user_complete_url = "{% url "kegadmin-autocomplete-user" %}";
+
   $(document).ready(function() {
-    var beverage_labels, beverage_mapped;
-    var beverage_complete_url = "{% url "kegadmin-autocomplete-beverage" %}";
     $('.beer-select').each(function() {
       var beverage_name = $(this).find('input[name=beverage_name]');
       var beverage_id = $(this).find('input[name=beverage_id]');
@@ -34,8 +38,6 @@
       });
     });
 
-    var user_labels, user_mapped;
-    var user_complete_url = "{% url "kegadmin-autocomplete-user" %}";
     $('.user-select').each(function() {
       var username = $(this).find('input[name=username]');
 

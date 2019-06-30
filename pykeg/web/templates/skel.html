@@ -9,8 +9,6 @@
 
 <title>{% block title %}Kegbot{% endblock %}</title>
 
-<script type="text/javascript" src={% static "js/jquery-1.9.1.min.js" %}></script>
-
 {% block css %}
 <link rel="icon" type="image/png" href={% static "images/kegbot-icon-72x72.png" %} />
 <link rel="stylesheet" type="text/css" href={% static "css/kegweb.css" %} media="screen"/>
@@ -23,19 +21,6 @@
 <body {% block bodyattrs %}{% endblock %}>
 {% block body %}
 {% endblock body %}
-
-{% block js %}
-<script type="text/javascript" src={% static "js/jquery.cookie.js" %}></script>
-<script type="text/javascript" src={% static "js/jquery.timeago.js" %}></script>
-<script type="text/javascript" src={% static "js/jquery.autounits.js" %}></script>
-<script type="text/javascript" src={% static "js/jquery.scrollstop.min.js" %}></script>
-<script type="text/javascript" src={% static "js/jquery.lazyload.min.js" %}></script>
-
-<script type="text/javascript" src={% static "bootstrap/js/bootstrap.min.js" %}></script>
-<script type="text/javascript" src={% static "js/handlebars.js" %}></script>
-<script type="text/javascript" src={% static "js/typeahead.bundle.min.js" %}></script>
-<script type="text/javascript" src={% static "highcharts/js/highcharts.js" %}></script>
-<script type="text/javascript" src={% static "fancybox/jquery.fancybox.pack.js" %}></script>
 
 {% if GOOGLE_ANALYTICS_ID %}
 <script type="text/javascript">
@@ -50,6 +35,29 @@
   })();
 </script>
 {% endif %}
+
+{% block js %}
+<script type="text/javascript" src={% static "js/jquery-1.12.4.min.js" %}></script>
+
+<script type="text/javascript" src={% static "js/jquery.cookie-1.4.1.min.js" %}></script>
+<script type="text/javascript" src={% static "js/jquery.timeago.js" %}></script>
+<script type="text/javascript" src={% static "js/jquery.autounits.js" %}></script>
+<script type="text/javascript" src={% static "js/jquery.scrollstop.min.js" %}></script>
+<script type="text/javascript" src={% static "js/jquery.lazyload.min.js" %}></script>
+
+<script type="text/javascript" src={% static "bootstrap/js/bootstrap.min.js" %}></script>
+<script type="text/javascript" src={% static "js/handlebars.js" %}></script>
+<script type="text/javascript" src={% static "js/typeahead.bundle.min.js" %}></script>
+<script type="text/javascript" src={% static "highcharts/js/highcharts.js" %}></script>
+<script type="text/javascript" src={% static "fancybox/jquery.fancybox.pack.js" %}></script>
+
+{% if user.is_staff %}
+{% include 'kegadmin/includes/extrajs.html' %}
+<script type="text/javascript" src={% static "js/kb-autocomplete.js" %}></script>
+{% endif %}
+{% endblock js %}
+
+{% block kb-extrajs %}{%endblock%}
 
 <script type="text/javascript">
   $(document).ready(function() {
@@ -145,13 +153,4 @@
 
   });
 </script>
-
-{% if user.is_staff %}
-{% include 'kegadmin/includes/extrajs.html' %}
-<!-- <script type="text/javascript" src={% static "js/kb-autocomplete.js" %}></script> -->
-{% endif %}
-
-{% endblock js %}
-
-{% block kb-extrajs %}{%endblock%}
 </body>

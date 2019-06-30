@@ -14,15 +14,14 @@
 
 // Container that the modal scrolls within
 .modal {
-  display: none;
-  overflow: auto;
-  overflow-y: scroll;
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
   z-index: @zindex-modal;
+  display: none;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
 
   // Prevent Chrome on Windows from adding a focus outline. For details, see
@@ -34,7 +33,11 @@
     .translate(0, -25%);
     .transition-transform(~"0.3s ease-out");
   }
-  &.in .modal-dialog { .translate(0, 0)}
+  &.in .modal-dialog { .translate(0, 0); }
+}
+.modal-open .modal {
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 // Shell div to position the modal with bottom padding
@@ -48,13 +51,13 @@
 .modal-content {
   position: relative;
   background-color: @modal-content-bg;
+  background-clip: padding-box;
   border: 1px solid @modal-content-fallback-border-color; //old browsers fallback (ie8 etc)
   border: 1px solid @modal-content-border-color;
   border-radius: @border-radius-large;
-  .box-shadow(0 3px 9px rgba(0,0,0,.5));
-  background-clip: padding-box;
+  .box-shadow(0 3px 9px rgba(0, 0, 0, .5));
   // Remove focus outline from opened modal
-  outline: none;
+  outline: 0;
 }
 
 // Modal background
@@ -76,7 +79,7 @@
 .modal-header {
   padding: @modal-title-padding;
   border-bottom: 1px solid @modal-header-border-color;
-  min-height: (@modal-title-padding + @modal-title-line-height);
+  &:extend(.clearfix all);
 }
 // Close icon
 .modal-header .close {
@@ -98,16 +101,15 @@
 
 // Footer (for actions)
 .modal-footer {
-  margin-top: 15px;
-  padding: (@modal-inner-padding - 1) @modal-inner-padding @modal-inner-padding;
+  padding: @modal-inner-padding;
   text-align: right; // right align buttons
   border-top: 1px solid @modal-footer-border-color;
   &:extend(.clearfix all); // clear it in case folks use .pull-* classes on buttons
 
   // Properly space out buttons
   .btn + .btn {
-    margin-left: 5px;
     margin-bottom: 0; // account for input[type="submit"] which gets the bottom margin like all other inputs
+    margin-left: 5px;
   }
   // but override that for button groups
   .btn-group .btn + .btn {
@@ -119,6 +121,15 @@
   }
 }
 
+// Measure scrollbar width for padding body during modal show/hide
+.modal-scrollbar-measure {
+  position: absolute;
+  top: -9999px;
+  width: 50px;
+  height: 50px;
+  overflow: scroll;
+}
+
 // Scale up the modal
 @media (min-width: @screen-sm-min) {
   // Automatically set modal's width for larger viewports
@@ -127,7 +138,7 @@
     margin: 30px auto;
   }
   .modal-content {
-    .box-shadow(0 5px 15px rgba(0,0,0,.5));
+    .box-shadow(0 5px 15px rgba(0, 0, 0, .5));
   }
 
   // Modal sizes

@@ -1,55 +1,74 @@
 {% load kegweblib %}
 
-<li class="nav-header">Kegbot Admin</a>
-{% navitem "kegadmin-dashboard" "Dashboard" exact %}
+<div class="panel panel-default">
+  <div class="panel-heading">Kegbot Admin</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% subnavitem "kegadmin-dashboard" "Dashboard" exact %}
+  </div>
+</div>
 
-<li class="nav-header">Settings</a>
-{% navitem "kegadmin-main" "General" %}
-{% navitem "kegadmin-location-settings" "Location" %}
-{% navitem "kegadmin-advanced-settings" "Advanced" %}
-{% if not EMBEDDED %}
-{% navitem "kegadmin-email" "E-Mail" %}
-{% endif %}
+<div class="panel panel-default">
+  <div class="panel-heading">General</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% subnavitem "kegadmin-main" "General Settings" %}
+    {% subnavitem "kegadmin-location-settings" "Location" %}
+    {% subnavitem "kegadmin-advanced-settings" "Advanced" %}
+    {% if not EMBEDDED %}
+      {% subnavitem "kegadmin-email" "E-Mail" %}
+    {% endif %}
+  </div>
+</div>
 
-<li class="nav-header">System</li>
-{% if ENABLE_SENSING %}
-  {% navitem "kegadmin-controllers" "Controllers" %}
-{% endif %}
+<div class="panel panel-default">
+  <div class="panel-heading">System</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% if ENABLE_SENSING %}
+      {% subnavitem "kegadmin-controllers" "Controllers" %}
+    {% endif %}
+    {% subnavitem "kegadmin-taps" "Taps" %}
+    {% subnavitem "kegadmin-kegs" "Keg Room" %}
+    {% if ENABLE_SENSING %}
+      {% subnavitem "kegadmin-drinks" "Drinks" %}
+    {% endif %}
+    {% if ENABLE_USERS %}
+      {% subnavitem "kegadmin-users" "Users" %}
+      {% subnavitem "kegadmin-tokens" "Tokens" %}
+    {% endif %}
+  </div>
+</div>
 
-{% navitem "kegadmin-taps" "Taps" %}
-{% navitem "kegadmin-kegs" "Keg Room" %}
-
-{% if ENABLE_SENSING %}
-  {% navitem "kegadmin-drinks" "Drinks" %}
-{% endif %}
-{% if ENABLE_USERS %}
-  {% navitem "kegadmin-users" "Users" %}
-  {% navitem "kegadmin-tokens" "Tokens" %}
-{% endif %}
-
-<li class="nav-header">Beer DB</li>
-{% navitem "kegadmin-beverage-producers" "Brewers" %}
-{% navitem "kegadmin-beverages" "Beer Types" %}
+<div class="panel panel-default">
+  <div class="panel-heading">Beer DB</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% subnavitem "kegadmin-beverage-producers" "Brewers" %}
+    {% subnavitem "kegadmin-beverages" "Beer Types" %}
+  </div>
+</div>
 
 {% if PLUGINS %}
-<li class="nav-header">Plugins</li>
-{% for plugin in PLUGINS.values %}
-  {% if plugin.get_admin_settings_view %}
+<div class="panel panel-default">
+  <div class="panel-heading">Plugins</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% for plugin in PLUGINS.values %}
     {% url "kegadmin-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
-    {% navitem settings_url plugin.get_name %}
-  {% endif %}
-{% endfor %}
+    {% subnavitem settings_url plugin.get_name %}
+    {% endfor %}
+  </div>
+</div>
 {% endif %}
 
-<li class="divider"></li>
-<li class="nav-header">Other</li>
-{% if not EMBEDDED %}
-{% navitem "kegadmin-logs" "Logs" %}
-{% navitem "kegadmin-bugreport" "Bugreport" %}
-{% endif %}
-{% navitem "kegadmin-export" "Export Data" %}
-{% if HAVE_ADMIN and not EMBEDDED %}
-{% navitem "kegadmin-workers" "Worker Status" %}
-<li><a href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a></li>
-{% endif %}
-<li><a href='https://github.com/Kegbot/kegbot-server/issues' target="_blank">Report a Bug &raquo;</a></li>
+<div class="panel panel-default">
+  <div class="panel-heading">Other</div>
+  <div class="panel-body list-group" style="padding:0;">
+    {% if not EMBEDDED %}
+      {% navitem "kegadmin-logs" "Logs" %}
+      {% navitem "kegadmin-bugreport" "Bugreport" %}
+    {% endif %}
+    {% subnavitem "kegadmin-export" "Export Data" %}
+    {% if HAVE_ADMIN and not EMBEDDED %}
+      {% subnavitem "kegadmin-workers" "Worker Status" %}
+      <a class="list-group-item" href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a>
+    {% endif %}
+    <a class="list-group-item" href='https://github.com/Kegbot/kegbot/issues' target="_blank">Report a Bug &raquo;</a>
+  </div>
+</div>

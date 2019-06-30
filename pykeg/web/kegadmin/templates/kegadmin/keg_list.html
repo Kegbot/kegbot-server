@@ -13,10 +13,10 @@
 {% for keg in kegs %}
 
     {% if forloop.counter0|divisibleby:6 %}
-    <div class="row-fluid">
+    <div class="row">
     {% endif %}
 
-        <div class="span2 clickable" data-href="{% url 'kegadmin-edit-keg' keg.id %}"
+        <div class="col-md-2 clickable" data-href="{% url 'kegadmin-edit-keg' keg.id %}"
                 style="padding:8px;">
           <img src="{{ keg.get_illustration_thumb }}" alt="" class="keg-popover"
                 data-title="<b>Keg {{keg.id}}</b> <span class='badge'>{{ keg.percent_full|floatformat:0 }}%</span>" data-trigger="hover" data-placement="bottom"
@@ -29,9 +29,9 @@
               <h5>{{ keg.type.name }}</h5>
           </center>
         </div>
-    
+
     {% if forloop.counter|divisibleby:6 or forloop.last %}
-    </div> <!-- /row-fluid -->
+    </div> <!-- /row -->
     {% endif %}
 
 {% endfor %}

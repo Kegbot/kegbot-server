@@ -10,9 +10,11 @@
 
 <div class="form-actions">
     <form class="user-select" action="" method="POST">{% csrf_token %}
-        <div class="input-append">
-            <input class="span8" type="text" name="username" placeholder="Name or e-mail" />
-            <input type="submit" name="submit" value="Edit user" class="btn"/>
+        <div class="input-group">
+            <input class="form-control" type="text" name="username" placeholder="Name or e-mail" />
+            <span class="input-group-btn">
+              <button type="submit" name="submit" class="btn btn-default">Edit user</button>
+            </span>
         </div>
     </form>
 </div>
@@ -46,7 +48,7 @@
 <tr class="info">
     <td colspan="3" style="text-align:right;">
         <a class="btn btn-small btn-success"
-            href="{% url 'kegadmin-add-user' %}"><i class="icon-plus icon-white"></i> Add User</a>
+            href="{% url 'kegadmin-add-user' %}"><i class="glyphicon glyphicon-plus"></i> Add User</a>
     </td>
 </tr>
 {% endif %}

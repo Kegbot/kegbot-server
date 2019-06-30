@@ -2,7 +2,7 @@
 
 <div class="row clickable" id="session-snapshot-{{session.id}}"
     data-href="{{session.get_absolute_url}}">
-<div class="span8">
+<div class="col-sm-12">
 
 <h3>{{ session.GetTitle }}</h3>
 
@@ -12,26 +12,26 @@
 {% with session.get_highlighted_picture as highlight %}
 
 {% if highlight %}
-<div class="row-fluid">
-  <div class="span3 offset1">
+<div class="row">
+  <div class="col-sm-3 col-sm-offset-1">
     {% gallery highlight "span12" gallery_id=session.id %}
   </div>
-  <div class="span8">
-    <div class="row-fluid">
-      <div class="span12">
+  <div class="col-sm-8">
+    <div class="row">
+      <div class="col-sm-12">
         {% include "kegweb/session-badges.html" %}
       </div>
     </div>
-    <div class="row-fluid">
-      <div class="span12">
-        {% gallery pictures|slice:":5" "span2" gallery_id=session.id %}
+    <div class="row">
+      <div class="col-sm-12">
+        {% gallery pictures|slice:":5" "col-sm-2" gallery_id=session.id %}
       </div>
     </div>
   </div>
 </div>
 {% else %}
-<div class="row-fluid">
-  <div class="span11 offset1">
+<div class="row">
+  <div class="col-sm-11 col-sm-offset-1">
     {% include "kegweb/session-badges.html" %}
   </div>
 </div>
@@ -39,13 +39,13 @@
 {% endwith %}
 {% endwith %}
 
-<div class="row-fluid">
-  <div class="span11 offset1">
+<div class="row">
+  <div class="col-sm-11 col-sm-offset-1">
     <p>
       <i class="icon-time"></i>
       <a href="{{ session.get_absolute_url }}">{{ session.start_time|date:"M j Y, P" }}</a>
       &middot;
-      <i class="icon-user"></i> {{ session.summarize_drinkers|safe }}
+      <i class="glyphicon glyphicon-user"></i> {{ session.summarize_drinkers|safe }}
     </p>
   </div>
 </div>

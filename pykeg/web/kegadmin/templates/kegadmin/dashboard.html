@@ -6,10 +6,10 @@
 {% block pagetitle %}Kegbot Admin{% endblock %}
 
 {% block kegadmin-main %}
-<ul class="badge-list">
+<div class="kb-badges">
 {% badge num_users "User" do_pluralize=True %}
 {% badge num_new_users "New User" do_pluralize=True %}
-</ul>
+</div>
 
 {% if redis_error %}
 <div class="alert alert-error">

@@ -4,25 +4,18 @@
 
 @import "../bootstrap/less/bootstrap.less";
 @import "bootstrap-variables.less";
+@import "typeahead.less";
 
 body {
-  padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
+  padding-top: 50px; /* 50px to make the container go all the way to the bottom of the topbar */
 }
 
-.sidebar {
-  // TODO(mikey): conditional on media min/max width.
-  max-width: 200px;
-}
+.container > footer {
+    padding: 5px 0;
 
-.container-fluid > footer p {
-  text-align: center; /* center align it with the container */
-}
-
-[class^="icon-"] {
-  background-image: url("/static/bootstrap/img/glyphicons-halflings.png");
-}
-[class*="icon-white"] {
-  background-image: url("/static/bootstrap/img/glyphicons-halflings-white.png");
+    > p {
+      text-align: center; /* center align it with the container */
+    }
 }
 
 .page-header {
@@ -45,6 +38,10 @@ div#content {
           box-shadow: 0 1px 2px rgba(0,0,0,.15);
 }
 
+.nav-tabs {
+  margin-bottom: 15px;
+}
+
 .helptext {
   .help-block();
 }
@@ -59,89 +56,62 @@ div#content {
   text-align: center;
 }
 
-.badge-list {
-  .clearfix();
-  margin-left: 0;
-  list-style: none;
+.alert-error {
+  .alert-danger;
+}
 
-  > li {
-    float: left;
-    width: 2 * @gridColumnWidth;
-    background-color: @gray;
-    color: @grayLighter;
-    .border-radius(6px);
-    border: 1px solid @grayLighter;
-    text-align: center;
-    padding: 4px;
-    margin-right: 4px;
+.kb-badges {
+  margin: 5px 5px 5px 15px;
+}
 
-    a {
-      color: @grayLighter;
-    }
-    h2 {
-      color: @grayLighter;
-      text-shadow: @black 2px 2px 2px;
-    }
-    small {
-      color: @grayLight;
-      text-transform: uppercase;
-      text-weight: bold;
-    }
+.kb-badge {
+  background-color: @gray;
+  color: @gray-lighter;
+  padding: 4px;
+  white-space: normal;
+  margin-right: 5px;
+  float: none;
+  vertical-align: top;
+
+  h2 {
+    text-shadow: @black 2px 2px 2px;
   }
 
-  .badge-small {
-    h2 {
-      margin: 0px;
-      text-shadow: none;
-      font-size: @baseFontSize * 1.75;
-      line-height: @baseLineHeight * 1.75;
-    }
+  small {
+    color: @gray-light;
+    text-transform: uppercase;
+    text-weight: bold;
   }
 }
 
-.avatar-list {
-  .clearfix();
-  margin-left: 0;
-  margin-bottom: 0;
-  list-style: none;
+.kb-badge-small {
+  .kb-badge;
 
-  > li {
-    margin: 0;
-    float: left;
-    padding: 1px;
+  h2 {
+    margin: 0px;
+    text-shadow: none;
+    font-size: @font-size-base * 1.75;
   }
 }
 
 .tap-snapshot-image {
-  width: 2 * @gridColumnWidth;
+  width: 80%;
   height: auto;
   padding: 4px;
 }
 
 .right-col {
-  background-color: @grayLighter;
-}
-
-.badge-header {
-  font-size: @baseFontSize + 2px;
-  color: @grayDark;
-  font-weight: bold;
-  padding: 2px;
-  .border-radius(6px 6px 0px 0px);
-
-  text-align: center;
-  border-bottom: 1px solid #eee;
-  font: bold;
+  background-color: @gray-lighter;
 }
 
 .kb-tapbox {
   .clearfix();
-  border-bottom: 1px solid @grayLighter;
+  border-bottom: 1px solid @gray-lighter;
   margin-bottom: 16px;
 }
 
 .session-snapshot {
-  border-bottom: 1px solid @grayLighter;
+  border-bottom: 1px solid @gray-lighter;
   padding: 8px;
 }
 
@@ -149,26 +119,26 @@ div#content {
   cursor: pointer;
 }
 .clickable:hover {
-  background-color: @grayLighter;
+  background-color: @gray-lighter;
 }
 
 .kb-keg-description {
-  color: @grayDark;
+  color: @gray-dark;
   margin-bottom: 8px;
 }
 
 .smalltext {
   font-size: 11px;
-  color: @grayLight;
-  font-family: @headingsFontFamily;
-  font-weight: @headingsFontWeight;
+  color: @gray-light;
+  font-family: @headings-font-family;
+  font-weight: @headings-font-weight;
 }
 
 .arrow_box {
   position: relative;
   background: #ebebeb;
   border: 3px solid #9fabc2;
-  .border-radius(3px);
+  border-radius: 3px;
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 10px;
@@ -208,125 +178,17 @@ div#content {
   .center-block();
 }
 
-/* @group Events */
-
-.kb-event-box-info {
-  font-size: 0.7em;
-  color: #999;
-}
-
-.kb-event-box-info a:link {
-  color: #999;
-  text-decoration: underline;
-  font-weight: normal;
-}
-
-.kb-event-box-info a:visited {
-  color: #999;
-  text-decoration: underline;
-  font-weight: normal;
-}
-
-.kb-event-box-dateline {
-  font-size: 0.7em;
-  color: #ccc;
-  margin-top: 4px;
-  font-style: italic;
-}
-
-.kb-event-box {
-  width: 300px;
-  margin-bottom: 8px;
-  padding: 8px;
-  border: 1px solid #eee;
-  display: inline-block;
-  .border-radius(5px);
-  .clearfix();
-}
-
-.kb-event-box-session-start {
-  width: 300px;
-  text-align: center;
-  margin-bottom: 32px;
-  font-size: 0.7em;
-  background-color: #ddd;
-  color: #777;
-  padding: 5px;
-}
-
-.kb-event-box {
-  width: 300px;
-  margin-bottom: 8px;
-  padding: 8px;
-  border: 1px solid #eee;
-  vertical-align: middle;
-  .border-radius(5px);
-}
-
-.kb-event-box-details {
-  vertical-align: middle;
-}
-
-.kb-event-box-image {
-  vertical-align: middle;
-  float: left;
-  margin-right: 8px;
-}
-
-.kb-drink-box-details-headline {
-
-}
-
-/* @end */
-
-/* @group Kegadmin Nav */
-
-#kb-admin-nav {
-  float: left;
-  width: 160px;
-  margin-right: 32px;
-  margin-bottom: 16px;
-  font-size: 0.9em;
-}
-
-.kb-admin-nav-tab {
-  width: 160px;
-  height: 32px;
-  line-height: 32px;
-  background-color: #eee;
-  margin-bottom: 2px;
-  padding-left: 4px;
-}
-
-.kb-admin-nav-tab-hover {
-  background-color: #aaa;
-  cursor: pointer;
-}
-
-.kb-admin-subnav {
-  font-size: 0.8em;
-}
-
-.kb-admin-subnav p {
-  margin: 0px;
-  margin-left: 10px;
-}
-
-.kb-admin-subnav-tap {
-  margin-bottom: 10px;
-}
-
 .setup-form {
   .control-group {
     margin-bottom: 32px;
 
     label.control-label {
-        font-size: @baseFontSize * 2.0;
+        font-size: @font-size-base * 2.0;
         height:200%;
     }
     label.checkbox {
-        font-size: @baseFontSize * 2.0;
-        height: @baseLineHeight * 2.0;
+        font-size: @font-size-base * 2.0;
+        height: @line-height-base * 2.0;
     }
     .requiredField {
       text-weight: bold;
@@ -336,11 +198,10 @@ div#content {
     }
   }
   .help-block {
-    font-size: @baseFontSize * 1.2;
+    font-size: @font-size-base * 1.2;
     color: @gray;
   }
 }
 
-/* @end */
 
 /* vim sw=2 ts=2 noet */

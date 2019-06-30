@@ -3,50 +3,50 @@
 {% url "kb-keg" keg.id as keg_url %}
 <div class="kb-tapbox clickable" id="keg-snapshot-{{keg.id}}"
     data-href="{{ keg_url }}">
-  <div class="row-fluid">
-    <div class="span3">
+  <div class="row">
+    <div class="col-md-3">
       <a href="{{ keg_url }}">
       {% if keg.type.picture %}
-        <img class="tap-snapshot-image" src="{{ keg.type.picture.resized.url }}">
+        <img class="tap-snapshot-image img-responsive" src="{{ keg.type.picture.resized.url }}">
       {% else %}
-        <img class="tap-snapshot-image" src={% static "images/kegbot-unknown-square.png" %}>
+        <img class="tap-snapshot-image img-responsive" src={% static "images/kegbot-unknown-square.png" %}>
       {% endif %}
       </a>
     </div>
 
-    <div class="span9">
+    <div class="col-md-9">
       <h2>{{ keg.type.name }} {% if tap %}<small>{{ tap.name }}</small>{% endif %}</h2>
 
-      <ul class="badge-list">
-        <li>
+      <div class="kb-badges">
+        <div class="badge col-sm-2 kb-badge">
           <h2>{% volume keg.served_volume %}</h2>
           <small>Poured</small>
-        </li>
-        <li>
+        </div>
+        <div class="badge col-sm-2 kb-badge">
           {% if keg.remaining_volume_ml > 0 and not keg.is_finished %}
           <h2>{% volume keg.remaining_volume_ml %}</h2>
           {% else %}
           <h2>{% volume 0 %}</h2>
           {% endif %}
           <small>Remaining</small>
-        </li>
+        </div>
 
       {% if tap %}
       {% if tap.temperature_sensor %}
-        <li>
+        <div class="badge col-sm-2 kb-badge">
           {% if kbsite.temperature_display_units == "f" %}
           <h2>{{ tap.Temperature.TempF|floatformat:1}} &deg;F</h2>
           {% else %}
           <h2>{{ tap.Temperature.TempC|floatformat:1}} &deg;C</h2>
           {% endif %}
           <small>Temperature</small>
-        </li>
+        </div>
       {% endif %}
       {% endif %}
-      </ul>
+      </div>
 
     </div>
-  </div> <!-- /row-fluid -->
+  </div> <!-- /row -->
 
 </div>
 

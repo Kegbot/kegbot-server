@@ -50,7 +50,7 @@ def mugshot_box(context, user, boxsize=0):
 
 
 @register.inclusion_tag('kegweb/picture-gallery.html')
-def gallery(picture_or_pictures, thumb_size='span2', gallery_id=''):
+def gallery(picture_or_pictures, thumb_size='col-md-2', gallery_id=''):
     c = {}
     if not hasattr(picture_or_pictures, '__iter__'):
         c['gallery_pictures'] = [picture_or_pictures]
@@ -62,7 +62,7 @@ def gallery(picture_or_pictures, thumb_size='span2', gallery_id=''):
 
 
 @register.inclusion_tag('kegweb/badge.html')
-def badge(amount, caption, style='', is_volume=False, do_pluralize=False):
+def badge(amount, caption, style='kb-badge', is_volume=False, do_pluralize=False):
     if is_volume:
         amount = mark_safe(VolumeNode.format(amount, 'mL'))
     if do_pluralize:
@@ -86,11 +86,11 @@ def progress_bar(progress_int, extra_css=''):
     c['progress_int'] = progress_int
     c['extra_css'] = extra_css
     if progress_int < 10:
-        bar_type = 'bar-danger'
+        bar_type = 'progress-bar-danger'
     elif progress_int < 25:
-        bar_type = 'bar-warning'
+        bar_type = 'progress-bar-warning'
     else:
-        bar_type = 'bar-success'
+        bar_type = 'progress-bar-success'
     c['bar_type'] = bar_type
     return c
 
@@ -133,6 +133,42 @@ class NavitemNode(Node):
         res += '<a href="%s">%s</a></li>' % (urlbase, title)
         return res
 
+### subnavitem
+
+@register.tag('subnavitem')
+def subnavitem(parser, token):
+    """(% subnavitem <viewname> <title> [exact] %}"""
+    tokens = token.split_contents()
+    if len(tokens) < 3:
+        raise TemplateSyntaxError, '%s requires at least 3 tokens' % tokens[0]
+    return SubNavitemNode(*tokens[1:])
+
+class SubNavitemNode(Node):
+    def __init__(self, *args):
+        self._viewname = args[0]
+        self._title = args[1]
+        self._exact = 'exact' in args[2:]
+
+    def render(self, context):
+        viewname = Variable(self._viewname).resolve(context)
+        title = Variable(self._title).resolve(context)
+        if viewname.startswith('/'):
+            urlbase = viewname
+        else:
+            urlbase = reverse(viewname)
+
+        request_path = context['request_path']
+
+        if self._exact:
+            active = (request_path == urlbase)
+        else:
+            active = request_path.startswith(urlbase)
+        if active:
+            res = '<a class="list-group-item active" '
+        else:
+            res = '<a class="list-group-item" '
+        res += 'href="%s">%s</a>' % (urlbase, title)
+        return res
 
 # timeago
 

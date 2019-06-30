@@ -2,33 +2,43 @@
 {% load kegweblib %}
 
 {% block content %}
-<div class="row-fluid">
-  <div class="span2">
-    <ul class="nav nav-list">
-      <li class="nav-header">General</a>
-      {% navitem "kb-account-main" "Account Main" exact %}
-      {% navitem "account-profile" "Profile" %}
-      {% if not SSO_LOGIN_URL %}
-        {% navitem "password_change" "Password" %}
-      {% endif %}
-      {% navitem "account-notifications" "E-Mail" %}
-      {% if CAN_INVITE %}
-        {% navitem "account-invite" "Invite a User" %}
-      {% endif %}
-
-      {% if PLUGINS %}
-      <li class="nav-header">Extras</li>
-      {% for plugin in PLUGINS.values %}
-        {% if plugin.get_user_settings_view %}
-          {% url "account-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
-          {% navitem settings_url plugin.get_name %}
+<div class="row">
+  <div class="col-sm-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">General</div>
+      <div class="panel-body list-group" style="padding:0;">
+        {% navitem "kb-account-main" "Account Main" exact %}
+        {% navitem "account-profile" "Profile" %}
+        {% if not SSO_LOGIN_URL %}
+          {% navitem "password_change" "Password" %}
         {% endif %}
+        {% navitem "account-notifications" "E-Mail" %}
+        {% if CAN_INVITE %}
+          {% navitem "account-invite" "Invite a User" %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if PLUGINS or USE_FACEBOOK %}
+      <div class="panel panel-default">
+        <div class="panel-heading">Extras</div>
+        <div class="panel-body list-group" style="padding:0;">
+        {% for plugin in PLUGINS.values %}
+          {% if plugin.get_user_settings_view %}
+            {% url "account-plugin-settings" plugin_name=plugin.get_short_name as settings_url %}
+            {% subnavitem settings_url plugin.get_name %}
+          {% endif %}
         {% endfor %}
-      {% endif %}
-    </ul>
+
+        {% if USE_FACEBOOK %}
+          {% subnavitem "fb-account-settings" "Facebook" %}
+        {% endif %}
+        </div>
+      </div>
+    {% endif %}
   </div>
 
-  <div class="span10">
+  <div class="col-sm-10">
     {% block kb-account-main %}{% endblock %}
   </div>
 </div>

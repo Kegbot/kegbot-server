@@ -8,12 +8,12 @@
 {% block kegadmin-main %}
 <ul class="nav nav-tabs" id="tapDetails">
     {% if not current_keg %}
-    <li><a href="#1" data-toggle="tab">Create New Keg</a></li>
+    <li class="active"><a href="#1" data-toggle="tab">Create New Keg</a></li>
       {% if available_kegs %}
       <li><a href="#2" data-toggle="tab">Attach Untapped Keg</a></li>
       {% endif %}
     {% else %}
-    <li><a href="#3" data-toggle="tab">Current Keg</a></li>
+    <li class="active"><a href="#3" data-toggle="tab">Current Keg</a></li>
     <li><a href="#4" data-toggle="tab">Add Drink</a></li>
     <li><a href="#5" data-toggle="tab">Add Spill</a></li>
     {% endif %}
@@ -23,20 +23,20 @@
 
 <div class="tab-content">
   {% if not current_keg %}
-  <div class="tab-pane" id="1">
+  <div class="tab-pane active" id="1">
     {% crispy activate_keg_form %}
   </div>
 
   {% if available_kegs %}
   <div class="tab-pane" id="2">
-    <form action="" class="user-select" method="POST">{% csrf_token %}
+    <form action="" class="form-inline user-select" method="POST">{% csrf_token %}
       <input type="hidden" name="tap_id" value="{{tap.id}}">
-      <select name="keg_id" class="span6">
+      <select name="keg_id" class="form-control col-md-6">
         {% for keg in available_kegs %}
           <option value="{{keg.id}}">{{keg}}</option>
         {% endfor %}
       </select>
-      <button class="btn btn-primary" style="margin-top:-10px;" name="submit_keg_choice" type="submit">
+      <button class="btn btn-primary" name="submit_keg_choice" type="submit">
         Activate Keg
       </button>
     </form>
@@ -44,7 +44,7 @@
   {% endif %}
 
   {% else %}
-  <div class="tab-pane" id="3">
+  <div class="tab-pane active" id="3">
     <table class="table table-striped table-hover">
     <tr>
       <th>Keg</th>
@@ -69,20 +69,20 @@
       add an anonymous pour.
     </div>
 
-    <form action="" class="user-select" method="POST">{% csrf_token %}
+    <form action="" class="form-inline user-select" method="POST">{% csrf_token %}
     <div class="input-prepend input-append">
     {% if metric_volumes %}
       <input type="hidden" name="units" value="mL">
-      <input class="span4" type="text" name="volume" placeholder="123">
+      <input class="form-control col-md-4" type="text" name="volume" placeholder="123">
       <span class="add-on">mL</span>
     {% else %}
       <input type="hidden" name="units" value="oz">
-      <input class="span4" type="text" name="volume" placeholder="1.23">
+      <input class="form-control col-md-4" type="text" name="volume" placeholder="1.23">
       <span class="add-on">oz</span>
     {% endif %}
-      <input class="span4" type="text" name="username" placeholder="username">
+      <input class="form-control col-md-4" type="text" name="username" placeholder="username">
     <button class="btn btn-info" name="submit_record_drink" type="submit">
-      <i class="icon-plus-sign icon-white"></i> Record
+      <i class="glyphicon glyphicon-plus"></i> Record
     </button>
     </div>
     </form>
@@ -96,19 +96,19 @@
       <a href="{% url 'kegadmin-edit-keg' current_keg.id %}">keg admin page</a>.
     </div>
 
-    <form action="" class="user-select" method="POST">{% csrf_token %}
+    <form action="" class="form-inline user-select" method="POST">{% csrf_token %}
     <div class="input-prepend input-append">
     {% if metric_volumes %}
       <input type="hidden" name="units" value="mL">
-      <input class="span4" type="text" name="volume" placeholder="123">
+      <input class="form-control col-md-4" type="text" name="volume" placeholder="123">
       <span class="add-on">mL</span>
     {% else %}
       <input type="hidden" name="units" value="oz">
-      <input class="span4" type="text" name="volume" placeholder="1.23">
+      <input class="form-control col-md-4" type="text" name="volume" placeholder="1.23">
       <span class="add-on">oz</span>
     {% endif %}
     <button class="btn btn-info" name="submit_record_spill" type="submit">
-      <i class="icon-plus-sign icon-white"></i> Record
+      <i class="glyphicon glyphicon-plus"></i> Record
     </button>
     </div>
     </form>

@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="row">
-  <div class="span8">
+  <div class="col-md-8">
     {% if sessions %}
     {% for session in sessions %}
       {% include "kegweb/keg-session.html" %}
@@ -16,7 +16,7 @@
     {% endif %}
   </div>
 
-  <div class="span4">
+  <div class="col-md-4">
   <h2>Top Users</h2>
   {% chart users_by_volume stats 280 220 %}<br/>
 

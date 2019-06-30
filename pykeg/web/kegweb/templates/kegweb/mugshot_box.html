@@ -6,11 +6,9 @@
   <a href="{% url "kb-drinker" user.username %}">
 {% endif %}
 
-  <img
+  <img class="img-responsive"
     {% if boxsize %}
       style="width:{{boxsize}}px; height:{{boxsize}}px"
-    {% else %}
-      style="width:100%;"
     {% endif %}
 {% if user and user.mugshot %}
       src="{{ user.mugshot.resized.url }}"

@@ -22,7 +22,7 @@
 <tr>
     <td>
         <div class="form-horizontal">
-            <a class="btn btn-small btn-primary" href="{% url "kegadmin-edit-token" token.id %}">Edit</a>&nbsp;&nbsp;
+            <a class="btn btn-sm btn-primary" href="{% url "kegadmin-edit-token" token.id %}">Edit</a>&nbsp;&nbsp;
             <span>{{ token.get_auth_device }} {{ token.token_value }}</span>
     </td>
     <td>{% if token.nice_name %}{{ token.nice_name }}{% endif %}</td>
@@ -34,7 +34,7 @@
 {% endfor %}
 <tr class="info">
     <td colspan="4" style="text-align:right;">
-        <a class="btn btn-small btn-success"
+        <a class="btn btn-sm btn-success"
             href="{% url 'kegadmin-add-token' %}"><i class="icon-plus icon-white"></i> Add Token</a>
     </td>
 </tr>

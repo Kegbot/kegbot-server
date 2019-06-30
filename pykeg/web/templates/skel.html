@@ -1,9 +1,12 @@
 {# Bare-bones skeletal template. #}
 {% load static humanize kegweblib %}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>{% block title %}Kegbot{% endblock %}</title>
 
 <script type="text/javascript" src={% static "js/jquery-1.9.1.min.js" %}></script>
@@ -29,8 +32,8 @@
 <script type="text/javascript" src={% static "js/jquery.lazyload.min.js" %}></script>
 
 <script type="text/javascript" src={% static "bootstrap/js/bootstrap.min.js" %}></script>
-<script type="text/javascript" src={% static "lib/bootstrap-progressbar/bootstrap-progressbar.min.js" %}></script>
-
+<script type="text/javascript" src={% static "js/handlebars.js" %}></script>
+<script type="text/javascript" src={% static "js/typeahead.bundle.min.js" %}></script>
 <script type="text/javascript" src={% static "highcharts/js/highcharts.js" %}></script>
 <script type="text/javascript" src={% static "fancybox/jquery.fancybox.pack.js" %}></script>
 
@@ -69,10 +72,10 @@
         'titlePosition' : 'inside',
         'cyclic' : true,
       });
-      $('.bar').progressbar({
-          display_text: 'fill',
-          percent_format: function(p) {return p + '% remaining';}
-      });
+      // $('.bar').progressbar({
+      //     display_text: 'fill',
+      //     percent_format: function(p) {return p + '% remaining';}
+      // });
       $('.keg-popover').popover();
   });
 
@@ -149,6 +152,7 @@
 
 {% if user.is_staff %}
 {% include 'kegadmin/includes/extrajs.html' %}
+<script type="text/javascript" src={% static "js/kb-autocomplete.js" %}></script>
 {% endif %}
 
 {% endblock js %}

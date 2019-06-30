@@ -4,10 +4,10 @@
 {% if event.kind == 'drink_poured' %}
 {% with event.drink as drink %}
 <div class="row">
-  <div class="span1">
-    {% mugshot_box event.user 48 %}
+  <div class="col-xs-2">
+    {% mugshot_box event.user %}
   </div>
-  <div class="span6">
+  <div class="col-xs-8">
     <div style="vertical-align: bottom;">
       <span>
         <strong>{% drinker_name event.user %}</strong> poured
@@ -21,11 +21,11 @@
     {% with drink.picture as pic %}
     {% if pic %}
       <p></p>
-      <a class="gallery-image" rel="gallery-{{ gallery_id }}"
+      <a class="gallery-image thumbnail" rel="gallery-{{ gallery_id }}"
           href="{{ pic.resized.url }}"
           title="{% drinker_name event.user nolink %} pouring drink {{ event.drink.id }}">
-        <img class="lazy" data-original="{{ pic.resized.url }}" width="1024" height="1024"/>
-        <noscript><img src="{{ pic.resized.url }}" width="1024" height="1024"/></noscript>
+        <img class="lazy img-responsive" data-original="{{ pic.resized.url }}" width="1024" height="1024"/>
+        <noscript><img class="img-responsive" src="{{ pic.resized.url }}" width="1024" height="1024"/></noscript>
       </a>
     {% endif %}
     {% endwith %}
@@ -39,7 +39,7 @@
 
 {% elif event.kind == 'session_joined' %}
 <div class="row">
-  <div class="span6 offset1">
+  <div class="col-sm-8 col-sm-offset-2">
     <span>
       {% drinker_name event.user %} started drinking 
     </span>
@@ -52,7 +52,7 @@
 
 {% elif event.kind == 'keg_tapped' %}
 <div class="row">
-  <div class="span6 offset1">
+  <div class="col-sm-8 col-sm-offset-2">
     <span>
       <a href="{{ event.keg.get_absolute_url }}">Keg {{ event.keg.id }} ({{ event.keg.type.name }})</a> was tapped.
     </span>
@@ -65,7 +65,7 @@
 
 {% elif event.kind == 'keg_ended' %}
 <div class="row">
-  <div class="span6 offset1">
+  <div class="col-sm-8 col-sm-offset-2">
     <span>
       <a href="{{ event.keg.get_absolute_url }}">Keg {{ event.keg.id }} ({{ event.keg.type.name }})</a> was finished.
     </span>

@@ -7,15 +7,15 @@
 
 {% block kegadmin-main %}
 
-<div class="row-fluid">
-<div class="span4">
+<div class="row">
+<div class="col-md-3">
     {% with edit_user as user %}
         {% mugshot_box user %}
     {% endwith %}
 </div>
-<div class="span8">
+<div class="col-md-8">
     <ul class="nav nav-tabs" id="userDetails">
-        <li><a href="#1" data-toggle="tab">Overview</a></li>
+        <li class="active"><a href="#1" data-toggle="tab">Overview</a></li>
         {% if tokens %}
         <li><a href="#2" data-toggle="tab">Tokens</a></li>
         {% endif %}
@@ -26,7 +26,7 @@
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane" id="1">
+        <div class="tab-pane active" id="1">
             <table class="table table-bordered">
             <tbody>
             <tr>
@@ -94,15 +94,15 @@
             <form action="" method="POST">{% csrf_token %}
 
                 {% if edit_user.is_active %}
-                <button class="btn btn-large btn-block disabled">Account Enabled</button>
+                <button class="btn btn-lg btn-block disabled">Account Enabled</button>
                 {% if not edit_user.is_superuser %}
                     <input type="submit" name="submit_disable"
-                        class="btn btn-large btn-block btn-danger" value="Disable Account"/>
+                        class="btn btn-lg btn-block btn-danger" value="Disable Account"/>
                 {% endif %}
                 {% else %}
                 <input type="submit" name="submit_enable"
-                    class="btn btn-large btn-block btn-success" value="Enable Account"/>
-                <button class="btn btn-large btn-block disabled">Account Disabled</button>
+                    class="btn btn-lg btn-block btn-success" value="Enable Account"/>
+                <button class="btn btn-lg btn-block disabled">Account Disabled</button>
                 {% endif %}
 
             </form>
@@ -111,15 +111,15 @@
             <form action="" method="POST">{% csrf_token %}
 
                 {% if edit_user.is_staff %}
-                <button class="btn btn-large btn-block disabled">Staff Status Enabled</button>
+                <button class="btn btn-lg btn-block disabled">Staff Status Enabled</button>
                 {% if not edit_user.is_superuser %}
                     <input type="submit" name="submit_remove_staff"
-                    class="btn btn-large btn-block btn-danger" value="Disable Staff Status"/>
+                    class="btn btn-lg btn-block btn-danger" value="Disable Staff Status"/>
                 {% endif %}
                 {% else %}
                 <input type="submit" name="submit_add_staff"
-                    class="btn btn-large btn-block btn-success" value="Enable Staff Status"/>
-                <button class="btn btn-large btn-block disabled">Staff Status Disabled</button>
+                    class="btn btn-lg btn-block btn-success" value="Enable Staff Status"/>
+                <button class="btn btn-lg btn-block disabled">Staff Status Disabled</button>
                 {% endif %}
 
             </form>

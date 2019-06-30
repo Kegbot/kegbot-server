@@ -61,9 +61,6 @@ setup(
         'bin/setup-kegbot.py',
     ],
     install_requires=DEPENDENCIES,
-    dependency_links=[
-        'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
-    ],
     include_package_data=True,
     entry_points={
         'console_scripts': ['instance=django.core.management:execute_manager'],

@@ -41,13 +41,13 @@ class MiniSiteSettingsForm(forms.ModelForm):
         }
 
     helper = FormHelper()
-    helper.form_class = 'setup-form span8 offset2'
+    helper.form_class = 'setup-form col-md-8 col-md-offset-2'
     helper.layout = Layout(
-        Field('title', css_class='span12'),
-        Field('privacy', css_class='span12'),
-        Field('timezone', css_class='span12'),
-        Field('volume_display_units', css_class='span12'),
-        Field('temperature_display_units', css_class='span12'),
+        'title',
+        'privacy',
+        'timezone',
+        'volume_display_units',
+        'temperature_display_units',
         FormActions(
             Submit('save_changes', 'Continue', css_class="btn-primary"),
         )
@@ -71,12 +71,14 @@ class AdminUserForm(forms.Form):
         help_text='In case you lose your password.')
 
     helper = FormHelper()
-    helper.form_class = 'setup-form span8 offset2'
+    helper.form_class = 'setup-form col-md-8 col-md-offset-2'
+    helper.label_class = 'col-sm-2'
+    helper.field_class = 'col-sm-6'
     helper.layout = Layout(
-        Field('username', css_class='span12'),
-        Field('email', css_class='span12'),
-        Field('password', css_class='span12'),
-        Field('confirm_password', css_class='span12'),
+        'username',
+        'email',
+        'password',
+        'confirm_password',
         FormActions(
             Submit('save_changes', 'Continue', css_class="btn-primary"),
         )

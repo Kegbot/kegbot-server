@@ -90,8 +90,7 @@
               {% if SSO_LOGOUT_URL %}
               <li><a href="{{ SSO_LOGOUT_URL }}">Logout</a></li>
               {% else %}
-              <!-- TODO: Fix this -->
-              <li><a href="/logout">Logout</a></li>
+              <li><a href="{% url "logout" %}">Logout</a></li>
               {% endif %}
             </ul>
           </li>

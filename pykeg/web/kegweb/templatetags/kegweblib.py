@@ -343,12 +343,14 @@ class ChartNode(Node):
     <div id="chart-%(chart_id)s-container"
         style="height: %(height)spx; width: %(width)spx;"
         class="kb-chartbox"></div>
-    <script type="text/javascript">
-      var chart_%(chart_id)s;
-      $(document).ready(function() {
-        var chart_data = %(chart_data)s;
-        chart_%(chart_id)s = new Highcharts.Chart(chart_data);
-      });
+    <script>
+        var chart_%(chart_id)s;
+        document.addEventListener( "DOMContentLoaded", function() {
+            $(document).ready(function() {
+                var chart_data = %(chart_data)s;
+                chart_%(chart_id)s = new Highcharts.Chart(chart_data);
+            });
+        }, false );
     </script>
     <!-- end chart %(chart_id)s -->
 

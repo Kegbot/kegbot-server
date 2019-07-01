@@ -26,9 +26,9 @@
         {% spaceless %}
         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
           <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
+          <span class="glyphicon glyphicon-bar"></span>
+          <span class="glyphicon glyphicon-bar"></span>
+          <span class="glyphicon glyphicon-bar"></span>
         </button>
         {% if kbsite %}
         <a class="navbar-brand" href="{% url "kb-home" %}">
@@ -58,7 +58,7 @@
           <li><a href="{% url "registration_register" %}"><i class="glyphicon glyphicon-edit"></i> New Drinker</a></li>
           {% endif %}
           {% if SSO_LOGIN_URL %}
-          <li><a href="{{ SSO_LOGIN_URL }}"><i class="icon-user icon-white"></i> Log In</a></li>
+          <li><a href="{{ SSO_LOGIN_URL }}"><i class="glyphicon glyphicon-user"></i> Log In</a></li>
           {% else %}
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-user"></i> Sign In <b class="caret"></b></a>
@@ -124,7 +124,7 @@
     </div>
 
     <footer>
-      <p class="muted">
+      <p class="text-muted">
         <small>
           Powered by
           <a href="http://kegbot.org/?utm_source=kbserver">Kegbot&trade;</a>{% if user.is_staff %}, version {{ VERSION }}{% endif %}

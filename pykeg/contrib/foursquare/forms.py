@@ -21,7 +21,7 @@
 from django import forms
 from django.conf import settings
 
-WIDE_TEXT = forms.TextInput(attrs={'class': 'input-block-level'})
+WIDE_TEXT = forms.TextInput(attrs={'class': 'form-control'})
 
 
 class SiteSettingsForm(forms.Form):

@@ -8,71 +8,71 @@
 {% block kegadmin-main %}
 
 <h2>Keg #{{keg.id}}: {{keg.type.name}}
-{% include 'kegadmin/includes/keg-status-label.html' %}
+  {% include 'kegadmin/includes/keg-status-label.html' %}
 </h2>
 
 <div class="well">
-<div class="row">
+  <div class="row">
 
-<div class="col-md-4">
+    <div class="col-md-4">
 
-  <img src="{{ keg.get_illustration }}" class="img-responsive">
-  <p class="text-center"><strong>{{ keg.percent_full|floatformat:0 }}% full</strong></p>
+      <img src="{{ keg.get_illustration }}" class="img-responsive">
+      <p class="text-center"><strong>{{ keg.percent_full|floatformat:0 }}% full</strong></p>
 
-</div>
+    </div>
 
-<div class="col-md-8">
+    <div class="col-md-8">
 
-  <table class="table">
-  <tbody>
-      {% if keg.is_on_tap or keg.is_finished %}
+      <table class="table">
+        <tbody>
+          {% if keg.is_on_tap or keg.is_finished %}
           <tr>
-              <th>Started</th>
-              <td>{{keg.start_time}}</td>
+            <th>Started</th>
+            <td>{{keg.start_time}}</td>
           </tr>
-      {% endif %}
-      {% if not keg.is_on_tap and keg.is_finished %}
+          {% endif %}
+          {% if not keg.is_on_tap and keg.is_finished %}
           <tr>
-              <th>End Time</th>
-              <td>{{keg.end_time}}</td>
+            <th>End Time</th>
+            <td>{{keg.end_time}}</td>
           </tr>
-      {% endif %}
-      <tr>
-          <th>Size</th>
-          <td>{{ keg.keg_type_description }}</td>
-      </tr>
-      <tr>
-          <th>Initial Volume</th>
-          <td>{% volume keg.full_volume_ml %}</td>
-      </tr>
-      <tr>
-          <th>Served Volume</th>
-          <td>{% volume keg.served_volume_ml %}</td>
-      </tr>
-      <tr>
-          <th>Remaining Volume</th>
-          <td>{% volume remaining %}</td>
-      </tr>
-      </tbody>
-  </table>
+          {% endif %}
+          <tr>
+            <th>Size</th>
+            <td>{{ keg.keg_type_description }}</td>
+          </tr>
+          <tr>
+            <th>Initial Volume</th>
+            <td>{% volume keg.full_volume_ml %}</td>
+          </tr>
+          <tr>
+            <th>Served Volume</th>
+            <td>{% volume keg.served_volume_ml %}</td>
+          </tr>
+          <tr>
+            <th>Remaining Volume</th>
+            <td>{% volume remaining %}</td>
+          </tr>
+        </tbody>
+      </table>
 
-</div>
+    </div>
 
-</div> <!-- /row -->
+  </div> <!-- /row -->
 </div>
 
 
 <form action="" method="post">{% csrf_token %}
   <div class="well">
 
-{% if keg.is_finished %}
+    {% if keg.is_finished %}
 
     <div class="row">
 
       <div class="col-md-4">
-          <button type="submit" class="btn btn-info btn-large btn-block" name="submit_reactivate">
-            <i class="icon-refresh icon-white"></i> Reactivate</button>
-          </button>
+        <button type="submit" class="btn btn-info btn-lg btn-block" name="submit_reactivate">
+          <i class="glyphicon glyphicon-refresh"></i> Reactivate</button>
+        </button>
       </div>
 
       <div class="col-md-8">
@@ -82,14 +82,14 @@
 
     </div> <!-- /row -->
 
-{% else %}
+    {% else %}
 
     <div class="row">
 
       <div class="col-md-4">
-          <button type="submit" class="btn btn-danger btn-large btn-block" name="submit_end">
-            <i class="icon-stop icon-white"></i> End Keg</button>
-          </button>
+        <button type="submit" class="btn btn-danger btn-lg btn-block" name="submit_end">
+          <i class="glyphicon glyphicon-stop"></i> End Keg</button>
+        </button>
       </div>
 
       <div class="col-md-8">
@@ -99,7 +99,7 @@
     </div> <!-- /row -->
 
 
-{% endif %}
+    {% endif %}
 
   </div>
 </form>
@@ -109,32 +109,31 @@
 {% crispy edit_form %}
 
 
-<div id="cancelModal" class="modal fade" tabindex="-1"
-    role="dialog" aria-labelledby="cancelDialogLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="cancelDialogLabel">Really Delete Keg {{ keg.id }}?</h3>
-        </div>
-        <div class="modal-body">
-            <p>
-                Are you sure you want to delete <b>Keg {{ keg.id }}</b>?
-            </p>
-            <p>
-                Deleting the keg will <b>immediately and permanently delete all pour data associated with
-                this keg</b>, including any recorded pictures and statistics.  This action cannot be undone.
-            </p>
-        </div>
-        <div class="modal-footer">
-            <form action="{% url "kegadmin-edit-keg" keg.id %}" method="POST">{% csrf_token %}
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-                <input type="submit" name="submit_delete_keg"
-                    class="btn btn-danger" value="Delete Keg"/>
-            </form>
-        </div>
+<div id="cancelModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="cancelDialogLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="cancelDialogLabel">Really Delete Keg {{ keg.id }}?</h3>
+      </div>
+      <div class="modal-body">
+        <p>
+          Are you sure you want to delete <b>Keg {{ keg.id }}</b>?
+        </p>
+        <p>
+          Deleting the keg will <b>immediately and permanently delete all pour data associated with
+            this keg</b>, including any recorded pictures and statistics. This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <form action="{% url "kegadmin-edit-keg" keg.id %}" method="POST">{% csrf_token %}
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          <input type="submit" name="submit_delete_keg" class="btn btn-danger" value="Delete Keg" />
+        </form>
       </div>
     </div>
+  </div>
 </div>
 
 

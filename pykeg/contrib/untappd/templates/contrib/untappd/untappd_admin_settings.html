@@ -10,13 +10,13 @@
 <h4>Settings</h4>
 <div class="well">
 <p class="lead">
-  Site-wide settings linking this Kegbot to Untappd. 
+  Site-wide settings linking this Kegbot to Untappd.
 </p>
 <form method="post" action="">
    {% csrf_token %}
    {{ settings_form|crispy }}
     <button type="submit" class="btn btn-success" name="submit-settings">
-      <i class="icon-edit icon-white"></i> Update Settings</button>
+      <i class="glyphicon glyphicon-edit"></i> Update Settings</button>
     </button>
 </form>
 </div>

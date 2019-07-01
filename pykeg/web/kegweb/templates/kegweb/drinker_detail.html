@@ -141,7 +141,7 @@
                     {% volume drink.volume_ml badge %}
                     of {{ drink.keg.type.name }}
                   </span>
-                  <span class="muted pull-right">
+                  <span class="text-muted pull-right">
                     <a href="{{ drink.get_absolute_url }}">{% timeago drink.time %}</a>
                   </span>
                 </div>
@@ -174,7 +174,7 @@
 
 
 {% block kb-extrajs %}
-<script type="text/javascript">
+<script>
 $(document).ready(function () {
   $('#drinkerDetails a:first').tab('show');
 });

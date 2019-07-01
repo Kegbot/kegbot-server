@@ -107,6 +107,7 @@ class EndKegForm(forms.Form):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal beer-select'
+    helper.field_class = 'col-md-2'
     helper.layout = Layout(
         Field('keg', type='hidden'),
         FormActions(
@@ -197,6 +198,7 @@ class TapForm(forms.ModelForm):
 class DeleteTapForm(forms.Form):
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.field_class = 'col-md-2'
     helper.layout = Layout(
         FormActions(
             Submit('submit_delete_tap_form', 'Delete Tap', css_class='btn-danger'),
@@ -326,7 +328,7 @@ class EditKegForm(forms.ModelForm):
         FormActions(
             Submit('submit_edit_keg', 'Save Keg', css_class='btn-primary'),
             HTML("""<a href="#cancelModal" role="button" class="btn btn-danger" data-toggle="modal">
-                    <i class="icon-trash icon-white"></i> Permanently Delete</a>""")
+                    <i class="glyphicon glyphicon-trash"></i> Permanently Delete</a>""")
         )
     )
 
@@ -449,6 +451,7 @@ class BeverageProducerForm(forms.ModelForm):
             'name',
             'country',
             'origin_state',
+            'origin_city',
             'is_homebrew',
             'url',
             'description',
@@ -526,6 +529,7 @@ class TokenForm(forms.ModelForm):
     class Meta:
         model = models.AuthenticationToken
         fields = (
+            'username',
             'nice_name',
             'enabled',
         )
@@ -560,6 +564,7 @@ class TokenForm(forms.ModelForm):
 class DeleteTokenForm(forms.Form):
     helper = FormHelper()
     helper.form_class = 'form-horizontal user-select'
+    helper.field_class = 'col-md-2'
     helper.layout = Layout(
         FormActions(
             Submit('delete_token', 'Delete Token', css_class='btn-danger'),
@@ -573,6 +578,7 @@ class AddTokenForm(forms.ModelForm):
         fields = (
             'auth_device',
             'token_value',
+            'username',
             'enabled',
         )
     CHOICES = (
@@ -617,6 +623,7 @@ class CancelDrinkForm(forms.Form):
 class DeleteDrinksForm(forms.Form):
     helper = FormHelper()
     helper.form_class = 'form-horizontal user-select'
+    helper.field_class = 'col-md-2'
     helper.layout = Layout(
         HTML("""<table class="table table-hover table-bordered">
 <thead>
@@ -733,9 +740,11 @@ class AddFlowMeterForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('port_name'),
-        Field('ticks_per_ml'),
+        'port_name',
+        'ticks_per_ml',
         Field('controller', type='hidden'),
         FormActions(
             Submit('add_flow_meter', 'Add Flow Meter', css_class='btn-primary'),
@@ -756,8 +765,10 @@ class AddFlowToggleForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('port_name'),
+        'port_name',
         Field('controller', type='hidden'),
         FormActions(
             Submit('add_flow_toggle', 'Add Flow Toggle', css_class='btn-primary'),
@@ -768,6 +779,7 @@ class AddFlowToggleForm(forms.ModelForm):
 class DeleteControllerForm(forms.Form):
     helper = FormHelper()
     helper.form_class = 'form-horizontal user-select'
+    helper.field_class = 'col-md-2'
     helper.layout = Layout(
         FormActions(
             Submit('delete_controller', 'Delete Controller', css_class='btn-danger'),
@@ -782,10 +794,12 @@ class ControllerForm(forms.ModelForm):
 
     helper = FormHelper()
     helper.form_class = 'form-horizontal'
+    helper.label_class = 'col-md-2'
+    helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        Field('name', css_class='input-xlarge'),
-        Field('model_name', css_class='input-xlarge'),
-        Field('serial_number', css_class='input-xlarge'),
+        'name'
+        'model_name',
+        'serial_number',
         FormActions(
             Submit('submit_controller_form', 'Save Controller', css_class='btn-success'),
         )

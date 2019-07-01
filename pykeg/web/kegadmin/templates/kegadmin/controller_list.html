@@ -7,36 +7,35 @@
 
 {% block kegadmin-main %}
 <table class="table table-hover table-bordered">
-<thead>
-  <tr>
-    <th>Controller</th>
-    <th>Meters</th>
-    <th>Toggles</th>
-  </tr>
-</thead>
-<tbody>
-{% for controller in controllers %}
-<tr>
-  <td>
-    <div class="form-horizontal">
-      <a class="btn btn-small btn-primary" href="{% url "kegadmin-edit-controller" controller.id %}">Edit</a>&nbsp;&nbsp;
-      <span>{{ controller.name }}</span>
-  </td>
-  <td>
-    {{ controller.meters.count }}
-  </td>
-  <td>
-    {{ controller.toggles.count }}
-  </td>
-</tr>
-{% endfor %}
-<tr class="info">
-	<td colspan="3" style="text-align:right;">
-		<a class="btn btn-small btn-success"
-			href="{% url 'kegadmin-add-controller' %}"><i class="icon-plus icon-white"></i> Add Controller</a>
-	</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Controller</th>
+      <th>Meters</th>
+      <th>Toggles</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for controller in controllers %}
+    <tr>
+      <td>
+        <a class="btn btn-sm btn-primary" href="{% url "kegadmin-edit-controller" controller.id %}">Edit</a>&nbsp;&nbsp;
+        <span>{{ controller.name }}</span>
+      </td>
+      <td>
+        {{ controller.meters.count }}
+      </td>
+      <td>
+        {{ controller.toggles.count }}
+      </td>
+    </tr>
+    {% endfor %}
+    <tr class="info">
+      <td colspan="3" style="text-align:right;">
+        <a class="btn btn-sm btn-success" href="{% url 'kegadmin-add-controller' %}"><i
+            class="glyphicon glyphicon-plus"></i> Add Controller</a>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 {% endblock %}

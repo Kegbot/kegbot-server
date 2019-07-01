@@ -12,19 +12,19 @@
 </p>
 
 {% for log in logs %}
-  {% ifchanged %}
-    <hr/>
-    <!-- {{ log.request_info|escape }} -->
-    <span class="label">{{ log.level.upper.0 }}</span>
-    {% if log.request_info %}
-    <span class="muted">{{ log.request_info.method }} {{ log.request_info.request_path }}</span><br/>
-    {% endif %}
-  {% endifchanged %}
-  <code>{{ log.time }} ({{ log.name }}) {{ log.msg }}</code> 
+{% ifchanged %}
+<hr />
+<!-- {{ log.request_info|escape }} -->
+<span class="label label-default">{{ log.level.upper.0 }}</span>
+{% if log.request_info %}
+<span class="text-muted">{{ log.request_info.method }} {{ log.request_info.request_path }}</span><br />
+{% endif %}
+{% endifchanged %}
+<code>{{ log.time }} ({{ log.name }}) {{ log.msg }}</code>
 
-  {% if log.traceback %}
-  <pre>{{ log.traceback }}</pre>
-  {% endif %}
+{% if log.traceback %}
+<pre>{{ log.traceback }}</pre>
+{% endif %}
 {% endfor %}
 
 {% else %}

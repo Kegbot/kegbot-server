@@ -20,7 +20,7 @@
 
 from django import forms
 
-TEXTAREA = forms.Textarea(attrs={'class': 'input-block-level'})
+TEXTAREA = forms.Textarea(attrs={'class': 'form-control'})
 
 
 class SiteSettingsForm(forms.Form):

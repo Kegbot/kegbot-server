@@ -10,13 +10,13 @@
 <h4>Settings</h4>
 <div class="well">
 <p class="lead">
-  Site-wide settings linking this Kegbot to Foursquare. 
+  Site-wide settings linking this Kegbot to Foursquare.
 </p>
 <form method="post" action="">
    {% csrf_token %}
    {{ settings_form|crispy }}
     <button type="submit" class="btn btn-success" name="submit-settings">
-      <i class="icon-edit icon-white"></i> Update Settings</button>
+      <i class="glyphicon glyphicon-edit"></i> Update Settings</button>
     </button>
 </form>
 </div>
@@ -34,7 +34,7 @@ Test connection to Foursquare API servers.
 </form>
 
 {% if test_response %}
-<a href="#" class="muted" data-toggle="collapse" data-target="#api_response">
+<a href="#" class="text-muted" data-toggle="collapse" data-target="#api_response">
   Show API Test Result &raquo;
 </a>
 <p></p>

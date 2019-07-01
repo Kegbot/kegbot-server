@@ -14,13 +14,12 @@
         {% volume drink.volume_ml badge %}
         of {{ drink.keg.type.name }}
       </span>
-      <span class="muted pull-right">
+      <span class="text-muted pull-right">
         <a href="{{ drink.get_absolute_url }}">{% timeago event.time %}</a>
       </span>
     </div>
     {% with drink.picture as pic %}
     {% if pic %}
-      <p></p>
       <a class="gallery-image thumbnail" rel="gallery-{{ gallery_id }}"
           href="{{ pic.resized.url }}"
           title="{% drinker_name event.user nolink %} pouring drink {{ event.drink.id }}">
@@ -41,9 +40,9 @@
 <div class="row">
   <div class="col-sm-8 col-sm-offset-2">
     <span>
-      {% drinker_name event.user %} started drinking 
+      {% drinker_name event.user %} started drinking
     </span>
-    <span class="muted pull-right">
+    <span class="text-muted pull-right">
       {% timeago event.time %}
     </span>
     <hr/>
@@ -56,7 +55,7 @@
     <span>
       <a href="{{ event.keg.get_absolute_url }}">Keg {{ event.keg.id }} ({{ event.keg.type.name }})</a> was tapped.
     </span>
-    <span class="muted pull-right">
+    <span class="text-muted pull-right">
       {% timeago event.time %}
     </span>
     <hr/>
@@ -69,12 +68,10 @@
     <span>
       <a href="{{ event.keg.get_absolute_url }}">Keg {{ event.keg.id }} ({{ event.keg.type.name }})</a> was finished.
     </span>
-    <span class="muted pull-right">
+    <span class="text-muted pull-right">
       {% timeago event.time %}
     </span>
     <hr/>
   </div>
 </div>
 {% endif %}
-
-<p/>

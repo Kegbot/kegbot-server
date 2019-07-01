@@ -9,50 +9,50 @@
 {% block kegadmin-main %}
 
 <div class="form-actions">
-    <form class="user-select" action="" method="POST">{% csrf_token %}
-        <div class="input-group">
-            <input class="form-control" type="text" name="username" placeholder="Name or e-mail" />
-            <span class="input-group-btn">
-              <button type="submit" name="submit" class="btn btn-default">Edit user</button>
-            </span>
-        </div>
-    </form>
+  <form class="user-select" action="" method="POST">{% csrf_token %}
+    <div class="input-group">
+      <input class="form-control" type="text" name="username" placeholder="Name or e-mail" />
+      <span class="input-group-btn">
+        <button type="submit" name="submit" class="btn btn-default">Edit user</button>
+      </span>
+    </div>
+  </form>
 </div>
 
 <table class="table table-hover table-bordered">
-<thead>
+  <thead>
     <tr>
-        <th>User</th>
-        <th>Date Joined</th>
-        <th>Status</th>
+      <th>User</th>
+      <th>Date Joined</th>
+      <th>Status</th>
     </tr>
-</thead>
-<tbody>
-{% for edit_user in users %}
-<tr>
-    <td>
+  </thead>
+  <tbody>
+    {% for edit_user in users %}
+    <tr>
+      <td>
         <div class="form-horizontal">
-            <a class="btn btn-small btn-primary" href="{% url "kegadmin-edit-user" edit_user.id %}">Edit</a>&nbsp;&nbsp;
-            <span>{{ edit_user.username }}</span>
+          <a class="btn btn-sm btn-primary" href="{% url "kegadmin-edit-user" edit_user.id %}">Edit</a>&nbsp;&nbsp;
+          <span>{{ edit_user.username }}</span>
         </div>
-    </td>
-    <td>{{ edit_user.date_joined }}</td>
-    <td>
+      </td>
+      <td>{{ edit_user.date_joined }}</td>
+      <td>
         {% with edit_user as user %}
-            {% include 'kegadmin/includes/user-status-label.html' %}
+        {% include 'kegadmin/includes/user-status-label.html' %}
         {% endwith %}
-    </td>
-</tr>
-{% endfor %}
-{% if not EMBEDDED %}
-<tr class="info">
-    <td colspan="3" style="text-align:right;">
-        <a class="btn btn-small btn-success"
-            href="{% url 'kegadmin-add-user' %}"><i class="glyphicon glyphicon-plus"></i> Add User</a>
-    </td>
-</tr>
-{% endif %}
-</tbody>
+      </td>
+    </tr>
+    {% endfor %}
+    {% if not EMBEDDED %}
+    <tr class="info">
+      <td colspan="3" style="text-align:right;">
+        <a class="btn btn-sm btn-success" href="{% url 'kegadmin-add-user' %}"><i class="glyphicon glyphicon-plus"></i>
+          Add User</a>
+      </td>
+    </tr>
+    {% endif %}
+  </tbody>
 </table>
 {% bootstrap_paginate users %}
 

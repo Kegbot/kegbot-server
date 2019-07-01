@@ -14,7 +14,7 @@
     {% subnavitem "kegadmin-location-settings" "Location" %}
     {% subnavitem "kegadmin-advanced-settings" "Advanced" %}
     {% if not EMBEDDED %}
-      {% subnavitem "kegadmin-email" "E-Mail" %}
+    {% subnavitem "kegadmin-email" "E-Mail" %}
     {% endif %}
   </div>
 </div>
@@ -23,16 +23,16 @@
   <div class="panel-heading">System</div>
   <div class="panel-body list-group" style="padding:0;">
     {% if ENABLE_SENSING %}
-      {% subnavitem "kegadmin-controllers" "Controllers" %}
+    {% subnavitem "kegadmin-controllers" "Controllers" %}
     {% endif %}
     {% subnavitem "kegadmin-taps" "Taps" %}
     {% subnavitem "kegadmin-kegs" "Keg Room" %}
     {% if ENABLE_SENSING %}
-      {% subnavitem "kegadmin-drinks" "Drinks" %}
+    {% subnavitem "kegadmin-drinks" "Drinks" %}
     {% endif %}
     {% if ENABLE_USERS %}
-      {% subnavitem "kegadmin-users" "Users" %}
-      {% subnavitem "kegadmin-tokens" "Tokens" %}
+    {% subnavitem "kegadmin-users" "Users" %}
+    {% subnavitem "kegadmin-tokens" "Tokens" %}
     {% endif %}
   </div>
 </div>
@@ -61,13 +61,13 @@
   <div class="panel-heading">Other</div>
   <div class="panel-body list-group" style="padding:0;">
     {% if not EMBEDDED %}
-      {% subnavitem "kegadmin-logs" "Logs" %}
-      {% subnavitem "kegadmin-bugreport" "Bugreport" %}
+    {% subnavitem "kegadmin-logs" "Logs" %}
+    {% subnavitem "kegadmin-bugreport" "Bugreport" %}
     {% endif %}
     {% subnavitem "kegadmin-export" "Export Data" %}
     {% if HAVE_ADMIN and not EMBEDDED %}
-      {% subnavitem "kegadmin-workers" "Worker Status" %}
-      <a class="list-group-item" href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a>
+    {% subnavitem "kegadmin-workers" "Worker Status" %}
+    <a class="list-group-item" href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a>
     {% endif %}
     <a class="list-group-item" href='https://github.com/Kegbot/kegbot/issues' target="_blank">Report a Bug &raquo;</a>
   </div>

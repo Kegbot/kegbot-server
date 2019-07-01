@@ -17,10 +17,10 @@
 <form method="post" action="{% url "plugin-untappd-redirect" %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-info" name="submit-link">
-      <i class="icon-repeat icon-white"></i> Re-link Account</button>
+      <i class="glyphicon glyphicon-repeat"></i> Re-link Account</button>
     </button>
     <button type="submit" class="btn btn-danger" name="submit-remove">
-      <i class="icon-remove icon-white"></i> Remove Account</button>
+      <i class="glyphicon glyphicon-remove"></i> Remove Account</button>
     </button>
 </form>
 </p>
@@ -35,7 +35,7 @@
     <form method="post" action="{% url "plugin-untappd-redirect" %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-info" name="submit">
-          <i class="icon-share-alt icon-white"></i> Link Account</button>
+          <i class="glyphicon glyphicon-share-alt"></i> Link Account</button>
         </button>
     </form>
 </p>
@@ -51,7 +51,7 @@
    {% csrf_token %}
    {{ settings_form|crispy }}
     <button type="submit" class="btn btn-success" name="submit-settings">
-      <i class="icon-edit icon-white"></i> Update Settings</button>
+      <i class="glyphicon glyphicon-edit"></i> Update Settings</button>
     </button>
 </form>
 </div>

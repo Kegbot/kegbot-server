@@ -9,31 +9,31 @@
 {% block kegadmin-main %}
 
 <table class="table table-hover table-bordered">
-<thead>
+  <thead>
     <tr>
-        <th>Name</th>
-        <th>Brewer</th>
-        <th>Style</th>
+      <th>Name</th>
+      <th>Brewer</th>
+      <th>Style</th>
     </tr>
-</thead>
-<tbody>
-{% for beverage in beverages %}
-<tr class="clickable" data-href="{% url 'kegadmin-edit-beverage' beverage.id %}">
-    <td>
-        <div class="form-horizontal">
-            <a class="btn btn-sm btn-primary" href="{% url 'kegadmin-edit-beverage' beverage.id %}">Edit</a>&nbsp;&nbsp;
-            <span>{{ beverage.name }}</span>
-    </td>
-    <td>{{ beverage.producer }}</td>
-    <td>{{ beverage.style }}</td>
-</tr>
-{% endfor %}
-<tr class="info">
-    <td colspan="3" style="text-align:right;">
-        <a class ="btn btn-sm btn-success pull-right" href="{% url 'kegadmin-add-beverage' %}"><i class="glyphicon glyphicon-plus"></i> Add New Beer Type</a>
-    </td>
-</tr>
-</tbody>
+  </thead>
+  <tbody>
+    {% for beverage in beverages %}
+    <tr class="clickable" data-href="{% url 'kegadmin-edit-beverage' beverage.id %}">
+      <td>
+        <a class="btn btn-sm btn-primary" href="{% url 'kegadmin-edit-beverage' beverage.id %}">Edit</a>&nbsp;&nbsp;
+        <span>{{ beverage.name }}</span>
+      </td>
+      <td>{{ beverage.producer }}</td>
+      <td>{{ beverage.style }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="info">
+      <td colspan="3" style="text-align:right;">
+        <a class="btn btn-sm btn-success pull-right" href="{% url 'kegadmin-add-beverage' %}"><i
+            class="glyphicon glyphicon-plus"></i> Add New Beer Type</a>
+      </td>
+    </tr>
+  </tbody>
 </table>
 {% bootstrap_paginate beverages %}
 

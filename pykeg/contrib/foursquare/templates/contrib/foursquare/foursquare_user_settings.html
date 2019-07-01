@@ -18,10 +18,10 @@
 <form method="post" action="{% url "plugin-foursquare-redirect" %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-info" name="submit-link">
-      <i class="icon-repeat icon-white"></i> Re-link Account</button>
+      <i class="glyphicon glyphicon-repeat"></i> Re-link Account</button>
     </button>
     <button type="submit" class="btn btn-danger" name="submit-remove">
-      <i class="icon-remove icon-white"></i> Remove Account</button>
+      <i class="glyphicon glyphicon-remove"></i> Remove Account</button>
     </button>
 </form>
 </p>
@@ -31,12 +31,12 @@
 <h4>Link Foursquare Account</h4>
 <div class="well">
     <p class="lead">
-      Link a Foursquare account to your Kegbot account.  
+      Link a Foursquare account to your Kegbot account.
     <p>
     <form method="post" action="{% url "plugin-foursquare-redirect" %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-info" name="submit">
-          <i class="icon-share-alt icon-white"></i> Link Account</button>
+          <i class="glyphicon glyphicon-share-alt"></i> Link Account</button>
         </button>
     </form>
 </p>
@@ -46,13 +46,13 @@
 <h4>Settings</h4>
 <div class="well">
 <p class="lead">
-  Control how Kegbot will use use your account. 
+  Control how Kegbot will use use your account.
 </p>
 <form method="post" action="">
    {% csrf_token %}
    {{ settings_form|crispy }}
     <button type="submit" class="btn btn-success" name="submit-settings">
-      <i class="icon-edit icon-white"></i> Update Settings</button>
+      <i class="glyphicon glyphicon-edit"></i> Update Settings</button>
     </button>
 </form>
 </div>
@@ -60,7 +60,7 @@
 
 {% else %}
 <h4>Foursquare Settings</h4>
-<p class="muted">
+<p class="text-muted">
   Sorry, Foursquare is not yet enabled on this Kegbot.
 </p>
 {% endif %}

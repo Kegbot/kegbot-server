@@ -7,7 +7,7 @@
 
 {% block kegadmin-main %}
 {% if not email_configured %}
-<div class="alert alert-error">
+<div class="alert alert-danger">
   <h4>Warning!</h4>
    E-mail is not properly configured; no mails will be sent.  Please
    <a href="https://kegbot.org/docs/server/extras/">read the docs</a>
@@ -25,7 +25,7 @@
       Send Test E-mail to {{ user.email }}
     </button>
   </form>
-  <p class="muted ">
+  <p class="text-muted ">
     Please check your inbox at the address above after sending a test E-mail.
     Be sure to check your spam folder, and add the sender to your whitelist if necessary.
   </p>

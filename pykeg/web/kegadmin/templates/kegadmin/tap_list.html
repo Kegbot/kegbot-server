@@ -8,44 +8,43 @@
 {% block kegadmin-main %}
 
 <table class="table table-hover table-bordered">
-<thead>
-	<tr>
-		<th>Tap</th>
-		<th>Meter</th>
-		<th>Status</th>
-	</tr>
-</thead>
-<tbody>
-{% for tap in taps %}
-<tr>
-	<td>
-		<div class="form-horizontal">
-			<a class="btn btn-sm btn-primary" href="{% url "kegadmin-edit-tap" tap.id %}">Edit</a>&nbsp;&nbsp;
-			<span>{{ tap.name }}</span>
-	</td>
-	<td>
-		{% if tap.current_meter %}
-			{{ tap.current_meter }}
-		{% else %}
-			<em>Not connected.</em>
-		{% endif %}
-	</td>
-	<td>
-		{% if tap.current_keg %}
-		Online: {{ tap.current_keg.type.name }}
-		{% else %}
-		<em>Idle</em>
-		{% endif %}
-	</td>
-</tr>
-{% endfor %}
-<tr class="info">
-	<td colspan="3" style="text-align:right;">
-		<a class="btn btn-sm btn-success"
-			href="{% url 'kegadmin-add-tap' %}"><i class="icon-plus icon-white"></i> Add Tap</a>
-	</td>
-</tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Tap</th>
+      <th>Meter</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for tap in taps %}
+    <tr>
+      <td>
+        <a class="btn btn-sm btn-primary" href="{% url "kegadmin-edit-tap" tap.id %}">Edit</a>&nbsp;&nbsp;
+        <span>{{ tap.name }}</span>
+      </td>
+      <td>
+        {% if tap.current_meter %}
+        {{ tap.current_meter }}
+        {% else %}
+        <em>Not connected.</em>
+        {% endif %}
+      </td>
+      <td>
+        {% if tap.current_keg %}
+        Online: {{ tap.current_keg.type.name }}
+        {% else %}
+        <em>Idle</em>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    <tr class="info">
+      <td colspan="3" style="text-align:right;">
+        <a class="btn btn-sm btn-success" href="{% url 'kegadmin-add-tap' %}"><i class="glyphicon glyphicon-plus"></i>
+          Add Tap</a>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 {% endblock %}

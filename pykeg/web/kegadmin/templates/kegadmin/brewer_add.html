@@ -11,12 +11,12 @@
 
 {% if brewer.picture %}
 <div class="row">
-<div class="col-md-10">
-<p><img class="img-responsive" src="{{brewer.picture.resized.url}}"/></p>
-</div>
+    <div class="col-md-10">
+        <p><img class="img-responsive" src="{{brewer.picture.resized.url}}"/></p>
+    </div>
 </div>
 {% endif %}
-    
+
 {% crispy form %}
 
 {% endblock %}

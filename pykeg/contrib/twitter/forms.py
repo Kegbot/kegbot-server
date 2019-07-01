@@ -20,7 +20,7 @@
 
 from django import forms
 
-WIDE_TEXT = forms.TextInput(attrs={'class': 'input-block-level'})
+WIDE_TEXT = forms.TextInput(attrs={'class': 'form-control'})
 
 
 class CredentialsForm(forms.Form):

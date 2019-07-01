@@ -8,142 +8,142 @@
 {% block kegadmin-main %}
 
 <div class="row">
-<div class="col-md-3">
+  <div class="col-md-3">
     {% with edit_user as user %}
-        {% mugshot_box user %}
+    {% mugshot_box user %}
     {% endwith %}
-</div>
-<div class="col-md-8">
+  </div>
+  <div class="col-md-8">
     <ul class="nav nav-tabs" id="userDetails">
-        <li class="active"><a href="#1" data-toggle="tab">Overview</a></li>
-        {% if tokens %}
-        <li><a href="#2" data-toggle="tab">Tokens</a></li>
-        {% endif %}
-        <li><a href="#3" data-toggle="tab">Access Control</a></li>
-        {% if user.is_superuser and not EMBEDDED %}
-        <li><a href="#4" data-toggle="tab">Update Profile</a></li>
-        {% endif %}
+      <li class="active"><a href="#1" data-toggle="tab">Overview</a></li>
+      {% if tokens %}
+      <li><a href="#2" data-toggle="tab">Tokens</a></li>
+      {% endif %}
+      <li><a href="#3" data-toggle="tab">Access Control</a></li>
+      {% if user.is_superuser and not EMBEDDED %}
+      <li><a href="#4" data-toggle="tab">Update Profile</a></li>
+      {% endif %}
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane active" id="1">
-            <table class="table table-bordered">
-            <tbody>
+      <div class="tab-pane active" id="1">
+        <table class="table table-bordered">
+          <tbody>
             <tr>
-                <th>Username</th>
-                <td>{{ edit_user.username }} <span class="muted">(#{{edit_user.id }})</span></td>
+              <th>Username</th>
+              <td>{{ edit_user.username }} <span class="text-muted">(#{{edit_user.id }})</span></td>
             </tr>
             <tr>
-                <th>Display Name</th>
-                <td>{{ edit_user.display_name }}</td>
+              <th>Display Name</th>
+              <td>{{ edit_user.display_name }}</td>
             </tr>
             <tr>
-                <th>E-Mail</th>
-                <td>
-                    {{ edit_user.email }}
-                </td>
+              <th>E-Mail</th>
+              <td>
+                {{ edit_user.email }}
+              </td>
             </tr>
             <tr>
-                <th>Date Joined</th>
-                <td>{{ edit_user.date_joined }}</td>
+              <th>Date Joined</th>
+              <td>{{ edit_user.date_joined }}</td>
             </tr>
             <tr>
-                <th>Last Login</th>
-                <td>{{ edit_user.last_login }}</td>
+              <th>Last Login</th>
+              <td>{{ edit_user.last_login }}</td>
             </tr>
             <tr>
-                <th>Access Level</th>
-                <td>
-                    {% with edit_user as user %}
-                        {% include 'kegadmin/includes/user-status-label.html' %}
-                    {% endwith %}
-                </td>
+              <th>Access Level</th>
+              <td>
+                {% with edit_user as user %}
+                {% include 'kegadmin/includes/user-status-label.html' %}
+                {% endwith %}
+              </td>
             </tr>
-            </table>
-        </div>
+        </table>
+      </div>
 
-        {% if tokens %}
-        <div class="tab-pane" id="2">
-            <table class="table table-bordered table-hover">
-            <tbody>
+      {% if tokens %}
+      <div class="tab-pane" id="2">
+        <table class="table table-bordered table-hover">
+          <tbody>
             <tr>
-                <th>Token</th>
-                <th>Status</th>
+              <th>Token</th>
+              <th>Status</th>
             </tr>
             {% for token in tokens %}
             <tr>
-                <td>
-                    <a href="{% url "kegadmin-edit-token" token.id %}">
-                    {% if token.auth_device == "core.rfid" %}
-                    RFID
-                    {% elif token.auth_device == "core.onewire" %}
-                    OneWire
-                    {% else %}
-                    {{ token.auth_device }}
-                    {% endif %}
-                    {{ token.token_value }}
-                    </a>
-                </td>
-                <td>{{ token.enabled }}</td>
-            {% endfor %}
-            </table>
-        </div>
-        {% endif %}
+              <td>
+                <a href="{% url "kegadmin-edit-token" token.id %}">
+                  {% if token.auth_device == "core.rfid" %}
+                  RFID
+                  {% elif token.auth_device == "core.onewire" %}
+                  OneWire
+                  {% else %}
+                  {{ token.auth_device }}
+                  {% endif %}
+                  {{ token.token_value }}
+                </a>
+              </td>
+              <td>{{ token.enabled }}</td>
+              {% endfor %}
+        </table>
+      </div>
+      {% endif %}
 
-        <div class="tab-pane" id="3">
-            <form action="" method="POST">{% csrf_token %}
+      <div class="tab-pane" id="3">
+        <form action="" method="POST">{% csrf_token %}
 
-                {% if edit_user.is_active %}
-                <button class="btn btn-lg btn-block disabled">Account Enabled</button>
-                {% if not edit_user.is_superuser %}
-                    <input type="submit" name="submit_disable"
-                        class="btn btn-lg btn-block btn-danger" value="Disable Account"/>
-                {% endif %}
-                {% else %}
-                <input type="submit" name="submit_enable"
-                    class="btn btn-lg btn-block btn-success" value="Enable Account"/>
-                <button class="btn btn-lg btn-block disabled">Account Disabled</button>
-                {% endif %}
+          {% if edit_user.is_active %}
+          <button class="btn btn-lg btn-block disabled">Account Enabled</button>
+          {% if not edit_user.is_superuser %}
+          <input type="submit" name="submit_disable" class="btn btn-lg btn-block btn-danger" value="Disable Account" />
+          {% endif %}
+          {% else %}
+          <input type="submit" name="submit_enable" class="btn btn-lg btn-block btn-success" value="Enable Account" />
+          <button class="btn btn-lg btn-block disabled">Account Disabled</button>
+          {% endif %}
 
-            </form>
-
-            {% if user.is_superuser %}
-            <form action="" method="POST">{% csrf_token %}
-
-                {% if edit_user.is_staff %}
-                <button class="btn btn-lg btn-block disabled">Staff Status Enabled</button>
-                {% if not edit_user.is_superuser %}
-                    <input type="submit" name="submit_remove_staff"
-                    class="btn btn-lg btn-block btn-danger" value="Disable Staff Status"/>
-                {% endif %}
-                {% else %}
-                <input type="submit" name="submit_add_staff"
-                    class="btn btn-lg btn-block btn-success" value="Enable Staff Status"/>
-                <button class="btn btn-lg btn-block disabled">Staff Status Disabled</button>
-                {% endif %}
-
-            </form>
-            {% endif %}
-        </div>
+        </form>
 
         {% if user.is_superuser %}
-        <div class="tab-pane" id="4">
-            <form enctype="multipart/form-data" action="" method="POST">{% csrf_token %}
-            {{ profile_form.as_table }}
-                <input type="submit" name="submit_update_profile"
-                    class="btn btn-large btn-block btn-success" value="Update Profile"/>
-            </form>
-        </div>
+        <form action="" method="POST">{% csrf_token %}
+
+          {% if edit_user.is_staff %}
+          <button class="btn btn-lg btn-block disabled">Staff Status Enabled</button>
+          {% if not edit_user.is_superuser %}
+          <input type="submit" name="submit_remove_staff" class="btn btn-lg btn-block btn-danger"
+            value="Disable Staff Status" />
+          {% endif %}
+          {% else %}
+          <input type="submit" name="submit_add_staff" class="btn btn-lg btn-block btn-success"
+            value="Enable Staff Status" />
+          <button class="btn btn-lg btn-block disabled">Staff Status Disabled</button>
+          {% endif %}
+
+        </form>
         {% endif %}
+      </div>
+
+      {% if user.is_superuser %}
+      <div class="tab-pane" id="4">
+        <form enctype="multipart/form-data" action="" method="POST">{% csrf_token %}
+          {{ profile_form.as_table }}
+          <input type="submit" name="submit_update_profile" class="btn btn-lg btn-block btn-success"
+            value="Update Profile" />
+        </form>
+      </div>
+      {% endif %}
     </div>
+  </div>
 </div>
 
 {% endblock %}
 
 {% block kb-extrajs %}
-<script type="text/javascript">
+<script>
 $(document).ready(function () {
-  $('#userDetails a:first').tab('show');
+    $('#userDetails a:first').tab('show');
 });
+
 </script>
 {% endblock %}

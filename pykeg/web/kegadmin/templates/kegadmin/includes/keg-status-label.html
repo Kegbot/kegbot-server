@@ -3,7 +3,7 @@
 {% elif keg.is_on_tap %}
     <span class="label label-info">Online</span>
 {% elif keg.is_finished %}
-    <span class="label label-important">Kicked</span>
+    <span class="label label-danger">Kicked</span>
 {% else %}
-    <span class="label label-important">Unknown</span>
+    <span class="label label-danger">Unknown</span>
 {% endif %}

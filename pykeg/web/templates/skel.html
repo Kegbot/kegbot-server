@@ -23,7 +23,7 @@
 {% endblock body %}
 
 {% if GOOGLE_ANALYTICS_ID %}
-<script type="text/javascript">
+<script>
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', '{{GOOGLE_ANALYTICS_ID}}']);
   _gaq.push(['_trackPageview']);
@@ -37,29 +37,29 @@
 {% endif %}
 
 {% block js %}
-<script type="text/javascript" src={% static "js/jquery-1.12.4.min.js" %}></script>
+<script src={% static "js/jquery-1.12.4.min.js" %}></script>
 
-<script type="text/javascript" src={% static "js/jquery.cookie-1.4.1.min.js" %}></script>
-<script type="text/javascript" src={% static "js/jquery.timeago.js" %}></script>
-<script type="text/javascript" src={% static "js/jquery.autounits.js" %}></script>
-<script type="text/javascript" src={% static "js/jquery.scrollstop.min.js" %}></script>
-<script type="text/javascript" src={% static "js/jquery.lazyload.min.js" %}></script>
+<script src={% static "js/jquery.cookie-1.4.1.min.js" %}></script>
+<script src={% static "js/jquery.timeago.js" %}></script>
+<script src={% static "js/jquery.autounits.js" %}></script>
+<script src={% static "js/jquery.scrollstop.min.js" %}></script>
+<script src={% static "js/jquery.lazyload.min.js" %}></script>
 
-<script type="text/javascript" src={% static "bootstrap/js/bootstrap.min.js" %}></script>
-<script type="text/javascript" src={% static "js/handlebars.js" %}></script>
-<script type="text/javascript" src={% static "js/typeahead.bundle.min.js" %}></script>
-<script type="text/javascript" src={% static "highcharts/js/highcharts.js" %}></script>
-<script type="text/javascript" src={% static "fancybox/jquery.fancybox.pack.js" %}></script>
+<script src={% static "bootstrap/js/bootstrap.min.js" %}></script>
+<script src={% static "js/handlebars.js" %}></script>
+<script src={% static "js/typeahead.bundle.min.js" %}></script>
+<script src={% static "highcharts/js/highcharts.js" %}></script>
+<script src={% static "fancybox/jquery.fancybox.pack.js" %}></script>
 
 {% if user.is_staff %}
 {% include 'kegadmin/includes/extrajs.html' %}
-<script type="text/javascript" src={% static "js/kb-autocomplete.js" %}></script>
+<script src={% static "js/kb-autocomplete.js" %}></script>
 {% endif %}
 {% endblock js %}
 
 {% block kb-extrajs %}{%endblock%}
 
-<script type="text/javascript">
+<script>
   $(document).ready(function() {
       $("span.hmeasure").autounits({ metric: {% if metric_volumes %}true{% else %}false{% endif %} })
       $("abbr.timeago").timeago();
@@ -89,7 +89,7 @@
       var valueId = inputId + '-value';
       var unitsId = inputId + '-units';
 
-      var newDiv = '<div class="control-group">';
+      var newDiv = '<div class="form-group">';
       newDiv += '<input type="hidden" id="' + inputId + '" name="' + this.name + '" value="' + $(this).val() + '">';
       newDiv += '<input class="numberinput" type="number" step="0.01" id="';
       newDiv += valueId;
@@ -154,3 +154,4 @@
   });
 </script>
 </body>
+</html>

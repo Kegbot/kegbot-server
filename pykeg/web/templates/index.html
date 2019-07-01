@@ -22,18 +22,18 @@
 {% endblock messages %}
 
 {% if not current_session and not most_recent_session %}
-<h3 class="muted">Fresh Kegbot</h3>
+<h3 class="text-muted">Fresh Kegbot</h3>
 <p>This will be more interesting once some activity is recorded.</p>
 
 {% else %}
 
 {% if current_session %}
-  <h3 class="muted">
+  <h3 class="text-muted">
     Now Drinking
     <small>(<a href="{{ current_session.get_absolute_url}}">details</a>)</small>
   </h3>
 {% else %}
-  <h3 class="muted">
+  <h3 class="text-muted">
     Recent Activity
     <small>(last session ended <a href="{{ most_recent_session.get_absolute_url}}">
       {% timeago most_recent_session.end_time %}</a>)</small>
@@ -53,7 +53,7 @@
 
 {% block col-2 %}
 
-<h3 class="muted">Currently On Tap</h3>
+<h3 class="text-muted">Currently On Tap</h3>
 
 {% if taps %}
 
@@ -61,12 +61,12 @@
 {% include 'kegweb/includes/tap_snapshot.html' %}
 {% endfor %}
 
-<p class="muted">
+<p class="text-muted">
   See all taps in <a href="{% url 'kb-fullscreen' %}">fullscreen mode</a>.
 </p>
 
 {% else %}
-<p class="muted">
+<p class="text-muted">
   No taps are configured.
   {% if user.is_staff %}
   (Want to <a href="{% url "kegadmin-taps" %}">manage taps</a>?)

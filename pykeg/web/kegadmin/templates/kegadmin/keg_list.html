@@ -12,25 +12,23 @@
 
 {% for keg in kegs %}
 
-    {% if forloop.counter0|divisibleby:6 %}
-    <div class="row">
-    {% endif %}
+{% if forloop.counter0|divisibleby:6 %}
+<div class="row">
+  {% endif %}
 
-        <div class="col-md-2 clickable" data-href="{% url 'kegadmin-edit-keg' keg.id %}"
-                style="padding:8px;">
-        <img src="{{ keg.get_illustration_thumb }}" alt="" class="img-responsive keg-popover"
-            data-title="<b>Keg {{keg.id}}</b> <span class='badge'>{{ keg.percent_full|floatformat:0 }}%</span>" data-trigger="hover" data-placement="bottom"
-            data-html="true"
-            data-content="
+  <div class="col-md-2 clickable" data-href="{% url 'kegadmin-edit-keg' keg.id %}" style="padding:8px;">
+    <img src="{{ keg.get_illustration_thumb }}" alt="" class="img-responsive keg-popover"
+      data-title="<b>Keg {{keg.id}}</b> <span class='badge'>{{ keg.percent_full|floatformat:0 }}%</span>"
+      data-trigger="hover" data-placement="bottom" data-html="true" data-content="
                 {{ keg.type.name }}<br/>
-                <span class='muted'>{{ keg.type.producer.name }}</span><br/>
+                <span class='text-muted'>{{ keg.type.producer.name }}</span><br/>
                 <b>{% if keg.current_tap %}Online, {{ keg.current_tap.name }}{% else %}Offline{% endif %}</b>">
-        <h5 class="text-center">{{ keg.type.name }}</h5>
-        </div>
+    <h5 class="text-center">{{ keg.type.name }}</h5>
+  </div>
 
-    {% if forloop.counter|divisibleby:6 or forloop.last %}
-    </div> <!-- /row -->
-    {% endif %}
+  {% if forloop.counter|divisibleby:6 or forloop.last %}
+</div> <!-- /row -->
+{% endif %}
 
 {% endfor %}
 

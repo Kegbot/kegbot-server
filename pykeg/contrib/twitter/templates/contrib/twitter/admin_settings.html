@@ -19,7 +19,7 @@
    {% csrf_token %}
    {{credentials_form|crispy }}
     <button type="submit" class="btn btn-success" name="submit-keys">
-      <i class="icon-edit icon-white"></i> Update Keys</button>
+      <i class="glyphicon glyphicon-edit"></i> Update Keys</button>
     </button>
 </form>
 </div>
@@ -36,10 +36,10 @@
 <form method="post" action="{% url "plugin-twitter-site_twitter_redirect" %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-info" name="submit-link">
-      <i class="icon-repeat icon-white"></i> Re-link Account</button>
+      <i class="glyphicon glyphicon-repeat"></i> Re-link Account</button>
     </button>
     <button type="submit" class="btn btn-danger" name="submit-remove">
-      <i class="icon-remove icon-white"></i> Remove Account</button>
+      <i class="glyphicon glyphicon-remove"></i> Remove Account</button>
     </button>
 </form>
 </p>
@@ -49,12 +49,12 @@
 <h4>Link Twitter Account</h4>
 <div class="well">
     <p class="lead">
-      Link a Twitter account to this Kegbot for system-wide use.  
+      Link a Twitter account to this Kegbot for system-wide use.
     <p>
     <form method="post" action="{% url "plugin-twitter-site_twitter_redirect" %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-info" name="submit">
-          <i class="icon-share-alt icon-white"></i> Link Account</button>
+          <i class="glyphicon glyphicon-share-alt"></i> Link Account</button>
         </button>
     </form>
 </p>
@@ -64,13 +64,13 @@
 <h4>Settings</h4>
 <div class="well">
 <p class="lead">
-  Site-wide settings control how Kegbot will use the system account. 
+  Site-wide settings control how Kegbot will use the system account.
 </p>
 <form method="post" action="">
    {% csrf_token %}
    {{ settings_form|crispy }}
     <button type="submit" class="btn btn-success" name="submit-settings">
-      <i class="icon-edit icon-white"></i> Update Settings</button>
+      <i class="glyphicon glyphicon-edit"></i> Update Settings</button>
     </button>
 </form>
 </div>
@@ -88,7 +88,7 @@
 
 
 {% else %}
-<p class="muted">
+<p class="text-muted">
   Other Twitter settings can be changed once API keys are set.
 </p>
 {% endif %}

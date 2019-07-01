@@ -17,7 +17,7 @@
 <form action="regenerate-api-key/" method="POST">
 {% csrf_token %}
 {{ apikey_form.as_p }}
-<button type="submit" class="btn btn-primary"><i class="icon-refresh icon-white"></i> Regenerate API Key</button>
+<button type="submit" class="btn btn-primary"><i class="glyphicon glyphicon-refresh"></i> Regenerate API Key</button>
 </form>
 
 {% else %}

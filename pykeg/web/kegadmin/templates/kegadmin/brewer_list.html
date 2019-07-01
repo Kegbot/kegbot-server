@@ -9,33 +9,34 @@
 {% block kegadmin-main %}
 
 <table class="table table-hover table-bordered">
-<thead>
+  <thead>
     <tr>
-        <th>Name</th>
-        <th>Country</th>
-        <th>State</th>
-        <th>City</th>
+      <th>Name</th>
+      <th>Country</th>
+      <th>State</th>
+      <th>City</th>
     </tr>
-</thead>
-<tbody>
-{% for brewer in brewers %}
-<tr class="clickable" data-href="{% url 'kegadmin-edit-beverage-producer' brewer.id %}">
-    <td>
-        <div class="form-horizontal">
-            <a class="btn btn-sm btn-primary" href="{% url 'kegadmin-edit-beverage-producer' brewer.id %}">Edit</a>&nbsp;&nbsp;
-            <span>{{ brewer.name }}</span>
-    </td>
-    <td>{{ brewer.country }}</td>
-    <td>{{ brewer.origin_state }}</td>
-    <td>{{ brewer.origin_city }}</td>
-</tr>
-{% endfor %}
-<tr class="info">
-    <td colspan="4" style="text-align:right;">
-        <a class ="btn btn-sm btn-success pull-right" href="{% url 'kegadmin-add-beverage-producer' %}"><i class="glyphicon glyphicon-plus"></i> Add New Brewer</a>
-    </td>
-</tr>
-</tbody>
+  </thead>
+  <tbody>
+    {% for brewer in brewers %}
+    <tr class="clickable" data-href="{% url 'kegadmin-edit-beverage-producer' brewer.id %}">
+      <td>
+        <a class="btn btn-sm btn-primary"
+          href="{% url 'kegadmin-edit-beverage-producer' brewer.id %}">Edit</a>&nbsp;&nbsp;
+        <span>{{ brewer.name }}</span>
+      </td>
+      <td>{{ brewer.country }}</td>
+      <td>{{ brewer.origin_state }}</td>
+      <td>{{ brewer.origin_city }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="info">
+      <td colspan="4" style="text-align:right;">
+        <a class="btn btn-sm btn-success pull-right" href="{% url 'kegadmin-add-beverage-producer' %}"><i
+            class="glyphicon glyphicon-plus"></i> Add New Brewer</a>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 {% bootstrap_paginate brewers %}

@@ -31,9 +31,9 @@
           </h2>
 
           {% if keg.current_tap %}
-          {% progress_bar keg.percent_full %} 
+          {% progress_bar keg.percent_full %}
           {% endif %}
-          
+
           {% include "kegweb/basic-badges.html" %}
 
           {% if keg.description %}
@@ -53,7 +53,7 @@
                 {% if keg.current_tap %}
                 Keg is <b>online</b>, and is {{ keg.keg_age.days }}
                 day{{keg.keg_age.days|pluralize}} old.
-                <span class="muted">
+                <span class="text-muted">
                 {% if keg.is_empty %}
                   (<i>empty</i>)
                 {% else %}
@@ -93,7 +93,7 @@
             <tr>
               <th>Temperature</th>
               <td>
-                {{ tap.Temperature.TempC|floatformat:1}}&deg;C / 
+                {{ tap.Temperature.TempC|floatformat:1}}&deg;C /
                 {{ tap.Temperature.TempF|floatformat:1}}&deg;F<br/>
                 {% chart temp_sensor tap.temperature_sensor 340 60 %}
               </td>
@@ -132,7 +132,7 @@
 {% endblock %}
 
 {% block kb-extrajs %}
-<script type="text/javascript">
+<script>
 $(document).ready(function () {
   $('#kegDetails a:first').tab('show');
 });

@@ -124,7 +124,7 @@
     <td>
       {% volume drink.volume_ml %}
       {% if drink.duration %}
-      <span class="muted">
+      <span class="text-muted">
        (took {{drink.duration}} second{{drink.duration|pluralize}} to pour)
       </span>
       {% endif %}
@@ -152,7 +152,7 @@
     <th>Session</th>
     <td>
        <a href="{{ drink.session.get_absolute_url }}">{{ drink.session.GetTitle }}</a>
-       <span class="muted">({{ drink.session.summarize_drinkers|safe }})</span>
+       <span class="text-muted">({{ drink.session.summarize_drinkers|safe }})</span>
     </td>
   </tr>
 
@@ -174,12 +174,12 @@
           <input class="form-control" name="username" type="text" placeholder="username" />
         </div>
         <button class="btn" type="submit" name="submit_reassign">
-          <i class="icon-user"></i> {% if not drink.is_guest_pour %}Reassign{% else %}Assign{% endif %}
+          <i class="glyphicon glyphicon-user"></i> {% if not drink.is_guest_pour %}Reassign{% else %}Assign{% endif %}
         </button>
         <a href="#spillModal" role="button" class="btn btn-warning" data-toggle="modal">
-          <i class="glyphicon glyphicon-minus icon-white"></i> Spill</a>
+          <i class="glyphicon glyphicon-minus"></i> Spill</a>
         <a href="#cancelModal" role="button" class="btn btn-danger" data-toggle="modal">
-          <i class="glyphicon glyphicon-trash icon-white"></i> Delete</a>
+          <i class="glyphicon glyphicon-trash"></i> Delete</a>
       </form>
 {% endif %}
 </div>

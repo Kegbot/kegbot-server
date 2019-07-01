@@ -69,6 +69,7 @@ class check_pidfile(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         os.unlink(self.pid_file)
+        sys.exit(0)
 
 
 class RunnerCommand(BaseCommand):
@@ -99,7 +100,6 @@ class RunnerCommand(BaseCommand):
 
             def exit_fn(signum, frame):
                 r.abort()
-                sys.exit(1)
 
             signal.signal(signal.SIGTERM, exit_fn)
             signal.signal(signal.SIGINT, exit_fn)

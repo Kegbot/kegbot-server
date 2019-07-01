@@ -31,10 +31,13 @@ class Command(RunnerCommand):
     def get_commands(self, options):
         ret = []
         logs_dir = options.get('logs_dir')
+        pidfile_dir = options.get('pidfile_dir')
 
         workers_command = 'kegbot run_workers'
         if logs_dir:
             workers_command += ' --logs_dir={}'.format(logs_dir)
+        if pidfile_dir and pidfile_dir != '/tmp':
+            workers_command += ' --pidfile_dir={}'.format(pidfile_dir)
         ret.append(('workers', workers_command))
 
         extra_options = options.get('gunicorn_options', '')

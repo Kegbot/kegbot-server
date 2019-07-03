@@ -507,12 +507,14 @@ class SetupApp(app.App):
         if FLAGS.interactive:
             try:
                 self.run_command('kegbot collectstatic --noinput -v 0')
+                self.run_command('kegbot compilestatic --noinput -v 0')
             except FatalError as e:
                 print 'WARNING: Collecting static files failed: %s' % e
                 print ''
                 print 'Try again with "kegbot collectstatic"'
         else:
             self.run_command('kegbot collectstatic --noinput')
+            self.run_command('kegbot compilestatic --noinput')
 
         print ''
         print 'Done!'

@@ -24,6 +24,7 @@ from pykeg.core.util import get_version_object
 from django.core.management.base import BaseCommand
 
 from django.contrib.staticfiles.management.commands import collectstatic
+from static_precompiler.management.commands import compilestatic
 from django.core.management.commands import migrate
 from pykeg.core.management.commands import regen_stats
 
@@ -95,6 +96,7 @@ class Command(BaseCommand):
 
         if not options.get('skip_static'):
             run(collectstatic.Command(), args=['--noinput'])
+            run(compilestatic.Command(), args=['--delete-stale-files'])
 
         site = models.KegbotSite.get()
         site.server_version = str(app_version)

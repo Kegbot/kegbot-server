@@ -33,7 +33,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.messages',
     'django.contrib.sessions',
-    'django.contrib.staticfiles',
+    'pykeg.util.staticfiles.MyStaticFilesConfig',
 
     'crispy_forms',
     'django_nose',

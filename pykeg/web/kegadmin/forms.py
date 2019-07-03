@@ -797,7 +797,7 @@ class ControllerForm(forms.ModelForm):
     helper.label_class = 'col-md-2'
     helper.field_class = 'col-md-6'
     helper.layout = Layout(
-        'name'
+        'name',
         'model_name',
         'serial_number',
         FormActions(

@@ -12,6 +12,7 @@
   <li><a href="#1" data-toggle="tab">About</a></li>
   <li><a href="#2" data-toggle="tab">Flow Meters</a></li>
   <li><a href="#3" data-toggle="tab">Flow Toggles</a></li>
+  <li><a href="#4" data-toggle="tab">Controller Settings</a></li>
   <li><a href="#deleteModal" data-toggle="modal">Delete Controller</a></li>
 </ul>
 
@@ -19,19 +20,22 @@
   <div class="col-md-12">
     <div class="tab-content">
       <div class="tab-pane" id="1">
-        {% if controller.serial_number %}
         <table class="table table-bordered">
           <tbody>
+            <tr>
+              <td>Name</td>
+              <td>{{ controller.name }}</td>
+            </tr>
+            <tr>
+              <td>Model Name</td>
+              <td>{{ controller.model_name }}</td>
+            </tr>
             <tr>
               <td>Serial Number</td>
               <td>{{ controller.serial_number }}</td>
             </tr>
           </tbody>
         </table>
-        {% else %}
-        <div class="alert alert-info">This controller does not have a serial number associated</div>
-        {% endif %}
-
       </div>
 
       <div class="tab-pane" id="2">
@@ -95,6 +99,10 @@
           </tbody>
         </table>
       </div>
+
+      <div class="tab-pane" id="4">
+          {% crispy controller_settings_form %}
+        </div>
 
     </div>
   </div>

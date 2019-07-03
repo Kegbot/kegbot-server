@@ -1,6 +1,6 @@
 /*
  * typehead.js-bootstrap3.less
- * @version 0.2.2
+ * @version 0.2.3
  * https://github.com/hyspace/typeahead.js-bootstrap3.less
  *
  * Licensed under the MIT license:
@@ -37,9 +37,11 @@
   //border
   .input-group .twitter-typeahead:first-child &{
     .border-left-radius(@border-radius-base);
+    width: 100%;
   }
   .input-group .twitter-typeahead:last-child &{
     .border-right-radius(@border-radius-base);
+    width: 100%;
   }
 
   //sizing - small:size and border
@@ -83,6 +85,10 @@
     //overwrite `display:inline-block` style
     display: table-cell!important;
   }
+
+  .tt-input.tt-nohint + pre {
+    display: none;
+  }
 }
 
 //particular style for each other
@@ -103,7 +109,7 @@
 }
 
 //dropdown styles
-.tt-dropdown-menu {
+.tt-dropdown-menu, .tt-menu {
   //dropdown menu
   position: absolute;
   top: 100%;
@@ -121,21 +127,20 @@
   border-radius: @border-radius-base;
   .box-shadow(0 6px 12px rgba(0,0,0,.175));
   background-clip: padding-box;
-  *border-right-width: 2px;
-  *border-bottom-width: 2px;
 
   .tt-suggestion {
     //item
     display: block;
-    padding: 3px 20px;
+    padding: @padding-small-vertical @line-height-computed;
     clear: both;
     font-weight: normal;
     line-height: @line-height-base;
     color: @dropdown-link-color;
-    white-space: nowrap;
+    word-wrap: break-word;
 
-    &.tt-cursor {
+    &.tt-cursor, &:hover {
       //item selected
+      cursor: pointer;
       text-decoration: none;
       outline: 0;
       background-color: @dropdown-link-hover-bg;
@@ -148,5 +153,27 @@
     p {
       margin: 0;
     }
+  }
+
+  .tt-title {
+    padding: 0 1em;
+
+    & > .heading {
+      border-bottom: 1px solid #DDD;
+      margin-top: .5em;
+      padding-bottom: .2em;
+    }
+  }
+}
+
+.twitter-typeahead-bordered {
+  .tt-suggestion {
+    border-bottom: 1px solid @gray-lighter;
+    padding-top: @padding-base-vertical;
+    padding-bottom: @padding-base-vertical;
+  }
+
+  .tt-suggestion:last-child {
+    border-bottom: 0 none;
   }
 }

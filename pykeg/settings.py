@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'imagekit',
     'gunicorn',
     'channels',
+    'static_precompiler',
 )
 
 LOGIN_REDIRECT_URL = "/account/"
@@ -54,9 +55,16 @@ AUTH_USER_MODEL = 'core.User'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'static_precompiler.finders.StaticPrecompilerFinder',
 )
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+STATIC_PRECOMPILER_COMPILERS = (
+    ('static_precompiler.compilers.LESS', {
+        "sourcemap_enabled": 'DEBUG',
+    }),
+)
 
 # Default session serialization.
 # Note: Twitter plugin requires Pickle (not JSON serializable).

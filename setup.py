@@ -23,6 +23,7 @@ DEPENDENCIES = [
     'django-nose',
     'django-redis',
     'django-registration',
+    'django-static-precompiler',
     'Django < 2',
     'flake8',
     'foursquare',

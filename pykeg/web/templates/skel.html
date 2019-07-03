@@ -1,5 +1,5 @@
 {# Bare-bones skeletal template. #}
-{% load static humanize kegweblib %}
+{% load compile_static static humanize kegweblib %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,9 +10,9 @@
 <title>{% block title %}Kegbot{% endblock %}</title>
 
 {% block css %}
-<link rel="icon" type="image/png" href={% static "images/kegbot-icon-72x72.png" %} />
-<link rel="stylesheet" type="text/css" href={% static "css/kegweb.css" %} media="screen"/>
-<link rel="stylesheet" type="text/css" href={% static "fancybox/jquery.fancybox.css" %} media="screen" />
+<link rel="icon" type="image/png" href="{% static "images/kegbot-icon-72x72.png" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "css/kegweb.less"|compile %}" media="screen"/>
+<link rel="stylesheet" type="text/css" href="{% static "fancybox/jquery.fancybox.css" %}" media="screen" />
 {% endblock %}
 
 {% block kb-extracss %}{% endblock %}

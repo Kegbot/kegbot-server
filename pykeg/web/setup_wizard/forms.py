@@ -41,7 +41,7 @@ class MiniSiteSettingsForm(forms.ModelForm):
         }
 
     helper = FormHelper()
-    helper.form_class = 'setup-form col-md-8 col-md-offset-2'
+    helper.form_class = 'form-horizontal setup-form col-md-10 col-md-offset-2'
     helper.layout = Layout(
         'title',
         'privacy',
@@ -71,7 +71,7 @@ class AdminUserForm(forms.Form):
         help_text='In case you lose your password.')
 
     helper = FormHelper()
-    helper.form_class = 'setup-form col-md-8 col-md-offset-2'
+    helper.form_class = 'form-horizontal setup-form col-md-10 col-md-offset-2'
     helper.label_class = 'col-sm-2'
     helper.field_class = 'col-sm-6'
     helper.layout = Layout(

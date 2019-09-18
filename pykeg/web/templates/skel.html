@@ -63,7 +63,7 @@
   $(document).ready(function() {
       $("span.hmeasure").autounits({ metric: {% if metric_volumes %}true{% else %}false{% endif %} })
       $("abbr.timeago").timeago();
-      $(".alert").alert()
+      $(".alert").alert();
       $(".clickable").each(function() {
         var href = $(this).attr("data-href");
         $(this).click(function(e) {

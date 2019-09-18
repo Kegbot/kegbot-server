@@ -4,133 +4,69 @@
 {% block title %}{{ kbsite.title }} (Fullscreen Mode){% endblock %}
 
 {% block kb-extracss %}
-<link rel="stylesheet" type="text/css" href={% static "lib/slick/slick.css" %} media="screen" />
-
 <style>
-
 body {
-	background-color: #000;
-	background-image: url({% static "images/chalkboard-bg.jpg" %}) center center no-repeat;
+  background-color: #000;
+  background-image: url({% static "images/chalkboard-bg.jpg" %});
   background-size: cover;
   color: #eee;
 }
-
-.establishment-logo {
-	position:fixed;
-	bottom:0;
-	left:0;
-	margin-left:15px;
-	height:7%;
-	min-height:7%;
-	max-height:7%;
-	width:100%;
-	color:#ffffff;
-	font-size:48px;
-}
-
-.kegbot-logo {
-	position:fixed;
-	bottom:0;
-	right:0;
-	height:7%;
-	min-height:7%;
-	max-height:7%;
-	width:100%;
-	margin-right:15px;
-	margin-bottom:15px;
-}
-
-img.taplist-foot-logos {
-	height:100%;
-	min-height:100%;
-	max-height:100%;
-}
-
-
 </style>
 {% endblock %}
 
 {% block body %}
-
 <div class="main">
-<div class="wrapper">
-
-  <div class="container">
-
-    <div class="row">
-      <div class="col-md-4 col-md-offset-4">
-        <img class="img-responsive" src={% static "images/whats-on-tap.png" %}>
+  <div class="wrapper">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+          <img class="img-responsive" src={% static "images/whats-on-tap.png" %}>
+        </div>
       </div>
-    </div>
+      <div class="tap-carousel">
+        {% for page in pages %}
+          <div class="page">
+            {% for tap in page %}
+              {% with tap.current_keg as keg %}
+                {% with keg.type as beverage %}
+                  <div class="row">
+                    <div class="col-md-2">
+                      <img src="{{ keg.get_illustration }}" class="img-responsive" style="padding-bottom: 20px;">
+                    </div>
 
-    <div class="tap-carousel">
-      {% for page in pages %}
-        <div>
+                    <div class="col-md-2">
+                      {% if keg.type.picture %}
+                        <img class="tap-snapshot-image img-responsive" src="{{ keg.type.picture.resized.url }}">
+                      {% else %}
+                        <img class="tap-snapshot-image img-responsive" src="{% static "images/kegbot-unknown-square.png" %}">
+                      {% endif %}
+                        <span class="label label-info">{% volume keg.remaining_volume_ml %} remaining</span>
+                    </div>
 
-          {% for tap in page %}
-            {% with tap.current_keg as keg %}
-            {% with keg.type as beverage %}
-
-            <div class="row">
-
-            <div class="col-md-2">
-              <img src="{{ keg.get_illustration }}" class="img-responsive" style="padding-bottom: 20px;">
-            </div>
-
-            <div class="col-md-2">
-              {% if keg.type.picture %}
-                <img class="tap-snapshot-image img-responsive" src="{{ keg.type.picture.resized.url }}">
-              {% else %}
-                <img class="tap-snapshot-image img-responsive" src={% static "images/kegbot-unknown-square.png" %}>
-              {% endif %}
-                <span class="label label-info">{% volume keg.remaining_volume_ml %} remaining</span>
-            </div>
-
-            <div class="col-md-8">
-              <h2>
-                {{ beverage.name }} <small>by {{ beverage.producer }}</small>
-              </h2>
-              {% if beverage.description %}
-                <p>
-                  <em>{{ beverage.description }}</em>
-                </p>
-              {% endif %}
-            </div>
-            </div>
-
-            {% endwith %}
-            {% endwith %}
-        {% endfor %} <!-- /tap in row -->
-
-      </div> <!-- /page -->
-
-    {% endfor %}
-
-    </div> <!-- /tap-carousel -->
-  </div> <!-- /container-fluid -->
-
-</div> <!-- /wrapper -->
+                    <div class="col-md-8">
+                      <h2>
+                        {{ beverage.name }} <small>by {{ beverage.producer }}</small>
+                      </h2>
+                      {% if beverage.description %}
+                        <p>
+                          <em>{{ beverage.description }}</em>
+                        </p>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endwith %}
+              {% endwith %}
+            {% endfor %} <!-- /tap in page -->
+          </div> <!-- /page -->
+        {% endfor %}
+      </div> <!-- /tap-carousel -->
+    </div> <!-- /container-fluid -->
+  </div> <!-- /wrapper -->
 </div> <!-- /main -->
-
 {% endblock %}
 
 {% block kb-extrajs %}
-<script src={% static "lib/slick/slick.min.js" %}></script>
-
 <script>
-
-  // Activate carousel.
-  $(document).ready(function(){
-      $('.tap-carousel').slick({
-          autoplay: true,
-          autoplaySpeed: 10000,
-          arrows: false,
-          dots: true,
-          infinite: true,
-          pauseOnHover: false,
-      });
-  });
-
   // Auto-reload when something happens.
   var lastEvent = null;
   var queryInterval = 10000;
@@ -157,6 +93,5 @@ img.taplist-foot-logos {
   $(document).ready(function(){
     fetchEvents();
   });
-
 </script>
 {% endblock %}

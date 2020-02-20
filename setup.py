@@ -33,7 +33,7 @@ DEPENDENCIES = [
     'kegbot-api',
     'kegbot-pyutils',
     'mock',
-    'MySQL-python',
+    'mysqlclient',
     'pillow',
     'protobuf',
     'python-gflags',

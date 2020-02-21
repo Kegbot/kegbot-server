@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ce1d51bcfcea448dee3bc04527fff104a177d4b479dd4ace75b03f1b48dd8955"
+            "sha256": "c8016d65740501ddd6f5a35b90475058540a8731f13def37477fec9de57d29ff"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -652,5 +652,10 @@
             "version": "==1.10.10"
         }
     },
-    "develop": {}
+    "develop": {
+        "kegbot": {
+            "editable": true,
+            "path": "."
+        }
+    }
 }

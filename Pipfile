@@ -4,6 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+kegbot = {editable = true,path = "."}
 
 [packages]
 amqp = "==2.1.4"
@@ -67,6 +68,9 @@ Pillow = "==4.1.1"
 PyYAML = "==3.12"
 mysqlclient = "*"
 sphinx = "*"
+
+[scripts]
+kegbot = "python bin/kegbot"
 
 [requires]
 python_version = "2.7"

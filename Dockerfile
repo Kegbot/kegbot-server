@@ -32,7 +32,7 @@ RUN pipenv run kegbot collectstatic -v 0 --noinput
 ENV SHELL=/bin/sh
 ENV KEGBOT_DATA_DIR=/kegbot-data
 ENV KEGBOT_IN_DOCKER=True
-ENV KEGBOT_DEBUG=True
+ENV KEGBOT_ENV=debug
 
 VOLUME  ["/kegbot-data"]
 

@@ -68,6 +68,8 @@ Pillow = "==4.1.1"
 PyYAML = "==3.12"
 mysqlclient = "*"
 sphinx = "*"
+pytest = "*"
+pytest-django = "*"
 
 [scripts]
 kegbot = "python bin/kegbot"

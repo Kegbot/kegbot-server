@@ -6,7 +6,7 @@
 
 from __future__ import absolute_import
 
-from pykeg.config import all_values
+from pykeg.config import all_values, ENV_PRODUCTION, ENV_TEST
 import dj_database_url
 import os
 import logging
@@ -16,13 +16,17 @@ logging.setLoggerClass(RedisLogger)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 KEGBOT = all_values()
-DEBUG = KEGBOT['KEGBOT_DEBUG']
+KEGBOT_ENV = KEGBOT['KEGBOT_ENV']
+DEBUG = KEGBOT_ENV != ENV_PRODUCTION
+
 SECRET_KEY = KEGBOT['KEGBOT_SECRET_KEY']
 DATABASES = {
     'default': dj_database_url.parse(KEGBOT['KEGBOT_DATABASE_URL']),
 }
 
 INSTALLED_APPS = (
+    'whitenoise.runserver_nostatic',
+
     'pykeg.core',
     'pykeg.web',
     'pykeg.web.api',
@@ -40,11 +44,14 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'crispy_forms',
-    'django_nose',
     'bootstrap_pagination',
     'imagekit',
     'gunicorn',
 )
+
+if KEGBOT_ENV == ENV_TEST:
+    # Run all celery tasks synchronously.
+    CELERY_ALWAYS_EAGER = True
 
 LOGIN_REDIRECT_URL = '/account/'
 
@@ -59,7 +66,13 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if KEGBOT_ENV == ENV_TEST:
+    # During tests, whitenoise's manifest will not be available and
+    # errors will be thrown while trying to access static files.
+    # Use the default static backend to work around this.
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default session serialization.
 # Note: Twitter plugin requires Pickle (not JSON serializable).
@@ -267,12 +280,6 @@ EMAIL_SUBJECT_PREFIX = ''
 
 # Imagekit
 IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = 'imagekit.imagecache.NonValidatingImageCacheBackend'
-
-TEST_RUNNER = 'pykeg.core.testutils.KegbotTestSuiteRunner'
-NOSE_ARGS = [
-    '--exe',
-    '--rednose',
-]
 
 # Storage
 DEFAULT_FILE_STORAGE = 'pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage'

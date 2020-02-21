@@ -25,6 +25,15 @@ Whenever you want to run code or tests, step into a development shell::
   $ ./bin/kegbot version
   1.3.0
 
+Running tests
+-------------
+
+We use `pytest` to run tests. Run all tests this way::
+
+  (kegbot-server)
+  $ pytest
+
+
 Building docs
 -------------
 

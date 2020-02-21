@@ -38,7 +38,6 @@ the kegbot directory, with the following contents::
  [config]
 
  KEGBOT_SETUP_ENABLED = True
- KEGBOT_DEBUG = True
  KEGBOT_SECRET_KEY = some-random-value
 
 In the example above, replace ``some-random-value`` with a random / unguessable

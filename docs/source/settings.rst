@@ -12,16 +12,15 @@ Available settings
 
 These values can be set in the shell environment of the server program.
 
+.. data:: KEGBOT_ENV
+
+  Controls debug mode and other settings. Should be ``production`` in production;
+  default ``debug``.
+
 .. data:: KEGBOT_DATA_DIR
 
   Filesystem path where Kegbot-specific data is stored and managed.
   Default: ``/kegbot-data``.
-
-.. data:: KEGBOT_DEBUG
-
-  Flag to enable debug mode. Debug mode should not be enabled in production
-  environments, but may be useful for development or debugging. Set to
-  ``true`` to enable debug mode, ``false`` to disable.
 
 .. data:: KEGBOT_DATABASE_URL
 
@@ -67,7 +66,6 @@ which can never be read from this file).
 Here is an example config file::
 
   [config]
-  KEGBOT_DEBUG = true
   KEGBOT_SECRET_KEY = my-1337-s3kr3t
   KEGBOT_DATABASE_URL = mysql://my_user@localhost:password/kegbot_test
   KEGBOT_REDIS_URL = redis://localhost/0

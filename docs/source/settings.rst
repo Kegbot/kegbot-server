@@ -1,66 +1,79 @@
 .. _settings:
 
-Appendix: Extra Settings
-========================
+Settings
+========
 
-This section lists settings that may be added to ``local_settings.py``.
-Most of these options serve uncommon needs.
+Most Kegbot features and behaviors are controlled within the web application
+by using your admin account. However, a handful of settings are managed outside
+of the web application, and are described here.
 
-In addition to settings described here, any of
-`Django's built-in settings <https://docs.djangoproject.com/en/dev/topics/settings/>`_
-may be listed in ``local_settings.py``.
+Available settings
+------------------
 
-.. data:: ALLOWED_HOSTS
-    :noindex:
+These values can be set in the shell environment of the server program.
 
-    Lists allowed hostnames that the server will respond to.  See the
-    `Django documentation for ALLOWED_HOSTS <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ALLOWED_HOSTS>`_
-    for more information.
+.. data:: KEGBOT_DATA_DIR
 
-    Default is ``['*']`` (any hostname accepted).
+  Filesystem path where Kegbot-specific data is stored and managed.
+  Default: ``/kegbot-data``.
 
-    ::
+.. data:: KEGBOT_DEBUG
 
-        ALLOWED_HOSTS = ['kegbot.example.com']
+  Flag to enable debug mode. Debug mode should not be enabled in production
+  environments, but may be useful for development or debugging. Set to
+  ``true`` to enable debug mode, ``false`` to disable.
+
+.. data:: KEGBOT_DATABASE_URL
+
+  Credentials to the Kegbot database. Should be a value of the form
+  ``mysql://USER:PASSWORD@HOST:PORT/NAME`` or ``postgres://USER:PASSWORD@HOST:PORT/NAME``.
+  ``PORT`` and ``PASSWORD`` are optional.
+
+  **Example:** ``mysql://kegbot@localhost/kegbot``
+
+.. data:: KEGBOT_REDIS_URL
+
+  URL to the Kegbot Redis instance, in the format ``redis://:PASSWORD@HOST:PORT/DATABASE``. ``PASSWORD`` and ``PORT`` are optional.
+
+  **Example:** ``redis://localhost/0``
+
+.. data:: KEGBOT_SECRET_KEY
+
+    A random value, like a password, that will be used to generate and protect
+    certain values used by the web service, such as cookies. Changing this
+    value will cause all users to be logged out and will invalidate any
+    pending invitations. Generally, you should only change this value if it has
+    become compromised.
+
+.. data:: KEGBOT_SETUP_ENABLED
+
+    If set to ``true``, the server will enable "setup mode". The server can
+    only be configured and upgraded when this mode is enabled. For security
+    reasons, this mode is disabled by default and must be explicitly enabled
+    by an administrator.
 
 
-.. data:: KEGBOT_BASE_URL
-    :noindex:
+Configuration file
+------------------
 
-    Ordinarily, Kegbot will infer your site's hostname and base URL from
-    incoming requests.  This hostname is used to compose full URLs, for example
-    when generating the links in outgoing e-mails and plugin posts.
+If you prefer, settings may be given in a config file instead. The
+configuration file must be located at ``$KEGBOT_DATA_DIR/kegbot.cfg``.
 
-    In some situations you may want to set this value explicitly, for example
-    if your server is available on multiple hostnames.
+The format is an `INI-style config file <https://en.wikipedia.org/wiki/INI_file>`_
+with a single section named ``config``. Any environment value may be
+given as a key in this section (with the exception of ``KEGBOT_DATA_DIR``,
+which can never be read from this file).
 
-    Default is unset (automatic mode).
+Here is an example config file::
 
-    ::
+  [config]
+  KEGBOT_DEBUG = true
+  KEGBOT_SECRET_KEY = my-1337-s3kr3t
+  KEGBOT_DATABASE_URL = mysql://my_user@localhost:password/kegbot_test
+  KEGBOT_REDIS_URL = redis://localhost/0
 
-        KEGBOT_BASE_URL = 'http://mykegbot.example:8001/'
+Precedence of settings
+----------------------
 
-
-.. data:: KEGBOT_ENABLE_ADMIN
-    :noindex:
-
-    When set to ``true``, the `Django Admin Site <https://docs.djangoproject.com/en/dev/ref/contrib/admin/>`_
-    will be enabled, allowing you to browse and edit raw Kegbot data through a web
-    interface.
-
-    **Warning:** Editing raw Kegbot data through the admin interface may leave
-    your system in a corrupt or inconsistent state.
-
-    Default is ``False``.
-
-    ::
-
-        KEGBOT_ENABLE_ADMIN = True
-
-.. data:: LOGGING['handlers']['redis']['url']
-    :noindex:
-
-    When specified, this setting gives the URL of a redis instance to
-    use for temporary log data.  The URL is parsed by `redis.from_url`.
-
-    Default is ``redis://localhost:6379``.
+When a value is specified in both the environment `and` the config file,
+the value from the environment takes precedence.

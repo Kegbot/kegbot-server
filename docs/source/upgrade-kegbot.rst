@@ -1,7 +1,7 @@
 .. _upgrading-kegbot:
 
-Upgrade from a Previous Version
-===============================
+Upgrading
+=========
 
 Upgrade notes
 -------------
@@ -34,5 +34,3 @@ Upgrade procedure
     (kb) $ kegbot upgrade
 
 4. Restart the Kegbot web server and Celery.
-
-

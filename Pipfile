@@ -66,6 +66,7 @@ Django = "==1.11.2"
 Pillow = "==4.1.1"
 PyYAML = "==3.12"
 mysqlclient = "*"
+sphinx = "*"
 
 [requires]
 python_version = "2.7"

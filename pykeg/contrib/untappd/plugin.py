@@ -18,12 +18,12 @@
 
 """Untappd plugin for Kegbot."""
 
-from django.conf import settings
 from django.utils import timezone
 from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.plugin import util as plugin_util
 
+from . import client
 from . import forms
 from . import tasks
 from . import views
@@ -41,8 +41,6 @@ class UntappdPlugin(plugin.Plugin):
     VERSION = '0.0.1-pre'
 
     def get_admin_settings_view(self):
-        if settings.EMBEDDED:
-            return None
         return views.admin_settings
 
     def get_user_settings_view(self):
@@ -50,8 +48,8 @@ class UntappdPlugin(plugin.Plugin):
 
     def get_extra_user_views(self):
         return [
-            ('redirect/$', 'pykeg.contrib.untappd.views.auth_redirect', 'redirect'),
-            ('callback/$', 'pykeg.contrib.untappd.views.auth_callback', 'callback'),
+            ('redirect/$', views.auth_redirect, 'redirect'),
+            ('callback/$', views.auth_callback, 'callback'),
         ]
 
     def handle_new_events(self, events):
@@ -99,7 +97,8 @@ class UntappdPlugin(plugin.Plugin):
             foursquare_client_id, foursquare_client_secret = foursquare.get_credentials()
             foursquare_venue_id = foursquare.get_venue_id()
             if foursquare_venue_id:
-                self.logger.info('Adding location info, foursquare venue id: {}'.format(foursquare_venue_id))
+                self.logger.info(
+                    'Adding location info, foursquare venue id: {}'.format(foursquare_venue_id))
             else:
                 self.logger.info('No Foursquare venue id, not adding location info.')
         else:
@@ -109,18 +108,13 @@ class UntappdPlugin(plugin.Plugin):
 
         with SuppressTaskErrors(self.logger):
             tasks.untappd_checkin.delay(token, beer_id, timezone_name, shout=shout,
-                foursquare_client_id=foursquare_client_id,
-                foursquare_client_secret=foursquare_client_secret,
-                foursquare_venue_id=foursquare_venue_id)
+                                        foursquare_client_id=foursquare_client_id,
+                                        foursquare_client_secret=foursquare_client_secret,
+                                        foursquare_venue_id=foursquare_venue_id)
 
-    ### Untappd-specific methods
+    # Untappd-specific methods
 
     def get_credentials(self):
-        if settings.EMBEDDED:
-            return (
-                getattr(settings, 'UNTAPPD_CLIENT_ID', ''),
-                getattr(settings, 'UNTAPPD_CLIENT_SECRET', ''),
-            )
         data = self.get_site_settings()
         return data.get('client_id'), data.get('client_secret')
 
@@ -153,3 +147,6 @@ class UntappdPlugin(plugin.Plugin):
 
     def save_user_token(self, user, token):
         self.datastore.set('user_token:%s' % user.id, token)
+
+    def get_client(self):
+        return client.UntappdClient(*self.get_credentials())

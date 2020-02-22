@@ -1,37 +1,19 @@
 language: python
+
 python:
   - "2.7"
 
-install:
-  - pip install -r requirements.txt
-  - pip install -r test_requirements.txt
-  - pip install coverage coveralls
-
 services:
-  - redis-server
+  - mysql
+  - redis
 
-before_script:
-  - mysql -e 'create database kegbot_travis_test;'
+before_install:
+  - mysql -e 'CREATE DATABASE kegbot;'
   - mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
-  - mkdir -p ~/kegbot-data/media
-  - mkdir -p ~/kegbot-data/static
-  - mkdir -p ~/.kegbot/
-  - cp deploy/travis/local_settings.py ~/.kegbot/
-  - pip freeze
-  - flake8 --version
+
+install:
+  - pip install pipenv
+  - pipenv install --dev --deploy
 
 script:
-  - kegbot test --traverse-namespace --first-package-wins --with-coverage --cover-package=pykeg
-
-after_success:
-  - coveralls
-
-deploy:
-  provider: pypi
-  user: mikey
-  password:
-    secure: amERhNGbfgTb/1vlWJ8SpDSTUlmx8GlysllFlqIT6H/X2+XiLFRjmH+T6UXWcHurGzwC71/QC0LGlSg69d4wGarXKnDowInjA9NR+s763gcbWIKixAWxiVrHl/LHTd3n+5ZCaYVDjHCX4RCRdunQ3DESELCkJ4U9RCVHtIGki8k=
-  on:
-    tags: true
-    repo: Kegbot/kegbot-server
-    branch: master
+  - pipenv run pytest

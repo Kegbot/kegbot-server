@@ -18,13 +18,6 @@
 
 """System constants and defaults."""
 
-# Where to look for local_settings.py
-LOCAL_SETTINGS_SEARCH_DIRS = (
-    '~/.kegbot/',
-    '/etc/kegbot/',
-    '/usr/local/etc/kegbot',
-)
-
 # FT330-RJ default.
 DEFAULT_TICKS_PER_ML = 2.724
 
@@ -51,3 +44,6 @@ AUTH_MODULE_NAMES_HEX_VALUES = (AUTH_MODULE_CORE_ONEWIRE, AUTH_MODULE_CORE_RFID)
 
 # Low volume threshold: 15% full
 KEG_VOLUME_LOW_PERCENT = 0.15
+
+# Valid usernames.
+USERNAME_REGEX = '^[\w.@+-]+$'

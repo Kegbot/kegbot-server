@@ -18,18 +18,16 @@
 
 """Twitter plugin for Kegbot."""
 
-from django.conf import settings
 from pykeg.plugin import plugin
 from pykeg.plugin import util
 
 from pykeg.core.models import KegbotSite
 from pykeg.core.util import SuppressTaskErrors
-from socialregistration.contrib.twitter.client import Twitter
-import oauth2 as oauth
 
 from . import forms
 from . import tasks
 from . import views
+from .client import TwitterClient
 
 from unicodedata import normalize
 
@@ -67,14 +65,6 @@ def truncate_tweet(tweet, max_len=TWEET_MAX_LEN, truncate_str=TRUNCATE_STR):
         words = words[:-1]
 
 
-class TwitterClient(Twitter):
-    def set_callback_url(self, url):
-        self.callback_url = url
-
-    def get_callback_url(self):
-        return self.callback_url
-
-
 class TwitterPlugin(plugin.Plugin):
     NAME = 'Twitter'
     SHORT_NAME = 'twitter'
@@ -90,14 +80,14 @@ class TwitterPlugin(plugin.Plugin):
 
     def get_extra_admin_views(self):
         return [
-            ('redirect/$', 'pykeg.contrib.twitter.views.site_twitter_redirect', 'site_twitter_redirect'),
-            ('callback/$', 'pykeg.contrib.twitter.views.site_twitter_callback', 'site_twitter_callback'),
+            ('redirect/$', views.site_twitter_redirect, 'site_twitter_redirect'),
+            ('callback/$', views.site_twitter_callback, 'site_twitter_callback'),
         ]
 
     def get_extra_user_views(self):
         return [
-            ('redirect/$', 'pykeg.contrib.twitter.views.user_twitter_redirect', 'user_twitter_redirect'),
-            ('callback/$', 'pykeg.contrib.twitter.views.user_twitter_callback', 'user_twitter_callback'),
+            ('redirect/$', views.user_twitter_redirect, 'user_twitter_redirect'),
+            ('callback/$', views.user_twitter_callback, 'user_twitter_callback'),
         ]
 
     def get_site_twitter_settings_form(self):
@@ -124,7 +114,7 @@ class TwitterPlugin(plugin.Plugin):
         if event.user and not event.user.is_guest():
             self._issue_user_tweet(event, site_settings)
 
-    ### Twitter-specific methods
+    # Twitter-specific methods
 
     def get_site_profile(self):
         return self._get_profile(KEY_SITE_PROFILE)
@@ -136,17 +126,17 @@ class TwitterPlugin(plugin.Plugin):
         return self.datastore.get(datastore_key, {})
 
     def save_site_profile(self, oauth_token, oauth_token_secret,
-            twitter_name, twitter_id):
+                          twitter_name, twitter_id):
         return self._save_profile(KEY_SITE_PROFILE, oauth_token,
-            oauth_token_secret, twitter_name, twitter_id)
+                                  oauth_token_secret, twitter_name, twitter_id)
 
     def save_user_profile(self, user, oauth_token, oauth_token_secret,
-            twitter_name, twitter_id):
+                          twitter_name, twitter_id):
         return self._save_profile('user_profile:%s' % user.id, oauth_token,
-            oauth_token_secret, twitter_name, twitter_id)
+                                  oauth_token_secret, twitter_name, twitter_id)
 
     def _save_profile(self, datastore_key, oauth_token, oauth_token_secret,
-            twitter_name, twitter_id):
+                      twitter_name, twitter_id):
         profile = {
             KEY_OAUTH_TOKEN: oauth_token,
             KEY_OAUTH_TOKEN_SECRET: oauth_token_secret,
@@ -163,11 +153,6 @@ class TwitterPlugin(plugin.Plugin):
         self.datastore.delete('user_profile:%s' % user.id)
 
     def get_credentials(self):
-        if settings.EMBEDDED:
-            return (
-                getattr(settings, 'TWITTER_CONSUMER_KEY', ''),
-                getattr(settings, 'TWITTER_CONSUMER_SECRET_KEY', ''),
-            )
         return self.datastore.get(KEY_CONSUMER_KEY), self.datastore.get(KEY_CONSUMER_SECRET)
 
     def set_credentials(self, consumer_key, consumer_secret):
@@ -190,31 +175,41 @@ class TwitterPlugin(plugin.Plugin):
 
         if kind == event.DRINK_POURED:
             if not settings.get('tweet_drink_events'):
-                self.logger.info('Skipping system tweet for drink event %s: disabled by settings.' % event.id)
+                self.logger.info(
+                    'Skipping system tweet for drink event %s: disabled by settings.' %
+                    event.id)
                 return
             template = settings.get('drink_poured_template')
 
         elif kind == event.SESSION_STARTED:
             if not settings.get('tweet_session_events'):
-                self.logger.info('Skipping system tweet for session start event %s: disabled by settings.' % event.id)
+                self.logger.info(
+                    'Skipping system tweet for session start event %s: disabled by settings.' %
+                    event.id)
                 return
             template = settings.get('session_started_template')
 
         elif kind == event.SESSION_JOINED:
-            if not settings.get('tweet_session_events'):
-                self.logger.info('Skipping system tweet for session join event %s: disabled by settings.' % event.id)
+            if not settings.get('tweet_session_joined_events'):
+                self.logger.info(
+                    'Skipping system tweet for session join event %s: disabled by settings.' %
+                    event.id)
                 return
             template = settings.get('session_joined_template')
 
         elif kind == event.KEG_TAPPED:
             if not settings.get('tweet_keg_events'):
-                self.logger.info('Skipping system tweet for keg start event %s: disabled by settings.' % event.id)
+                self.logger.info(
+                    'Skipping system tweet for keg start event %s: disabled by settings.' %
+                    event.id)
                 return
             template = settings.get('keg_started_template')
 
         elif kind == event.KEG_ENDED:
             if not settings.get('tweet_keg_events'):
-                self.logger.info('Skipping system tweet for keg end event %s: disabled by settings.' % event.id)
+                self.logger.info(
+                    'Skipping system tweet for keg end event %s: disabled by settings.' %
+                    event.id)
                 return
             template = settings.get('keg_ended_template')
 
@@ -265,7 +260,9 @@ class TwitterPlugin(plugin.Plugin):
 
         elif kind == event.SESSION_JOINED:
             if not user_settings.get('tweet_session_events'):
-                self.logger.info('Skipping session tweet for event %s: disabled by user.' % event.id)
+                self.logger.info(
+                    'Skipping session tweet for event %s: disabled by user.' %
+                    event.id)
                 return
             template = site_settings.get('session_started_template')
 
@@ -304,7 +301,7 @@ class TwitterPlugin(plugin.Plugin):
 
         with SuppressTaskErrors(self.logger):
             tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret,
-                tweet, image_url)
+                                   tweet, image_url)
 
     def get_vars(self, event):
         kbsite = KegbotSite.get()
@@ -356,6 +353,4 @@ class TwitterPlugin(plugin.Plugin):
 
     def get_client(self):
         consumer_key, consumer_secret = self.get_credentials()
-        client = TwitterClient()
-        client.consumer = oauth.Consumer(consumer_key, consumer_secret)
-        return client
+        return TwitterClient(consumer_key, consumer_secret)

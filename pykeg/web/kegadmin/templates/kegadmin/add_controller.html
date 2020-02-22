@@ -1,0 +1,10 @@
+{% extends "kegadmin/base.html" %}
+{% load kegweblib %}
+{% load crispy_forms_tags %}
+
+{% block title %}Kegbot Admin: Add Controller | {{ block.super }}{% endblock %}
+{% block pagetitle %}Kegbot Admin: Add Controller{% endblock %}
+
+{% block kegadmin-main %}
+{% crispy form %}
+{% endblock %}

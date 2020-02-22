@@ -35,9 +35,9 @@ class SetupWizardTestCase(TransactionTestCase):
         for path in ('/', '/stats/'):
             response = self.client.get(path)
             self.assertContains(response, '<h2>Kegbot Offline</h2>',
-                status_code=403)
+                                status_code=403)
             self.assertNotContains(response, 'Start Setup',
-                status_code=403)
+                                   status_code=403)
 
         response = self.client.get('/setup/')
         self.failUnlessEqual(response.status_code, 404)
@@ -61,9 +61,9 @@ class SetupWizardTestCase(TransactionTestCase):
         for path in ('/', '/stats/'):
             response = self.client.get(path)
             self.assertNotContains(response, '<h2>Kegbot Offline</h2>',
-                status_code=200)
+                                   status_code=200)
             self.assertNotContains(response, '<h2>Setup Required</h2>',
-                status_code=200)
+                                   status_code=200)
             self.assertNotContains(response, 'Start Setup', status_code=200)
 
         response = self.client.get('/setup/')

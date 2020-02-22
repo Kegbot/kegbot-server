@@ -20,7 +20,7 @@
         <li><a href="#2" data-toggle="tab">Tokens</a></li>
         {% endif %}
         <li><a href="#3" data-toggle="tab">Access Control</a></li>
-        {% if user.is_superuser and not EMBEDDED %}
+        {% if user.is_superuser %}
         <li><a href="#4" data-toggle="tab">Update Profile</a></li>
         {% endif %}
     </ul>

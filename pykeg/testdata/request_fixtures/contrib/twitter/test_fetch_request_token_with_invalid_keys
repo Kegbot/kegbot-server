@@ -1,0 +1,43 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Authorization: ['OAuth oauth_nonce="70685767335772369761498410357", oauth_timestamp="1498410357",
+          oauth_version="1.0", oauth_signature_method="HMAC-SHA1", oauth_consumer_key="test",
+          oauth_callback="http%3A%2F%2Fexample.com", oauth_signature="L4ndtubHRMmO2b51FylQMZ29MDE%3D"']
+      Connection: [keep-alive]
+      Content-Length: ['0']
+      User-Agent: [python-requests/2.18.1]
+    method: POST
+    uri: https://api.twitter.com/oauth/request_token
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi8qVrKKrlZKzk9JVbIyNtJRyk0tLk5MB3KUnPNLc1IU8vJLFBJLSzJS
+        80oykxNLUhUq80v1lGpjawEAAAD//wMACvBeDEAAAAA=
+    headers:
+      cache-control: ['no-cache, no-store, must-revalidate, pre-check=0, post-check=0']
+      content-disposition: [attachment; filename=json.json]
+      content-encoding: [gzip]
+      content-type: [application/json; charset=utf-8]
+      date: ['Sun, 25 Jun 2017 17:05:57 GMT']
+      expires: ['Tue, 31 Mar 1981 05:00:00 GMT']
+      last-modified: ['Sun, 25 Jun 2017 17:05:57 GMT']
+      pragma: [no-cache]
+      server: [tsa_b]
+      set-cookie: ['guest_id=v1%3A149841035728169581; Domain=.twitter.com; Path=/;
+          Expires=Tue, 25-Jun-2019 17:05:57 UTC']
+      status: [401 Unauthorized]
+      strict-transport-security: [max-age=631138519]
+      www-authenticate: ['OAuth realm="https://api.twitter.com"']
+      x-connection-hash: [af65a6fbd9836689ccc7e091fd25a63c]
+      x-content-type-options: [nosniff]
+      x-frame-options: [SAMEORIGIN]
+      x-response-time: ['7']
+      x-transaction: [00a43b1400b70c52]
+      x-twitter-response-tags: [BouncerCompliant]
+      x-xss-protection: [1; mode=block]
+    status: {code: 401, message: Authorization Required}
+version: 1

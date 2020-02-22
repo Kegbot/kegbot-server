@@ -17,10 +17,10 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+from importlib import import_module
+
 from django.utils import timezone
-from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from django.conf.urls import patterns
 from django.conf.urls import url
 from django.conf import settings
 
@@ -36,7 +36,7 @@ def get_plugin_class(name):
         module_path, member_name = name.rsplit(".", 1)
         module = import_module(module_path)
         cls = getattr(module, member_name)
-    except (ValueError, ImportError, AttributeError), e:
+    except (ValueError, ImportError, AttributeError) as e:
         raise ImproperlyConfigured("Could not import plugin %s: %s" % (name, e))
 
     if not issubclass(cls, Plugin):
@@ -65,14 +65,14 @@ def get_admin_urls():
     urls = []
     for plugin in get_plugins().values():
         urls += _to_urls(plugin.get_extra_admin_views(), plugin.get_short_name())
-    return patterns('', *urls)
+    return urls
 
 
 def get_account_urls():
     urls = []
     for plugin in get_plugins().values():
         urls += _to_urls(plugin.get_extra_user_views(), plugin.get_short_name())
-    return patterns('', *urls)
+    return urls
 
 
 def _to_urls(urllist, short_name):

@@ -19,8 +19,7 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.shortcuts import redirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 
 from pykeg.web.kbregistration.forms import KegbotRegistrationForm
 from pykeg.backend import get_kegbot_backend
@@ -31,7 +30,7 @@ from pykeg.core import models
 
 
 def register(request):
-    context = RequestContext(request)
+    context = {}
     form = KegbotRegistrationForm()
 
     # Check if we need an invitation before processing the request further.
@@ -45,8 +44,8 @@ def register(request):
             invite_code = request.session.get('invite_code', None)
 
         if not invite_code:
-            r = render_to_response('registration/invitation_required.html',
-                context_instance=context)
+            r = render(request, 'registration/invitation_required.html',
+                       context=context)
             r.status_code = 401
             return r
 
@@ -56,8 +55,8 @@ def register(request):
             pass
 
         if not invite or invite.is_expired():
-            r = render_to_response('registration/invitation_expired.html',
-                context_instance=context)
+            r = render(request, 'registration/invitation_expired.html',
+                       context=context)
             r.status_code = 401
             return r
 
@@ -81,9 +80,9 @@ def register(request):
                 login(request, new_user)
                 return redirect('kb-account-main')
 
-            return render_to_response('registration/registration_complete.html',
-                context_instance=context)
+            return render(request, 'registration/registration_complete.html',
+                          context=context)
 
     context['form'] = form
-    return render_to_response('registration/registration_form.html',
-        context_instance=context)
+    return render(request, 'registration/registration_form.html',
+                  context=context)

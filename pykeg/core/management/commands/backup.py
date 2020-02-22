@@ -21,16 +21,15 @@ import os
 from django.core.files.storage import get_storage_class
 from django.core.management.base import BaseCommand
 from pykeg.backup import backup
-from optparse import make_option
 from pykeg.backend.backends import UnknownBaseUrlException
 
 
 class Command(BaseCommand):
     help = u'Creates a zipfile backup of the current Kegbot system.'
-    option_list = BaseCommand.option_list + (
-        make_option('--no_media', action='store_true', dest='no_media', default=False,
-            help='Skip media during backup.'),
-    )
+
+    def add_arguments(self, parser):
+        parser.add_argument('--no_media', action='store_true', dest='no_media', default=False,
+                    help='Skip media during backup.')
 
     def handle(self, **options):
         location = backup.backup(include_media=not options.get('no_media'))

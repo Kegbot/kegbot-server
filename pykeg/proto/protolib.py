@@ -72,7 +72,7 @@ def ToDict(obj, full=False):
     else:
         return protoutil.ProtoMessageToDict(res)
 
-### Model conversions
+# Model conversions
 
 
 @converts(models.AuthenticationToken)
@@ -107,10 +107,10 @@ def PictureToProto(record, full=False, use_png=False):
     ret.original_url = record.image.url
     # TODO(mikey): This can be expensive depending on the storage backend
     # (attempts to fetch image).
-    #try:
+    # try:
     #  ret.width = record.image.width
     #  ret.height = record.image.height
-    #except IOError:
+    # except IOError:
     #  pass
     if record.time:
         ret.time = datestr(record.time)
@@ -391,7 +391,7 @@ def SessionToProto(record, full=False):
     ret.name = record.name or ''
 
     if full:
-        #ret.stats.MergeFrom(record.get_stats())
+        # ret.stats.MergeFrom(record.get_stats())
         ret.is_active = record.IsActiveNow()
     return ret
 
@@ -432,7 +432,7 @@ def UserToProto(user, full=False):
         ret.is_staff = user.is_staff
         ret.is_active = user.is_active
         ret.is_superuser = user.is_superuser
-        ret.last_login = datestr(user.last_login)
+        ret.last_login = datestr(user.last_login or user.date_joined)
         ret.date_joined = datestr(user.date_joined)
     if user.mugshot_id:
         ret.image.MergeFrom(ToProto(user.mugshot))
@@ -483,8 +483,8 @@ def SystemEventToProto(record, full=False):
 
 
 def GetSyncResponse(active_kegs=[], active_session=[], active_users=[],
-        controllers=[], drinks=[], events=[], meters=[], site_title='',
-        server_version='', sound_events=[], taps=[], toggles=[]):
+                    controllers=[], drinks=[], events=[], meters=[], site_title='',
+                    server_version='', sound_events=[], taps=[], toggles=[]):
     ret = api_pb2.SyncResponse()
     if active_session:
         ret.active_session.MergeFrom(ToProto(active_session))

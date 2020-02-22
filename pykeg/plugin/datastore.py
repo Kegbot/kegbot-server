@@ -70,12 +70,12 @@ class ModelDatastore(PluginDatastore):
             row.save()
         except models.PluginData.DoesNotExist:
             models.PluginData.objects.create(plugin_name=self.plugin_name, key=key,
-                value=value)
+                                             value=value)
 
     def get(self, key, default=None):
         try:
             row = models.PluginData.objects.get(plugin_name=self.plugin_name,
-                key=key)
+                                                key=key)
             return row.value
         except models.PluginData.DoesNotExist:
             return default
@@ -83,7 +83,7 @@ class ModelDatastore(PluginDatastore):
     def delete(self, key):
         try:
             models.PluginData.objects.get(plugin_name=self.plugin_name,
-                key=key).delete()
+                                          key=key).delete()
         except models.PluginData.DoesNotExist:
             pass
 

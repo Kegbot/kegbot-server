@@ -1,0 +1,8 @@
+machine:
+  services:
+    - mysql
+    - redis
+
+test:
+  pre:
+    - kegbot collectstatic -v 0 --noinput

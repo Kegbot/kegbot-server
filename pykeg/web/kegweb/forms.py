@@ -23,7 +23,7 @@ class ActivateAccountForm(forms.Form):
 
 class InvitationForm(forms.Form):
     email = forms.EmailField(required=True,
-        help_text='E-mail address to invite')
+                             help_text='E-mail address to invite')
 
 
 class ProfileForm(forms.Form):
@@ -37,7 +37,7 @@ class RegenerateApiKeyForm(forms.Form):
 
 class DeletePictureForm(forms.Form):
     picture = forms.ModelChoiceField(queryset=ALL_PICTURES, required=True,
-         widget=forms.HiddenInput)
+                                     widget=forms.HiddenInput)
 
 
 class ChangeEmailForm(forms.Form):

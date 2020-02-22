@@ -36,11 +36,14 @@ class EmailNotificationBackendTestCase(TestCase):
         defaults.set_defaults(set_is_setup=True, create_controller=True)
 
         self.user = models.User.objects.create(username='notification_user',
-            email='test@example')
+                                               email='test@example')
 
-        self.prefs = models.NotificationSettings.objects.create(user=self.user,
+        self.prefs = models.NotificationSettings.objects.create(
+            user=self.user,
             backend='pykeg.notification.backends.email.EmailNotificationBackend',
-            keg_tapped=False, session_started=False, keg_volume_low=False,
+            keg_tapped=False,
+            session_started=False,
+            keg_volume_low=False,
             keg_ended=False)
 
     def test_keg_tapped(self):
@@ -48,13 +51,17 @@ class EmailNotificationBackendTestCase(TestCase):
         self.prefs.save()
         self.assertEquals(0, len(mail.outbox))
 
-        keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
-            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
+        keg = self.backend.start_keg(
+            defaults.METER_NAME_0,
+            beverage_name='Unknown',
+            beverage_type='beer',
+            producer_name='Unknown',
+            style_name='Unknown')
         self.assertEquals(1, len(mail.outbox))
 
         msg = mail.outbox[0]
         self.assertEquals('[My Kegbot] New keg tapped: Keg %s: Unknown by Unknown' % keg.id,
-            msg.subject)
+                          msg.subject)
         self.assertEquals(['test@example'], msg.to)
         self.assertEquals('test-from@example', msg.from_email)
 
@@ -92,7 +99,7 @@ http://localhost:1234/account.
         self.assertEquals(0, len(mail.outbox))
 
         self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
-            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
+                               beverage_type='beer', producer_name='Unknown', style_name='Unknown')
         drink = self.backend.record_drink(defaults.METER_NAME_0, ticks=500)
         self.assertEquals(1, len(mail.outbox))
 
@@ -134,15 +141,19 @@ http://localhost:1234/account.
         self.prefs.save()
         self.assertEquals(0, len(mail.outbox))
 
-        keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
-            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
+        keg = self.backend.start_keg(
+            defaults.METER_NAME_0,
+            beverage_name='Unknown',
+            beverage_type='beer',
+            producer_name='Unknown',
+            style_name='Unknown')
         self.backend.record_drink(defaults.METER_NAME_0, ticks=500,
-            volume_ml=keg.full_volume_ml * (1 - kb_common.KEG_VOLUME_LOW_PERCENT))
+                                  volume_ml=keg.full_volume_ml * (1 - kb_common.KEG_VOLUME_LOW_PERCENT))
         self.assertEquals(1, len(mail.outbox))
 
         msg = mail.outbox[0]
         self.assertEquals('[My Kegbot] Volume low on keg %s (Unknown by Unknown)' % keg.id,
-            msg.subject)
+                          msg.subject)
         self.assertEquals(['test@example'], msg.to)
         self.assertEquals('test-from@example', msg.from_email)
 
@@ -178,8 +189,12 @@ http://localhost:1234/account.
         self.prefs.save()
         self.assertEquals(0, len(mail.outbox))
 
-        keg = self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
-            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
+        keg = self.backend.start_keg(
+            defaults.METER_NAME_0,
+            beverage_name='Unknown',
+            beverage_type='beer',
+            producer_name='Unknown',
+            style_name='Unknown')
         self.assertEquals(0, len(mail.outbox))
         self.backend.end_keg(keg)
         self.assertEquals(1, len(mail.outbox))

@@ -96,7 +96,7 @@ class Plugin:
             raise NotImplementedError
         return cls.URL
 
-    ### Plugin methods
+    # Plugin methods
 
     def get_admin_settings_view(self):
         """Returns the view instance for the main admin settings for this
@@ -142,7 +142,7 @@ class Plugin:
         """
         pass
 
-    ### Helpers
+    # Helpers
 
     def save_form(self, form, prefix):
         return self.datastore.save_form(form, prefix)

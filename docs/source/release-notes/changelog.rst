@@ -6,6 +6,47 @@ Changelog
 **Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
 
 
+Current Version (in development)
+--------------------------------
+
+For a detailed look at what's new in version 1.3, see :ref:`version-13-release-notes`.
+
+**Breaking Changes**
+
+* Settings are no longer read from `local_settings.py` and must instead be supplied by env.
+* The `setup-kegbot.py` tool is no longer supported.
+* Built-in production support and documentation for `supervisor` and `nginx` has been droped.
+* Optional support for Sentry has been removed.
+* Optional support for django-storages has been removed.
+* Optional support for memcache has been removed.
+* Optional support for statsd has been removed.
+* Optional support for django-debug-toolbar has been removed.
+
+**New features**
+
+* Allow deletion of tokens from web (#337)
+* Add mini (5L) keg size (#331)
+* Add drinks tab to drinker details page (#347)
+* Allow deleting drinks from Kegbot Admin drinks page (#348)
+* Don't require user to be active in order to view the user's details and sessions (#350)
+* Twitter plugin: option to tweet/disable system session join events (#363)
+* Add a create controller view (#364)
+
+**Bugfixes**
+
+* Prevent divide by zero error when keg volume is set to zero (#353)
+* Fixed keg list error (#353)
+* Fix chart (#342)
+* Skip notifications for inactive users  (#349)
+* Fix compatibility with with MySQL versions later than v5.7.5 (#356)
+* Allow usernames with a period (#336)
+
+**Other Changes**
+
+* Internal: Upgraded to Django 1.11.
+* Internal: Improved static file serving (#368)
+* Internal: Developer tests now use ``pytest``
+
 Version 1.2.3 (2015-01-12)
 --------------------------
 * Allow users to change e-mail addresses.
@@ -71,3 +112,5 @@ Version 1.0.0 (2014-06-24)
 --------------------------
 * Initial 1.0 release.
 * See :ref:`upgrade_pre_10` for upgrade instructions.
+
+For versions prior to 1.0, see :ref:`old-versions`.

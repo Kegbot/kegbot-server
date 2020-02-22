@@ -129,6 +129,6 @@ class SuppressTaskErrors(object):
         exc_info = (exc_type, exc_val, exc_tb)
         if isinstance(exc_val, RedisError):
             self.logger.error('Error scheduling task: {}'.format(exc_val),
-                exc_info=exc_info)
+                              exc_info=exc_info)
             return True
         return False

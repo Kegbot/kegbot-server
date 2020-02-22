@@ -30,8 +30,8 @@ logger = util.get_logger(__name__)
 
 @app.task(name='untappd_checkin', expires=60)
 def untappd_checkin(token, beer_id, timezone_name, shout=None,
-        foursquare_client_id=None, foursquare_client_secret=None,
-        foursquare_venue_id=None):
+                    foursquare_client_id=None, foursquare_client_secret=None,
+                    foursquare_venue_id=None):
     logger.info('Checking in: token=%s beer_id=%s timezone_name=%s' % (
         token, beer_id, timezone_name))
 
@@ -41,7 +41,7 @@ def untappd_checkin(token, beer_id, timezone_name, shout=None,
     geolat = geolng = None
     if foursquare_venue_id:
         fs = foursquare.Foursquare(client_id=foursquare_client_id,
-            client_secret=foursquare_client_secret)
+                                   client_secret=foursquare_client_secret)
         logger.info('Fetching venue location info from Foursquare')
         try:
             venue_info = fs.venues(foursquare_venue_id).get('venue', {})

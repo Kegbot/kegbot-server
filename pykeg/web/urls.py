@@ -20,53 +20,45 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.conf.urls import include
-from django.conf.urls import patterns
+from django.conf.urls.static import static
 from django.conf.urls import url
 from django.contrib import admin
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
 
 admin.autodiscover()
 
-urlpatterns = patterns('',
-    ### api
-    (r'^api/(v1/)?', include('pykeg.web.api.urls')),
+urlpatterns = [
+    # api
+    url(r'^api/(?:v1/)?', include('pykeg.web.api.urls')),
 
-    ### kegbot account
-    (r'^account/', include('pykeg.web.account.urls')),
+    # kegbot account
+    url(r'^account/', include('pykeg.web.account.urls')),
 
-    ### auth account
-    (r'^accounts/', include('pykeg.web.kbregistration.urls')),
+    # auth account
+    url(r'^accounts/', include('pykeg.web.kbregistration.urls')),
 
-    ### kegadmin
-    (r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
+    # kegadmin
+    url(r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
 
-    ### Shortcuts
-    (r'^link/?$', RedirectView.as_view(pattern_name='kegadmin-link-device'))
-)
+    # Shortcuts
+    url(r'^link/?$', RedirectView.as_view(pattern_name='kegadmin-link-device')),
+]
 
 if 'pykeg.web.setup_wizard' in settings.INSTALLED_APPS:
-    urlpatterns += patterns('',
-        (r'^setup/', include('pykeg.web.setup_wizard.urls')),
-    )
+    urlpatterns += [
+        url(r'^setup/', include('pykeg.web.setup_wizard.urls')),
+    ]
 
 if settings.DEBUG:
-    urlpatterns += staticfiles_urlpatterns()
-    urlpatterns += patterns('',
-      url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, }),
-    )
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.KEGBOT_ENABLE_ADMIN:
-    urlpatterns += patterns('',
-      (r'^admin/', include(admin.site.urls)),
-    )
+    urlpatterns += [
+        url(r'^admin/', include(admin.site.urls)),
+    ]
 
-if settings.DEMO_MODE:
-    urlpatterns += patterns('',
-      (r'^demo/', include('pykeg.contrib.demomode.urls')),
-    )
-
-### main kegweb urls
-urlpatterns += patterns('',
-  (r'^', include('pykeg.web.kegweb.urls')),
-)
+# main kegweb urls
+urlpatterns += [
+    url(r'^', include('pykeg.web.kegweb.urls')),
+]

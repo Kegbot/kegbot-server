@@ -95,7 +95,7 @@ def progress_bar(progress_int, extra_css=''):
     return c
 
 
-### navitem
+# navitem
 
 @register.tag('navitem')
 def navitem(parser, token):
@@ -134,7 +134,7 @@ class NavitemNode(Node):
         return res
 
 
-### timeago
+# timeago
 
 @register.tag('timeago')
 def timeago(parser, token):
@@ -166,7 +166,7 @@ class TimeagoNode(Node):
         return '<abbr class="timeago" title="%s">%s</abbr>' % (iso, alt)
 
 
-### temperature
+# temperature
 
 @register.tag('temperature')
 def temperature_tag(parser, token):
@@ -199,7 +199,7 @@ class TemperatureNode(Node):
 
         return self.TEMPLATE % {'amount': amount, 'unit': unit}
 
-### volume
+# volume
 
 
 @register.tag('volume')
@@ -244,7 +244,7 @@ class VolumeNode(Node):
         }
         return cls.TEMPLATE % ctx
 
-### drinker
+# drinker
 
 
 @register.tag('drinker_name')
@@ -278,11 +278,12 @@ class DrinkerNameNode(Node):
             if 'nolink' in self._extra_args:
                 return user.get_full_name()
             else:
-                return '<a href="%s">%s</a>' % (reverse('kb-drinker', args=[user.username]), user.get_full_name())
+                return '<a href="%s">%s</a>' % (reverse('kb-drinker',
+                                                        args=[user.username]), user.get_full_name())
         return context['guest_info']['name']
 
 
-### chart
+# chart
 
 @register.tag('chart')
 def chart(parser, tokens):
@@ -362,8 +363,8 @@ class ChartNode(Node):
 
         try:
             chart_result = self._chart_fn(obj, metric_volumes=metric_volumes,
-                temperature_units=temperature_units)
-        except charts.ChartError, e:
+                                          temperature_units=temperature_units)
+        except charts.ChartError as e:
             return self.show_error(str(e))
 
         chart_base = {

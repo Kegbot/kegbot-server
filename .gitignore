@@ -4,6 +4,8 @@
 *.egg
 *.egg-info
 .coverage
+.noseids
+.vscode
 
 ### docs
 docs/build

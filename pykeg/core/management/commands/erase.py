@@ -17,16 +17,16 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 from pykeg.backup import backup
 
 import sys
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = u'Erases all data in the current Kegbot system.'
 
-    def handle(self, **options):
+    def handle(self, *args, **options):
         print 'WARNING!'
         print ''
         print '  ************************************************************************'

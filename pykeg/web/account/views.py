@@ -26,9 +26,8 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.shortcuts import redirect
-from django.template import RequestContext
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.contrib.auth.views import password_change as password_change_orig
@@ -42,14 +41,14 @@ from pykeg.notification.forms import NotificationSettingsForm
 
 @login_required
 def account_main(request):
-    context = RequestContext(request)
+    context = {}
     context['user'] = request.user
-    return render_to_response('account/index.html', context_instance=context)
+    return render(request, 'account/index.html', context=context)
 
 
 @login_required
 def edit_profile(request):
-    context = RequestContext(request)
+    context = {}
     user = request.user
 
     context['form'] = forms.ProfileForm(initial={'display_name': user.get_full_name()})
@@ -66,12 +65,12 @@ def edit_profile(request):
                 user.mugshot = pic
             user.display_name = form.cleaned_data['display_name']
             user.save()
-    return render_to_response('account/profile.html', context_instance=context)
+    return render(request, 'account/profile.html', context=context)
 
 
 @login_required
 def invite(request):
-    context = RequestContext(request)
+    context = {}
     form = forms.InvitationForm()
 
     if not request.kbsite.can_invite(request.user):
@@ -82,12 +81,12 @@ def invite(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             invite = models.Invitation.objects.create(for_email=email,
-                invited_by=request.user)
+                                                      invited_by=request.user)
             invite.send()
             messages.success(request, 'Invitation mailed to ' + email)
 
     context['form'] = form
-    return render_to_response('account/invite.html', context_instance=context)
+    return render(request, 'account/invite.html', context=context)
 
 
 @login_required
@@ -95,9 +94,9 @@ def notifications(request):
     # TODO(mikey): Dynamically add settings forms for other e-mail
     # backends (currently hardcoded to email backend).
 
-    context = RequestContext(request)
-    existing_settings = models.NotificationSettings.objects.get_or_create(user=request.user,
-        backend='pykeg.notification.backends.email.EmailNotificationBackend')[0]
+    context = {}
+    existing_settings = models.NotificationSettings.objects.get_or_create(
+        user=request.user, backend='pykeg.notification.backends.email.EmailNotificationBackend')[0]
 
     if request.method == 'POST':
         if 'submit-settings' in request.POST:
@@ -121,10 +120,11 @@ def notifications(request):
                     url = models.KegbotSite.get().reverse_full(
                         'account-confirm-email', args=(), kwargs={'token': token})
 
-                    message = email.build_message(new_email, 'registration/email_confirm_email_change.html',
-                        {'url': url})
+                    message = email.build_message(
+                        new_email, 'registration/email_confirm_email_change.html', {'url': url})
                     message.send()
-                    messages.success(request, 'An e-mail confirmation has been sent to {}'.format(new_email))
+                    messages.success(
+                        request, 'An e-mail confirmation has been sent to {}'.format(new_email))
 
         else:
             messages.error(request, 'Unknown request.')
@@ -132,7 +132,7 @@ def notifications(request):
     context['form'] = NotificationSettingsForm(instance=existing_settings)
     context['email_form'] = forms.ChangeEmailForm(initial={'email': request.user.email})
 
-    return render_to_response('account/notifications.html', context_instance=context)
+    return render(request, 'account/notifications.html', context=context)
 
 
 @login_required
@@ -182,9 +182,9 @@ def activate_account(request, activation_key):
             messages.success(request, 'Your account has been activated!')
             return redirect('kb-account-main')
 
-    context = RequestContext(request)
+    context = {}
     context['form'] = form
-    return render_to_response('account/activate_account.html', context_instance=context)
+    return render(request, 'account/activate_account.html', context=context)
 
 
 @login_required

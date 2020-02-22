@@ -21,7 +21,7 @@
 import datetime
 import os
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.core.files import File
 
 from . import kb_common
@@ -33,7 +33,7 @@ from pykeg.core.testutils import get_filename
 from kegbot.util import units
 
 
-class CoreModelsTestCase(TestCase):
+class CoreModelsTestCase(TransactionTestCase):
     def setUp(self):
         models.KegbotSite.get()  # create the site
         self.backend = get_kegbot_backend()
@@ -91,7 +91,7 @@ class CoreModelsTestCase(TestCase):
     def testKegStuff(self):
         """Test basic keg relations that should always work."""
         self.assertEqual(self.keg.full_volume_ml,
-            units.Quantity(2.0, units.UNITS.Liter).InMilliliters())
+                         units.Quantity(2.0, units.UNITS.Liter).InMilliliters())
         self.assertEqual(self.keg.type.producer.name, "Moonshine Beers")
 
         self.assertEqual(0.0, self.keg.served_volume())
@@ -99,8 +99,8 @@ class CoreModelsTestCase(TestCase):
 
     def testDrinkAccounting(self):
         d = self.backend.record_drink(self.tap,
-            ticks=1200,
-            username=self.user.username,
+                                      ticks=1200,
+                                      username=self.user.username,
                                       )
         self.assertEqual(d.keg.served_volume(), d.volume_ml)
 
@@ -121,43 +121,43 @@ class CoreModelsTestCase(TestCase):
 
         # u=1 t=0
         self.backend.record_drink(self.tap,
-            ticks=1200,
-            username=u1.username,
-            pour_time=base_time,
+                                  ticks=1200,
+                                  username=u1.username,
+                                  pour_time=base_time,
                                   )
         # u=2 t=0
         self.backend.record_drink(self.tap,
-            ticks=1200,
-            username=u2.username,
-            pour_time=base_time,
+                                  ticks=1200,
+                                  username=u2.username,
+                                  pour_time=base_time,
                                   )
 
         # u=1 t=10
         self.backend.record_drink(self.tap,
-            ticks=1200,
-            username=u1.username,
-            pour_time=base_time + td_10m,
+                                  ticks=1200,
+                                  username=u1.username,
+                                  pour_time=base_time + td_10m,
                                   )
 
         # u=1 t=400
         self.backend.record_drink(self.tap,
-            ticks=1200,
-            username=u1.username,
-            pour_time=base_time + td_400m,
+                                  ticks=1200,
+                                  username=u1.username,
+                                  pour_time=base_time + td_400m,
                                   )
 
         # u=2 t=490
         self.backend.record_drink(self.tap,
-            ticks=1200,
-            username=u2.username,
-            pour_time=base_time + td_390m,
+                                  ticks=1200,
+                                  username=u2.username,
+                                  pour_time=base_time + td_390m,
                                   )
 
         # u=2 t=400
         self.backend.record_drink(self.tap,
-            ticks=1200,
-            username=u2.username,
-            pour_time=base_time + td_400m,
+                                  ticks=1200,
+                                  username=u2.username,
+                                  pour_time=base_time + td_400m,
                                   )
 
         drinks_u1 = u1.drinks.all().order_by('time')
@@ -193,7 +193,7 @@ class CoreModelsTestCase(TestCase):
 
     def test_pic_filename(self):
         basename = '1/2/3-4567 89.jpg'
-        now = datetime.datetime(2011, 02, 03)
+        now = datetime.datetime(2011, 0o2, 0o3)
         uuid_str = 'abcdef'
         uploaded_name = models._pics_file_name(None, basename, now, uuid_str)
         self.assertEqual('pics/20110203000000-abcdef.jpg', uploaded_name)

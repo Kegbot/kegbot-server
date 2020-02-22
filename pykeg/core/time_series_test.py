@@ -12,5 +12,6 @@ class TimeSeriesTestCase(unittest.TestCase):
 
         self.assertEqual(s.strip(), time_series.to_string(expected))
 
+
 if __name__ == '__main__':
     unittest.main()

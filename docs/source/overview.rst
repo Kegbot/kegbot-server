@@ -1,57 +1,29 @@
 .. _overview:
 
-Kegbot Server Overview
-======================
+Overview
+========
 
-Kegbot Server is the web service behind Kegbot.  It serves as both a frontend for
-visual navigaton of drinking activity, as well as the backend for all Kegbot
-data.
+Kegbot Server is the web service behind Kegbot.  It serves as both the backend
+and web UI for a Kegbot system. These instructions will guide you through
+installing a new Kegbot server.
 
-
-Quick Install
--------------
-
-**New:** The easiest way to get going is by following the
-`Digital Ocean Install Instructions <https://forum.kegbot.org/t/howto-install-kegbot-server-on-digital-ocean/77>`_.
-
-For those already familiar with Linux, these ultra-quick install instructions
-may suffice::
-  
-  $ virtualenv ~/kb                 # create a new home for kegbot
-  $ . ~/kb/bin/activate             # step into it
-  (kb) $ pip install kegbot         # install the latest kegbot release
-  (kb) $ setup-kegbot.py            # interactive configuration tool
-  (kb) $ kegbot runserver           # run the dev web server
-  Development server is running at http://127.0.0.1:8000/
-
-Read on for detailed, step-by-step instructions.
-
-Dependencies
+Prerequisites
 ------------
 
-Kegbot Server is built on a number of open source projects.  The major
-dependencies are:
-
-* `Python <https://www.python.org/>`_ 2.7
-* `MySQL <http://www.mysql.com/>`_ or `PostgreSQL <http://www.postgresql.org/>`_
-* `Redis <http://redis.io/>`_ 2.8 or newer
-
-In addition, Kegbot Server requires several Python modules which are
-installed automatically by the Python package manager.
-
-
-Supported Operating Systems
----------------------------
-
-Kegbot Server should run on any UNIX-based operating system.  Since there are
-many possible distributions, the examples in this document are
-written for Debian/Ubuntu and Mac OS X
-(`Homebrew <http://brew.sh/>`_) package managers.
-
+Kegbot Server requires `Docker <https://get.docker.sh/>`_ to run, and
+runs on any operating system that supports Docker. We have tested these
+instructions on Linux and Mac OS X machines.
 
 License
 -------
 
 Kegbot Server is licensed under the `GNU General Public License v2.0
-<http://www.gnu.org/licenses/gpl-2.0.html>`_.  You must accept this license
-before installing or using Kegbot Server.
+<http://www.gnu.org/licenses/gpl-2.0.html>`_.  By installing or using
+Kegbot Server, you agree to this license.
+
+Getting help
+------------
+
+Kegbot is a community-supported project, built and maintained by
+volunteers. For help and pointers, visit the `Kegbot Forum
+<https://forum.kegbot.org/>`_, where you can also chat with other users.

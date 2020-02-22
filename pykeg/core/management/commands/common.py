@@ -19,7 +19,6 @@
 import os
 import signal
 import sys
-from optparse import make_option
 from django.core.management.base import BaseCommand
 from pykeg.util.runner import Runner
 
@@ -75,15 +74,19 @@ class check_pidfile(object):
 class RunnerCommand(BaseCommand):
     """Command that runs several subcommands as a watched group."""
     requires_model_validation = False
-
-    option_list = BaseCommand.option_list + (
-        make_option('--logs_dir', action='store', dest='logs_dir', default='',
-            help='Specifies the directory for log files.  If empty, logging disabled.'),
-        make_option('--pidfile_dir', action='store', dest='pidfile_dir', default='/tmp',
-            help='PID file for this program.'),
-    )
-
     pidfile_name = None
+
+    def add_arguments(self, parser):
+        parser.add_argument('--logs_dir',
+            action='store',
+            dest='logs_dir',
+            default='',
+            help='Specifies the directory for log files.  If empty, logging disabled.')
+        parser.add_argument('--pidfile_dir',
+            action='store',
+            dest='pidfile_dir',
+            default='/tmp',
+            help='PID file for this program.')
 
     def get_commands(self, options):
         """Returns iterable of (command_name, command)."""

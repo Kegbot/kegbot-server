@@ -18,7 +18,6 @@
 
 """Checks a central server for updates."""
 
-from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
 
@@ -79,10 +78,6 @@ def schedule_checkin(force=False):
     Returns
         True if a checkin was scheduled.
     """
-    if settings.EMBEDDED:
-        LOGGER.debug('schedule_checkin: not scheduling: site is embedded')
-        return False
-
     kbsite = models.KegbotSite.get()
     if not kbsite.check_for_updates:
         LOGGER.debug('schedule_checkin: not scheduling: checkin disabled')
@@ -111,10 +106,6 @@ def checkin(url=CHECKIN_URL, product=PRODUCT, timeout=None, quiet=False):
         ValueError: On malformed reponse.
         requests.RequestException: On error talking to server.
     """
-    if settings.EMBEDDED:
-        LOGGER.debug('Checkin disabled in embedded mode')
-        return
-
     kbsite = models.KegbotSite.get()
     if not kbsite.check_for_updates:
         LOGGER.debug('Upgrade check is disabled')

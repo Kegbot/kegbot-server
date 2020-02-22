@@ -17,17 +17,16 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from pykeg.core.management.commands.common import RunnerCommand
-from optparse import make_option
 
 
 class Command(RunnerCommand):
     help = u'Runs background task queue workers.'
     pidfile_name = 'kegbot_run_all.pid'
 
-    option_list = RunnerCommand.option_list + (
-        make_option('--gunicorn_options', action='store', dest='gunicorn_options', default='-w 3',
-            help='Specifies extra options to pass to gunicorn.'),
-    )
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('--gunicorn_options', action='store', dest='gunicorn_options', default='-w 3',
+                    help='Specifies extra options to pass to gunicorn.')
 
     def get_commands(self, options):
         ret = []

@@ -11,5 +11,9 @@ app = Celery('pykeg')
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
-plugin_tasks = lambda: ['.'.join(x.split('.')[:-2]) for x in settings.KEGBOT_PLUGINS]
+
+def plugin_tasks():
+    return ['.'.join(x.split('.')[:-2]) for x in settings.KEGBOT_PLUGINS]
+
+
 app.autodiscover_tasks(plugin_tasks())

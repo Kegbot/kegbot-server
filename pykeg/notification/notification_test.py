@@ -63,9 +63,10 @@ class NotificationTestCase(TestCase):
         defaults.set_defaults(set_is_setup=True)
 
         self.user = models.User.objects.create(username='notification_user',
-            email='test@example')
+                                               email='test@example')
 
-    @override_settings(NOTIFICATION_BACKENDS=['pykeg.notification.notification_test.CaptureBackend'])
+    @override_settings(NOTIFICATION_BACKENDS=[
+                       'pykeg.notification.notification_test.CaptureBackend'])
     def test_notifications(self):
         class CaptureBackend(BaseNotificationBackend):
             """Notification backend which captures calls."""
@@ -80,9 +81,12 @@ class NotificationTestCase(TestCase):
         captured = CaptureBackend.captured
         self.assertEquals(0, len(captured))
 
-        prefs = models.NotificationSettings.objects.create(user=self.user,
+        prefs = models.NotificationSettings.objects.create(
+            user=self.user,
             backend='pykeg.notification.notification_test.CaptureBackend',
-            keg_tapped=False, session_started=False, keg_volume_low=False,
+            keg_tapped=False,
+            session_started=False,
+            keg_volume_low=False,
             keg_ended=False)
 
         event = SystemEvent(kind=SystemEvent.KEG_TAPPED)

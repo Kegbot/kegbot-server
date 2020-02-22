@@ -188,9 +188,10 @@ class StatsBuilder:
             }
         return previous_value
 
+
 BUILDER = StatsBuilder()
 
-### Public methods
+# Public methods
 
 
 def invalidate(drink_id):
@@ -255,7 +256,7 @@ def _build_single_view(drink, view, prior_stats=None):
                 try:
                     prior_stats = util.AttrDict(
                         models.Stats.objects.get(drink=prior_drink, user=view.user,
-                            session=view.session, keg=view.keg).stats
+                                                 session=view.session, keg=view.keg).stats
                     )
                     break
                 except models.Stats.DoesNotExist:
@@ -265,8 +266,15 @@ def _build_single_view(drink, view, prior_stats=None):
     for build_drink in build_list:
         logger.debug('  - operating on drink {}'.format(build_drink.id))
         stats = BUILDER.build(drink=build_drink, previous_stats=prior_stats)
-        models.Stats.objects.create(drink=build_drink, user=view.user, time=build_drink.time,
-            session=view.session, keg=view.keg, stats=stats, is_first=(not prior_stats))
+        models.Stats.objects.create(
+            drink=build_drink,
+            user=view.user,
+            time=build_drink.time,
+            session=view.session,
+            keg=view.keg,
+            stats=stats,
+            is_first=(
+                not prior_stats))
         prior_stats = stats
     logger.debug('<<< Done.')
     return stats

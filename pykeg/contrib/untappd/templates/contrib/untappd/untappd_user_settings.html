@@ -11,7 +11,7 @@
 <h4>Untappd Account</h4>
 <div class="well">
 <p class="lead">
-    Untappd is currently linked to <b>{{ profile.first_name }} {{ profile.last_name }}</b>.
+    Untappd is currently linked to <b>{{ profile.user_name }}</b>.
 </p>
 <p>
 <form method="post" action="{% url "plugin-untappd-redirect" %}">
@@ -30,7 +30,7 @@
 <h4>Link Untappd Account</h4>
 <div class="well">
     <p class="lead">
-      Link an Untappd account to your Kegbot account.  
+      Link an Untappd account to your Kegbot account.
     <p>
     <form method="post" action="{% url "plugin-untappd-redirect" %}">
         {% csrf_token %}
@@ -45,7 +45,7 @@
 <h4>Settings</h4>
 <div class="well">
 <p class="lead">
-  Control how Kegbot will use use your account. 
+  Control how Kegbot will use use your account.
 </p>
 <form method="post" action="">
    {% csrf_token %}

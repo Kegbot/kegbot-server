@@ -90,38 +90,47 @@ class User(AbstractBaseUser):
         - Drops `first_name` and `last_name`.
     """
 
-    ### Django AbstractUser fields.
+    # Django AbstractUser fields.
 
-    is_superuser = models.BooleanField(_('superuser status'), default=False,
-        help_text=_('Designates that this user has all permissions without '
-                    'explicitly assigning them.'))
+    is_superuser = models.BooleanField(
+        _('superuser status'), default=False, help_text=_(
+            'Designates that this user has all permissions without '
+            'explicitly assigning them.'))
 
-    username = models.CharField(_('username'), max_length=30, unique=True,
-        help_text=_('Required. 30 characters or fewer. Letters, numbers and '
-                    '@/./+/-/_ characters'),
+    username = models.CharField(
+        _('username'),
+        max_length=30,
+        unique=True,
+        help_text=_(
+            'Required. 30 characters or fewer. Letters, numbers and '
+            '@/./+/-/_ characters'),
         validators=[
-            validators.RegexValidator(re.compile('^[\w.@+-]+$'), _('Enter a valid username.'), 'invalid')
-    ])
-    display_name = models.CharField(default='', max_length=127,
+            validators.RegexValidator(
+                re.compile(kb_common.USERNAME_REGEX),
+                _('Enter a valid username.'),
+                'invalid')])
+    display_name = models.CharField(
+        default='',
+        max_length=127,
         help_text='Full name, will be shown in some places instead of username')
 
     email = models.EmailField(_('email address'), blank=True)
-    is_staff = models.BooleanField(_('staff status'), default=False,
-        help_text=_('Designates whether the user can log into this admin '
-                    'site.'))
-    is_active = models.BooleanField(_('active'), default=True,
-        help_text=_('Designates whether this user should be treated as '
-                    'active. Unselect this instead of deleting accounts.'))
+    is_staff = models.BooleanField(_('staff status'), default=False, help_text=_(
+        'Designates whether the user can log into this admin ' 'site.'))
+    is_active = models.BooleanField(
+        _('active'), default=True, help_text=_(
+            'Designates whether this user should be treated as '
+            'active. Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
-    ### Kegbot fields.
+    # Kegbot fields.
 
     mugshot = models.ForeignKey('Picture', blank=True, null=True,
-        related_name='user_mugshot',
-        on_delete=models.SET_NULL)
+                                related_name='user_mugshot',
+                                on_delete=models.SET_NULL)
     activation_key = models.CharField(max_length=128, blank=True,
-        null=True,
-        help_text='Unguessable token, used to finish registration.')
+                                      null=True,
+                                      help_text='Unguessable token, used to finish registration.')
 
     objects = UserManager()
 
@@ -135,7 +144,7 @@ class User(AbstractBaseUser):
     def __unicode__(self):
         return self.username
 
-    ### Django-required methods.
+    # Django-required methods.
 
     def get_full_name(self):
         return self.display_name
@@ -155,7 +164,7 @@ class User(AbstractBaseUser):
         """
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
-    ### Other methods.
+    # Other methods.
 
     def get_absolute_url(self):
         return reverse('kb-drinker', kwargs={'username': self.username})
@@ -168,7 +177,7 @@ class User(AbstractBaseUser):
 
     def get_api_key(self):
         api_key, new = ApiKey.objects.get_or_create(user=self,
-            defaults={'key': ApiKey.generate_key()})
+                                                    defaults={'key': ApiKey.generate_key()})
         return api_key.key
 
 
@@ -177,24 +186,28 @@ def _user_pre_save(sender, instance, **kwargs):
     if not user.display_name:
         user.display_name = user.username
 
+
 pre_save.connect(_user_pre_save, sender=User)
 
 
 class Invitation(models.Model):
     """A time-sensitive cookie which can be used to create an account."""
 
-    invite_code = models.CharField(unique=True, max_length=255,
+    invite_code = models.CharField(
+        unique=True,
+        max_length=255,
         default=get_default_invite_code,
         help_text='Unguessable token which must be presented to use this invite')
     for_email = models.EmailField(
         help_text='Address this invitation was sent to.')
     invited_date = models.DateTimeField(_('date invited'), auto_now_add=True,
-        help_text='Date and time the invitation was sent')
-    expires_date = models.DateTimeField(_('date expries'),
+                                        help_text='Date and time the invitation was sent')
+    expires_date = models.DateTimeField(
+        _('date expries'),
         default=get_default_expires_date,
         help_text='Date and time after which the invitation is considered expired')
     invited_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
-        help_text='User that created this invitation, if any.')
+                                   help_text='User that created this invitation, if any.')
 
     def is_expired(self, now=None):
         if now is None:
@@ -238,27 +251,34 @@ class KegbotSite(models.Model):
     DEFAULT_REGISTRATION_MODE = 'public'
 
     name = models.CharField(max_length=64, unique=True, default='default',
-        editable=False)
+                            editable=False)
     server_version = models.CharField(max_length=64, null=True, editable=False)
     is_setup = models.BooleanField(default=False,
-        help_text='True if the site has completed setup.',
-        editable=False)
+                                   help_text='True if the site has completed setup.',
+                                   editable=False)
     registration_id = models.TextField(max_length=128, editable=False,
-        blank=True, default='',
-        help_text='A unique id for this system.')
+                                       blank=True, default='',
+                                       help_text='A unique id for this system.')
 
-    volume_display_units = models.CharField(max_length=64,
-        choices=VOLUME_DISPLAY_UNITS_CHOICES, default='imperial',
+    volume_display_units = models.CharField(
+        max_length=64,
+        choices=VOLUME_DISPLAY_UNITS_CHOICES,
+        default='imperial',
         help_text='Unit system to use when displaying volumetric data.')
-    temperature_display_units = models.CharField(max_length=64,
-        choices=TEMPERATURE_DISPLAY_UNITS_CHOICES, default='f',
+    temperature_display_units = models.CharField(
+        max_length=64,
+        choices=TEMPERATURE_DISPLAY_UNITS_CHOICES,
+        default='f',
         help_text='Unit system to use when displaying temperature data.')
     title = models.CharField(max_length=64, default='My Kegbot',
-        help_text='The title of this site.')
+                             help_text='The title of this site.')
     background_image = models.ForeignKey('Picture', blank=True, null=True,
-        on_delete=models.SET_NULL,
-        help_text='Background for this site.')
-    google_analytics_id = models.CharField(blank=True, null=True, max_length=64,
+                                         on_delete=models.SET_NULL,
+                                         help_text='Background for this site.')
+    google_analytics_id = models.CharField(
+        blank=True,
+        null=True,
+        max_length=64,
         help_text='Set to your Google Analytics ID to enable tracking. '
         'Example: UA-XXXX-y')
     session_timeout_minutes = models.PositiveIntegerField(
@@ -267,22 +287,22 @@ class KegbotSite(models.Model):
         'before it is considered to be finished.  '
         'Recommended value is %s.' % kb_common.DRINK_SESSION_TIME_MINUTES)
     privacy = models.CharField(max_length=63, choices=PRIVACY_CHOICES,
-        default=DEFAULT_PRIVACY,
-        help_text='Who can view Kegbot data?')
+                               default=DEFAULT_PRIVACY,
+                               help_text='Who can view Kegbot data?')
     registration_mode = models.CharField(max_length=63, choices=REGISTRATION_MODE_CHOICES,
-        default=DEFAULT_REGISTRATION_MODE,
-        help_text='Who can join this Kegbot from the web site?')
+                                         default=DEFAULT_REGISTRATION_MODE,
+                                         help_text='Who can join this Kegbot from the web site?')
     timezone = models.CharField(max_length=255, choices=TIMEZONE_CHOICES,
-        default='UTC',
-        help_text='Time zone for this system.')
+                                default='UTC',
+                                help_text='Time zone for this system.')
 
-    enable_sensing = models.BooleanField(default=True,
-        help_text='Enable and show features related to volume sensing.')
+    enable_sensing = models.BooleanField(
+        default=True, help_text='Enable and show features related to volume sensing.')
     enable_users = models.BooleanField(default=True,
-        help_text='Enable user pour tracking.')
+                                       help_text='Enable user pour tracking.')
 
-    check_for_updates = models.BooleanField(default=True,
-        help_text='Periodically check for updates '
+    check_for_updates = models.BooleanField(
+        default=True, help_text='Periodically check for updates '
         '(<a href="https://kegbot.org/about/checkin">more info</a>)')
 
     def __unicode__(self):
@@ -291,8 +311,9 @@ class KegbotSite(models.Model):
     @classmethod
     def get(cls):
         """Gets the default site settings."""
-        return KegbotSite.objects.get_or_create(name='default',
-            defaults={'is_setup': False, 'server_version': get_version()})[0]
+        return KegbotSite.objects.get_or_create(
+            name='default', defaults={
+                'is_setup': False, 'server_version': get_version()})[0]
 
     @classmethod
     def get_installed_version(cls):
@@ -343,25 +364,25 @@ class KegbotSite(models.Model):
 class Device(models.Model):
     name = models.CharField(max_length=255, default='Unknown Device')
     created_time = models.DateTimeField(default=timezone.now,
-        help_text='Time the device was created.')
+                                        help_text='Time the device was created.')
 
 
 class ApiKey(models.Model):
     """Grants access to certain API endpoints to a user via a secret key."""
 
     user = models.ForeignKey(User, blank=True, null=True,
-        help_text='User receiving API access.')
+                             help_text='User receiving API access.')
     device = models.ForeignKey(Device, null=True,
-        help_text='Device this key is associated with.')
+                               help_text='Device this key is associated with.')
     key = models.CharField(max_length=127, editable=False, unique=True,
-        default=get_default_api_key,
-        help_text='The secret key.')
+                           default=get_default_api_key,
+                           help_text='The secret key.')
     active = models.BooleanField(default=True,
-        help_text='Whether access by this key is currently allowed.')
+                                 help_text='Whether access by this key is currently allowed.')
     description = models.TextField(blank=True, null=True,
-        help_text='Information about this key.')
+                                   help_text='Information about this key.')
     created_time = models.DateTimeField(default=timezone.now,
-        help_text='Time the key was created.')
+                                        help_text='Time the key was created.')
 
     def is_active(self):
         """Returns true if both the key and the key's user are active."""
@@ -381,33 +402,35 @@ class ApiKey(models.Model):
 def _sitesettings_post_save(sender, instance, **kwargs):
     # Privacy settings may have changed.
     cache.clear()
+
+
 post_save.connect(_sitesettings_post_save, sender=KegbotSite)
 
 
 class BeverageProducer(models.Model):
     """Information about a beverage producer (brewer, vineyard, etc)."""
     name = models.CharField(max_length=255,
-        help_text='Name of the brewer')
+                            help_text='Name of the brewer')
     country = fields.CountryField(default='USA',
-        help_text='Country of origin')
+                                  help_text='Country of origin')
     origin_state = models.CharField(max_length=128,
-        default='', blank=True, null=True,
-        help_text='State of origin, if applicable')
+                                    default='', blank=True, null=True,
+                                    help_text='State of origin, if applicable')
     origin_city = models.CharField(max_length=128, default='', blank=True,
-        null=True,
-        help_text='City of origin, if known')
+                                   null=True,
+                                   help_text='City of origin, if known')
     is_homebrew = models.BooleanField(default=False)
     url = models.URLField(default='', blank=True, null=True,
-        help_text='Brewer\'s home page')
+                          help_text='Brewer\'s home page')
     description = models.TextField(default='', blank=True, null=True,
-        help_text='A short description of the brewer')
+                                   help_text='A short description of the brewer')
     picture = models.ForeignKey('Picture', blank=True, null=True,
-        on_delete=models.SET_NULL)
+                                on_delete=models.SET_NULL)
 
     beverage_backend = models.CharField(max_length=255, blank=True, null=True,
-        help_text='Future use.')
+                                        help_text='Future use.')
     beverage_backend_id = models.CharField(max_length=255, blank=True, null=True,
-        help_text='Future use.')
+                                           help_text='Future use.')
 
     class Meta:
         ordering = ('name',)
@@ -433,31 +456,35 @@ class Beverage(models.Model):
     )
 
     name = models.CharField(max_length=255,
-        help_text='Name of the beverage, such as "Potrero Pale".')
+                            help_text='Name of the beverage, such as "Potrero Pale".')
     producer = models.ForeignKey(BeverageProducer)
 
     beverage_type = models.CharField(max_length=32,
-        choices=TYPES,
-        default=TYPE_BEER)
+                                     choices=TYPES,
+                                     default=TYPE_BEER)
     style = models.CharField(max_length=255, blank=True, null=True,
-        help_text='Beverage style within type, eg "Pale Ale", "Pinot Noir".')
+                             help_text='Beverage style within type, eg "Pale Ale", "Pinot Noir".')
     description = models.TextField(blank=True, null=True,
-        help_text='Free-form description of the beverage.')
+                                   help_text='Free-form description of the beverage.')
 
     picture = models.ForeignKey('Picture', blank=True, null=True,
-        help_text='Label image.')
-    vintage_year = models.DateField(blank=True, null=True,
+                                help_text='Label image.')
+    vintage_year = models.DateField(
+        blank=True,
+        null=True,
         help_text='Date of production, for wines or special/seasonal editions')
 
     abv_percent = models.FloatField(blank=True, null=True,
-        verbose_name='ABV Percentage',
-        help_text='Alcohol by volume, as percentage (0.0-100.0).')
+                                    verbose_name='ABV Percentage',
+                                    help_text='Alcohol by volume, as percentage (0.0-100.0).')
     calories_per_ml = models.FloatField(blank=True, null=True,
-        help_text='Calories per mL of beverage.')
+                                        help_text='Calories per mL of beverage.')
     carbs_per_ml = models.FloatField(blank=True, null=True,
-        help_text='Carbohydrates per mL of beverage.')
+                                     help_text='Carbohydrates per mL of beverage.')
 
-    color_hex = models.CharField(max_length=16, default=colors.DEFAULT_COLOR,
+    color_hex = models.CharField(
+        max_length=16,
+        default=colors.DEFAULT_COLOR,
         validators=[
             RegexValidator(
                 regex='(^#[0-9a-zA-Z]{3}$)|(^#[0-9a-zA-Z]{6}$)',
@@ -468,25 +495,25 @@ class Beverage(models.Model):
         verbose_name='Color (Hex Value)',
         help_text='Approximate beverage color')
     original_gravity = models.FloatField(blank=True, null=True,
-        help_text='Original gravity (beer only).')
+                                         help_text='Original gravity (beer only).')
     specific_gravity = models.FloatField(blank=True, null=True,
-        help_text='Final gravity (beer only).')
+                                         help_text='Final gravity (beer only).')
     srm = models.FloatField(blank=True, null=True,
-        verbose_name='SRM Value',
-        help_text='Standard Reference Method value (beer only).')
+                            verbose_name='SRM Value',
+                            help_text='Standard Reference Method value (beer only).')
     ibu = models.FloatField(blank=True, null=True,
-        verbose_name='IBUs',
-        help_text='International Bittering Units value (beer only).')
+                            verbose_name='IBUs',
+                            help_text='International Bittering Units value (beer only).')
     star_rating = models.FloatField(blank=True, null=True,
-        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
-        help_text='Star rating for beverage (0: worst, 5: best)')
+                                    validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
+                                    help_text='Star rating for beverage (0: worst, 5: best)')
     untappd_beer_id = models.IntegerField(blank=True, null=True,
-        help_text='Untappd.com resource ID (beer only).')
+                                          help_text='Untappd.com resource ID (beer only).')
 
     beverage_backend = models.CharField(max_length=255, blank=True, null=True,
-        help_text='Future use.')
+                                        help_text='Future use.')
     beverage_backend_id = models.CharField(max_length=255, blank=True, null=True,
-        help_text='Future use.')
+                                           help_text='Future use.')
 
     class Meta:
         ordering = ('name',)
@@ -500,18 +527,21 @@ class KegTap(models.Model):
     class Meta:
         ordering = ('sort_order', 'id')
     name = models.CharField(max_length=128,
-        help_text='The display name for this tap, for example, "Main Tap".')
+                            help_text='The display name for this tap, for example, "Main Tap".')
     notes = models.TextField(blank=True, null=True,
-        help_text='Private notes about this tap.')
+                             help_text='Private notes about this tap.')
     current_keg = models.OneToOneField('Keg', blank=True, null=True,
-        on_delete=models.SET_NULL,
-        related_name='current_tap',
-        help_text='Keg currently connected to this tap.')
-    temperature_sensor = models.ForeignKey('ThermoSensor', blank=True, null=True,
+                                       on_delete=models.SET_NULL,
+                                       related_name='current_tap',
+                                       help_text='Keg currently connected to this tap.')
+    temperature_sensor = models.ForeignKey(
+        'ThermoSensor',
+        blank=True,
+        null=True,
         on_delete=models.SET_NULL,
         help_text='Optional sensor monitoring the temperature at this tap.')
-    sort_order = models.PositiveIntegerField(default=0,
-        help_text='Position relative to other taps when sorting (0=first).')
+    sort_order = models.PositiveIntegerField(
+        default=0, help_text='Position relative to other taps when sorting (0=first).')
 
     def __unicode__(self):
         return u'{}: {}'.format(self.name, self.current_keg)
@@ -545,7 +575,7 @@ class KegTap(models.Model):
     def get_from_meter_name(cls, meter_name):
         try:
             meter = FlowMeter.get_from_meter_name(meter_name)
-        except FlowMeter.DoesNotExist, e:
+        except FlowMeter.DoesNotExist as e:
             raise cls.DoesNotExist(e)
         tap = meter.tap
         if not tap:
@@ -555,11 +585,11 @@ class KegTap(models.Model):
 
 class Controller(models.Model):
     name = models.CharField(max_length=128, unique=True,
-        help_text='Identifying name for this device; must be unique.')
+                            help_text='Identifying name for this device; must be unique.')
     model_name = models.CharField(max_length=128, blank=True, null=True,
-        help_text='Type of controller (optional).')
+                                  help_text='Type of controller (optional).')
     serial_number = models.CharField(max_length=128, blank=True, null=True,
-        help_text='Serial number (optional).')
+                                     help_text='Serial number (optional).')
 
     def __unicode__(self):
         return u'Controller: {}'.format(self.name)
@@ -569,15 +599,17 @@ class FlowMeter(models.Model):
     class Meta:
         unique_together = ('controller', 'port_name')
     controller = models.ForeignKey(Controller, related_name='meters',
-        help_text='Controller that owns this meter.')
+                                   help_text='Controller that owns this meter.')
     port_name = models.CharField(max_length=128,
-        help_text='Controller-specific data port name for this meter.')
+                                 help_text='Controller-specific data port name for this meter.')
     tap = models.OneToOneField(KegTap, blank=True, null=True,
-        related_name='meter',
-        help_text='Tap to which this meter is currently bound.')
-    ticks_per_ml = models.FloatField(default=kb_common.DEFAULT_TICKS_PER_ML,
+                               related_name='meter',
+                               help_text='Tap to which this meter is currently bound.')
+    ticks_per_ml = models.FloatField(
+        default=kb_common.DEFAULT_TICKS_PER_ML,
         help_text='Flow meter pulses per mL of fluid.  Common values: %s '
-        '(FT330-RJ), 5.4 (SF800)' % kb_common.DEFAULT_TICKS_PER_ML)
+        '(FT330-RJ), 5.4 (SF800)' %
+        kb_common.DEFAULT_TICKS_PER_ML)
 
     def meter_name(self):
         return '{}.{}'.format(self.controller.name, self.port_name)
@@ -621,12 +653,12 @@ class FlowToggle(models.Model):
     class Meta:
         unique_together = ('controller', 'port_name')
     controller = models.ForeignKey(Controller, related_name='toggles',
-        help_text='Controller that owns this toggle.')
+                                   help_text='Controller that owns this toggle.')
     port_name = models.CharField(max_length=128,
-        help_text='Controller-specific data port name for this toggle.')
+                                 help_text='Controller-specific data port name for this toggle.')
     tap = models.OneToOneField(KegTap, blank=True, null=True,
-        related_name='toggle',
-        help_text='Tap to which this toggle is currently bound.')
+                               related_name='toggle',
+                               help_text='Tap to which this toggle is currently bound.')
 
     def toggle_name(self):
         return u'{}.{}'.format(self.controller.name, self.port_name)
@@ -678,29 +710,30 @@ class Keg(models.Model):
         (STATUS_FINISHED, 'Finished'),
     )
     type = models.ForeignKey(Beverage,
-        on_delete=models.PROTECT,
-        help_text='Beverage in this Keg.')
-    keg_type = models.CharField(max_length=32,
+                             on_delete=models.PROTECT,
+                             help_text='Beverage in this Keg.')
+    keg_type = models.CharField(
+        max_length=32,
         choices=keg_sizes.DESCRIPTIONS.items(),
         default=keg_sizes.HALF_BARREL,
         help_text='Keg container type, used to initialize keg\'s full volume')
     served_volume_ml = models.FloatField(default=0, editable=False,
-        help_text='Computed served volume.')
-    full_volume_ml = models.FloatField(default=0,
-        help_text='Full volume of this Keg; usually set automatically from keg_type.')
+                                         help_text='Computed served volume.')
+    full_volume_ml = models.FloatField(
+        default=0, help_text='Full volume of this Keg; usually set automatically from keg_type.')
     start_time = models.DateTimeField(default=timezone.now,
-        help_text='Time the Keg was first tapped.')
+                                      help_text='Time the Keg was first tapped.')
     end_time = models.DateTimeField(default=timezone.now,
-        help_text='Time the Keg was finished or disconnected.')
+                                    help_text='Time the Keg was finished or disconnected.')
     status = models.CharField(max_length=32, choices=STATUS_CHOICES,
-        default=STATUS_AVAILABLE,
-        help_text='Current keg state.')
+                              default=STATUS_AVAILABLE,
+                              help_text='Current keg state.')
     description = models.TextField(blank=True, null=True,
-        help_text='User-visible description of the Keg.')
-    spilled_ml = models.FloatField(default=0,
-        help_text='Amount of beverage poured without an associated Drink.')
+                                   help_text='User-visible description of the Keg.')
+    spilled_ml = models.FloatField(
+        default=0, help_text='Amount of beverage poured without an associated Drink.')
     notes = models.TextField(blank=True, null=True,
-        help_text='Private notes about this keg, viewable only by admins.')
+                             help_text='Private notes about this keg, viewable only by admins.')
 
     def get_absolute_url(self):
         return reverse('kb-keg', args=(str(self.id),))
@@ -776,7 +809,10 @@ class Keg(models.Model):
         return self.get_illustration(thumbnail=True)
 
     def get_sessions(self):
-        sessions_ids = Drink.objects.filter(keg=self.id).values('session_id').annotate(id=models.Count('id'), time=models.Count('time'))
+        sessions_ids = Drink.objects.filter(
+            keg=self.id).values('session_id').annotate(
+            id=models.Count('id'),
+            time=models.Count('time'))
         pks = [x.get('session_id') for x in sessions_ids]
         return [DrinkingSession.objects.get(pk=pk) for pk in pks]
 
@@ -819,6 +855,7 @@ def _keg_pre_save(sender, instance, **kwargs):
         if drink.time > keg.end_time:
             keg.end_time = drink.time
 
+
 pre_save.connect(_keg_pre_save, sender=Keg)
 
 
@@ -829,29 +866,35 @@ class Drink(models.Model):
         ordering = ('-time',)
 
     ticks = models.PositiveIntegerField(editable=False,
-        help_text='Flow sensor ticks, never changed once recorded.')
+                                        help_text='Flow sensor ticks, never changed once recorded.')
     volume_ml = models.FloatField(editable=False,
-        help_text='Calculated (or set) Drink volume.')
+                                  help_text='Calculated (or set) Drink volume.')
     time = models.DateTimeField(editable=False,
-      help_text='Date and time of pour.')
+                                help_text='Date and time of pour.')
     duration = models.PositiveIntegerField(blank=True, default=0, editable=False,
-        help_text='Time in seconds taken to pour this Drink.')
-    user = models.ForeignKey(User, related_name='drinks', editable=False,
+                                           help_text='Time in seconds taken to pour this Drink.')
+    user = models.ForeignKey(
+        User,
+        related_name='drinks',
+        editable=False,
         help_text='User responsible for this Drink, or None if anonymous/unknown.')
     keg = models.ForeignKey(Keg, related_name='drinks',
-        on_delete=models.PROTECT, editable=False,
-        help_text='Keg against which this Drink is accounted.')
+                            on_delete=models.PROTECT, editable=False,
+                            help_text='Keg against which this Drink is accounted.')
     session = models.ForeignKey('DrinkingSession',
-        related_name='drinks', null=True, blank=True, editable=False,
-        on_delete=models.PROTECT,
-        help_text='Session where this Drink is grouped.')
+                                related_name='drinks', null=True, blank=True, editable=False,
+                                on_delete=models.PROTECT,
+                                help_text='Session where this Drink is grouped.')
     shout = models.TextField(blank=True, null=True,
-        help_text='Comment from the drinker at the time of the pour.')
-    tick_time_series = models.TextField(blank=True, null=True, editable=False,
+                             help_text='Comment from the drinker at the time of the pour.')
+    tick_time_series = models.TextField(
+        blank=True,
+        null=True,
+        editable=False,
         help_text='Tick update sequence that generated this drink (diagnostic data).')
     picture = models.OneToOneField('Picture', blank=True, null=True,
-        on_delete=models.SET_NULL,
-        help_text='Picture snapped with this drink.')
+                                   on_delete=models.SET_NULL,
+                                   help_text='Picture snapped with this drink.')
 
     def is_guest_pour(self):
         return self.user is None or self.user.is_guest()
@@ -881,22 +924,26 @@ class AuthenticationToken(models.Model):
         unique_together = ('auth_device', 'token_value')
 
     auth_device = models.CharField(max_length=64,
-        help_text='Namespace for this token.')
-    token_value = models.CharField(max_length=128,
+                                   help_text='Namespace for this token.')
+    token_value = models.CharField(
+        max_length=128,
         help_text='Actual value of the token, unique within an auth_device.')
-    nice_name = models.CharField(max_length=256, blank=True, null=True,
+    nice_name = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
         help_text='A human-readable alias for the token, for example "Guest Key".')
     pin = models.CharField(max_length=256, blank=True, null=True,
-        help_text='A secret value necessary to authenticate with this token.')
+                           help_text='A secret value necessary to authenticate with this token.')
     user = models.ForeignKey(User, blank=True, null=True,
-        related_name='tokens',
-        help_text='User in possession of and authenticated by this token.')
+                             related_name='tokens',
+                             help_text='User in possession of and authenticated by this token.')
     enabled = models.BooleanField(default=True,
-        help_text='Whether this token is considered active.')
+                                  help_text='Whether this token is considered active.')
     created_time = models.DateTimeField(auto_now_add=True,
-        help_text='Date token was first added to the system.')
+                                        help_text='Date token was first added to the system.')
     expire_time = models.DateTimeField(blank=True, null=True,
-        help_text='Date after which token is treated as disabled.')
+                                       help_text='Date after which token is treated as disabled.')
 
     def __unicode__(self):
         auth_device = self.auth_device
@@ -932,6 +979,7 @@ class AuthenticationToken(models.Model):
 def _auth_token_pre_save(sender, instance, **kwargs):
     if instance.auth_device in kb_common.AUTH_MODULE_NAMES_HEX_VALUES:
         instance.token_value = instance.token_value.lower()
+
 
 pre_save.connect(_auth_token_pre_save, sender=AuthenticationToken)
 
@@ -1150,7 +1198,7 @@ class Stats(models.Model):
     drink = models.ForeignKey(Drink)
 
     is_first = models.BooleanField(default=False,
-        help_text='True if this is the most first record for the view.')
+                                   help_text='True if this is the most first record for the view.')
 
     # Any combination of these fields is allowed.
     user = models.ForeignKey(User, related_name='stats', null=True)
@@ -1171,7 +1219,8 @@ class Stats(models.Model):
                 return None
         orig = stats.get('registered_drinkers', [])
         if orig:
-            stats['registered_drinkers'] = [safe_get_user(pk).username for pk in orig if safe_get_user(pk)]
+            stats['registered_drinkers'] = [
+                safe_get_user(pk).username for pk in orig if safe_get_user(pk)]
 
         orig = stats.get('volume_by_drinker', util.AttrDict())
         if orig:
@@ -1214,20 +1263,20 @@ class SystemEvent(models.Model):
     )
 
     kind = models.CharField(max_length=255, choices=KINDS,
-        help_text='Type of event.')
+                            help_text='Type of event.')
     time = models.DateTimeField(help_text='Time of the event.')
     user = models.ForeignKey(User, blank=True, null=True,
-        related_name='events',
-        help_text='User responsible for the event, if any.')
+                             related_name='events',
+                             help_text='User responsible for the event, if any.')
     drink = models.ForeignKey(Drink, blank=True, null=True,
-        related_name='events',
-        help_text='Drink involved in the event, if any.')
+                              related_name='events',
+                              help_text='Drink involved in the event, if any.')
     keg = models.ForeignKey(Keg, blank=True, null=True,
-        related_name='events',
-        help_text='Keg involved in the event, if any.')
+                            related_name='events',
+                            help_text='Keg involved in the event, if any.')
     session = models.ForeignKey(DrinkingSession, blank=True, null=True,
-        related_name='events',
-        help_text='Session involved in the event, if any.')
+                                related_name='events',
+                                help_text='Session involved in the event, if any.')
 
     objects = managers.SystemEventManager()
 
@@ -1238,7 +1287,7 @@ class SystemEvent(models.Model):
             ret = u'Session {} started by drink {}'.format(self.session.id, self.drink.id)
         elif self.kind == self.SESSION_JOINED:
             ret = u'Session {} joined by {} (drink {})'.format(self.session.id,
-                self.user.username, self.drink.id)
+                                                               self.user.username, self.drink.id)
         elif self.kind == self.KEG_TAPPED:
             ret = u'Keg {} tapped'.format(self.keg.id)
         elif self.kind == self.KEG_VOLUME_LOW:
@@ -1281,7 +1330,7 @@ class SystemEvent(models.Model):
             q = session.events.filter(kind=cls.SESSION_STARTED)
             if q.count() == 0:
                 e = session.events.create(kind=cls.SESSION_STARTED,
-                    time=session.start_time, drink=drink, user=user)
+                                          time=session.start_time, drink=drink, user=user)
                 e.save()
                 events.append(e)
 
@@ -1289,13 +1338,13 @@ class SystemEvent(models.Model):
             q = user.events.filter(kind=cls.SESSION_JOINED, session=session)
             if q.count() == 0:
                 e = user.events.create(kind=cls.SESSION_JOINED,
-                    time=drink.time, session=session, drink=drink, user=user)
+                                       time=drink.time, session=session, drink=drink, user=user)
                 e.save()
                 events.append(e)
 
         e = drink.events.create(kind=cls.DRINK_POURED,
-            time=drink.time, drink=drink, user=user, keg=keg,
-            session=session)
+                                time=drink.time, drink=drink, user=user, keg=keg,
+                                session=session)
         e.save()
         events.append(e)
 
@@ -1305,8 +1354,8 @@ class SystemEvent(models.Model):
 
         if volume_now <= threshold and volume_before > threshold:
             e = drink.events.create(kind=cls.KEG_VOLUME_LOW,
-                time=drink.time, drink=drink, user=user, keg=keg,
-                session=session)
+                                    time=drink.time, drink=drink, user=user, keg=keg,
+                                    session=session)
             e.save()
             events.append(e)
 
@@ -1327,39 +1376,43 @@ def _pics_file_name(instance, filename, now=None, uuid_str=None):
 
 class Picture(models.Model):
     image = models.ImageField(upload_to=_pics_file_name,
-        help_text='The image')
+                              help_text='The image')
     resized = ImageSpecField(source='image',
-        processors=[resize.ResizeToFit(1024, 1024)],
-        format='JPEG',
-        options={'quality': 100})
+                             processors=[resize.ResizeToFit(1024, 1024)],
+                             format='JPEG',
+                             options={'quality': 100})
     resized_png = ImageSpecField(source='image',
-        processors=[resize.ResizeToFit(1024, 1024)],
-        format='PNG',
-        options={'quality': 100})
-    thumbnail = ImageSpecField(source='image',
-        processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(128, 128)],
-        format='JPEG',
-        options={'quality': 90})
-    thumbnail_png = ImageSpecField(source='image',
-        processors=[Adjust(contrast=1.2, sharpness=1.1), resize.SmartResize(128, 128)],
-        format='PNG',
-        options={'quality': 90})
+                                 processors=[resize.ResizeToFit(1024, 1024)],
+                                 format='PNG',
+                                 options={'quality': 100})
+    thumbnail = ImageSpecField(
+        source='image', processors=[
+            Adjust(
+                contrast=1.2, sharpness=1.1), resize.SmartResize(
+                128, 128)], format='JPEG', options={
+                    'quality': 90})
+    thumbnail_png = ImageSpecField(
+        source='image', processors=[
+            Adjust(
+                contrast=1.2, sharpness=1.1), resize.SmartResize(
+                128, 128)], format='PNG', options={
+                    'quality': 90})
 
     time = models.DateTimeField(default=timezone.now,
-        help_text='Time/date of image capture')
+                                help_text='Time/date of image capture')
     caption = models.TextField(blank=True, null=True,
-        help_text='Caption for the picture, if any.')
+                               help_text='Caption for the picture, if any.')
     user = models.ForeignKey(User, blank=True, null=True,
-        related_name='pictures',
-        help_text='User that owns/uploaded this picture')
+                             related_name='pictures',
+                             help_text='User that owns/uploaded this picture')
     keg = models.ForeignKey(Keg, blank=True, null=True,
-        related_name='pictures',
-        on_delete=models.SET_NULL,
-        help_text='Keg this picture was taken with, if any.')
+                            related_name='pictures',
+                            on_delete=models.SET_NULL,
+                            help_text='Keg this picture was taken with, if any.')
     session = models.ForeignKey(DrinkingSession, blank=True, null=True,
-        related_name='pictures',
-        on_delete=models.SET_NULL,
-        help_text='Session this picture was taken with, if any.')
+                                related_name='pictures',
+                                on_delete=models.SET_NULL,
+                                help_text='Session this picture was taken with, if any.')
 
     def __unicode__(self):
         return u'Picture: {}'.format(self.image)
@@ -1407,17 +1460,17 @@ class NotificationSettings(models.Model):
         unique_together = ('user', 'backend')
 
     user = models.ForeignKey(User,
-        help_text='User for these settings.')
+                             help_text='User for these settings.')
     backend = models.CharField(max_length=255,
-        help_text='Notification backend (dotted path) for these settings.')
+                               help_text='Notification backend (dotted path) for these settings.')
     keg_tapped = models.BooleanField(default=True,
-        help_text='Sent when a keg is activated.')
+                                     help_text='Sent when a keg is activated.')
     session_started = models.BooleanField(default=False,
-        help_text='Sent when a new drinking session starts.')
+                                          help_text='Sent when a new drinking session starts.')
     keg_volume_low = models.BooleanField(default=False,
-        help_text='Sent when a keg becomes low.')
+                                         help_text='Sent when a keg becomes low.')
     keg_ended = models.BooleanField(default=False,
-        help_text='Sent when a keg has been taken offline.')
+                                    help_text='Sent when a keg has been taken offline.')
 
 
 class PluginData(models.Model):
@@ -1427,6 +1480,6 @@ class PluginData(models.Model):
         unique_together = ('plugin_name', 'key')
 
     plugin_name = models.CharField(max_length=127,
-        help_text='Plugin short name')
+                                   help_text='Plugin short name')
     key = models.CharField(max_length=127)
     value = JSONField()

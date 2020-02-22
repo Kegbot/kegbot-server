@@ -18,11 +18,12 @@
 
 from __future__ import absolute_import
 
+from django.conf import settings
+from django.utils.module_loading import import_string
+from django.core.exceptions import ImproperlyConfigured
+
 import logging
 logger = logging.getLogger('notification')
-
-from django.conf import settings
-from django.utils.module_loading import import_by_path
 
 __all__ = ['get_backends', 'handle_new_system_events']
 
@@ -30,7 +31,10 @@ __all__ = ['get_backends', 'handle_new_system_events']
 def get_backends():
     """Returns the enabled notification backend(s)."""
     backend_names = settings.NOTIFICATION_BACKENDS
-    backends = [import_by_path(n)() for n in backend_names]
+    try:
+        backends = [import_string(n)() for n in backend_names]
+    except ImportError as e:
+        raise ImproperlyConfigured(e)
     return backends
 
 

@@ -72,7 +72,7 @@ class KegbotBackend(object):
         """Creates and returns a User for the given username."""
         try:
             user = get_auth_backend().register(username=username, email=email,
-                    password=password, photo=photo)
+                                               password=password, photo=photo)
             signals.user_created.send_robust(sender=self.__class__, user=user)
             return user
         except UserExistsException as e:
@@ -141,8 +141,8 @@ class KegbotBackend(object):
 
     @transaction.atomic
     def record_drink(self, tap, ticks, volume_ml=None, username=None,
-            pour_time=None, duration=0, shout='', tick_time_series='', photo=None,
-            spilled=False):
+                     pour_time=None, duration=0, shout='', tick_time_series='', photo=None,
+                     spilled=False):
         """Records a new drink against a given tap.
 
         The tap must have a Keg assigned to it (KegTap.current_keg), and the keg
@@ -206,8 +206,8 @@ class KegbotBackend(object):
                 tick_time_series = ''
 
         d = models.Drink(ticks=ticks, keg=keg, user=user,
-            volume_ml=volume_ml, time=pour_time, duration=duration,
-            shout=shout, tick_time_series=tick_time_series)
+                         volume_ml=volume_ml, time=pour_time, duration=duration,
+                         shout=shout, tick_time_series=tick_time_series)
         models.DrinkingSession.AssignSessionForDrink(d)
         d.save()
 
@@ -327,7 +327,7 @@ class KegbotBackend(object):
         self.rebuild_stats(drink.id)
 
         signals.drink_assigned.send_robust(sender=self.__class__, drink=drink,
-            previous_user=previous_user)
+                                           previous_user=previous_user)
         return drink
 
     def set_drink_volume(self, drink, volume_ml):
@@ -350,7 +350,7 @@ class KegbotBackend(object):
             self.rebuild_stats(drink.id)
 
         signals.drink_adjusted.send_robust(sender=self.__class__, drink=drink,
-            previous_volume=previous_volume)
+                                           previous_volume=previous_volume)
 
     @transaction.atomic
     def log_sensor_reading(self, sensor_name, temperature, when=None):
@@ -397,7 +397,7 @@ class KegbotBackend(object):
             'temp': temperature,
         }
         record, created = models.Thermolog.objects.get_or_create(sensor=sensor,
-          time=when, defaults=log_defaults)
+                                                                 time=when, defaults=log_defaults)
         record.temp = temperature
         record.save()
 
@@ -428,19 +428,19 @@ class KegbotBackend(object):
             token_value = token_value.lower()
         try:
             return models.AuthenticationToken.objects.get(auth_device=auth_device,
-                token_value=token_value)
+                                                          token_value=token_value)
         except models.AuthenticationToken.DoesNotExist:
             # TODO(mikey): return None instead of raising.
             raise exceptions.NoTokenError
 
     @transaction.atomic
     def start_keg(self, tap, beverage=None, keg_type=keg_sizes.HALF_BARREL,
-            full_volume_ml=None, beverage_name=None, beverage_type=None,
-            producer_name=None, style_name=None, when=None):
+                  full_volume_ml=None, beverage_name=None, beverage_type=None,
+                  producer_name=None, style_name=None, when=None):
         """Creates and attaches a new keg."""
         tap = self._get_tap(tap)
         keg = self.create_keg(beverage, keg_type, full_volume_ml, beverage_name, beverage_type,
-                producer_name, style_name, notes=None, description=None, when=when)
+                              producer_name, style_name, notes=None, description=None, when=when)
         return self.attach_keg(tap, keg)
 
     @transaction.atomic
@@ -523,9 +523,9 @@ class KegbotBackend(object):
 
     @transaction.atomic
     def create_keg(self, beverage=None, keg_type=keg_sizes.HALF_BARREL,
-            full_volume_ml=None, beverage_name=None, beverage_type=None,
-            producer_name=None, style_name=None, notes=None, description=None,
-            when=None):
+                   full_volume_ml=None, beverage_name=None, beverage_type=None,
+                   producer_name=None, style_name=None, notes=None, description=None,
+                   when=None):
         """Adds a new keg to the keg room (queue).
 
         A beverage must be specified, either by providing an existing
@@ -569,8 +569,8 @@ class KegbotBackend(object):
             if not style_name:
                 raise ValueError('Must supply style_name when beverage is None')
             producer = models.BeverageProducer.objects.get_or_create(name=producer_name)[0]
-            beverage = models.Beverage.objects.get_or_create(name=beverage_name, beverage_type=beverage_type,
-                    producer=producer, style=style_name)[0]
+            beverage = models.Beverage.objects.get_or_create(
+                name=beverage_name, beverage_type=beverage_type, producer=producer, style=style_name)[0]
 
         if keg_type not in keg_sizes.DESCRIPTIONS:
             raise ValueError('Unrecognized keg type: %s' % keg_type)
@@ -582,9 +582,14 @@ class KegbotBackend(object):
         if not when:
             when = timezone.now()
 
-        keg = models.Keg.objects.create(type=beverage, keg_type=keg_type,
-                full_volume_ml=full_volume_ml,
-                start_time=when, end_time=when, notes=notes, description=description)
+        keg = models.Keg.objects.create(
+            type=beverage,
+            keg_type=keg_type,
+            full_volume_ml=full_volume_ml,
+            start_time=when,
+            end_time=when,
+            notes=notes,
+            description=description)
         signals.keg_created.send_robust(sender=self.__class__, keg=keg)
         return keg
 
@@ -652,7 +657,7 @@ class KegbotBackend(object):
             return keg_tap_or_meter_name
         try:
             return models.KegTap.get_from_meter_name(keg_tap_or_meter_name)
-        except models.KegTap.DoesNotExist, e:
+        except models.KegTap.DoesNotExist as e:
             raise exceptions.BackendError('Invalid tap: %s: %s' % (repr(keg_tap_or_meter_name), e))
 
     def _get_sensor_from_name(self, name, autocreate=True):

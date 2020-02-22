@@ -41,7 +41,7 @@ class UserExistsException(AuthException):
 
 class AuthBackend(object):
 
-    ### Django methods
+    # Django methods
 
     def authenticate(self, **credentials):
         raise NotImplementedError
@@ -49,7 +49,7 @@ class AuthBackend(object):
     def get_user(self, user_id):
         raise NotImplementedError
 
-    ### Kegbot methods
+    # Kegbot methods
 
     def is_manager(self, user):
         """Returns true if this user has manager privileges.

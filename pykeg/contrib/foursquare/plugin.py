@@ -18,16 +18,14 @@
 
 """Foursquare plugin for Kegbot."""
 
-from django.conf import settings
 from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.plugin import util
 
-import foursquare
-
 from . import forms
 from . import tasks
 from . import views
+from .client import FoursquareClient
 
 KEY_SITE_SETTINGS = 'settings'
 KEY_CLIENT_ID = 'client_id'
@@ -50,8 +48,8 @@ class FoursquarePlugin(plugin.Plugin):
 
     def get_extra_user_views(self):
         return [
-            ('redirect/$', 'pykeg.contrib.foursquare.views.auth_redirect', 'redirect'),
-            ('callback/$', 'pykeg.contrib.foursquare.views.auth_callback', 'callback'),
+            ('redirect/$', views.auth_redirect, 'redirect'),
+            ('callback/$', views.auth_callback, 'callback'),
         ]
 
     def handle_new_events(self, events):
@@ -92,20 +90,15 @@ class FoursquarePlugin(plugin.Plugin):
         with SuppressTaskErrors(self.logger):
             tasks.foursquare_checkin.delay(token, venue_id)
 
-    ### Foursquare-specific methods
+    # Foursquare-specific methods
 
     def get_credentials(self):
-        if settings.EMBEDDED:
-            return (
-                getattr(settings, 'FOURSQUARE_CLIENT_ID', ''),
-                getattr(settings, 'FOURSQUARE_CLIENT_SECRET', ''),
-            )
         data = self.get_site_settings()
         return data.get('client_id'), data.get('client_secret')
 
-    def get_foursquare_client(self):
+    def get_client(self):
         client_id, client_secret = self.get_credentials()
-        client = foursquare.Foursquare(client_id=client_id, client_secret=client_secret)
+        client = FoursquareClient(client_id, client_secret)
         return client
 
     def get_venue_id(self):

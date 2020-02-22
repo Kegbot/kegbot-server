@@ -18,6 +18,7 @@
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
+from pykeg import config
 from pykeg.core.util import get_version_object
 from pykeg.core.util import set_current_request
 from pykeg.core.util import must_upgrade
@@ -27,9 +28,7 @@ from pykeg.plugin import util as plugin_util
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.http import HttpResponseServerError
-from django.template.response import SimpleTemplateResponse
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils import timezone
 
 import logging
@@ -57,22 +56,44 @@ def _path_allowed(path, kbsite):
     return False
 
 
-class CurrentRequestMiddleware:
+class CurrentRequestMiddleware(object):
     """Set/clear the current request."""
-    def process_request(self, request):
-        set_current_request(request)
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-    def process_response(self, request, response):
-        set_current_request(None)
+    def __call__(self, request):
+        set_current_request(request)
+        try:
+            response = self.get_response(request)
+        finally:
+            set_current_request(None)
         return response
 
 
-class KegbotSiteMiddleware:
+class IsSetupMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if not config.is_setup():
+            # Disable the auth user middleware.
+            request.session = {}
+            request.session['_auth_user_backend'] = None
+
+            if not request.path.startswith('/setup'):
+                return render(request, 'setup_wizard/setup_required.html', status=403)
+        return self.get_response(request)
+
+
+class KegbotSiteMiddleware(object):
     ALLOWED_VIEW_MODULE_PREFIXES = (
         'pykeg.web.setup_wizard.',
     )
 
-    def process_request(self, request):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         request.need_setup = False
         request.need_upgrade = False
         request.kbsite = None
@@ -88,13 +109,13 @@ class KegbotSiteMiddleware:
             request.kbsite = models.KegbotSite.objects.get(name='default')
             if request.kbsite.is_setup:
                 timezone.activate(request.kbsite.timezone)
-                request.plugins = dict((p.get_short_name(), p) for p in plugin_util.get_plugins().values())
+                request.plugins = dict((p.get_short_name(), p)
+                                       for p in plugin_util.get_plugins().values())
             else:
                 request.need_setup = True
+            request.backend = get_kegbot_backend()
 
-        request.backend = get_kegbot_backend()
-
-        return None
+        return self.get_response(request)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
@@ -113,26 +134,27 @@ class KegbotSiteMiddleware:
         return None
 
     def _setup_required(self, request):
-        if settings.EMBEDDED:
-            return HttpResponseServerError('Site is not set up.', content_type='text/plain')
-        return SimpleTemplateResponse('setup_wizard/setup_required.html',
-            context=RequestContext(request), status=403)
+        return render(request, 'setup_wizard/setup_required.html', status=403)
 
     def _upgrade_required(self, request):
-        if settings.EMBEDDED:
-            return HttpResponseServerError('Site needs upgrade.', content_type='text/plain')
-        context = RequestContext(request)
-        context['installed_version'] = getattr(request, 'installed_version_string', None)
-        return SimpleTemplateResponse('setup_wizard/upgrade_required.html',
-            context=context, status=403)
+        context = {
+            'installed_version': getattr(request, 'installed_version_string', None),
+        }
+        return render(request, 'setup_wizard/upgrade_required.html',
+                      context=context, status=403)
 
 
-class PrivacyMiddleware:
+class PrivacyMiddleware(object):
     """Enforces site privacy settings.
 
     Must be installed after ApiRequestMiddleware (in request order) to
     access is_kb_api_request attribute.
     """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         if not hasattr(request, 'kbsite'):
@@ -149,13 +171,13 @@ class PrivacyMiddleware:
             return None
         elif privacy == 'staff':
             if not request.user.is_staff:
-                return SimpleTemplateResponse('kegweb/staff_only.html',
-                    context=RequestContext(request), status=401)
+                return render(request, 'kegweb/staff_only.html', status=401)
             return None
         elif privacy == 'members':
             if not request.user.is_authenticated() or not request.user.is_active:
-                return SimpleTemplateResponse('kegweb/members_only.html',
-                    context=RequestContext(request), status=401)
+                return render(request, 'kegweb/members_only.html', status=401)
             return None
 
-        return HttpResponse('Server misconfigured, unknown privacy setting:%s' % privacy, status=500)
+        return HttpResponse(
+            'Server misconfigured, unknown privacy setting:%s' %
+            privacy, status=500)

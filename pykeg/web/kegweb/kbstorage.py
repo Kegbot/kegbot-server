@@ -46,6 +46,7 @@ class KegbotFileSystemStorage(FileSystemStorage):
             self.base_url = urlparse.urljoin(base_url, self.base_url)
         return super(KegbotFileSystemStorage, self).url(name)
 
+
 if S3BotoStorage:
     class S3StaticStorage(S3BotoStorage):
         """Uses settings.S3_STATIC_BUCKET instead of AWS_STORAGE_BUCKET_NAME."""

@@ -59,7 +59,7 @@ def check_api_key(request):
     """Check a request for an API key."""
     keystr = request.META.get('HTTP_X_KEGBOT_API_KEY')
     if not keystr:
-        keystr = request.REQUEST.get('api_key')
+        keystr = request.POST.get('api_key', request.GET.get('api_key', None))
     if not keystr:
         raise kbapi.NoAuthTokenError('The parameter "api_key" is required')
 
@@ -154,8 +154,8 @@ def wrap_exception(request, exception):
     exc_info = sys.exc_info()
 
     LOGGER.error('%s: %s' % (exception.__class__.__name__, exception),
-        exc_info=exc_info,
-        extra={
+                 exc_info=exc_info,
+                 extra={
         'status_code': 500,
         'request': request,
     }

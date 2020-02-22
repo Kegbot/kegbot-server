@@ -17,8 +17,8 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
-from django.utils.module_loading import import_by_path
+from django.utils.module_loading import import_string
 
 
 def get_kegbot_backend():
-    return import_by_path(settings.KEGBOT_BACKEND)()
+    return import_string(settings.KEGBOT_BACKEND)()

@@ -7,7 +7,6 @@
 
 {% block kegadmin-main %}
 
-{% if not EMBEDDED %}
 <h4>Twitter API Keys</h4>
 <div class="well">
 <p class="lead">
@@ -23,7 +22,6 @@
     </button>
 </form>
 </div>
-{% endif %}
 
 {% if have_credentials %}
 {% if site_profile %}
@@ -49,7 +47,7 @@
 <h4>Link Twitter Account</h4>
 <div class="well">
     <p class="lead">
-      Link a Twitter account to this Kegbot for system-wide use.  
+      Link a Twitter account to this Kegbot for system-wide use.
     <p>
     <form method="post" action="{% url "plugin-twitter-site_twitter_redirect" %}">
         {% csrf_token %}
@@ -64,7 +62,7 @@
 <h4>Settings</h4>
 <div class="well">
 <p class="lead">
-  Site-wide settings control how Kegbot will use the system account. 
+  Site-wide settings control how Kegbot will use the system account.
 </p>
 <form method="post" action="">
    {% csrf_token %}

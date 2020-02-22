@@ -37,15 +37,22 @@ class StatsTestCase(TransactionTestCase):
         models.User.objects.create_user('guest')
 
         test_usernames = ('user1', 'user2', 'user3')
-        self.users = [self.backend.create_new_user(name, '%s@example.com' % name) for name in test_usernames]
+        self.users = [
+            self.backend.create_new_user(
+                name, '%s@example.com' %
+                name) for name in test_usernames]
 
         self.taps = [
             self.backend.create_tap('tap1', 'kegboard.flow0', ticks_per_ml=2.2),
             self.backend.create_tap('tap2', 'kegboard.flow1', ticks_per_ml=2.2),
         ]
 
-        self.keg = self.backend.start_keg('kegboard.flow0', beverage_name='Unknown',
-            beverage_type='beer', producer_name='Unknown', style_name='Unknown')
+        self.keg = self.backend.start_keg(
+            'kegboard.flow0',
+            beverage_name='Unknown',
+            beverage_type='beer',
+            producer_name='Unknown',
+            style_name='Unknown')
 
     def testStuff(self):
         site = models.KegbotSite.get()
@@ -56,7 +63,7 @@ class StatsTestCase(TransactionTestCase):
         self.maxDiff = None
 
         d = self.backend.record_drink('kegboard.flow0', ticks=1, volume_ml=100,
-            username='user1', pour_time=now)
+                                      username='user1', pour_time=now)
         expected = util.AttrDict({
             u'volume_by_year': {u'2012': 100.0},
             u'total_pours': 1,
@@ -79,7 +86,7 @@ class StatsTestCase(TransactionTestCase):
 
         now = make_datetime(2012, 1, 3, 12, 00)
         d = self.backend.record_drink('kegboard.flow0', ticks=200,
-            volume_ml=200, username='user2', pour_time=now)
+                                      volume_ml=200, username='user2', pour_time=now)
         stats = site.get_stats()
         expected.total_pours = 2
         expected.greatest_volume_ml = 200.0
@@ -98,7 +105,7 @@ class StatsTestCase(TransactionTestCase):
         self.assertDictEqual(expected, stats)
 
         d = self.backend.record_drink('kegboard.flow0', ticks=300,
-            volume_ml=300, username='user2', pour_time=now)
+                                      volume_ml=300, username='user2', pour_time=now)
 
         stats = site.get_stats()
         expected.total_pours = 3
@@ -118,7 +125,7 @@ class StatsTestCase(TransactionTestCase):
         previous_stats = copy.copy(stats)
 
         d = self.backend.record_drink('kegboard.flow0', ticks=300,
-            volume_ml=300, pour_time=now)
+                                      volume_ml=300, pour_time=now)
 
         stats = site.get_stats()
         self.assertTrue(stats.has_guest_pour)
@@ -140,8 +147,12 @@ class StatsTestCase(TransactionTestCase):
 
         now = make_datetime(2012, 1, 2, 12, 00)
         for volume_ml, user in drink_data:
-            d = self.backend.record_drink('kegboard.flow0', ticks=volume_ml,
-                username=user.username, volume_ml=volume_ml, pour_time=now)
+            d = self.backend.record_drink(
+                'kegboard.flow0',
+                ticks=volume_ml,
+                username=user.username,
+                volume_ml=volume_ml,
+                pour_time=now)
             drinks.append(d)
 
         self.assertEquals(600, self.users[0].get_stats().total_volume_ml)
@@ -166,8 +177,12 @@ class StatsTestCase(TransactionTestCase):
         # Start a new session.
         now = make_datetime(2013, 1, 2, 12, 00)
         for volume_ml, user in drink_data:
-            d = self.backend.record_drink('kegboard.flow0', ticks=volume_ml,
-                username=user.username, volume_ml=volume_ml, pour_time=now)
+            d = self.backend.record_drink(
+                'kegboard.flow0',
+                ticks=volume_ml,
+                username=user.username,
+                volume_ml=volume_ml,
+                pour_time=now)
             drinks.append(d)
 
         self.assertEquals(1300, self.users[0].get_stats().total_volume_ml)
@@ -181,7 +196,7 @@ class StatsTestCase(TransactionTestCase):
         models.Stats.objects.filter(drink=drinks[-2]).delete()
 
         d = self.backend.record_drink('kegboard.flow0', ticks=1111,
-            username=user.username, volume_ml=1111, pour_time=now)
+                                      username=user.username, volume_ml=1111, pour_time=now)
         drinks.append(d)
 
         # Intermediate stats are generated.
@@ -205,8 +220,12 @@ class StatsTestCase(TransactionTestCase):
         # 1 AM UTC
         now = make_datetime(2012, 1, 2, 1, 0)
         for volume_ml, user in drink_data:
-            d = self.backend.record_drink('kegboard.flow0', ticks=volume_ml,
-                username=user.username, volume_ml=volume_ml, pour_time=now)
+            d = self.backend.record_drink(
+                'kegboard.flow0',
+                ticks=volume_ml,
+                username=user.username,
+                volume_ml=volume_ml,
+                pour_time=now)
             drinks.append(d)
             self.assertEquals('US/Pacific', d.session.timezone)
 

@@ -1,8 +1,11 @@
-.. _old_versions:
+.. _old-versions:
 
-=======================
-Old Kegbot Server Notes
-=======================
+=================
+Pre-1.0 Changelog
+=================
+
+This changelog covers pre-1.0 releases of Kegbot. For the latest releases,
+see :ref:`changelog`.
 
 .. _upgrade_pre_10:
 
@@ -11,7 +14,7 @@ Upgrading from a pre-1.0 release
 
 Use the following procedures to upgrade from a pre-1.0 version of
 Kegbot Server::
-  
+
   ## Step 1: Only for installs older than 0.9.32
 
   (kb) $ pip install kegbot==0.9.33
@@ -28,8 +31,8 @@ See :ref:`upgrading-kegbot` for general instructions.
 
 .. _old_changelog:
 
-Pre-1.0 Changelog
-=================
+Pre-1.0 Releases
+================
 
 Version 1.0.0a6 (2014-06-24)
 ----------------------------
@@ -116,7 +119,7 @@ Version 0.9.26 (2014-05-01)
 ---------------------------
 .. note::
   Supervisor configuration has changed.  Please update your configuration file
-  to match :ref:`the example <supervisor-conf>`.
+  to match the example supervisor config.
 
 * Beverage images are now served as PNGs, preserving transparency.
 * Updated supervisor configuration.
@@ -144,7 +147,7 @@ Version 0.9.23 (2014-04-17)
 ---------------------------
 .. note::
   Supervisor configuration has changed.  Please update your configuration file
-  to match :ref:`the example <supervisor-conf>`.
+  to match the example supervisor config.
 
 * Redis is now a required dependency; memcached is no longer required.
 * Statistics are computed in a background task (#214).
@@ -203,7 +206,7 @@ Version 0.9.17 (2014-03-08)
 * Internal: Controllers and flow meters are now first-class objects.
 * Internal: Migrated to Django custom user model.
 * Internal: Better support for non-beer beverage types.
-* Internal: Anonymous pours are now assigned to the virtual user "guest". 
+* Internal: Anonymous pours are now assigned to the virtual user "guest".
 * Bug fix: Issues with migrating on MySQL with v0.9.16.
 * Bug fix: Password reset.
 * Bug fix: Plugin account linking.
@@ -294,7 +297,7 @@ Version 0.9.8 (2013-04-06)
 .. note::
   If you are upgrading from an older version of Kegbot, run the following
   command after ``kb_upgrade``::
-    
+
     $ kegbot-admin.py kb_migrate_times
 
 Version 0.9.7 (2013-01-10)
@@ -373,7 +376,7 @@ Version 0.9.0 (2012-06-21)
 
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
-  
+
   $ kegbot-admin.py migrate
   $ kegbot-admin.py kb_regen_stats
 
@@ -406,16 +409,16 @@ connections will be lost.
 
 **Important:** Please run the following commands to delete the old
 Twitter/Facebook support prior to upgrading::
-  
+
   $ kegbot-admin.py migrate contrib.twitter zero
 
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
-  
+
   $ kegbot-admin.py migrate
 
 *Note:* To post tweets, you must run the `celery` daemon::
-  
+
   $ kegbot-admin.py celeryd --loglevel=INFO
 
 **Core/General**
@@ -460,7 +463,7 @@ Version 0.8.2 (2011-08-05)
 --------------------------
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
-  
+
   $ kegbot-admin.py migrate
   $ kegbot-admin.py createcachetable cache
 
@@ -509,7 +512,7 @@ Version 0.8.0 (2011-06-12)
 
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
-  
+
   $ kegbot-admin.py migrate
   $ kegbot-admin.py kb_regen_events
 
@@ -564,7 +567,7 @@ Version 0.7.8 (2010-12-01)
 --------------------------
 *Note:* Due to changes in the Kegbot core, you must run the following commands
 after updating::
-  
+
   $ kegbot-admin.py migrate
   $ kegbot-admin.py kb_regen_stats
 
@@ -612,7 +615,7 @@ Reflashing your kegboard is recommended.
 
 *Note:* It is recommended that you rebuild all session and statistical data
 after updating to this version::
-  
+
   $ kegbot-admin.py kb_regen_sessions
   $ kegbot-admin.py kb_regen_stats
   $ kegbot-admin.py kb_regen_events
@@ -642,7 +645,7 @@ after updating to this version::
 
 * Improved stability in kegboard_daemon when malformed or unknown messages are
   received.
-* Added the :ref:`auth-token-message` type to the serial protocol.
+* Added the "auth token" type to the serial protocol.
 * Fixed reporting for negative temperatures.
 * Fixed kegboard reader/daemon to not crash when ``EAGAIN`` is received from the
   OS.
@@ -653,7 +656,7 @@ Version 0.7.5 (2010-09-11)
 
 *Note:* Due to changes to the third-party ``socialregistration`` dependency,
 existing users will need to issue the following command after updating::
-  
+
   $ kegbot-admin.py migrate --fake socialregistration 0001
   $ kegbot-admin.py migrate
 
@@ -699,7 +702,7 @@ Version 0.7.3 (2010-09-01)
 *Note:* Existing users upgrading from a previous kegbot version will need to
 issue the migrate command to update their database schema.  Also, statistics and
 sessions need to be regenerated::
-  
+
   $ kegbot_admin.py migrate
   $ kegbot_admin.py kb_regen_sessions
   $ kegbot_admin.py kb_regen_stats

@@ -18,7 +18,7 @@
 
 """Unittests for backends module."""
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.core import defaults
@@ -33,7 +33,7 @@ FAKE_BEER_STYLE = 'Test-Driven Pale Ale'
 
 
 @override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
-class BackendsFixtureTestCase(TestCase):
+class BackendsFixtureTestCase(TransactionTestCase):
     """Test backened using fixture (demo) data."""
 
     fixtures = ['testdata/full_demo_site.json']
@@ -59,7 +59,7 @@ class BackendsFixtureTestCase(TestCase):
 
 
 @override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
-class BackendsTestCase(TestCase):
+class BackendsTestCase(TransactionTestCase):
     """Test backend without canned data (legacy tests)."""
 
     def setUp(self):

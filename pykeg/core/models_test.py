@@ -21,7 +21,7 @@
 import datetime
 import os
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.core.files import File
 
 from . import kb_common
@@ -33,7 +33,7 @@ from pykeg.core.testutils import get_filename
 from kegbot.util import units
 
 
-class CoreModelsTestCase(TestCase):
+class CoreModelsTestCase(TransactionTestCase):
     def setUp(self):
         models.KegbotSite.get()  # create the site
         self.backend = get_kegbot_backend()

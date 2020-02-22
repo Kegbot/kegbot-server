@@ -18,7 +18,6 @@
 
 """Untappd plugin for Kegbot."""
 
-from django.conf import settings
 from django.utils import timezone
 from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
@@ -42,8 +41,6 @@ class UntappdPlugin(plugin.Plugin):
     VERSION = '0.0.1-pre'
 
     def get_admin_settings_view(self):
-        if settings.EMBEDDED:
-            return None
         return views.admin_settings
 
     def get_user_settings_view(self):
@@ -118,11 +115,6 @@ class UntappdPlugin(plugin.Plugin):
     # Untappd-specific methods
 
     def get_credentials(self):
-        if settings.EMBEDDED:
-            return (
-                getattr(settings, 'UNTAPPD_CLIENT_ID', ''),
-                getattr(settings, 'UNTAPPD_CLIENT_SECRET', ''),
-            )
         data = self.get_site_settings()
         return data.get('client_id'), data.get('client_secret')
 

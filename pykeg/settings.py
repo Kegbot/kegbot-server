@@ -1,15 +1,13 @@
 # Kegbot Server main settings file.
 #
-# YOU SHOULD NOT EDIT THIS FILE.  Instead, run `setup-kegbot.py` and override
-# any settings in the local_settings.py file it installs.
+# YOU SHOULD NOT EDIT THIS FILE.
 
 # --------------------------------------------------------------------------- #
 
 from __future__ import absolute_import
 
-# Grab flags for optional modules.
-from pykeg.core.optional_modules import *
-
+from pykeg.config import all_values, ENV_PRODUCTION, ENV_TEST
+import dj_database_url
 import os
 import logging
 from pykeg.logging.logger import RedisLogger
@@ -17,7 +15,18 @@ logging.setLoggerClass(RedisLogger)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+KEGBOT = all_values()
+KEGBOT_ENV = KEGBOT['KEGBOT_ENV']
+DEBUG = KEGBOT_ENV != ENV_PRODUCTION
+
+SECRET_KEY = KEGBOT['KEGBOT_SECRET_KEY']
+DATABASES = {
+    'default': dj_database_url.parse(KEGBOT['KEGBOT_DATABASE_URL']),
+}
+
 INSTALLED_APPS = (
+    'whitenoise.runserver_nostatic',
+
     'pykeg.core',
     'pykeg.web',
     'pykeg.web.api',
@@ -26,7 +35,6 @@ INSTALLED_APPS = (
     'pykeg.web.kegadmin',
     'pykeg.web.kegweb',
     'pykeg.web.setup_wizard',
-    'pykeg.contrib.demomode',
 
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -36,13 +44,16 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'crispy_forms',
-    'django_nose',
     'bootstrap_pagination',
     'imagekit',
     'gunicorn',
 )
 
-LOGIN_REDIRECT_URL = "/account/"
+if KEGBOT_ENV == ENV_TEST:
+    # Run all celery tasks synchronously.
+    CELERY_ALWAYS_EAGER = True
+
+LOGIN_REDIRECT_URL = '/account/'
 
 KEGBOT_ADMIN_LOGIN_URL = 'auth_login'
 
@@ -55,7 +66,13 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if KEGBOT_ENV == ENV_TEST:
+    # During tests, whitenoise's manifest will not be available and
+    # errors will be thrown while trying to access static files.
+    # Use the default static backend to work around this.
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default session serialization.
 # Note: Twitter plugin requires Pickle (not JSON serializable).
@@ -78,7 +95,7 @@ USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = os.path.join(KEGBOT['KEGBOT_DATA_DIR'], 'media')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -106,16 +123,16 @@ ALLOWED_HOSTS = ['*']
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'pykeg.web.middleware.IsSetupMiddleware',
     'pykeg.web.middleware.CurrentRequestMiddleware',
     'pykeg.web.middleware.KegbotSiteMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'pykeg.contrib.demomode.middleware.DemoModeMiddleware',
     'pykeg.web.api.middleware.ApiRequestMiddleware',
     'pykeg.web.middleware.PrivacyMiddleware',
 ]
@@ -127,7 +144,7 @@ AUTHENTICATION_BACKENDS = (
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': '127.0.0.1:6379:1',
+        'LOCATION': KEGBOT['KEGBOT_REDIS_URL'],
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
@@ -139,7 +156,6 @@ INTERNAL_IPS = ('127.0.0.1',)
 # Set to true if the database admin module should be enabled.
 KEGBOT_ENABLE_ADMIN = False
 
-# Add plugins in local_settings.py
 KEGBOT_PLUGINS = [
     'pykeg.contrib.foursquare.plugin.FoursquarePlugin',
     'pykeg.contrib.twitter.plugin.TwitterPlugin',
@@ -147,16 +163,12 @@ KEGBOT_PLUGINS = [
     'pykeg.contrib.webhook.plugin.WebhookPlugin',
 ]
 
-# You probably don't want to turn this on.
-DEMO_MODE = False
-EMBEDDED = False
-
 KEGBOT_BACKEND = 'pykeg.backend.backends.KegbotBackend'
 
 # Celery
 
-BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+BROKER_URL = KEGBOT['KEGBOT_REDIS_URL']
+CELERY_RESULT_BACKEND = KEGBOT['KEGBOT_REDIS_URL']
 
 CELERY_QUEUES = {
     'default': {
@@ -169,7 +181,7 @@ CELERY_QUEUES = {
     },
 }
 
-CELERY_DEFAULT_QUEUE = "default"
+CELERY_DEFAULT_QUEUE = 'default'
 CELERYD_CONCURRENCY = 3
 
 from datetime import timedelta
@@ -195,9 +207,8 @@ LOGGING = {
     'handlers': {
         'console': {
             'level': 'DEBUG',
-            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'verbosecolor',
         },
         'null': {
             'class': 'logging.NullHandler',
@@ -206,6 +217,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'pykeg.logging.handlers.RedisListHandler',
             'key': 'kb:log',
+            'url': KEGBOT['KEGBOT_REDIS_URL'],
             'max_messages': 100,
         },
     },
@@ -213,14 +225,18 @@ LOGGING = {
         'verbose': {
             'format': '%(asctime)s %(levelname)-8s (%(name)s) %(message)s'
         },
+        'verbosecolor': {
+            'format': '%(asctime)s %(levelname)-8s (%(name)s) %(message)s',
+            '()': 'coloredlogs.ColoredFormatter',
+        },
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
     },
     'loggers': {
         'raven': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
+            'level': 'INFO',
+            'handlers': ['console', 'redis'],
             'propagate': False,
         },
         'pykeg': {
@@ -228,30 +244,17 @@ LOGGING = {
             'handlers': ['console', 'redis'],
             'propagate': False,
         },
+        'django': {
+            'level': 'INFO' if DEBUG else 'WARNING',
+            'handlers': ['console', 'redis'],
+            'propagate': False,
+        },
         '': {
-            'level': 'INFO',
-            'handlers': ['console'],
-            'formatter': 'verbose',
+            'level': 'INFO' if DEBUG else 'WARNING',
+            'handlers': ['console', 'redis'],
         },
     },
 }
-
-# raven
-
-if HAVE_RAVEN:
-    INSTALLED_APPS += (
-        'raven.contrib.django.raven_compat',
-    )
-
-    LOGGING['root']['handlers'] = ['sentry']
-    LOGGING['handlers']['sentry'] = {
-        'level': 'ERROR',
-        'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-    }
-
-# django-storages
-if HAVE_STORAGES:
-    INSTALLED_APPS += ('storages',)
 
 # django.contrib.messages
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
@@ -275,52 +278,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 EMAIL_FROM_ADDRESS = ''
 EMAIL_SUBJECT_PREFIX = ''
 
-# Bogus default values (to prevent djangofb from choking if unavailable);
-# replace with site-specific values in local_settings.py, if desired.
-FACEBOOK_API_KEY = ''
-FACEBOOK_SECRET_KEY = ''
-
-# Twitter
-
-TWITTER_CONSUMER_KEY = ''
-TWITTER_CONSUMER_SECRET_KEY = ''
-TWITTER_REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
-TWITTER_ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
-TWITTER_AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
-
-# Foursquare
-
-FOURSQUARE_CLIENT_ID = ''
-FOURSQUARE_CLIENT_SECRET = ''
-FOURSQUARE_REQUEST_PERMISSIONS = ''
-
-# Untappd
-
-UNTAPPD_CLIENT_ID = ''
-UNTAPPD_CLIENT_SECRET = ''
-
 # Imagekit
 IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = 'imagekit.imagecache.NonValidatingImageCacheBackend'
 
-TEST_RUNNER = 'pykeg.core.testutils.KegbotTestSuiteRunner'
-NOSE_ARGS = [
-    '--exe',
-    '--rednose',
-]
-
 # Storage
 DEFAULT_FILE_STORAGE = 'pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage'
-
-from pykeg.core import importhacks
-try:
-    from local_settings import *
-except ImportError:
-    msg = "Could not find local_settings.py; has Kegbot been set up?\n"
-    msg += 'Tried: ' + ' '.join(importhacks.SEARCH_DIRS) + '\n\n'
-    msg += 'Run setup-kegbot.py or set KEGBOT_SETTINGS_DIR to the settings directory.'
-    import sys
-    print>>sys.stderr, msg
-    sys.exit(1)
 
 from pykeg.core.util import get_plugin_template_dirs
 TEMPLATES = [
@@ -354,10 +316,3 @@ DEFAULT_FROM_EMAIL = EMAIL_FROM_ADDRESS
 
 if KEGBOT_ENABLE_ADMIN:
     INSTALLED_APPS += ('django.contrib.admin',)
-
-# djcelery_email
-
-if HAVE_CELERY_EMAIL:
-    CELERY_EMAIL_BACKEND = EMAIL_BACKEND
-    INSTALLED_APPS += ('djcelery_email',)
-    EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'

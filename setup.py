@@ -13,39 +13,6 @@ DOCLINES = __doc__.split('\n')
 
 SHORT_DESCRIPTION = DOCLINES[0]
 LONG_DESCRIPTION = '\n'.join(DOCLINES[2:])
-DEPENDENCIES = [
-    'Celery',
-    'django-bootstrap-pagination',
-    'django-crispy-forms',
-    'django-imagekit',
-    'django-nose',
-    'django-redis',
-    'django-registration',
-    'Django',
-    'flake8',
-    'foursquare',
-    'gunicorn',
-    'httplib2',
-    'isodate',
-    'jsonfield',
-    'kegbot-api',
-    'kegbot-pyutils',
-    'mock',
-    'MySQL-python',
-    'pillow',
-    'protobuf',
-    'python-gflags',
-    'pytz',
-    'redis',
-    'rednose',
-    'requests',
-    'requests-mock',
-    'requests_oauthlib',
-    'tweepy',
-    'vcrpy',
-    'whitenoise',
-]
-
 
 setup(
     name='kegbot',
@@ -60,7 +27,6 @@ setup(
         'bin/kegbot',
         'bin/setup-kegbot.py',
     ],
-    install_requires=DEPENDENCIES,
     dependency_links=[
         'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
     ],

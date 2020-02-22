@@ -13,10 +13,7 @@ Contents:
 
    overview
    install
-   run-server
-   production-server
-   extras
-   upgrade-kegbot
-   troubleshooting
    settings
-   changelog
+   developers
+   upgrade-kegbot
+   release-notes/index

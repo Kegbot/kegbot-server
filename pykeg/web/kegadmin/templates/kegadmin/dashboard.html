@@ -24,7 +24,7 @@
 </div>
 {% endif %}
 
-{% if DEBUG and not EMBEDDED %}
+{% if DEBUG %}
 <div class="alert alert-warning">
   <h4>Warning: Debug Mode</h4>
    Kegbot Server is running in DEBUG mode.  For
@@ -33,7 +33,7 @@
 </div>
 {% endif %}
 
-{% if not email_configured and not EMBEDDED %}
+{% if not email_configured %}
 <div class="alert alert-warning">
   <h4>Warning: E-Mail Configuration Problem</h4>
    E-mail is not properly configured; no mails will be sent.  Please

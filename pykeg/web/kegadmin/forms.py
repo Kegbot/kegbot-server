@@ -1,5 +1,4 @@
 from django import forms
-from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Field, HTML
@@ -485,8 +484,6 @@ class UserProfileForm(forms.ModelForm):
     class Meta:
         model = models.User
         fields = ('username', 'display_name', 'email')
-        if settings.EMBEDDED:
-            fields = ('email', ) + fields
 
     new_mugshot = forms.ImageField(required=False)
 

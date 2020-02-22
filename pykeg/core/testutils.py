@@ -26,8 +26,6 @@ from pykeg.backend.backends import KegbotBackend
 from django.conf import settings
 from django.utils import timezone
 
-from django_nose import NoseTestSuiteRunner
-
 import vcr
 
 TESTDATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../testdata/'))
@@ -62,9 +60,3 @@ class TestBackend(KegbotBackend):
             return static_url.rstrip('/')
         return 'http://localhost:1234'
 
-
-class KegbotTestSuiteRunner(NoseTestSuiteRunner):
-    def __init__(self, *args, **kwargs):
-        # Run all celery tasks synchronously.
-        settings.CELERY_ALWAYS_EAGER = True
-        super(KegbotTestSuiteRunner, self).__init__(*args, **kwargs)

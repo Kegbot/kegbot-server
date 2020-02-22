@@ -91,9 +91,12 @@ ENGINE_MYSQL = 'mysql'
 ENGINE_POSTGRES = 'postgres'
 ENGINE_UNKNOWN = 'unknown'
 
-if 'mysql' in settings.DATABASES[DEFAULT_DB]['ENGINE']:
+
+# TODO(mikey): Lazy init.
+engine = settings.DATABASES.get(DEFAULT_DB, {}).get('ENGINE', 'unknown')
+if 'mysql' in engine:
     from . import mysql as db_impl
-elif 'postgres' in settings.DATABASES[DEFAULT_DB]['ENGINE']:
+elif 'postgres' in engine:
     from . import postgres as db_impl
 else:
     from . import unknown_engine as db_impl

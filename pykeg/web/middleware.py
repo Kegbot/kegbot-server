@@ -18,6 +18,7 @@
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
+from pykeg import config
 from pykeg.core.util import get_version_object
 from pykeg.core.util import set_current_request
 from pykeg.core.util import must_upgrade
@@ -27,7 +28,6 @@ from pykeg.plugin import util as plugin_util
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.http import HttpResponseServerError
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -68,6 +68,21 @@ class CurrentRequestMiddleware(object):
         finally:
             set_current_request(None)
         return response
+
+
+class IsSetupMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if not config.is_setup():
+            # Disable the auth user middleware.
+            request.session = {}
+            request.session['_auth_user_backend'] = None
+
+            if not request.path.startswith('/setup'):
+                return render(request, 'setup_wizard/setup_required.html', status=403)
+        return self.get_response(request)
 
 
 class KegbotSiteMiddleware(object):
@@ -119,13 +134,9 @@ class KegbotSiteMiddleware(object):
         return None
 
     def _setup_required(self, request):
-        if settings.EMBEDDED:
-            return HttpResponseServerError('Site is not set up.', content_type='text/plain')
         return render(request, 'setup_wizard/setup_required.html', status=403)
 
     def _upgrade_required(self, request):
-        if settings.EMBEDDED:
-            return HttpResponseServerError('Site needs upgrade.', content_type='text/plain')
         context = {
             'installed_version': getattr(request, 'installed_version_string', None),
         }

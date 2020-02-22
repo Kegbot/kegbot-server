@@ -70,6 +70,7 @@ mysqlclient = "*"
 sphinx = "*"
 pytest = "*"
 pytest-django = "*"
+future = "*"
 
 [scripts]
 kegbot = "python bin/kegbot"

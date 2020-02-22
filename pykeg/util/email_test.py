@@ -18,6 +18,7 @@
 
 """Test for email util module."""
 
+from builtins import str
 import time
 from pykeg.core import models
 from pykeg.util import email

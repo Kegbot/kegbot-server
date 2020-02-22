@@ -18,6 +18,7 @@
 
 from __future__ import absolute_import
 
+from builtins import str
 from django.conf import settings
 from django.utils.module_loading import import_string
 from django.core.exceptions import ImproperlyConfigured

@@ -67,7 +67,7 @@ def find_closest_keg_size(volume_ml, tolerance_ml=100.0):
 
     If no match is found, OTHER is returned.
     """
-    for size_name, size_volume_ml in VOLUMES_ML.iteritems():
+    for size_name, size_volume_ml in VOLUMES_ML.items():
         diff = abs(volume_ml - size_volume_ml)
         if diff <= tolerance_ml:
             return size_name

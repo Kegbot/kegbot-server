@@ -19,13 +19,17 @@
 
 from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import datetime
 import logging
 import os
 import pytz
 import random
 import re
-import urlparse
+import urllib.parse
 from uuid import uuid4
 from distutils.version import StrictVersion
 
@@ -137,7 +141,7 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
-    class Meta:
+    class Meta(object):
         verbose_name = _('user')
         verbose_name_plural = _('users')
 
@@ -335,7 +339,7 @@ class KegbotSite(models.Model):
 
     def full_url(self, path):
         """Returns an absolute URL to the specified path."""
-        return urlparse.urljoin(self.base_url(), path)
+        return urllib.parse.urljoin(self.base_url(), path)
 
     def reverse_full(self, *args, **kwargs):
         """Returns an absolute URL to the path reversed by parameters."""
@@ -432,7 +436,7 @@ class BeverageProducer(models.Model):
     beverage_backend_id = models.CharField(max_length=255, blank=True, null=True,
                                            help_text='Future use.')
 
-    class Meta:
+    class Meta(object):
         ordering = ('name',)
 
     def __unicode__(self):
@@ -515,7 +519,7 @@ class Beverage(models.Model):
     beverage_backend_id = models.CharField(max_length=255, blank=True, null=True,
                                            help_text='Future use.')
 
-    class Meta:
+    class Meta(object):
         ordering = ('name',)
 
     def __unicode__(self):
@@ -524,7 +528,7 @@ class Beverage(models.Model):
 
 class KegTap(models.Model):
     """A physical tap of beer."""
-    class Meta:
+    class Meta(object):
         ordering = ('sort_order', 'id')
     name = models.CharField(max_length=128,
                             help_text='The display name for this tap, for example, "Main Tap".')
@@ -596,7 +600,7 @@ class Controller(models.Model):
 
 
 class FlowMeter(models.Model):
-    class Meta:
+    class Meta(object):
         unique_together = ('controller', 'port_name')
     controller = models.ForeignKey(Controller, related_name='meters',
                                    help_text='Controller that owns this meter.')
@@ -650,7 +654,7 @@ class FlowMeter(models.Model):
 
 
 class FlowToggle(models.Model):
-    class Meta:
+    class Meta(object):
         unique_together = ('controller', 'port_name')
     controller = models.ForeignKey(Controller, related_name='toggles',
                                    help_text='Controller that owns this toggle.')
@@ -714,7 +718,7 @@ class Keg(models.Model):
                              help_text='Beverage in this Keg.')
     keg_type = models.CharField(
         max_length=32,
-        choices=keg_sizes.DESCRIPTIONS.items(),
+        choices=list(keg_sizes.DESCRIPTIONS.items()),
         default=keg_sizes.HALF_BARREL,
         help_text='Keg container type, used to initialize keg\'s full volume')
     served_volume_ml = models.FloatField(default=0, editable=False,
@@ -800,8 +804,8 @@ class Keg(models.Model):
         kind = 'thumb' if thumbnail else 'full'
         img_path = 'images/keg/{}/keg-srm14-{}.png'.format(kind, level)
 
-        url = urlparse.urljoin(settings.STATIC_URL, img_path)
-        if not urlparse.urlparse(url).scheme:
+        url = urllib.parse.urljoin(settings.STATIC_URL, img_path)
+        if not urllib.parse.urlparse(url).scheme:
             url = KegbotSite.get().full_url(url)
         return url
 
@@ -822,7 +826,7 @@ class Keg(models.Model):
             return []
         ret = []
         entries = stats.get('volume_by_drinker', {})
-        for username, vol in entries.iteritems():
+        for username, vol in entries.items():
             try:
                 user = User.objects.get(username=username)
             except User.DoesNotExist:
@@ -861,7 +865,7 @@ pre_save.connect(_keg_pre_save, sender=Keg)
 
 class Drink(models.Model):
     """ Table of drinks records """
-    class Meta:
+    class Meta(object):
         get_latest_by = 'time'
         ordering = ('-time',)
 
@@ -920,7 +924,7 @@ class Drink(models.Model):
 
 class AuthenticationToken(models.Model):
     """A secret token to authenticate a user, optionally pin-protected."""
-    class Meta:
+    class Meta(object):
         unique_together = ('auth_device', 'token_value')
 
     auth_device = models.CharField(max_length=64,
@@ -986,7 +990,7 @@ pre_save.connect(_auth_token_pre_save, sender=AuthenticationToken)
 
 class DrinkingSession(models.Model):
     """A collection of contiguous drinks. """
-    class Meta:
+    class Meta(object):
         get_latest_by = 'start_time'
         ordering = ('-start_time',)
     start_time = models.DateTimeField()
@@ -1162,7 +1166,7 @@ class ThermoSensor(models.Model):
 
 class Thermolog(models.Model):
     """ A log from an ITemperatureSensor device of periodic measurements. """
-    class Meta:
+    class Meta(object):
         get_latest_by = 'time'
         ordering = ('-time',)
 
@@ -1205,7 +1209,7 @@ class Stats(models.Model):
     keg = models.ForeignKey(Keg, related_name='stats', null=True)
     session = models.ForeignKey(DrinkingSession, related_name='stats', null=True)
 
-    class Meta:
+    class Meta(object):
         get_latest_by = 'id'
         unique_together = ('drink', 'user', 'keg', 'session')
 
@@ -1225,7 +1229,7 @@ class Stats(models.Model):
         orig = stats.get('volume_by_drinker', util.AttrDict())
         if orig:
             stats['volume_by_drinker'] = util.AttrDict(
-                (safe_get_user(pk).username, val) for pk, val in orig.iteritems() if safe_get_user(pk))
+                (safe_get_user(pk).username, val) for pk, val in orig.items() if safe_get_user(pk))
 
     @classmethod
     def get_latest_for_view(cls, user=None, keg=None, session=None):
@@ -1242,7 +1246,7 @@ class Stats(models.Model):
 
 
 class SystemEvent(models.Model):
-    class Meta:
+    class Meta(object):
         ordering = ('-id',)
         get_latest_by = 'time'
 
@@ -1456,7 +1460,7 @@ class Picture(models.Model):
 class NotificationSettings(models.Model):
     """Stores a user's notification settings for a notification backend."""
 
-    class Meta:
+    class Meta(object):
         unique_together = ('user', 'backend')
 
     user = models.ForeignKey(User,
@@ -1476,7 +1480,7 @@ class NotificationSettings(models.Model):
 class PluginData(models.Model):
     """Key/value JSON data store for plugins."""
 
-    class Meta:
+    class Meta(object):
         unique_together = ('plugin_name', 'key')
 
     plugin_name = models.CharField(max_length=127,

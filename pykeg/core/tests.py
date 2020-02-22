@@ -17,6 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 """Generic unittests."""
+from __future__ import print_function
 
 import os
 import subprocess
@@ -43,6 +44,6 @@ class CoreTests(TestCase):
         try:
             subprocess.check_output(command.split())
         except subprocess.CalledProcessError as e:
-            print 'command: {}'.format(command)
-            print e.output
+            print('command: {}'.format(command))
+            print(e.output)
             self.fail('flake8 failed with return code {}.'.format(e.returncode))

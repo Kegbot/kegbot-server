@@ -18,6 +18,7 @@
 
 """Unittests for backends module."""
 
+from builtins import range
 from django.test import TransactionTestCase
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
@@ -117,7 +118,7 @@ class BackendsTestCase(TransactionTestCase):
         self.assertIsNotNone(keg)
         self.assertEquals(0, keg.served_volume())
 
-        for i in xrange(10):
+        for i in range(10):
             self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100)
 
         drinks = list(models.Drink.objects.all().order_by('id'))

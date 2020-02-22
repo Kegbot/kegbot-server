@@ -21,6 +21,8 @@
 # Note: imports should be limited to python stdlib, since methods here
 # may be used in models.py, settings.py, etc.
 
+from builtins import str
+from builtins import object
 import logging
 import pkgutil
 import os

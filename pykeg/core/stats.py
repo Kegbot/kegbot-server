@@ -18,6 +18,8 @@
 
 """Methods to generate cached statistics from drinks."""
 
+from builtins import str
+from builtins import object
 import copy
 import inspect
 import logging
@@ -32,7 +34,7 @@ STAT_MAP = {}
 logger = logging.getLogger(__name__)
 
 
-class StatsView:
+class StatsView(object):
     def __init__(self, user=None, session=None, keg=None):
         self.user = user
         self.session = session
@@ -73,7 +75,7 @@ class StatsView:
         return qs.order_by('-id')
 
 
-class StatsBuilder:
+class StatsBuilder(object):
     """Derives statistics from drinks."""
 
     def __init__(self):
@@ -151,7 +153,7 @@ class StatsBuilder:
         # Use volume_by_session, ensuring our session is captured
         # by injecting a dummy value.
         prev_sessions = previous_stats.get('volume_by_session', {})
-        ret = len(prev_sessions.keys())
+        ret = len(list(prev_sessions.keys()))
         if str(drink.session.id) not in prev_sessions:
             ret += 1
         return ret

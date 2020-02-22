@@ -18,6 +18,7 @@
 
 """Checks a central server for updates."""
 
+from builtins import str
 from django.core.cache import cache
 from django.utils import timezone
 

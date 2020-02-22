@@ -1,7 +1,7 @@
 """Loads Kegbot configuration from env or config files.
 """
 
-import ConfigParser
+import configparser
 import os
 import sys
 
@@ -37,7 +37,7 @@ def Setting(name, default, typefn=str):
 def read_config(filename=None):
     if not filename:
         filename = os.path.join(getvalue('KEGBOT_DATA_DIR'), 'kegbot.cfg')
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     try:
         with open(filename) as fp:
             config.readfp(fp)

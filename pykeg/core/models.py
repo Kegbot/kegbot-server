@@ -36,7 +36,7 @@ from distutils.version import StrictVersion
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import UserManager
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.core import validators
 from django.core.cache import cache
 from django.core.files.storage import default_storage
@@ -907,7 +907,7 @@ class Drink(models.Model):
         return self.user is None or self.user.is_guest()
 
     def get_absolute_url(self):
-        return reverse('kb-drink', args=(str(self.id),))
+        return reverse_lazy('kb-drink', args=(str(self.id),))
 
     def short_url(self):
         return KegbotSite.get().reverse_full('kb-drink-short', args=(str(self.id),))

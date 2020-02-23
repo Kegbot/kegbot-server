@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3d58973d9ef5117d77d417b5268b8717c12c556b3a154ccd89028edc2ce4b869"
+            "sha256": "6ce8f921c509e7311123c4bbbb442422d8a07559908f4af48c27a94237fb5b71"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -247,16 +247,10 @@
         },
         "kegbot-api": {
             "hashes": [
-                "sha256:9e135a781351c13dd1391b09afa6273aa72629d760ff55892694cd7e819458b2"
+                "sha256:90e83ffe4a661c96d93158f0ed02d8eebcab45be4d5aa473281158befd558472"
             ],
             "index": "pypi",
-            "version": "==1.1.0"
-        },
-        "kegbot-pyutils": {
-            "hashes": [
-                "sha256:7ec9a06e22c34fe0b35b60c5c6619434f7ff431f99ae38c8cbcfc9d878fc6451"
-            ],
-            "version": "==0.1.8"
+            "version": "==1.2.0"
         },
         "kombu": {
             "hashes": [

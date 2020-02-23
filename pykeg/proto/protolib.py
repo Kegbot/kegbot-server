@@ -30,6 +30,7 @@ from kegbot.api import models_pb2
 from kegbot.api import protoutil
 
 from pykeg.core import models
+from addict import Dict
 
 _CONVERSION_MAP = {}
 
@@ -62,9 +63,9 @@ def ToProto(obj, full=False):
 def ToDict(obj, full=False):
     res = ToProto(obj, full)
     if hasattr(res, '__iter__'):
-        return [protoutil.ProtoMessageToDict(m) for m in res]
+        return [Dict(protoutil.ProtoMessageToDict(m)) for m in res]
     else:
-        return protoutil.ProtoMessageToDict(res)
+        return Dict(protoutil.ProtoMessageToDict(res))
 
 # Model conversions
 

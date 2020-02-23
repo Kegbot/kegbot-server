@@ -31,6 +31,7 @@ from kegbot.api import kbapi
 from pykeg.util import kbjson
 from pykeg.core import models
 from pykeg.backend.exceptions import NoTokenError
+from addict import Dict
 
 from . import validate_jsonp
 
@@ -147,7 +148,7 @@ def prepare_data(data, inner=False):
 def to_dict(data):
     if not isinstance(data, Message):
         data = protolib.ToProto(data, full=True)
-    return protoutil.ProtoMessageToDict(data)
+    return Dict(protoutil.ProtoMessageToDict(data))
 
 
 def wrap_exception(request, exception):

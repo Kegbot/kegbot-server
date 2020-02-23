@@ -19,8 +19,8 @@
 """Django admin site settings for core models."""
 
 from django.contrib import admin
-from kegbot.util import util
 from pykeg.core import models
+from pykeg.core.util import CtoF
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -95,7 +95,7 @@ def thermolog_deg_c(obj):
 
 
 def thermolog_deg_f(obj):
-    return '%.2f F' % (util.CtoF(obj.temp),)
+    return '%.2f F' % (CtoF(obj.temp),)
 
 
 class ThermologAdmin(admin.ModelAdmin):

@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from builtins import object
 """Celery beat scheduler backed by Redis.
 
 The schedule will be saved as a pickled data in the key

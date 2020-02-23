@@ -43,6 +43,6 @@ class Command(BaseCommand):
             sys.exit(1)
         except backup.BackupError as e:
             sys.stderr.write('Error: ')
-            sys.stderr.write(e.message)
+            sys.stderr.write(e)
             sys.stderr.write('\n')
             sys.exit(1)

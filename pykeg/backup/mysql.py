@@ -18,6 +18,7 @@
 
 """MySQL-specific database backup/restore implementation."""
 
+from builtins import str
 import logging
 import subprocess
 

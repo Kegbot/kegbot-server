@@ -46,6 +46,7 @@ For a detailed look at what's new in version 1.3, see :ref:`version-13-release-n
 * Internal: Upgraded to Django 1.11.
 * Internal: Improved static file serving (#368)
 * Internal: Developer tests now use ``pytest``
+* Upgraded to Python 3.
 
 Version 1.2.3 (2015-01-12)
 --------------------------

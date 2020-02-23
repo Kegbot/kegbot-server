@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import str
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
@@ -23,7 +24,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from pykeg.web.decorators import staff_member_required
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 
 from . import forms
 from . import client
@@ -60,7 +61,7 @@ def admin_settings(request, plugin):
                 context['test_response'] = kbjson.dumps(venue_info, indent=2)
                 messages.success(request, 'API test successful.')
             except client.FoursquareClientError as e:
-                messages.success(request, 'API test failed: {}'.format(e.message))
+                messages.success(request, 'API test failed: {}'.format(e))
 
     context['plugin'] = plugin
     context['settings_form'] = settings_form

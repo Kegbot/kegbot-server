@@ -18,6 +18,7 @@
 
 """Utilities for processing API views."""
 
+from builtins import str
 from django.conf import settings
 from django.http import Http404
 from django.http import HttpResponse
@@ -27,9 +28,10 @@ from kegbot.api import protoutil
 from google.protobuf.message import Message
 
 from kegbot.api import kbapi
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 from pykeg.core import models
 from pykeg.backend.exceptions import NoTokenError
+from addict import Dict
 
 from . import validate_jsonp
 
@@ -80,11 +82,11 @@ def to_json_error(e, exc_info):
     """Converts an exception to an API error response."""
     # Wrap some common exception types into kbapi types
     if isinstance(e, Http404):
-        e = kbapi.NotFoundError(e.message)
+        e = kbapi.NotFoundError(str(e))
     elif isinstance(e, ValueError):
         e = kbapi.BadRequestError(str(e))
     elif isinstance(e, NoTokenError):
-        e = kbapi.NotFoundError(e.message)
+        e = kbapi.NotFoundError(str(e))
 
     # Now determine the response based on the exception type.
     if isinstance(e, kbapi.Error):
@@ -125,7 +127,7 @@ def build_response(request, result_data, response_code=200):
 
 
 def prepare_data(data, inner=False):
-    if isinstance(data, QuerySet) or isinstance(data, types.ListType):
+    if isinstance(data, QuerySet) or isinstance(data, list):
         result = [prepare_data(d, True) for d in data]
         container = 'objects'
     elif isinstance(data, dict):
@@ -146,7 +148,7 @@ def prepare_data(data, inner=False):
 def to_dict(data):
     if not isinstance(data, Message):
         data = protolib.ToProto(data, full=True)
-    return protoutil.ProtoMessageToDict(data)
+    return Dict(protoutil.ProtoMessageToDict(data))
 
 
 def wrap_exception(request, exception):

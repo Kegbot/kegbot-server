@@ -18,6 +18,7 @@
 
 """Celery tasks for Untappd."""
 
+from builtins import str
 import requests
 
 import foursquare

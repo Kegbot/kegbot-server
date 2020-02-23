@@ -18,6 +18,7 @@
 
 """Kegbot authentication backend interface."""
 
+from builtins import object
 from django.contrib import auth
 from django.core.exceptions import ImproperlyConfigured
 

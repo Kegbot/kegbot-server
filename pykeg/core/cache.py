@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import str
+from builtins import object
 from django.conf import settings
 from django.core.cache import cache as django_cache
 
@@ -27,7 +29,7 @@ import time
 SEP = ':'
 
 
-class KegbotCache:
+class KegbotCache(object):
     """Wrapper around django cache, supporting Kegbot-specific features.
 
     Primarily, this wrapper facilitates "generational" or "namespaced" caching,

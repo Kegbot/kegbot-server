@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 import copy
 import logging
 import os
@@ -86,7 +87,7 @@ class Runner(object):
 
         self.logger.debug('env={}'.format(repr(env)))
 
-        for command_name, command in self.commands.iteritems():
+        for command_name, command in list(self.commands.items()):
             proc = self._launch_command(command_name, command, dev_null, env)
             self.logger.info('Started {} (pid={})'.format(command_name, proc.pid))
             self.watched_procs[command_name] = proc
@@ -97,7 +98,7 @@ class Runner(object):
         self.logger.info('Watching {} processes.'.format(len(self.commands)))
         while True:
             abort = False
-            for command_name, proc in self.watched_procs.iteritems():
+            for command_name, proc in list(self.watched_procs.items()):
                 self.logger.debug('Pinging {} (pid={})'.format(command_name, proc.pid))
                 proc.poll()
                 if proc.returncode is not None:
@@ -112,11 +113,11 @@ class Runner(object):
 
     def abort(self):
         self.logger.info('Abort called, killing remaining processes ...')
-        for command_name, proc in self.watched_procs.iteritems():
+        for command_name, proc in list(self.watched_procs.items()):
             if proc.returncode is None:
                 self.logger.info('Killing {} (pid={})'.format(command_name, proc.pid))
                 os.killpg(proc.pid, signal.SIGTERM)
-        for command_name, proc in self.watched_procs.iteritems():
+        for command_name, proc in list(self.watched_procs.items()):
             self.logger.info('Waiting for {} to exit (pid={}) ...'.format(command_name, proc.pid))
             proc.wait()
             self.logger.info('... done.')

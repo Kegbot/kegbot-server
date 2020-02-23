@@ -23,7 +23,7 @@ import foursquare
 import datetime
 import PIL
 
-from cStringIO import StringIO
+from io import StringIO
 from pykeg.celery import app
 from pykeg.plugin import util
 from pykeg.core.util import download_to_tempfile

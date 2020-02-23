@@ -1,10 +1,12 @@
+from builtins import str
+from builtins import object
 from django import forms
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Field, HTML
 from crispy_forms.bootstrap import FormActions
 
-from kegbot.util import units
+from pykeg.util import units
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import keg_sizes
 from pykeg.core import models
@@ -118,14 +120,14 @@ class TapForm(forms.ModelForm):
             if meter.tap:
                 return u'{} (connected to {})'.format(meter, meter.tap.name)
             else:
-                return unicode(meter)
+                return str(meter)
 
     class FlowToggleModelChoiceField(forms.ModelChoiceField):
         def label_from_instance(self, toggle):
             if toggle.tap:
                 return u'{} (connected to {})'.format(toggle, toggle.tap.name)
             else:
-                return unicode(toggle)
+                return str(toggle)
 
     class ThermoSensorModelChoiceField(forms.ModelChoiceField):
         def label_from_instance(self, sensor):
@@ -133,7 +135,7 @@ class TapForm(forms.ModelForm):
             if last_log:
                 return u'{} (Last report: {})'.format(sensor, naturaltime(last_log.time))
             else:
-                return unicode(sensor)
+                return str(sensor)
 
     meter = FlowMeterModelChoiceField(
         queryset=ALL_METERS,
@@ -153,7 +155,7 @@ class TapForm(forms.ModelForm):
         empty_label='No sensor.',
         help_text='Optional sensor monitoring the temperature at this tap.')
 
-    class Meta:
+    class Meta(object):
         model = models.KegTap
         fields = ('name', 'notes', 'temperature_sensor', 'sort_order')
 
@@ -297,7 +299,7 @@ class KegForm(forms.Form):
 
 
 class EditKegForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.Keg
         fields = ('type', 'keg_type', 'full_volume_ml', 'spilled_ml', 'description', 'notes',)
         labels = {
@@ -323,7 +325,7 @@ class EditKegForm(forms.ModelForm):
 
 
 class GeneralSiteSettingsForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.KegbotSite
         fields = (
             'title',
@@ -351,7 +353,7 @@ class LocationSiteSettingsForm(forms.ModelForm):
     guest_image = forms.ImageField(required=False,
                                    help_text='Custom image for the "guest" user.')
 
-    class Meta:
+    class Meta(object):
         model = models.KegbotSite
         fields = (
             'volume_display_units',
@@ -372,7 +374,7 @@ class LocationSiteSettingsForm(forms.ModelForm):
 
 
 class AdvancedSiteSettingsForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.KegbotSite
         fields = (
             'session_timeout_minutes',
@@ -393,7 +395,7 @@ class AdvancedSiteSettingsForm(forms.ModelForm):
 
 
 class BeverageForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.Beverage
         fields = ('name', 'style', 'producer', 'vintage_year', 'abv_percent',
                   'original_gravity', 'specific_gravity', 'ibu', 'srm', 'color_hex',
@@ -426,7 +428,7 @@ class BeverageForm(forms.ModelForm):
 
 
 class BeverageProducerForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.BeverageProducer
         fields = (
             'name',
@@ -458,7 +460,7 @@ class FindUserForm(forms.Form):
 
 
 class UserForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.User
         fields = (
             'username',
@@ -481,7 +483,7 @@ class UserForm(forms.ModelForm):
 
 
 class UserProfileForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.User
         fields = ('username', 'display_name', 'email')
 
@@ -500,7 +502,7 @@ class UserProfileForm(forms.ModelForm):
 
 
 class TokenForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.AuthenticationToken
         fields = (
             'nice_name',
@@ -543,7 +545,7 @@ class DeleteTokenForm(forms.Form):
 
 
 class AddTokenForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.AuthenticationToken
         fields = (
             'auth_device',
@@ -687,19 +689,19 @@ class TestEmailForm(forms.Form):
 
 
 class NewFlowMeterForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.FlowMeter
         fields = ('port_name', 'ticks_per_ml', 'controller')
 
 
 class UpdateFlowMeterForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.FlowMeter
         fields = ('ticks_per_ml',)
 
 
 class AddFlowMeterForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.FlowMeter
         fields = ('port_name', 'ticks_per_ml', 'controller')
 
@@ -716,13 +718,13 @@ class AddFlowMeterForm(forms.ModelForm):
 
 
 class FlowToggleForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.FlowToggle
         fields = ('port_name', 'controller')
 
 
 class AddFlowToggleForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.FlowToggle
         fields = ('port_name', 'controller')
 
@@ -748,7 +750,7 @@ class DeleteControllerForm(forms.Form):
 
 
 class ControllerForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.Controller
         fields = ('name', 'model_name', 'serial_number')
 

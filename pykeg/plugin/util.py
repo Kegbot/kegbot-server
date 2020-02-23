@@ -63,14 +63,14 @@ def get_plugins():
 
 def get_admin_urls():
     urls = []
-    for plugin in get_plugins().values():
+    for plugin in list(get_plugins().values()):
         urls += _to_urls(plugin.get_extra_admin_views(), plugin.get_short_name())
     return urls
 
 
 def get_account_urls():
     urls = []
-    for plugin in get_plugins().values():
+    for plugin in list(get_plugins().values()):
         urls += _to_urls(plugin.get_extra_user_views(), plugin.get_short_name())
     return urls
 

@@ -17,6 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 """General tests for the web interface."""
+from __future__ import print_function
 
 from django.core import mail
 from django.test import TransactionTestCase
@@ -85,7 +86,7 @@ class KegwebTestCase(TransactionTestCase):
         }
 
         def test_urls(expect_fail, urls=urls):
-            for url, expected_content in urls.iteritems():
+            for url, expected_content in urls.items():
                 response = self.client.get(url)
                 if expect_fail:
                     self.assertNotContains(response, expected_content, status_code=401,
@@ -228,7 +229,7 @@ class KegwebTestCase(TransactionTestCase):
                                         'password2': '1235',
                                         'email': 'test2@example.com',
                                     }, follow=False)
-        print response
+        print(response)
         self.assertContains(response, "The two password fields didn&#39;t match.",
                             status_code=200)
 

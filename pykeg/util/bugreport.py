@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Copyright 2014 Bevbot LLC, All Rights Reserved
 #
 # This file is part of the Pykeg package of the Kegbot project.
@@ -16,7 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-from cStringIO import StringIO
+from future import standard_library
+standard_library.install_aliases()
+from builtins import input
+from io import StringIO
 import datetime
 import isodate
 import json
@@ -144,7 +148,7 @@ def prompt_to_post():
 
     while True:
         sys.stderr.write('Post this bugreport to dpaste.com for easy sharing (y/n)? ')
-        val = raw_input()
+        val = input()
         val = val.strip().lower()
         if not val or val[0] not in ('y', 'n'):
             sys.stderr.write('Please type "y" or "n" to continue.\n')
@@ -173,8 +177,8 @@ def take_bugreport():
 
         if prompt:
             val = fd.getvalue()
-            print val
-            print ''
+            print(val)
+            print('')
             if prompt_to_post():
                 url = post_report(val)
                 sys.stderr.write('Bugreport posted: {}\n'.format(url))

@@ -18,6 +18,7 @@
 
 """Test for util module."""
 
+from builtins import str
 from distutils.version import StrictVersion
 
 from pykeg.core import util

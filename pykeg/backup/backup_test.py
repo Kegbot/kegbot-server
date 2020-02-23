@@ -35,7 +35,7 @@ from . import backup
 from pykeg.core.testutils import make_datetime
 from pykeg.core.util import get_version
 
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 
 
 def run(cmd, args=[]):

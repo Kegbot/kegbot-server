@@ -32,7 +32,7 @@ logger = get_task_logger(__name__)
 
 def schedule_tasks(events):
     """Synchronously schedules tasks related to the given events."""
-    for plugin in plugin_util.get_plugins().values():
+    for plugin in list(plugin_util.get_plugins().values()):
         try:
             plugin.handle_new_events(events)
         except Exception:

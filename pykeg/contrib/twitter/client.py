@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 import tweepy
 from requests_oauthlib import OAuth1Session
 from requests_oauthlib.oauth1_session import TokenMissing
@@ -42,7 +43,7 @@ class RequestError(TwitterClientError):
         self.cause = cause
 
 
-class TwitterClient:
+class TwitterClient(object):
     REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
     AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
@@ -62,9 +63,9 @@ class TwitterClient:
 
         try:
             res = session.fetch_request_token(self.REQUEST_TOKEN_URL)
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             raise RequestError('Request error fetching token.', e)
-        except (TokenRequestDenied, TokenMissing), e:
+        except (TokenRequestDenied, TokenMissing) as e:
             raise AuthError('Token request failed.', e)
 
         request_token = res.get('oauth_token')
@@ -98,9 +99,9 @@ class TwitterClient:
 
         try:
             res = session.fetch_access_token(self.ACCESS_TOKEN_URL)
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             raise RequestError('Request error fetching access token.', e)
-        except (TokenRequestDenied, TokenMissing), e:
+        except (TokenRequestDenied, TokenMissing) as e:
             raise AuthError('Auth error fetching access token.', e)
 
         oauth_token = res.get('oauth_token')

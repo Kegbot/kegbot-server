@@ -5,6 +5,8 @@
 
 """Validate Javascript Identifiers for use as JSON-P callback parameters."""
 
+from builtins import str
+from builtins import chr
 import re
 
 from unicodedata import category
@@ -63,9 +65,9 @@ def is_valid_javascript_identifier(identifier, escape=r'\u', ucd_cat=category):
     if not identifier:
         return False
 
-    if not isinstance(identifier, unicode):
+    if not isinstance(identifier, str):
         try:
-            identifier = unicode(identifier, 'utf-8')
+            identifier = str(identifier, 'utf-8')
         except UnicodeDecodeError:
             return False
 
@@ -80,7 +82,7 @@ def is_valid_javascript_identifier(identifier, escape=r'\u', ucd_cat=category):
             if len(segment) < 4:
                 return False
             try:
-                add_char(unichr(int('0x' + segment[:4], 16)))
+                add_char(chr(int('0x' + segment[:4], 16)))
             except Exception:
                 return False
             add_char(segment[4:])
@@ -123,7 +125,7 @@ def is_valid_jsonp_callback_value(value):
 
 
 def test():
-    """
+    r"""
     The function ``is_valid_javascript_identifier`` validates a given identifier
     according to the latest draft of the ECMAScript 5 Specification:
 

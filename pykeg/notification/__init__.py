@@ -18,6 +18,7 @@
 
 from __future__ import absolute_import
 
+from builtins import str
 from django.conf import settings
 from django.utils.module_loading import import_string
 from django.core.exceptions import ImproperlyConfigured
@@ -60,7 +61,7 @@ def handle_single_event(event, backends):
     logger.info('Processing event: %s' % event.kind)
 
     for backend in backends:
-        backend_name = str(backend.__class__)
+        backend_name = backend.name()
         prefs = core_models.NotificationSettings.objects.filter(backend=backend_name)
 
         if kind == event.KEG_TAPPED:

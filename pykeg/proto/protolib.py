@@ -17,7 +17,10 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 """Routines from converting data to and from Protocol Buffer format."""
+from __future__ import division
 
+from builtins import str
+from past.utils import old_div
 import pytz
 
 from django.conf import settings
@@ -25,9 +28,9 @@ from django.conf import settings
 from kegbot.api import api_pb2
 from kegbot.api import models_pb2
 from kegbot.api import protoutil
-from kegbot.util import util
 
 from pykeg.core import models
+from addict import Dict
 
 _CONVERSION_MAP = {}
 
@@ -41,15 +44,7 @@ def converts(kind):
 
 
 def datestr(dt):
-    if settings.USE_TZ:
-        return dt.isoformat()
-    try:
-        # Convert from local to UTC.
-        # TODO(mikey): handle incoming datetimes with tzinfo.
-        dt = util.local_to_utc(dt, settings.TIME_ZONE)
-    except pytz.UnknownTimeZoneError:
-        pass
-    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+    return dt.isoformat()
 
 
 def ToProto(obj, full=False):
@@ -68,9 +63,9 @@ def ToProto(obj, full=False):
 def ToDict(obj, full=False):
     res = ToProto(obj, full)
     if hasattr(res, '__iter__'):
-        return [protoutil.ProtoMessageToDict(m) for m in res]
+        return [Dict(protoutil.ProtoMessageToDict(m)) for m in res]
     else:
-        return protoutil.ProtoMessageToDict(res)
+        return Dict(protoutil.ProtoMessageToDict(res))
 
 # Model conversions
 
@@ -274,7 +269,7 @@ def FlowToggleToProto(flow_toggle, full=False):
 def DrinkToProto(drink, full=False):
     ret = models_pb2.Drink()
     ret.id = drink.id
-    ret.url = drink.get_absolute_url()
+    ret.url = str(drink.get_absolute_url())
     ret.ticks = drink.ticks
     ret.volume_ml = drink.volume_ml
     ret.session_id = drink.session_id
@@ -352,7 +347,7 @@ def KegTapToProto(tap, full=False):
 
     if meter:
         ret.meter_name = meter.meter_name()
-        ret.ml_per_tick = 1 / meter.ticks_per_ml
+        ret.ml_per_tick = old_div(1, meter.ticks_per_ml)
         ret.meter.MergeFrom(ToProto(meter))
     else:
         # TODO(mikey): Remove compatibility.
@@ -384,7 +379,7 @@ def KegTapToProto(tap, full=False):
 def SessionToProto(record, full=False):
     ret = models_pb2.Session()
     ret.id = record.id
-    ret.url = record.get_absolute_url()
+    ret.url = str(record.get_absolute_url())
     ret.start_time = datestr(record.start_time)
     ret.end_time = datestr(record.end_time)
     ret.volume_ml = record.volume_ml
@@ -424,7 +419,7 @@ def ThermoSensorToProto(record, full=False):
 def UserToProto(user, full=False):
     ret = models_pb2.User()
     ret.username = user.username
-    ret.url = user.get_absolute_url()
+    ret.url = str(user.get_absolute_url())
     ret.is_active = user.is_active
     ret.display_name = user.get_full_name()
     if full:

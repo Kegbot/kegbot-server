@@ -18,6 +18,8 @@
 
 """Methods to generate cached statistics from drinks."""
 
+from builtins import str
+from builtins import object
 import copy
 import inspect
 import logging
@@ -25,20 +27,20 @@ import pytz
 
 from django.utils.timezone import localtime
 from pykeg.core import models
-from kegbot.util import util
+from addict import Dict
 
 STAT_MAP = {}
 
 logger = logging.getLogger(__name__)
 
 
-class StatsView:
+class StatsView(object):
     def __init__(self, user=None, session=None, keg=None):
         self.user = user
         self.session = session
         self.keg = keg
 
-    def __unicode__(self):
+    def __str__(self):
         ret = 'view: '
         if not self.user and not self.keg and not self.session:
             ret += 'system'
@@ -73,21 +75,21 @@ class StatsView:
         return qs.order_by('-id')
 
 
-class StatsBuilder:
+class StatsBuilder(object):
     """Derives statistics from drinks."""
 
     def __init__(self):
         self.functions = []
         for name, fn in inspect.getmembers(self, inspect.ismethod):
-            if not name.startswith('_') and name != 'build':
+            if not name.startswith('_') and name != 'build' and name != 'next':
                 self.functions.append((name, fn))
 
     def build(self, drink, previous_stats):
         if previous_stats is None:
-            previous_stats = util.AttrDict()
+            previous_stats = Dict()
 
         logger.debug('build: drink={}'.format(drink.id))
-        stats = util.AttrDict()
+        stats = Dict()
 
         for statname, fn in self.functions:
             previous_value = previous_stats.get(statname, None)
@@ -151,7 +153,7 @@ class StatsBuilder:
         # Use volume_by_session, ensuring our session is captured
         # by injecting a dummy value.
         prev_sessions = previous_stats.get('volume_by_session', {})
-        ret = len(prev_sessions.keys())
+        ret = len(list(prev_sessions.keys()))
         if str(drink.session.id) not in prev_sessions:
             ret += 1
         return ret
@@ -244,7 +246,7 @@ def _build_single_view(drink, view, prior_stats=None):
 
     build_list = [drink]
     if prior_stats is None:
-        prior_stats = util.AttrDict()
+        prior_stats = Dict()
         prior_drinks_in_view = view.get_prior_drinks(drink)
         if prior_drinks_in_view.count():
             # Starting with the most recent prior drink, get its stats row.
@@ -254,7 +256,7 @@ def _build_single_view(drink, view, prior_stats=None):
             # depth in certain cases.
             for prior_drink in prior_drinks_in_view:
                 try:
-                    prior_stats = util.AttrDict(
+                    prior_stats = Dict(
                         models.Stats.objects.get(drink=prior_drink, user=view.user,
                                                  session=view.session, keg=view.keg).stats
                     )
@@ -272,7 +274,7 @@ def _build_single_view(drink, view, prior_stats=None):
             time=build_drink.time,
             session=view.session,
             keg=view.keg,
-            stats=stats,
+            stats=stats.to_dict(),
             is_first=(
                 not prior_stats))
         prior_stats = stats

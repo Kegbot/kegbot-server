@@ -21,6 +21,8 @@
 # Note: imports should be limited to python stdlib, since methods here
 # may be used in models.py, settings.py, etc.
 
+from builtins import str
+from builtins import object
 import logging
 import pkgutil
 import os
@@ -64,6 +66,8 @@ def should_upgrade(installed_verison, new_version):
 def get_user_agent():
     return 'KegbotServer/%s' % get_version()
 
+def CtoF(t):
+  return ((9.0/5.0)*t) + 32
 
 def get_plugin_template_dirs(plugin_list):
     from django.utils import six
@@ -76,6 +80,9 @@ def get_plugin_template_dirs(plugin_list):
         pkg = pkgutil.get_loader(plugin_module)
         if not pkg:
             raise ImproperlyConfigured('Cannot find plugin "%s"' % plugin)
+        if not hasattr(pkg, 'filename'):
+            # TODO(mikey): Resolve breakage.
+            continue
         template_dir = os.path.join(os.path.dirname(pkg.filename), 'templates')
         if os.path.isdir(template_dir):
             if not six.PY3:

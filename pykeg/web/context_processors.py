@@ -1,6 +1,8 @@
+from future import standard_library
+standard_library.install_aliases()
 from django.conf import settings
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from pykeg.core import models
 from pykeg.core import util
@@ -10,7 +12,7 @@ from pykeg.web.kegweb.forms import LoginForm
 def kbsite(request):
     kbsite = getattr(request, 'kbsite', None)
 
-    redir = urllib.urlencode({'redir': request.build_absolute_uri(request.path)})
+    redir = urllib.parse.urlencode({'redir': request.build_absolute_uri(request.path)})
 
     sso_login_url = getattr(settings, 'SSO_LOGIN_URL', '')
     if sso_login_url:

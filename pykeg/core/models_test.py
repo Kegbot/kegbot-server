@@ -30,7 +30,7 @@ from .testutils import make_datetime
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core.testutils import get_filename
-from kegbot.util import units
+from pykeg.util import units
 
 
 class CoreModelsTestCase(TransactionTestCase):

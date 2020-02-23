@@ -18,6 +18,7 @@
 
 """Unittests for pykeg.web.api"""
 
+from builtins import str
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TransactionTestCase
@@ -26,7 +27,7 @@ from pykeg.core import models
 from pykeg.core import defaults
 from pykeg.core.testutils import get_filename
 from pykeg.core.util import get_version
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 
 # Helper methods
 
@@ -59,15 +60,15 @@ class ApiClientNoSiteTestCase(BaseApiTestCase):
         endpoints = ('events/', 'taps/', 'kegs/', 'drinks/')
         for endpoint in endpoints:
             response, data = self.get(endpoint)
-            self.assertEquals(data.meta.result, 'error')
-            self.assertEquals(data.error.code, 'BadRequestError')
+            self.assertEqual(data.meta.result, 'error')
+            self.assertEqual(data.error.code, 'BadRequestError')
 
         create_site()
 
         # Ordinary results expected after site installed.
         for endpoint in endpoints:
             response, data = self.get(endpoint)
-            self.assertEquals(data.meta.result, 'ok')
+            self.assertEqual(data.meta.result, 'ok')
 
 
 @override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
@@ -89,89 +90,89 @@ class ApiClientTestCase(BaseApiTestCase):
         empty_endpoints = ('events/', 'kegs/')
         for endpoint in empty_endpoints:
             response, data = self.get(endpoint)
-            self.assertEquals(data.objects, [])
+            self.assertEqual(data.objects, [])
 
         response, data = self.get('taps/')
         taps = data.objects
-        self.assertEquals(2, len(taps))
-        self.assertEquals('Main Tap', taps[0].name)
-        self.assertEquals('kegboard.flow0', taps[0].meter_name)
-        self.assertEquals('Second Tap', taps[1].name)
-        self.assertEquals('kegboard.flow1', taps[1].meter_name)
+        self.assertEqual(2, len(taps))
+        self.assertEqual('Main Tap', taps[0].name)
+        self.assertEqual('kegboard.flow0', taps[0].meter_name)
+        self.assertEqual('Second Tap', taps[1].name)
+        self.assertEqual('kegboard.flow1', taps[1].meter_name)
 
         for tap in taps:
             response1, data1 = self.get('taps/%s' % tap.meter_name)
-            self.assertEquals(data1.meta.result, 'ok')
+            self.assertEqual(data1.meta.result, 'ok')
 
             response2, data2 = self.get('taps/%s' % tap.id)
-            self.assertEquals(data2.meta.result, 'ok')
+            self.assertEqual(data2.meta.result, 'ok')
 
-            self.assertEquals(data1, data2)
+            self.assertEqual(data1, data2)
 
     def test_api_access(self):
         endpoint = 'users/'
 
         # No API key.
         response, data = self.get(endpoint)
-        self.assertEquals(data.meta.result, 'error')
-        self.assertEquals(data.error.code, 'NoAuthTokenError')
+        self.assertEqual(data.meta.result, 'error')
+        self.assertEqual(data.error.code, 'NoAuthTokenError')
 
         # Non-existent key.
         response, data = self.get(endpoint, HTTP_X_KEGBOT_API_KEY='foobar')
-        self.assertEquals(data.meta.result, 'error')
-        self.assertEquals(data.error.code, 'BadApiKeyError')
+        self.assertEqual(data.meta.result, 'error')
+        self.assertEqual(data.error.code, 'BadApiKeyError')
 
         # Key exists, non-superuser.
         response, data = self.get(endpoint, HTTP_X_KEGBOT_API_KEY=self.bad_apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
 
         # Finally ok.
         response, data = self.get(endpoint, HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
 
         endpoint = 'events/'
 
         # Alter privacy and compare.
         response, data = self.get(endpoint)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
         self.site.privacy = 'members'
         self.site.save()
 
         response, data = self.get(endpoint)
-        self.assertEquals(data.meta.result, 'error')
+        self.assertEqual(data.meta.result, 'error')
 
         self.client.login(username='admin', password='testpass')
         response, data = self.get(endpoint)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
 
         # Alert to staff-only.
         self.site.privacy = 'staff'
         self.site.save()
         response, data = self.get(endpoint)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
 
         self.client.logout()
         response, data = self.get(endpoint)
-        self.assertEquals(data.meta.result, 'error')
-        self.assertEquals(data.error.code, 'NoAuthTokenError')
+        self.assertEqual(data.meta.result, 'error')
+        self.assertEqual(data.error.code, 'NoAuthTokenError')
 
         # Login endpoint works despite privacy settings
         for ep in ('login', 'login/', 'v1/login', 'v1/login/'):
             response, data = self.post(ep, data={'username': 'admin', 'password': 'testpass'})
-            self.assertEquals(data.meta.result, 'ok')
+            self.assertEqual(data.meta.result, 'ok')
 
         for ep in ('version/', 'v1/version/'):
             response, data = self.get(ep)
-            self.assertEquals(data.meta.result, 'ok')
+            self.assertEqual(data.meta.result, 'ok')
 
     def test_record_drink(self):
         response, data = self.get('taps/1')
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(data.object.get('current_keg'), None)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(data.object.get('current_keg'), None)
 
         response, data = self.get('drinks/last')
-        self.assertEquals(response.status_code, 404)
-        self.assertEquals(data.meta.result, 'error')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data.meta.result, 'error')
 
         new_keg_data = {
             'keg_size': 'half-barrel',
@@ -180,34 +181,34 @@ class ApiClientTestCase(BaseApiTestCase):
             'style_name': 'Test Style,'
         }
         response, data = self.post('taps/1/activate', data=new_keg_data)
-        self.assertEquals(data.meta.result, 'error')
-        self.assertEquals(data.error.code, 'NoAuthTokenError')
+        self.assertEqual(data.meta.result, 'error')
+        self.assertEqual(data.error.code, 'NoAuthTokenError')
 
         response, data = self.post('taps/1/activate', data=new_keg_data,
                                    HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
         self.assertIsNotNone(data.object.get('current_keg'))
 
         response, data = self.post('taps/1', data={'ticks': 1000})
-        self.assertEquals(data.meta.result, 'error')
-        self.assertEquals(data.error.code, 'NoAuthTokenError')
+        self.assertEqual(data.meta.result, 'error')
+        self.assertEqual(data.error.code, 'NoAuthTokenError')
 
         response, data = self.post('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
                                    data={'ticks': 1000, 'username': self.normal_user.username})
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
         drink = data.object
 
         response, data = self.get('drinks/last')
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(data.object.id, drink.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(data.object.id, drink.id)
 
         response, data = self.get('status', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
         users = data.object.get('active_users', [])
-        self.assertEquals(1, len(users))
+        self.assertEqual(1, len(users))
         active_user = users[0]
-        self.assertEquals(self.normal_user.username, active_user.username)
+        self.assertEqual(self.normal_user.username, active_user.username)
 
     def test_record_drink_usernames(self):
         new_keg_data = {
@@ -218,32 +219,32 @@ class ApiClientTestCase(BaseApiTestCase):
         }
         response, data = self.post('taps/1/activate', data=new_keg_data,
                                    HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
 
         models.User.objects.create(username='test.123')
         response, data = self.post('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
             data={'ticks': 1000, 'username': 'test.123'})
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
     @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
     def test_registration(self):
         response, data = self.post(
             'new-user/', data={'username': 'newuser', 'email': 'foo@example.com'})
-        self.assertEquals(data.meta.result, 'error')
-        self.assertEquals(data.error.code, 'NoAuthTokenError')
+        self.assertEqual(data.meta.result, 'error')
+        self.assertEqual(data.error.code, 'NoAuthTokenError')
 
-        self.assertEquals(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
         response, data = self.post('new-user/', data={'username': 'newuser', 'email': 'foo@example.com'},
                                    HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(1, len(mail.outbox))
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(1, len(mail.outbox))
 
         msg = mail.outbox[0]
-        self.assertEquals('[My Kegbot] Complete your registration', msg.subject)
-        self.assertEquals(['foo@example.com'], msg.to)
-        self.assertEquals('test-from@example', msg.from_email)
+        self.assertEqual('[My Kegbot] Complete your registration', msg.subject)
+        self.assertEqual(['foo@example.com'], msg.to)
+        self.assertEqual('test-from@example', msg.from_email)
 
         # Simulate clicking on the activation link.
         user = models.User.objects.get(username='newuser')
@@ -255,10 +256,10 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertContains(response, 'Choose a Password', status_code=200)
 
     def test_pictures(self):
-        image_data = open(get_filename('test_image_800x600.png'))
+        image_data = open(get_filename('test_image_800x600.png'), 'rb')
         response, data = self.post(
             'pictures/', data={'photo': image_data}, HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
 
         picture = data['object']
         picture_url = picture['url']
@@ -267,11 +268,11 @@ class ApiClientTestCase(BaseApiTestCase):
     def test_controller_data(self):
         for endpoint in ('controllers', 'flow-meters'):
             response, data = self.get(endpoint)
-            self.assertEquals(data.meta.result, 'error')
-            self.assertEquals(data.error.code, 'NoAuthTokenError')
+            self.assertEqual(data.meta.result, 'error')
+            self.assertEqual(data.error.code, 'NoAuthTokenError')
 
         response, data = self.get('controllers', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
         expected = {
             'objects': [
                 {
@@ -283,10 +284,10 @@ class ApiClientTestCase(BaseApiTestCase):
                 'result': 'ok',
             }
         }
-        self.assertEquals(expected, data)
+        self.assertEqual(expected, data)
 
         response, data = self.get('flow-meters', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
         expected = {
             'objects': [
                 {
@@ -312,10 +313,10 @@ class ApiClientTestCase(BaseApiTestCase):
             ],
             'meta': {'result': 'ok'}
         }
-        self.assertEquals(expected, data)
+        self.assertEqual(expected, data)
 
         response, data = self.get('flow-toggles', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
         expected = {
             'objects': [
                 {
@@ -339,98 +340,98 @@ class ApiClientTestCase(BaseApiTestCase):
             ],
             'meta': {'result': 'ok'}
         }
-        self.assertEquals(expected, data)
+        self.assertEqual(expected, data)
 
     def test_add_remove_meters(self):
         response, data = self.get('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(data.object.meter.id, 1)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(data.object.meter.id, 1)
         original_data = data
 
         response, data = self.post('taps/1/disconnect-meter', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(data.object.get('meter'), None)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(data.object.get('meter'), None)
 
         response, data = self.post('taps/1/connect-meter', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
                                    data={'meter': 1})
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(data.object.meter.id, 1)
-        self.assertEquals(original_data, data)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(data.object.meter.id, 1)
+        self.assertEqual(original_data, data)
 
     def test_add_remove_toggles(self):
         response, data = self.get('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(data.object.toggle.id, 1)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(data.object.toggle.id, 1)
 
         response, data = self.post('taps/1/disconnect-toggle',
                                    HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(data.object.get('toggle'), None)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(data.object.get('toggle'), None)
 
         response, data = self.post('taps/1/connect-toggle', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
                                    data={'toggle': 1})
         response, data = self.get('taps/1', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
         self.assertIsNotNone(data.object.get('toggle'))
-        self.assertEquals(data.object.toggle.id, 1)
+        self.assertEqual(data.object.toggle.id, 1)
 
     def test_get_version(self):
         response, data = self.get('version')
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(data.object.get('server_version'), get_version())
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(data.object.get('server_version'), get_version())
 
     def test_devices(self):
         # Perform a device link.
         response, data = self.post('devices/link', data={'name': 'Test Device'})
-        self.assertEquals(data.meta.result, 'ok')
+        self.assertEqual(data.meta.result, 'ok')
         code = data.object.code
 
         response, data = self.get('devices/link/status/' + code)
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(False, data.object.linked)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(False, data.object.linked)
 
         self.client.login(username='admin', password='testpass')
         response = self.client.post('/kegadmin/devices/link/', data={'code': code}, follow=True)
         self.client.logout()
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         response, data = self.get('devices/link/status/' + code)
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(True, data.object.linked)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(True, data.object.linked)
         api_key = data.object.get('api_key')
         self.assertIsNotNone(api_key)
 
         key_obj = models.ApiKey.objects.get(key=api_key)
         self.assertIsNotNone(key_obj.device)
-        self.assertEquals('Test Device', key_obj.device.name)
+        self.assertEqual('Test Device', key_obj.device.name)
 
         # Confirm device key is gone.
         response, data = self.get('devices/link/status/' + code)
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     # Kegbot object tests
 
     def test_auth_tokens(self):
         response, data = self.get('auth-tokens/nfc/deadbeef', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(data.meta.result, 'error')
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(data.meta.result, 'error')
+        self.assertEqual(response.status_code, 404)
 
         response, data = self.post(
             'auth-tokens/nfc/deadbeef/assign', HTTP_X_KEGBOT_API_KEY=self.apikey.key, data={
                 'username': self.normal_user.username})
-        self.assertEquals(data.meta.result, 'ok')
-        self.assertEquals(data.object.auth_device, 'nfc')
-        self.assertEquals(data.object.token_value, 'deadbeef')
-        self.assertEquals(data.object.username, 'normal_user')
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(data.meta.result, 'ok')
+        self.assertEqual(data.object.auth_device, 'nfc')
+        self.assertEqual(data.object.token_value, 'deadbeef')
+        self.assertEqual(data.object.username, 'normal_user')
+        self.assertEqual(response.status_code, 200)
 
     def test_controllers(self):
         """List, create, update, and delete controllers."""
         # List controllers.
         response, data = self.get('controllers', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(1, len(data.objects))
-        self.assertEquals('kegboard', data.objects[0]['name'])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, len(data.objects))
+        self.assertEqual('kegboard', data.objects[0]['name'])
 
         # Create a new controller.
         response, data = self.post('controllers', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
@@ -439,56 +440,56 @@ class ApiClientTestCase(BaseApiTestCase):
                                        'model_name': 'Test Model',
                                        'serial_number': 'Test Serial'
                                    })
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('Test Controller', data.object.name)
-        self.assertEquals('Test Model', data.object.model_name)
-        self.assertEquals('Test Serial', data.object.serial_number)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('Test Controller', data.object.name)
+        self.assertEqual('Test Model', data.object.model_name)
+        self.assertEqual('Test Serial', data.object.serial_number)
 
         # Fetch controller.
         new_controller_id = data.object.id
         response, data = self.get('controllers/' + str(new_controller_id),
                                   HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('Test Controller', data.object.name)
-        self.assertEquals('Test Model', data.object.model_name)
-        self.assertEquals('Test Serial', data.object.serial_number)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('Test Controller', data.object.name)
+        self.assertEqual('Test Model', data.object.model_name)
+        self.assertEqual('Test Serial', data.object.serial_number)
 
         # Update controller
         response, data = self.post(
             'controllers/' + str(new_controller_id), HTTP_X_KEGBOT_API_KEY=self.apikey.key, data={
                 'name': 'Test Controller+', 'model_name': 'Test Model+', 'serial_number': 'Test Serial+'})
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('Test Controller+', data.object.name)
-        self.assertEquals('Test Model+', data.object.model_name)
-        self.assertEquals('Test Serial+', data.object.serial_number)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('Test Controller+', data.object.name)
+        self.assertEqual('Test Model+', data.object.model_name)
+        self.assertEqual('Test Serial+', data.object.serial_number)
 
         response, data = self.get('controllers/' + str(new_controller_id),
                                   HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('Test Controller+', data.object.name)
-        self.assertEquals('Test Model+', data.object.model_name)
-        self.assertEquals('Test Serial+', data.object.serial_number)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('Test Controller+', data.object.name)
+        self.assertEqual('Test Model+', data.object.model_name)
+        self.assertEqual('Test Serial+', data.object.serial_number)
 
         # Delete controller
         response, data = self.delete('controllers/' + str(new_controller_id))
-        self.assertEquals(response.status_code, 401)
+        self.assertEqual(response.status_code, 401)
         response, data = self.delete('controllers/' +
                                      str(new_controller_id), HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         response, data = self.get('controllers/' + str(new_controller_id),
                                   HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     def test_flow_meters(self):
         """List, create, update, and delete flow meters."""
         # List flow meters.
         response, data = self.get('flow-meters', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(2, len(data.objects))
-        self.assertEquals('kegboard.flow0', data.objects[0]['name'])
-        self.assertEquals('flow0', data.objects[0]['port_name'])
-        self.assertEquals('kegboard.flow1', data.objects[1]['name'])
-        self.assertEquals('flow1', data.objects[1]['port_name'])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(2, len(data.objects))
+        self.assertEqual('kegboard.flow0', data.objects[0]['name'])
+        self.assertEqual('flow0', data.objects[0]['port_name'])
+        self.assertEqual('kegboard.flow1', data.objects[1]['name'])
+        self.assertEqual('flow1', data.objects[1]['port_name'])
 
         # Create a new meter.
         controller = models.Controller.objects.all()[0]
@@ -498,50 +499,50 @@ class ApiClientTestCase(BaseApiTestCase):
                                        'ticks_per_ml': 3.45,
                                        'controller': controller.id,
                                    })
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('kegboard.flow-test', data.object.name)
-        self.assertEquals('flow-test', data.object.port_name)
-        self.assertEquals(3.45, data.object.ticks_per_ml)
-        self.assertEquals(controller.name, data.object.controller.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('kegboard.flow-test', data.object.name)
+        self.assertEqual('flow-test', data.object.port_name)
+        self.assertEqual(3.45, data.object.ticks_per_ml)
+        self.assertEqual(controller.name, data.object.controller.name)
 
         # Fetch meter.
         new_meter_id = data.object.id
         response, data = self.get('flow-meters/' + str(new_meter_id),
                                   HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('kegboard.flow-test', data.object.name)
-        self.assertEquals('flow-test', data.object.port_name)
-        self.assertEquals(3.45, data.object.ticks_per_ml)
-        self.assertEquals(controller.name, data.object.controller.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('kegboard.flow-test', data.object.name)
+        self.assertEqual('flow-test', data.object.port_name)
+        self.assertEqual(3.45, data.object.ticks_per_ml)
+        self.assertEqual(controller.name, data.object.controller.name)
 
         # Update meter
         response, data = self.post('flow-meters/' + str(new_meter_id),
                                    HTTP_X_KEGBOT_API_KEY=self.apikey.key, data={'ticks_per_ml': 5.67, })
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('kegboard.flow-test', data.object.name)
-        self.assertEquals(5.67, data.object.ticks_per_ml)
-        self.assertEquals(controller.name, data.object.controller.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('kegboard.flow-test', data.object.name)
+        self.assertEqual(5.67, data.object.ticks_per_ml)
+        self.assertEqual(controller.name, data.object.controller.name)
 
         # Delete meter
         response, data = self.delete('flow-meters/' + str(new_meter_id))
-        self.assertEquals(response.status_code, 401)
+        self.assertEqual(response.status_code, 401)
         response, data = self.delete('flow-meters/' + str(new_meter_id),
                                      HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         response, data = self.get('flow-meters/' + str(new_meter_id),
                                   HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     def test_flow_toggles(self):
         """List, create, and delete flow toggles."""
         # List flow toggles.
         response, data = self.get('flow-toggles', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(2, len(data.objects))
-        self.assertEquals('kegboard.relay0', data.objects[0]['name'])
-        self.assertEquals('relay0', data.objects[0]['port_name'])
-        self.assertEquals('kegboard.relay1', data.objects[1]['name'])
-        self.assertEquals('relay1', data.objects[1]['port_name'])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(2, len(data.objects))
+        self.assertEqual('kegboard.relay0', data.objects[0]['name'])
+        self.assertEqual('relay0', data.objects[0]['port_name'])
+        self.assertEqual('kegboard.relay1', data.objects[1]['name'])
+        self.assertEqual('relay1', data.objects[1]['port_name'])
 
         # Create a new toggle.
         controller = models.Controller.objects.all()[0]
@@ -550,57 +551,57 @@ class ApiClientTestCase(BaseApiTestCase):
                                        'port_name': 'toggle-test',
                                        'controller': controller.id,
                                    })
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('kegboard.toggle-test', data.object.name)
-        self.assertEquals('toggle-test', data.object.port_name)
-        self.assertEquals(controller.name, data.object.controller.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('kegboard.toggle-test', data.object.name)
+        self.assertEqual('toggle-test', data.object.port_name)
+        self.assertEqual(controller.name, data.object.controller.name)
 
         # Fetch toggle.
         new_toggle_id = data.object.id
         response, data = self.get('flow-toggles/' + str(new_toggle_id),
                                   HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('kegboard.toggle-test', data.object.name)
-        self.assertEquals('toggle-test', data.object.port_name)
-        self.assertEquals(controller.name, data.object.controller.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('kegboard.toggle-test', data.object.name)
+        self.assertEqual('toggle-test', data.object.port_name)
+        self.assertEqual(controller.name, data.object.controller.name)
 
         # Delete toggle.
         response, data = self.delete('flow-toggles/' + str(new_toggle_id))
-        self.assertEquals(response.status_code, 401)
+        self.assertEqual(response.status_code, 401)
         response, data = self.delete('flow-toggles/' +
                                      str(new_toggle_id), HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         response, data = self.get('flow-toggles/' + str(new_toggle_id),
                                   HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     def test_taps(self):
         """List, create, and delete taps."""
         # List flow toggles.
         response, data = self.get('taps', HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(2, len(data.objects))
-        self.assertEquals('Main Tap', data.objects[0]['name'])
-        self.assertEquals('Second Tap', data.objects[1]['name'])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(2, len(data.objects))
+        self.assertEqual('Main Tap', data.objects[0]['name'])
+        self.assertEqual('Second Tap', data.objects[1]['name'])
 
         # Create a new toggle.
         response, data = self.post('taps', HTTP_X_KEGBOT_API_KEY=self.apikey.key,
                                    data={
                                        'name': 'Test Tap',
                                    })
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('Test Tap', data.object.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('Test Tap', data.object.name)
 
         # Fetch tap.
         tap_id = data.object.id
         response, data = self.get('taps/' + str(tap_id), HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals('Test Tap', data.object.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('Test Tap', data.object.name)
 
         # Delete tap.
         response, data = self.delete('taps/' + str(tap_id))
-        self.assertEquals(response.status_code, 401)
+        self.assertEqual(response.status_code, 401)
         response, data = self.delete('taps/' + str(tap_id), HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         response, data = self.get('taps/' + str(tap_id), HTTP_X_KEGBOT_API_KEY=self.apikey.key)
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)

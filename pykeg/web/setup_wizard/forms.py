@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Field
@@ -25,7 +26,7 @@ from pykeg.core import models
 
 
 class MiniSiteSettingsForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.KegbotSite
         fields = (
             'title',

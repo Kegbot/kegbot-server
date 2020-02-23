@@ -16,7 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import urlparse
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+import urllib.parse
 
 from django import forms
 from django.conf import settings
@@ -37,7 +40,7 @@ from pykeg.backend import get_kegbot_backend
 
 
 class KegbotRegistrationForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.User
         fields = ('email', 'username')
 
@@ -80,7 +83,7 @@ class PasswordResetForm(forms.Form):
 
             be = get_kegbot_backend()
             base_url = be.get_base_url()
-            parsed = urlparse.urlparse(base_url)
+            parsed = urllib.parse.urlparse(base_url)
             domain = parsed.netloc
             protocol = parsed.scheme
 

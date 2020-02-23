@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import str
+from builtins import object
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg import config
@@ -110,7 +112,7 @@ class KegbotSiteMiddleware(object):
             if request.kbsite.is_setup:
                 timezone.activate(request.kbsite.timezone)
                 request.plugins = dict((p.get_short_name(), p)
-                                       for p in plugin_util.get_plugins().values())
+                                       for p in list(plugin_util.get_plugins().values()))
             else:
                 request.need_setup = True
             request.backend = get_kegbot_backend()

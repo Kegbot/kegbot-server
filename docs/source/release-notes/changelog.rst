@@ -40,6 +40,7 @@ For a detailed look at what's new in version 1.3, see :ref:`version-13-release-n
 * Skip notifications for inactive users  (#349)
 * Fix compatibility with with MySQL versions later than v5.7.5 (#356)
 * Allow usernames with a period (#336)
+* Update stats and sessions when admin deletes a drink (#371)
 
 **Other Changes**
 

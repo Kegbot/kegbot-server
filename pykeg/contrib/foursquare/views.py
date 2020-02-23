@@ -23,7 +23,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from pykeg.web.decorators import staff_member_required
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 
 from . import forms
 from . import client

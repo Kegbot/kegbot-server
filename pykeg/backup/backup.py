@@ -51,7 +51,7 @@ import json
 import zipfile
 
 from pykeg.core.util import get_version
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 
 from .exceptions import BackupError, InvalidBackup, AlreadyInstalledError
 

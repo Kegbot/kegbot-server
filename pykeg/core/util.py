@@ -66,6 +66,8 @@ def should_upgrade(installed_verison, new_version):
 def get_user_agent():
     return 'KegbotServer/%s' % get_version()
 
+def CtoF(t):
+  return ((9.0/5.0)*t) + 32
 
 def get_plugin_template_dirs(plugin_list):
     from django.utils import six

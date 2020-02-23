@@ -19,7 +19,7 @@
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
-from kegbot.util import util
+from addict import Dict
 
 from . import models
 from .testutils import make_datetime
@@ -64,7 +64,7 @@ class StatsTestCase(TransactionTestCase):
 
         d = self.backend.record_drink('kegboard.flow0', ticks=1, volume_ml=100,
                                       username='user1', pour_time=now)
-        expected = util.AttrDict({
+        expected = Dict({
             u'volume_by_year': {u'2012': 100.0},
             u'total_pours': 1,
             u'has_guest_pour': False,

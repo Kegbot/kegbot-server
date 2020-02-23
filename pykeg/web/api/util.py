@@ -27,7 +27,7 @@ from kegbot.api import protoutil
 from google.protobuf.message import Message
 
 from kegbot.api import kbapi
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 from pykeg.core import models
 from pykeg.backend.exceptions import NoTokenError
 

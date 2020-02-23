@@ -57,12 +57,13 @@ from pykeg.core import kb_common
 from pykeg.core import keg_sizes
 from pykeg.core import fields
 from pykeg.core import managers
+from pykeg.core.util import CtoF
 from pykeg.core.util import get_version
 from pykeg.util.email import build_message
 
-from kegbot.util import kbjson
-from kegbot.util import units
-from kegbot.util import util
+from pykeg.util import kbjson
+from pykeg.util import units
+from addict import Dict
 
 from pykeg.core.jsonfield import JSONField
 from django.utils.translation import ugettext_lazy as _
@@ -339,7 +340,9 @@ class KegbotSite(models.Model):
 
     def full_url(self, path):
         """Returns an absolute URL to the specified path."""
-        return urllib.parse.urljoin(self.base_url(), path)
+        base_url = str(self.base_url())
+        path = str(path)
+        return urllib.parse.urljoin(base_url, path)
 
     def reverse_full(self, *args, **kwargs):
         """Returns an absolute URL to the path reversed by parameters."""
@@ -1181,7 +1184,7 @@ class Thermolog(models.Model):
         return self.temp
 
     def TempF(self):
-        return util.CtoF(self.temp)
+        return CtoF(self.temp)
 
 
 class Stats(models.Model):
@@ -1226,9 +1229,9 @@ class Stats(models.Model):
             stats['registered_drinkers'] = [
                 safe_get_user(pk).username for pk in orig if safe_get_user(pk)]
 
-        orig = stats.get('volume_by_drinker', util.AttrDict())
+        orig = stats.get('volume_by_drinker', Dict())
         if orig:
-            stats['volume_by_drinker'] = util.AttrDict(
+            stats['volume_by_drinker'] = Dict(
                 (safe_get_user(pk).username, val) for pk, val in orig.items() if safe_get_user(pk))
 
     @classmethod
@@ -1242,7 +1245,7 @@ class Stats(models.Model):
         except IndexError:
             stats = {}
         cls.apply_usernames(stats)
-        return util.AttrDict(stats)
+        return Dict(stats)
 
 
 class SystemEvent(models.Model):

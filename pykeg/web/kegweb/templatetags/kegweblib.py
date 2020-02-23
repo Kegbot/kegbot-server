@@ -29,9 +29,9 @@ from django.template.defaultfilters import pluralize
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
-from kegbot.util import kbjson
-from kegbot.util import units
-from kegbot.util import util
+from pykeg.util import kbjson
+from pykeg.util import units
+from pykeg.core.util import CtoF
 
 from pykeg.core import models
 from pykeg.web.charts import charts
@@ -195,7 +195,7 @@ class TemperatureNode(Node):
         kbsite = models.KegbotSite.get()
         if kbsite.temperature_display_units == 'f':
             unit = 'F'
-            amount = util.CtoF(amount)
+            amount = CtoF(amount)
 
         return self.TEMPLATE % {'amount': amount, 'unit': unit}
 

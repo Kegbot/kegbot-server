@@ -26,7 +26,7 @@ from pykeg.core import models
 from pykeg.core import defaults
 from pykeg.core.testutils import get_filename
 from pykeg.core.util import get_version
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 
 # Helper methods
 

@@ -19,8 +19,8 @@
 import datetime
 
 from django.utils import timezone
-from kegbot.util import units
-from kegbot.util import util
+from pykeg.util import units
+from pykeg.core.util import CtoF
 
 from pykeg.core import models
 
@@ -42,7 +42,7 @@ def format_temperature(temp_c, chart_kwargs):
     if use_c:
         return temp_c
     else:
-        return util.CtoF(temp_c)
+        return CtoF(temp_c)
 
 
 def chart_temp_sensor(sensor, *args, **kwargs):

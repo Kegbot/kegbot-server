@@ -42,7 +42,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 
 from pykeg.backup import backup
 from pykeg.web.api import devicelink

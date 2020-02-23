@@ -28,7 +28,7 @@ Local changes:
 
 import logging
 import redis
-from kegbot.util import kbjson as json
+from pykeg.util import kbjson as json
 
 
 class RedisFormatter(logging.Formatter):

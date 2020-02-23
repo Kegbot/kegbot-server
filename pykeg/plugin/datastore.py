@@ -19,7 +19,7 @@
 """Data storage interface and implementations for plugins."""
 
 from builtins import object
-from kegbot.util.util import AttrDict
+from addict import Dict
 from pykeg.core import models
 
 
@@ -47,7 +47,7 @@ class PluginDatastore(object):
 
     def load_form(self, form_cls, prefix, form_kwargs={}):
         """Helper method to load a form using the specified per-field prefix."""
-        data = AttrDict()
+        data = Dict()
         for field_name, field in form_cls.base_fields.items():
             initial = self.get('%s:%s' % (prefix, field_name))
             if initial is not None:

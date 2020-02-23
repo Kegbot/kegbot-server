@@ -4,7 +4,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Field, HTML
 from crispy_forms.bootstrap import FormActions
 
-from kegbot.util import units
+from pykeg.util import units
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import keg_sizes
 from pykeg.core import models

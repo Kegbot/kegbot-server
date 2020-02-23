@@ -28,7 +28,6 @@ from django.conf import settings
 from kegbot.api import api_pb2
 from kegbot.api import models_pb2
 from kegbot.api import protoutil
-from kegbot.util import util
 
 from pykeg.core import models
 
@@ -44,15 +43,7 @@ def converts(kind):
 
 
 def datestr(dt):
-    if settings.USE_TZ:
-        return dt.isoformat()
-    try:
-        # Convert from local to UTC.
-        # TODO(mikey): handle incoming datetimes with tzinfo.
-        dt = util.local_to_utc(dt, settings.TIME_ZONE)
-    except pytz.UnknownTimeZoneError:
-        pass
-    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+    return dt.isoformat()
 
 
 def ToProto(obj, full=False):

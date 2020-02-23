@@ -21,7 +21,7 @@
 from pykeg.celery import app
 from pykeg.plugin import util
 from pykeg.core.util import get_version
-from kegbot.util import kbjson
+from pykeg.util import kbjson
 
 import requests
 

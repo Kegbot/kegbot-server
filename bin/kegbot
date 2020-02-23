@@ -18,6 +18,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import django
 
 import os
@@ -41,7 +48,7 @@ if __name__ == "__main__":
         cmd = sys.argv[1]
         if cmd == 'version':
             # Hack: Django's `version` command cannot be overridden the usual way.
-            print 'kegbot-server {}'.format(get_version())
+            print('kegbot-server {}'.format(get_version()))
             sys.exit(0)
         elif cmd == 'run_gunicorn':
             # run_gunicorn was deprecated upstream.

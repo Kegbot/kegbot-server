@@ -44,7 +44,11 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'sphinx_issues',
 ]
+
+# Extensions config
+issues_github_path = 'kegbot/kegbot-server'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

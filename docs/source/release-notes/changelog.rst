@@ -24,28 +24,28 @@ For a detailed look at what's new in version 1.3, see :ref:`version-13-release-n
 
 **New features**
 
-* Allow deletion of tokens from web (#337)
-* Add mini (5L) keg size (#331)
-* Add drinks tab to drinker details page (#347)
-* Allow deleting drinks from Kegbot Admin drinks page (#348)
-* Don't require user to be active in order to view the user's details and sessions (#350)
-* Twitter plugin: option to tweet/disable system session join events (#363)
-* Add a create controller view (#364)
+* Allow deletion of tokens from web (:issue:`337`)
+* Add mini (5L) keg size (:issue:`331`)
+* Add drinks tab to drinker details page (:issue:`347`)
+* Allow deleting drinks from Kegbot Admin drinks page (:issue:`348`)
+* Don't require user to be active in order to view the user's details and sessions (:issue:`350`)
+* Twitter plugin: option to tweet/disable system session join events (:issue:`363`)
+* Add a create controller view (:issue:`364`)
 
 **Bugfixes**
 
-* Prevent divide by zero error when keg volume is set to zero (#353)
-* Fixed keg list error (#353)
-* Fix chart (#342)
-* Skip notifications for inactive users  (#349)
-* Fix compatibility with with MySQL versions later than v5.7.5 (#356)
-* Allow usernames with a period (#336)
-* Update stats and sessions when admin deletes a drink (#371)
+* Prevent divide by zero error when keg volume is set to zero (:issue:`353`)
+* Fixed keg list error (:issue:`353`)
+* Fix chart (:issue:`342`)
+* Skip notifications for inactive users  (:issue:`349`)
+* Fix compatibility with with MySQL versions later than v5.7.5 (:issue:`356`)
+* Allow usernames with a period (:issue:`336`)
+* Update stats and sessions when admin deletes a drink (:issue:`371`)
 
 **Other Changes**
 
 * Internal: Upgraded to Django 1.11.
-* Internal: Improved static file serving (#368)
+* Internal: Improved static file serving (:issue:`368`)
 * Internal: Developer tests now use ``pytest``
 * Upgraded to Python 3.
 
@@ -59,8 +59,8 @@ Version 1.2.3 (2015-01-12)
 Version 1.2.2 (2015-01-03)
 --------------------------
 * New command `kegbot bugreport` collects various system information.
-* Bugfix: Crash on end keg button (#326).
-* Bugfix: Unicode error during `kegbot upgrade` (#328).
+* Bugfix: Crash on end keg button (:issue:`326`).
+* Bugfix: Unicode error during `kegbot upgrade` (:issue:`328`).
 
 
 Version 1.2.1 (2014-12-02)
@@ -78,9 +78,9 @@ Version 1.2.0 (2014-12-01)
   earlier file format.
 * Django 1.7 update.
 * Flow sensing and multiuser features can be hidden.
-* Statistics now properly consider local timezone (#199).
-* Some new keg sizes are supported (#318).
-* Keg full volume and beverage type can be edited (#279).
+* Statistics now properly consider local timezone (:issue:`199`).
+* Some new keg sizes are supported (:issue:`318`).
+* Keg full volume and beverage type can be edited (:issue:`279`).
 
 
 Version 1.1.1 (2014-11-11)

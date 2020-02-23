@@ -44,6 +44,7 @@ pytest-django = "*"
 future = "*"
 addict = "*"
 kegbot-api = "*"
+sphinx-issues = "*"
 
 [scripts]
 kegbot = "python bin/kegbot"

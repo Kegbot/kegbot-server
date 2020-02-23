@@ -81,11 +81,11 @@ def to_json_error(e, exc_info):
     """Converts an exception to an API error response."""
     # Wrap some common exception types into kbapi types
     if isinstance(e, Http404):
-        e = kbapi.NotFoundError(e.message)
+        e = kbapi.NotFoundError(str(e))
     elif isinstance(e, ValueError):
         e = kbapi.BadRequestError(str(e))
     elif isinstance(e, NoTokenError):
-        e = kbapi.NotFoundError(e.message)
+        e = kbapi.NotFoundError(str(e))
 
     # Now determine the response based on the exception type.
     if isinstance(e, kbapi.Error):

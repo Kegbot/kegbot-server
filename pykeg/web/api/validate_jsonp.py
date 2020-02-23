@@ -125,7 +125,7 @@ def is_valid_jsonp_callback_value(value):
 
 
 def test():
-    """
+    r"""
     The function ``is_valid_javascript_identifier`` validates a given identifier
     according to the latest draft of the ECMAScript 5 Specification:
 

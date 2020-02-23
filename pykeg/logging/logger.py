@@ -127,7 +127,7 @@ class RedisLogRecord(logging.LogRecord):
 
 
 class RedisLogger(logging.getLoggerClass()):
-    def makeRecord(self, name, lvl, fn, lno, msg, args, exc_info, func=None, extra=None):
+    def makeRecord(self, name, lvl, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
         record = RedisLogRecord(name, lvl, fn, lno, msg, args, exc_info, func=None)
 
         if extra:

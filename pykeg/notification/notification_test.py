@@ -18,6 +18,7 @@
 
 """Unittests for notification module."""
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -30,11 +31,19 @@ from pykeg.notification.backends.base import BaseNotificationBackend
 
 
 class TestBackendA(BaseNotificationBackend):
+    @classmethod
+    def name(cls):
+        return 'pykeg.notification.test.TestBackendA'
+
     def notify(self, event, user):
         pass
 
 
 class TestBackendB(BaseNotificationBackend):
+    @classmethod
+    def name(cls):
+        return 'pykeg.notification.test.TestBackendB'
+
     def notify(self, event, user):
         pass
 
@@ -72,6 +81,10 @@ class NotificationTestCase(TestCase):
             """Notification backend which captures calls."""
             captured = []
 
+            @classmethod
+            def name(cls):
+                return 'CaptureBackend'
+
             def notify(self, event, user):
                 self.captured.append((event, user))
 
@@ -83,7 +96,7 @@ class NotificationTestCase(TestCase):
 
         prefs = models.NotificationSettings.objects.create(
             user=self.user,
-            backend='pykeg.notification.notification_test.CaptureBackend',
+            backend=CaptureBackend.name(),
             keg_tapped=False,
             session_started=False,
             keg_volume_low=False,

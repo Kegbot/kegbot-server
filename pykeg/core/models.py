@@ -146,7 +146,7 @@ class User(AbstractBaseUser):
         verbose_name = _('user')
         verbose_name_plural = _('users')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.username
 
     # Django-required methods.
@@ -310,7 +310,7 @@ class KegbotSite(models.Model):
         default=True, help_text='Periodically check for updates '
         '(<a href="https://kegbot.org/about/checkin">more info</a>)')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     @classmethod
@@ -442,7 +442,7 @@ class BeverageProducer(models.Model):
     class Meta(object):
         ordering = ('name',)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -525,7 +525,7 @@ class Beverage(models.Model):
     class Meta(object):
         ordering = ('name',)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{} by {}'.format(self.name, self.producer)
 
 
@@ -550,7 +550,7 @@ class KegTap(models.Model):
     sort_order = models.PositiveIntegerField(
         default=0, help_text='Position relative to other taps when sorting (0=first).')
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{}: {}'.format(self.name, self.current_keg)
 
     def is_active(self):
@@ -598,7 +598,7 @@ class Controller(models.Model):
     serial_number = models.CharField(max_length=128, blank=True, null=True,
                                      help_text='Serial number (optional).')
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Controller: {}'.format(self.name)
 
 
@@ -621,7 +621,7 @@ class FlowMeter(models.Model):
     def meter_name(self):
         return '{}.{}'.format(self.controller.name, self.port_name)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.meter_name()
 
     @classmethod
@@ -670,7 +670,7 @@ class FlowToggle(models.Model):
     def toggle_name(self):
         return u'{}.{}'.format(self.controller.name, self.port_name)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{} (tap: {})'.format(self.toggle_name(), self.tap)
 
     @classmethod
@@ -838,7 +838,7 @@ class Keg(models.Model):
         ret.sort(reverse=True)
         return ret
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Keg #{} - {}'.format(self.id, self.type)
 
 
@@ -921,7 +921,7 @@ class Drink(models.Model):
         ounces = self.Volume().InOunces()
         return self.keg.type.calories_oz * ounces
 
-    def __unicode__(self):
+    def __str__(self):
         return 'Drink {} by {}'.format(self.id, self.user)
 
 
@@ -952,7 +952,7 @@ class AuthenticationToken(models.Model):
     expire_time = models.DateTimeField(blank=True, null=True,
                                        help_text='Date after which token is treated as disabled.')
 
-    def __unicode__(self):
+    def __str__(self):
         auth_device = self.auth_device
         if auth_device == 'core.rfid':
             auth_device = 'RFID'
@@ -1004,7 +1004,7 @@ class DrinkingSession(models.Model):
     objects = managers.SessionManager()
     name = models.CharField(max_length=256, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return 'Session #{}: {}'.format(self.id, self.start_time)
 
     def Duration(self):
@@ -1155,7 +1155,7 @@ class ThermoSensor(models.Model):
     raw_name = models.CharField(max_length=256)
     nice_name = models.CharField(max_length=128)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.nice_name:
             return u'{} ({})'.format(self.nice_name, self.raw_name)
         return self.raw_name
@@ -1177,7 +1177,7 @@ class Thermolog(models.Model):
     temp = models.FloatField()
     time = models.DateTimeField()
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%.2f C / %.2f F [%s]' % (self.TempC(), self.TempF(), self.time)
 
     def TempC(self):
@@ -1287,7 +1287,7 @@ class SystemEvent(models.Model):
 
     objects = managers.SystemEventManager()
 
-    def __unicode__(self):
+    def __str__(self):
         if self.kind == self.DRINK_POURED:
             ret = u'Drink {} poured'.format(self.drink.id)
         elif self.kind == self.SESSION_STARTED:
@@ -1421,7 +1421,7 @@ class Picture(models.Model):
                                 on_delete=models.SET_NULL,
                                 help_text='Session this picture was taken with, if any.')
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Picture: {}'.format(self.image)
 
     def get_caption(self):

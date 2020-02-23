@@ -394,7 +394,7 @@ class ChartNode(Node):
         }
 
         chart_data = chart_base
-        for k, v in chart_result.iteritems():
+        for k, v in chart_result.items():
             if k not in chart_data:
                 chart_data[k] = v
             elif isinstance(v, dict):

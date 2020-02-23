@@ -26,6 +26,10 @@ logger = logging.getLogger('email-notification')
 
 
 class EmailNotificationBackend(BaseNotificationBackend):
+    @classmethod
+    def name(cls):
+        return 'pykeg.notification.backends.email.EmailNotificationBackend'
+
     def notify(self, event, user):
         logger.info('Event %s -> user %s' % (event, user))
 

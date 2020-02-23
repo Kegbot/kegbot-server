@@ -61,7 +61,7 @@ def admin_settings(request, plugin):
                 context['test_response'] = kbjson.dumps(venue_info, indent=2)
                 messages.success(request, 'API test successful.')
             except client.FoursquareClientError as e:
-                messages.success(request, 'API test failed: {}'.format(e.message))
+                messages.success(request, 'API test failed: {}'.format(e))
 
     context['plugin'] = plugin
     context['settings_form'] = settings_form

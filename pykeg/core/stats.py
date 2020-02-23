@@ -40,7 +40,7 @@ class StatsView(object):
         self.session = session
         self.keg = keg
 
-    def __unicode__(self):
+    def __str__(self):
         ret = 'view: '
         if not self.user and not self.keg and not self.session:
             ret += 'system'

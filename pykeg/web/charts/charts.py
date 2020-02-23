@@ -188,7 +188,7 @@ def chart_users_by_volume(stats, *args, **kwargs):
         return cmp(b[1], a[1])
 
     other_vol = 0
-    data.sort(_sort_vol_desc)
+    data.sort(key=lambda item: item[1])
     for username, pints in data[10:]:
         other_vol += pints
     data = data[:10]

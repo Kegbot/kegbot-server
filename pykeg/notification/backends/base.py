@@ -19,7 +19,8 @@
 """Base notification module."""
 
 
-class BaseNotificationBackend:
+from builtins import object
+class BaseNotificationBackend(object):
     """Base class for notification backend implementations."""
 
     def notify(self, event, user):

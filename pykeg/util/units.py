@@ -1,3 +1,6 @@
+from __future__ import division
+from builtins import object
+from past.utils import old_div
 import types
 from enum import Enum
 
@@ -19,7 +22,7 @@ class UNITS(Enum):
   Hogshead = 238480.9434
 
 
-class Quantity:
+class Quantity(object):
   def __init__(self, amount, units=UNITS.Milliliter, from_units=None):
     self._units = units
     self._amount = self.convert(amount, units, from_units) if from_units else amount
@@ -101,4 +104,4 @@ class Quantity:
     if not units_to:
       raise ValueError('Bad units_to')
     amount_in_ml = float(amount) * units_from.value
-    return amount_in_ml / units_to.value
+    return old_div(amount_in_ml, units_to.value)

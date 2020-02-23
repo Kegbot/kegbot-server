@@ -18,6 +18,7 @@
 
 """Unittests for pykeg.web.api"""
 
+from builtins import str
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TransactionTestCase

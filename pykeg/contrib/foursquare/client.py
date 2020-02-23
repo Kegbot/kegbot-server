@@ -16,10 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 import foursquare
 
 
-class FoursquareClient:
+class FoursquareClient(object):
     AUTHORIZATION_URL = 'https://foursquare.com/oauth2/authorize'
     ACCESS_TOKEN_URL = 'https://foursquare.com/oauth2/token'
 

@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from past.builtins import cmp
 import datetime
 
 from django.utils import timezone
@@ -121,7 +122,7 @@ def chart_volume_by_weekday(stats, *args, **kwargs):
     if not volmap:
         raise ChartError('Daily volumes unavailable')
 
-    for weekday, volume_ml in vols.iteritems():
+    for weekday, volume_ml in vols.items():
         volmap[int(weekday)] += format_volume(volume_ml, kwargs)[0]
     return _weekday_chart_common(volmap)
 
@@ -129,7 +130,7 @@ def chart_volume_by_weekday(stats, *args, **kwargs):
 def chart_sessions_by_weekday(stats, *args, **kwargs):
     data = stats.get('volume_by_day_of_week', {})
     weekdays = [0] * 7
-    for weekday, volume_ml in data.iteritems():
+    for weekday, volume_ml in data.items():
         weekdays[int(weekday)] += format_volume(volume_ml, kwargs)[0]
     return _weekday_chart_common(weekdays)
 
@@ -145,7 +146,7 @@ def chart_sessions_by_volume(stats, *args, **kwargs):
         '5+'
     ]
     volmap = stats.get('volume_by_session', {})
-    for session_volume in volmap.values():
+    for session_volume in list(volmap.values()):
         volume = round(format_volume(session_volume, kwargs)[0], 1)
         intval = int(volume)
         if intval >= len(buckets):
@@ -176,7 +177,7 @@ def chart_users_by_volume(stats, *args, **kwargs):
         raise ChartError('no data')
 
     data = []
-    for username, volume in vols.iteritems():
+    for username, volume in vols.items():
         if not username:
             username = 'Guest'
         volume, units = format_volume(volume, kwargs)

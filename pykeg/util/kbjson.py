@@ -33,7 +33,7 @@ def _ToAttrDict(obj):
   if type(obj) == dict:
     # Try to convert any "time" or "date" fields into datetime objects.  If the
     # format doesn't match, just leave it alone.
-    for k, v in obj.items():
+    for k, v in list(obj.items()):
       if type(v) in (str,):
         if k.endswith('date') or k.endswith('time') or k.startswith('date') or k.startswith('last_login'):
           try:

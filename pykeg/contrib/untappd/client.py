@@ -16,11 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 import requests
 from requests_oauthlib import OAuth2Session
 
 
-class UntappdClient:
+class UntappdClient(object):
     AUTHORIZATION_URL = 'https://untappd.com/oauth/authenticate/'
     ACCESS_TOKEN_URL = 'https://untappd.com/oauth/authorize/'
 

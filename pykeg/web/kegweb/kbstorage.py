@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-import urlparse
+from future import standard_library
+standard_library.install_aliases()
+import urllib.parse
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
@@ -43,7 +45,7 @@ class KegbotFileSystemStorage(FileSystemStorage):
         be = get_kegbot_backend()
         base_url = be.get_base_url()
         if not self.base_url.startswith(base_url):
-            self.base_url = urlparse.urljoin(base_url, self.base_url)
+            self.base_url = urllib.parse.urljoin(base_url, self.base_url)
         return super(KegbotFileSystemStorage, self).url(name)
 
 

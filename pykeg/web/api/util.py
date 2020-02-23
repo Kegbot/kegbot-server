@@ -18,6 +18,7 @@
 
 """Utilities for processing API views."""
 
+from builtins import str
 from django.conf import settings
 from django.http import Http404
 from django.http import HttpResponse
@@ -125,7 +126,7 @@ def build_response(request, result_data, response_code=200):
 
 
 def prepare_data(data, inner=False):
-    if isinstance(data, QuerySet) or isinstance(data, types.ListType):
+    if isinstance(data, QuerySet) or isinstance(data, list):
         result = [prepare_data(d, True) for d in data]
         container = 'objects'
     elif isinstance(data, dict):

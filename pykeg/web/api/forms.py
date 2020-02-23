@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 from django import forms
 
 from pykeg.core import models
@@ -51,7 +52,7 @@ class ThermoPostForm(forms.Form):
 
 
 class CreateKegTapForm(forms.ModelForm):
-    class Meta:
+    class Meta(object):
         model = models.KegTap
         fields = ('name', 'notes')
 

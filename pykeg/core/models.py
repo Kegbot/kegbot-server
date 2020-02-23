@@ -829,7 +829,7 @@ class Keg(models.Model):
             return []
         ret = []
         entries = stats.get('volume_by_drinker', {})
-        for username, vol in entries.items():
+        for username, vol in list(entries.items()):
             try:
                 user = User.objects.get(username=username)
             except User.DoesNotExist:
@@ -1232,7 +1232,7 @@ class Stats(models.Model):
         orig = stats.get('volume_by_drinker', Dict())
         if orig:
             stats['volume_by_drinker'] = Dict(
-                (safe_get_user(pk).username, val) for pk, val in orig.items() if safe_get_user(pk))
+                (safe_get_user(pk).username, val) for pk, val in list(orig.items()) if safe_get_user(pk))
 
     @classmethod
     def get_latest_for_view(cls, user=None, keg=None, session=None):

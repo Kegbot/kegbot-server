@@ -259,14 +259,14 @@ def workers(request):
     if not pings and 'error' not in context:
         context['error'] = 'No response from workers. Not running?'
     else:
-        for k, v in pings.iteritems():
+        for k, v in pings.items():
             status[k] = {
                 'status': 'ok' if v.get('ok') else 'unknown',
             }
-        for k, v in stats.iteritems():
+        for k, v in stats.items():
             if k in status:
                 status[k]['stats'] = v
-        for k, v in queues.iteritems():
+        for k, v in queues.items():
             if k in status:
                 status[k]['active_queues'] = v
 

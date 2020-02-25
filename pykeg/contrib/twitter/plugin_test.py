@@ -43,9 +43,9 @@ class TwitterPluginTestCase(TransactionTestCase):
             plugin.KEY_TWITTER_ID: '4',
         }
         self.plugin.save_site_profile('1', '2', '3', '4')
-        self.assertEquals(fake_profile, self.plugin.get_site_profile())
+        self.assertEqual(fake_profile, self.plugin.get_site_profile())
         self.plugin.remove_site_profile()
-        self.assertEquals({}, self.plugin.get_site_profile())
+        self.assertEqual({}, self.plugin.get_site_profile())
         self.plugin.save_site_profile('1', '2', '3', '4')
 
     def test_get_site_twitter_settings_form(self):
@@ -65,12 +65,12 @@ class TwitterPluginTestCase(TransactionTestCase):
             'drink_poured_template': '$DRINKER poured $VOLUME of $BEER on $SITENAME.',
             'user_drink_poured_template': 'Just poured $VOLUME of $BEER on $SITENAME. #kegbot',
         }
-        self.assertEquals(expected, dict(settings_form.initial))
+        self.assertEqual(expected, dict(settings_form.initial))
 
     def test_truncate_tweet(self):
         msg = 'x' * 138 + 'x'
         truncated = plugin.truncate_tweet(msg)
-        self.assertEquals(msg, truncated)
+        self.assertEqual(msg, truncated)
 
         longer_msg = 'x' * 138 + ' xxxx'
         truncated = plugin.truncate_tweet(longer_msg)

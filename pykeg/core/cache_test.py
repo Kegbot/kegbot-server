@@ -32,31 +32,31 @@ class KegbotCacheTest(TransactionTestCase):
         cache = KegbotCache(generation_fn=lambda: 100)
 
         # keyname, get, set
-        self.assertEquals('kb:foo', cache.keyname('foo'))
-        self.assertEquals(None, django_cache.get('kb:foo'))
-        self.assertEquals(123, django_cache.get('kb:foo', 123))
+        self.assertEqual('kb:foo', cache.keyname('foo'))
+        self.assertEqual(None, django_cache.get('kb:foo'))
+        self.assertEqual(123, django_cache.get('kb:foo', 123))
         cache.set('foo', 'bar')
-        self.assertEquals('bar', django_cache.get('kb:foo'))
+        self.assertEqual('bar', django_cache.get('kb:foo'))
 
         # generation
-        self.assertEquals(None, django_cache.get(cache.generation_key))
+        self.assertEqual(None, django_cache.get(cache.generation_key))
         gen = cache.get_generation()
-        self.assertEquals(100, gen)
-        self.assertEquals('kb:foo:100', cache.gen_keyname('foo'))
-        self.assertEquals(100, django_cache.get(cache.generation_key))
+        self.assertEqual(100, gen)
+        self.assertEqual('kb:foo:100', cache.gen_keyname('foo'))
+        self.assertEqual(100, django_cache.get(cache.generation_key))
 
         cache.gen_set('test', 555)
-        self.assertEquals(555, cache.gen_get('test'))
+        self.assertEqual(555, cache.gen_get('test'))
         cache.update_generation()
-        self.assertEquals(101, cache.get_generation())
-        self.assertEquals(None, cache.gen_get('test'))
+        self.assertEqual(101, cache.get_generation())
+        self.assertEqual(None, cache.gen_get('test'))
 
     @override_settings(KEGBOT_CACHE_PREFIX='other')
     def test_prefix_other(self):
         """Verifies settings.KEGBOT_CACHE_PREFIX is respected."""
         cache = KegbotCache(generation_fn=lambda: 100)
-        self.assertEquals('other:foo', cache.keyname('foo'))
-        self.assertEquals('other:foo:100', cache.gen_keyname('foo'))
+        self.assertEqual('other:foo', cache.keyname('foo'))
+        self.assertEqual('other:foo:100', cache.gen_keyname('foo'))
 
     def test_generation_update(self):
         """Tests updating the generation succeeds even when missing."""

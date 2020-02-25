@@ -57,7 +57,7 @@ class StatsTestCase(TransactionTestCase):
     def testStuff(self):
         site = models.KegbotSite.get()
         stats = site.get_stats()
-        self.assertEquals(stats, {})
+        self.assertEqual(stats, {})
 
         now = make_datetime(2012, 1, 2, 12, 00)
         self.maxDiff = None
@@ -155,24 +155,24 @@ class StatsTestCase(TransactionTestCase):
                 pour_time=now)
             drinks.append(d)
 
-        self.assertEquals(600, self.users[0].get_stats().total_volume_ml)
-        self.assertEquals(200, self.users[1].get_stats().total_volume_ml)
-        self.assertEquals(200, self.users[2].get_stats().total_volume_ml)
+        self.assertEqual(600, self.users[0].get_stats().total_volume_ml)
+        self.assertEqual(200, self.users[1].get_stats().total_volume_ml)
+        self.assertEqual(200, self.users[2].get_stats().total_volume_ml)
 
-        self.assertEquals(1000, models.KegbotSite.get().get_stats().total_volume_ml)
+        self.assertEqual(1000, models.KegbotSite.get().get_stats().total_volume_ml)
 
         self.backend.cancel_drink(drinks[0])
-        self.assertEquals(500, self.users[0].get_stats().total_volume_ml)
-        self.assertEquals(200, self.users[1].get_stats().total_volume_ml)
-        self.assertEquals(200, self.users[2].get_stats().total_volume_ml)
-        self.assertEquals(900, models.KegbotSite.get().get_stats().total_volume_ml)
+        self.assertEqual(500, self.users[0].get_stats().total_volume_ml)
+        self.assertEqual(200, self.users[1].get_stats().total_volume_ml)
+        self.assertEqual(200, self.users[2].get_stats().total_volume_ml)
+        self.assertEqual(900, models.KegbotSite.get().get_stats().total_volume_ml)
 
         self.backend.assign_drink(drinks[1], self.users[0])
-        self.assertEquals(700, self.users[0].get_stats().total_volume_ml)
-        self.assertEquals({}, self.users[1].get_stats())
-        self.assertEquals(200, self.users[2].get_stats().total_volume_ml)
-        self.assertEquals(900, models.KegbotSite.get().get_stats().total_volume_ml)
-        self.assertEquals(900, drinks[1].session.get_stats().total_volume_ml)
+        self.assertEqual(700, self.users[0].get_stats().total_volume_ml)
+        self.assertEqual({}, self.users[1].get_stats())
+        self.assertEqual(200, self.users[2].get_stats().total_volume_ml)
+        self.assertEqual(900, models.KegbotSite.get().get_stats().total_volume_ml)
+        self.assertEqual(900, drinks[1].session.get_stats().total_volume_ml)
 
         # Start a new session.
         now = make_datetime(2013, 1, 2, 12, 00)
@@ -185,11 +185,11 @@ class StatsTestCase(TransactionTestCase):
                 pour_time=now)
             drinks.append(d)
 
-        self.assertEquals(1300, self.users[0].get_stats().total_volume_ml)
-        self.assertEquals(200, self.users[1].get_stats().total_volume_ml)
-        self.assertEquals(400, self.users[2].get_stats().total_volume_ml)
-        self.assertEquals(1900, models.KegbotSite.get().get_stats().total_volume_ml)
-        self.assertEquals(1000, drinks[-1].session.get_stats().total_volume_ml)
+        self.assertEqual(1300, self.users[0].get_stats().total_volume_ml)
+        self.assertEqual(200, self.users[1].get_stats().total_volume_ml)
+        self.assertEqual(400, self.users[2].get_stats().total_volume_ml)
+        self.assertEqual(1900, models.KegbotSite.get().get_stats().total_volume_ml)
+        self.assertEqual(1000, drinks[-1].session.get_stats().total_volume_ml)
 
         # Delete all stats for some intermediate drinks.
         models.Stats.objects.filter(drink=drinks[-1]).delete()
@@ -200,8 +200,8 @@ class StatsTestCase(TransactionTestCase):
         drinks.append(d)
 
         # Intermediate stats are generated.
-        self.assertEquals(3011, models.KegbotSite.get().get_stats().total_volume_ml)
-        self.assertEquals(2111, drinks[-1].session.get_stats().total_volume_ml)
+        self.assertEqual(3011, models.KegbotSite.get().get_stats().total_volume_ml)
+        self.assertEqual(2111, drinks[-1].session.get_stats().total_volume_ml)
 
     def test_timezone_awareness(self):
         site = models.KegbotSite.get()
@@ -227,10 +227,10 @@ class StatsTestCase(TransactionTestCase):
                 volume_ml=volume_ml,
                 pour_time=now)
             drinks.append(d)
-            self.assertEquals('US/Pacific', d.session.timezone)
+            self.assertEqual('US/Pacific', d.session.timezone)
 
         stats = site.get_stats()
         # Assert that stats are recorded for Sunday (day = 0) rather than
         # UTC's monday (day = 1).
-        self.assertEquals({'0': 1000.0}, stats.volume_by_day_of_week)
-        self.assertEquals(600, self.users[0].get_stats().total_volume_ml)
+        self.assertEqual({'0': 1000.0}, stats.volume_by_day_of_week)
+        self.assertEqual(600, self.users[0].get_stats().total_volume_ml)

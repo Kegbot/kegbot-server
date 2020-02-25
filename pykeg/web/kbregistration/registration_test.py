@@ -43,15 +43,15 @@ class ForgotPasswordTest(TestCase):
     def test_notifications(self):
         response = self.client.get('/accounts/password/reset/')
         self.assertContains(response, "Reset Password", status_code=200)
-        self.assertEquals(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
         response = self.client.post('/accounts/password/reset/', data={'email': 'test@example.com'},
                                     follow=True)
         self.assertContains(response, 'E-Mail Sent', status_code=200)
-        self.assertEquals(1, len(mail.outbox))
+        self.assertEqual(1, len(mail.outbox))
 
         msg = mail.outbox[0]
 
-        self.assertEquals('Password reset on My Kegbot', msg.subject)
-        self.assertEquals(['test@example.com'], msg.to)
-        self.assertEquals('test-from@example', msg.from_email)
+        self.assertEqual('Password reset on My Kegbot', msg.subject)
+        self.assertEqual(['test@example.com'], msg.to)
+        self.assertEqual('test-from@example', msg.from_email)

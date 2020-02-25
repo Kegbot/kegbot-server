@@ -38,18 +38,18 @@ class KegwebTestCase(TransactionTestCase):
     def testBasicEndpoints(self):
         for endpoint in ('/kegs/', '/stats/', '/drinkers/guest/', '/drinkers/guest/sessions/'):
             response = self.client.get(endpoint)
-            self.assertEquals(200, response.status_code)
+            self.assertEqual(200, response.status_code)
 
         for endpoint in ('/sessions/',):
             response = self.client.get(endpoint)
-            self.assertEquals(404, response.status_code)
+            self.assertEqual(404, response.status_code)
 
         b = get_kegbot_backend()
         keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
                           beverage_type='beer', style_name='Unknown')
         self.assertIsNotNone(keg)
         response = self.client.get('/kegs/')
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         d = b.record_drink('kegboard.flow0', ticks=100)
         drink_id = d.id

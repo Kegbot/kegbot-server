@@ -49,7 +49,7 @@ class EmailNotificationBackendTestCase(TestCase):
     def test_keg_tapped(self):
         self.prefs.keg_tapped = True
         self.prefs.save()
-        self.assertEquals(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
         keg = self.backend.start_keg(
             defaults.METER_NAME_0,
@@ -57,13 +57,13 @@ class EmailNotificationBackendTestCase(TestCase):
             beverage_type='beer',
             producer_name='Unknown',
             style_name='Unknown')
-        self.assertEquals(1, len(mail.outbox))
+        self.assertEqual(1, len(mail.outbox))
 
         msg = mail.outbox[0]
-        self.assertEquals('[My Kegbot] New keg tapped: Keg %s: Unknown by Unknown' % keg.id,
+        self.assertEqual('[My Kegbot] New keg tapped: Keg %s: Unknown by Unknown' % keg.id,
                           msg.subject)
-        self.assertEquals(['test@example'], msg.to)
-        self.assertEquals('test-from@example', msg.from_email)
+        self.assertEqual(['test@example'], msg.to)
+        self.assertEqual('test-from@example', msg.from_email)
 
         expected_body_plain = '''A new keg of Unknown by Unknown was just tapped on My Kegbot!
 
@@ -89,25 +89,25 @@ on <a href="http://localhost:1234">My Kegbot</a>.  To change your settings, visi
 http://localhost:1234/account.
 </p>''' % (keg.id,)
 
-        self.assertEquals(1, len(msg.alternatives))
+        self.assertEqual(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])
-        self.assertEquals('text/html', msg.alternatives[0][1])
+        self.assertEqual('text/html', msg.alternatives[0][1])
 
     def test_session_started(self):
         self.prefs.session_started = True
         self.prefs.save()
-        self.assertEquals(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
         self.backend.start_keg(defaults.METER_NAME_0, beverage_name='Unknown',
                                beverage_type='beer', producer_name='Unknown', style_name='Unknown')
         drink = self.backend.record_drink(defaults.METER_NAME_0, ticks=500)
-        self.assertEquals(1, len(mail.outbox))
+        self.assertEqual(1, len(mail.outbox))
 
         msg = mail.outbox[0]
-        self.assertEquals('[My Kegbot] A new session (session %s) has started.' % (
+        self.assertEqual('[My Kegbot] A new session (session %s) has started.' % (
             drink.session.id,), msg.subject)
-        self.assertEquals(['test@example'], msg.to)
-        self.assertEquals('test-from@example', msg.from_email)
+        self.assertEqual(['test@example'], msg.to)
+        self.assertEqual('test-from@example', msg.from_email)
 
         expected_body_plain = '''A new session was just kicked off on My Kegbot.
 
@@ -132,14 +132,14 @@ on <a href="http://localhost:1234">My Kegbot</a>.  To change your settings, visi
 http://localhost:1234/account.
 </p>''' % (drink.session.id,)
 
-        self.assertEquals(1, len(msg.alternatives))
+        self.assertEqual(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])
-        self.assertEquals('text/html', msg.alternatives[0][1])
+        self.assertEqual('text/html', msg.alternatives[0][1])
 
     def test_keg_volume_low(self):
         self.prefs.keg_volume_low = True
         self.prefs.save()
-        self.assertEquals(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
         keg = self.backend.start_keg(
             defaults.METER_NAME_0,
@@ -149,13 +149,13 @@ http://localhost:1234/account.
             style_name='Unknown')
         self.backend.record_drink(defaults.METER_NAME_0, ticks=500,
                                   volume_ml=keg.full_volume_ml * (1 - kb_common.KEG_VOLUME_LOW_PERCENT))
-        self.assertEquals(1, len(mail.outbox))
+        self.assertEqual(1, len(mail.outbox))
 
         msg = mail.outbox[0]
-        self.assertEquals('[My Kegbot] Volume low on keg %s (Unknown by Unknown)' % keg.id,
+        self.assertEqual('[My Kegbot] Volume low on keg %s (Unknown by Unknown)' % keg.id,
                           msg.subject)
-        self.assertEquals(['test@example'], msg.to)
-        self.assertEquals('test-from@example', msg.from_email)
+        self.assertEqual(['test@example'], msg.to)
+        self.assertEqual('test-from@example', msg.from_email)
 
         expected_body_plain = '''Keg %s (Unknown by Unknown) is 15.0%% full.
 
@@ -180,14 +180,14 @@ on <a href="http://localhost:1234">My Kegbot</a>.  To change your settings, visi
 http://localhost:1234/account.
 </p>''' % (keg.id, keg.id)
 
-        self.assertEquals(1, len(msg.alternatives))
+        self.assertEqual(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])
-        self.assertEquals('text/html', msg.alternatives[0][1])
+        self.assertEqual('text/html', msg.alternatives[0][1])
 
     def test_keg_ended(self):
         self.prefs.keg_ended = True
         self.prefs.save()
-        self.assertEquals(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
         keg = self.backend.start_keg(
             defaults.METER_NAME_0,
@@ -195,14 +195,14 @@ http://localhost:1234/account.
             beverage_type='beer',
             producer_name='Unknown',
             style_name='Unknown')
-        self.assertEquals(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
         self.backend.end_keg(keg)
-        self.assertEquals(1, len(mail.outbox))
+        self.assertEqual(1, len(mail.outbox))
 
         msg = mail.outbox[0]
-        self.assertEquals('[My Kegbot] Keg ended: Keg %s: Unknown by Unknown' % keg.id, msg.subject)
-        self.assertEquals(['test@example'], msg.to)
-        self.assertEquals('test-from@example', msg.from_email)
+        self.assertEqual('[My Kegbot] Keg ended: Keg %s: Unknown by Unknown' % keg.id, msg.subject)
+        self.assertEqual(['test@example'], msg.to)
+        self.assertEqual('test-from@example', msg.from_email)
 
         expected_body_plain = '''Keg %s of Unknown by Unknown was just finished on My Kegbot.
 
@@ -228,6 +228,6 @@ on <a href="http://localhost:1234">My Kegbot</a>.  To change your settings, visi
 http://localhost:1234/account.
 </p>''' % (keg.id, keg.id)
 
-        self.assertEquals(1, len(msg.alternatives))
+        self.assertEqual(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])
-        self.assertEquals('text/html', msg.alternatives[0][1])
+        self.assertEqual('text/html', msg.alternatives[0][1])

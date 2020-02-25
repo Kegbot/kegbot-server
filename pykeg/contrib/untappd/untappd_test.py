@@ -61,7 +61,7 @@ class UntappdTests(TransactionTestCase):
             'foo': 'bar'
         }
         self.plugin.save_user_profile(self.user, fake_profile)
-        self.assertEquals(fake_profile, self.plugin.get_user_profile(self.user))
+        self.assertEqual(fake_profile, self.plugin.get_user_profile(self.user))
 
     def test_drink_poured_no_foursquare(self):
         self.plugin.save_user_token(self.user, 'fake-token')

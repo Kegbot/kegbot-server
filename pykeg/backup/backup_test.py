@@ -62,9 +62,9 @@ class BackupTestCase(TransactionTestCase):
         metadata_json = kbjson.loads(open(metadata_file).read())
 
         self.assertEqual(when, metadata_json[backup.META_CREATED_TIME])
-        self.assertEquals(site_name, metadata_json[backup.META_SERVER_NAME])
-        self.assertEquals(num_media_files, metadata_json[backup.META_NUM_MEDIA_FILES])
-        self.assertEquals(get_version(), metadata_json[backup.META_SERVER_VERSION])
+        self.assertEqual(site_name, metadata_json[backup.META_SERVER_NAME])
+        self.assertEqual(num_media_files, metadata_json[backup.META_NUM_MEDIA_FILES])
+        self.assertEqual(get_version(), metadata_json[backup.META_SERVER_VERSION])
 
     def test_create_backup_tree_empty_site(self):
         # Create a backup of an empty system.

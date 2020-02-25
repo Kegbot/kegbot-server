@@ -45,17 +45,17 @@ class BackendsFixtureTestCase(TransactionTestCase):
     def test_delete_keg(self):
         site = models.KegbotSite.get()
         original_stats = site.get_stats()
-        self.assertEquals(755, original_stats['total_pours'])
+        self.assertEqual(755, original_stats['total_pours'])
 
         keg = models.Keg.objects.get(pk=2)
         keg_stats = keg.get_stats()
         keg_drinks = keg.drinks.all()
-        self.assertEquals(185, len(keg_drinks))
+        self.assertEqual(185, len(keg_drinks))
         self.backend.cancel_keg(keg)
 
         stats = site.get_stats()
-        self.assertEquals(755 - 185, stats['total_pours'])
-        self.assertEquals(original_stats['total_volume_ml'] - keg_stats['total_volume_ml'],
+        self.assertEqual(755 - 185, stats['total_pours'])
+        self.assertEqual(original_stats['total_volume_ml'] - keg_stats['total_volume_ml'],
                           stats['total_volume_ml'])
 
 
@@ -79,20 +79,20 @@ class BackendsTestCase(TransactionTestCase):
                                      style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
 
-        self.assertEquals(0, keg.served_volume())
+        self.assertEqual(0, keg.served_volume())
         drink = self.backend.record_drink(METER_NAME, ticks=2200)
         self.assertIsNotNone(drink)
-        self.assertEquals(2200, drink.ticks)
+        self.assertEqual(2200, drink.ticks)
         self.assertAlmostEqual(1000.0, drink.volume_ml, places=3)
         keg = models.Keg.objects.get(pk=keg.id)
         self.assertAlmostEqual(1000.0, keg.served_volume(), places=3)
-        self.assertEquals('', drink.shout)
-        self.assertEquals(0, drink.duration)
+        self.assertEqual('', drink.shout)
+        self.assertEqual(0, drink.duration)
 
         drink = self.backend.record_drink(METER_NAME, ticks=1100)
         keg = models.Keg.objects.get(pk=keg.id)
         self.assertIsNotNone(drink)
-        self.assertEquals(1100, drink.ticks)
+        self.assertEqual(1100, drink.ticks)
         self.assertAlmostEqual(500.0, drink.volume_ml, places=3)
         self.assertAlmostEqual(1500.0, keg.served_volume(), places=3)
 
@@ -100,7 +100,7 @@ class BackendsTestCase(TransactionTestCase):
         drink = self.backend.record_drink(METER_NAME, ticks=1100, volume_ml=1)
         keg = models.Keg.objects.get(pk=keg.id)
         self.assertIsNotNone(drink)
-        self.assertEquals(1100, drink.ticks)
+        self.assertEqual(1100, drink.ticks)
         self.assertAlmostEqual(1.0, drink.volume_ml, places=3)
         self.assertAlmostEqual(1501.0, keg.served_volume(), places=3)
 
@@ -108,7 +108,7 @@ class BackendsTestCase(TransactionTestCase):
         user = models.User.objects.create(username='testy')
         drink = self.backend.record_drink(METER_NAME, ticks=2200, username=user.username)
         self.assertIsNotNone(drink)
-        self.assertEquals(user, drink.user)
+        self.assertEqual(user, drink.user)
 
     def test_drink_cancel(self):
         """Tests cancelling drinks."""
@@ -116,14 +116,14 @@ class BackendsTestCase(TransactionTestCase):
                                      beverage_type='beer', producer_name=FAKE_BREWER_NAME,
                                      style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
-        self.assertEquals(0, keg.served_volume())
+        self.assertEqual(0, keg.served_volume())
 
         for i in range(10):
             self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100)
 
         drinks = list(models.Drink.objects.all().order_by('id'))
         keg = models.Keg.objects.get(pk=keg.id)
-        self.assertEquals(10, len(drinks))
+        self.assertEqual(10, len(drinks))
         self.assertAlmostEqual(1000.0, keg.served_volume(), places=3)
 
         cancel_drink = drinks[-1]
@@ -133,18 +133,18 @@ class BackendsTestCase(TransactionTestCase):
         self.backend.cancel_drink(drinks[-1])
         drinks = list(models.Drink.objects.all().order_by('id'))
         keg = models.Keg.objects.get(pk=keg.id)
-        self.assertEquals(9, len(drinks))
+        self.assertEqual(9, len(drinks))
         self.assertAlmostEqual(900.0, keg.served_volume(), places=3)
         session = models.DrinkingSession.objects.get(id=session.id)
         self.assertAlmostEqual(session.get_stats().total_volume_ml, 900.0, places=3)
 
         keg = models.Keg.objects.get(pk=keg.id)
-        self.assertEquals(0, keg.spilled_ml)
+        self.assertEqual(0, keg.spilled_ml)
 
         self.backend.cancel_drink(drinks[-1], spilled=True)
         keg = models.Keg.objects.get(pk=keg.id)
         drinks = list(models.Drink.objects.all().order_by('id'))
-        self.assertEquals(8, len(drinks))
+        self.assertEqual(8, len(drinks))
         self.assertAlmostEqual(800.0, keg.served_volume(), places=3)
         self.assertAlmostEqual(100.0, keg.spilled_ml, places=3)
 
@@ -154,7 +154,7 @@ class BackendsTestCase(TransactionTestCase):
         for d in other_drinks:
             self.backend.cancel_drink(d)
 
-        self.assertEquals(first_drink.volume_ml, first_drink.session.volume_ml)
+        self.assertEqual(first_drink.volume_ml, first_drink.session.volume_ml)
         session_id = first_drink.session.id
 
         self.backend.cancel_drink(first_drink)
@@ -162,14 +162,14 @@ class BackendsTestCase(TransactionTestCase):
         with self.assertRaises(models.DrinkingSession.DoesNotExist):
             models.DrinkingSession.objects.get(pk=session_id)
 
-        self.assertEquals(num_sessions - 1, models.DrinkingSession.objects.all().count())
+        self.assertEqual(num_sessions - 1, models.DrinkingSession.objects.all().count())
 
     def test_reassign_drink_with_photo(self):
         keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
                                      beverage_type='beer', producer_name=FAKE_BREWER_NAME,
                                      style_name=FAKE_BEER_STYLE)
         self.assertIsNotNone(keg)
-        self.assertEquals(0, keg.served_volume())
+        self.assertEqual(0, keg.served_volume())
 
         drink = self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100,
                                           photo='foo')
@@ -181,8 +181,8 @@ class BackendsTestCase(TransactionTestCase):
 
         user = self.backend.create_new_user('blort', email='blort@example.com')
         updated_drink = self.backend.assign_drink(drink, user)
-        self.assertEquals(user, updated_drink.user)
-        self.assertEquals(user, updated_drink.picture.user)
+        self.assertEqual(user, updated_drink.user)
+        self.assertEqual(user, updated_drink.picture.user)
 
     def test_keg_management(self):
         """Tests adding and removing kegs."""
@@ -191,7 +191,7 @@ class BackendsTestCase(TransactionTestCase):
 
         # No beer types yet.
         qs = models.Beverage.objects.filter(name=FAKE_BEER_NAME)
-        self.assertEquals(len(qs), 0, "Beverage already exists")
+        self.assertEqual(len(qs), 0, "Beverage already exists")
 
         # Tap the keg.
         keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
@@ -200,18 +200,18 @@ class BackendsTestCase(TransactionTestCase):
         self.assertIsNotNone(keg)
         self.assertTrue(keg.is_on_tap())
 
-        self.assertEquals(keg.current_tap, tap, "Tap did not become active.")
+        self.assertEqual(keg.current_tap, tap, "Tap did not become active.")
         tap = keg.current_tap
         self.assertTrue(keg.current_tap.is_active())
 
         # Check that the beer type was created.
         qs = models.Beverage.objects.filter(name=FAKE_BEER_NAME)
-        self.assertEquals(len(qs), 1, "Expected a single new Beverage.")
+        self.assertEqual(len(qs), 1, "Expected a single new Beverage.")
         beverage = qs[0]
         brewer = beverage.producer
         style = beverage.style
-        self.assertEquals(brewer.name, FAKE_BREWER_NAME)
-        self.assertEquals(style, FAKE_BEER_STYLE)
+        self.assertEqual(brewer.name, FAKE_BREWER_NAME)
+        self.assertEqual(style, FAKE_BEER_STYLE)
 
         # Now activate a new keg.
         keg = self.backend.end_keg(tap.current_keg)
@@ -227,15 +227,15 @@ class BackendsTestCase(TransactionTestCase):
         self.assertTrue(new_keg.is_on_tap())
 
         # Ensure the beer type was reused.
-        self.assertEquals(new_keg.type, beverage)
+        self.assertEqual(new_keg.type, beverage)
 
         # Deactivate, and activate a new keg again by name.
         self.backend.end_keg(tap.current_keg)
         new_keg_2 = self.backend.start_keg(METER_NAME, beverage_name='Other Beer',
                                            beverage_type='beer', producer_name=FAKE_BREWER_NAME,
                                            style_name=FAKE_BEER_STYLE)
-        self.assertEquals(new_keg_2.type.producer, keg.type.producer)
-        self.assertEquals(new_keg_2.type.style, keg.type.style)
+        self.assertEqual(new_keg_2.type.producer, keg.type.producer)
+        self.assertEqual(new_keg_2.type.style, keg.type.style)
         self.assertNotEquals(new_keg_2.type, keg.type)
 
         # New brewer, identical beer name == new beer type.
@@ -248,7 +248,7 @@ class BackendsTestCase(TransactionTestCase):
             producer_name='Other Brewer',
             style_name=FAKE_BEER_STYLE)
         self.assertNotEquals(new_keg_3.type.producer, keg.type.producer)
-        self.assertEquals(new_keg_3.type.name, keg.type.name)
+        self.assertEqual(new_keg_3.type.name, keg.type.name)
         self.assertNotEquals(new_keg_3.type, keg.type)
 
     def test_meters(self):
@@ -275,20 +275,20 @@ class BackendsTestCase(TransactionTestCase):
 
     @override_settings(KEGBOT_BASE_URL='http://example.com:8000//')
     def test_urls(self):
-        self.assertEquals('http://example.com:8000', self.backend.get_base_url())
+        self.assertEqual('http://example.com:8000', self.backend.get_base_url())
 
         keg = self.backend.start_keg(METER_NAME, beverage_name=FAKE_BEER_NAME,
                                      beverage_type='beer', producer_name=FAKE_BREWER_NAME,
                                      style_name=FAKE_BEER_STYLE)
-        self.assertEquals('http://example.com:8000/kegs/{}'.format(keg.id), keg.full_url())
+        self.assertEqual('http://example.com:8000/kegs/{}'.format(keg.id), keg.full_url())
 
         drink = self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100,
                                           photo='foo')
-        self.assertEquals('http://example.com:8000/d/{}'.format(drink.id), drink.short_url())
-        self.assertEquals('http://example.com:8000/s/{}'.format(drink.session.id),
+        self.assertEqual('http://example.com:8000/d/{}'.format(drink.id), drink.short_url())
+        self.assertEqual('http://example.com:8000/s/{}'.format(drink.session.id),
                           drink.session.short_url())
 
         start = drink.session.start_time
         datepart = '{}/{}/{}'.format(start.year, start.month, start.day)
-        self.assertEquals('http://example.com:8000/sessions/{}/{}'.format(datepart,
+        self.assertEqual('http://example.com:8000/sessions/{}/{}'.format(datepart,
                                                                           drink.session.id), drink.session.full_url())

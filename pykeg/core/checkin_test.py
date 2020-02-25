@@ -57,4 +57,4 @@ class CheckinTestCase(TransactionTestCase):
                                          timeout=1.23)
 
         site = models.KegbotSite.get()
-        self.assertEquals('new-regid', site.registration_id)
+        self.assertEqual('new-regid', site.registration_id)

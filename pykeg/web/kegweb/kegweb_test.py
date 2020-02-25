@@ -86,7 +86,7 @@ class KegwebTestCase(TransactionTestCase):
         }
 
         def test_urls(expect_fail, urls=urls):
-            for url, expected_content in urls.items():
+            for url, expected_content in list(urls.items()):
                 response = self.client.get(url)
                 if expect_fail:
                     self.assertNotContains(response, expected_content, status_code=401,

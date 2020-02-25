@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
@@ -38,9 +39,9 @@ class Command(BaseCommand):
         path = location
         if hasattr(storage, 'location'):
             path = os.path.join(storage.location, path)
-        print 'Backup complete!'
-        print 'Path: {}'.format(path)
+        print('Backup complete!')
+        print('Path: {}'.format(path))
         try:
-            print 'URL: {}'.format(storage.url(location))
+            print('URL: {}'.format(storage.url(location)))
         except (NotImplementedError, UnknownBaseUrlException):
             pass

@@ -65,7 +65,7 @@ def system_stats(request):
     }
 
     top_drinkers = []
-    for username, vol in stats.get('volume_by_drinker', {}).items():
+    for username, vol in list(stats.get('volume_by_drinker', {}).items()):
         try:
             user = models.User.objects.get(username=username)
         except models.User.DoesNotExist:

@@ -122,7 +122,7 @@ def chart_volume_by_weekday(stats, *args, **kwargs):
     if not volmap:
         raise ChartError('Daily volumes unavailable')
 
-    for weekday, volume_ml in vols.items():
+    for weekday, volume_ml in list(vols.items()):
         volmap[int(weekday)] += format_volume(volume_ml, kwargs)[0]
     return _weekday_chart_common(volmap)
 
@@ -130,7 +130,7 @@ def chart_volume_by_weekday(stats, *args, **kwargs):
 def chart_sessions_by_weekday(stats, *args, **kwargs):
     data = stats.get('volume_by_day_of_week', {})
     weekdays = [0] * 7
-    for weekday, volume_ml in data.items():
+    for weekday, volume_ml in list(data.items()):
         weekdays[int(weekday)] += format_volume(volume_ml, kwargs)[0]
     return _weekday_chart_common(weekdays)
 
@@ -177,7 +177,7 @@ def chart_users_by_volume(stats, *args, **kwargs):
         raise ChartError('no data')
 
     data = []
-    for username, volume in vols.items():
+    for username, volume in list(vols.items()):
         if not username:
             username = 'Guest'
         volume, units = format_volume(volume, kwargs)

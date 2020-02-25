@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import str
 import pytz
 
 from django.conf import settings
@@ -394,7 +395,7 @@ class ChartNode(Node):
         }
 
         chart_data = chart_base
-        for k, v in chart_result.items():
+        for k, v in list(chart_result.items()):
             if k not in chart_data:
                 chart_data[k] = v
             elif isinstance(v, dict):

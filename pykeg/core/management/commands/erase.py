@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
@@ -16,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import input
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from pykeg.backup import backup
@@ -27,25 +29,25 @@ class Command(BaseCommand):
     help = u'Erases all data in the current Kegbot system.'
 
     def handle(self, *args, **options):
-        print 'WARNING!'
-        print ''
-        print '  ************************************************************************'
-        print '  This command erases ALL tables and media files in the Kegbot system, and '
-        print '  CANNOT BE UNDONE.'
-        print ''
-        print '    Database: {}'.format(settings.DATABASES['default']['NAME'])
-        print '       Media: {}'.format(settings.MEDIA_ROOT)
-        print '  ************************************************************************'
-        print ''
-        print 'Are you SURE you want to continue? '
-        print ''
+        print('WARNING!')
+        print('')
+        print('  ************************************************************************')
+        print('  This command erases ALL tables and media files in the Kegbot system, and ')
+        print('  CANNOT BE UNDONE.')
+        print('')
+        print('    Database: {}'.format(settings.DATABASES['default']['NAME']))
+        print('       Media: {}'.format(settings.MEDIA_ROOT))
+        print('  ************************************************************************')
+        print('')
+        print('Are you SURE you want to continue? ')
+        print('')
 
         try:
-            response = raw_input('Type ERASE to continue, anything else to abort: ')
+            response = input('Type ERASE to continue, anything else to abort: ')
         except KeyboardInterrupt:
             response = ''
-        print ''
+        print('')
         if response.strip() != 'ERASE':
-            print 'Aborted.'
+            print('Aborted.')
             sys.exit(1)
         backup.erase()

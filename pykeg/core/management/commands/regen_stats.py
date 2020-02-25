@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
@@ -39,5 +40,5 @@ class Command(BaseCommand):
         stats.invalidate_all()
         stats.rebuild_from_id(0, cb=cb)
 
-        print ''
-        print 'done!'
+        print('')
+        print('done!')

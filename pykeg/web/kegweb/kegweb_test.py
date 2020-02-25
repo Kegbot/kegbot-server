@@ -22,7 +22,7 @@ from __future__ import print_function
 from django.core import mail
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models

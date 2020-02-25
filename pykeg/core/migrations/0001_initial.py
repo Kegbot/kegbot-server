@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
                 ('enabled', models.BooleanField(default=True, help_text=b'Whether this token is considered active.')),
                 ('created_time', models.DateTimeField(help_text=b'Date token was first added to the system.', auto_now_add=True)),
                 ('expire_time', models.DateTimeField(help_text=b'Date after which token is treated as disabled.', null=True, blank=True)),
-                ('user', models.ForeignKey(related_name='tokens', blank=True, to=settings.AUTH_USER_MODEL, help_text=b'User in possession of and authenticated by this token.', null=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tokens', blank=True, to=settings.AUTH_USER_MODEL, help_text=b'User in possession of and authenticated by this token.', null=True)),
             ],
             options={
             },
@@ -176,7 +176,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('port_name', models.CharField(help_text=b'Controller-specific data port name for this meter.', max_length=128)),
                 ('ticks_per_ml', models.FloatField(default=2.724, help_text=b'Flow meter pulses per mL of fluid.  Common values: 2.724 (FT330-RJ), 5.4 (SF800)')),
-                ('controller', models.ForeignKey(related_name='meters', to='core.Controller', help_text=b'Controller that owns this meter.')),
+                ('controller', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='meters', to='core.Controller', help_text=b'Controller that owns this meter.')),
             ],
             options={
             },
@@ -187,7 +187,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('port_name', models.CharField(help_text=b'Controller-specific data port name for this toggle.', max_length=128)),
-                ('controller', models.ForeignKey(related_name='toggles', to='core.Controller', help_text=b'Controller that owns this toggle.')),
+                ('controller', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='toggles', to='core.Controller', help_text=b'Controller that owns this toggle.')),
             ],
             options={
             },
@@ -272,7 +272,7 @@ class Migration(migrations.Migration):
                 ('session_started', models.BooleanField(default=False, help_text=b'Sent when a new drinking session starts.')),
                 ('keg_volume_low', models.BooleanField(default=False, help_text=b'Sent when a keg becomes low.')),
                 ('keg_ended', models.BooleanField(default=False, help_text=b'Sent when a keg has been taken offline.')),
-                ('user', models.ForeignKey(help_text=b'User for these settings.', to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, help_text=b'User for these settings.', to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -287,7 +287,7 @@ class Migration(migrations.Migration):
                 ('caption', models.TextField(help_text=b'Caption for the picture, if any.', null=True, blank=True)),
                 ('keg', models.ForeignKey(related_name='pictures', on_delete=django.db.models.deletion.SET_NULL, blank=True, to='core.Keg', help_text=b'Keg this picture was taken with, if any.', null=True)),
                 ('session', models.ForeignKey(related_name='pictures', on_delete=django.db.models.deletion.SET_NULL, blank=True, to='core.DrinkingSession', help_text=b'Session this picture was taken with, if any.', null=True)),
-                ('user', models.ForeignKey(related_name='pictures', blank=True, to=settings.AUTH_USER_MODEL, help_text=b'User that owns/uploaded this picture', null=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pictures', blank=True, to=settings.AUTH_USER_MODEL, help_text=b'User that owns/uploaded this picture', null=True)),
             ],
             options={
             },
@@ -312,10 +312,10 @@ class Migration(migrations.Migration):
                 ('time', models.DateTimeField(default=django.utils.timezone.now)),
                 ('stats', pykeg.core.jsonfield.JSONField()),
                 ('is_first', models.BooleanField(default=False, help_text=b'True if this is the most first record for the view.')),
-                ('drink', models.ForeignKey(to='core.Drink')),
-                ('keg', models.ForeignKey(related_name='stats', to='core.Keg', null=True)),
-                ('session', models.ForeignKey(related_name='stats', to='core.DrinkingSession', null=True)),
-                ('user', models.ForeignKey(related_name='stats', to=settings.AUTH_USER_MODEL, null=True)),
+                ('drink', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.Drink')),
+                ('keg', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stats', to='core.Keg', null=True)),
+                ('session', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stats', to='core.DrinkingSession', null=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stats', to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={
                 'get_latest_by': 'id',
@@ -328,10 +328,10 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('kind', models.CharField(help_text=b'Type of event.', max_length=255, choices=[(b'drink_poured', b'Drink poured'), (b'session_started', b'Session started'), (b'session_joined', b'User joined session'), (b'keg_tapped', b'Keg tapped'), (b'keg_volume_low', b'Keg volume low'), (b'keg_ended', b'Keg ended')])),
                 ('time', models.DateTimeField(help_text=b'Time of the event.')),
-                ('drink', models.ForeignKey(related_name='events', blank=True, to='core.Drink', help_text=b'Drink involved in the event, if any.', null=True)),
-                ('keg', models.ForeignKey(related_name='events', blank=True, to='core.Keg', help_text=b'Keg involved in the event, if any.', null=True)),
-                ('session', models.ForeignKey(related_name='events', blank=True, to='core.DrinkingSession', help_text=b'Session involved in the event, if any.', null=True)),
-                ('user', models.ForeignKey(related_name='events', blank=True, to=settings.AUTH_USER_MODEL, help_text=b'User responsible for the event, if any.', null=True)),
+                ('drink', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='events', blank=True, to='core.Drink', help_text=b'Drink involved in the event, if any.', null=True)),
+                ('keg', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='events', blank=True, to='core.Keg', help_text=b'Keg involved in the event, if any.', null=True)),
+                ('session', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='events', blank=True, to='core.DrinkingSession', help_text=b'Session involved in the event, if any.', null=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='events', blank=True, to=settings.AUTH_USER_MODEL, help_text=b'User responsible for the event, if any.', null=True)),
             ],
             options={
                 'ordering': ('-id',),
@@ -366,7 +366,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='thermolog',
             name='sensor',
-            field=models.ForeignKey(to='core.ThermoSensor'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.ThermoSensor'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
@@ -396,7 +396,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='flowtoggle',
             name='tap',
-            field=models.OneToOneField(related_name='toggle', null=True, blank=True, to='core.KegTap', help_text=b'Tap to which this toggle is currently bound.'),
+            field=models.OneToOneField(on_delete=django.db.models.deletion.SET_NULL, related_name='toggle', null=True, blank=True, to='core.KegTap', help_text=b'Tap to which this toggle is currently bound.'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
@@ -406,7 +406,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='flowmeter',
             name='tap',
-            field=models.OneToOneField(related_name='meter', null=True, blank=True, to='core.KegTap', help_text=b'Tap to which this meter is currently bound.'),
+            field=models.OneToOneField(on_delete=django.db.models.deletion.SET_NULL, related_name='meter', null=True, blank=True, to='core.KegTap', help_text=b'Tap to which this meter is currently bound.'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
@@ -434,7 +434,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='drink',
             name='user',
-            field=models.ForeignKey(related_name='drinks', editable=False, to=settings.AUTH_USER_MODEL, help_text=b'User responsible for this Drink, or None if anonymous/unknown.'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='drinks', editable=False, to=settings.AUTH_USER_MODEL, help_text=b'User responsible for this Drink, or None if anonymous/unknown.'),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -446,13 +446,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='beverage',
             name='picture',
-            field=models.ForeignKey(blank=True, to='core.Picture', help_text=b'Label image.', null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, blank=True, to='core.Picture', help_text=b'Label image.', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='beverage',
             name='producer',
-            field=models.ForeignKey(to='core.BeverageProducer'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='core.BeverageProducer'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
@@ -462,13 +462,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='apikey',
             name='device',
-            field=models.ForeignKey(to='core.Device', help_text=b'Device this key is associated with.', null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, to='core.Device', help_text=b'Device this key is associated with.', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='apikey',
             name='user',
-            field=models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, help_text=b'User receiving API access.', null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, blank=True, to=settings.AUTH_USER_MODEL, help_text=b'User receiving API access.', null=True),
             preserve_default=True,
         ),
         migrations.AddField(

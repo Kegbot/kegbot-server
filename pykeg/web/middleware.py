@@ -176,7 +176,7 @@ class PrivacyMiddleware(object):
                 return render(request, 'kegweb/staff_only.html', status=401)
             return None
         elif privacy == 'members':
-            if not request.user.is_authenticated() or not request.user.is_active:
+            if not request.user.is_authenticated or not request.user.is_active:
                 return render(request, 'kegweb/members_only.html', status=401)
             return None
 

@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'pykeg.web.kegweb',
     'pykeg.web.setup_wizard',
 
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.humanize',
@@ -313,6 +314,3 @@ TIME_ZONE = 'UTC'
 
 # Update email addresses.
 DEFAULT_FROM_EMAIL = EMAIL_FROM_ADDRESS
-
-if KEGBOT_ENABLE_ADMIN:
-    INSTALLED_APPS += ('django.contrib.admin',)

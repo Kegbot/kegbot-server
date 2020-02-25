@@ -18,7 +18,7 @@
 
 from builtins import str
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.shortcuts import redirect
 from pykeg.web.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required

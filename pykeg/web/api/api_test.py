@@ -20,7 +20,7 @@
 
 from builtins import str
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 from pykeg.core import models

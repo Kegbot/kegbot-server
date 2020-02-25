@@ -5,49 +5,52 @@ verify_ssl = true
 
 [dev-packages]
 kegbot = {editable = true,path = "."}
+black = "*"
+flake8 = "*"
+pytest = "*"
+pytest-django = "*"
+requests-mock = "*"
+sphinx-issues = "*"
+sphinx = "*"
+vcrpy = "*"
 
 [packages]
 celery = "*"
 coloredlogs = "*"
-dj-database-url = "==0.4.2"
+dj-database-url = "*"
 django-bootstrap-pagination = "*"
 django-crispy-forms = "*"
 django-imagekit = "*"
 django-redis = "*"
 django-registration = "*"
-flake8 = "*"
 foursquare = "==1!2016.9.12"
 gunicorn = "*"
 httplib2 = "*"
 isodate = "*"
 jsonfield = "*"
-mock = "==2.0.0"
 oauthlib = "*"
 pilkit = "*"
 protobuf = "*"
 python-gflags = "*"
 pytz = "*"
 redis = "*"
-requests-mock = "*"
 requests-oauthlib = "*"
 requests = "*"
 tweepy = "*"
-vcrpy = "*"
 whitenoise = "*"
 Django = "<3"
 Pillow = "*"
 PyYAML = "*"
 mysqlclient = "*"
-sphinx = "*"
-pytest = "*"
-pytest-django = "*"
 future = "*"
 addict = "*"
 kegbot-api = "*"
-sphinx-issues = "*"
 
 [scripts]
 kegbot = "python bin/kegbot"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true

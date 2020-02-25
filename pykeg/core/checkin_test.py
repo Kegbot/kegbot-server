@@ -20,8 +20,7 @@
 
 from django.test import TransactionTestCase
 
-from mock import Mock
-from mock import patch
+from unittest.mock import Mock, patch
 
 from pykeg.core import checkin
 from pykeg.core import models

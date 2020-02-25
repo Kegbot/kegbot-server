@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/

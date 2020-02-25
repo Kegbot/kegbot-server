@@ -46,12 +46,6 @@ This software is offered under the **GPLv2** license.  Your use of
 Kegbot Server constitutes your agreement to that license.  Please see
 ``LICENSE.txt`` for the full license.
 
-Code and documentation are **Copyright 2014 Bevbot LLC**,
-unless otherwise noted.  Graphics and images distributed with Kegbot,
-such as the Kegbot logo, are also copyrighted works of Bevbot LLC
-unless otherwise noted, and may not be reused without permission.
-
-
 ## Contributing
 
 We love getting patches! Send us a pull request, or hop on to IRC if

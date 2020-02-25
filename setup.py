@@ -8,7 +8,7 @@ kegerator.  For more information and documentation, see http://kegbot.org/
 
 from setuptools import setup, find_packages
 
-VERSION = '1.2.3'
+VERSION = '1.3.0b1'
 DOCLINES = __doc__.split('\n')
 
 SHORT_DESCRIPTION = DOCLINES[0]
@@ -19,8 +19,8 @@ setup(
     version=VERSION,
     description=SHORT_DESCRIPTION,
     long_description=LONG_DESCRIPTION,
-    author='Bevbot LLC',
-    author_email='info@bevbot.com',
+    author='Kegbot Project',
+    author_email='info@kegbot.org',
     url='https://kegbot.org/',
     packages=find_packages(),
     scripts=[

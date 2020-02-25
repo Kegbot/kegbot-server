@@ -178,7 +178,7 @@ class KegwebTestCase(TransactionTestCase):
         self.assertIsNone(user.activation_key)
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    @override_settings(DEFAULT_FROM_EMAIL='test-from@example')
     def test_registration(self):
         kbsite = models.KegbotSite.get()
         self.assertEqual('public', kbsite.privacy)
@@ -234,7 +234,7 @@ class KegwebTestCase(TransactionTestCase):
                             status_code=200)
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    @override_settings(DEFAULT_FROM_EMAIL='test-from@example')
     def test_registration_with_invite(self):
         kbsite = models.KegbotSite.get()
         kbsite.registration_mode = 'staff-invite-online'

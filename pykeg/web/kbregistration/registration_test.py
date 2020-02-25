@@ -39,7 +39,7 @@ class ForgotPasswordTest(TestCase):
         self.user.save()
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    @override_settings(DEFAULT_FROM_EMAIL='test-from@example')
     def test_notifications(self):
         response = self.client.get('/accounts/password/reset/')
         self.assertContains(response, "Reset Password", status_code=200)
@@ -52,6 +52,7 @@ class ForgotPasswordTest(TestCase):
 
         msg = mail.outbox[0]
 
-        self.assertEqual('Password reset on My Kegbot', msg.subject)
+        # TODO(mikey): Customize subject with `kbsite.title`
+        self.assertEqual('Password reset', msg.subject)
         self.assertEqual(['test@example.com'], msg.to)
         self.assertEqual('test-from@example', msg.from_email)

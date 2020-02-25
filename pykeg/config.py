@@ -97,6 +97,7 @@ def is_setup():
 
 
 Setting('KEGBOT_ENV', 'test' if IS_RUNNING_PYTEST else ENV_DEBUG)
+Setting('KEGBOT_EMAIL_FROM_ADDRESS', '')
 Setting('KEGBOT_DATA_DIR', '/kegbot-data')
 Setting('KEGBOT_IN_DOCKER', False, typefn=boolstr)
 Setting('KEGBOT_SECRET_KEY', 'not-configured')

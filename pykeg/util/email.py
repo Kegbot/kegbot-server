@@ -31,9 +31,9 @@ EMAIL_CHANGE_MAX_AGE = 60 * 60 * 24
 
 
 def build_message(to_address, template_name, context):
-    from_address = getattr(settings, 'EMAIL_FROM_ADDRESS', None)
+    from_address = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
     if not from_address:
-        logger.error('EMAIL_FROM_ADDRESS is not available; aborting!')
+        logger.error('DEFAULT_FROM_EMAIL is not available; aborting!')
         return None
 
     template = get_template(template_name)

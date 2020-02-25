@@ -227,7 +227,7 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEqual(data.meta.result, 'ok')
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    @override_settings(DEFAULT_FROM_EMAIL='test-from@example')
     def test_registration(self):
         response, data = self.post(
             'new-user/', data={'username': 'newuser', 'email': 'foo@example.com'})

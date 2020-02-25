@@ -276,7 +276,7 @@ NOTIFICATION_BACKENDS = [
 
 # E-mail
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
-EMAIL_FROM_ADDRESS = ''
+DEFAULT_FROM_EMAIL = KEGBOT['KEGBOT_EMAIL_FROM_ADDRESS']
 EMAIL_SUBJECT_PREFIX = ''
 
 # Imagekit
@@ -311,6 +311,3 @@ TEMPLATES = [
 # Override any user-specified timezone: As of Kegbot 0.9.12, this is
 # specified in site settings.
 TIME_ZONE = 'UTC'
-
-# Update email addresses.
-DEFAULT_FROM_EMAIL = EMAIL_FROM_ADDRESS

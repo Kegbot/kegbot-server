@@ -29,7 +29,7 @@ from pykeg.core import kb_common
 
 @override_settings(KEGBOT_BACKEND='pykeg.core.testutils.TestBackend')
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-@override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+@override_settings(DEFAULT_FROM_EMAIL='test-from@example')
 class EmailNotificationBackendTestCase(TestCase):
     def setUp(self):
         self.backend = get_kegbot_backend()

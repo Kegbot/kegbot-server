@@ -68,7 +68,7 @@ def dashboard(request):
 
     email_backend = getattr(settings, 'EMAIL_BACKEND', None)
     email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
-    email_configured = email_configured and bool(getattr(settings, 'EMAIL_FROM_ADDRESS', None))
+    email_configured = email_configured and settings.DEFAULT_FROM_EMAIL
 
     context['email_configured'] = email_configured
 
@@ -168,7 +168,7 @@ def email(request):
 
     email_backend = getattr(settings, 'EMAIL_BACKEND', None)
     email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
-    email_configured = email_configured and bool(getattr(settings, 'EMAIL_FROM_ADDRESS', None))
+    email_configured = email_configured and settings.DEFAULT_FROM_EMAIL
 
     if request.method == 'POST':
         if 'send_test_email' in request.POST:

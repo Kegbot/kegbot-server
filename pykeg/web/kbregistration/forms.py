@@ -79,7 +79,7 @@ class PasswordResetForm(forms.Form):
             # a password marked as unusable
             if not user.has_usable_password():
                 continue
-            from_email = getattr(settings, 'EMAIL_FROM_ADDRESS', from_email)
+            from_email = settings.DEFAULT_FROM_EMAIL or from_email
 
             be = get_kegbot_backend()
             base_url = be.get_base_url()

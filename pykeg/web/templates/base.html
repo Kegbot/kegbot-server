@@ -78,7 +78,7 @@
               {% if SSO_LOGOUT_URL %}
               <li><a href="{{ SSO_LOGOUT_URL }}">Logout</a></li>
               {% else %}
-              <li><a href="{% url "auth_logout" %}">Logout</a></li>
+              <li><a href="{% url "logout" %}">Logout</a></li>
               {% endif %}
             </ul>
           </li>
@@ -118,9 +118,7 @@
           Powered by
           <a href="http://kegbot.org/?utm_source=kbserver">Kegbot&trade;</a>{% if user.is_staff %}, version {{ VERSION }}{% endif %}
           &mdash;
-          &copy; 2003-2014 <a href="http://bevbot.com/?utm_source=kbserver">Bevbot LLC</a>
-          &mdash;
-          Charts by <a href="http://highcharts.com/" target="_blank">Highcharts</a>
+          &copy; 2003-2020 Kegbot Project contributors
           <span id="page-settings"></span>
         </small>
       </p>

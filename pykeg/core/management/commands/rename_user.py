@@ -1,4 +1,5 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+from __future__ import print_function
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -46,4 +47,4 @@ class Command(BaseCommand):
             user.username = to_username
             user.save()
 
-        print '"{}" has been renamed "{}"'.format(from_username, to_username)
+        print('"{}" has been renamed "{}"'.format(from_username, to_username))

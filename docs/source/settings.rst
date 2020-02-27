@@ -30,6 +30,10 @@ These values can be set in the shell environment of the server program.
 
   **Example:** ``mysql://kegbot@localhost/kegbot``
 
+.. data:: KEGBOT_EMAIL_FROM_ADDRESS
+
+  The "From:" address to use in emails from the system. No default.
+
 .. data:: KEGBOT_REDIS_URL
 
   URL to the Kegbot Redis instance, in the format ``redis://:PASSWORD@HOST:PORT/DATABASE``. ``PASSWORD`` and ``PORT`` are optional.

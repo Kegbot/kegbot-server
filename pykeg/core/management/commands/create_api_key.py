@@ -1,4 +1,5 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+from __future__ import print_function
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -31,4 +32,4 @@ class Command(BaseCommand):
             raise CommandError('Must specify description')
 
         key = models.ApiKey.objects.create(description=args[0])
-        print key.key
+        print(key.key)

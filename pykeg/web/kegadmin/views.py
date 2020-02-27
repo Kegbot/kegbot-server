@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -68,7 +68,7 @@ def dashboard(request):
 
     email_backend = getattr(settings, 'EMAIL_BACKEND', None)
     email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
-    email_configured = email_configured and bool(getattr(settings, 'EMAIL_FROM_ADDRESS', None))
+    email_configured = email_configured and settings.DEFAULT_FROM_EMAIL
 
     context['email_configured'] = email_configured
 
@@ -168,7 +168,7 @@ def email(request):
 
     email_backend = getattr(settings, 'EMAIL_BACKEND', None)
     email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
-    email_configured = email_configured and bool(getattr(settings, 'EMAIL_FROM_ADDRESS', None))
+    email_configured = email_configured and settings.DEFAULT_FROM_EMAIL
 
     if request.method == 'POST':
         if 'send_test_email' in request.POST:
@@ -259,14 +259,14 @@ def workers(request):
     if not pings and 'error' not in context:
         context['error'] = 'No response from workers. Not running?'
     else:
-        for k, v in pings.items():
+        for k, v in list(pings.items()):
             status[k] = {
                 'status': 'ok' if v.get('ok') else 'unknown',
             }
-        for k, v in stats.items():
+        for k, v in list(stats.items()):
             if k in status:
                 status[k]['stats'] = v
-        for k, v in queues.items():
+        for k, v in list(queues.items()):
             if k in status:
                 status[k]['active_queues'] = v
 

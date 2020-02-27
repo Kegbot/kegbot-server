@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -20,7 +20,7 @@
 
 from builtins import str
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 from pykeg.core import models
@@ -227,7 +227,7 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEqual(data.meta.result, 'ok')
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    @override_settings(DEFAULT_FROM_EMAIL='test-from@example')
     def test_registration(self):
         response, data = self.post(
             'new-user/', data={'username': 'newuser', 'email': 'foo@example.com'})

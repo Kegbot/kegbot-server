@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -16,10 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import str
 import pytz
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.template import Library
 from django.template import Node
 from django.template import VariableDoesNotExist
@@ -394,7 +395,7 @@ class ChartNode(Node):
         }
 
         chart_data = chart_base
-        for k, v in chart_result.items():
+        for k, v in list(chart_result.items()):
             if k not in chart_data:
                 chart_data[k] = v
             elif isinstance(v, dict):

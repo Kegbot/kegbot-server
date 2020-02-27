@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -313,7 +313,7 @@ def get_keg_sizes(request):
     # Deprecated endpoint.
     ret = []
     fake_id = 0
-    for size_name, volume_ml in keg_sizes.VOLUMES_ML.items():
+    for size_name, volume_ml in list(keg_sizes.VOLUMES_ML.items()):
         ret.append({
             'volume_ml': volume_ml,
             'id': fake_id,

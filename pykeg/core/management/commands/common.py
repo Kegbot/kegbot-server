@@ -1,4 +1,5 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+from __future__ import print_function
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -16,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 import os
 import signal
 import sys
@@ -46,7 +48,7 @@ def progbar(title, pos, total, width=40):
 
 def check_and_create_pid_file(pid_file):
     if os.path.exists(pid_file):
-        print 'Error: already running ({})'.format(pid_file)
+        print('Error: already running ({})'.format(pid_file))
         sys.exit(1)
 
     f = open(pid_file, 'w')

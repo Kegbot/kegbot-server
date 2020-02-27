@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -57,7 +57,7 @@ class StandaloneNotificationTestCase(TestCase):
     ])
     def test_get_backends(self):
         backends = notification.get_backends()
-        self.assertEquals(2, len(backends))
+        self.assertEqual(2, len(backends))
         self.assertIsInstance(backends[0], TestBackendA, 'Expected TestBackendA obj')
         self.assertIsInstance(backends[1], TestBackendB, 'Expected TestBackendB obj')
 
@@ -92,7 +92,7 @@ class NotificationTestCase(TestCase):
 
         backends = [CaptureBackend()]
         captured = CaptureBackend.captured
-        self.assertEquals(0, len(captured))
+        self.assertEqual(0, len(captured))
 
         prefs = models.NotificationSettings.objects.create(
             user=self.user,
@@ -104,36 +104,36 @@ class NotificationTestCase(TestCase):
 
         event = SystemEvent(kind=SystemEvent.KEG_TAPPED)
         notification.handle_single_event(event, backends)
-        self.assertEquals(0, len(captured))
+        self.assertEqual(0, len(captured))
         prefs.keg_tapped = True
         prefs.save()
         notification.handle_single_event(event, backends)
-        self.assertEquals(1, len(captured))
+        self.assertEqual(1, len(captured))
         del captured[:]
 
         event = SystemEvent(kind=SystemEvent.SESSION_STARTED)
         notification.handle_single_event(event, backends)
-        self.assertEquals(0, len(captured))
+        self.assertEqual(0, len(captured))
         prefs.session_started = True
         prefs.save()
         notification.handle_single_event(event, backends)
-        self.assertEquals(1, len(captured))
+        self.assertEqual(1, len(captured))
         del captured[:]
 
         event = SystemEvent(kind=SystemEvent.KEG_ENDED)
         notification.handle_single_event(event, backends)
-        self.assertEquals(0, len(captured))
+        self.assertEqual(0, len(captured))
         prefs.keg_ended = True
         prefs.save()
         notification.handle_single_event(event, backends)
-        self.assertEquals(1, len(captured))
+        self.assertEqual(1, len(captured))
         del captured[:]
 
         event = SystemEvent(kind=SystemEvent.KEG_VOLUME_LOW)
         notification.handle_single_event(event, backends)
-        self.assertEquals(0, len(captured))
+        self.assertEqual(0, len(captured))
         prefs.keg_volume_low = True
         prefs.save()
         notification.handle_single_event(event, backends)
-        self.assertEquals(1, len(captured))
+        self.assertEqual(1, len(captured))
         del captured[:]

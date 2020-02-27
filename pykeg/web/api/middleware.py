@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -82,7 +82,7 @@ class ApiRequestMiddleware(object):
             else:
                 # API request to non-whitelisted path, in non-public site privacy mode.
                 # Demand API key.
-                if privacy == 'members' and not request.user.is_authenticated():
+                if privacy == 'members' and not request.user.is_authenticated:
                     need_auth = True
                 elif privacy == 'staff' and not request.user.is_staff:
                     need_auth = True

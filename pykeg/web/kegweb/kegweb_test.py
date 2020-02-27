@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -22,7 +22,7 @@ from __future__ import print_function
 from django.core import mail
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
@@ -38,18 +38,18 @@ class KegwebTestCase(TransactionTestCase):
     def testBasicEndpoints(self):
         for endpoint in ('/kegs/', '/stats/', '/drinkers/guest/', '/drinkers/guest/sessions/'):
             response = self.client.get(endpoint)
-            self.assertEquals(200, response.status_code)
+            self.assertEqual(200, response.status_code)
 
         for endpoint in ('/sessions/',):
             response = self.client.get(endpoint)
-            self.assertEquals(404, response.status_code)
+            self.assertEqual(404, response.status_code)
 
         b = get_kegbot_backend()
         keg = b.start_keg('kegboard.flow0', beverage_name='Unknown', producer_name='Unknown',
                           beverage_type='beer', style_name='Unknown')
         self.assertIsNotNone(keg)
         response = self.client.get('/kegs/')
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         d = b.record_drink('kegboard.flow0', ticks=100)
         drink_id = d.id
@@ -86,7 +86,7 @@ class KegwebTestCase(TransactionTestCase):
         }
 
         def test_urls(expect_fail, urls=urls):
-            for url, expected_content in urls.items():
+            for url, expected_content in list(urls.items()):
                 response = self.client.get(url)
                 if expect_fail:
                     self.assertNotContains(response, expected_content, status_code=401,
@@ -178,7 +178,7 @@ class KegwebTestCase(TransactionTestCase):
         self.assertIsNone(user.activation_key)
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    @override_settings(DEFAULT_FROM_EMAIL='test-from@example')
     def test_registration(self):
         kbsite = models.KegbotSite.get()
         self.assertEqual('public', kbsite.privacy)
@@ -234,7 +234,7 @@ class KegwebTestCase(TransactionTestCase):
                             status_code=200)
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-    @override_settings(EMAIL_FROM_ADDRESS='test-from@example')
+    @override_settings(DEFAULT_FROM_EMAIL='test-from@example')
     def test_registration_with_invite(self):
         kbsite = models.KegbotSite.get()
         kbsite.registration_mode = 'staff-invite-online'

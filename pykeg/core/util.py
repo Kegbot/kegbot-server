@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -80,10 +80,7 @@ def get_plugin_template_dirs(plugin_list):
         pkg = pkgutil.get_loader(plugin_module)
         if not pkg:
             raise ImproperlyConfigured('Cannot find plugin "%s"' % plugin)
-        if not hasattr(pkg, 'filename'):
-            # TODO(mikey): Resolve breakage.
-            continue
-        template_dir = os.path.join(os.path.dirname(pkg.filename), 'templates')
+        template_dir = os.path.join(os.path.dirname(pkg.path), 'templates')
         if os.path.isdir(template_dir):
             if not six.PY3:
                 template_dir = template_dir.decode(fs_encoding)

@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -176,7 +176,7 @@ class PrivacyMiddleware(object):
                 return render(request, 'kegweb/staff_only.html', status=401)
             return None
         elif privacy == 'members':
-            if not request.user.is_authenticated() or not request.user.is_active:
+            if not request.user.is_authenticated or not request.user.is_active:
                 return render(request, 'kegweb/members_only.html', status=401)
             return None
 

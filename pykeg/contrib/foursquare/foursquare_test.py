@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -18,7 +18,7 @@
 
 """Unittests for Foursquare plugin."""
 
-from mock import patch
+from unittest.mock import patch
 
 from django.test import TransactionTestCase
 from django.utils import timezone
@@ -59,7 +59,7 @@ class FoursquareTests(TransactionTestCase):
             'foo': 'bar'
         }
         self.plugin.save_user_profile(self.user, fake_profile)
-        self.assertEquals(fake_profile, self.plugin.get_user_profile(self.user))
+        self.assertEqual(fake_profile, self.plugin.get_user_profile(self.user))
 
     def test_drink_poured(self):
         self.plugin.save_user_token(self.user, '')

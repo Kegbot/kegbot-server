@@ -1,4 +1,5 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+from __future__ import print_function
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -31,7 +32,7 @@ class Command(BaseCommand):
         progbar('clear events', 0, num_events)
         events.delete()
         progbar('clear events', num_events, num_events)
-        print ''
+        print('')
 
         pos = 0
         drinks = models.Drink.objects.all()
@@ -40,6 +41,6 @@ class Command(BaseCommand):
             pos += 1
             progbar('create new events', pos, count)
             models.SystemEvent.build_events_for_drink(d)
-        print ''
+        print('')
 
-        print 'done!'
+        print('done!')

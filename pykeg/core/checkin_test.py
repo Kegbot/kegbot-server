@@ -1,4 +1,4 @@
-# Copyright 2014 Bevbot LLC, All Rights Reserved
+# Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
 # For more information on Pykeg or Kegbot, see http://kegbot.org/
@@ -20,8 +20,7 @@
 
 from django.test import TransactionTestCase
 
-from mock import Mock
-from mock import patch
+from unittest.mock import Mock, patch
 
 from pykeg.core import checkin
 from pykeg.core import models
@@ -57,4 +56,4 @@ class CheckinTestCase(TransactionTestCase):
                                          timeout=1.23)
 
         site = models.KegbotSite.get()
-        self.assertEquals('new-regid', site.registration_id)
+        self.assertEqual('new-regid', site.registration_id)

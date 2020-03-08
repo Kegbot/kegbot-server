@@ -27,7 +27,7 @@ For much more detail, see the complete [Kegbot Server documentation](https://keg
 * Main project page: https://kegbot.org
 * Documentation: https://kegbot-server.readthedocs.io/en/latest/
 * Discussion forum: https://forum.kegbot.org/
-* Discusion Slack group: [Slack link](https://join.slack.com/t/kegbot/shared_invite/enQtMjk4NjI4NTMyMzUzLTQwYzBhNzk2NDg2NjcwZjViOTIxY2E2ZmFmY2NkOTU0Y2ZiNzYwMmFhNGYzZDY0YjU2MmQ3Mjk3ZGMwYTNhM2U)
+* Discusion Slack group: [Slack link](https://join.slack.com/t/kegbot/shared_invite/zt-3t6rpu9t-AXLNNmL0vPelsbcU6afvjQ)
 * [@kegbot](http://twitter.com/kegbot) on
 Twitter
 

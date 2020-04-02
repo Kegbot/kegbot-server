@@ -40,7 +40,6 @@ INSTALLED_APPS = (
     'bootstrap_pagination',
     'imagekit',
     'gunicorn',
-    'channels',
     'static_precompiler',
 )
 
@@ -162,18 +161,6 @@ DEMO_MODE = False
 EMBEDDED = False
 
 KEGBOT_BACKEND = 'pykeg.backend.backends.KegbotBackend'
-
-# Channels
-
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'asgi_redis.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [('localhost', 6379)],
-        },
-        'ROUTING': 'pykeg.web.ws.routing.channel_routing',
-    }
-}
 
 # Celery
 

@@ -24,8 +24,6 @@ from pykeg.backup import backup
 from pykeg.core import stats
 from django.db import transaction
 
-from pykeg.web.ws.common import publish_events
-
 from pykeg.celery import app
 from celery.utils.log import get_task_logger
 
@@ -39,9 +37,6 @@ def schedule_tasks(events):
             plugin.handle_new_events(events)
         except Exception:
             logger.exception('Error dispatching events to plugin {}'.format(plugin.get_name()))
-
-    publish_events(events)
-
     notification.handle_new_system_events(events)
 
 

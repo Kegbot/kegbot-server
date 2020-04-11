@@ -1,0 +1,32 @@
+version: '3'
+services:
+  kegbot:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - kegbot-data:/kegbot-data
+    environment:
+      KEGBOT_REDIS_URL: redis://redis:6379/0
+      KEGBOT_DATABASE_URL: mysql://kegbot_dev:changeme@mysql/kegbot_dev
+      KEGBOT_SETUP_ENABLED: "true"
+      KEGBOT_DEBUG: "true"
+
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'changeme'
+      MYSQL_USER: 'kegbot_dev'
+      MYSQL_PASSWORD: 'changeme'
+      MYSQL_DATABASE: 'kegbot_dev'
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    restart: always
+
+volumes:
+  mysql-data:
+  kegbot-data:

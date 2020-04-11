@@ -26,7 +26,7 @@ def kbsite(request):
         'DEBUG': settings.DEBUG,
         'VERSION': util.get_version(),
         'HAVE_SESSIONS': False,
-        'HAVE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,
+        'KEGBOT_ENABLE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,
         'ENABLE_SENSING': kbsite.enable_sensing if kbsite else True,
         'ENABLE_USERS': kbsite.enable_users if kbsite else True,
         'GOOGLE_ANALYTICS_ID': None,

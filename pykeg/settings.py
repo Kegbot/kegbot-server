@@ -155,7 +155,7 @@ CACHES = {
 INTERNAL_IPS = ('127.0.0.1',)
 
 # Set to true if the database admin module should be enabled.
-KEGBOT_ENABLE_ADMIN = False
+KEGBOT_ENABLE_ADMIN = DEBUG
 
 KEGBOT_PLUGINS = [
     'pykeg.contrib.foursquare.plugin.FoursquarePlugin',
@@ -199,7 +199,7 @@ CELERYBEAT_SCHEDULE = {
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'filters': {
         'require_debug_true': {
             '()': 'django.utils.log.RequireDebugTrue',
@@ -241,17 +241,17 @@ LOGGING = {
             'propagate': False,
         },
         'pykeg': {
-            'level': 'INFO',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'handlers': ['console', 'redis'],
             'propagate': False,
         },
         'django': {
-            'level': 'INFO' if DEBUG else 'WARNING',
+            'level': 'DEBUG' if DEBUG else 'WARNING',
             'handlers': ['console', 'redis'],
             'propagate': False,
         },
         '': {
-            'level': 'INFO' if DEBUG else 'WARNING',
+            'level': 'DEBUG' if DEBUG else 'WARNING',
             'handlers': ['console', 'redis'],
         },
     },

@@ -6,7 +6,7 @@ Kegbot is a hardware and software system to record and monitor access to a
 kegerator.  For more information and documentation, see http://kegbot.org/
 """
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 VERSION = '1.3.0b1'
 DOCLINES = __doc__.split('\n')
@@ -22,16 +22,7 @@ setup(
     author='Kegbot Project',
     author_email='info@kegbot.org',
     url='https://kegbot.org/',
-    packages=find_packages(),
     scripts=[
         'bin/kegbot',
-        'bin/setup-kegbot.py',
     ],
-    dependency_links=[
-        'https://github.com/rem/python-protobuf/tarball/master#egg=protobuf-2.4.1',
-    ],
-    include_package_data=True,
-    entry_points={
-        'console_scripts': ['instance=django.core.management:execute_manager'],
-    },
 )

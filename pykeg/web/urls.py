@@ -19,26 +19,24 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from django.conf.urls import include
-from django.conf.urls.static import static
 from django.conf.urls import url
+from django.conf.urls.static import static
 from django.contrib import admin
+from django.urls import path, re_path, include
 from django.views.generic.base import RedirectView
 
-admin.autodiscover()
+from pykeg.web.account import urls as account_urls
+from pykeg.web.api import urls as api_urls
+from pykeg.web.kbregistration import urls as kbregistration_urls
+from pykeg.web.kegadmin import urls as kegadmin_urls
+from pykeg.web.kegweb import urls as kegweb_urls
+from pykeg.web.setup_wizard import urls as setup_wizard_urls
 
 urlpatterns = [
-    # api
-    url(r'^api/(?:v1/)?', include('pykeg.web.api.urls')),
-
-    # kegbot account
-    url(r'^account/', include('pykeg.web.account.urls')),
-
-    # auth account
-    url(r'^accounts/', include('pykeg.web.kbregistration.urls')),
-
-    # kegadmin
-    url(r'^kegadmin/', include('pykeg.web.kegadmin.urls')),
+    re_path(r'^api/(?:v1/)?', include(api_urls)),
+    path('account/', include(account_urls)),
+    path('accounts/', include(kbregistration_urls)),
+    path('kegadmin/', include(kegadmin_urls)),
 
     # Shortcuts
     url(r'^link/?$', RedirectView.as_view(pattern_name='kegadmin-link-device')),
@@ -46,7 +44,7 @@ urlpatterns = [
 
 if 'pykeg.web.setup_wizard' in settings.INSTALLED_APPS:
     urlpatterns += [
-        url(r'^setup/', include('pykeg.web.setup_wizard.urls')),
+        path('setup/', include(setup_wizard_urls)),
     ]
 
 if settings.DEBUG:
@@ -55,10 +53,10 @@ if settings.DEBUG:
 
 if settings.KEGBOT_ENABLE_ADMIN:
     urlpatterns += [
-        url(r'^admin/', include(admin.site.urls)),
+        path('admin/', admin.site.urls),
     ]
 
 # main kegweb urls
 urlpatterns += [
-    url(r'^', include('pykeg.web.kegweb.urls')),
+    path('', include(kegweb_urls)),
 ]

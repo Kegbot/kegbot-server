@@ -44,7 +44,7 @@
 {% navitem "kegadmin-logs" "Logs" %}
 {% navitem "kegadmin-bugreport" "Bugreport" %}
 {% navitem "kegadmin-export" "Export Data" %}
-{% if HAVE_ADMIN %}
+{% if KEGBOT_ENABLE_ADMIN %}
 {% navitem "kegadmin-workers" "Worker Status" %}
 <li><a href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a></li>
 {% endif %}

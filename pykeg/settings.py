@@ -155,7 +155,7 @@ CACHES = {
 INTERNAL_IPS = ('127.0.0.1',)
 
 # Set to true if the database admin module should be enabled.
-KEGBOT_ENABLE_ADMIN = False
+KEGBOT_ENABLE_ADMIN = DEBUG
 
 KEGBOT_PLUGINS = [
     'pykeg.contrib.foursquare.plugin.FoursquarePlugin',

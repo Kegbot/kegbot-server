@@ -21,17 +21,25 @@ RUN apk update && \
 ADD Pipfile Pipfile.lock ./
 RUN apk add --no-cache mariadb-connector-c-dev && \
    apk add --no-cache --virtual _build-deps \
-     build-base mariadb-dev libjpeg-turbo-dev zlib-dev && \
-   pipenv install --deploy && \
+     build-base mariadb-dev libjpeg-turbo-dev zlib-dev py-gevent libffi-dev && \
+   pipenv install --deploy --system && \
    apk del _build-deps
 
 ADD bin ./bin
 ADD pykeg ./pykeg
 ADD setup.py ./
-RUN pipenv run python setup.py develop
-RUN pipenv run kegbot collectstatic -v 0 --noinput
+RUN python setup.py develop
+RUN bin/kegbot collectstatic -v 0 --noinput
 
 VOLUME  ["/kegbot-data"]
 
 EXPOSE 8000
-CMD ["/usr/local/bin/pipenv", "run", "gunicorn", "pykeg.web.wsgi:application", "-b", "0.0.0.0:8000"]
+CMD [ \
+   "gunicorn", \
+   "pykeg.web.wsgi:application", \
+   "--worker-class=gevent", \
+   "--workers=8", \
+   "--worker-tmp-dir=/dev/shm", \
+   "-b", \
+   "0.0.0.0:8000" \
+]

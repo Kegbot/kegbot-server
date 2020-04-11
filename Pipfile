@@ -45,6 +45,7 @@ mysqlclient = "*"
 future = "*"
 addict = "*"
 kegbot-api = "*"
+gevent = "*"
 
 [scripts]
 kegbot = "python bin/kegbot"

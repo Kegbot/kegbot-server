@@ -21,6 +21,9 @@ on:
   push:
     branches:
       - master
+    tags:
+      - '*'
+  
   release:
     types: [published]
 

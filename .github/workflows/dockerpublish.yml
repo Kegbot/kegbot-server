@@ -1,0 +1,52 @@
+# Publishes built images to the docker hub.
+#
+#   - Merges to master are published as `kegbot/server:master` as
+#     well as `kegbot/server:sha-<shortsha>`.
+#   - Releases are published as `kegbot/server:latest` as well as
+#     `kegbot/server:<tag>`
+#
+# Right now we prefer Docker Hub instead of GitHub Package Registry
+# because GitHub requires login even for public repo pulls, and that's
+# more work for the average user. Change to the following `with:`
+# settings to use GitHub Package index:
+#
+#   username: $GITHUB_ACTOR
+#   password: ${{ secrets.GITHUB_TOKEN }}
+#   registry: docker.pkg.github.com
+#   repository: kegbot/kegbot-server/kegbot-server
+
+name: Docker Publish
+
+on:
+  push:
+    branches:
+      - master
+  release:
+    types: [published]
+
+jobs:
+  publish-as-latest:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: docker/build-push-action@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        repository: kegbot/server
+        tag_with_ref: true
+        tag_with_sha: true
+
+  publish-as-release:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: docker/build-push-action@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        repository: kegbot/server
+        tag_with_ref: true
+        tags: latest

@@ -24,6 +24,7 @@ from pykeg import config
 from pykeg.core.util import get_version_object
 from pykeg.core.util import set_current_request
 from pykeg.core.util import must_upgrade
+from pykeg.util import dbstatus
 from pykeg.web.api.util import is_api_request
 
 from pykeg.plugin import util as plugin_util
@@ -73,24 +74,7 @@ class CurrentRequestMiddleware(object):
 
 
 class IsSetupMiddleware(object):
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        if not config.is_setup():
-            # Disable the auth user middleware.
-            request.session = {}
-            request.session['_auth_user_backend'] = None
-
-            if not request.path.startswith('/setup'):
-                return render(request, 'setup_wizard/setup_required.html', status=403)
-        return self.get_response(request)
-
-
-class KegbotSiteMiddleware(object):
-    ALLOWED_VIEW_MODULE_PREFIXES = (
-        'pykeg.web.setup_wizard.',
-    )
+    """Adds `.need_setup`, `.need_upgrade`, and `.kbsite` to the request."""
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -100,30 +84,45 @@ class KegbotSiteMiddleware(object):
         request.need_upgrade = False
         request.kbsite = None
 
-        installed_version = models.KegbotSite.get_installed_version()
-        if installed_version is None:
-            request.need_setup = True
-        else:
-            request.installed_version_string = str(installed_version)
-            request.need_upgrade = must_upgrade(installed_version, get_version_object())
+        # Skip all checks if we're in the setup wizard.
+        if request.path.startswith('/setup'):
+            request.session = {}
+            request.session['_auth_user_backend'] = None
+            return self.get_response(request)
 
-        if not request.need_setup and not request.need_upgrade:
-            request.kbsite = models.KegbotSite.objects.get(name='default')
-            if request.kbsite.is_setup:
-                timezone.activate(request.kbsite.timezone)
-                request.plugins = dict((p.get_short_name(), p)
-                                       for p in list(plugin_util.get_plugins().values()))
-            else:
+        # First confirm the database is working.
+        try:
+            dbstatus.check_db_status()
+        except dbstatus.DatabaseNotInitialized:
+            logger.warning('Database is not initialized, sending to setup ...')
+            request.need_setup = True
+            request.need_upgrade = True
+        except dbstatus.NeedMigration:
+            logger.warning('Database needs migration, sending to setup ...')
+            request.need_upgrade = True
+        
+        # If the database looks good, check the data.
+        if not request.need_setup:
+            installed_version = models.KegbotSite.get_installed_version()
+            if installed_version is None:
+                logger.warning('Kegbot not installed, sending to setup ...')
                 request.need_setup = True
-            request.backend = get_kegbot_backend()
+            else:
+                request.installed_version_string = str(installed_version)
+                if must_upgrade(installed_version, get_version_object()):
+                    logger.warning('Kegbot upgrade required, sending to setup ...')
+                    request.need_upgrade = True
+        
+        # Lastly verify the kbsite record.
+        if not request.need_setup:
+            request.kbsite = models.KegbotSite.objects.get(name='default')
+            if not request.kbsite.is_setup:
+                logger.warning('Setup incomplete, sending to setup ...')
+                request.need_setup = True
 
         return self.get_response(request)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        for prefix in self.ALLOWED_VIEW_MODULE_PREFIXES:
-            if view_func.__module__.startswith(prefix):
-                return None
-
         if is_api_request(request):
             # API endpoints handle "setup required" differently.
             return None
@@ -144,6 +143,20 @@ class KegbotSiteMiddleware(object):
         }
         return render(request, 'setup_wizard/upgrade_required.html',
                       context=context, status=403)
+
+
+class KegbotSiteMiddleware(object):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.kbsite and not request.need_setup:
+            timezone.activate(request.kbsite.timezone)
+            request.plugins = dict((p.get_short_name(), p)
+                                    for p in list(plugin_util.get_plugins().values()))
+            request.backend = get_kegbot_backend()
+
+        return self.get_response(request)
 
 
 class PrivacyMiddleware(object):

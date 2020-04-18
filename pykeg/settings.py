@@ -246,7 +246,7 @@ LOGGING = {
             'propagate': False,
         },
         'django': {
-            'level': 'DEBUG' if DEBUG else 'WARNING',
+            'level': 'INFO' if DEBUG else 'WARNING',
             'handlers': ['console', 'redis'],
             'propagate': False,
         },

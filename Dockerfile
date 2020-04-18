@@ -37,9 +37,5 @@ EXPOSE 8000
 CMD [ \
    "gunicorn", \
    "pykeg.web.wsgi:application", \
-   "--worker-class=gevent", \
-   "--workers=8", \
-   "--worker-tmp-dir=/dev/shm", \
-   "-b", \
-   "0.0.0.0:8000" \
+   "--config=python:pykeg.web.gunicorn_conf" \
 ]

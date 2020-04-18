@@ -147,7 +147,7 @@
   });
 </script>
 
-{% if user.is_staff %}
+{% if kbsite and kbsite.is_setup and user.is_staff %}
 {% include 'kegadmin/includes/extrajs.html' %}
 {% endif %}
 

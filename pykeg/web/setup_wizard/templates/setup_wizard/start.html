@@ -6,8 +6,13 @@
 
 <h2>Kegbot Setup: Welcome</h2>
 <p class="lead">
-  Before you get started, what kind of Kegbot would you like?<br/>
-  (You can always change settings later.)
+  {% if need_upgrade %}
+  Before you continue, please click below to upgrade your database.
+  {% elif need_install %}
+  Before you continue, please click below to perform database setup.
+  {% else %}
+  Please click below to continue with setup.
+  {% endif %}
 </p>
 
 <div class="row-fluid">
@@ -15,23 +20,14 @@
     <form action="" method="POST">{% csrf_token %}
 
       <p>
-        <input type="submit" name="enable_sensing" value="Enable Sensors, Continue »"
-            class="btn btn-primary btn-success btn-block" id="submit-id-enable_sensing">
-        <span class="muted">Classic mode: Enables features that require flow sensing hardware.</span>
-      </p>
-      
-      <br/>
-      
-      <p>
-        <input type="submit" name="disable_sensing" value="No Sensor Hardware, Continue »"
-            class="btn btn-primary btn-info btn-block" id="submit-id-disable_sensing">
-        <span class="muted">Hides features that require flow sensing hardware.</span>
+        <input type="submit" name="db"
+          value="{% if need_install %}Install Database{% elif need_upgrade %}Upgrade Database{% else %}Continue{% endif %}"
+            class="btn btn-primary btn-success btn-block" id="submit-id-db">
       </p>
 
     </form>
   </div>
 </div>
-
 </div>
 
 {% endblock content %}

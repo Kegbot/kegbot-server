@@ -1,0 +1,29 @@
+{% extends "setup_wizard/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="jumbotron">
+
+<h2>Upgrade Kegbot</h2>
+<p class="lead">
+  {% if message %}
+    {{ message }}
+  {% else %}
+    Please click below to upgrade your Kegbot.
+  {% endif %}
+</p>
+
+<div class="row-fluid">
+  <div class="span8 offset2">
+    <form action="" method="POST">{% csrf_token %}
+      <p>
+        <input type="submit" name="update_db" value="Upgrade"
+            class="btn btn-primary btn-success btn-block" id="submit-id-update_db">
+      </p>
+    </form>
+  </div>
+</div>
+
+</div>
+
+{% endblock content %}

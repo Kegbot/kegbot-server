@@ -70,5 +70,18 @@
 {% block content %}
 {% endblock %}
 
+{% if error_stack %}
+<div class="container">
+  <div class="row-fluid">
+    <div class="span10">
+      <hr/>
+      <h3>Error logs</h3>
+      {% if error_message %}<h5>{{ error_message }}{% endif %}
+      <pre>{{ error_stack }}</pre>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 </div> <!-- /container-narrow -->
 {% endblock body %}

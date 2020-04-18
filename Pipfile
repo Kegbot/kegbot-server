@@ -46,6 +46,7 @@ future = "*"
 addict = "*"
 kegbot-api = "*"
 gevent = "*"
+psycopg2 = "*"
 
 [scripts]
 kegbot = "python bin/kegbot"

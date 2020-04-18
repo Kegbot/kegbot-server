@@ -19,9 +19,9 @@ RUN apk update && \
    pip install pipenv
 
 ADD Pipfile Pipfile.lock ./
-RUN apk add --no-cache mariadb-connector-c-dev && \
+RUN apk add --no-cache mariadb-connector-c-dev libpq && \
    apk add --no-cache --virtual _build-deps \
-     build-base mariadb-dev libjpeg-turbo-dev zlib-dev py-gevent libffi-dev && \
+     build-base mariadb-dev postgresql-dev libjpeg-turbo-dev zlib-dev py-gevent libffi-dev && \
    pipenv install --deploy --system && \
    apk del _build-deps
 

@@ -1,9 +1,21 @@
 version: '3'
 services:
   kegbot:
+    image: kegbot-server
     build: .
     ports:
       - "8000:8000"
+    volumes:
+      - kegbot-data:/kegbot-data
+    environment:
+      KEGBOT_REDIS_URL: redis://redis:6379/0
+      KEGBOT_DATABASE_URL: mysql://kegbot_dev:changeme@mysql/kegbot_dev
+      KEGBOT_SETUP_ENABLED: "true"
+      KEGBOT_DEBUG: "true"
+
+  workers:
+    image: kegbot-server
+    command: bin/kegbot run_workers
     volumes:
       - kegbot-data:/kegbot-data
     environment:

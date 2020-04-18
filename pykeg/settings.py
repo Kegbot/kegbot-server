@@ -241,7 +241,7 @@ LOGGING = {
             'propagate': False,
         },
         'pykeg': {
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'level': 'INFO',
             'handlers': ['console', 'redis'],
             'propagate': False,
         },

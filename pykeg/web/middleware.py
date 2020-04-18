@@ -111,7 +111,7 @@ class IsSetupMiddleware(object):
                 request.installed_version_string = str(installed_version)
                 if must_upgrade(installed_version, get_version_object()):
                     logger.warning('Kegbot upgrade required, sending to setup ...')
-                    request.need_setup = True
+                    request.need_upgrade = True
         
         # Lastly verify the kbsite record.
         if not request.need_setup:

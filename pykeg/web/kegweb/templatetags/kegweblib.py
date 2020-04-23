@@ -40,43 +40,43 @@ from pykeg.web.charts import charts
 register = Library()
 
 
-@register.inclusion_tag('kegweb/mugshot_box.html', takes_context=True)
+@register.inclusion_tag("kegweb/mugshot_box.html", takes_context=True)
 def mugshot_box(context, user, boxsize=0):
     return {
-        'user': user,
-        'boxsize': boxsize,
-        'guest_info': context.get('guest_info', None),
-        'STATIC_URL': context.get('STATIC_URL')
+        "user": user,
+        "boxsize": boxsize,
+        "guest_info": context.get("guest_info", None),
+        "STATIC_URL": context.get("STATIC_URL"),
     }
 
 
-@register.inclusion_tag('kegweb/picture-gallery.html')
-def gallery(picture_or_pictures, thumb_size='span2', gallery_id=''):
+@register.inclusion_tag("kegweb/picture-gallery.html")
+def gallery(picture_or_pictures, thumb_size="span2", gallery_id=""):
     c = {}
-    if not hasattr(picture_or_pictures, '__iter__'):
-        c['gallery_pictures'] = [picture_or_pictures]
+    if not hasattr(picture_or_pictures, "__iter__"):
+        c["gallery_pictures"] = [picture_or_pictures]
     else:
-        c['gallery_pictures'] = picture_or_pictures
-    c['thumb_size'] = thumb_size
-    c['gallery_id'] = gallery_id
+        c["gallery_pictures"] = picture_or_pictures
+    c["thumb_size"] = thumb_size
+    c["gallery_id"] = gallery_id
     return c
 
 
-@register.inclusion_tag('kegweb/badge.html')
-def badge(amount, caption, style='', is_volume=False, do_pluralize=False):
+@register.inclusion_tag("kegweb/badge.html")
+def badge(amount, caption, style="", is_volume=False, do_pluralize=False):
     if is_volume:
-        amount = mark_safe(VolumeNode.format(amount, 'mL'))
+        amount = mark_safe(VolumeNode.format(amount, "mL"))
     if do_pluralize:
         caption += pluralize(amount)
     return {
-        'badge_amount': amount,
-        'badge_caption': caption,
-        'badge_style': style,
+        "badge_amount": amount,
+        "badge_caption": caption,
+        "badge_style": style,
     }
 
 
-@register.inclusion_tag('kegweb/includes/progress_bar.html')
-def progress_bar(progress_int, extra_css=''):
+@register.inclusion_tag("kegweb/includes/progress_bar.html")
+def progress_bar(progress_int, extra_css=""):
     c = {}
     try:
         progress_int = max(int(progress_int), 0)
@@ -84,26 +84,27 @@ def progress_bar(progress_int, extra_css=''):
         progress_int = 0
     progress_int = min(progress_int, 100)
 
-    c['progress_int'] = progress_int
-    c['extra_css'] = extra_css
+    c["progress_int"] = progress_int
+    c["extra_css"] = extra_css
     if progress_int < 10:
-        bar_type = 'bar-danger'
+        bar_type = "bar-danger"
     elif progress_int < 25:
-        bar_type = 'bar-warning'
+        bar_type = "bar-warning"
     else:
-        bar_type = 'bar-success'
-    c['bar_type'] = bar_type
+        bar_type = "bar-success"
+    c["bar_type"] = bar_type
     return c
 
 
 # navitem
 
-@register.tag('navitem')
+
+@register.tag("navitem")
 def navitem(parser, token):
     """{% navitem <viewname> <title> [exact] %}"""
     tokens = token.split_contents()
     if len(tokens) < 3:
-        raise TemplateSyntaxError('%s requires at least 3 tokens' % tokens[0])
+        raise TemplateSyntaxError("%s requires at least 3 tokens" % tokens[0])
     return NavitemNode(*tokens[1:])
 
 
@@ -111,38 +112,39 @@ class NavitemNode(Node):
     def __init__(self, *args):
         self._viewname = args[0]
         self._title = args[1]
-        self._exact = 'exact' in args[2:]
+        self._exact = "exact" in args[2:]
 
     def render(self, context):
         viewname = Variable(self._viewname).resolve(context)
         title = Variable(self._title).resolve(context)
-        if viewname.startswith('/'):
+        if viewname.startswith("/"):
             urlbase = viewname
         else:
             urlbase = reverse(viewname)
 
-        request_path = context['request_path']
+        request_path = context["request_path"]
 
         if self._exact:
-            active = (request_path == urlbase)
+            active = request_path == urlbase
         else:
             active = request_path.startswith(urlbase)
         if active:
             res = '<li class="active">'
         else:
-            res = '<li>'
+            res = "<li>"
         res += '<a href="%s">%s</a></li>' % (urlbase, title)
         return res
 
 
 # timeago
 
-@register.tag('timeago')
+
+@register.tag("timeago")
 def timeago(parser, token):
     """{% timeago <timestamp> %}"""
     tokens = token.contents.split()
     if len(tokens) != 2:
-        raise TemplateSyntaxError('%s requires 2 tokens' % tokens[0])
+        raise TemplateSyntaxError("%s requires 2 tokens" % tokens[0])
     return TimeagoNode(tokens[1])
 
 
@@ -169,12 +171,13 @@ class TimeagoNode(Node):
 
 # temperature
 
-@register.tag('temperature')
+
+@register.tag("temperature")
 def temperature_tag(parser, token):
     """{% temperature <temp_c> %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise TemplateSyntaxError('%s requires at least 2 tokens' % tokens[0])
+        raise TemplateSyntaxError("%s requires at least 2 tokens" % tokens[0])
     return TemperatureNode(tokens[1])
 
 
@@ -190,25 +193,26 @@ class TemperatureNode(Node):
             amount = v.resolve(context)
         except (VariableDoesNotExist, ValueError):
             raise
-            amount = 'unknown'
+            amount = "unknown"
 
-        unit = 'C'
+        unit = "C"
         kbsite = models.KegbotSite.get()
-        if kbsite.temperature_display_units == 'f':
-            unit = 'F'
+        if kbsite.temperature_display_units == "f":
+            unit = "F"
             amount = CtoF(amount)
 
-        return self.TEMPLATE % {'amount': amount, 'unit': unit}
+        return self.TEMPLATE % {"amount": amount, "unit": unit}
+
 
 # volume
 
 
-@register.tag('volume')
+@register.tag("volume")
 def volumetag(parser, token):
     """{% volume <amount> %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise TemplateSyntaxError('%s requires at least 2 tokens' % tokens[0])
+        raise TemplateSyntaxError("%s requires at least 2 tokens" % tokens[0])
     return VolumeNode(tokens[1], tokens[2:])
 
 
@@ -228,9 +232,9 @@ class VolumeNode(Node):
         try:
             num = float(tv.resolve(context))
         except (VariableDoesNotExist, ValueError):
-            num = 'unknown'
-        unit = 'mL'
-        make_badge = 'badge' in self._extra_args
+            num = "unknown"
+        unit = "mL"
+        make_badge = "badge" in self._extra_args
         return self.format(num, unit, make_badge)
 
     @classmethod
@@ -238,22 +242,23 @@ class VolumeNode(Node):
         if amount < 0:
             amount = 0
         ctx = {
-            'units': units,
-            'amount': amount,
-            'title': '%s %s' % (amount, units),
-            'extra_css': 'badge ' if make_badge else '',
+            "units": units,
+            "amount": amount,
+            "title": "%s %s" % (amount, units),
+            "extra_css": "badge " if make_badge else "",
         }
         return cls.TEMPLATE % ctx
+
 
 # drinker
 
 
-@register.tag('drinker_name')
+@register.tag("drinker_name")
 def drinker_name_tag(parser, token):
     """{% drinker_name <drink_or_user_obj> [nolink] %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise TemplateSyntaxError('%s requires at least 2 tokens' % tokens[0])
+        raise TemplateSyntaxError("%s requires at least 2 tokens" % tokens[0])
     return DrinkerNameNode(tokens[1], tokens[2:])
 
 
@@ -276,34 +281,37 @@ class DrinkerNameNode(Node):
             elif isinstance(obj, models.User):
                 user = obj
         if user:
-            if 'nolink' in self._extra_args:
+            if "nolink" in self._extra_args:
                 return user.get_full_name()
             else:
-                return '<a href="%s">%s</a>' % (reverse('kb-drinker',
-                                                        args=[user.username]), user.get_full_name())
-        return context['guest_info']['name']
+                return '<a href="%s">%s</a>' % (
+                    reverse("kb-drinker", args=[user.username]),
+                    user.get_full_name(),
+                )
+        return context["guest_info"]["name"]
 
 
 # chart
 
-@register.tag('chart')
+
+@register.tag("chart")
 def chart(parser, tokens):
     """{% chart <charttype> <obj> width height %}"""
     tokens = tokens.contents.split()
     if len(tokens) < 4:
-        raise TemplateSyntaxError('chart requires at least 4 arguments')
+        raise TemplateSyntaxError("chart requires at least 4 arguments")
     charttype = tokens[1]
     try:
         width = int(tokens[-2])
         height = int(tokens[-1])
     except ValueError:
-        raise TemplateSyntaxError('invalid width or height')
+        raise TemplateSyntaxError("invalid width or height")
     args = tokens[2:-2]
     return ChartNode(charttype, width, height, args)
 
 
 class ChartNode(Node):
-    CHART_TMPL = '''
+    CHART_TMPL = """
     <!-- begin chart %(chart_id)s -->
     <div id="chart-%(chart_id)s-container"
         style="height: %(height)spx; width: %(width)spx;"
@@ -317,8 +325,8 @@ class ChartNode(Node):
     </script>
     <!-- end chart %(chart_id)s -->
 
-    '''
-    ERROR_TMPL = '''
+    """
+    ERROR_TMPL = """
     <!-- begin chart %(chart_id)s -->
     <div id="chart-%(chart_id)s-container"
         style="height: %(height)spx; width: %(width)spx;"
@@ -326,7 +334,7 @@ class ChartNode(Node):
       %(error_str)s
     </div>
     <!-- end chart %(chart_id)s -->
-    '''
+    """
 
     def __init__(self, charttype, width, height, args):
         self._charttype = charttype
@@ -334,21 +342,21 @@ class ChartNode(Node):
         self._height = height
         self._args = args
 
-        self._chart_fn = getattr(charts, 'chart_%s' % (self._charttype,), None)
+        self._chart_fn = getattr(charts, "chart_%s" % (self._charttype,), None)
 
     def _get_chart_id(self, context):
         # TODO(mikey): Is there a better way to store _CHART_ID?
-        if not hasattr(context, '_CHART_ID'):
+        if not hasattr(context, "_CHART_ID"):
             context._CHART_ID = 0
         context._CHART_ID += 1
         return context._CHART_ID
 
     def show_error(self, error_str):
         ctx = {
-            'error_str': error_str,
-            'chart_id': 0,
-            'width': self._width,
-            'height': self._height,
+            "error_str": error_str,
+            "chart_id": 0,
+            "width": self._width,
+            "height": self._height,
         }
         return ChartNode.ERROR_TMPL % ctx
 
@@ -359,39 +367,27 @@ class ChartNode(Node):
         chart_id = self._get_chart_id(context)
         obj = Variable(self._args[0]).resolve(context)
 
-        metric_volumes = context.get('metric_volumes', False)
-        temperature_units = context.get('temperature_display_units', 'f')
+        metric_volumes = context.get("metric_volumes", False)
+        temperature_units = context.get("temperature_display_units", "f")
 
         try:
-            chart_result = self._chart_fn(obj, metric_volumes=metric_volumes,
-                                          temperature_units=temperature_units)
+            chart_result = self._chart_fn(
+                obj, metric_volumes=metric_volumes, temperature_units=temperature_units
+            )
         except charts.ChartError as e:
             return self.show_error(str(e))
 
         chart_base = {
-            'chart': {
-                'borderColor': '#eeeeff',
-                'borderWidth': 0,
-                'renderTo': 'chart-%s-container' % chart_id,
+            "chart": {
+                "borderColor": "#eeeeff",
+                "borderWidth": 0,
+                "renderTo": "chart-%s-container" % chart_id,
             },
-            'credits': {
-                'enabled': False,
-            },
-            'legend': {
-                'enabled': False,
-            },
-            'margin': [0, 0, 0, 0],
-            'title': {
-                'text': None,
-            },
-            'yAxis': {
-                'labels': {
-                    'align': 'left'
-                },
-                'title': {
-                    'text': None,
-                }
-            },
+            "credits": {"enabled": False,},
+            "legend": {"enabled": False,},
+            "margin": [0, 0, 0, 0],
+            "title": {"text": None,},
+            "yAxis": {"labels": {"align": "left"}, "title": {"text": None,}},
         }
 
         chart_data = chart_base
@@ -405,33 +401,33 @@ class ChartNode(Node):
         chart_data = kbjson.dumps(chart_data, indent=None)
 
         ctx = {
-            'chart_id': chart_id,
-            'width': self._width,
-            'height': self._height,
-            'chart_data': chart_data,
+            "chart_id": chart_id,
+            "width": self._width,
+            "height": self._height,
+            "chart_data": chart_data,
         }
 
         return ChartNode.CHART_TMPL % ctx
 
 
 @register.filter
-def volume(text, fmt='pints'):
+def volume(text, fmt="pints"):
     try:
         vol = units.Quantity(float(text))
     except ValueError:
         return text
-    if fmt == 'pints':
+    if fmt == "pints":
         res = vol.InPints()
-    elif fmt == 'liters':
+    elif fmt == "liters":
         res = vol.InLiters()
-    elif fmt == 'ounces':
+    elif fmt == "ounces":
         res = vol.InOunces()
-    elif fmt == 'gallons':
+    elif fmt == "gallons":
         res = vol.InUSGallons()
-    elif fmt == 'twelveounces':
+    elif fmt == "twelveounces":
         res = vol.InTwelveOunceBeers()
-    elif fmt == 'halfbarrels':
+    elif fmt == "halfbarrels":
         res = vol.InHalfBarrelKegs()
     else:
-        raise TemplateSyntaxError('Unknown volume format: %s' % fmt)
+        raise TemplateSyntaxError("Unknown volume format: %s" % fmt)
     return float(res)

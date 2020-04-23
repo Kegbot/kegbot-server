@@ -43,13 +43,13 @@ class PluginDatastore(object):
     def save_form(self, form, prefix):
         """Helper method to save a form using the specified per-field prefix."""
         for field_name, value in list(form.cleaned_data.items()):
-            self.set('%s:%s' % (prefix, field_name), value)
+            self.set("%s:%s" % (prefix, field_name), value)
 
     def load_form(self, form_cls, prefix, form_kwargs={}):
         """Helper method to load a form using the specified per-field prefix."""
         data = Dict()
         for field_name, field in list(form_cls.base_fields.items()):
-            initial = self.get('%s:%s' % (prefix, field_name))
+            initial = self.get("%s:%s" % (prefix, field_name))
             if initial is not None:
                 data[field_name] = field.to_python(initial)
             else:
@@ -70,21 +70,18 @@ class ModelDatastore(PluginDatastore):
             row.value = value
             row.save()
         except models.PluginData.DoesNotExist:
-            models.PluginData.objects.create(plugin_name=self.plugin_name, key=key,
-                                             value=value)
+            models.PluginData.objects.create(plugin_name=self.plugin_name, key=key, value=value)
 
     def get(self, key, default=None):
         try:
-            row = models.PluginData.objects.get(plugin_name=self.plugin_name,
-                                                key=key)
+            row = models.PluginData.objects.get(plugin_name=self.plugin_name, key=key)
             return row.value
         except models.PluginData.DoesNotExist:
             return default
 
     def delete(self, key):
         try:
-            models.PluginData.objects.get(plugin_name=self.plugin_name,
-                                          key=key).delete()
+            models.PluginData.objects.get(plugin_name=self.plugin_name, key=key).delete()
         except models.PluginData.DoesNotExist:
             pass
 
@@ -96,7 +93,7 @@ class InMemoryDatastore(PluginDatastore):
 
     def _keyname(self, key):
         """Returns the datastore-namespaced key name."""
-        return '{}:{}'.format(self.plugin_name, key)
+        return "{}:{}".format(self.plugin_name, key)
 
     def set(self, key, value):
         if value is None:

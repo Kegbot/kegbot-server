@@ -19,17 +19,17 @@
 """Constants about physical keg shell."""
 
 # Most common shell sizes, from smalles to largest.
-MINI = 'mini'
-CORNY_25 = 'corny-2_5-gal'
-CORNY_30 = 'corny-3-gal'
-CORNY = 'corny'
-SIXTH_BARREL = 'sixth'
-EURO_30_LITER = 'euro-30-liter'
-EURO_HALF_BARREL = 'euro-half'
-QUARTER_BARREL = 'quarter'
-EURO = 'euro'
-HALF_BARREL = 'half-barrel'
-OTHER = 'other'
+MINI = "mini"
+CORNY_25 = "corny-2_5-gal"
+CORNY_30 = "corny-3-gal"
+CORNY = "corny"
+SIXTH_BARREL = "sixth"
+EURO_30_LITER = "euro-30-liter"
+EURO_HALF_BARREL = "euro-half"
+QUARTER_BARREL = "quarter"
+EURO = "euro"
+HALF_BARREL = "half-barrel"
+OTHER = "other"
 
 VOLUMES_ML = {
     MINI: 5000,
@@ -42,21 +42,21 @@ VOLUMES_ML = {
     QUARTER_BARREL: 29336.9,
     EURO: 100000.0,
     HALF_BARREL: 58673.9,
-    OTHER: 0.0
+    OTHER: 0.0,
 }
 
 DESCRIPTIONS = {
-    MINI: 'Mini Keg (5 L)',
-    CORNY_25: 'Corny Keg (2.5 gal)',
-    CORNY_30: 'Corny Keg (3.0 gal)',
-    CORNY: 'Corny Keg (5 gal)',
-    SIXTH_BARREL: 'Sixth Barrel (5.17 gal)',
-    EURO_30_LITER: 'European DIN (30 L)',
-    EURO_HALF_BARREL: 'European Half Barrel (50 L)',
-    QUARTER_BARREL: 'Quarter Barrel (7.75 gal)',
-    EURO: 'European Full Barrel (100 L)',
-    HALF_BARREL: 'Half Barrel (15.5 gal)',
-    OTHER: 'Other',
+    MINI: "Mini Keg (5 L)",
+    CORNY_25: "Corny Keg (2.5 gal)",
+    CORNY_30: "Corny Keg (3.0 gal)",
+    CORNY: "Corny Keg (5 gal)",
+    SIXTH_BARREL: "Sixth Barrel (5.17 gal)",
+    EURO_30_LITER: "European DIN (30 L)",
+    EURO_HALF_BARREL: "European Half Barrel (50 L)",
+    QUARTER_BARREL: "Quarter Barrel (7.75 gal)",
+    EURO: "European Full Barrel (100 L)",
+    HALF_BARREL: "Half Barrel (15.5 gal)",
+    OTHER: "Other",
 }
 
 CHOICES = [(x, DESCRIPTIONS[x]) for x in reversed(sorted(VOLUMES_ML, key=VOLUMES_ML.get))]
@@ -75,4 +75,4 @@ def find_closest_keg_size(volume_ml, tolerance_ml=100.0):
 
 
 def get_description(keg_type):
-    return DESCRIPTIONS.get(keg_type, 'Unknown')
+    return DESCRIPTIONS.get(keg_type, "Unknown")

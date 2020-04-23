@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 # Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
@@ -25,18 +26,18 @@ from pykeg.core import models
 
 
 class Command(BaseCommand):
-    args = '<from> <to>'
-    help = 'Renames user from <from> to <to>.'
+    args = "<from> <to>"
+    help = "Renames user from <from> to <to>."
 
     def handle(self, *args, **options):
         if len(args) < 2:
-            raise CommandError('Must specify <from> and <to>')
+            raise CommandError("Must specify <from> and <to>")
 
         from_username = args[0]
         to_username = args[1]
 
-        if from_username == 'guest':
-            raise CommandError('Cannot rename the guest user.')
+        if from_username == "guest":
+            raise CommandError("Cannot rename the guest user.")
 
         with transaction.atomic():
             try:

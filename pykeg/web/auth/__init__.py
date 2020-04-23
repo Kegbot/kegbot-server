@@ -27,8 +27,7 @@ def get_auth_backend():
     """Returns the sole authentication backend."""
     backends = auth.get_backends()
     if len(backends) != 1:
-        raise ImproperlyConfigured('Expected exactly 1 backend (found {})'.format(
-            len(backends)))
+        raise ImproperlyConfigured("Expected exactly 1 backend (found {})".format(len(backends)))
     return backends[0]
 
 

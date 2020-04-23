@@ -40,7 +40,7 @@ def get_plugin_class(name):
         raise ImproperlyConfigured("Could not import plugin %s: %s" % (name, e))
 
     if not issubclass(cls, Plugin):
-        raise ImproperlyConfigured('%s does not subclass plugin.Plugin', name)
+        raise ImproperlyConfigured("%s does not subclass plugin.Plugin", name)
 
     return cls
 
@@ -49,13 +49,13 @@ def get_plugins():
     """Returns all installed plugins by short name."""
     global _CACHED_PLUGINS
     if _CACHED_PLUGINS is None:
-        plugin_names = getattr(settings, 'KEGBOT_PLUGINS', [])
+        plugin_names = getattr(settings, "KEGBOT_PLUGINS", [])
         plugins = {}
         for name in plugin_names:
             cls = get_plugin_class(name)
             plugin_obj = cls(plugin_registry=_CACHED_PLUGINS)
             short_name = plugin_obj.get_short_name()
-            assert short_name not in plugins, 'Multiple plugins named {}'.format(short_name)
+            assert short_name not in plugins, "Multiple plugins named {}".format(short_name)
             plugins[short_name] = plugin_obj
         _CACHED_PLUGINS = plugins
     return _CACHED_PLUGINS
@@ -78,8 +78,8 @@ def get_account_urls():
 def _to_urls(urllist, short_name):
     urls = []
     for regex, fn, viewname in urllist:
-        regex = 'plugin/%s/%s' % (short_name, regex)
-        viewname = 'plugin-%s-%s' % (short_name, viewname)
+        regex = "plugin/%s/%s" % (short_name, regex)
+        viewname = "plugin-%s-%s" % (short_name, viewname)
         urls.append(url(regex, fn, name=viewname))
     return urls
 
@@ -93,8 +93,10 @@ def is_stale(time, now=None):
 def get_logger(name):
     try:
         from celery.utils.log import get_task_logger
+
         logger = get_task_logger(name)
     except ImportError:
         import logging
+
         logger = logging.getLogger(name)
     return logger

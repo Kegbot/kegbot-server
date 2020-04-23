@@ -9,6 +9,7 @@ class JSONField(BaseJSONField):
 
 try:
     from south.modelsinspector import add_introspection_rules
+
     add_introspection_rules([], ["^pykeg.core.jsonfield\.JSONField"])
 except ImportError:
     pass

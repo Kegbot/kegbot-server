@@ -55,6 +55,7 @@ from pykeg.util.email import build_message
 from pykeg.web.kegadmin import forms
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -66,38 +67,40 @@ def dashboard(request):
     # This works around sites that are not running celerybeat.
     checkin.schedule_checkin()
 
-    email_backend = getattr(settings, 'EMAIL_BACKEND', None)
-    email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
+    email_backend = getattr(settings, "EMAIL_BACKEND", None)
+    email_configured = (
+        email_backend and email_backend != "django.core.mail.backends.dummy.EmailBackend"
+    )
     email_configured = email_configured and settings.DEFAULT_FROM_EMAIL
 
-    context['email_configured'] = email_configured
+    context["email_configured"] = email_configured
 
-    if settings.BROKER_URL.startswith('redis:'):
+    if settings.BROKER_URL.startswith("redis:"):
         try:
             r = redis.StrictRedis.from_url(settings.BROKER_URL)
             r.ping()
         except redis.RedisError as e:
-            context['redis_error'] = e.message if e.message else "Unknown error."
+            context["redis_error"] = e.message if e.message else "Unknown error."
 
     last_checkin_time, last_checkin = checkin.get_last_checkin()
-    context['last_checkin_time'] = last_checkin_time
-    context['checkin'] = last_checkin
+    context["last_checkin_time"] = last_checkin_time
+    context["checkin"] = last_checkin
 
     if last_checkin:
-        for news in last_checkin.get('news', []):
+        for news in last_checkin.get("news", []):
             try:
-                news['date'] = isodate.parse_datetime(news['date'])
+                news["date"] = isodate.parse_datetime(news["date"])
             except (KeyError, ValueError):
                 pass
 
-    active_users = models.User.objects.filter(is_active=True).exclude(username='guest')
-    context['num_users'] = len(active_users)
+    active_users = models.User.objects.filter(is_active=True).exclude(username="guest")
+    context["num_users"] = len(active_users)
 
     recent_time = timezone.now() - datetime.timedelta(days=30)
-    new_users = models.User.objects.filter(date_joined__gte=recent_time).exclude(username='guest')
-    context['num_new_users'] = len(new_users)
+    new_users = models.User.objects.filter(date_joined__gte=recent_time).exclude(username="guest")
+    context["num_new_users"] = len(new_users)
 
-    return render(request, 'kegadmin/dashboard.html', context=context)
+    return render(request, "kegadmin/dashboard.html", context=context)
 
 
 @staff_member_required
@@ -107,15 +110,15 @@ def general_settings(request):
 
     form = forms.GeneralSiteSettingsForm(instance=kbsite)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.GeneralSiteSettingsForm(request.POST, instance=kbsite)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Settings were updated.')
-            return redirect('kegadmin-main')
-    context['settings_form'] = form
+            messages.success(request, "Settings were updated.")
+            return redirect("kegadmin-main")
+    context["settings_form"] = form
 
-    return render(request, 'kegadmin/index.html', context=context)
+    return render(request, "kegadmin/index.html", context=context)
 
 
 @staff_member_required
@@ -125,15 +128,15 @@ def location_settings(request):
 
     form = forms.LocationSiteSettingsForm(instance=kbsite)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.LocationSiteSettingsForm(request.POST, instance=kbsite)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Settings were updated.')
-            return redirect('kegadmin-location-settings')
-    context['settings_form'] = form
+            messages.success(request, "Settings were updated.")
+            return redirect("kegadmin-location-settings")
+    context["settings_form"] = form
 
-    return render(request, 'kegadmin/index.html', context=context)
+    return render(request, "kegadmin/index.html", context=context)
 
 
 @staff_member_required
@@ -143,22 +146,22 @@ def advanced_settings(request):
 
     form = forms.AdvancedSiteSettingsForm(instance=kbsite)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.AdvancedSiteSettingsForm(request.POST, instance=kbsite)
         if form.is_valid():
             form.save()
-            guest_image = request.FILES.get('guest_image')
+            guest_image = request.FILES.get("guest_image")
             if guest_image:
                 pic = models.Picture.objects.create()
                 pic.image.save(guest_image.name, guest_image)
                 pic.save()
                 kbsite.guest_image = pic
                 kbsite.save()
-            messages.success(request, 'Settings were updated.')
-            return redirect('kegadmin-advanced-settings')
-    context['settings_form'] = form
+            messages.success(request, "Settings were updated.")
+            return redirect("kegadmin-advanced-settings")
+    context["settings_form"] = form
 
-    return render(request, 'kegadmin/index.html', context=context)
+    return render(request, "kegadmin/index.html", context=context)
 
 
 @staff_member_required
@@ -166,25 +169,27 @@ def email(request):
     context = {}
     kbsite = request.kbsite
 
-    email_backend = getattr(settings, 'EMAIL_BACKEND', None)
-    email_configured = email_backend and email_backend != 'django.core.mail.backends.dummy.EmailBackend'
+    email_backend = getattr(settings, "EMAIL_BACKEND", None)
+    email_configured = (
+        email_backend and email_backend != "django.core.mail.backends.dummy.EmailBackend"
+    )
     email_configured = email_configured and settings.DEFAULT_FROM_EMAIL
 
-    if request.method == 'POST':
-        if 'send_test_email' in request.POST:
+    if request.method == "POST":
+        if "send_test_email" in request.POST:
             test_email_form = forms.TestEmailForm(request.POST)
             if test_email_form.is_valid():
-                address = test_email_form.cleaned_data.get('address')
-                context['site_name'] = kbsite.title
-                context['site_url'] = kbsite.base_url()
-                context['settings_url'] = context['site_url'] + '/account'
-                message = build_message(address, 'notification/email_test.html', context)
+                address = test_email_form.cleaned_data.get("address")
+                context["site_name"] = kbsite.title
+                context["site_url"] = kbsite.base_url()
+                context["settings_url"] = context["site_url"] + "/account"
+                message = build_message(address, "notification/email_test.html", context)
                 message.send(fail_silently=True)
-                messages.success(request, 'E-mail successfully sent to %s' % address)
+                messages.success(request, "E-mail successfully sent to %s" % address)
 
-    context['email_configured'] = email_configured
+    context["email_configured"] = email_configured
 
-    return render(request, 'kegadmin/email.html', context=context)
+    return render(request, "kegadmin/email.html", context=context)
 
 
 @staff_member_required
@@ -193,37 +198,37 @@ def export(request):
     backups = []
     storage = get_storage_class()()
 
-    if request.method == 'POST':
-        if 'package_backup' in request.POST:
+    if request.method == "POST":
+        if "package_backup" in request.POST:
             request.backend.build_backup()
-            messages.success(request, 'The backup is being generated; please reload in a few.')
+            messages.success(request, "The backup is being generated; please reload in a few.")
 
-        elif 'delete_backup' in request.POST:
-            backup_file = os.path.normpath(os.path.basename(request.POST['backup_name']))
+        elif "delete_backup" in request.POST:
+            backup_file = os.path.normpath(os.path.basename(request.POST["backup_name"]))
             backup_file = os.path.join(backup.BACKUPS_DIRNAME, backup_file)
             if storage.exists(backup_file):
                 storage.delete(backup_file)
-                messages.success(request, 'Backup deleted.')
+                messages.success(request, "Backup deleted.")
             else:
-                messages.warning(request, 'Unknown backup file.')
+                messages.warning(request, "Unknown backup file.")
 
     if storage.exists(backup.BACKUPS_DIRNAME):
         subdirs, files = storage.listdir(backup.BACKUPS_DIRNAME)
         for filename in files:
-            if filename[-3:] == 'zip':
+            if filename[-3:] == "zip":
                 storage_filename = os.path.join(backup.BACKUPS_DIRNAME, filename)
-                with storage.open(storage_filename, mode='rb') as backup_file:
+                with storage.open(storage_filename, mode="rb") as backup_file:
                     archive = zipfile.ZipFile(backup_file)
                     metadata = backup.read_metadata(archive)
-                    metadata['size_bytes'] = storage.size(storage_filename)
-                    metadata['url'] = storage.url(storage_filename)
-                    metadata['backup_name'] = filename
+                    metadata["size_bytes"] = storage.size(storage_filename)
+                    metadata["url"] = storage.url(storage_filename)
+                    metadata["backup_name"] = filename
                     backups.append(metadata)
 
     backups.sort(key=itemgetter(backup.META_CREATED_TIME), reverse=True)
-    context['backups'] = backups
+    context["backups"] = backups
 
-    return render(request, 'kegadmin/backup_export.html', context=context)
+    return render(request, "kegadmin/backup_export.html", context=context)
 
 
 @staff_member_required
@@ -232,15 +237,15 @@ def bugreport(request):
 
     error = None
     try:
-        output = subprocess.check_output('kegbot bugreport --noinput', shell=True)
+        output = subprocess.check_output("kegbot bugreport --noinput", shell=True)
     except subprocess.CalledProcessError as e:
         logger.exception('Error running "kegbot bugreport" from admin console.')
         error = e
 
-    context['bugreport'] = output
-    context['error'] = error
+    context["bugreport"] = output
+    context["error"] = error
 
-    return render(request, 'kegadmin/bugreport.html', context=context)
+    return render(request, "kegadmin/bugreport.html", context=context)
 
 
 @staff_member_required
@@ -253,48 +258,48 @@ def workers(request):
         stats = inspector.stats() or {}
         queues = inspector.active_queues() or {}
     except redis.RedisError as e:
-        context['error'] = e
+        context["error"] = e
 
     status = {}
-    if not pings and 'error' not in context:
-        context['error'] = 'No response from workers. Not running?'
+    if not pings and "error" not in context:
+        context["error"] = "No response from workers. Not running?"
     else:
         for k, v in list(pings.items()):
             status[k] = {
-                'status': 'ok' if v.get('ok') else 'unknown',
+                "status": "ok" if v.get("ok") else "unknown",
             }
         for k, v in list(stats.items()):
             if k in status:
-                status[k]['stats'] = v
+                status[k]["stats"] = v
         for k, v in list(queues.items()):
             if k in status:
-                status[k]['active_queues'] = v
+                status[k]["active_queues"] = v
 
-    context['status'] = status
-    context['raw_stats'] = kbjson.dumps(context['status'], indent=2)
+    context["status"] = status
+    context["raw_stats"] = kbjson.dumps(context["status"], indent=2)
 
-    return render(request, 'kegadmin/workers.html', context=context)
+    return render(request, "kegadmin/workers.html", context=context)
 
 
 @staff_member_required
 def controller_list(request):
     context = {}
-    context['controllers'] = models.Controller.objects.all()
-    return render(request, 'kegadmin/controller_list.html', context=context)
+    context["controllers"] = models.Controller.objects.all()
+    return render(request, "kegadmin/controller_list.html", context=context)
 
 
 @staff_member_required
 def add_controller(request):
     context = {}
     form = forms.ControllerForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.ControllerForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Controller created.')
-            return redirect('kegadmin-controllers')
-    context['form'] = form
-    return render(request, 'kegadmin/add_controller.html', context=context)
+            messages.success(request, "Controller created.")
+            return redirect("kegadmin-controllers")
+    context["form"] = form
+    return render(request, "kegadmin/add_controller.html", context=context)
 
 
 @staff_member_required
@@ -302,186 +307,188 @@ def controller_detail(request, controller_id):
     controller = get_object_or_404(models.Controller, id=controller_id)
     delete_controller_form = forms.DeleteControllerForm()
     add_flow_meter_form = forms.AddFlowMeterForm()
-    add_flow_meter_form.fields['controller'].initial = controller_id
+    add_flow_meter_form.fields["controller"].initial = controller_id
     add_flow_toggle_form = forms.AddFlowToggleForm()
-    add_flow_toggle_form.fields['controller'].initial = controller_id
+    add_flow_toggle_form.fields["controller"].initial = controller_id
     context = {}
 
-    if request.method == 'POST':
-        if 'delete_controller' in request.POST:
+    if request.method == "POST":
+        if "delete_controller" in request.POST:
             delete_controller_form = forms.DeleteControllerForm(request.POST)
             if delete_controller_form.is_valid():
                 controller.delete()
-                messages.success(request, 'The controller was deleted.')
-                return redirect('kegadmin-controllers')
-        elif 'add_flow_meter' in request.POST:
+                messages.success(request, "The controller was deleted.")
+                return redirect("kegadmin-controllers")
+        elif "add_flow_meter" in request.POST:
             add_flow_meter_form = forms.AddFlowMeterForm(request.POST)
             if add_flow_meter_form.is_valid():
                 add_flow_meter_form.save()
-                messages.success(request, 'Flow Meter added successfully.')
-                return redirect('kegadmin-controllers')
-        elif 'edit_flow_meter' in request.POST:
-            flowmeter = models.FlowMeter.objects.filter(id=request.POST.get('flowmeter_id'))
-            flowmeter.update(port_name=request.POST.get('port_name'))
-            flowmeter.update(ticks_per_ml=request.POST.get('ticks_per_ml'))
-            messages.success(request, 'Flow Meter successfully updated.')
-            return redirect('kegadmin-controllers')
-        elif 'delete_flow_meter' in request.POST:
+                messages.success(request, "Flow Meter added successfully.")
+                return redirect("kegadmin-controllers")
+        elif "edit_flow_meter" in request.POST:
+            flowmeter = models.FlowMeter.objects.filter(id=request.POST.get("flowmeter_id"))
+            flowmeter.update(port_name=request.POST.get("port_name"))
+            flowmeter.update(ticks_per_ml=request.POST.get("ticks_per_ml"))
+            messages.success(request, "Flow Meter successfully updated.")
+            return redirect("kegadmin-controllers")
+        elif "delete_flow_meter" in request.POST:
             flowmeter = models.FlowMeter.objects.filter(
-                id=request.POST.get('flowmeter_id')).delete()
-            messages.success(request, 'Flow Meter removed successfully.')
-            return redirect('kegadmin-controllers')
-        elif 'add_flow_toggle' in request.POST:
+                id=request.POST.get("flowmeter_id")
+            ).delete()
+            messages.success(request, "Flow Meter removed successfully.")
+            return redirect("kegadmin-controllers")
+        elif "add_flow_toggle" in request.POST:
             add_flow_toggle_form = forms.AddFlowToggleForm(request.POST)
             if add_flow_toggle_form.is_valid():
                 add_flow_toggle_form.save()
-                messages.success(request, 'Flow Toggle added successfully.')
-                return redirect('kegadmin-controllers')
-        elif 'edit_flow_toggle' in request.POST:
-            flowtoggle = models.FlowToggle.objects.filter(id=request.POST.get('flowtoggle_id'))
-            flowtoggle.update(port_name=request.POST.get('port_name'))
-            messages.success(request, 'Flow Toggle successfully updated.')
-            return redirect('kegadmin-controllers')
-        elif 'delete_flow_toggle' in request.POST:
+                messages.success(request, "Flow Toggle added successfully.")
+                return redirect("kegadmin-controllers")
+        elif "edit_flow_toggle" in request.POST:
+            flowtoggle = models.FlowToggle.objects.filter(id=request.POST.get("flowtoggle_id"))
+            flowtoggle.update(port_name=request.POST.get("port_name"))
+            messages.success(request, "Flow Toggle successfully updated.")
+            return redirect("kegadmin-controllers")
+        elif "delete_flow_toggle" in request.POST:
             flowmeter = models.FlowToggle.objects.filter(
-                id=request.POST.get('flowtoggle_id')).delete()
-            messages.success(request, 'Flow Toggle removed successfully.')
-            return redirect('kegadmin-controllers')
+                id=request.POST.get("flowtoggle_id")
+            ).delete()
+            messages.success(request, "Flow Toggle removed successfully.")
+            return redirect("kegadmin-controllers")
 
-    context['controller'] = controller
-    context['delete_controller_form'] = delete_controller_form
-    context['add_flow_meter_form'] = add_flow_meter_form
-    context['add_flow_toggle_form'] = add_flow_toggle_form
-    return render(request, 'kegadmin/controller_detail.html', context=context)
+    context["controller"] = controller
+    context["delete_controller_form"] = delete_controller_form
+    context["add_flow_meter_form"] = add_flow_meter_form
+    context["add_flow_toggle_form"] = add_flow_toggle_form
+    return render(request, "kegadmin/controller_detail.html", context=context)
 
 
 @staff_member_required
 def tap_list(request):
     context = {}
-    context['taps'] = models.KegTap.objects.all()
-    return render(request, 'kegadmin/tap_list.html', context=context)
+    context["taps"] = models.KegTap.objects.all()
+    return render(request, "kegadmin/tap_list.html", context=context)
 
 
 @staff_member_required
 def add_tap(request):
     context = {}
     form = forms.TapForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.TapForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Tap created.')
-            return redirect('kegadmin-taps')
-    context['form'] = form
-    return render(request, 'kegadmin/add_tap.html', context=context)
+            messages.success(request, "Tap created.")
+            return redirect("kegadmin-taps")
+    context["form"] = form
+    return render(request, "kegadmin/add_tap.html", context=context)
 
 
 @staff_member_required
 def tap_detail(request, tap_id):
     tap = get_object_or_404(models.KegTap, id=tap_id)
-    available_kegs = models.Keg.objects.filter(status=models.Keg.STATUS_AVAILABLE).order_by('id')
+    available_kegs = models.Keg.objects.filter(status=models.Keg.STATUS_AVAILABLE).order_by("id")
 
     record_drink_form = forms.RecordDrinkForm()
     activate_keg_form = forms.ChangeKegForm()
     tap_settings_form = forms.TapForm(instance=tap)
 
-    if request.method == 'POST':
-        if 'submit_change_keg_form' in request.POST:
+    if request.method == "POST":
+        if "submit_change_keg_form" in request.POST:
             activate_keg_form = forms.ChangeKegForm(request.POST)
             if activate_keg_form.is_valid():
                 activate_keg_form.save(tap)
-                messages.success(request, 'The new keg was activated. Bottoms up!')
-                return redirect('kegadmin-taps')
+                messages.success(request, "The new keg was activated. Bottoms up!")
+                return redirect("kegadmin-taps")
 
-        if 'submit_keg_choice' in request.POST:
-            keg_id = request.POST.get('keg_id')
+        if "submit_keg_choice" in request.POST:
+            keg_id = request.POST.get("keg_id")
             keg = models.Keg.objects.get(id=keg_id)
             d = request.backend.attach_keg(tap, keg)
-            messages.success(request, 'The new keg was activated. Bottoms up!')
-            return redirect('kegadmin-taps')
+            messages.success(request, "The new keg was activated. Bottoms up!")
+            return redirect("kegadmin-taps")
 
-        elif 'submit_tap_form' in request.POST:
+        elif "submit_tap_form" in request.POST:
             tap_settings_form = forms.TapForm(request.POST, instance=tap)
             if tap_settings_form.is_valid():
                 tap_settings_form.save()
-                messages.success(request, 'Tap settings saved.')
+                messages.success(request, "Tap settings saved.")
                 tap_settings_form = forms.TapForm(instance=tap)
 
-        elif 'submit_delete_tap_form' in request.POST:
+        elif "submit_delete_tap_form" in request.POST:
             delete_form = forms.DeleteTapForm(request.POST)
             if delete_form.is_valid():
                 if tap.current_keg:
                     request.backend.end_keg(tap.current_keg)
                 tap.delete()
-                messages.success(request, 'Tap deleted.')
-                return redirect('kegadmin-taps')
+                messages.success(request, "Tap deleted.")
+                return redirect("kegadmin-taps")
 
-        elif 'submit_end_keg_form' in request.POST:
+        elif "submit_end_keg_form" in request.POST:
             end_keg_form = forms.EndKegForm(request.POST)
             if end_keg_form.is_valid():
                 old_keg = request.backend.end_keg(tap.current_keg)
-                messages.success(request, 'Keg %s was ended.' % old_keg.id)
+                messages.success(request, "Keg %s was ended." % old_keg.id)
 
-        elif 'submit_record_drink' in request.POST:
+        elif "submit_record_drink" in request.POST:
             record_drink_form = forms.RecordDrinkForm(request.POST)
             if record_drink_form.is_valid():
-                user = record_drink_form.cleaned_data.get('user')
-                volume_ml = record_drink_form.cleaned_data.get('volume_ml')
-                d = request.backend.record_drink(tap, ticks=0, username=user,
-                                                 volume_ml=volume_ml)
-                messages.success(request, 'Drink %s recorded.' % d.id)
+                user = record_drink_form.cleaned_data.get("user")
+                volume_ml = record_drink_form.cleaned_data.get("volume_ml")
+                d = request.backend.record_drink(tap, ticks=0, username=user, volume_ml=volume_ml)
+                messages.success(request, "Drink %s recorded." % d.id)
             else:
-                messages.error(request, 'Please enter a valid volume and user.')
+                messages.error(request, "Please enter a valid volume and user.")
 
-        elif 'submit_record_spill' in request.POST:
+        elif "submit_record_spill" in request.POST:
             record_drink_form = forms.RecordDrinkForm(request.POST)
             if record_drink_form.is_valid():
-                user = record_drink_form.cleaned_data.get('user')
-                volume_ml = record_drink_form.cleaned_data.get('volume_ml')
-                d = request.backend.record_drink(tap, ticks=0, username=user,
-                                                 volume_ml=volume_ml, spilled=True)
-                messages.success(request, 'Spill recorded.')
+                user = record_drink_form.cleaned_data.get("user")
+                volume_ml = record_drink_form.cleaned_data.get("volume_ml")
+                d = request.backend.record_drink(
+                    tap, ticks=0, username=user, volume_ml=volume_ml, spilled=True
+                )
+                messages.success(request, "Spill recorded.")
             else:
-                messages.error(request, 'Please enter a valid volume.')
+                messages.error(request, "Please enter a valid volume.")
 
         else:
-            messages.warning(request, 'No form data was found. Bug?')
+            messages.warning(request, "No form data was found. Bug?")
 
-    end_keg_form = forms.EndKegForm(initial={'keg': tap.current_keg})
+    end_keg_form = forms.EndKegForm(initial={"keg": tap.current_keg})
 
     context = {}
-    context['tap'] = tap
-    context['current_keg'] = tap.current_keg
-    context['available_kegs'] = available_kegs
-    context['activate_keg_form'] = activate_keg_form
-    context['record_drink_form'] = record_drink_form
-    context['end_keg_form'] = end_keg_form
-    context['tap_settings_form'] = tap_settings_form
-    context['delete_tap_form'] = forms.DeleteTapForm()
-    return render(request, 'kegadmin/tap_detail.html', context=context)
+    context["tap"] = tap
+    context["current_keg"] = tap.current_keg
+    context["available_kegs"] = available_kegs
+    context["activate_keg_form"] = activate_keg_form
+    context["record_drink_form"] = record_drink_form
+    context["end_keg_form"] = end_keg_form
+    context["tap_settings_form"] = tap_settings_form
+    context["delete_tap_form"] = forms.DeleteTapForm()
+    return render(request, "kegadmin/tap_detail.html", context=context)
 
 
 @staff_member_required
 def keg_list(request):
-    qs = models.Keg.objects.all().order_by('-id')
+    qs = models.Keg.objects.all().order_by("-id")
     return keg_list_internal(request, qs)
 
 
 @staff_member_required
 def keg_list_available(request):
-    qs = models.Keg.objects.filter(status=models.Keg.STATUS_AVAILABLE).order_by('-id')
+    qs = models.Keg.objects.filter(status=models.Keg.STATUS_AVAILABLE).order_by("-id")
     return keg_list_internal(request, qs)
 
 
 @staff_member_required
 def keg_list_online(request):
-    qs = models.Keg.objects.filter(status=models.Keg.STATUS_ON_TAP).order_by('-id')
+    qs = models.Keg.objects.filter(status=models.Keg.STATUS_ON_TAP).order_by("-id")
     return keg_list_internal(request, qs)
 
 
 @staff_member_required
 def keg_list_kicked(request):
-    qs = models.Keg.objects.filter(status=models.Keg.STATUS_FINISHED).order_by('-id')
+    qs = models.Keg.objects.filter(status=models.Keg.STATUS_FINISHED).order_by("-id")
     return keg_list_internal(request, qs)
 
 
@@ -489,7 +496,7 @@ def keg_list_internal(request, qs):
     context = {}
     paginator = Paginator(qs, 30)
 
-    page = request.GET.get('page')
+    page = request.GET.get("page")
     try:
         kegs = paginator.page(page)
     except PageNotAnInteger:
@@ -497,8 +504,8 @@ def keg_list_internal(request, qs):
     except EmptyPage:
         kegs = paginator.page(paginator.num_pages)
 
-    context['kegs'] = kegs
-    return render(request, 'kegadmin/keg_list.html', context=context)
+    context["kegs"] = kegs
+    return render(request, "kegadmin/keg_list.html", context=context)
 
 
 @staff_member_required
@@ -507,72 +514,72 @@ def keg_detail(request, keg_id):
 
     edit_form = forms.EditKegForm(instance=keg)
 
-    if request.method == 'POST':
-        if 'submit_edit_keg' in request.POST:
+    if request.method == "POST":
+        if "submit_edit_keg" in request.POST:
             edit_form = forms.EditKegForm(request.POST, instance=keg)
             if edit_form.is_valid():
                 edit_form.save()
-                messages.success(request, 'Keg updated.')
-                return redirect('kegadmin-kegs')
+                messages.success(request, "Keg updated.")
+                return redirect("kegadmin-kegs")
 
-        elif 'submit_delete_keg' in request.POST:
+        elif "submit_delete_keg" in request.POST:
             request.backend.cancel_keg(keg)
-            messages.success(request, 'Keg deleted.')
-            return redirect('kegadmin-kegs')
+            messages.success(request, "Keg deleted.")
+            return redirect("kegadmin-kegs")
 
-        elif 'submit_reactivate' in request.POST:
+        elif "submit_reactivate" in request.POST:
             request.backend.reactivate_keg(keg)
-            messages.success(request, 'Keg reactivated.')
-            return redirect('kegadmin-edit-keg', keg_id=keg.id)
+            messages.success(request, "Keg reactivated.")
+            return redirect("kegadmin-edit-keg", keg_id=keg.id)
 
-        elif 'submit_end' in request.POST:
+        elif "submit_end" in request.POST:
             request.backend.end_keg(keg)
-            messages.success(request, 'Keg ended.')
-            return redirect('kegadmin-edit-keg', keg_id=keg.id)
+            messages.success(request, "Keg ended.")
+            return redirect("kegadmin-edit-keg", keg_id=keg.id)
 
     context = {}
-    context['keg'] = keg
-    context['remaining'] = keg.remaining_volume_ml()
-    context['edit_form'] = edit_form
+    context["keg"] = keg
+    context["remaining"] = keg.remaining_volume_ml()
+    context["edit_form"] = edit_form
 
-    return render(request, 'kegadmin/keg_detail.html', context=context)
+    return render(request, "kegadmin/keg_detail.html", context=context)
 
 
 @staff_member_required
 def keg_add(request):
     add_keg_form = forms.KegForm()
-    if request.method == 'POST':
-        if 'submit_add_keg' in request.POST:
+    if request.method == "POST":
+        if "submit_add_keg" in request.POST:
             add_keg_form = forms.KegForm(request.POST)
             if add_keg_form.is_valid():
                 keg = add_keg_form.save()
-                messages.success(request, 'New keg added.')
-                return redirect('kegadmin-edit-keg', keg_id=keg.id)
+                messages.success(request, "New keg added.")
+                return redirect("kegadmin-edit-keg", keg_id=keg.id)
 
     context = {}
-    context['keg'] = 'new'
-    context['form'] = add_keg_form
-    return render(request, 'kegadmin/keg_add.html', context=context)
+    context["keg"] = "new"
+    context["form"] = add_keg_form
+    return render(request, "kegadmin/keg_add.html", context=context)
 
 
 @staff_member_required
 def user_list(request):
     context = {}
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.FindUserForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
+            username = form.cleaned_data.get("username")
             try:
                 user = models.User.objects.get(username=username)
-                return redirect('kegadmin-edit-user', user.id)
+                return redirect("kegadmin-edit-user", user.id)
             except models.User.DoesNotExist:
                 messages.error(request, 'User "%s" does not exist.' % username)
 
-    users = models.User.objects.exclude(username='guest').order_by('-id')
+    users = models.User.objects.exclude(username="guest").order_by("-id")
     paginator = Paginator(users, 25)
 
-    page = request.GET.get('page')
+    page = request.GET.get("page")
     try:
         users = paginator.page(page)
     except PageNotAnInteger:
@@ -580,24 +587,24 @@ def user_list(request):
     except EmptyPage:
         users = paginator.page(paginator.num_pages)
 
-    context['users'] = users
-    return render(request, 'kegadmin/user_list.html', context=context)
+    context["users"] = users
+    return render(request, "kegadmin/user_list.html", context=context)
 
 
 @staff_member_required
 def add_user(request):
     context = {}
     form = forms.UserForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.UserForm(request.POST)
         if form.is_valid():
             instance = form.save(commit=False)
-            instance.set_password(form.cleaned_data.get('password'))
+            instance.set_password(form.cleaned_data.get("password"))
             instance.save()
             messages.success(request, 'User "%s" created.' % instance.username)
-            return redirect('kegadmin-users')
-    context['form'] = form
-    return render(request, 'kegadmin/add_user.html', context=context)
+            return redirect("kegadmin-users")
+    context["form"] = form
+    return render(request, "kegadmin/add_user.html", context=context)
 
 
 @staff_member_required
@@ -606,64 +613,64 @@ def user_detail(request, user_id):
     context = {}
     profile_form = forms.UserProfileForm(instance=edit_user)
 
-    if request.method == 'POST':
-        if 'submit_enable' in request.POST:
+    if request.method == "POST":
+        if "submit_enable" in request.POST:
             if edit_user.is_active:
-                messages.error(request, 'User is already enabled.')
+                messages.error(request, "User is already enabled.")
             else:
                 edit_user.is_active = True
                 edit_user.save()
-                messages.success(request, 'User %s was enabled.' % edit_user.username)
+                messages.success(request, "User %s was enabled." % edit_user.username)
 
-        elif 'submit_disable' in request.POST:
+        elif "submit_disable" in request.POST:
             if edit_user.is_guest():
-                messages.error(request, 'Cannot disable the guest user.')
+                messages.error(request, "Cannot disable the guest user.")
             elif not edit_user.is_active:
-                messages.error(request, 'User is already disabled.')
+                messages.error(request, "User is already disabled.")
             else:
                 edit_user.is_active = False
                 edit_user.save()
-                messages.success(request, 'User %s was disabled.' % edit_user.username)
+                messages.success(request, "User %s was disabled." % edit_user.username)
 
-        elif 'submit_add_staff' in request.POST:
+        elif "submit_add_staff" in request.POST:
             if edit_user.is_staff:
-                messages.error(request, 'User is already staff.')
+                messages.error(request, "User is already staff.")
             else:
                 edit_user.is_staff = True
                 edit_user.save()
-                messages.success(request, 'User %s staff status enabled.' % edit_user.username)
+                messages.success(request, "User %s staff status enabled." % edit_user.username)
 
-        elif 'submit_remove_staff' in request.POST:
+        elif "submit_remove_staff" in request.POST:
             if edit_user.is_guest():
-                messages.error(request, 'Cannot change staff status on the guest user.')
+                messages.error(request, "Cannot change staff status on the guest user.")
             elif not edit_user.is_staff:
-                messages.error(request, 'User is not currently staff.')
+                messages.error(request, "User is not currently staff.")
             else:
                 edit_user.is_staff = False
                 edit_user.save()
-                messages.success(request, 'User %s staff status disabled.' % edit_user.username)
+                messages.success(request, "User %s staff status disabled." % edit_user.username)
 
-        elif 'submit_update_profile' in request.POST:
+        elif "submit_update_profile" in request.POST:
             profile_form = forms.UserProfileForm(request.POST, request.FILES, instance=edit_user)
             if profile_form.is_valid():
                 profile_form.save()
-                messages.success(request, 'User %s e-profile updated' % edit_user.username)
+                messages.success(request, "User %s e-profile updated" % edit_user.username)
 
         else:
-            messages.error(request, 'Unknown form submitted.')
+            messages.error(request, "Unknown form submitted.")
 
-    context['profile_form'] = profile_form
-    context['edit_user'] = edit_user
-    context['tokens'] = edit_user.tokens.all().order_by('created_time')
+    context["profile_form"] = profile_form
+    context["edit_user"] = edit_user
+    context["tokens"] = edit_user.tokens.all().order_by("created_time")
 
-    return render(request, 'kegadmin/user_detail.html', context=context)
+    return render(request, "kegadmin/user_detail.html", context=context)
 
 
 @staff_member_required
 def drink_list(request):
     delete_drinks_form = forms.DeleteDrinksForm()
 
-    if 'delete_drinks' in request.POST:
+    if "delete_drinks" in request.POST:
         form = forms.DeleteDrinksForm(request.POST)
         if form.is_valid():
             delete_ids = request.POST.getlist("delete_ids[]")
@@ -672,19 +679,26 @@ def drink_list(request):
                 request.backend.cancel_drink(drink)
             delete_ids.reverse()
             if len(delete_ids) == 1:
-                messages.success(request, 'Drink ' + delete_ids[0] + ' has been deleted.')
+                messages.success(request, "Drink " + delete_ids[0] + " has been deleted.")
             elif len(delete_ids) == 2:
-                messages.success(request, 'Drinks ' + ' and '.join(delete_ids) +
-                                 ' have been deleted.')
+                messages.success(
+                    request, "Drinks " + " and ".join(delete_ids) + " have been deleted."
+                )
             else:
-                messages.success(request, 'Drinks ' + ', '.join(delete_ids[:-1]) + ', and ' +
-                                 delete_ids[-1] + ' have been deleted.')
+                messages.success(
+                    request,
+                    "Drinks "
+                    + ", ".join(delete_ids[:-1])
+                    + ", and "
+                    + delete_ids[-1]
+                    + " have been deleted.",
+                )
 
     context = {}
-    drinks = models.Drink.objects.all().order_by('-time')
+    drinks = models.Drink.objects.all().order_by("-time")
     paginator = Paginator(drinks, 25)
 
-    page = request.GET.get('page')
+    page = request.GET.get("page")
     try:
         drinks = paginator.page(page)
     except PageNotAnInteger:
@@ -692,9 +706,9 @@ def drink_list(request):
     except EmptyPage:
         drinks = paginator.page(paginator.num_pages)
 
-    context['drinks'] = drinks
-    context['delete_drinks_form'] = delete_drinks_form
-    return render(request, 'kegadmin/drink_list.html', context=context)
+    context["drinks"] = drinks
+    context["delete_drinks_form"] = delete_drinks_form
+    return render(request, "kegadmin/drink_list.html", context=context)
 
 
 @staff_member_required
@@ -702,65 +716,65 @@ def drink_list(request):
 def drink_edit(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
 
-    if 'submit_cancel' in request.POST:
+    if "submit_cancel" in request.POST:
         form = forms.CancelDrinkForm(request.POST)
         old_keg = drink.keg
         if form.is_valid():
             request.backend.cancel_drink(drink)
-            messages.success(request, 'Drink %s was cancelled.' % drink_id)
+            messages.success(request, "Drink %s was cancelled." % drink_id)
             return redirect(old_keg.get_absolute_url())
         else:
-            messages.error(request, 'Invalid request')
+            messages.error(request, "Invalid request")
             return redirect(drink.get_absolute_url())
 
-    if 'submit_spill' in request.POST:
+    if "submit_spill" in request.POST:
         form = forms.CancelDrinkForm(request.POST)
         old_keg = drink.keg
         if form.is_valid():
             request.backend.cancel_drink(drink, spilled=True)
-            messages.success(request, 'Drink %s was spilled.' % drink_id)
+            messages.success(request, "Drink %s was spilled." % drink_id)
             return redirect(old_keg.get_absolute_url())
         else:
-            messages.error(request, 'Invalid request')
+            messages.error(request, "Invalid request")
             return redirect(drink.get_absolute_url())
 
-    elif 'submit_reassign' in request.POST:
+    elif "submit_reassign" in request.POST:
         form = forms.ReassignDrinkForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username', None)
+            username = form.cleaned_data.get("username", None)
             try:
                 request.backend.assign_drink(drink, username)
-                messages.success(request, 'Drink %s was reassigned.' % drink_id)
+                messages.success(request, "Drink %s was reassigned." % drink_id)
             except models.User.DoesNotExist:
-                messages.error(request, 'No such user')
+                messages.error(request, "No such user")
         else:
-            messages.error(request, 'Invalid request')
+            messages.error(request, "Invalid request")
         return redirect(drink.get_absolute_url())
 
-    elif 'submit_edit_volume' in request.POST:
+    elif "submit_edit_volume" in request.POST:
         form = forms.ChangeDrinkVolumeForm(request.POST)
         if form.is_valid():
-            volume_ml = form.cleaned_data.get('volume_ml')
+            volume_ml = form.cleaned_data.get("volume_ml")
             if volume_ml == drink.volume_ml:
-                messages.warning(request, 'Drink volume unchanged.')
+                messages.warning(request, "Drink volume unchanged.")
             else:
                 request.backend.set_drink_volume(drink, volume_ml)
-                messages.success(request, 'Drink %s was updated.' % drink_id)
+                messages.success(request, "Drink %s was updated." % drink_id)
         else:
-            messages.error(request, 'Please provide a valid volume.')
+            messages.error(request, "Please provide a valid volume.")
         return redirect(drink.get_absolute_url())
 
-    messages.error(request, 'Unknown action.')
+    messages.error(request, "Unknown action.")
     return redirect(drink.get_absolute_url())
 
 
 @staff_member_required
 def token_list(request):
     context = {}
-    tokens = models.AuthenticationToken.objects.all().order_by('-created_time')
+    tokens = models.AuthenticationToken.objects.all().order_by("-created_time")
     paginator = Paginator(tokens, 25)
 
-    page = request.GET.get('page')
+    page = request.GET.get("page")
     try:
         tokens = paginator.page(page)
     except PageNotAnInteger:
@@ -768,8 +782,8 @@ def token_list(request):
     except EmptyPage:
         tokens = paginator.page(paginator.num_pages)
 
-    context['tokens'] = tokens
-    return render(request, 'kegadmin/token_list.html', context=context)
+    context["tokens"] = tokens
+    return render(request, "kegadmin/token_list.html", context=context)
 
 
 @staff_member_required
@@ -778,55 +792,55 @@ def token_detail(request, token_id):
     delete_token_form = forms.DeleteTokenForm()
     context = {}
 
-    username = ''
+    username = ""
     if token.user:
         username = token.user.username
 
-    if request.method == 'POST':
-        if 'delete_token' in request.POST:
+    if request.method == "POST":
+        if "delete_token" in request.POST:
             delete_token_form = forms.DeleteTokenForm(request.POST)
             if delete_token_form.is_valid():
                 token.delete()
-                messages.success(request, 'The token was deleted.')
-                return redirect('kegadmin-tokens')
+                messages.success(request, "The token was deleted.")
+                return redirect("kegadmin-tokens")
         else:
             form = forms.TokenForm(request.POST, instance=token)
             if form.is_valid():
                 instance = form.save(commit=False)
-                instance.user = form.cleaned_data['user']
+                instance.user = form.cleaned_data["user"]
                 instance.save()
-                messages.success(request, 'Token updated.')
+                messages.success(request, "Token updated.")
 
-    form = forms.TokenForm(instance=token, initial={'username': username})
-    context['token'] = token
-    context['delete_token_form'] = delete_token_form
-    context['form'] = form
-    return render(request, 'kegadmin/token_detail.html', context=context)
+    form = forms.TokenForm(instance=token, initial={"username": username})
+    context["token"] = token
+    context["delete_token_form"] = delete_token_form
+    context["form"] = form
+    return render(request, "kegadmin/token_detail.html", context=context)
 
 
 @staff_member_required
 def add_token(request):
     context = {}
     form = forms.AddTokenForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.AddTokenForm(request.POST)
         if form.is_valid():
             instance = form.save(commit=False)
-            instance.user = form.cleaned_data['user']
+            instance.user = form.cleaned_data["user"]
             instance.save()
-            messages.success(request, 'Token created.')
-            return redirect('kegadmin-tokens')
-    context['form'] = form
-    return render(request, 'kegadmin/add_token.html', context=context)
+            messages.success(request, "Token created.")
+            return redirect("kegadmin-tokens")
+    context["form"] = form
+    return render(request, "kegadmin/add_token.html", context=context)
 
 
 @staff_member_required
 def beverages_list(request):
     context = {}
-    beers = models.Beverage.objects.all().order_by('name')
+    beers = models.Beverage.objects.all().order_by("name")
     paginator = Paginator(beers, 25)
 
-    page = request.GET.get('page')
+    page = request.GET.get("page")
     try:
         beers = paginator.page(page)
     except PageNotAnInteger:
@@ -834,8 +848,8 @@ def beverages_list(request):
     except EmptyPage:
         beers = paginator.page(paginator.num_pages)
 
-    context['beverages'] = beers
-    return render(request, 'kegadmin/beer_type_list.html', context=context)
+    context["beverages"] = beers
+    return render(request, "kegadmin/beer_type_list.html", context=context)
 
 
 @staff_member_required
@@ -843,11 +857,11 @@ def beverage_detail(request, beer_id):
     btype = get_object_or_404(models.Beverage, id=beer_id)
 
     form = forms.BeverageForm(instance=btype)
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.BeverageForm(request.POST, instance=btype)
         if form.is_valid():
             btype = form.save()
-            new_image = request.FILES.get('new_image')
+            new_image = request.FILES.get("new_image")
             if new_image:
                 pic = models.Picture.objects.create()
                 pic.image.save(new_image.name, new_image)
@@ -855,26 +869,26 @@ def beverage_detail(request, beer_id):
                 btype.picture = pic
                 btype.save()
 
-            messages.success(request, 'Beer type updated.')
-            return redirect('kegadmin-beverages')
+            messages.success(request, "Beer type updated.")
+            return redirect("kegadmin-beverages")
         else:
-            messages.error(request, 'Please correct the error(s) below.')
+            messages.error(request, "Please correct the error(s) below.")
 
     context = {}
-    context['beer_type'] = btype
-    context['form'] = form
-    return render(request, 'kegadmin/beer_type_detail.html', context=context)
+    context["beer_type"] = btype
+    context["form"] = form
+    return render(request, "kegadmin/beer_type_detail.html", context=context)
 
 
 @staff_member_required
 def beverage_add(request):
 
     form = forms.BeverageForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.BeverageForm(request.POST)
         if form.is_valid():
             btype = form.save()
-            new_image = request.FILES.get('new_image')
+            new_image = request.FILES.get("new_image")
             if new_image:
                 pic = models.Picture.objects.create()
                 pic.image.save(new_image.name, new_image)
@@ -882,22 +896,22 @@ def beverage_add(request):
                 btype.picture = pic
                 btype.save()
 
-            messages.success(request, 'Beer type added.')
-            return redirect('kegadmin-beverages')
+            messages.success(request, "Beer type added.")
+            return redirect("kegadmin-beverages")
 
     context = {}
-    context['beer_type'] = 'new'
-    context['form'] = form
-    return render(request, 'kegadmin/beer_type_add.html', context=context)
+    context["beer_type"] = "new"
+    context["form"] = form
+    return render(request, "kegadmin/beer_type_add.html", context=context)
 
 
 @staff_member_required
 def beverage_producer_list(request):
     context = {}
-    brewers = models.BeverageProducer.objects.all().order_by('name')
+    brewers = models.BeverageProducer.objects.all().order_by("name")
     paginator = Paginator(brewers, 25)
 
-    page = request.GET.get('page')
+    page = request.GET.get("page")
     try:
         brewers = paginator.page(page)
     except PageNotAnInteger:
@@ -905,8 +919,8 @@ def beverage_producer_list(request):
     except EmptyPage:
         brewers = paginator.page(paginator.num_pages)
 
-    context['brewers'] = brewers
-    return render(request, 'kegadmin/brewer_list.html', context=context)
+    context["brewers"] = brewers
+    return render(request, "kegadmin/brewer_list.html", context=context)
 
 
 @staff_member_required
@@ -914,27 +928,27 @@ def beverage_producer_detail(request, brewer_id):
     brewer = get_object_or_404(models.BeverageProducer, id=brewer_id)
 
     form = forms.BeverageProducerForm(instance=brewer)
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.BeverageProducerForm(request.POST, instance=brewer)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Brewer updated.')
-            return redirect('kegadmin-beverage-producers')
+            messages.success(request, "Brewer updated.")
+            return redirect("kegadmin-beverage-producers")
 
     context = {}
-    context['brewer'] = brewer
-    context['form'] = form
-    return render(request, 'kegadmin/brewer_detail.html', context=context)
+    context["brewer"] = brewer
+    context["form"] = form
+    return render(request, "kegadmin/brewer_detail.html", context=context)
 
 
 @staff_member_required
 def beverage_producer_add(request):
     form = forms.BeverageProducerForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.BeverageProducerForm(request.POST)
         if form.is_valid():
             btype = form.save()
-            new_image = request.FILES.get('new_image')
+            new_image = request.FILES.get("new_image")
             if new_image:
                 pic = models.Picture.objects.create()
                 pic.image.save(new_image.name, new_image)
@@ -942,79 +956,93 @@ def beverage_producer_add(request):
                 btype.picture = pic
                 btype.save()
 
-            messages.success(request, 'Brewer added.')
-            return redirect('kegadmin-beverage-producers')
+            messages.success(request, "Brewer added.")
+            return redirect("kegadmin-beverage-producers")
 
     context = {}
-    context['brewer'] = 'new'
-    context['form'] = form
-    return render(request, 'kegadmin/brewer_add.html', context=context)
+    context["brewer"] = "new"
+    context["form"] = form
+    return render(request, "kegadmin/brewer_add.html", context=context)
 
 
 @staff_member_required
 def autocomplete_beverage(request):
-    search = request.GET.get('q')
+    search = request.GET.get("q")
     if search:
         beverages = models.Beverage.objects.filter(
-            Q(name__icontains=search) | Q(producer__name__icontains=search))
+            Q(name__icontains=search) | Q(producer__name__icontains=search)
+        )
     else:
         beverages = models.Beverage.objects.all()
     beverages = beverages[:10]  # autocomplete widget limited to 10
     values = []
     for beverage in beverages:
-        values.append({
-            'name': beverage.name,
-            'id': beverage.id,
-            'producer_name': beverage.producer.name,
-            'producer_id': beverage.producer.id,
-            'style': beverage.style,
-        })
-    return HttpResponse(kbjson.dumps(values, indent=None),
-                        content_type='application/json', status=200)
+        values.append(
+            {
+                "name": beverage.name,
+                "id": beverage.id,
+                "producer_name": beverage.producer.name,
+                "producer_id": beverage.producer.id,
+                "style": beverage.style,
+            }
+        )
+    return HttpResponse(
+        kbjson.dumps(values, indent=None), content_type="application/json", status=200
+    )
 
 
 @staff_member_required
 def autocomplete_user(request):
-    search = request.GET.get('q')
+    search = request.GET.get("q")
     if search:
-        users = models.User.objects.filter(Q(username__icontains=search) | Q(
-            email__icontains=search) | Q(display_name__icontains=search))
+        users = models.User.objects.filter(
+            Q(username__icontains=search)
+            | Q(email__icontains=search)
+            | Q(display_name__icontains=search)
+        )
     else:
         users = models.User.objects.all()
     users = users[:10]  # autocomplete widget limited to 10
     values = []
     for user in users:
-        values.append({
-            'username': user.username,
-            'id': user.id,
-            'email': user.email,
-            'display_name': user.get_full_name(),
-            'is_active': user.is_active,
-        })
-    return HttpResponse(kbjson.dumps(values, indent=None),
-                        content_type='application/json', status=200)
+        values.append(
+            {
+                "username": user.username,
+                "id": user.id,
+                "email": user.email,
+                "display_name": user.get_full_name(),
+                "is_active": user.is_active,
+            }
+        )
+    return HttpResponse(
+        kbjson.dumps(values, indent=None), content_type="application/json", status=200
+    )
 
 
 @staff_member_required
 def autocomplete_token(request):
-    search = request.GET.get('q')
+    search = request.GET.get("q")
     if search:
         tokens = models.AuthenticationToken.objects.filter(
-            Q(token_value__icontains=search) | Q(nice_name__icontains=search))
+            Q(token_value__icontains=search) | Q(nice_name__icontains=search)
+        )
     else:
         tokens = models.AuthenticationToken.objects.all()
     tokens = tokens[:10]  # autocomplete widget limited to 10
     values = []
     for token in tokens:
-        values.append({
-            'username': token.user.username,
-            'id': token.id,
-            'auth_device': token.auth_device,
-            'token_value': token.token_value,
-            'enabled': token.enabled,
-        })
-    return HttpResponse(kbjson.dumps(values, indent=None),
-                        content_type='application/json', status=200)
+        values.append(
+            {
+                "username": token.user.username,
+                "id": token.id,
+                "auth_device": token.auth_device,
+                "token_value": token.token_value,
+                "enabled": token.enabled,
+            }
+        )
+    return HttpResponse(
+        kbjson.dumps(values, indent=None), content_type="application/json", status=200
+    )
 
 
 @staff_member_required
@@ -1025,7 +1053,7 @@ def plugin_settings(request, plugin_name):
 
     view = plugin.get_admin_settings_view()
     if not view:
-        raise Http404('No settings for this plugin')
+        raise Http404("No settings for this plugin")
 
     return view(request, plugin)
 
@@ -1042,24 +1070,24 @@ def logs(request):
             logs.reverse()
             break
 
-    context['logs'] = logs
-    return render(request, 'kegadmin/logs.html', context=context)
+    context["logs"] = logs
+    return render(request, "kegadmin/logs.html", context=context)
 
 
 @staff_member_required
 def link_device(request):
     context = {}
     form = forms.LinkDeviceForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.LinkDeviceForm(request.POST)
         if form.is_valid():
-            code = form.cleaned_data.get('code')
+            code = form.cleaned_data.get("code")
             try:
                 status = devicelink.confirm_link(code)
-                name = status.get('name', 'New device')
-                messages.success(request, '{} linked!'.format(name))
+                name = status.get("name", "New device")
+                messages.success(request, "{} linked!".format(name))
             except devicelink.LinkExpiredException:
-                messages.error(request, 'Code incorrect or expired.')
-            return redirect('kegadmin-link-device')
-    context['form'] = form
-    return render(request, 'kegadmin/link_device.html', context=context)
+                messages.error(request, "Code incorrect or expired.")
+            return redirect("kegadmin-link-device")
+    context["form"] = form
+    return render(request, "kegadmin/link_device.html", context=context)

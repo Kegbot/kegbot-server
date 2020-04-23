@@ -1,0 +1,9 @@
+[tool.black]
+line-length = 100
+target_version = ['py38']
+include = 'pykeg/.*\.pyi?$'
+exclude = '''
+(
+  .*/migrations/.*
+)
+'''

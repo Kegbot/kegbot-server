@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 # Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
@@ -26,7 +27,7 @@ from pykeg.core.management.commands.common import progbar
 
 
 class Command(BaseCommand):
-    help = u'Regenerate all cached stats.'
+    help = "Regenerate all cached stats."
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -35,10 +36,10 @@ class Command(BaseCommand):
 
         def cb(results, self=self):
             self.pos += 1
-            progbar('regenerating stats', self.pos, num_drinks)
+            progbar("regenerating stats", self.pos, num_drinks)
 
         stats.invalidate_all()
         stats.rebuild_from_id(0, cb=cb)
 
-        print('')
-        print('done!')
+        print("")
+        print("done!")

@@ -1,4 +1,5 @@
 from future import standard_library
+
 standard_library.install_aliases()
 from django.conf import settings
 
@@ -10,43 +11,40 @@ from pykeg.web.kegweb.forms import LoginForm
 
 
 def kbsite(request):
-    kbsite = getattr(request, 'kbsite', None)
+    kbsite = getattr(request, "kbsite", None)
 
-    redir = urllib.parse.urlencode({'redir': request.build_absolute_uri(request.path)})
+    redir = urllib.parse.urlencode({"redir": request.build_absolute_uri(request.path)})
 
-    sso_login_url = getattr(settings, 'SSO_LOGIN_URL', '')
+    sso_login_url = getattr(settings, "SSO_LOGIN_URL", "")
     if sso_login_url:
-        sso_login_url = '{}?{}'.format(sso_login_url, redir)
+        sso_login_url = "{}?{}".format(sso_login_url, redir)
 
-    sso_logout_url = getattr(settings, 'SSO_LOGOUT_URL', '')
+    sso_logout_url = getattr(settings, "SSO_LOGOUT_URL", "")
     if sso_logout_url:
-        sso_logout_url = '{}?{}'.format(sso_logout_url, redir)
+        sso_logout_url = "{}?{}".format(sso_logout_url, redir)
 
     ret = {
-        'DEBUG': settings.DEBUG,
-        'VERSION': util.get_version(),
-        'HAVE_SESSIONS': False,
-        'KEGBOT_ENABLE_ADMIN': settings.KEGBOT_ENABLE_ADMIN,
-        'ENABLE_SENSING': kbsite.enable_sensing if kbsite else True,
-        'ENABLE_USERS': kbsite.enable_users if kbsite else True,
-        'GOOGLE_ANALYTICS_ID': None,
-        'SSO_LOGIN_URL': sso_login_url,
-        'SSO_LOGOUT_URL': sso_logout_url,
-        'CAN_INVITE': kbsite.can_invite(request.user) if kbsite else False,
-        'kbsite': kbsite,
-        'request_path': request.path,
-        'login_form': LoginForm(initial={'next_page': request.path}),
-        'guest_info': {
-            'name': 'guest',
-            'image': None,
-        },
-        'PLUGINS': getattr(request, 'plugins', {}),
+        "DEBUG": settings.DEBUG,
+        "VERSION": util.get_version(),
+        "HAVE_SESSIONS": False,
+        "KEGBOT_ENABLE_ADMIN": settings.KEGBOT_ENABLE_ADMIN,
+        "ENABLE_SENSING": kbsite.enable_sensing if kbsite else True,
+        "ENABLE_USERS": kbsite.enable_users if kbsite else True,
+        "GOOGLE_ANALYTICS_ID": None,
+        "SSO_LOGIN_URL": sso_login_url,
+        "SSO_LOGOUT_URL": sso_logout_url,
+        "CAN_INVITE": kbsite.can_invite(request.user) if kbsite else False,
+        "kbsite": kbsite,
+        "request_path": request.path,
+        "login_form": LoginForm(initial={"next_page": request.path}),
+        "guest_info": {"name": "guest", "image": None,},
+        "PLUGINS": getattr(request, "plugins", {}),
     }
 
     if kbsite:
-        ret['HAVE_SESSIONS'] = models.DrinkingSession.objects.all().count() > 0
-        ret['GOOGLE_ANALYTICS_ID'] = kbsite.google_analytics_id
-        ret['metric_volumes'] = (kbsite.volume_display_units == 'metric')
-        ret['temperature_display_units'] = kbsite.temperature_display_units
+        ret["HAVE_SESSIONS"] = models.DrinkingSession.objects.all().count() > 0
+        ret["GOOGLE_ANALYTICS_ID"] = kbsite.google_analytics_id
+        ret["metric_volumes"] = kbsite.volume_display_units == "metric"
+        ret["temperature_display_units"] = kbsite.temperature_display_units
 
     return ret

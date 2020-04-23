@@ -28,15 +28,14 @@ def admin_settings(request, plugin):
     context = {}
     settings_form = plugin.get_site_settings_form()
 
-    if request.method == 'POST':
-        if 'submit-settings' in request.POST:
+    if request.method == "POST":
+        if "submit-settings" in request.POST:
             settings_form = forms.SiteSettingsForm(request.POST)
             if settings_form.is_valid():
                 plugin.save_site_settings_form(settings_form)
-                messages.success(request, 'Settings updated')
+                messages.success(request, "Settings updated")
 
-    context['plugin'] = plugin
-    context['settings_form'] = settings_form
+    context["plugin"] = plugin
+    context["settings_form"] = settings_form
 
-    return render(request, 'contrib/webhook/webhook_admin_settings.html',
-                  context=context)
+    return render(request, "contrib/webhook/webhook_admin_settings.html", context=context)

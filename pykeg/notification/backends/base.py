@@ -20,8 +20,11 @@
 
 
 from builtins import object
+
+
 class BaseNotificationBackend(object):
     """Base class for notification backend implementations."""
+
     def name(self):
         raise NotImplementedError
 
@@ -35,4 +38,4 @@ class BaseNotificationBackend(object):
         Returns:
             True on success, False otherwise.
         """
-        raise NotImplementedError('Subclasses must override notify() method')
+        raise NotImplementedError("Subclasses must override notify() method")

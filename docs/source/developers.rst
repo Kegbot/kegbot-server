@@ -34,6 +34,14 @@ We use `pytest` to run tests. Run all tests this way::
   $ pytest
 
 
+Code format
+-----------
+
+We use `black` to format all code. Run it this way::
+
+  $ black pykeg/
+
+
 Building docs
 -------------
 

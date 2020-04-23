@@ -26,7 +26,7 @@ import time
 """Kegbot system cache."""
 
 # Separator
-SEP = ':'
+SEP = ":"
 
 
 class KegbotCache(object):
@@ -38,9 +38,13 @@ class KegbotCache(object):
     changed).
     """
 
-    def __init__(self, prefix=None, cache=django_cache,
-                 generation_fn=lambda: int(time.time()),
-                 generation_key_name='drink_generation'):
+    def __init__(
+        self,
+        prefix=None,
+        cache=django_cache,
+        generation_fn=lambda: int(time.time()),
+        generation_key_name="drink_generation",
+    ):
         """Constructor.
 
         Args:
@@ -53,7 +57,7 @@ class KegbotCache(object):
             generation_key_name: the key name for the "generation", aka
                 the namespace.
         """
-        global_prefix = getattr(settings, 'KEGBOT_CACHE_PREFIX', 'kb')
+        global_prefix = getattr(settings, "KEGBOT_CACHE_PREFIX", "kb")
         if not prefix:
             self.prefix = global_prefix
         else:
@@ -101,7 +105,7 @@ class KegbotCache(object):
                 # Lost the race.
                 generation = self.cache.get(self.generation_key)
         if generation is None:
-            raise ValueError('Cache backend returned None')
+            raise ValueError("Cache backend returned None")
         return generation
 
     def update_generation(self):

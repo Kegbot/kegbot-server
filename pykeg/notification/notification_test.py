@@ -33,7 +33,7 @@ from pykeg.notification.backends.base import BaseNotificationBackend
 class TestBackendA(BaseNotificationBackend):
     @classmethod
     def name(cls):
-        return 'pykeg.notification.test.TestBackendA'
+        return "pykeg.notification.test.TestBackendA"
 
     def notify(self, event, user):
         pass
@@ -42,7 +42,7 @@ class TestBackendA(BaseNotificationBackend):
 class TestBackendB(BaseNotificationBackend):
     @classmethod
     def name(cls):
-        return 'pykeg.notification.test.TestBackendB'
+        return "pykeg.notification.test.TestBackendB"
 
     def notify(self, event, user):
         pass
@@ -51,17 +51,19 @@ class TestBackendB(BaseNotificationBackend):
 class StandaloneNotificationTestCase(TestCase):
     """Standalone notification tests, no other components involved."""
 
-    @override_settings(NOTIFICATION_BACKENDS=[
-        'pykeg.notification.notification_test.TestBackendA',
-        'pykeg.notification.notification_test.TestBackendB',
-    ])
+    @override_settings(
+        NOTIFICATION_BACKENDS=[
+            "pykeg.notification.notification_test.TestBackendA",
+            "pykeg.notification.notification_test.TestBackendB",
+        ]
+    )
     def test_get_backends(self):
         backends = notification.get_backends()
         self.assertEqual(2, len(backends))
-        self.assertIsInstance(backends[0], TestBackendA, 'Expected TestBackendA obj')
-        self.assertIsInstance(backends[1], TestBackendB, 'Expected TestBackendB obj')
+        self.assertIsInstance(backends[0], TestBackendA, "Expected TestBackendA obj")
+        self.assertIsInstance(backends[1], TestBackendB, "Expected TestBackendB obj")
 
-    @override_settings(NOTIFICATION_BACKENDS=['pykeg.bougus.NoBackend'])
+    @override_settings(NOTIFICATION_BACKENDS=["pykeg.bougus.NoBackend"])
     def test_improperly_configured(self):
         self.assertRaises(ImproperlyConfigured, notification.get_backends)
 
@@ -71,19 +73,20 @@ class NotificationTestCase(TestCase):
         self.backend = get_kegbot_backend()
         defaults.set_defaults(set_is_setup=True)
 
-        self.user = models.User.objects.create(username='notification_user',
-                                               email='test@example')
+        self.user = models.User.objects.create(username="notification_user", email="test@example")
 
-    @override_settings(NOTIFICATION_BACKENDS=[
-                       'pykeg.notification.notification_test.CaptureBackend'])
+    @override_settings(
+        NOTIFICATION_BACKENDS=["pykeg.notification.notification_test.CaptureBackend"]
+    )
     def test_notifications(self):
         class CaptureBackend(BaseNotificationBackend):
             """Notification backend which captures calls."""
+
             captured = []
 
             @classmethod
             def name(cls):
-                return 'CaptureBackend'
+                return "CaptureBackend"
 
             def notify(self, event, user):
                 self.captured.append((event, user))
@@ -100,7 +103,8 @@ class NotificationTestCase(TestCase):
             keg_tapped=False,
             session_started=False,
             keg_volume_low=False,
-            keg_ended=False)
+            keg_ended=False,
+        )
 
         event = SystemEvent(kind=SystemEvent.KEG_TAPPED)
         notification.handle_single_event(event, backends)

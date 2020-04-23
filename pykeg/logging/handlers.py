@@ -38,17 +38,17 @@ class RedisFormatter(logging.Formatter):
 
         Convert date to iso format, and stringify any exceptions.
         """
-        if not hasattr(record, '_raw'):
+        if not hasattr(record, "_raw"):
             return None
 
         data = record._raw.copy()
 
         # serialize the datetime date as utc string
-        data['time'] = data['time'].isoformat()
+        data["time"] = data["time"].isoformat()
 
         # stringify exception data
-        if data.get('traceback'):
-            data['traceback'] = self.formatException(data['traceback'])
+        if data.get("traceback"):
+            data["traceback"] = self.formatException(data["traceback"])
 
         return json.dumps(data)
 
@@ -62,7 +62,7 @@ class RedisHandler(logging.Handler):
     """
 
     @classmethod
-    def to(cls, channel, url='redis://localhost:6379/0', level=logging.NOTSET):
+    def to(cls, channel, url="redis://localhost:6379/0", level=logging.NOTSET):
         return cls(channel, redis.from_url(url), level=level)
 
     def __init__(self, channel, redis_client, level=logging.NOTSET):
@@ -95,12 +95,18 @@ class RedisListHandler(logging.Handler):
     """
 
     @classmethod
-    def to(cls, key, max_messages=None, url='redis://localhost:6379', level=logging.NOTSET):
+    def to(cls, key, max_messages=None, url="redis://localhost:6379", level=logging.NOTSET):
         return cls(key, max_messages, redis.from_url(url), level=level)
 
-    def __init__(self, key, max_messages, redis_client=None,
-                 url='redis://localhost:6379', redis_db=0,
-                 level=logging.NOTSET):
+    def __init__(
+        self,
+        key,
+        max_messages,
+        redis_client=None,
+        url="redis://localhost:6379",
+        redis_db=0,
+        level=logging.NOTSET,
+    ):
         """
         Create a new logger for the given key and redis_client.
         """

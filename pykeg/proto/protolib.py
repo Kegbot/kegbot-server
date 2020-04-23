@@ -40,6 +40,7 @@ def converts(kind):
         global _CONVERSION_MAP
         _CONVERSION_MAP[kind] = f
         return f
+
     return decorate
 
 
@@ -52,20 +53,21 @@ def ToProto(obj, full=False):
     if obj is None:
         return None
     kind = obj.__class__
-    if hasattr(obj, '__iter__'):
+    if hasattr(obj, "__iter__"):
         return [ToProto(item, full) for item in obj]
     elif kind in _CONVERSION_MAP:
         return _CONVERSION_MAP[kind](obj, full)
     else:
-        raise ValueError('Unknown object type: %s' % kind)
+        raise ValueError("Unknown object type: %s" % kind)
 
 
 def ToDict(obj, full=False):
     res = ToProto(obj, full)
-    if hasattr(res, '__iter__'):
+    if hasattr(res, "__iter__"):
         return [Dict(protoutil.ProtoMessageToDict(m)) for m in res]
     else:
         return Dict(protoutil.ProtoMessageToDict(res))
+
 
 # Model conversions
 
@@ -126,7 +128,7 @@ def BeverageToBeerType(beverage, full=False):
     ret.id = str(beverage.id)
     ret.name = beverage.name
     ret.brewer_id = str(beverage.producer_id)
-    ret.style_id = '0'
+    ret.style_id = "0"
     abv = beverage.abv_percent or 0.0
     ret.abv = max(min(abv, 100.0), 0.0)
     if beverage.specific_gravity is not None:
@@ -150,7 +152,7 @@ def ProducerToBrewer(producer, full=False):
     if producer.origin_city is not None:
         ret.origin_city = producer.origin_city
     if producer.production is not None:
-        ret.production = 'commercial'
+        ret.production = "commercial"
     if producer.url is not None:
         ret.url = producer.url
     if producer.description is not None:
@@ -175,8 +177,7 @@ def BeverageToProto(beverage, full=False):
 
     if beverage.picture:
         # Use PNG for beverages.
-        ret.picture.MergeFrom(
-            PictureToProto(beverage.picture, full=full, use_png=True))
+        ret.picture.MergeFrom(PictureToProto(beverage.picture, full=full, use_png=True))
 
     if beverage.vintage_year:
         ret.vintage_year = beverage.vintage_year.year
@@ -351,7 +352,7 @@ def KegTapToProto(tap, full=False):
         ret.meter.MergeFrom(ToProto(meter))
     else:
         # TODO(mikey): Remove compatibility.
-        ret.meter_name = 'unknown.%s' % tap.id
+        ret.meter_name = "unknown.%s" % tap.id
         ret.ml_per_tick = 0
 
     toggle = tap.current_toggle()
@@ -359,7 +360,7 @@ def KegTapToProto(tap, full=False):
         ret.relay_name = toggle.toggle_name()
         ret.toggle.MergeFrom(ToProto(toggle))
     else:
-        ret.relay_name = ''
+        ret.relay_name = ""
 
     if tap.current_keg:
         ret.current_keg_id = tap.current_keg_id
@@ -383,7 +384,7 @@ def SessionToProto(record, full=False):
     ret.start_time = datestr(record.start_time)
     ret.end_time = datestr(record.end_time)
     ret.volume_ml = record.volume_ml
-    ret.name = record.name or ''
+    ret.name = record.name or ""
 
     if full:
         # ret.stats.MergeFrom(record.get_stats())
@@ -464,9 +465,9 @@ def SystemEventToProto(record, full=False):
             ret.user.MergeFrom(ToProto(record.user, full=True))
 
     image = None
-    if record.kind in ('drink_poured', 'session_started', 'session_joined') and record.user:
+    if record.kind in ("drink_poured", "session_started", "session_joined") and record.user:
         image = record.user.mugshot
-    elif record.kind in ('keg_tapped', 'keg_ended'):
+    elif record.kind in ("keg_tapped", "keg_ended"):
         if record.keg.type and record.keg.type.picture:
             image = record.keg.type.picture
     if image:
@@ -474,12 +475,24 @@ def SystemEventToProto(record, full=False):
 
     return ret
 
+
 # Composite messages
 
 
-def GetSyncResponse(active_kegs=[], active_session=[], active_users=[],
-                    controllers=[], drinks=[], events=[], meters=[], site_title='',
-                    server_version='', sound_events=[], taps=[], toggles=[]):
+def GetSyncResponse(
+    active_kegs=[],
+    active_session=[],
+    active_users=[],
+    controllers=[],
+    drinks=[],
+    events=[],
+    meters=[],
+    site_title="",
+    server_version="",
+    sound_events=[],
+    taps=[],
+    toggles=[],
+):
     ret = api_pb2.SyncResponse()
     if active_session:
         ret.active_session.MergeFrom(ToProto(active_session))

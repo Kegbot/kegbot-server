@@ -30,17 +30,17 @@ LOGGER = logging.getLogger(__name__)
 # These paths are allowed without authorization, regardless of
 # site privacy settings.
 WHITELISTED_API_PATHS = (
-    '/api/devices/link',
-    '/api/v1/devices/link',
-    '/api/login',
-    '/api/v1/login',
-    '/api/version',
-    '/api/v1/version',
-    '/api/get-api-key',
-    '/api/v1/get-api-key',
+    "/api/devices/link",
+    "/api/v1/devices/link",
+    "/api/login",
+    "/api/v1/login",
+    "/api/version",
+    "/api/v1/version",
+    "/api/get-api-key",
+    "/api/v1/get-api-key",
 )
 
-WHITELISTED_API_PATHS += getattr(settings, 'KEGBOT_EXTRA_WHITELISTED_API_PATHS', ())
+WHITELISTED_API_PATHS += getattr(settings, "KEGBOT_EXTRA_WHITELISTED_API_PATHS", ())
 
 
 class ApiRequestMiddleware(object):
@@ -53,9 +53,7 @@ class ApiRequestMiddleware(object):
         if util.is_api_request(request):
             if not isinstance(response, HttpResponse):
                 data = util.prepare_data(response)
-                data['meta'] = {
-                    'result': 'ok'
-                }
+                data["meta"] = {"result": "ok"}
                 response = util.build_response(request, data, 200)
 
             add_never_cache_headers(response)
@@ -70,9 +68,9 @@ class ApiRequestMiddleware(object):
 
         try:
             if request.need_setup:
-                raise ValueError('Setup required')
+                raise ValueError("Setup required")
             elif request.need_upgrade:
-                raise ValueError('Upgrade required')
+                raise ValueError("Upgrade required")
 
             need_auth = util.needs_auth(view_func)
             privacy = request.kbsite.privacy
@@ -82,9 +80,9 @@ class ApiRequestMiddleware(object):
             else:
                 # API request to non-whitelisted path, in non-public site privacy mode.
                 # Demand API key.
-                if privacy == 'members' and not request.user.is_authenticated:
+                if privacy == "members" and not request.user.is_authenticated:
                     need_auth = True
-                elif privacy == 'staff' and not request.user.is_staff:
+                elif privacy == "staff" and not request.user.is_staff:
                     need_auth = True
 
             if need_auth:
@@ -103,4 +101,4 @@ class ApiRequestMiddleware(object):
 
 
 def cache_key(request):
-    return 'api:%s' % request.get_full_path()
+    return "api:%s" % request.get_full_path()

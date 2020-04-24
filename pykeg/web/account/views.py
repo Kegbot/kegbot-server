@@ -141,7 +141,7 @@ def notifications(request):
 def confirm_email(request, token):
     try:
         uid, new_address = email.verify_email_change_token(request.user, token)
-        if uid != request.user.uid:
+        if uid != request.user.id:
             messages.error(request, "E-mail confirmation does not exist for this account.")
         elif request.user.email != new_address:
             request.user.email = new_address

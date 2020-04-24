@@ -34,6 +34,15 @@ These values can be set in the shell environment of the server program.
 
   The "From:" address to use in emails from the system. No default.
 
+.. data:: KEGBOT_EMAIL_URL
+
+  SMTP configuration URL. Should be a value in the form
+  ``smtp://USER:PASSWORD@HOST:PORT`` or ``submission://USER:PASSWORD@HOST:PORT``.
+  Make sure to URL encode any special characters in USER and PASSWORD.
+
+  **Gmail Example:** ``submission://kegbot%40kegbot.org:secretpassword@smtp.gmail.com``
+  **Local Relay Example:** ``smtp:``
+
 .. data:: KEGBOT_REDIS_URL
 
   URL to the Kegbot Redis instance, in the format ``redis://:PASSWORD@HOST:PORT/DATABASE``. ``PASSWORD`` and ``PORT`` are optional.

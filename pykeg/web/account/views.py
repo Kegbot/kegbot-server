@@ -119,8 +119,9 @@ def notifications(request):
                         "account-confirm-email", args=(), kwargs={"token": token}
                     )
 
+                    email_context = {"url": url, "site_name": request.kbsite.title}
                     message = email.build_message(
-                        new_email, "registration/email_confirm_email_change.html", {"url": url}
+                        new_email, "registration/email_confirm_email_change.html", email_context
                     )
                     message.send()
                     messages.success(

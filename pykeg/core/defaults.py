@@ -18,8 +18,8 @@
 
 from . import models
 
-METER_NAME_0 = 'kegboard.flow0'
-METER_NAME_1 = 'kegboard.flow1'
+METER_NAME_0 = "kegboard.flow0"
+METER_NAME_1 = "kegboard.flow1"
 
 
 def db_is_installed():
@@ -40,23 +40,19 @@ def set_defaults(force=False, set_is_setup=False, create_controller=False):
         site.is_setup = True
         site.save()
 
-    models.User.objects.create_user('guest')
+    models.User.objects.create_user("guest")
 
-    tap_0 = models.KegTap.objects.create(name='Main Tap')
+    tap_0 = models.KegTap.objects.create(name="Main Tap")
 
     # Prior to 0.9.23, controller objects were created automatically.
     # This behavior is available for unittests which request it.
     if create_controller:
-        tap_1 = models.KegTap.objects.create(name='Second Tap')
-        controller = models.Controller.objects.create(name='kegboard')
+        tap_1 = models.KegTap.objects.create(name="Second Tap")
+        controller = models.Controller.objects.create(name="kegboard")
 
-        models.FlowMeter.objects.create(controller=controller, port_name='flow0',
-                                        tap=tap_0)
-        models.FlowMeter.objects.create(controller=controller, port_name='flow1',
-                                        tap=tap_1)
-        models.FlowToggle.objects.create(controller=controller, port_name='relay0',
-                                         tap=tap_0)
-        models.FlowToggle.objects.create(controller=controller, port_name='relay1',
-                                         tap=tap_1)
+        models.FlowMeter.objects.create(controller=controller, port_name="flow0", tap=tap_0)
+        models.FlowMeter.objects.create(controller=controller, port_name="flow1", tap=tap_1)
+        models.FlowToggle.objects.create(controller=controller, port_name="relay0", tap=tap_0)
+        models.FlowToggle.objects.create(controller=controller, port_name="relay1", tap=tap_1)
 
     return site

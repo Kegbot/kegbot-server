@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 # Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
@@ -24,12 +25,12 @@ from pykeg.core import models
 
 
 class Command(BaseCommand):
-    args = '<description>'
-    help = 'Creates an API key with the given description.'
+    args = "<description>"
+    help = "Creates an API key with the given description."
 
     def handle(self, *args, **options):
         if len(args) < 1:
-            raise CommandError('Must specify description')
+            raise CommandError("Must specify description")
 
         key = models.ApiKey.objects.create(description=args[0])
         print(key.key)

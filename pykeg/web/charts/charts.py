@@ -31,15 +31,15 @@ class ChartError(Exception):
 
 
 def format_volume(volume_ml, chart_kwargs):
-    metric_volumes = chart_kwargs.get('metric_volumes', False)
+    metric_volumes = chart_kwargs.get("metric_volumes", False)
     if metric_volumes:
-        return volume_ml / 1000.0, 'L'
+        return volume_ml / 1000.0, "L"
     else:
-        return units.Quantity(volume_ml).InPints(), 'pints'
+        return units.Quantity(volume_ml).InPints(), "pints"
 
 
 def format_temperature(temp_c, chart_kwargs):
-    use_c = chart_kwargs.get('temperature_units', None) == 'c'
+    use_c = chart_kwargs.get("temperature_units", None) == "c"
     if use_c:
         return temp_c
     else:
@@ -55,14 +55,14 @@ def chart_temp_sensor(sensor, *args, **kwargs):
       sensorname - the nice_name of a ThermoSensor
     """
     if not isinstance(sensor, models.ThermoSensor):
-        raise ChartError('Bad sensor given')
+        raise ChartError("Bad sensor given")
 
     hours = 6
     now = timezone.now()
     start = now - (datetime.timedelta(hours=hours))
     start = start - (datetime.timedelta(seconds=start.second))
 
-    points = sensor.thermolog_set.filter(time__gte=start).order_by('time')
+    points = sensor.thermolog_set.filter(time__gte=start).order_by("time")
 
     curr = start
     temps = []
@@ -78,33 +78,17 @@ def chart_temp_sensor(sensor, *args, **kwargs):
                 have_temps = True
 
     if not have_temps:
-        raise ChartError('Not enough data')
+        raise ChartError("Not enough data")
 
     res = {
-        'series': [
-          {
-              'data': temps,
-              'marker': {
-                  'enabled': False,
-              },
-          },
-        ],
-        'tooltip': {
-            'enabled': True,
+        "series": [{"data": temps, "marker": {"enabled": False,},},],
+        "tooltip": {"enabled": True,},
+        "xAxis": {
+            "categories": ["Temperature"],
+            "labels": {"enabled": False,},
+            "tickInterval": 60,
         },
-        'xAxis': {
-            'categories': ['Temperature'],
-            'labels': {
-                'enabled': False,
-            },
-            'tickInterval': 60,
-        },
-        'yAxis': {
-            'labels': {
-                'enabled': True,
-            },
-            'tickInterval': 1,
-        },
+        "yAxis": {"labels": {"enabled": True,}, "tickInterval": 1,},
     }
     return res
 
@@ -118,9 +102,9 @@ def chart_volume_by_weekday(stats, *args, **kwargs):
       stats - a stats object containing volume_by_day_of_week
     """
     volmap = [0] * 7
-    vols = stats.get('volume_by_day_of_week', {})
+    vols = stats.get("volume_by_day_of_week", {})
     if not volmap:
-        raise ChartError('Daily volumes unavailable')
+        raise ChartError("Daily volumes unavailable")
 
     for weekday, volume_ml in list(vols.items()):
         volmap[int(weekday)] += format_volume(volume_ml, kwargs)[0]
@@ -128,7 +112,7 @@ def chart_volume_by_weekday(stats, *args, **kwargs):
 
 
 def chart_sessions_by_weekday(stats, *args, **kwargs):
-    data = stats.get('volume_by_day_of_week', {})
+    data = stats.get("volume_by_day_of_week", {})
     weekdays = [0] * 7
     for weekday, volume_ml in list(data.items()):
         weekdays[int(weekday)] += format_volume(volume_ml, kwargs)[0]
@@ -137,15 +121,8 @@ def chart_sessions_by_weekday(stats, *args, **kwargs):
 
 def chart_sessions_by_volume(stats, *args, **kwargs):
     buckets = [0] * 6
-    labels = [
-        '<1',
-        '1.0-1.9',
-        '2.0-2.9',
-        '3.0-3.9',
-        '4.0-4.9',
-        '5+'
-    ]
-    volmap = stats.get('volume_by_session', {})
+    labels = ["<1", "1.0-1.9", "2.0-2.9", "3.0-3.9", "4.0-4.9", "5+"]
+    volmap = stats.get("volume_by_session", {})
     for session_volume in list(volmap.values()):
         volume = round(format_volume(session_volume, kwargs)[0], 1)
         intval = int(volume)
@@ -155,33 +132,25 @@ def chart_sessions_by_volume(stats, *args, **kwargs):
             buckets[intval] += 1
 
     res = {
-        'xAxis': {
-            'categories': labels,
-        },
-        'series': [
-            {'data': buckets},
-        ],
-        'yAxis': {
-            'min': 0,
-        },
-        'chart': {
-            'defaultSeriesType': 'column',
-        }
+        "xAxis": {"categories": labels,},
+        "series": [{"data": buckets},],
+        "yAxis": {"min": 0,},
+        "chart": {"defaultSeriesType": "column",},
     }
     return res
 
 
 def chart_users_by_volume(stats, *args, **kwargs):
-    vols = stats.get('volume_by_drinker')
+    vols = stats.get("volume_by_drinker")
     if not vols:
-        raise ChartError('no data')
+        raise ChartError("no data")
 
     data = []
     for username, volume in list(vols.items()):
         if not username:
-            username = 'Guest'
+            username = "Guest"
         volume, units = format_volume(volume, kwargs)
-        label = '<b>%s</b> (%.1f %s)' % (username, volume, units)
+        label = "<b>%s</b> (%.1f %s)" % (username, volume, units)
         data.append((label, volume))
 
     def _sort_vol_desc(a, b):
@@ -195,51 +164,29 @@ def chart_users_by_volume(stats, *args, **kwargs):
     data.reverse()
 
     if other_vol:
-        label = '<b>%s</b> (%.1f)' % ('all others', other_vol)
+        label = "<b>%s</b> (%.1f)" % ("all others", other_vol)
         data.append((label, other_vol))
 
     res = {
-        'series': [
-          {
-              'type': 'pie',
-              'name': 'Drinkers by Volume',
-              'data': data,
-          }
-        ],
-        'yAxis': {
-            'min': 0,
-        },
-        'chart': {
-            'defaultSeriesType': 'column',
-        },
-        'tooltip': {
-            'enabled': False,
-        },
+        "series": [{"type": "pie", "name": "Drinkers by Volume", "data": data,}],
+        "yAxis": {"min": 0,},
+        "chart": {"defaultSeriesType": "column",},
+        "tooltip": {"enabled": False,},
     }
     return res
 
 
 def _weekday_chart_common(vals):
-    labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
     # convert from 0=Monday to 0=Sunday
-    #vals.insert(0, vals.pop(-1))
+    # vals.insert(0, vals.pop(-1))
 
     res = {
-        'xAxis': {
-            'categories': labels,
-        },
-        'yAxis': {
-            'min': 0,
-        },
-        'series': [
-            {'data': vals},
-        ],
-        'tooltip': {
-            'enabled': False,
-        },
-        'chart': {
-            'defaultSeriesType': 'column',
-        }
+        "xAxis": {"categories": labels,},
+        "yAxis": {"min": 0,},
+        "series": [{"data": vals},],
+        "tooltip": {"enabled": False,},
+        "chart": {"defaultSeriesType": "column",},
     }
     return res

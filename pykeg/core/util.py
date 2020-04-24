@@ -45,9 +45,9 @@ _REQUESTS = {}
 
 def get_version():
     try:
-        return pkg_resources.get_distribution('kegbot').version
+        return pkg_resources.get_distribution("kegbot").version
     except pkg_resources.DistributionNotFound:
-        return '0.0.0'
+        return "0.0.0"
 
 
 def get_version_object():
@@ -64,23 +64,26 @@ def should_upgrade(installed_verison, new_version):
 
 
 def get_user_agent():
-    return 'KegbotServer/%s' % get_version()
+    return "KegbotServer/%s" % get_version()
+
 
 def CtoF(t):
-  return ((9.0/5.0)*t) + 32
+    return ((9.0 / 5.0) * t) + 32
+
 
 def get_plugin_template_dirs(plugin_list):
     from django.utils import six
+
     if not six.PY3:
         fs_encoding = sys.getfilesystemencoding() or sys.getdefaultencoding()
 
     ret = []
     for plugin in plugin_list:
-        plugin_module = '.'.join(plugin.split('.')[:-1])
+        plugin_module = ".".join(plugin.split(".")[:-1])
         pkg = pkgutil.get_loader(plugin_module)
         if not pkg:
             raise ImproperlyConfigured('Cannot find plugin "%s"' % plugin)
-        template_dir = os.path.join(os.path.dirname(pkg.path), 'templates')
+        template_dir = os.path.join(os.path.dirname(pkg.path), "templates")
         if os.path.isdir(template_dir):
             if not six.PY3:
                 template_dir = template_dir.decode(fs_encoding)
@@ -110,14 +113,14 @@ def download_to_tempfile(url):
         r = requests.get(url, stream=True)
         ext = os.path.splitext(url)[1]
         fd, pathname = tempfile.mkstemp(suffix=ext)
-        logger.info('Downloading file %s to path %s' % (url, pathname))
-        with closing(os.fdopen(fd, 'wb')):
+        logger.info("Downloading file %s to path %s" % (url, pathname))
+        with closing(os.fdopen(fd, "wb")):
             for chunk in r.iter_content(chunk_size=1024):
                 if chunk:
                     os.write(fd, chunk)
         return str(pathname)
     except requests.exceptions.RequestException as e:
-        raise IOError('Could not download file: {}'.format(e))
+        raise IOError("Could not download file: {}".format(e))
 
 
 class SuppressTaskErrors(object):
@@ -132,7 +135,6 @@ class SuppressTaskErrors(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         exc_info = (exc_type, exc_val, exc_tb)
         if isinstance(exc_val, RedisError):
-            self.logger.error('Error scheduling task: {}'.format(exc_val),
-                              exc_info=exc_info)
+            self.logger.error("Error scheduling task: {}".format(exc_val), exc_info=exc_info)
             return True
         return False

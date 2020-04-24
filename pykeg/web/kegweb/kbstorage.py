@@ -17,6 +17,7 @@
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
 from future import standard_library
+
 standard_library.install_aliases()
 import urllib.parse
 
@@ -30,7 +31,7 @@ except ImportError:
 
 from pykeg.backend import get_kegbot_backend
 
-S3_STATIC_BUCKET = getattr(settings, 'S3_STATIC_BUCKET', None)
+S3_STATIC_BUCKET = getattr(settings, "S3_STATIC_BUCKET", None)
 
 
 class KegbotFileSystemStorage(FileSystemStorage):
@@ -50,9 +51,10 @@ class KegbotFileSystemStorage(FileSystemStorage):
 
 
 if S3BotoStorage:
+
     class S3StaticStorage(S3BotoStorage):
         """Uses settings.S3_STATIC_BUCKET instead of AWS_STORAGE_BUCKET_NAME."""
 
         def __init__(self, *args, **kwargs):
-            kwargs['bucket'] = S3_STATIC_BUCKET
+            kwargs["bucket"] = S3_STATIC_BUCKET
             super(S3StaticStorage, self).__init__(*args, **kwargs)

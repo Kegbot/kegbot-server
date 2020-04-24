@@ -41,22 +41,22 @@ class StatsView(object):
         self.keg = keg
 
     def __str__(self):
-        ret = 'view: '
+        ret = "view: "
         if not self.user and not self.keg and not self.session:
-            ret += 'system'
+            ret += "system"
         if self.user:
-            ret += 'user={} '.format(self.user.username)
+            ret += "user={} ".format(self.user.username)
         if self.session:
-            ret += 'session={} '.format(self.session.id)
+            ret += "session={} ".format(self.session.id)
         if self.keg:
-            ret += 'keg={}'.format(self.keg.id)
+            ret += "keg={}".format(self.keg.id)
         return ret
 
     def as_tuple(self):
         return (
             self.user.id if self.user else None,
             self.session.id if self.session else None,
-            self.keg.id if self.keg else None
+            self.keg.id if self.keg else None,
         )
 
     def get_prior_drinks(self, drink):
@@ -72,7 +72,7 @@ class StatsView(object):
             qs = qs.filter(session=self.session.id)
         if self.keg:
             qs = qs.filter(keg=self.keg.id)
-        return qs.order_by('-id')
+        return qs.order_by("-id")
 
 
 class StatsBuilder(object):
@@ -81,14 +81,14 @@ class StatsBuilder(object):
     def __init__(self):
         self.functions = []
         for name, fn in inspect.getmembers(self, inspect.ismethod):
-            if not name.startswith('_') and name != 'build' and name != 'next':
+            if not name.startswith("_") and name != "build" and name != "next":
                 self.functions.append((name, fn))
 
     def build(self, drink, previous_stats):
         if previous_stats is None:
             previous_stats = Dict()
 
-        logger.debug('build: drink={}'.format(drink.id))
+        logger.debug("build: drink={}".format(drink.id))
         stats = Dict()
 
         for statname, fn in self.functions:
@@ -99,7 +99,7 @@ class StatsBuilder(object):
                 val = fn(drink, previous_stats)
 
             if val is None:
-                raise ValueError('Stat generator for %s returned None' % statname)
+                raise ValueError("Stat generator for %s returned None" % statname)
             stats[statname] = val
         return stats
 
@@ -119,8 +119,8 @@ class StatsBuilder(object):
         return previous_value + 1
 
     def average_volume_ml(self, drink, previous_stats, previous_value=0):
-        vol = previous_stats.get('total_volume_ml', 0)
-        count = previous_stats.get('total_pours', 0)
+        vol = previous_stats.get("total_volume_ml", 0)
+        count = previous_stats.get("total_pours", 0)
         vol += drink.volume_ml
         count += 1
         return vol / float(count)
@@ -129,7 +129,7 @@ class StatsBuilder(object):
         return float(max(drink.volume_ml, previous_value))
 
     def greatest_volume_id(self, drink, previous_stats, previous_value=0):
-        if drink.volume_ml > previous_stats.get('greatest_volume_ml', 0):
+        if drink.volume_ml > previous_stats.get("greatest_volume_ml", 0):
             return drink.id
         return previous_value
 
@@ -137,7 +137,7 @@ class StatsBuilder(object):
         ret = copy.copy(previous_value)
         tz = pytz.timezone(drink.session.timezone)
         local_time = localtime(drink.session.start_time, timezone=tz)
-        drink_weekday = str(local_time.strftime('%w'))
+        drink_weekday = str(local_time.strftime("%w"))
         ret[drink_weekday] = ret.get(drink_weekday, 0) + drink.volume_ml
         return ret
 
@@ -152,7 +152,7 @@ class StatsBuilder(object):
     def sessions_count(self, drink, previous_stats, previous_value=0):
         # Use volume_by_session, ensuring our session is captured
         # by injecting a dummy value.
-        prev_sessions = previous_stats.get('volume_by_session', {})
+        prev_sessions = previous_stats.get("volume_by_session", {})
         ret = len(list(prev_sessions.keys()))
         if str(drink.session.id) not in prev_sessions:
             ret += 1
@@ -183,10 +183,10 @@ class StatsBuilder(object):
         return ret
 
     def largest_session(self, drink, previous_stats, previous_value={}):
-        if drink.session.volume_ml >= previous_value.get('volume_ml', 0):
+        if drink.session.volume_ml >= previous_value.get("volume_ml", 0):
             return {
-                'session_id': drink.session.id,
-                'volume_ml': drink.session.volume_ml,
+                "session_id": drink.session.id,
+                "volume_ml": drink.session.volume_ml,
             }
         return previous_value
 
@@ -198,12 +198,12 @@ BUILDER = StatsBuilder()
 
 def invalidate(drink_id):
     """Clears all statistics starting from (and including) drink_id."""
-    logger.debug('--- Invalidating stats since id {}'.format(drink_id))
+    logger.debug("--- Invalidating stats since id {}".format(drink_id))
     models.Stats.objects.filter(drink_id__gte=drink_id).delete()
 
 
 def invalidate_all():
-    logger.debug('--- Invalidating ALL stats')
+    logger.debug("--- Invalidating ALL stats")
     models.Stats.objects.all().delete()
 
 
@@ -214,7 +214,7 @@ def build_for_id(drink_id):
     try:
         drink = models.Drink.objects.get(pk=drink_id)
     except models.Drink.DoesNotExist:
-        logger.warning('No drink exists with id={}'.format(drink_id))
+        logger.warning("No drink exists with id={}".format(drink_id))
         return
     _build_all_views(drink)
 
@@ -226,7 +226,7 @@ def rebuild_from_id(drink_id, cb=None):
     """
     invalidate(drink_id)
     results_cache = {}
-    for drink in models.Drink.objects.filter(id__gte=drink_id).order_by('id'):
+    for drink in models.Drink.objects.filter(id__gte=drink_id).order_by("id"):
         _build_all_views(drink, results_cache=results_cache)
         if cb:
             cb(results_cache)
@@ -242,7 +242,7 @@ def _build_single_view(drink, view, prior_stats=None):
             indicates that the prior stats are unknown.  When prior stats
             are unknown, they will be queried or generated as needed.
     """
-    logger.debug('>>> Building stats for {}'.format(view))
+    logger.debug(">>> Building stats for {}".format(view))
 
     build_list = [drink]
     if prior_stats is None:
@@ -257,8 +257,9 @@ def _build_single_view(drink, view, prior_stats=None):
             for prior_drink in prior_drinks_in_view:
                 try:
                     prior_stats = Dict(
-                        models.Stats.objects.get(drink=prior_drink, user=view.user,
-                                                 session=view.session, keg=view.keg).stats
+                        models.Stats.objects.get(
+                            drink=prior_drink, user=view.user, session=view.session, keg=view.keg
+                        ).stats
                     )
                     break
                 except models.Stats.DoesNotExist:
@@ -266,7 +267,7 @@ def _build_single_view(drink, view, prior_stats=None):
 
     # Build all drinks on the hit list.
     for build_drink in build_list:
-        logger.debug('  - operating on drink {}'.format(build_drink.id))
+        logger.debug("  - operating on drink {}".format(build_drink.id))
         stats = BUILDER.build(drink=build_drink, previous_stats=prior_stats)
         models.Stats.objects.create(
             drink=build_drink,
@@ -275,10 +276,10 @@ def _build_single_view(drink, view, prior_stats=None):
             session=view.session,
             keg=view.keg,
             stats=stats.to_dict(),
-            is_first=(
-                not prior_stats))
+            is_first=(not prior_stats),
+        )
         prior_stats = stats
-    logger.debug('<<< Done.')
+    logger.debug("<<< Done.")
     return stats
 
 

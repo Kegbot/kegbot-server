@@ -31,7 +31,6 @@ from pykeg.util.email import build_message
 
 
 class LocalAuthBackend(ModelBackend, AuthBackend):
-
     def is_manager(self, user):
         return user.is_staff
 
@@ -58,7 +57,7 @@ class LocalAuthBackend(ModelBackend, AuthBackend):
             user.set_password(password)
         else:
             user.set_unusable_password()
-            user.activation_key = str(uuid.uuid4()).replace('-', '')
+            user.activation_key = str(uuid.uuid4()).replace("-", "")
 
         if photo:
             pic = models.Picture.objects.create(user=user)
@@ -73,18 +72,19 @@ class LocalAuthBackend(ModelBackend, AuthBackend):
 
         if user.activation_key:
             # Needs further activation: send activation e-mail.
-            template = 'registration/email_activate_registration.html'
-            url = kbsite.reverse_full('activate-account', args=(),
-                                      kwargs={'activation_key': user.activation_key})
+            template = "registration/email_activate_registration.html"
+            url = kbsite.reverse_full(
+                "activate-account", args=(), kwargs={"activation_key": user.activation_key}
+            )
         elif email:
             # User already activated, send "complete" email.
-            template = 'registration/email_registration_complete.html'
-            url = kbsite.reverse_full('kb-account-main', args=(), kwargs={})
+            template = "registration/email_registration_complete.html"
+            url = kbsite.reverse_full("kb-account-main", args=(), kwargs={})
 
         if template:
             context = {
-                'site_name': kbsite.title,
-                'url': url,
+                "site_name": kbsite.title,
+                "url": url,
             }
             message = build_message(email, template, context)
             if message:

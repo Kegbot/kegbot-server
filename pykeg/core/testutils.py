@@ -28,8 +28,8 @@ from django.utils import timezone
 
 import vcr
 
-TESTDATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../testdata/'))
-CASSETTE_DIR = os.path.join(TESTDATA_DIR, 'request_fixtures')
+TESTDATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../testdata/"))
+CASSETTE_DIR = os.path.join(TESTDATA_DIR, "request_fixtures")
 
 
 def get_filename(f):
@@ -46,17 +46,16 @@ def make_datetime(*args):
 def get_vcr(test_name):
     cassette_dir = os.path.join(CASSETTE_DIR, test_name)
     return vcr.VCR(
-        serializer='yaml',
+        serializer="yaml",
         cassette_library_dir=cassette_dir,
-        record_mode='none',
-        match_on=['uri', 'method'],
+        record_mode="none",
+        match_on=["uri", "method"],
     )
 
 
 class TestBackend(KegbotBackend):
     def get_base_url(self):
-        static_url = getattr(settings, 'KEGBOT_BASE_URL', None)
+        static_url = getattr(settings, "KEGBOT_BASE_URL", None)
         if static_url:
-            return static_url.rstrip('/')
-        return 'http://localhost:1234'
-
+            return static_url.rstrip("/")
+        return "http://localhost:1234"

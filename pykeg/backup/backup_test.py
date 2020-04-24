@@ -39,22 +39,21 @@ from pykeg.util import kbjson
 
 
 def run(cmd, args=[]):
-    cmdname = cmd.__module__.split('.')[-1]
+    cmdname = cmd.__module__.split(".")[-1]
     cmd.run_from_argv([sys.argv[0], cmdname] + args)
 
 
-@unittest.skip('backup tests failing')
+@unittest.skip("backup tests failing")
 class BackupTestCase(TransactionTestCase):
     def setUp(self):
-        self.temp_storage_location = tempfile.mkdtemp(dir=os.environ.get('DJANGO_TEST_TEMP_DIR'))
+        self.temp_storage_location = tempfile.mkdtemp(dir=os.environ.get("DJANGO_TEST_TEMP_DIR"))
         self.storage = FileSystemStorage(location=self.temp_storage_location)
         self.now = make_datetime(2014, 4, 1)
 
     def tearDown(self):
         shutil.rmtree(self.temp_storage_location)
 
-    def assertMetadata(self, backup_dir, when=None, site_name='My Kegbot',
-                       num_media_files=0):
+    def assertMetadata(self, backup_dir, when=None, site_name="My Kegbot", num_media_files=0):
         when = when or self.now
 
         backup.verify_backup_directory(backup_dir)
@@ -71,7 +70,7 @@ class BackupTestCase(TransactionTestCase):
         backup_dir = backup.create_backup_tree(self.now, storage=self.storage)
 
         try:
-            self.assertMetadata(backup_dir, site_name='kegbot')
+            self.assertMetadata(backup_dir, site_name="kegbot")
         finally:
             shutil.rmtree(backup_dir)
 
@@ -79,13 +78,13 @@ class BackupTestCase(TransactionTestCase):
         defaults.set_defaults(set_is_setup=True)
 
         site = models.KegbotSite.get()
-        site.title = 'Kegbot Test 2'
+        site.title = "Kegbot Test 2"
         site.save()
 
         backup_dir = backup.create_backup_tree(self.now, storage=self.storage)
 
         try:
-            self.assertMetadata(backup_dir, site_name='Kegbot Test 2')
+            self.assertMetadata(backup_dir, site_name="Kegbot Test 2")
         finally:
             shutil.rmtree(backup_dir)
 
@@ -95,8 +94,9 @@ class BackupTestCase(TransactionTestCase):
 
         try:
             # Restore must fail when something is already installed.
-            self.assertRaises(backup.AlreadyInstalledError, backup.restore_from_directory,
-                              backup_dir)
+            self.assertRaises(
+                backup.AlreadyInstalledError, backup.restore_from_directory, backup_dir
+            )
 
             # Erase and restore.
             backup.erase(self.storage)
@@ -145,5 +145,5 @@ class BackupTestCase(TransactionTestCase):
             f2 = open(f2_full).read()
             if f1 != f2:
                 message = 'Files not equal: "{}" and "{}" differ.'.format(f1_full, f2_full)
-                message += '\n' + ''.join(difflib.ndiff(f1.splitlines(True), f2.splitlines(True)))
+                message += "\n" + "".join(difflib.ndiff(f1.splitlines(True), f2.splitlines(True)))
                 self.fail(message)

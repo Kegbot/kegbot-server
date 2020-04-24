@@ -26,15 +26,15 @@ from . import forms
 from . import tasks
 from . import views
 
-KEY_SITE_SETTINGS = 'settings'
+KEY_SITE_SETTINGS = "settings"
 
 
 class WebhookPlugin(plugin.Plugin):
-    NAME = 'Web Hooks'
-    SHORT_NAME = 'webhook'
-    DESCRIPTION = 'Posts each system event to configured URLs'
-    URL = 'http://kegbot.org'
-    VERSION = '1.0.0'
+    NAME = "Web Hooks"
+    SHORT_NAME = "webhook"
+    DESCRIPTION = "Posts each system event to configured URLs"
+    URL = "http://kegbot.org"
+    VERSION = "1.0.0"
 
     def get_admin_settings_view(self):
         return views.admin_settings
@@ -44,9 +44,9 @@ class WebhookPlugin(plugin.Plugin):
             self.handle_event(event)
 
     def handle_event(self, event):
-        self.logger.info('Handling new event: %s' % event.id)
+        self.logger.info("Handling new event: %s" % event.id)
         settings = self.get_site_settings()
-        urls = settings.get('webhook_urls', '').strip().split()
+        urls = settings.get("webhook_urls", "").strip().split()
         event_dict = protolib.ToDict(event, full=True)
         for url in urls:
             with SuppressTaskErrors(self.logger):

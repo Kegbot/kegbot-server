@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 # Copyright 2014 Kegbot Project contributors
 #
 # This file is part of the Pykeg package of the Kegbot project.
@@ -41,18 +42,18 @@ def progbar(title, pos, total, width=40):
     else:
         chars = int((float(pos) / total) * width)
     rem = width - chars
-    inner = '+' * chars + ' ' * rem
-    sys.stdout.write('%-30s  [%s] %i/%i\r' % (title, inner, pos, total))
+    inner = "+" * chars + " " * rem
+    sys.stdout.write("%-30s  [%s] %i/%i\r" % (title, inner, pos, total))
     sys.stdout.flush()
 
 
 def check_and_create_pid_file(pid_file):
     if os.path.exists(pid_file):
-        print('Error: already running ({})'.format(pid_file))
+        print("Error: already running ({})".format(pid_file))
         sys.exit(1)
 
-    f = open(pid_file, 'w')
-    f.write('{}\n'.format(os.getpid()))
+    f = open(pid_file, "w")
+    f.write("{}\n".format(os.getpid()))
     f.close()
 
 
@@ -64,9 +65,9 @@ class check_pidfile(object):
 
     def __enter__(self):
         if os.path.exists(self.pid_file):
-            raise RuntimeError('Error: already running ({})'.format(self.pid_file))
-        f = open(self.pid_file, 'w')
-        f.write('{}\n'.format(os.getpid()))
+            raise RuntimeError("Error: already running ({})".format(self.pid_file))
+        f = open(self.pid_file, "w")
+        f.write("{}\n".format(os.getpid()))
         f.close()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -75,27 +76,32 @@ class check_pidfile(object):
 
 class RunnerCommand(BaseCommand):
     """Command that runs several subcommands as a watched group."""
+
     requires_model_validation = False
     pidfile_name = None
 
     def add_arguments(self, parser):
-        parser.add_argument('--logs_dir',
-            action='store',
-            dest='logs_dir',
-            default='',
-            help='Specifies the directory for log files.  If empty, logging disabled.')
-        parser.add_argument('--pidfile_dir',
-            action='store',
-            dest='pidfile_dir',
-            default='/tmp',
-            help='PID file for this program.')
+        parser.add_argument(
+            "--logs_dir",
+            action="store",
+            dest="logs_dir",
+            default="",
+            help="Specifies the directory for log files.  If empty, logging disabled.",
+        )
+        parser.add_argument(
+            "--pidfile_dir",
+            action="store",
+            dest="pidfile_dir",
+            default="/tmp",
+            help="PID file for this program.",
+        )
 
     def get_commands(self, options):
         """Returns iterable of (command_name, command)."""
         raise NotImplementedError
 
     def handle(self, *args, **options):
-        pidfile = os.path.join(options['pidfile_dir'], self.pidfile_name)
+        pidfile = os.path.join(options["pidfile_dir"], self.pidfile_name)
         with check_pidfile(pidfile):
             r = Runner()
 

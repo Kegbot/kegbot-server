@@ -33,18 +33,17 @@ from pykeg.web.kegweb import urls as kegweb_urls
 from pykeg.web.setup_wizard import urls as setup_wizard_urls
 
 urlpatterns = [
-    re_path(r'^api/(?:v1/)?', include(api_urls)),
-    path('account/', include(account_urls)),
-    path('accounts/', include(kbregistration_urls)),
-    path('kegadmin/', include(kegadmin_urls)),
-
+    re_path(r"^api/(?:v1/)?", include(api_urls)),
+    path("account/", include(account_urls)),
+    path("accounts/", include(kbregistration_urls)),
+    path("kegadmin/", include(kegadmin_urls)),
     # Shortcuts
-    url(r'^link/?$', RedirectView.as_view(pattern_name='kegadmin-link-device')),
+    url(r"^link/?$", RedirectView.as_view(pattern_name="kegadmin-link-device")),
 ]
 
-if 'pykeg.web.setup_wizard' in settings.INSTALLED_APPS:
+if "pykeg.web.setup_wizard" in settings.INSTALLED_APPS:
     urlpatterns += [
-        path('setup/', include(setup_wizard_urls)),
+        path("setup/", include(setup_wizard_urls)),
     ]
 
 if settings.DEBUG:
@@ -53,10 +52,10 @@ if settings.DEBUG:
 
 if settings.KEGBOT_ENABLE_ADMIN:
     urlpatterns += [
-        path('admin/', admin.site.urls),
+        path("admin/", admin.site.urls),
     ]
 
 # main kegweb urls
 urlpatterns += [
-    path('', include(kegweb_urls)),
+    path("", include(kegweb_urls)),
 ]

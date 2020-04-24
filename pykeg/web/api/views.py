@@ -51,7 +51,7 @@ from pykeg.web.kegadmin.forms import UpdateFlowMeterForm
 
 _LOGGER = logging.getLogger(__name__)
 
-RESULT_OK = {'result': 'ok'}
+RESULT_OK = {"result": "ok"}
 
 # Decorators
 
@@ -59,8 +59,10 @@ RESULT_OK = {'result': 'ok'}
 def auth_required(view_func):
     def wrapped_view(*args, **kwargs):
         return view_func(*args, **kwargs)
+
     util.set_needs_auth(wrapped_view)
     return wraps(view_func)(wrapped_view)
+
 
 # Helpers
 
@@ -75,28 +77,29 @@ def _form_errors(form):
                 ret[name].append(error)
     return ret
 
+
 # Endpoints
 
 
 def all_kegs(request):
-    return models.Keg.objects.all().order_by('-start_time')
+    return models.Keg.objects.all().order_by("-start_time")
 
 
 def all_drinks(request, limit=100):
     qs = models.Drink.objects.all()
-    if 'start' in request.GET:
+    if "start" in request.GET:
         try:
-            start = int(request.GET['start'])
+            start = int(request.GET["start"])
             qs = qs.filter(id__lte=start)
         except ValueError:
             pass
-    qs = qs.order_by('-id')
+    qs = qs.order_by("-id")
     qs = qs[:limit]
     return qs
 
 
 def last_drink(request):
-    drinks = models.Drink.objects.all().order_by('-id')
+    drinks = models.Drink.objects.all().order_by("-id")
     if not drinks:
         raise Http404
     return protolib.ToProto(drinks[0], full=True)
@@ -110,7 +113,7 @@ def get_drink(request, drink_id):
 @csrf_exempt
 @auth_required
 def all_controllers(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ControllerForm(request.POST)
         if form.is_valid():
             return form.save()
@@ -126,11 +129,11 @@ def all_controllers(request):
 def get_controller(request, controller_id):
     controller = get_object_or_404(models.Controller, id=controller_id)
 
-    if request.method == 'DELETE':
+    if request.method == "DELETE":
         controller.delete()
         return RESULT_OK
 
-    elif request.method == 'POST':
+    elif request.method == "POST":
         form = ControllerForm(request.POST, instance=controller)
         if form.is_valid():
             controller = form.save()
@@ -144,7 +147,7 @@ def get_controller(request, controller_id):
 @csrf_exempt
 @auth_required
 def all_flow_meters(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = NewFlowMeterForm(request.POST)
         if form.is_valid():
             return form.save()
@@ -160,11 +163,11 @@ def all_flow_meters(request):
 def get_flow_meter(request, flow_meter_id):
     meter = get_object_or_404(models.FlowMeter, id=flow_meter_id)
 
-    if request.method == 'DELETE':
+    if request.method == "DELETE":
         meter.delete()
         return RESULT_OK
 
-    elif request.method == 'POST':
+    elif request.method == "POST":
         form = UpdateFlowMeterForm(request.POST, instance=meter)
         if form.is_valid():
             meter = form.save()
@@ -178,7 +181,7 @@ def get_flow_meter(request, flow_meter_id):
 @csrf_exempt
 @auth_required
 def all_flow_toggles(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = FlowToggleForm(request.POST)
         if form.is_valid():
             return form.save()
@@ -194,11 +197,11 @@ def all_flow_toggles(request):
 def get_flow_toggle(request, flow_toggle_id):
     toggle = get_object_or_404(models.FlowToggle, id=flow_toggle_id)
 
-    if request.method == 'DELETE':
+    if request.method == "DELETE":
         toggle.delete()
         return RESULT_OK
 
-    elif request.method == 'POST':
+    elif request.method == "POST":
         form = FlowToggleForm(request.POST, instance=toggle)
         if form.is_valid():
             toggle = form.save()
@@ -212,19 +215,17 @@ def get_flow_toggle(request, flow_toggle_id):
 @csrf_exempt
 @auth_required
 def pictures(request):
-    if request.method != 'POST':
-        raise Http404('Method not supported')
-    pic = models.Picture.objects.create(
-        image=request.FILES['photo'],
-    )
+    if request.method != "POST":
+        raise Http404("Method not supported")
+    pic = models.Picture.objects.create(image=request.FILES["photo"],)
     return protolib.ToProto(pic, full=True)
 
 
 @csrf_exempt
 @auth_required
 def add_drink_photo(request, drink_id):
-    if request.method != 'POST':
-        raise Http404('Method not supported')
+    if request.method != "POST":
+        raise Http404("Method not supported")
     drink = get_object_or_404(models.Drink, id=drink_id)
     pic = _save_pour_pic(request, drink)
     return protolib.ToProto(pic, full=True)
@@ -232,10 +233,7 @@ def add_drink_photo(request, drink_id):
 
 def _save_pour_pic(request, drink):
     pic = models.Picture.objects.create(
-        image=request.FILES['photo'],
-        user=drink.user,
-        keg=drink.keg,
-        session=drink.session
+        image=request.FILES["photo"], user=drink.user, keg=drink.keg, session=drink.session
     )
     # TODO(mikey): Should we do anything with a previously-saved
     # picture here?
@@ -266,7 +264,7 @@ def get_status(request):
     events = models.SystemEvent.objects.all()[:5]
     kegs = models.Keg.objects.all().filter(status=models.Keg.STATUS_ON_TAP)
     meters = models.FlowMeter.objects.all()
-    sound_events = []   # deprecated
+    sound_events = []  # deprecated
     taps = models.KegTap.objects.all()
     toggles = models.FlowToggle.objects.all()
 
@@ -281,15 +279,24 @@ def get_status(request):
     version = core_util.get_version()
 
     response = protolib.GetSyncResponse(
-        active_kegs=kegs, active_session=session, active_users=current_users,
-        controllers=controllers, drinks=drinks, events=events, meters=meters,
-        site_title=title, server_version=version,
-        sound_events=sound_events, taps=taps, toggles=toggles)
+        active_kegs=kegs,
+        active_session=session,
+        active_users=current_users,
+        controllers=controllers,
+        drinks=drinks,
+        events=events,
+        meters=meters,
+        site_title=title,
+        server_version=version,
+        sound_events=sound_events,
+        taps=taps,
+        toggles=toggles,
+    )
     return response
 
 
 def get_version(request):
-    return {'server_version': core_util.get_version()}
+    return {"server_version": core_util.get_version()}
 
 
 def get_keg(request, keg_id):
@@ -314,11 +321,13 @@ def get_keg_sizes(request):
     ret = []
     fake_id = 0
     for size_name, volume_ml in list(keg_sizes.VOLUMES_ML.items()):
-        ret.append({
-            'volume_ml': volume_ml,
-            'id': fake_id,
-            'description': keg_sizes.DESCRIPTIONS[size_name],
-        })
+        ret.append(
+            {
+                "volume_ml": volume_ml,
+                "id": fake_id,
+                "description": keg_sizes.DESCRIPTIONS[size_name],
+            }
+        )
         fake_id += 1
     return ret
 
@@ -344,11 +353,11 @@ def current_session(request):
     except models.DrinkingSession.DoesNotExist:
         pass
 
-    raise Http404('There is no active session.')
+    raise Http404("There is no active session.")
 
 
 def all_events(request):
-    events = models.SystemEvent.objects.all().order_by('-id')
+    events = models.SystemEvent.objects.all().order_by("-id")
     events = apply_since(request, events)
     events = events[:10]
     return [protolib.ToProto(e, full=True) for e in events]
@@ -356,7 +365,7 @@ def all_events(request):
 
 def apply_since(request, query):
     """Restricts the query to `since` events, if given."""
-    since_str = request.GET.get('since')
+    since_str = request.GET.get("since")
     if since_str:
         try:
             since = int(since_str)
@@ -386,25 +395,25 @@ def get_system_stats(request):
     return models.KegbotSite.get().get_stats()
 
 
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(["GET", "POST"])
 @csrf_exempt
 def all_taps(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         util.check_api_key(request)
         return create_tap(request)
-    return models.KegTap.objects.all().order_by('name')
+    return models.KegTap.objects.all().order_by("name")
 
 
 def create_tap(request):
     form = forms.TapCreateForm(request.POST)
     if form.is_valid():
-        return request.backend.create_tap(name=form.cleaned_data['name'])
+        return request.backend.create_tap(name=form.cleaned_data["name"])
     raise kbapi.BadRequestError(_form_errors(form))
 
 
 @auth_required
 def user_list(request):
-    return models.User.objects.filter(is_active=True).exclude(username='guest').order_by('username')
+    return models.User.objects.filter(is_active=True).exclude(username="guest").order_by("username")
 
 
 def get_user(request, username):
@@ -437,7 +446,7 @@ def get_auth_token(request, auth_device, token_value):
 @auth_required
 def assign_auth_token(request, auth_device, token_value):
     if not request.POST:
-        raise kbapi.BadRequestError('POST required.')
+        raise kbapi.BadRequestError("POST required.")
 
     form = forms.AssignTokenForm(request.POST)
     if not form.is_valid():
@@ -445,7 +454,7 @@ def assign_auth_token(request, auth_device, token_value):
         raise kbapi.BadRequestError(errors)
 
     b = request.backend
-    username = form.cleaned_data['username']
+    username = form.cleaned_data["username"]
 
     user = b.get_user(username)
     if not user:
@@ -481,7 +490,7 @@ def _get_sensor_or_404(request, sensor_name):
 
 @csrf_exempt
 def get_thermo_sensor(request, sensor_name):
-    if request.method == 'POST':
+    if request.method == "POST":
         return _thermo_sensor_post(request, sensor_name)
     else:
         return _thermo_sensor_get(request, sensor_name)
@@ -497,9 +506,9 @@ def _thermo_sensor_get(request, sensor_name):
         last_temp = logs[0].temp
         last_time = logs[0].time
     res = {
-        'sensor': sensor,
-        'last_temp': last_temp,
-        'last_time': last_time,
+        "sensor": sensor,
+        "last_temp": last_temp,
+        "last_time": last_time,
     }
     return res
 
@@ -512,38 +521,38 @@ def _thermo_sensor_post(request, sensor_name):
     cd = form.cleaned_data
     sensor, created = models.ThermoSensor.objects.get_or_create(raw_name=sensor_name)
     # TODO(mikey): use form fields to compute `when`
-    return request.backend.log_sensor_reading(sensor.raw_name, cd['temp_c'])
+    return request.backend.log_sensor_reading(sensor.raw_name, cd["temp_c"])
 
 
 def get_thermo_sensor_logs(request, sensor_name):
     sensor = _get_sensor_or_404(request, sensor_name)
-    return sensor.thermolog_set.all()[:60 * 2]
+    return sensor.thermolog_set.all()[: 60 * 2]
 
 
 def get_api_key(request):
     user = request.user
-    api_key = ''
+    api_key = ""
     if user and (user.is_staff or user.is_superuser):
-        description = request.GET.get('description', '')
+        description = request.GET.get("description", "")
         api_key = models.ApiKey.objects.create(description=description)
         api_key = api_key.key
-    return {'api_key': api_key}
+    return {"api_key": api_key}
 
 
 @csrf_exempt
 def tap_detail(request, meter_name_or_id):
     tap = get_tap_from_meter_name_or_404(meter_name_or_id)
-    if request.method == 'POST':
+    if request.method == "POST":
         util.check_api_key(request)
         return _tap_detail_post(request, tap)
-    elif request.method == 'GET':
+    elif request.method == "GET":
         return _tap_detail_get(request, tap)
-    elif request.method == 'DELETE':
+    elif request.method == "DELETE":
         util.check_api_key(request)
         tap.delete()
         return RESULT_OK
 
-    raise kbapi.BadRequestError('Method not supported')
+    raise kbapi.BadRequestError("Method not supported")
 
 
 def _tap_detail_get(request, tap):
@@ -559,11 +568,11 @@ def tap_calibrate(request, meter_name_or_id):
     tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     meter = tap.current_meter()
     if not meter:
-        raise kbapi.BadRequestError('Tap does not have a meter!')
+        raise kbapi.BadRequestError("Tap does not have a meter!")
 
     form = forms.CalibrateTapForm(request.POST)
     if form.is_valid():
-        meter.ticks_per_ml = 1.0 / form.cleaned_data['ml_per_tick']
+        meter.ticks_per_ml = 1.0 / form.cleaned_data["ml_per_tick"]
         meter.save()
         tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     else:
@@ -576,10 +585,10 @@ def tap_calibrate(request, meter_name_or_id):
 def tap_spill(request, meter_name_or_id):
     tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     if not tap.current_keg:
-        raise kbapi.BadRequestError('No keg on tap.')
+        raise kbapi.BadRequestError("No keg on tap.")
     form = forms.TapSpillForm(request.POST)
     if form.is_valid():
-        tap.current_keg.spilled_ml += form.cleaned_data['volume_ml']
+        tap.current_keg.spilled_ml += form.cleaned_data["volume_ml"]
         tap.current_keg.save()
     else:
         raise kbapi.BadRequestError(_form_errors(form))
@@ -605,7 +614,7 @@ def tap_connect_meter(request, meter_name_or_id):
     tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     form = forms.ConnectMeterForm(request.POST)
     if form.is_valid():
-        tap = request.backend.connect_meter(tap, form.cleaned_data['meter'])
+        tap = request.backend.connect_meter(tap, form.cleaned_data["meter"])
     else:
         raise kbapi.BadRequestError(_form_errors(form))
     return protolib.ToProto(tap, full=True)
@@ -627,7 +636,7 @@ def tap_connect_toggle(request, meter_name_or_id):
     tap = get_tap_from_meter_name_or_404(meter_name_or_id)
     form = forms.ConnectToggleForm(request.POST)
     if form.is_valid():
-        tap = request.backend.connect_toggle(tap, form.cleaned_data['toggle'])
+        tap = request.backend.connect_toggle(tap, form.cleaned_data["toggle"])
     else:
         raise kbapi.BadRequestError(_form_errors(form))
     return protolib.ToProto(tap, full=True)
@@ -648,26 +657,28 @@ def _tap_detail_post(request, tap):
     if not form.is_valid():
         raise kbapi.BadRequestError(_form_errors(form))
     cd = form.cleaned_data
-    if cd.get('pour_time') and cd.get('now'):
-        pour_time = datetime.datetime.fromtimestamp(cd.get('pour_time'))
-        pour_now = datetime.datetime.fromtimestamp(cd.get('now'))
+    if cd.get("pour_time") and cd.get("now"):
+        pour_time = datetime.datetime.fromtimestamp(cd.get("pour_time"))
+        pour_now = datetime.datetime.fromtimestamp(cd.get("now"))
         pour_time_ago = pour_now - pour_time
         pour_time = timezone.now() - pour_time_ago
     else:
         pour_time = None
-    duration = cd.get('duration')
+    duration = cd.get("duration")
     if duration is None:
         duration = 0
     try:
-        drink = request.backend.record_drink(tap,
-                                             ticks=cd['ticks'],
-                                             volume_ml=cd.get('volume_ml'),
-                                             username=cd.get('username'),
-                                             pour_time=pour_time,
-                                             duration=duration,
-                                             shout=cd.get('shout'),
-                                             tick_time_series=cd.get('tick_time_series'),
-                                             photo=request.FILES.get('photo', None))
+        drink = request.backend.record_drink(
+            tap,
+            ticks=cd["ticks"],
+            volume_ml=cd.get("volume_ml"),
+            username=cd.get("username"),
+            pour_time=pour_time,
+            duration=duration,
+            shout=cd.get("shout"),
+            tick_time_series=cd.get("tick_time_series"),
+            photo=request.FILES.get("photo", None),
+        )
         return protolib.ToProto(drink, full=True)
     except backend.exceptions.BackendError as e:
         raise kbapi.ServerError(str(e))
@@ -676,14 +687,14 @@ def _tap_detail_post(request, tap):
 @csrf_exempt
 @auth_required
 def cancel_drink(request):
-    if request.method != 'POST':
-        raise kbapi.BadRequestError('POST required')
+    if request.method != "POST":
+        raise kbapi.BadRequestError("POST required")
     form = forms.CancelDrinkForm(request.POST)
     if not form.is_valid():
         raise kbapi.BadRequestError(_form_errors(form))
     cd = form.cleaned_data
     try:
-        res = request.backend.cancel_drink(drink_id=cd.get('id'), spilled=cd.get('spilled', False))
+        res = request.backend.cancel_drink(drink_id=cd.get("id"), spilled=cd.get("spilled", False))
         return protolib.ToProto(res, full=True)
     except backend.exceptions.BackendError as e:
         raise kbapi.ServerError(str(e))
@@ -699,7 +710,7 @@ def login(request):
             request.session.delete_test_cookie()
         return RESULT_OK
     else:
-        raise kbapi.PermissionDeniedError('Login failed.')
+        raise kbapi.PermissionDeniedError("Login failed.")
 
 
 def logout(request):
@@ -711,24 +722,25 @@ def logout(request):
 @auth_required
 def register(request):
     if not request.POST:
-        raise kbapi.BadRequestError('POST required.')
+        raise kbapi.BadRequestError("POST required.")
     form = forms.RegisterForm(request.POST)
     errors = {}
     if not form.is_valid():
         errors = _form_errors(form)
     else:
-        username = form.cleaned_data['username']
-        email = form.cleaned_data.get('email', None)
-        password = form.cleaned_data.get('password', None)
-        photo = request.FILES.get('photo', None)
+        username = form.cleaned_data["username"]
+        email = form.cleaned_data.get("email", None)
+        password = form.cleaned_data.get("password", None)
+        photo = request.FILES.get("photo", None)
         try:
-            user = request.backend.create_new_user(username, email=email,
-                                                   password=password, photo=photo)
+            user = request.backend.create_new_user(
+                username, email=email, password=password, photo=photo
+            )
             return protolib.ToProto(user, full=True)
         except backend.exceptions.UserExistsError:
-            user_errs = errors.get('username', [])
-            user_errs.append('Username not available.')
-            errors['username'] = user_errs
+            user_errs = errors.get("username", [])
+            user_errs.append("Username not available.")
+            errors["username"] = user_errs
     raise kbapi.BadRequestError(errors)
 
 
@@ -736,7 +748,7 @@ def register(request):
 @auth_required
 def user_photo(request, username):
     user = get_object_or_404(models.User, username=username)
-    if request.method == 'POST':
+    if request.method == "POST":
         return post_user_photo(request, user)
     else:
         return get_user_photo(request, user)
@@ -750,7 +762,7 @@ def get_user_photo(request, user):
 
 
 def post_user_photo(request, user):
-    photo_file = request.FILES.get('photo')
+    photo_file = request.FILES.get("photo")
     if not photo_file:
         raise kbapi.BadRequestError('The file "photo" is required.')
 
@@ -766,9 +778,9 @@ def post_user_photo(request, user):
 @csrf_exempt
 @require_http_methods(["POST"])
 def link_device_new(request):
-    name = request.POST.get('name', 'Unknown Device')
+    name = request.POST.get("name", "Unknown Device")
     code = devicelink.start_link(name)
-    return {'status': 'ok', 'code': code, 'linked': False}
+    return {"status": "ok", "code": code, "linked": False}
 
 
 @require_http_methods(["GET"])
@@ -776,14 +788,14 @@ def link_device_status(request, code):
     try:
         api_key = devicelink.get_status(code)
     except devicelink.LinkExpiredException:
-        raise Http404('Code expired or does not exist.')
+        raise Http404("Code expired or does not exist.")
     if api_key:
-        return {'status': 'ok', 'linked': True, 'api_key': api_key}
-    return {'status': 'ok', 'linked': False}
+        return {"status": "ok", "linked": True, "api_key": api_key}
+    return {"status": "ok", "linked": False}
 
 
 def default_handler(request):
-    raise Http404('Not an API endpoint: %s' % request.path[:100])
+    raise Http404("Not an API endpoint: %s" % request.path[:100])
 
 
 def get_tap_from_meter_name_or_404(meter_name_or_id):

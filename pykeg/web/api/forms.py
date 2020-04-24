@@ -28,6 +28,7 @@ ALL_TOGGLES = models.FlowToggle.objects.all()
 
 class DrinkPostForm(forms.Form):
     """Form to handle posts to /tap/<tap_id>/"""
+
     ticks = forms.IntegerField()
     volume_ml = forms.FloatField(required=False)
     username = forms.RegexField(required=False, max_length=30, regex=USERNAME_REGEX)
@@ -40,12 +41,14 @@ class DrinkPostForm(forms.Form):
 
 class CancelDrinkForm(forms.Form):
     """Form to handled posts to /cancel-drink/"""
+
     id = forms.IntegerField()
     spilled = forms.BooleanField(required=False)
 
 
 class ThermoPostForm(forms.Form):
     """Handles posting new temperature sensor readings."""
+
     temp_c = forms.FloatField()
     when = forms.IntegerField(required=False)
     now = forms.IntegerField(required=False)
@@ -54,7 +57,7 @@ class ThermoPostForm(forms.Form):
 class CreateKegTapForm(forms.ModelForm):
     class Meta(object):
         model = models.KegTap
-        fields = ('name', 'notes')
+        fields = ("name", "notes")
 
 
 class CalibrateTapForm(forms.Form):

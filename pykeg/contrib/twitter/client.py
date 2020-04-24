@@ -31,6 +31,7 @@ class TwitterClientError(Exception):
 
 class AuthError(TwitterClientError):
     """Wraps an error raised by oauthlib."""
+
     def __init__(self, message, cause):
         super(AuthError, self).__init__(message)
         self.cause = cause
@@ -38,18 +39,19 @@ class AuthError(TwitterClientError):
 
 class RequestError(TwitterClientError):
     """Wraps an error raised by the request library."""
+
     def __init__(self, message, cause):
         super(RequestError, self).__init__(message)
         self.cause = cause
 
 
 class TwitterClient(object):
-    REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
-    AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
-    ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
+    REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token"
+    AUTHORIZATION_URL = "https://api.twitter.com/oauth/authorize"
+    ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token"
 
-    SESSION_RESOURCE_OWNER = 'twitter:resource_owner_key'
-    SESSION_RESOURCE_OWNER_SECRET = 'twitter:resource_owner_secret'
+    SESSION_RESOURCE_OWNER = "twitter:resource_owner_key"
+    SESSION_RESOURCE_OWNER_SECRET = "twitter:resource_owner_secret"
 
     def __init__(self, client_key, client_secret):
         self.client_key = client_key
@@ -57,27 +59,29 @@ class TwitterClient(object):
 
     def fetch_request_token(self, callback_uri):
         """Step 1 of flow: Get a request token."""
-        session = OAuth1Session(self.client_key,
-            client_secret=self.client_secret,
-            callback_uri=callback_uri)
+        session = OAuth1Session(
+            self.client_key, client_secret=self.client_secret, callback_uri=callback_uri
+        )
 
         try:
             res = session.fetch_request_token(self.REQUEST_TOKEN_URL)
         except requests.exceptions.RequestException as e:
-            raise RequestError('Request error fetching token.', e)
+            raise RequestError("Request error fetching token.", e)
         except (TokenRequestDenied, TokenMissing) as e:
-            raise AuthError('Token request failed.', e)
+            raise AuthError("Token request failed.", e)
 
-        request_token = res.get('oauth_token')
-        request_token_secret = res.get('oauth_token_secret')
+        request_token = res.get("oauth_token")
+        request_token_secret = res.get("oauth_token_secret")
         return request_token, request_token_secret
 
     def get_authorization_url(self, request_token, request_token_secret):
         """Step 2 of flow: Get an authorization url."""
-        session = OAuth1Session(self.client_key,
+        session = OAuth1Session(
+            self.client_key,
             client_secret=self.client_secret,
             resource_owner_key=request_token,
-            resource_owner_secret=request_token_secret)
+            resource_owner_secret=request_token_secret,
+        )
         return session.authorization_url(self.AUTHORIZATION_URL)
 
     def get_redirect_url(self, callback_uri):
@@ -86,26 +90,30 @@ class TwitterClient(object):
         url = self.get_authorization_url(request_token, request_token_secret)
         return url, request_token, request_token_secret
 
-    def handle_authorization_callback(self, request_token, request_token_secret, request=None, uri=None):
+    def handle_authorization_callback(
+        self, request_token, request_token_secret, request=None, uri=None
+    ):
         """Step 3 of the flow: Parse the response and fetch token."""
-        session = OAuth1Session(self.client_key,
+        session = OAuth1Session(
+            self.client_key,
             client_secret=self.client_secret,
             resource_owner_key=request_token,
-            resource_owner_secret=request_token_secret)
+            resource_owner_secret=request_token_secret,
+        )
 
         if not uri:
-            uri = request.build_absolute_uri() + '?' + request.META.get('QUERY_STRING', '')
+            uri = request.build_absolute_uri() + "?" + request.META.get("QUERY_STRING", "")
         session.parse_authorization_response(uri)
 
         try:
             res = session.fetch_access_token(self.ACCESS_TOKEN_URL)
         except requests.exceptions.RequestException as e:
-            raise RequestError('Request error fetching access token.', e)
+            raise RequestError("Request error fetching access token.", e)
         except (TokenRequestDenied, TokenMissing) as e:
-            raise AuthError('Auth error fetching access token.', e)
+            raise AuthError("Auth error fetching access token.", e)
 
-        oauth_token = res.get('oauth_token')
-        oauth_token_secret = res.get('oauth_token_secret')
+        oauth_token = res.get("oauth_token")
+        oauth_token_secret = res.get("oauth_token_secret")
         return oauth_token, oauth_token_secret
 
     def get_user_info(self, access_token, access_token_secret):

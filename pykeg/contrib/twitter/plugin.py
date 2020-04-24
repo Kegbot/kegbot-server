@@ -31,21 +31,21 @@ from .client import TwitterClient
 
 from unicodedata import normalize
 
-KEY_CONSUMER_KEY = 'consumer_key'
-KEY_CONSUMER_SECRET = 'consumer_secret'
+KEY_CONSUMER_KEY = "consumer_key"
+KEY_CONSUMER_SECRET = "consumer_secret"
 
-KEY_SITE_PROFILE = 'site_profile'
-KEY_OAUTH_TOKEN = 'oauth_token'
-KEY_OAUTH_TOKEN_SECRET = 'oauth_token_secret'
-KEY_TWITTER_NAME = 'twitter_name'
-KEY_TWITTER_ID = 'twitter_id'
+KEY_SITE_PROFILE = "site_profile"
+KEY_OAUTH_TOKEN = "oauth_token"
+KEY_OAUTH_TOKEN_SECRET = "oauth_token_secret"
+KEY_TWITTER_NAME = "twitter_name"
+KEY_TWITTER_ID = "twitter_id"
 
-KEY_SITE_SETTINGS = 'site_settings'
+KEY_SITE_SETTINGS = "site_settings"
 
 TWITTER_LINK_LEN = 22
 TWEET_MAX_LEN = 140
 TWEET_MAX_LEN_WITH_URL = TWEET_MAX_LEN - TWITTER_LINK_LEN - 1
-TRUNCATE_STR = u'\u2026'
+TRUNCATE_STR = "\u2026"
 
 
 def send_tweet(api, contents):
@@ -58,19 +58,19 @@ def truncate_tweet(tweet, max_len=TWEET_MAX_LEN, truncate_str=TRUNCATE_STR):
         return tweet
     words = tweet.strip().split()
     while True:
-        tweet = u' '.join(words)
-        candidate = normalize('NFC', tweet + truncate_str)
+        tweet = " ".join(words)
+        candidate = normalize("NFC", tweet + truncate_str)
         if not tweet or len(candidate) <= max_len:
             return candidate
         words = words[:-1]
 
 
 class TwitterPlugin(plugin.Plugin):
-    NAME = 'Twitter'
-    SHORT_NAME = 'twitter'
-    DESCRIPTION = 'Tweet when you pour!'
-    URL = 'http://kegbot.org'
-    VERSION = '0.0.1-pre'
+    NAME = "Twitter"
+    SHORT_NAME = "twitter"
+    DESCRIPTION = "Tweet when you pour!"
+    URL = "http://kegbot.org"
+    VERSION = "0.0.1-pre"
 
     def get_admin_settings_view(self):
         return views.admin_settings
@@ -80,14 +80,14 @@ class TwitterPlugin(plugin.Plugin):
 
     def get_extra_admin_views(self):
         return [
-            ('redirect/$', views.site_twitter_redirect, 'site_twitter_redirect'),
-            ('callback/$', views.site_twitter_callback, 'site_twitter_callback'),
+            ("redirect/$", views.site_twitter_redirect, "site_twitter_redirect"),
+            ("callback/$", views.site_twitter_callback, "site_twitter_callback"),
         ]
 
     def get_extra_user_views(self):
         return [
-            ('redirect/$', views.user_twitter_redirect, 'user_twitter_redirect'),
-            ('callback/$', views.user_twitter_callback, 'user_twitter_callback'),
+            ("redirect/$", views.user_twitter_redirect, "user_twitter_redirect"),
+            ("callback/$", views.user_twitter_callback, "user_twitter_callback"),
         ]
 
     def get_site_twitter_settings_form(self):
@@ -98,14 +98,14 @@ class TwitterPlugin(plugin.Plugin):
             self.handle_event(event)
 
     def handle_event(self, event):
-        self.logger.info('Handling new event: %s' % event.id)
+        self.logger.info("Handling new event: %s" % event.id)
         if util.is_stale(event.time):
-            self.logger.info('Event is stale, ignoring: %s' % event.id)
+            self.logger.info("Event is stale, ignoring: %s" % event.id)
             return
 
         profile = self.get_site_profile()
         if not profile:
-            self.logger.info('No site twitter profile, ignoring.')
+            self.logger.info("No site twitter profile, ignoring.")
             return
 
         site_settings = self.get_site_twitter_settings_form().initial
@@ -120,23 +120,24 @@ class TwitterPlugin(plugin.Plugin):
         return self._get_profile(KEY_SITE_PROFILE)
 
     def get_user_profile(self, user):
-        return self._get_profile('user_profile:%s' % user.id)
+        return self._get_profile("user_profile:%s" % user.id)
 
     def _get_profile(self, datastore_key):
         return self.datastore.get(datastore_key, {})
 
-    def save_site_profile(self, oauth_token, oauth_token_secret,
-                          twitter_name, twitter_id):
-        return self._save_profile(KEY_SITE_PROFILE, oauth_token,
-                                  oauth_token_secret, twitter_name, twitter_id)
+    def save_site_profile(self, oauth_token, oauth_token_secret, twitter_name, twitter_id):
+        return self._save_profile(
+            KEY_SITE_PROFILE, oauth_token, oauth_token_secret, twitter_name, twitter_id
+        )
 
-    def save_user_profile(self, user, oauth_token, oauth_token_secret,
-                          twitter_name, twitter_id):
-        return self._save_profile('user_profile:%s' % user.id, oauth_token,
-                                  oauth_token_secret, twitter_name, twitter_id)
+    def save_user_profile(self, user, oauth_token, oauth_token_secret, twitter_name, twitter_id):
+        return self._save_profile(
+            "user_profile:%s" % user.id, oauth_token, oauth_token_secret, twitter_name, twitter_id
+        )
 
-    def _save_profile(self, datastore_key, oauth_token, oauth_token_secret,
-                      twitter_name, twitter_id):
+    def _save_profile(
+        self, datastore_key, oauth_token, oauth_token_secret, twitter_name, twitter_id
+    ):
         profile = {
             KEY_OAUTH_TOKEN: oauth_token,
             KEY_OAUTH_TOKEN_SECRET: oauth_token_secret,
@@ -150,7 +151,7 @@ class TwitterPlugin(plugin.Plugin):
         self.datastore.delete(KEY_SITE_PROFILE)
 
     def remove_user_profile(self, user):
-        self.datastore.delete('user_profile:%s' % user.id)
+        self.datastore.delete("user_profile:%s" % user.id)
 
     def get_credentials(self):
         return self.datastore.get(KEY_CONSUMER_KEY), self.datastore.get(KEY_CONSUMER_SECRET)
@@ -160,71 +161,73 @@ class TwitterPlugin(plugin.Plugin):
         self.datastore.set(KEY_CONSUMER_SECRET, consumer_secret)
 
     def get_user_settings_form(self, user):
-        return self.datastore.load_form(forms.UserSettingsForm, 'user_settings:%s' % user.id)
+        return self.datastore.load_form(forms.UserSettingsForm, "user_settings:%s" % user.id)
 
     def get_user_settings(self, user):
         return self.get_user_settings_form(user).initial
 
     def save_user_settings_form(self, user, form):
-        self.datastore.save_form(form, 'user_settings:%s' % user.id)
+        self.datastore.save_form(form, "user_settings:%s" % user.id)
 
     def _issue_system_tweet(self, event, settings, site_profile):
         kind = event.kind
         tweet = None
-        append_url = bool(settings.get('append_url'))
+        append_url = bool(settings.get("append_url"))
 
         if kind == event.DRINK_POURED:
-            if not settings.get('tweet_drink_events'):
+            if not settings.get("tweet_drink_events"):
                 self.logger.info(
-                    'Skipping system tweet for drink event %s: disabled by settings.' %
-                    event.id)
+                    "Skipping system tweet for drink event %s: disabled by settings." % event.id
+                )
                 return
-            template = settings.get('drink_poured_template')
+            template = settings.get("drink_poured_template")
 
         elif kind == event.SESSION_STARTED:
-            if not settings.get('tweet_session_events'):
+            if not settings.get("tweet_session_events"):
                 self.logger.info(
-                    'Skipping system tweet for session start event %s: disabled by settings.' %
-                    event.id)
+                    "Skipping system tweet for session start event %s: disabled by settings."
+                    % event.id
+                )
                 return
-            template = settings.get('session_started_template')
+            template = settings.get("session_started_template")
 
         elif kind == event.SESSION_JOINED:
-            if not settings.get('tweet_session_joined_events'):
+            if not settings.get("tweet_session_joined_events"):
                 self.logger.info(
-                    'Skipping system tweet for session join event %s: disabled by settings.' %
-                    event.id)
+                    "Skipping system tweet for session join event %s: disabled by settings."
+                    % event.id
+                )
                 return
-            template = settings.get('session_joined_template')
+            template = settings.get("session_joined_template")
 
         elif kind == event.KEG_TAPPED:
-            if not settings.get('tweet_keg_events'):
+            if not settings.get("tweet_keg_events"):
                 self.logger.info(
-                    'Skipping system tweet for keg start event %s: disabled by settings.' %
-                    event.id)
+                    "Skipping system tweet for keg start event %s: disabled by settings." % event.id
+                )
                 return
-            template = settings.get('keg_started_template')
+            template = settings.get("keg_started_template")
 
         elif kind == event.KEG_ENDED:
-            if not settings.get('tweet_keg_events'):
+            if not settings.get("tweet_keg_events"):
                 self.logger.info(
-                    'Skipping system tweet for keg end event %s: disabled by settings.' %
-                    event.id)
+                    "Skipping system tweet for keg end event %s: disabled by settings." % event.id
+                )
                 return
-            template = settings.get('keg_ended_template')
+            template = settings.get("keg_ended_template")
 
         else:
-            self.logger.info('Skipping unhandled event type: %s' % kind)
+            self.logger.info("Skipping unhandled event type: %s" % kind)
             return
 
         if kind in (event.DRINK_POURED, event.SESSION_JOINED):
-            if event.user.is_guest() and not settings.get('include_guests'):
-                self.logger.info('Skipping system tweet for event %s: guest pour.' % event.id)
+            if event.user.is_guest() and not settings.get("include_guests"):
+                self.logger.info("Skipping system tweet for event %s: guest pour." % event.id)
                 return
 
         image_url = None
 
-        if event.drink and event.drink.picture and settings.get('include_pictures'):
+        if event.drink and event.drink.picture and settings.get("include_pictures"):
             image_url = event.drink.picture.resized.url
 
         tweet = self._compose_tweet(event, template, append_url)
@@ -232,45 +235,45 @@ class TwitterPlugin(plugin.Plugin):
         if not tweet:
             return
 
-        self.logger.info('Scheduling system tweet: %s' % tweet)
+        self.logger.info("Scheduling system tweet: %s" % tweet)
         self._schedule_tweet(tweet, site_profile, image_url)
 
     def _issue_user_tweet(self, event, site_settings):
         kind = event.kind
         user = event.user
         tweet = None
-        append_url = bool(site_settings.get('append_url'))
+        append_url = bool(site_settings.get("append_url"))
 
         if kind not in (event.SESSION_JOINED, event.DRINK_POURED):
-            self.logger.info('Skipping user tweet for event %s: unknown event.' % event)
+            self.logger.info("Skipping user tweet for event %s: unknown event." % event)
             return
 
         profile = self.get_user_profile(user)
         if not profile:
-            self.logger.info('Skipping user tweet for event %s: no twitter profile.' % event.id)
+            self.logger.info("Skipping user tweet for event %s: no twitter profile." % event.id)
             return
 
         user_settings = self.get_user_settings(user)
 
         if kind == event.DRINK_POURED:
-            if not user_settings.get('tweet_drink_events'):
-                self.logger.info('Skipping drink tweet for event %s: disabled by user.' % event.id)
+            if not user_settings.get("tweet_drink_events"):
+                self.logger.info("Skipping drink tweet for event %s: disabled by user." % event.id)
                 return
-            template = site_settings.get('user_drink_poured_template')
+            template = site_settings.get("user_drink_poured_template")
 
         elif kind == event.SESSION_JOINED:
-            if not user_settings.get('tweet_session_events'):
+            if not user_settings.get("tweet_session_events"):
                 self.logger.info(
-                    'Skipping session tweet for event %s: disabled by user.' %
-                    event.id)
+                    "Skipping session tweet for event %s: disabled by user." % event.id
+                )
                 return
-            template = site_settings.get('session_started_template')
+            template = site_settings.get("session_started_template")
 
         if event.drink.shout:
             template = event.drink.shout
 
         image_url = None
-        if event.drink and event.drink.picture and user_settings.get('include_pictures'):
+        if event.drink and event.drink.picture and user_settings.get("include_pictures"):
             image_url = event.drink.picture.resized.url
 
         tweet = self._compose_tweet(event, template, append_url)
@@ -278,45 +281,46 @@ class TwitterPlugin(plugin.Plugin):
         if not tweet:
             return
 
-        self.logger.info('Scheduling tweet: %s' % tweet)
+        self.logger.info("Scheduling tweet: %s" % tweet)
         self._schedule_tweet(tweet, profile, image_url)
 
     def _compose_tweet(self, event, template, append_url):
         kbvars = self.get_vars(event)
         tweet = self.expand_template(template, kbvars)
         if append_url:
-            url = kbvars['url']
+            url = kbvars["url"]
             tweet = truncate_tweet(tweet, TWEET_MAX_LEN_WITH_URL)
-            tweet = '%s %s' % (tweet, url)
+            tweet = "%s %s" % (tweet, url)
         return truncate_tweet(tweet)
 
     def _schedule_tweet(self, tweet, profile, image_url=None):
         if not profile:
-            self.logger.warning('Empty profile, skipping tweet.')
+            self.logger.warning("Empty profile, skipping tweet.")
             return
-        self.logger.info('Scheduling tweet on @%s: %s' % (profile.get('twitter_name'), repr(tweet)))
+        self.logger.info("Scheduling tweet on @%s: %s" % (profile.get("twitter_name"), repr(tweet)))
         consumer_key, consumer_secret = self.get_credentials()
         oauth_token = profile.get(KEY_OAUTH_TOKEN)
         oauth_token_secret = profile.get(KEY_OAUTH_TOKEN_SECRET)
 
         with SuppressTaskErrors(self.logger):
-            tasks.send_tweet.delay(consumer_key, consumer_secret, oauth_token, oauth_token_secret,
-                                   tweet, image_url)
+            tasks.send_tweet.delay(
+                consumer_key, consumer_secret, oauth_token, oauth_token_secret, tweet, image_url
+            )
 
     def get_vars(self, event):
         kbsite = KegbotSite.get()
 
-        username = ''
+        username = ""
         if event.user:
             username = event.user.username
 
-        url = ''
+        url = ""
         if event.drink:
             url = event.drink.short_url()
         elif event.session:
             url = event.session.short_url()
 
-        beverage_name = ''
+        beverage_name = ""
         if event.drink and (event.drink.keg and event.drink.keg.type):
             beverage_name = event.drink.keg.type.name
 
@@ -326,29 +330,29 @@ class TwitterPlugin(plugin.Plugin):
             if not url:
                 url = event.keg.full_url()
 
-        volume_str = ''
+        volume_str = ""
         if event.drink:
             volume_str = kbsite.format_volume(event.drink.volume_ml)
 
         kbvars = {
-            'site_name': kbsite.title,
-            'username': username,
-            'url': url,
-            'volume_str': volume_str,
-            'beverage_name': beverage_name,
+            "site_name": kbsite.title,
+            "username": username,
+            "url": url,
+            "volume_str": volume_str,
+            "beverage_name": beverage_name,
         }
         return kbvars
 
     def expand_template(self, template, kbvars):
         """Compiles a template from `kbvars` variables."""
         if not template:
-            return ''
-        template = template.replace('$DRINKER', kbvars.get('username', ''))
-        template = template.replace('$VOLUME', kbvars.get('volume_str', ''))
-        template = template.replace('$BEVERAGE', kbvars.get('beverage_name', ''))
-        template = template.replace('$BEER', kbvars.get('beverage_name', ''))  # compatibility
-        template = template.replace('$SITENAME', kbvars.get('site_name', ''))
-        template = template.replace('$URL', kbvars.get('url', ''))
+            return ""
+        template = template.replace("$DRINKER", kbvars.get("username", ""))
+        template = template.replace("$VOLUME", kbvars.get("volume_str", ""))
+        template = template.replace("$BEVERAGE", kbvars.get("beverage_name", ""))
+        template = template.replace("$BEER", kbvars.get("beverage_name", ""))  # compatibility
+        template = template.replace("$SITENAME", kbvars.get("site_name", ""))
+        template = template.replace("$URL", kbvars.get("url", ""))
         return template
 
     def get_client(self):

@@ -6,7 +6,7 @@ import shutil
 from django.conf import settings
 
 
-logger = logging.getLogger('pykeg.test.plugin')
+logger = logging.getLogger("pykeg.test.plugin")
 TEMP_DATA_DIR = None
 
 
@@ -14,11 +14,11 @@ TEMP_DATA_DIR = None
 def pytest_load_initial_conftests(early_config, parser, args):
     global TEMP_DATA_DIR
     TEMP_DATA_DIR = tempfile.mkdtemp()
-    os.environ['KEGBOT_DATA_DIR'] = TEMP_DATA_DIR
-    logger.info('setting KEGBOT_DATA_DIR to {}'.format(TEMP_DATA_DIR))
+    os.environ["KEGBOT_DATA_DIR"] = TEMP_DATA_DIR
+    logger.info("setting KEGBOT_DATA_DIR to {}".format(TEMP_DATA_DIR))
 
 
 @pytest.hookimpl
 def pytest_sessionfinish(session, exitstatus):
-    logger.info('removing KEGBOT_DATA_DIR {}'.format(TEMP_DATA_DIR))
+    logger.info("removing KEGBOT_DATA_DIR {}".format(TEMP_DATA_DIR))
     shutil.rmtree(TEMP_DATA_DIR)

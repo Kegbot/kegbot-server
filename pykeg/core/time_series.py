@@ -34,15 +34,15 @@ def from_string(s):
     pairs = s.strip().split()
     ret = []
     for pair in pairs:
-        time, amount = pair.split(':')
+        time, amount = pair.split(":")
         time = int(time)
         amount = int(amount)
         if time < 0:
-            raise ValueError('Time cannot be less than zero: %s' % time)
+            raise ValueError("Time cannot be less than zero: %s" % time)
         ret.append((time, amount))
     return ret
 
 
 def to_string(pairs):
     """Converts a series of (int, int) tuples to a time series string."""
-    return ' '.join('%i:%i' % pair for pair in pairs)
+    return " ".join("%i:%i" % pair for pair in pairs)

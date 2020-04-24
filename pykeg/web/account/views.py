@@ -40,8 +40,8 @@ from pykeg.notification.forms import NotificationSettingsForm
 @login_required
 def account_main(request):
     context = {}
-    context['user'] = request.user
-    return render(request, 'account/index.html', context=context)
+    context["user"] = request.user
+    return render(request, "account/index.html", context=context)
 
 
 @login_required
@@ -49,21 +49,21 @@ def edit_profile(request):
     context = {}
     user = request.user
 
-    context['form'] = forms.ProfileForm(initial={'display_name': user.get_full_name()})
+    context["form"] = forms.ProfileForm(initial={"display_name": user.get_full_name()})
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.ProfileForm(request.POST, request.FILES)
-        context['form'] = form
+        context["form"] = form
         if form.is_valid():
-            if 'new_mugshot' in request.FILES:
+            if "new_mugshot" in request.FILES:
                 pic = models.Picture.objects.create(user=user)
-                image = request.FILES['new_mugshot']
+                image = request.FILES["new_mugshot"]
                 pic.image.save(image.name, image)
                 pic.save()
                 user.mugshot = pic
-            user.display_name = form.cleaned_data['display_name']
+            user.display_name = form.cleaned_data["display_name"]
             user.save()
-    return render(request, 'account/profile.html', context=context)
+    return render(request, "account/profile.html", context=context)
 
 
 @login_required
@@ -72,19 +72,18 @@ def invite(request):
     form = forms.InvitationForm()
 
     if not request.kbsite.can_invite(request.user):
-        raise Http404('Cannot invite from this account.')
+        raise Http404("Cannot invite from this account.")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.InvitationForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
-            invite = models.Invitation.objects.create(for_email=email,
-                                                      invited_by=request.user)
+            email = form.cleaned_data["email"]
+            invite = models.Invitation.objects.create(for_email=email, invited_by=request.user)
             invite.send()
-            messages.success(request, 'Invitation mailed to ' + email)
+            messages.success(request, "Invitation mailed to " + email)
 
-    context['form'] = form
-    return render(request, 'account/invite.html', context=context)
+    context["form"] = form
+    return render(request, "account/invite.html", context=context)
 
 
 @login_required
@@ -94,43 +93,47 @@ def notifications(request):
 
     context = {}
     existing_settings = models.NotificationSettings.objects.get_or_create(
-        user=request.user, backend='pykeg.notification.backends.email.EmailNotificationBackend')[0]
+        user=request.user, backend="pykeg.notification.backends.email.EmailNotificationBackend"
+    )[0]
 
-    if request.method == 'POST':
-        if 'submit-settings' in request.POST:
+    if request.method == "POST":
+        if "submit-settings" in request.POST:
             form = NotificationSettingsForm(request.POST, instance=existing_settings)
             if form.is_valid():
                 instance = form.save(commit=False)
                 instance.user = request.user
-                instance.backend = 'pykeg.notification.backends.email.EmailNotificationBackend'
+                instance.backend = "pykeg.notification.backends.email.EmailNotificationBackend"
                 instance.save()
-                messages.success(request, 'Settings updated')
+                messages.success(request, "Settings updated")
                 existing_settings = instance
 
-        elif 'submit-email' in request.POST:
+        elif "submit-email" in request.POST:
             form = forms.ChangeEmailForm(request.POST)
             if form.is_valid():
-                new_email = form.cleaned_data['email']
+                new_email = form.cleaned_data["email"]
                 if new_email == request.user.email:
-                    messages.warning(request, 'E-mail address unchanged.')
+                    messages.warning(request, "E-mail address unchanged.")
                 else:
                     token = email.build_email_change_token(request.user, new_email)
                     url = models.KegbotSite.get().reverse_full(
-                        'account-confirm-email', args=(), kwargs={'token': token})
+                        "account-confirm-email", args=(), kwargs={"token": token}
+                    )
 
                     message = email.build_message(
-                        new_email, 'registration/email_confirm_email_change.html', {'url': url})
+                        new_email, "registration/email_confirm_email_change.html", {"url": url}
+                    )
                     message.send()
                     messages.success(
-                        request, 'An e-mail confirmation has been sent to {}'.format(new_email))
+                        request, "An e-mail confirmation has been sent to {}".format(new_email)
+                    )
 
         else:
-            messages.error(request, 'Unknown request.')
+            messages.error(request, "Unknown request.")
 
-    context['form'] = NotificationSettingsForm(instance=existing_settings)
-    context['email_form'] = forms.ChangeEmailForm(initial={'email': request.user.email})
+    context["form"] = NotificationSettingsForm(instance=existing_settings)
+    context["email_form"] = forms.ChangeEmailForm(initial={"email": request.user.email})
 
-    return render(request, 'account/notifications.html', context=context)
+    return render(request, "account/notifications.html", context=context)
 
 
 @login_required
@@ -138,51 +141,51 @@ def confirm_email(request, token):
     try:
         uid, new_address = email.verify_email_change_token(request.user, token)
         if uid != request.user.uid:
-            messages.error(request, 'E-mail confirmation does not exist for this account.')
+            messages.error(request, "E-mail confirmation does not exist for this account.")
         elif request.user.email != new_address:
             request.user.email = new_address
             request.user.save()
-            messages.success(request, 'E-mail address successfully changed.')
+            messages.success(request, "E-mail address successfully changed.")
         else:
-            messages.warning(request, 'E-mail address unchanged.')
+            messages.warning(request, "E-mail address unchanged.")
     except ValueError:
-        messages.error(request, 'That token is not valid.')
+        messages.error(request, "That token is not valid.")
 
-    return redirect('account-notifications')
+    return redirect("account-notifications")
 
 
 @never_cache
 def activate_account(request, activation_key):
     users = models.User.objects.filter(activation_key=activation_key)
     if users.count() != 1:
-        raise Http404('No such activation key')
+        raise Http404("No such activation key")
     user = users[0]
 
-    assert not user.has_usable_password(), 'User already has a usable password'
+    assert not user.has_usable_password(), "User already has a usable password"
 
     form = forms.ActivateAccountForm()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.ActivateAccountForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
 
             # Set the password and revoke the activation key.
-            user.set_password(cd.get('password'))
+            user.set_password(cd.get("password"))
             user.activation_key = None
             user.save()
 
             # Log the user in.
-            user = authenticate(username=user.username, password=cd.get('password'))
+            user = authenticate(username=user.username, password=cd.get("password"))
             auth_login(request, user)
             if request.session.test_cookie_worked():
                 request.session.delete_test_cookie()
 
-            messages.success(request, 'Your account has been activated!')
-            return redirect('kb-account-main')
+            messages.success(request, "Your account has been activated!")
+            return redirect("kb-account-main")
 
     context = {}
-    context['form'] = form
-    return render(request, 'account/activate_account.html', context=context)
+    context["form"] = form
+    return render(request, "account/activate_account.html", context=context)
 
 
 @login_required
@@ -193,7 +196,7 @@ def regenerate_api_key(request):
         key, is_new = models.ApiKey.objects.get_or_create(user=request.user)
         key.regenerate()
         key.save()
-    return redirect('kb-account-main')
+    return redirect("kb-account-main")
 
 
 @login_required
@@ -204,6 +207,6 @@ def plugin_settings(request, plugin_name):
 
     view = plugin.get_user_settings_view()
     if not view:
-        raise Http404('No user settings for this plugin')
+        raise Http404("No user settings for this plugin")
 
     return view(request, plugin)

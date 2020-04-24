@@ -24,9 +24,10 @@ from django.utils.module_loading import import_string
 from django.core.exceptions import ImproperlyConfigured
 
 import logging
-logger = logging.getLogger('notification')
 
-__all__ = ['get_backends', 'handle_new_system_events']
+logger = logging.getLogger("notification")
+
+__all__ = ["get_backends", "handle_new_system_events"]
 
 
 def get_backends():
@@ -49,16 +50,17 @@ def handle_new_system_events(events):
         None
     """
     backends = get_backends()
-    logger.info('Handling %s event(s)' % len(events))
-    logger.info('Num backends: %s' % len(backends))
+    logger.info("Handling %s event(s)" % len(events))
+    logger.info("Num backends: %s" % len(backends))
     for event in events:
         handle_single_event(event, backends)
 
 
 def handle_single_event(event, backends):
     from pykeg.core import models as core_models
+
     kind = event.kind
-    logger.info('Processing event: %s' % event.kind)
+    logger.info("Processing event: %s" % event.kind)
 
     for backend in backends:
         backend_name = backend.name()
@@ -73,14 +75,14 @@ def handle_single_event(event, backends):
         elif kind == event.KEG_ENDED:
             prefs = prefs.filter(keg_ended=True)
         else:
-            logger.info('Unknown kind: %s' % kind)
+            logger.info("Unknown kind: %s" % kind)
             prefs = []
 
-        logger.debug('Matching prefs: %s' % str(prefs))
+        logger.debug("Matching prefs: %s" % str(prefs))
         for matching_pref in prefs:
             user = matching_pref.user
             if not user.is_active:
-                logger.info('Skipping notification for inactive user %s' % user)
+                logger.info("Skipping notification for inactive user %s" % user)
                 continue
-            logger.info('Notifying %s for event %s' % (user, kind))
+            logger.info("Notifying %s for event %s" % (user, kind))
             backend.notify(event, user)

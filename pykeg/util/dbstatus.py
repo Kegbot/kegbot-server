@@ -14,6 +14,7 @@ class DatabaseNotInitialized(DatabaseStatusError):
 
 class NeedMigration(DatabaseStatusError):
     """Thrown when a migration is needed."""
+
     def __init__(self, migration_name):
         super(NeedMigration, self).__init__('Migration "{}" not applied'.format(migration_name))
         self.migration_name = migration_name
@@ -21,7 +22,7 @@ class NeedMigration(DatabaseStatusError):
 
 def check_db_status():
     tables = connection.introspection.table_names()
-    if 'django_migrations' not in tables:
+    if "django_migrations" not in tables:
         raise DatabaseNotInitialized()
 
     executor = MigrationExecutor(connection)

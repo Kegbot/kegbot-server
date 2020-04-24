@@ -43,29 +43,29 @@ from pykeg.web.kegweb import forms
 def index(request):
     context = {}
 
-    context['taps'] = models.KegTap.objects.all()
-    context['events'] = models.SystemEvent.objects.timeline()[:20]
-    sessions = models.DrinkingSession.objects.all().order_by('-id')[:10]
-    context['sessions'] = sessions
+    context["taps"] = models.KegTap.objects.all()
+    context["events"] = models.SystemEvent.objects.timeline()[:20]
+    sessions = models.DrinkingSession.objects.all().order_by("-id")[:10]
+    context["sessions"] = sessions
 
     if sessions:
         last_session = sessions[0]
-        context['most_recent_session'] = last_session
+        context["most_recent_session"] = last_session
         if sessions and last_session.IsActiveNow():
-            context['current_session'] = last_session
+            context["current_session"] = last_session
 
-    return render(request, 'index.html', context=context)
+    return render(request, "index.html", context=context)
 
 
 @cache_page(30)
 def system_stats(request):
     stats = models.KegbotSite.get().get_stats()
     context = {
-        'stats': stats,
+        "stats": stats,
     }
 
     top_drinkers = []
-    for username, vol in list(stats.get('volume_by_drinker', {}).items()):
+    for username, vol in list(stats.get("volume_by_drinker", {}).items()):
         try:
             user = models.User.objects.get(username=username)
         except models.User.DoesNotExist:
@@ -73,20 +73,21 @@ def system_stats(request):
         top_drinkers.append((vol, user))
     top_drinkers.sort(reverse=True)
 
-    largest_session_id = stats.get('largest_session', {}).get('session_id', None)
+    largest_session_id = stats.get("largest_session", {}).get("session_id", None)
     if largest_session_id:
         try:
-            context['largest_session'] = models.DrinkingSession.objects.get(pk=largest_session_id)
+            context["largest_session"] = models.DrinkingSession.objects.get(pk=largest_session_id)
         except models.DrinkingSession.DoesNotExist:
             # Stats out of date.
             pass
 
-    context['top_drinkers'] = top_drinkers[:10]
+    context["top_drinkers"] = top_drinkers[:10]
 
-    return render(request, 'kegweb/system-stats.html', context=context)
+    return render(request, "kegweb/system-stats.html", context=context)
 
 
 # object lists and detail (generic views)
+
 
 def user_detail(request, username):
     user = get_object_or_404(models.User, username=username)
@@ -94,36 +95,36 @@ def user_detail(request, username):
     drinks = user.drinks.all()
 
     context = {
-        'drinks': drinks,
-        'stats': stats,
-        'drinker': user,
+        "drinks": drinks,
+        "stats": stats,
+        "drinker": user,
     }
 
-    largest_session_id = stats.get('largest_session', {}).get('session_id', None)
+    largest_session_id = stats.get("largest_session", {}).get("session_id", None)
     if largest_session_id:
-        context['largest_session'] = models.DrinkingSession.objects.get(pk=largest_session_id)
+        context["largest_session"] = models.DrinkingSession.objects.get(pk=largest_session_id)
 
-    return render(request, 'kegweb/drinker_detail.html', context=context)
+    return render(request, "kegweb/drinker_detail.html", context=context)
 
 
 class KegListView(ListView):
     model = models.Keg
-    template_name = 'kegweb/keg_list.html'
-    context_object_name = 'kegs'
+    template_name = "kegweb/keg_list.html"
+    context_object_name = "kegs"
     paginate_by = 10
 
     def get_queryset(self):
-        return models.Keg.objects.all().order_by('-id')
+        return models.Keg.objects.all().order_by("-id")
 
 
 def fullscreen(request):
     context = {}
     taps = models.KegTap.objects.all()
     active_taps = [t for t in taps if t.current_keg]
-    pages = [active_taps[i:i + 4] for i in range(0, len(active_taps), 4)]
-    context['pages'] = pages
+    pages = [active_taps[i : i + 4] for i in range(0, len(active_taps), 4)]
+    context["pages"] = pages
 
-    return render(request, 'kegweb/fullscreen.html', context=context)
+    return render(request, "kegweb/fullscreen.html", context=context)
 
 
 @cache_page(30)
@@ -133,16 +134,16 @@ def keg_detail(request, keg_id):
     last_session = sessions[:1]
 
     context = {
-        'keg': keg,
-        'stats': keg.get_stats(),
-        'sessions': sessions,
-        'last_session': last_session,
+        "keg": keg,
+        "stats": keg.get_stats(),
+        "sessions": sessions,
+        "last_session": last_session,
     }
-    return render(request, 'kegweb/keg_detail.html', context=context)
+    return render(request, "kegweb/keg_detail.html", context=context)
 
 
 def short_drink_detail(request, drink_id):
-    return redirect('kb-drink', drink_id=str(drink_id), permanent=True)
+    return redirect("kb-drink", drink_id=str(drink_id), permanent=True)
 
 
 def short_session_detail(request, session_id):
@@ -154,31 +155,31 @@ def short_session_detail(request, session_id):
 def drink_detail(request, drink_id):
     drink = get_object_or_404(models.Drink, id=drink_id)
     context = {
-        'drink': drink,
+        "drink": drink,
     }
 
     can_delete = (request.user == drink.user) or request.user.is_staff
 
     if can_delete:
-        picture_form = forms.DeletePictureForm(initial={'picture': drink.picture})
+        picture_form = forms.DeletePictureForm(initial={"picture": drink.picture})
     else:
         picture_form = None
 
-    if request.method == 'POST':
+    if request.method == "POST":
         if can_delete:
             picture_form = forms.DeletePictureForm(request.POST)
             if picture_form.is_valid():
                 drink.picture.erase_and_delete()
                 picture_form = None
-                messages.success(request, 'Erased image.')
+                messages.success(request, "Erased image.")
             else:
-                messages.error(request, 'request not valid: ' + str(picture_form.errors))
+                messages.error(request, "request not valid: " + str(picture_form.errors))
         else:
-            messages.error(request, 'No permission to delete picture.')
-        return redirect('kb-drink', drink_id=str(drink_id))
+            messages.error(request, "No permission to delete picture.")
+        return redirect("kb-drink", drink_id=str(drink_id))
 
-    context['picture_form'] = picture_form
-    return render(request, 'kegweb/drink_detail.html', context=context)
+    context["picture_form"] = picture_form
+    return render(request, "kegweb/drink_detail.html", context=context)
 
 
 def drinker_sessions(request, username):
@@ -186,13 +187,17 @@ def drinker_sessions(request, username):
     stats = user.get_stats()
     drinks = user.drinks.all()
 
-    chunks = models.Stats.objects.filter(
-        user=user, keg__isnull=True, session__isnull=False, is_first=True
-    ).order_by('-id').select_related('session')
+    chunks = (
+        models.Stats.objects.filter(
+            user=user, keg__isnull=True, session__isnull=False, is_first=True
+        )
+        .order_by("-id")
+        .select_related("session")
+    )
 
     paginator = Paginator(chunks, 5)
 
-    page = request.GET.get('page')
+    page = request.GET.get("page")
     try:
         chunks = paginator.page(page)
     except PageNotAnInteger:
@@ -201,13 +206,13 @@ def drinker_sessions(request, username):
         chunks = paginator.page(paginator.num_pages)
 
     context = {
-        'drinks': drinks,
-        'chunks': chunks,
-        'stats': stats,
-        'drinker': user,
+        "drinks": drinks,
+        "chunks": chunks,
+        "stats": stats,
+        "drinker": user,
     }
 
-    return render(request, 'kegweb/drinker_sessions.html', context=context)
+    return render(request, "kegweb/drinker_sessions.html", context=context)
 
 
 def keg_sessions(request, keg_id):
@@ -216,7 +221,7 @@ def keg_sessions(request, keg_id):
 
     paginator = Paginator(sessions, 5)
 
-    page = request.GET.get('page')
+    page = request.GET.get("page")
     try:
         sessions = paginator.page(page)
     except PageNotAnInteger:
@@ -225,58 +230,58 @@ def keg_sessions(request, keg_id):
         sessions = paginator.page(paginator.num_pages)
 
     context = {
-        'keg': keg,
-        'stats': keg.get_stats(),
-        'sessions': sessions,
+        "keg": keg,
+        "stats": keg.get_stats(),
+        "sessions": sessions,
     }
-    return render(request, 'kegweb/keg_sessions.html', context=context)
+    return render(request, "kegweb/keg_sessions.html", context=context)
 
 
 class SessionArchiveIndexView(ArchiveIndexView):
     model = models.DrinkingSession
-    date_field = 'start_time'
-    template_name = 'kegweb/drinkingsession_archive.html'
-    context_object_name = 'sessions'
+    date_field = "start_time"
+    template_name = "kegweb/drinkingsession_archive.html"
+    context_object_name = "sessions"
     paginate_by = 20
 
 
 class SessionYearArchiveView(YearArchiveView):
     model = models.DrinkingSession
-    date_field = 'start_time'
-    template_name = 'kegweb/drinkingsession_archive_year.html'
+    date_field = "start_time"
+    template_name = "kegweb/drinkingsession_archive_year.html"
     make_object_list = True
-    context_object_name = 'sessions'
+    context_object_name = "sessions"
     paginate_by = 20
 
 
 class SessionMonthArchiveView(MonthArchiveView):
     model = models.DrinkingSession
-    date_field = 'start_time'
-    template_name = 'kegweb/drinkingsession_archive_month.html'
+    date_field = "start_time"
+    template_name = "kegweb/drinkingsession_archive_month.html"
     make_object_list = True
-    context_object_name = 'sessions'
+    context_object_name = "sessions"
     paginate_by = 20
 
 
 class SessionDayArchiveView(DayArchiveView):
     model = models.DrinkingSession
-    date_field = 'start_time'
-    template_name = 'kegweb/drinkingsession_archive_day.html'
+    date_field = "start_time"
+    template_name = "kegweb/drinkingsession_archive_day.html"
     make_object_list = True
-    context_object_name = 'sessions'
+    context_object_name = "sessions"
     paginate_by = 20
 
 
 class SessionDateDetailView(DateDetailView):
     model = models.DrinkingSession
-    date_field = 'start_time'
-    template_name = 'kegweb/session_detail.html'
-    context_object_name = 'session'
+    date_field = "start_time"
+    template_name = "kegweb/session_detail.html"
+    context_object_name = "session"
 
     def get_context_data(self, **kwargs):
         """Adds `stats` to the context."""
         ret = super(SessionDateDetailView, self).get_context_data(**kwargs)
         stats = ret[self.context_object_name].get_stats()
-        ret['stats'] = stats
-        ret['kegs'] = [models.Keg.objects.get(pk=pk) for pk in stats.get('keg_ids', [])]
+        ret["stats"] = stats
+        ret["kegs"] = [models.Keg.objects.get(pk=pk) for pk in stats.get("keg_ids", [])]
         return ret

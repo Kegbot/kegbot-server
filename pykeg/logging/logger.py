@@ -38,12 +38,14 @@ from pykeg.core.util import get_current_request
 
 
 def levelAsString(level):
-    return {logging.DEBUG: 'debug',
-            logging.INFO: 'info',
-            logging.WARNING: 'warning',
-            logging.ERROR: 'error',
-            logging.CRITICAL: 'critical',
-            logging.FATAL: 'fatal'}.get(level, 'unknown')
+    return {
+        logging.DEBUG: "debug",
+        logging.INFO: "info",
+        logging.WARNING: "warning",
+        logging.ERROR: "error",
+        logging.CRITICAL: "critical",
+        logging.FATAL: "fatal",
+    }.get(level, "unknown")
 
 
 def _getCallingContext():
@@ -101,33 +103,35 @@ class RedisLogRecord(logging.LogRecord):
         self.modname, self.funcname, self.lineno, request = _getCallingContext()
 
         self._raw = {
-            'name': name,
-            'level': levelAsString(lvl),
-            'filename': fn,
-            'line_no': self.lineno,
-            'msg': str(msg),
-            'args': list(args),
-            'time': datetime.datetime.utcnow(),
-            'username': self.username,
-            'funcname': self.funcname,
-            'hostname': self.hostname,
-            'traceback': exc_info,
-            'request_info': self._request_info(request),
+            "name": name,
+            "level": levelAsString(lvl),
+            "filename": fn,
+            "line_no": self.lineno,
+            "msg": str(msg),
+            "args": list(args),
+            "time": datetime.datetime.utcnow(),
+            "username": self.username,
+            "funcname": self.funcname,
+            "hostname": self.hostname,
+            "traceback": exc_info,
+            "request_info": self._request_info(request),
         }
 
     def _request_info(self, request):
         """Extracts loggable information from a request."""
         ret = {}
-        if not request or not hasattr(request, 'META'):
+        if not request or not hasattr(request, "META"):
             return ret
-        ret['addr'] = request.META.get('REMOTE_ADDR')
-        ret['request_path'] = request.path
-        ret['method'] = request.method
+        ret["addr"] = request.META.get("REMOTE_ADDR")
+        ret["request_path"] = request.path
+        ret["method"] = request.method
         return ret
 
 
 class RedisLogger(logging.getLoggerClass()):
-    def makeRecord(self, name, lvl, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
+    def makeRecord(
+        self, name, lvl, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None
+    ):
         record = RedisLogRecord(name, lvl, fn, lno, msg, args, exc_info, func=None)
 
         if extra:

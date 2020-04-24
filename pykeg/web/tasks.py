@@ -36,14 +36,13 @@ def schedule_tasks(events):
         try:
             plugin.handle_new_events(events)
         except Exception:
-            logger.exception('Error dispatching events to plugin {}'.format(plugin.get_name()))
+            logger.exception("Error dispatching events to plugin {}".format(plugin.get_name()))
     notification.handle_new_system_events(events)
 
 
-@app.task(name='build_stats', queue='stats', expires=60 * 60)
+@app.task(name="build_stats", queue="stats", expires=60 * 60)
 def build_stats(drink_id, rebuild_following):
-    logger.info('build_stats drink_id={} rebuild_following={}'.format(
-        drink_id, rebuild_following))
+    logger.info("build_stats drink_id={} rebuild_following={}".format(drink_id, rebuild_following))
     with transaction.atomic():
         if rebuild_following:
             stats.rebuild_from_id(drink_id)
@@ -51,8 +50,8 @@ def build_stats(drink_id, rebuild_following):
             stats.build_for_id(drink_id)
 
 
-@app.task(name='build_backup', bind=True)
+@app.task(name="build_backup", bind=True)
 def build_backup(self):
-    logger.info('build_backup')
+    logger.info("build_backup")
     with transaction.atomic():
         backup.backup()

@@ -1,15 +1,9 @@
 name: Docker buildx
 
-# on:
-#   pull_request:
-#     branches: master
-#   push:
-#     branches:
-#       - master
-#     tags:
-#       - '*'
-
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   buildx:
@@ -34,6 +28,6 @@ jobs:
         name: Build and push
         run: |
           docker buildx build \
-            --platform linux/arm/v7 \
+            --platform linux/arm/v7,linux/amd64 \
             -t kegbot/server:latest \
             --push .

@@ -119,8 +119,9 @@ def notifications(request):
                         "account-confirm-email", args=(), kwargs={"token": token}
                     )
 
+                    email_context = {"url": url, "site_name": request.kbsite.title}
                     message = email.build_message(
-                        new_email, "registration/email_confirm_email_change.html", {"url": url}
+                        new_email, "registration/email_confirm_email_change.html", email_context
                     )
                     message.send()
                     messages.success(
@@ -140,7 +141,7 @@ def notifications(request):
 def confirm_email(request, token):
     try:
         uid, new_address = email.verify_email_change_token(request.user, token)
-        if uid != request.user.uid:
+        if uid != request.user.id:
             messages.error(request, "E-mail confirmation does not exist for this account.")
         elif request.user.email != new_address:
             request.user.email = new_address

@@ -1,0 +1,32 @@
+# docker-compose for use in continuous integration
+# Not for production!
+
+version: '3'
+services:
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'changeme'
+      MYSQL_USER: 'kegbot_dev'
+      MYSQL_PASSWORD: 'changeme'
+      MYSQL_DATABASE: 'kegbot_dev'
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--silent"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+
+volumes:
+  mysql-data:
+  kegbot-data:

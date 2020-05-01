@@ -1,4 +1,4 @@
-name: Docker Build (armv7)
+name: Docker Build
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
         name: Build
         run: |
           docker buildx build \
-            --platform linux/arm/v7 \
+            --platform linux/amd64,linux/arm/v7 \
             -t current \
             --load .
       -
@@ -36,12 +36,12 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
       -
-        name: Tag as latest-arm
+        name: Tag as latest
         if: success() && github.ref == 'refs/heads/master'
         run: |
-          docker tag current kegbot/server:latest-arm
+          docker tag current kegbot/server:latest
       -
         name: Publish
         if: success() && github.ref == 'refs/heads/master'
         run: |
-          docker push kegbot/server:latest-arm
+          docker push kegbot/server:latest

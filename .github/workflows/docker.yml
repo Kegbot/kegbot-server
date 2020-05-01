@@ -37,26 +37,33 @@ jobs:
         name: Available platforms
         run: echo ${{ steps.build.outputs.platforms }}
       -
+        name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+      -
         name: Build
         run: |
           docker buildx build \
+            --output "type=image,push=false" \
             --platform linux/amd64,linux/arm/v7 \
+            --cache-from=type=registry,ref=kegbot/server \
+            --cache-to=type=registry,ref=kegbot/server \
             --build-arg "BUILD_DATE=${{ steps.prepare.outputs.build_date }}" \
             --build-arg "GIT_SHORT_SHA=${GITHUB_SHA::8}" \
             --build-arg "VERSION=${{ steps.prepare.outputs.version }}" \
-            -t current \
-            --load .
-      -
-        name: Login to DockerHub Registry
-        if: success() && github.ref == 'refs/heads/master'
-        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-      -
-        name: Tag as latest
-        if: success() && github.ref == 'refs/heads/master'
-        run: |
-          docker tag current kegbot/server:latest
+            --tag "kegbot/server:${{ steps.prepare.outputs.version }}" \
+            --tag "kegbot/server:latest" \
+            .
       -
         name: Publish
         if: success() && github.ref == 'refs/heads/master'
         run: |
-          docker push kegbot/server:latest
+          docker buildx build \
+            --output "type=image,push=true" \
+            --platform linux/amd64,linux/arm/v7 \
+            --cache-from=type=registry,ref=kegbot/server \
+            --build-arg "BUILD_DATE=${{ steps.prepare.outputs.build_date }}" \
+            --build-arg "GIT_SHORT_SHA=${GITHUB_SHA::8}" \
+            --build-arg "VERSION=${{ steps.prepare.outputs.version }}" \
+            --tag "kegbot/server:${{ steps.prepare.outputs.version }}" \
+            --tag "kegbot/server:latest" \
+            .

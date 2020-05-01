@@ -1,0 +1,33 @@
+name: Python Build & Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master    
+
+jobs:
+  py_build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          pip install pipenv docker-compose
+          pipenv install --deploy --dev
+
+      - name: Run mysql & redis
+        run: |
+          docker-compose -f testdata/test-docker-compose.yml up -d
+          sleep 10 && ./bin/wait-for-container.sh testdata_mysql_1
+
+      - name: pytest
+        run: KEGBOT_DATABASE_URL=mysql://root:changeme@127.0.0.1:3306/kegbot_dev pipenv run pytest

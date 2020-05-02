@@ -19,8 +19,9 @@ setup(
     version=VERSION,
     description=SHORT_DESCRIPTION,
     long_description=LONG_DESCRIPTION,
-    author='Kegbot Project',
+    author='The Kegbot Project Contributors',
     author_email='info@kegbot.org',
+    license='MIT',
     url='https://kegbot.org/',
     scripts=[
         'bin/kegbot',

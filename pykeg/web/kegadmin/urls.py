@@ -56,7 +56,7 @@ urlpatterns = [
     url(r"^email/$", views.email, name="kegadmin-email"),
     url(r"^logs/$", views.logs, name="kegadmin-logs"),
     url(r"^users/create/$", views.add_user, name="kegadmin-add-user"),
-    url(r"^workers/$", views.workers, name="kegadmin-workers"),
+    url(r"^system/$", views.system_status, name="kegadmin-system-status"),
 ]
 
 if util.get_plugins():

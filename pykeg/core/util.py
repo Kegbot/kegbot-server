@@ -12,6 +12,7 @@ import pkg_resources
 import requests
 import sys
 import tempfile
+from collections import OrderedDict
 from threading import current_thread
 from contextlib import closing
 from distutils.version import StrictVersion
@@ -23,6 +24,8 @@ from django.core.exceptions import ImproperlyConfigured
 logger = logging.getLogger(__name__)
 
 _REQUESTS = {}
+
+DOCKER_VERSION_INFO_FILE = "/etc/kegbot-version"
 
 
 def get_version():
@@ -103,6 +106,18 @@ def download_to_tempfile(url):
         return str(pathname)
     except requests.exceptions.RequestException as e:
         raise IOError("Could not download file: {}".format(e))
+
+
+def get_runtime_version_info():
+    ret = {}
+    if os.environ.get("KEGBOT_IN_DOCKER") and os.path.exists(DOCKER_VERSION_INFO_FILE):
+        with open(DOCKER_VERSION_INFO_FILE) as f:
+            for line in f:
+                if not line.strip() or "=" not in line:
+                    continue
+                key, val = line.strip().split("=")
+                ret[key] = val
+    return OrderedDict(sorted(ret.items()))
 
 
 class SuppressTaskErrors(object):

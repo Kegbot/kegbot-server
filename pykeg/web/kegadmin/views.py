@@ -31,6 +31,7 @@ from pykeg.web.api import devicelink
 from pykeg.celery import app as celery_app
 from pykeg.core import checkin
 from pykeg.core import models
+from pykeg.core.util import get_runtime_version_info
 from pykeg.logging.handlers import RedisListHandler
 from pykeg.util.email import build_message
 
@@ -231,8 +232,10 @@ def bugreport(request):
 
 
 @staff_member_required
-def workers(request):
+def system_status(request):
     context = {}
+
+    context["runtime_info"] = get_runtime_version_info()
 
     try:
         inspector = celery_app.control.inspect()
@@ -257,10 +260,10 @@ def workers(request):
             if k in status:
                 status[k]["active_queues"] = v
 
-    context["status"] = status
-    context["raw_stats"] = kbjson.dumps(context["status"], indent=2)
+    context["worker_status"] = status
+    context["raw_stats"] = kbjson.dumps(context["worker_status"], indent=2)
 
-    return render(request, "kegadmin/workers.html", context=context)
+    return render(request, "kegadmin/system_status.html", context=context)
 
 
 @staff_member_required

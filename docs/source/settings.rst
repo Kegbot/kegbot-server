@@ -57,6 +57,13 @@ These values can be set in the shell environment of the server program.
     pending invitations. Generally, you should only change this value if it has
     become compromised.
 
+.. data:: KEGBOT_INSECURE_SHARED_API_KEY
+
+    If set, a random value, like a password, that will always be accepted as
+    an API key. As the name suggests, it is insecure to use this feature,
+    which is intended only for use in special standalone/embedded installs
+    (e.g. a single-user, offline Raspberry Pi) where there is no risk of exposure.
+
 .. data:: KEGBOT_SETUP_ENABLED
 
     If set to ``true``, the server will enable "setup mode". The server can

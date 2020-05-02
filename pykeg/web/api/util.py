@@ -65,6 +65,10 @@ def check_api_key(request):
     if not keystr:
         raise kbapi.NoAuthTokenError('The parameter "api_key" is required')
 
+    shared_key = settings.KEGBOT["KEGBOT_INSECURE_SHARED_API_KEY"]
+    if shared_key and keystr == shared_key:
+        return
+
     try:
         api_key = models.ApiKey.objects.get(key=keystr)
     except models.ApiKey.DoesNotExist:

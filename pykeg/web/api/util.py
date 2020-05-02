@@ -158,11 +158,6 @@ def wrap_exception(request, exception):
         extra={"status_code": 500, "request": request,},
     )
 
-    if settings.DEBUG and settings.HAVE_RAVEN:
-        from raven.contrib.django.models import client
-
-        client.captureException()
-
     # Don't wrap the exception during debugging.
     if settings.DEBUG and "deb" in request.GET:
         return None

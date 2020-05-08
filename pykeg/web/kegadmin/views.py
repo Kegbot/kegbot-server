@@ -2,6 +2,7 @@
 #
 import datetime
 import os
+import re
 import zipfile
 
 import isodate
@@ -1067,6 +1068,10 @@ def link_device(request):
         form = forms.LinkDeviceForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data.get("code")
+            result = re.match("^([A-Z1-9]{3})-?([A-Z1-9]{3})$", code.upper())
+            if not result:
+                messages.error('Link code is not in the form of "XXX-XXX"')
+            code = "{}-{}".format(result.group(1), result.group(2))
             try:
                 status = devicelink.confirm_link(code)
                 name = status.get("name", "New device")

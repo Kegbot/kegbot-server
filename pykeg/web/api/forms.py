@@ -6,6 +6,7 @@ from pykeg.core.kb_common import USERNAME_REGEX
 
 ALL_METERS = models.FlowMeter.objects.all()
 ALL_TOGGLES = models.FlowToggle.objects.all()
+ALL_THERMOS = models.ThermoSensor.objects.all()
 
 
 class DrinkPostForm(forms.Form):
@@ -76,3 +77,6 @@ class ConnectMeterForm(forms.Form):
 
 class ConnectToggleForm(forms.Form):
     toggle = forms.ModelChoiceField(queryset=ALL_TOGGLES, required=True)
+
+class ConnectThermoForm(forms.Form):
+    thermo = forms.ModelChoiceField(queryset=ALL_THERMOS, required=True)

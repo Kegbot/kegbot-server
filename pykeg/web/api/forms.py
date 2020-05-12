@@ -78,5 +78,6 @@ class ConnectMeterForm(forms.Form):
 class ConnectToggleForm(forms.Form):
     toggle = forms.ModelChoiceField(queryset=ALL_TOGGLES, required=True)
 
+
 class ConnectThermoForm(forms.Form):
     thermo = forms.ModelChoiceField(queryset=ALL_THERMOS, required=True)

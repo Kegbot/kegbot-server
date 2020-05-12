@@ -632,6 +632,7 @@ def tap_disconnect_toggle(request, meter_name_or_id):
     tap = request.backend.connect_toggle(tap, None)
     return protolib.ToProto(tap, full=True)
 
+
 @require_http_methods(["POST"])
 @csrf_exempt
 @auth_required

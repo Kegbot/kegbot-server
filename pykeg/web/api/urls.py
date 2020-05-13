@@ -55,6 +55,8 @@ urlpatterns = [
     url(r"^thermo-sensors/?$", views.all_thermo_sensors),
     url(r"^thermo-sensors/(?P<sensor_name>[^/]+)/?$", views.get_thermo_sensor),
     url(r"^thermo-sensors/(?P<sensor_name>[^/]+)/logs/?$", views.get_thermo_sensor_logs),
+    url(r"^taps/(?P<meter_name_or_id>[\w\.-]+)/connect-thermo/?$", views.tap_connect_thermo),
+    url(r"^taps/(?P<meter_name_or_id>[\w\.-]+)/disconnect-thermo/?$", views.tap_disconnect_thermo),
     url(r"^users/?$", views.user_list),
     url(r"^users/(?P<username>[\w@.+-_]+)/drinks/?$", views.get_user_drinks),
     url(r"^users/(?P<username>[\w@.+-_]+)/events/?$", views.get_user_events),

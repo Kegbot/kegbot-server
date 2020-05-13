@@ -633,6 +633,28 @@ def tap_disconnect_toggle(request, meter_name_or_id):
     return protolib.ToProto(tap, full=True)
 
 
+@require_http_methods(["POST"])
+@csrf_exempt
+@auth_required
+def tap_connect_thermo(request, meter_name_or_id):
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
+    form = forms.ConnectThermoForm(request.POST)
+    if form.is_valid():
+        tap = request.backend.connect_thermo(tap, form.cleaned_data["thermo"])
+    else:
+        raise kbapi.BadRequestError(_form_errors(form))
+    return protolib.ToProto(tap, full=True)
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+@auth_required
+def tap_disconnect_thermo(request, meter_name_or_id):
+    tap = get_tap_from_meter_name_or_404(meter_name_or_id)
+    tap = request.backend.connect_thermo(tap, None)
+    return protolib.ToProto(tap, full=True)
+
+
 @auth_required
 def _tap_detail_post(request, tap):
     form = forms.DrinkPostForm(request.POST)

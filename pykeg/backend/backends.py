@@ -656,6 +656,17 @@ class KegbotBackend(object):
 
         return tap
 
+    @transaction.atomic
+    def connect_thermo(self, tap, new_thermo):
+        tap = self._get_tap(tap)
+        if new_thermo:
+            tap.temperature_sensor = new_thermo
+        else:
+            tap.temperature_sensor = None
+        tap.save()
+
+        return tap
+
     def build_stats(self, drink_id):
         """Build statistics for the given drink (or drink), without adjusting
         any future statistics.

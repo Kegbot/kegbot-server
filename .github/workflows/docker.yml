@@ -38,9 +38,11 @@ jobs:
         run: echo ${{ steps.build.outputs.platforms }}
       -
         name: Login to DockerHub Registry
+        if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
         run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
       -
         name: Build
+        if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
         run: |
           docker buildx build \
             --output "type=image,push=false" \
@@ -54,8 +56,19 @@ jobs:
             --tag "kegbot/server:latest" \
             .
       -
+        name: Build (no cache)
+        if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' == '' || '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
+        run: |
+          docker buildx build \
+            --output "type=image,push=false" \
+            --platform linux/amd64,linux/arm/v7 \
+            --build-arg "BUILD_DATE=${{ steps.prepare.outputs.build_date }}" \
+            --build-arg "GIT_SHORT_SHA=${GITHUB_SHA::8}" \
+            --build-arg "VERSION=${{ steps.prepare.outputs.version }}" \
+            .
+      -
         name: Publish
-        if: success() && github.ref == 'refs/heads/master'
+        if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
         run: |
           docker buildx build \
             --output "type=image,push=true" \

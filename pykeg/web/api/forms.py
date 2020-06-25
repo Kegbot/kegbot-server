@@ -15,6 +15,7 @@ class DrinkPostForm(forms.Form):
     ticks = forms.IntegerField()
     volume_ml = forms.FloatField(required=False)
     username = forms.RegexField(required=False, max_length=30, regex=USERNAME_REGEX)
+    record_date = forms.CharField(required=False)
     pour_time = forms.IntegerField(required=False)
     now = forms.IntegerField(required=False)
     duration = forms.IntegerField(required=False)

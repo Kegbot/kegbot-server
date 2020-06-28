@@ -661,7 +661,9 @@ def _tap_detail_post(request, tap):
     if not form.is_valid():
         raise kbapi.BadRequestError(_form_errors(form))
     cd = form.cleaned_data
-    if cd.get("pour_time") and cd.get("now"):
+    if cd.get("record_date"):
+        pour_time = datetime.datetime.fromisoformat(cd.get("record_date"))
+    elif cd.get("pour_time") and cd.get("now"):
         pour_time = datetime.datetime.fromtimestamp(cd.get("pour_time"))
         pour_now = datetime.datetime.fromtimestamp(cd.get("now"))
         pour_time_ago = pour_now - pour_time

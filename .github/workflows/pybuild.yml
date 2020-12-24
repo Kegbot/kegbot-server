@@ -17,12 +17,12 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       - name: Install dependencies
         run: |
-          pip install pipenv docker-compose
-          pipenv install --deploy --dev
+          pip install poetry docker-compose
+          poetry install -n
 
       - name: Run mysql & redis
         run: |
@@ -30,4 +30,4 @@ jobs:
           sleep 10 && ./bin/wait-for-container.sh testdata_mysql_1
 
       - name: pytest
-        run: KEGBOT_DATABASE_URL=mysql://root:changeme@127.0.0.1:3306/kegbot_dev pipenv run pytest
+        run: KEGBOT_DATABASE_URL=mysql://root:changeme@127.0.0.1:3306/kegbot_dev poetry run pytest

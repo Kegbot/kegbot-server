@@ -10,17 +10,17 @@ Local environment
 -----------------
 
 Most likely, you'll want to run kegbot locally (outside of Docker) while
-developing. We use `Pipenv` to manage the Python environment. Create
+developing. We use `Poetry` to manage the Python environment. Create
 your development environment this way::
 
-  $ pipenv install
+  $ poetry install
 
 This will fetch and install all dependencies, and create a virtual Python
 environment.
 
 Whenever you want to run code or tests, step into a development shell::
 
-  $ pipenv shell
+  $ poetry shell
   (kegbot-server)
   $ ./bin/kegbot version
   1.3.0
@@ -47,7 +47,7 @@ Building docs
 
 We use `Sphinx` to build docs. You can create them this way::
 
-  $ pipenv shell
+  $ poetry shell
   (kegbot-server)
   $ cd docs
   $ make html

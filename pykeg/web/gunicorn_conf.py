@@ -1,5 +1,5 @@
 import multiprocessing
-import pkg_resources
+from importlib import metadata as importlib_metadata
 import sys
 import os
 
@@ -15,8 +15,8 @@ BANNER = """
 
 def get_version():
     try:
-        return pkg_resources.get_distribution("kegbot").version
-    except pkg_resources.DistributionNotFound:
+        return importlib_metadata.version("kegbot")
+    except importlib_metadata.PackageNotFoundError:
         return "0.0.0"
 
 

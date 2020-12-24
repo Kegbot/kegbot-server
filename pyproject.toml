@@ -7,3 +7,64 @@ exclude = '''
   .*/migrations/.*
 )
 '''
+
+[tool.poetry]
+name = "kegbot"
+version = "1.3.0b2"
+description = "Kegbot Server"
+authors = ["The Kegbot Project contributors"]
+repository = "https://github.com/Kegbot/kegbot-server"
+license = "MIT"
+packages = [
+    { include = "pykeg", from = "." }
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+celery = "*"
+coloredlogs = "*"
+dj-database-url = "*"
+dj-email-url = "*"
+django-bootstrap-pagination = "*"
+django-crispy-forms = "*"
+django-imagekit = "*"
+django-redis = "*"
+django-registration = "*"
+foursquare = "==1!2016.9.12"
+gunicorn = "*"
+httplib2 = "*"
+isodate = "*"
+jsonfield = "*"
+oauthlib = "*"
+pilkit = "*"
+protobuf = "*"
+python-gflags = "*"
+pytz = "*"
+redis = "*"
+requests-oauthlib = "*"
+requests = "*"
+tweepy = "*"
+whitenoise = "*"
+Django = "<3"
+Pillow = "*"
+PyYAML = "*"
+mysqlclient = "*"
+future = "*"
+addict = "*"
+kegbot-api = "*"
+gevent = "*"
+psycopg2 = "*"
+
+[tool.poetry.dev-dependencies]
+black = "*"
+flake8 = "*"
+pytest = "*"
+pytest-django = "*"
+requests-mock = "*"
+sphinx-issues = "*"
+sphinx = "*"
+vcrpy = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

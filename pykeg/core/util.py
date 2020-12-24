@@ -8,7 +8,7 @@ from builtins import object
 import logging
 import pkgutil
 import os
-import pkg_resources
+from importlib import metadata as importlib_metadata
 import requests
 import sys
 import tempfile
@@ -30,8 +30,8 @@ DOCKER_VERSION_INFO_FILE = "/etc/kegbot-version"
 
 def get_version():
     try:
-        return pkg_resources.get_distribution("kegbot").version
-    except pkg_resources.DistributionNotFound:
+        return importlib_metadata.version("kegbot")
+    except importlib_metadata.PackageNotFoundError:
         return "0.0.0"
 
 

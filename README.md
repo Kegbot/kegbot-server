@@ -12,8 +12,8 @@ Super quick start instructions:
 
 ```
 $ cd git/kegbot-server
-$ pipenv install
-$ pipenv shell
+$ poetry install
+$ poetry shell
 (kegbot-server)
 $ KEGBOT_DATABASE_URL=mysql://root@localhost/kegbot_dev kegbot runserver
 Development server is running at http://localhost:8000/

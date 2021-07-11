@@ -25,7 +25,11 @@ RUN apk update && \
      libjpeg-turbo-dev \
      zlib-dev \
      py-gevent \
-     libffi-dev
+     libffi-dev \
+     musl-dev \
+     python3-dev \
+     openssl-dev \
+     cargo
 
 RUN pip install poetry
 

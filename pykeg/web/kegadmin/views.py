@@ -22,7 +22,7 @@ from django.views.decorators.http import require_http_methods
 
 from pykeg.backup import backup
 from pykeg.celery import app as celery_app
-from pykeg.core import checkin, models
+from pykeg.core import models
 from pykeg.core.util import get_runtime_version_info
 from pykeg.logging.handlers import RedisListHandler
 from pykeg.util import kbjson
@@ -38,10 +38,6 @@ logger = logging.getLogger(__name__)
 def dashboard(request):
     context = {}
 
-    # Hack: Schedule an update checkin if it looks like it's been a while.
-    # This works around sites that are not running celerybeat.
-    checkin.schedule_checkin()
-
     email_backend = getattr(settings, "EMAIL_BACKEND", None)
     email_configured = (
         email_backend and email_backend != "django.core.mail.backends.dummy.EmailBackend"
@@ -56,17 +52,6 @@ def dashboard(request):
             r.ping()
         except redis.RedisError as e:
             context["redis_error"] = e.message if e.message else "Unknown error."
-
-    last_checkin_time, last_checkin = checkin.get_last_checkin()
-    context["last_checkin_time"] = last_checkin_time
-    context["checkin"] = last_checkin
-
-    if last_checkin:
-        for news in last_checkin.get("news", []):
-            try:
-                news["date"] = isodate.parse_datetime(news["date"])
-            except (KeyError, ValueError):
-                pass
 
     active_users = models.User.objects.filter(is_active=True).exclude(username="guest")
     context["num_users"] = len(active_users)

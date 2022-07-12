@@ -173,16 +173,6 @@ CELERY_QUEUES = {
 CELERY_DEFAULT_QUEUE = "default"
 CELERYD_CONCURRENCY = 3
 
-from datetime import timedelta
-
-CELERYBEAT_SCHEDULER = "pykeg.util.celery.RedisScheduler"
-CELERYBEAT_SCHEDULE = {
-    "checkin": {
-        "task": "checkin",
-        "schedule": timedelta(hours=12),
-    }
-}
-
 
 # logging
 

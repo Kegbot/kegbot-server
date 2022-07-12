@@ -42,13 +42,4 @@
 </div>
 {% endif %}
 
-{% if checkin %}
-{% for news in checkin.news %}
-<div class="alert alert-info">
-	<h4>{{ news.title|safe }} <small>{{ news.date|date:"l, F j Y" }}</small></h4>
-	{{ news.body|safe }}
-</div>
-{% endfor %}
-{% endif %}
-
 {% endblock %}

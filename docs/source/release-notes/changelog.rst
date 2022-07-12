@@ -44,6 +44,7 @@ Several features have been removed in order to lower code or documentation compl
 * Fix compatibility with with MySQL versions later than v5.7.5 (:issue:`356`)
 * Allow usernames with a period (:issue:`336`)
 * Update stats and sessions when admin deletes a drink (:issue:`371`)
+* Automatic checks for updates have been removed.
 
 **Other Changes**
 

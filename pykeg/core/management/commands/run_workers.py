@@ -14,7 +14,6 @@ class Command(RunnerCommand):
         if logs_dir:
             default_log = ' --logfile="{}"'.format(os.path.join(logs_dir, "celery_default.log"))
             stats_log = ' --logfile="{}"'.format(os.path.join(logs_dir, "celery_stats.log"))
-            beat_log = ' --logfile="{}"'.format(os.path.join(logs_dir, "celery_beat.log"))
         ret = []
 
         base_cmd = "celery -A pykeg worker -l info "
@@ -28,7 +27,5 @@ class Command(RunnerCommand):
                 base_cmd + '-Q stats --concurrency=1 --hostname="stats@%h"' + stats_log,
             )
         )
-
-        ret.append(("celery_beat", "celery -A pykeg beat --pidfile= -l info{}".format(beat_log)))
 
         return ret

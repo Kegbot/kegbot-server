@@ -6,7 +6,7 @@ from django.contrib.staticfiles.management.commands import collectstatic
 from django.core.management.base import BaseCommand
 from django.core.management.commands import migrate
 
-from pykeg.core import checkin, models
+from pykeg.core import models
 from pykeg.core.management.commands import regen_stats
 from pykeg.core.util import get_version_object
 
@@ -99,12 +99,6 @@ class Command(BaseCommand):
         site = models.KegbotSite.get()
         site.server_version = str(app_version)
         site.save()
-
-        # Refresh any news (since we have a new version).
-        try:
-            checkin.checkin(timeout=5.0, quiet=True)
-        except (checkin.CheckinError, Exception):
-            pass
 
         print("")
         print("Upgrade complete!")

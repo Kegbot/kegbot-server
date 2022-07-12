@@ -4,18 +4,16 @@ import logging
 import sys
 import traceback
 import types
-from builtins import str
 
 from addict import Dict
 from django.conf import settings
 from django.db.models.query import QuerySet
 from django.http import Http404, HttpResponse
 from google.protobuf.message import Message
-from kegbot.api import kbapi, protoutil
 
 from pykeg.backend.exceptions import NoTokenError
 from pykeg.core import models
-from pykeg.proto import protolib
+from pykeg.proto import kbapi, protolib, protoutil
 from pykeg.util import kbjson
 
 from . import validate_jsonp

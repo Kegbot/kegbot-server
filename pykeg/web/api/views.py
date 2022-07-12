@@ -13,12 +13,11 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from kegbot.api import kbapi
 
 from pykeg import backend
 from pykeg.core import keg_sizes, models
 from pykeg.core import util as core_util
-from pykeg.proto import protolib
+from pykeg.proto import kbapi, protolib
 from pykeg.web.api import devicelink, forms, util
 from pykeg.web.kegadmin.forms import (
     ChangeKegForm,

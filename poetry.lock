@@ -534,19 +534,6 @@ python-versions = ">=3.6"
 Django = ">=2.2"
 
 [[package]]
-name = "kegbot-api"
-version = "1.3.2"
-description = "Kegboard API client library"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-protobuf = "*"
-python-gflags = ">=1.8"
-requests = "*"
-
-[[package]]
 name = "kombu"
 version = "5.2.4"
 description = "Messaging library for Python."
@@ -1154,7 +1141,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10.5"
-content-hash = "fee5a680e919b8b447d50ca6db4050677d90f9a32054b5503f299029a904cb2f"
+content-hash = "1f7e3cd78dce77caebcc887f16193126e3f68af3aa80ef84c9959012569b4370"
 
 [metadata.files]
 addict = [
@@ -1497,9 +1484,6 @@ jinja2 = [
 jsonfield = [
     {file = "jsonfield-3.1.0-py3-none-any.whl", hash = "sha256:df857811587f252b97bafba42e02805e70a398a7a47870bc6358a0308dd689ed"},
     {file = "jsonfield-3.1.0.tar.gz", hash = "sha256:7e4e84597de21eeaeeaaa7cc5da08c61c48a9b64d0c446b2d71255d01812887a"},
-]
-kegbot-api = [
-    {file = "kegbot-api-1.3.2.tar.gz", hash = "sha256:b3302ebe2e3d5b2689407b398fcd2d7d04d6e11f34c4151d7710a3ddbfc3a8f6"},
 ]
 kombu = [
     {file = "kombu-5.2.4-py3-none-any.whl", hash = "sha256:8b213b24293d3417bcf0d2f5537b7f756079e3ea232a8386dcc89a59fd2361a4"},

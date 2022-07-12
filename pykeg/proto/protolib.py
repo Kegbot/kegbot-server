@@ -1,13 +1,10 @@
 """Routines from converting data to and from Protocol Buffer format."""
 
-from builtins import str
-
-import pytz
 from addict import Dict
-from django.conf import settings
-from kegbot.api import api_pb2, models_pb2, protoutil
 
 from pykeg.core import models
+
+from . import api_pb2, models_pb2, protoutil
 
 _CONVERSION_MAP = {}
 

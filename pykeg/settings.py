@@ -75,7 +75,6 @@ else:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default session serialization.
-# Note: Twitter plugin requires Pickle (not JSON serializable).
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
@@ -153,9 +152,6 @@ INTERNAL_IPS = ("127.0.0.1",)
 KEGBOT_ENABLE_ADMIN = DEBUG
 
 KEGBOT_PLUGINS = [
-    "pykeg.contrib.foursquare.plugin.FoursquarePlugin",
-    "pykeg.contrib.twitter.plugin.TwitterPlugin",
-    "pykeg.contrib.untappd.plugin.UntappdPlugin",
     "pykeg.contrib.webhook.plugin.WebhookPlugin",
 ]
 

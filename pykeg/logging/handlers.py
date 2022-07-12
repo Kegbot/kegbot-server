@@ -104,7 +104,6 @@ class RedisListHandler(logging.Handler):
         max_messages,
         redis_client=None,
         url="redis://localhost:6379",
-        redis_db=0,
         level=logging.NOTSET,
     ):
         """
@@ -115,7 +114,7 @@ class RedisListHandler(logging.Handler):
         if redis_client:
             self.redis_client = redis_client
         else:
-            self.redis_client = redis.from_url(url, redis_db)
+            self.redis_client = redis.from_url(url)
         self.formatter = RedisFormatter()
         self.max_messages = max_messages
 

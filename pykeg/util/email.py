@@ -1,9 +1,9 @@
-from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
-from django.core import signing
-from django.template.loader import get_template
-
 import logging
+
+from django.conf import settings
+from django.core import signing
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import get_template
 
 logger = logging.getLogger("util")
 
@@ -32,7 +32,12 @@ def build_message(to_address, template_name, context):
 
 
 def build_email_change_token(user, new_address):
-    token = signing.dumps({"uid": user.id, "new_address": new_address,})
+    token = signing.dumps(
+        {
+            "uid": user.id,
+            "new_address": new_address,
+        }
+    )
     return token
 
 

@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 
-from builtins import str
-from django.conf import settings
-from django.utils.module_loading import import_string
-from django.core.exceptions import ImproperlyConfigured
-
 import logging
+from builtins import str
+
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.utils.module_loading import import_string
 
 logger = logging.getLogger("notification")
 

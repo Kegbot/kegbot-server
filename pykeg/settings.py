@@ -6,11 +6,13 @@
 
 from __future__ import absolute_import
 
-from pykeg.config import all_values, ENV_PRODUCTION, ENV_TEST
+import logging
+import os
+
 import dj_database_url
 import dj_email_url
-import os
-import logging
+
+from pykeg.config import ENV_PRODUCTION, ENV_TEST, all_values
 from pykeg.logging.logger import RedisLogger
 
 logging.setLoggerClass(RedisLogger)
@@ -142,7 +144,9 @@ CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": KEGBOT["KEGBOT_REDIS_URL"],
-        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient",},
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
     }
 }
 
@@ -173,7 +177,12 @@ CELERYD_CONCURRENCY = 3
 from datetime import timedelta
 
 CELERYBEAT_SCHEDULER = "pykeg.util.celery.RedisScheduler"
-CELERYBEAT_SCHEDULE = {"checkin": {"task": "checkin", "schedule": timedelta(hours=12),}}
+CELERYBEAT_SCHEDULE = {
+    "checkin": {
+        "task": "checkin",
+        "schedule": timedelta(hours=12),
+    }
+}
 
 
 # logging
@@ -181,14 +190,20 @@ CELERYBEAT_SCHEDULE = {"checkin": {"task": "checkin", "schedule": timedelta(hour
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "filters": {"require_debug_true": {"()": "django.utils.log.RequireDebugTrue",},},
+    "filters": {
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
     "handlers": {
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "verbosecolor",
         },
-        "null": {"class": "logging.NullHandler",},
+        "null": {
+            "class": "logging.NullHandler",
+        },
         "redis": {
             "level": "INFO",
             "class": "pykeg.logging.handlers.RedisListHandler",
@@ -206,14 +221,25 @@ LOGGING = {
         "simple": {"format": "%(levelname)s %(message)s"},
     },
     "loggers": {
-        "raven": {"level": "INFO", "handlers": ["console", "redis"], "propagate": False,},
-        "pykeg": {"level": "INFO", "handlers": ["console", "redis"], "propagate": False,},
+        "raven": {
+            "level": "INFO",
+            "handlers": ["console", "redis"],
+            "propagate": False,
+        },
+        "pykeg": {
+            "level": "INFO",
+            "handlers": ["console", "redis"],
+            "propagate": False,
+        },
         "django": {
             "level": "INFO" if DEBUG else "WARNING",
             "handlers": ["console", "redis"],
             "propagate": False,
         },
-        "": {"level": "DEBUG" if DEBUG else "WARNING", "handlers": ["console", "redis"],},
+        "": {
+            "level": "DEBUG" if DEBUG else "WARNING",
+            "handlers": ["console", "redis"],
+        },
     },
 }
 

@@ -1,13 +1,13 @@
+import copy
+
+from addict import Dict
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
-from addict import Dict
+from pykeg.backend import get_kegbot_backend
 
 from . import models
 from .testutils import make_datetime
-
-import copy
-from pykeg.backend import get_kegbot_backend
 
 
 @override_settings(KEGBOT_BACKEND="pykeg.core.testutils.TestBackend")

@@ -27,12 +27,12 @@ Local changes:
     - Added request_info in RedisLogRecord
 """
 
-from builtins import str
-import socket
-import getpass
 import datetime
+import getpass
 import inspect
 import logging
+import socket
+from builtins import str
 
 from pykeg.core.util import get_current_request
 

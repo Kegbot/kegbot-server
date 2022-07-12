@@ -4,11 +4,10 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.test.utils import override_settings
-from pykeg.backend import get_kegbot_backend
-from pykeg.core import models
-from pykeg.core import defaults
 
 from pykeg import notification
+from pykeg.backend import get_kegbot_backend
+from pykeg.core import defaults, models
 from pykeg.notification.backends.base import BaseNotificationBackend
 
 

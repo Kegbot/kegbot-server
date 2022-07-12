@@ -1,22 +1,22 @@
 from builtins import str
-import pytz
 
+import pytz
 from django.conf import settings
-from django.urls import reverse
-from django.template import Library
-from django.template import Node
-from django.template import VariableDoesNotExist
-from django.template import TemplateSyntaxError
-from django.template import Variable
+from django.template import (
+    Library,
+    Node,
+    TemplateSyntaxError,
+    Variable,
+    VariableDoesNotExist,
+)
 from django.template.defaultfilters import pluralize
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
-from pykeg.util import kbjson
-from pykeg.util import units
-from pykeg.core.util import CtoF
-
 from pykeg.core import models
+from pykeg.core.util import CtoF
+from pykeg.util import kbjson, units
 from pykeg.web.charts import charts
 
 register = Library()
@@ -365,11 +365,22 @@ class ChartNode(Node):
                 "borderWidth": 0,
                 "renderTo": "chart-%s-container" % chart_id,
             },
-            "credits": {"enabled": False,},
-            "legend": {"enabled": False,},
+            "credits": {
+                "enabled": False,
+            },
+            "legend": {
+                "enabled": False,
+            },
             "margin": [0, 0, 0, 0],
-            "title": {"text": None,},
-            "yAxis": {"labels": {"align": "left"}, "title": {"text": None,}},
+            "title": {
+                "text": None,
+            },
+            "yAxis": {
+                "labels": {"align": "left"},
+                "title": {
+                    "text": None,
+                },
+            },
         }
 
         chart_data = chart_base

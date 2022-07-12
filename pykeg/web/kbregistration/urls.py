@@ -1,16 +1,15 @@
-from django.conf.urls import include
-from django.conf.urls import url
-
-from pykeg.web.kbregistration.forms import PasswordResetForm
-from pykeg.web.kbregistration import views
+from django.conf.urls import include, url
 from django.contrib.auth.views import (
-    PasswordResetView,
+    PasswordChangeDoneView,
+    PasswordChangeView,
+    PasswordResetCompleteView,
     PasswordResetConfirmView,
     PasswordResetDoneView,
-    PasswordResetCompleteView,
-    PasswordChangeView,
-    PasswordChangeDoneView,
+    PasswordResetView,
 )
+
+from pykeg.web.kbregistration import views
+from pykeg.web.kbregistration.forms import PasswordResetForm
 
 urlpatterns = [
     url(r"^register/?$", views.register, name="registration_register"),

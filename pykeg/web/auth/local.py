@@ -1,15 +1,14 @@
 """Local Django authentication backend."""
 
-from builtins import str
 import uuid
+from builtins import str
 
-from django.db import IntegrityError
 from django.contrib.auth.backends import ModelBackend
+from django.db import IntegrityError
 
 from pykeg.core import models
-from pykeg.web.auth import AuthBackend
-from pykeg.web.auth import UserExistsException
 from pykeg.util.email import build_message
+from pykeg.web.auth import AuthBackend, UserExistsException
 
 
 class LocalAuthBackend(ModelBackend, AuthBackend):

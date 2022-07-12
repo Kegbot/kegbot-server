@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from future import standard_library
-standard_library.install_aliases()
-from builtins import *
-import django
+from __future__ import absolute_import, division, print_function, unicode_literals
 
+from future import standard_library
+
+standard_library.install_aliases()
 import os
 import subprocess
 import sys
+from builtins import *
 
+import django
 from django.core import management
+
 from pykeg.core.util import get_version
 from pykeg.util import bugreport
 
 if sys.version_info < (2, 7):
-    sys.stderr.write('Error: Kegbot needs Python 2.7 or newer.\n\n'
-                     'Current version: %s\n' % sys.version)
+    sys.stderr.write(
+        "Error: Kegbot needs Python 2.7 or newer.\n\n" "Current version: %s\n" % sys.version
+    )
     sys.exit(1)
 
 if __name__ == "__main__":
@@ -28,18 +28,19 @@ if __name__ == "__main__":
     # Override some special commands.
     if len(sys.argv) > 1:
         cmd = sys.argv[1]
-        if cmd == 'version':
+        if cmd == "version":
             # Hack: Django's `version` command cannot be overridden the usual way.
-            print('kegbot-server {}'.format(get_version()))
+            print("kegbot-server {}".format(get_version()))
             sys.exit(0)
-        elif cmd == 'run_gunicorn':
+        elif cmd == "run_gunicorn":
             # run_gunicorn was deprecated upstream.
-            cmd = 'gunicorn pykeg.web.wsgi:application {}'.format(' '.join(sys.argv[2:]))
+            cmd = "gunicorn pykeg.web.wsgi:application {}".format(" ".join(sys.argv[2:]))
             sys.stderr.write(
-                'Warning: run_gunicorn is deprecated, call `{}` instead.\n'.format(cmd))
+                "Warning: run_gunicorn is deprecated, call `{}` instead.\n".format(cmd)
+            )
             ret = subprocess.call(cmd, shell=True)
             sys.exit(ret)
-        elif cmd == 'bugreport':
+        elif cmd == "bugreport":
             ret = bugreport.take_bugreport()
             sys.exit(ret)
 

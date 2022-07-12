@@ -1,11 +1,11 @@
-from past.builtins import cmp
 import datetime
 
 from django.utils import timezone
-from pykeg.util import units
-from pykeg.core.util import CtoF
+from past.builtins import cmp
 
 from pykeg.core import models
+from pykeg.core.util import CtoF
+from pykeg.util import units
 
 
 class ChartError(Exception):
@@ -29,7 +29,7 @@ def format_temperature(temp_c, chart_kwargs):
 
 
 def chart_temp_sensor(sensor, *args, **kwargs):
-    """ Shows a simple line plot of a specific temperature sensor.
+    """Shows a simple line plot of a specific temperature sensor.
 
     Syntax:
       {% chart temp_sensor <sensorname> width height %}
@@ -63,20 +63,36 @@ def chart_temp_sensor(sensor, *args, **kwargs):
         raise ChartError("Not enough data")
 
     res = {
-        "series": [{"data": temps, "marker": {"enabled": False,},},],
-        "tooltip": {"enabled": True,},
+        "series": [
+            {
+                "data": temps,
+                "marker": {
+                    "enabled": False,
+                },
+            },
+        ],
+        "tooltip": {
+            "enabled": True,
+        },
         "xAxis": {
             "categories": ["Temperature"],
-            "labels": {"enabled": False,},
+            "labels": {
+                "enabled": False,
+            },
             "tickInterval": 60,
         },
-        "yAxis": {"labels": {"enabled": True,}, "tickInterval": 1,},
+        "yAxis": {
+            "labels": {
+                "enabled": True,
+            },
+            "tickInterval": 1,
+        },
     }
     return res
 
 
 def chart_volume_by_weekday(stats, *args, **kwargs):
-    """ Shows a histogram of volume by day of the week.
+    """Shows a histogram of volume by day of the week.
 
     Syntax:
       {% chart volume_by_weekday <stats> width height %}
@@ -114,10 +130,18 @@ def chart_sessions_by_volume(stats, *args, **kwargs):
             buckets[intval] += 1
 
     res = {
-        "xAxis": {"categories": labels,},
-        "series": [{"data": buckets},],
-        "yAxis": {"min": 0,},
-        "chart": {"defaultSeriesType": "column",},
+        "xAxis": {
+            "categories": labels,
+        },
+        "series": [
+            {"data": buckets},
+        ],
+        "yAxis": {
+            "min": 0,
+        },
+        "chart": {
+            "defaultSeriesType": "column",
+        },
     }
     return res
 
@@ -150,10 +174,22 @@ def chart_users_by_volume(stats, *args, **kwargs):
         data.append((label, other_vol))
 
     res = {
-        "series": [{"type": "pie", "name": "Drinkers by Volume", "data": data,}],
-        "yAxis": {"min": 0,},
-        "chart": {"defaultSeriesType": "column",},
-        "tooltip": {"enabled": False,},
+        "series": [
+            {
+                "type": "pie",
+                "name": "Drinkers by Volume",
+                "data": data,
+            }
+        ],
+        "yAxis": {
+            "min": 0,
+        },
+        "chart": {
+            "defaultSeriesType": "column",
+        },
+        "tooltip": {
+            "enabled": False,
+        },
     }
     return res
 
@@ -165,10 +201,20 @@ def _weekday_chart_common(vals):
     # vals.insert(0, vals.pop(-1))
 
     res = {
-        "xAxis": {"categories": labels,},
-        "yAxis": {"min": 0,},
-        "series": [{"data": vals},],
-        "tooltip": {"enabled": False,},
-        "chart": {"defaultSeriesType": "column",},
+        "xAxis": {
+            "categories": labels,
+        },
+        "yAxis": {
+            "min": 0,
+        },
+        "series": [
+            {"data": vals},
+        ],
+        "tooltip": {
+            "enabled": False,
+        },
+        "chart": {
+            "defaultSeriesType": "column",
+        },
     }
     return res

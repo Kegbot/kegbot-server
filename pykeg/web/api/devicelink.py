@@ -24,10 +24,12 @@ Protocol:
 """
 from __future__ import division
 
-from builtins import range
-from past.utils import old_div
 import random
+from builtins import range
+
 from django.core.cache import cache
+from past.utils import old_div
+
 from pykeg.core import models
 
 CACHE_PREFIX = "devicelink:"

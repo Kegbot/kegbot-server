@@ -1,6 +1,5 @@
-from django.contrib.auth.signals import user_logged_in
-from django.contrib.auth.signals import user_logged_out
 from django.contrib import messages
+from django.contrib.auth.signals import user_logged_in, user_logged_out
 
 
 def on_logged_in(sender, user, request, **kwargs):

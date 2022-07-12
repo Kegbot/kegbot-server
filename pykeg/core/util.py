@@ -3,23 +3,21 @@
 # Note: imports should be limited to python stdlib, since methods here
 # may be used in models.py, settings.py, etc.
 
-from builtins import str
-from builtins import object
 import logging
-import pkgutil
 import os
-from importlib import metadata as importlib_metadata
-import requests
+import pkgutil
 import sys
 import tempfile
+from builtins import object, str
 from collections import OrderedDict
-from threading import current_thread
 from contextlib import closing
 from distutils.version import StrictVersion
+from importlib import metadata as importlib_metadata
+from threading import current_thread
 
-from redis.exceptions import RedisError
-
+import requests
 from django.core.exceptions import ImproperlyConfigured
+from redis.exceptions import RedisError
 
 logger = logging.getLogger(__name__)
 

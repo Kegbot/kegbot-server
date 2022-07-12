@@ -1,19 +1,19 @@
 """Kegweb main views."""
 
-from builtins import str
-from builtins import range
+from builtins import range, str
+
 from django.contrib import messages
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render
-from django.shortcuts import redirect
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
-from django.views.generic.dates import ArchiveIndexView
-from django.views.generic.dates import DateDetailView
-from django.views.generic.dates import DayArchiveView
-from django.views.generic.dates import MonthArchiveView
-from django.views.generic.dates import YearArchiveView
+from django.views.generic.dates import (
+    ArchiveIndexView,
+    DateDetailView,
+    DayArchiveView,
+    MonthArchiveView,
+    YearArchiveView,
+)
 from django.views.generic.list import ListView
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from pykeg.core import models
 from pykeg.web.kegweb import forms

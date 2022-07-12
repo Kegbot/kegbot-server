@@ -261,4 +261,13 @@ try:
 except ImportError:
     pass
 else:
-    add_introspection_rules([([CountryField], [], {},),], ["^pykeg\.core\.fields\.CountryField"])
+    add_introspection_rules(
+        [
+            (
+                [CountryField],
+                [],
+                {},
+            ),
+        ],
+        ["^pykeg\.core\.fields\.CountryField"],
+    )

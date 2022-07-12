@@ -1,18 +1,17 @@
 """Checks a central server for updates."""
 
-from builtins import str
-from django.core.cache import cache
-from django.utils import timezone
-
-from pykeg.core import models
-from pykeg.core import util
-from pykeg.core.tasks import core_checkin_task
-from pykeg.core.util import SuppressTaskErrors
-
 import datetime
 import logging
 import os
+from builtins import str
+
 import requests
+from django.core.cache import cache
+from django.utils import timezone
+
+from pykeg.core import models, util
+from pykeg.core.tasks import core_checkin_task
+from pykeg.core.util import SuppressTaskErrors
 
 FIELD_REG_ID = "reg_id"
 FIELD_PRODUCT = "product"

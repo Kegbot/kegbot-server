@@ -2,21 +2,20 @@
 #
 """Kegweb main views."""
 
-from django.http import Http404
 from django.contrib import messages
-from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
+from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.shortcuts import render
-from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from pykeg.core import models
+from pykeg.notification.forms import NotificationSettingsForm
 from pykeg.util import email
 from pykeg.web.kegweb import forms
-from pykeg.notification.forms import NotificationSettingsForm
 
 
 @login_required

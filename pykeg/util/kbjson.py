@@ -5,9 +5,10 @@ datetime instances to ISO8601 strings, and decoding them back.
 """
 
 import datetime
-import isodate
-import types
 import json
+import types
+
+import isodate
 from addict import Dict
 
 
@@ -23,14 +24,14 @@ class JSONEncoder(json.JSONEncoder):
 def _ToAttrDict(obj):
     """JSONDecoder object_hook that translates dicts and ISO times.
 
-  Dictionaries are converted to AttrDicts, which allow element access by
-  attribute (getattr).
+    Dictionaries are converted to AttrDicts, which allow element access by
+    attribute (getattr).
 
-  Also, an attempt will be made to convert any field ending in 'date' or 'time'
-  to a datetime.datetime object.  The format is expected to match the ISO8601
-  format used in JSONEncoder.  If it does not parse, the value will be left as a
-  string.
-  """
+    Also, an attempt will be made to convert any field ending in 'date' or 'time'
+    to a datetime.datetime object.  The format is expected to match the ISO8601
+    format used in JSONEncoder.  If it does not parse, the value will be left as a
+    string.
+    """
     if type(obj) == dict:
         # Try to convert any "time" or "date" fields into datetime objects.  If the
         # format doesn't match, just leave it alone.

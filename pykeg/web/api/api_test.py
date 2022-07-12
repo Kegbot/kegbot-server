@@ -1,12 +1,13 @@
 """Unittests for pykeg.web.api"""
 
 from builtins import str
+
 from django.core import mail
-from django.urls import reverse
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
-from pykeg.core import models
-from pykeg.core import defaults
+from django.urls import reverse
+
+from pykeg.core import defaults, models
 from pykeg.core.testutils import get_filename
 from pykeg.core.util import get_version
 from pykeg.util import kbjson
@@ -266,7 +267,17 @@ class ApiClientTestCase(BaseApiTestCase):
 
         response, data = self.get("controllers", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
-        expected = {"objects": [{"id": 1, "name": "kegboard",}], "meta": {"result": "ok",}}
+        expected = {
+            "objects": [
+                {
+                    "id": 1,
+                    "name": "kegboard",
+                }
+            ],
+            "meta": {
+                "result": "ok",
+            },
+        }
         self.assertEqual(expected, data)
 
         response, data = self.get("flow-meters", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
@@ -277,7 +288,10 @@ class ApiClientTestCase(BaseApiTestCase):
                     "id": 1,
                     "ticks_per_ml": 2.724,
                     "port_name": "flow0",
-                    "controller": {"id": 1, "name": "kegboard",},
+                    "controller": {
+                        "id": 1,
+                        "name": "kegboard",
+                    },
                     "name": "kegboard.flow0",
                 },
                 {
@@ -299,7 +313,10 @@ class ApiClientTestCase(BaseApiTestCase):
                 {
                     "id": 1,
                     "port_name": "relay0",
-                    "controller": {"id": 1, "name": "kegboard",},
+                    "controller": {
+                        "id": 1,
+                        "name": "kegboard",
+                    },
                     "name": "kegboard.relay0",
                 },
                 {
@@ -485,7 +502,11 @@ class ApiClientTestCase(BaseApiTestCase):
         response, data = self.post(
             "flow-meters",
             HTTP_X_KEGBOT_API_KEY=self.apikey.key,
-            data={"port_name": "flow-test", "ticks_per_ml": 3.45, "controller": controller.id,},
+            data={
+                "port_name": "flow-test",
+                "ticks_per_ml": 3.45,
+                "controller": controller.id,
+            },
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual("kegboard.flow-test", data.object.name)
@@ -508,7 +529,9 @@ class ApiClientTestCase(BaseApiTestCase):
         response, data = self.post(
             "flow-meters/" + str(new_meter_id),
             HTTP_X_KEGBOT_API_KEY=self.apikey.key,
-            data={"ticks_per_ml": 5.67,},
+            data={
+                "ticks_per_ml": 5.67,
+            },
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual("kegboard.flow-test", data.object.name)
@@ -543,7 +566,10 @@ class ApiClientTestCase(BaseApiTestCase):
         response, data = self.post(
             "flow-toggles",
             HTTP_X_KEGBOT_API_KEY=self.apikey.key,
-            data={"port_name": "toggle-test", "controller": controller.id,},
+            data={
+                "port_name": "toggle-test",
+                "controller": controller.id,
+            },
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual("kegboard.toggle-test", data.object.name)
@@ -583,7 +609,11 @@ class ApiClientTestCase(BaseApiTestCase):
 
         # Create a new toggle.
         response, data = self.post(
-            "taps", HTTP_X_KEGBOT_API_KEY=self.apikey.key, data={"name": "Test Tap",}
+            "taps",
+            HTTP_X_KEGBOT_API_KEY=self.apikey.key,
+            data={
+                "name": "Test Tap",
+            },
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual("Test Tap", data.object.name)

@@ -1,9 +1,8 @@
-from builtins import str
-from builtins import object
+import time
+from builtins import object, str
+
 from django.conf import settings
 from django.core.cache import cache as django_cache
-
-import time
 
 """Kegbot system cache."""
 

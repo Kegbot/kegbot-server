@@ -2,17 +2,14 @@
 from __future__ import division
 
 from builtins import str
-from past.utils import old_div
+
 import pytz
-
+from addict import Dict
 from django.conf import settings
-
-from kegbot.api import api_pb2
-from kegbot.api import models_pb2
-from kegbot.api import protoutil
+from kegbot.api import api_pb2, models_pb2, protoutil
+from past.utils import old_div
 
 from pykeg.core import models
-from addict import Dict
 
 _CONVERSION_MAP = {}
 

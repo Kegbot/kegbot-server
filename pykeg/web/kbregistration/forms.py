@@ -1,8 +1,8 @@
 from future import standard_library
 
 standard_library.install_aliases()
-from builtins import object
 import urllib.parse
+from builtins import object
 
 from django import forms
 from django.conf import settings
@@ -19,8 +19,8 @@ try:
 except ImportError:
     from django.contrib.auth.models import User
 
-from pykeg.core import models
 from pykeg.backend import get_kegbot_backend
+from pykeg.core import models
 
 
 class KegbotRegistrationForm(forms.ModelForm):

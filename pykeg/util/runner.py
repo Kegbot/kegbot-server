@@ -1,12 +1,12 @@
-from builtins import object
 import copy
 import logging
 import os
 import pwd
 import signal
-import sys
 import subprocess
+import sys
 import time
+from builtins import object
 
 logger = logging.getLogger(__name__)
 

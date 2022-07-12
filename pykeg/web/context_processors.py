@@ -1,12 +1,13 @@
 from future import standard_library
 
 standard_library.install_aliases()
+import urllib.error
+import urllib.parse
+import urllib.request
+
 from django.conf import settings
 
-import urllib.request, urllib.parse, urllib.error
-
-from pykeg.core import models
-from pykeg.core import util
+from pykeg.core import models, util
 from pykeg.web.kegweb.forms import LoginForm
 
 
@@ -37,7 +38,10 @@ def kbsite(request):
         "kbsite": kbsite,
         "request_path": request.path,
         "login_form": LoginForm(initial={"next_page": request.path}),
-        "guest_info": {"name": "guest", "image": None,},
+        "guest_info": {
+            "name": "guest",
+            "image": None,
+        },
         "PLUGINS": getattr(request, "plugins", {}),
     }
 

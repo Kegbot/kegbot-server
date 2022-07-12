@@ -1,20 +1,16 @@
 from __future__ import print_function
 
+import sys
 from builtins import str
 from distutils.version import StrictVersion
-import sys
-
-from pykeg.core.util import get_version_object
-
-from django.core.management.base import BaseCommand
 
 from django.contrib.staticfiles.management.commands import collectstatic
+from django.core.management.base import BaseCommand
 from django.core.management.commands import migrate
+
+from pykeg.core import checkin, models
 from pykeg.core.management.commands import regen_stats
-
-from pykeg.core import models
-from pykeg.core import checkin
-
+from pykeg.core.util import get_version_object
 
 # Versions earlier than this cannot be upgraded. History:
 #  v0.9.35 - migrations rebased to 0001

@@ -27,7 +27,9 @@ Local changes:
 """
 
 import logging
+
 import redis
+
 from pykeg.util import kbjson as json
 
 

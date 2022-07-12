@@ -1,11 +1,10 @@
 """Unittests for the checkin module."""
 
-from django.test import TransactionTestCase
-
 from unittest.mock import Mock, patch
 
-from pykeg.core import checkin
-from pykeg.core import models
+from django.test import TransactionTestCase
+
+from pykeg.core import checkin, models
 from pykeg.core.util import get_version
 
 
@@ -27,7 +26,11 @@ class CheckinTestCase(TransactionTestCase):
             mock_post.assert_called_with(
                 "http://example.com/checkin",
                 headers={"User-Agent": "KegbotServer/%s" % version},
-                data={"reg_id": "original-regid", "product": "test-product", "version": version,},
+                data={
+                    "reg_id": "original-regid",
+                    "product": "test-product",
+                    "version": version,
+                },
                 timeout=1.23,
             )
 

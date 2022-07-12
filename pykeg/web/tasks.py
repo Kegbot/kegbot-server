@@ -1,13 +1,13 @@
 """Tasks for the Kegbot core."""
 
-from pykeg.plugin import util as plugin_util
-from pykeg import notification
-from pykeg.backup import backup
-from pykeg.core import stats
+from celery.utils.log import get_task_logger
 from django.db import transaction
 
+from pykeg import notification
+from pykeg.backup import backup
 from pykeg.celery import app
-from celery.utils.log import get_task_logger
+from pykeg.core import stats
+from pykeg.plugin import util as plugin_util
 
 logger = get_task_logger(__name__)
 

@@ -1,8 +1,8 @@
 import os
 import sys
 
-from django.core.management.base import BaseCommand
-from django.core.management.base import CommandError
+from django.core.management.base import BaseCommand, CommandError
+
 from pykeg.backup import backup
 
 

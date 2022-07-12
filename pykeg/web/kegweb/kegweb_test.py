@@ -7,8 +7,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from pykeg.backend import get_kegbot_backend
-from pykeg.core import models
-from pykeg.core import defaults
+from pykeg.core import defaults, models
 
 
 @override_settings(KEGBOT_BACKEND="pykeg.core.testutils.TestBackend")

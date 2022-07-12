@@ -2,6 +2,7 @@
 
 from django.core.cache import cache
 from django.test import TransactionTestCase
+
 from pykeg.core import models
 from pykeg.web.api import devicelink
 

@@ -1,15 +1,14 @@
-from builtins import str
-from builtins import object
+from builtins import object, str
+
+from crispy_forms.bootstrap import FormActions
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import HTML, Field, Layout, Submit
 from django import forms
 from django.contrib.humanize.templatetags.humanize import naturaltime
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Field, HTML
-from crispy_forms.bootstrap import FormActions
 
-from pykeg.util import units
 from pykeg.backend import get_kegbot_backend
-from pykeg.core import keg_sizes
-from pykeg.core import models
+from pykeg.core import keg_sizes, models
+from pykeg.util import units
 
 ALL_TAPS = models.KegTap.objects.all()
 ALL_KEGS = models.Keg.objects.all()
@@ -48,7 +47,9 @@ class ChangeKegForm(forms.Form):
         Field("style_name", css_class="input-xlarge"),
         Field("keg_size", css_class="input-xlarge"),
         Field("initial_volume", css_class="input-volume"),
-        FormActions(Submit("submit_change_keg_form", "Activate Keg", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit_change_keg_form", "Activate Keg", css_class="btn-primary"),
+        ),
     )
 
     def clean_beverage_name(self):
@@ -109,7 +110,9 @@ class EndKegForm(forms.Form):
     helper.form_class = "form-horizontal beer-select"
     helper.layout = Layout(
         Field("keg", type="hidden"),
-        FormActions(Submit("submit_end_keg_form", "End Keg", css_class="btn-danger"),),
+        FormActions(
+            Submit("submit_end_keg_form", "End Keg", css_class="btn-danger"),
+        ),
     )
 
 
@@ -187,7 +190,9 @@ class TapForm(forms.ModelForm):
         Field("temperature_sensor", css_class="input-xlarge"),
         Field("sort_order", css_class="input-xlarge"),
         Field("notes", css_class="input-block-level", rows="3"),
-        FormActions(Submit("submit_tap_form", "Save Settings", css_class="btn-success"),),
+        FormActions(
+            Submit("submit_tap_form", "Save Settings", css_class="btn-success"),
+        ),
     )
 
 
@@ -195,7 +200,9 @@ class DeleteTapForm(forms.Form):
     helper = FormHelper()
     helper.form_class = "form-horizontal"
     helper.layout = Layout(
-        FormActions(Submit("submit_delete_tap_form", "Delete Tap", css_class="btn-danger"),)
+        FormActions(
+            Submit("submit_delete_tap_form", "Delete Tap", css_class="btn-danger"),
+        )
     )
 
 
@@ -253,7 +260,9 @@ class KegForm(forms.Form):
         Field("description", css_class="input-block-level", rows="3"),
         Field("notes", css_class="input-block-level", rows="3"),
         Field("connect_to", css_class="input-block-level"),
-        FormActions(Submit("submit_add_keg", "Save", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit_add_keg", "Save", css_class="btn-primary"),
+        ),
     )
 
     def clean_beverage_name(self):
@@ -360,7 +369,9 @@ class GeneralSiteSettingsForm(forms.ModelForm):
         Field("enable_users", css_class="input-xlarge"),
         Field("privacy", css_class="input-xlarge"),
         Field("registration_mode", css_class="input-xlarge"),
-        FormActions(Submit("submit", "Save Settings", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit", "Save Settings", css_class="btn-primary"),
+        ),
     )
 
 
@@ -381,7 +392,9 @@ class LocationSiteSettingsForm(forms.ModelForm):
         Field("volume_display_units", css_class="input-xlarge"),
         Field("temperature_display_units", css_class="input-xlarge"),
         Field("timezone"),
-        FormActions(Submit("submit", "Save Settings", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit", "Save Settings", css_class="btn-primary"),
+        ),
     )
 
 
@@ -400,7 +413,9 @@ class AdvancedSiteSettingsForm(forms.ModelForm):
         Field("session_timeout_minutes"),
         Field("google_analytics_id"),
         Field("check_for_updates"),
-        FormActions(Submit("submit", "Save Settings", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit", "Save Settings", css_class="btn-primary"),
+        ),
     )
 
 
@@ -442,7 +457,9 @@ class BeverageForm(forms.ModelForm):
         Field("untappd_beer_id"),
         Field("description"),
         Field("new_image"),
-        FormActions(Submit("submit", "Save", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit", "Save", css_class="btn-primary"),
+        ),
     )
 
 
@@ -468,7 +485,9 @@ class BeverageProducerForm(forms.ModelForm):
         Field("is_homebrew"),
         Field("url"),
         Field("description"),
-        FormActions(Submit("submit", "Save", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit", "Save", css_class="btn-primary"),
+        ),
     )
 
 
@@ -493,7 +512,9 @@ class UserForm(forms.ModelForm):
         Field("email", css_class="input-xlarge"),
         "password",
         "is_staff",
-        FormActions(Submit("submit", "Save", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit", "Save", css_class="btn-primary"),
+        ),
     )
 
 
@@ -532,7 +553,9 @@ class TokenForm(forms.ModelForm):
         Field("username", css_class="input-xlarge"),
         Field("nice_name", css_class="input-xlarge"),
         "enabled",
-        FormActions(Submit("submit", "Save", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit", "Save", css_class="btn-primary"),
+        ),
     )
 
     def clean_username(self):
@@ -553,7 +576,9 @@ class DeleteTokenForm(forms.Form):
     helper = FormHelper()
     helper.form_class = "form-horizontal user-select"
     helper.layout = Layout(
-        FormActions(Submit("delete_token", "Delete Token", css_class="btn-danger"),)
+        FormActions(
+            Submit("delete_token", "Delete Token", css_class="btn-danger"),
+        )
     )
 
 
@@ -581,7 +606,9 @@ class AddTokenForm(forms.ModelForm):
         Field("token_value", css_class="input-xlarge"),
         Field("username", css_class="input-xlarge"),
         "enabled",
-        FormActions(Submit("submit", "Save", css_class="btn-primary"),),
+        FormActions(
+            Submit("submit", "Save", css_class="btn-primary"),
+        ),
     )
 
     def clean_username(self):
@@ -637,7 +664,9 @@ class DeleteDrinksForm(forms.Form):
 </tbody>
 </table>"""
         ),
-        FormActions(Submit("delete_drinks", "Delete Drinks", css_class="btn-danger"),),
+        FormActions(
+            Submit("delete_drinks", "Delete Drinks", css_class="btn-danger"),
+        ),
     )
 
 
@@ -724,7 +753,9 @@ class AddFlowMeterForm(forms.ModelForm):
         Field("port_name"),
         Field("ticks_per_ml"),
         Field("controller", type="hidden"),
-        FormActions(Submit("add_flow_meter", "Add Flow Meter", css_class="btn-primary"),),
+        FormActions(
+            Submit("add_flow_meter", "Add Flow Meter", css_class="btn-primary"),
+        ),
     )
 
 
@@ -744,7 +775,9 @@ class AddFlowToggleForm(forms.ModelForm):
     helper.layout = Layout(
         Field("port_name"),
         Field("controller", type="hidden"),
-        FormActions(Submit("add_flow_toggle", "Add Flow Toggle", css_class="btn-primary"),),
+        FormActions(
+            Submit("add_flow_toggle", "Add Flow Toggle", css_class="btn-primary"),
+        ),
     )
 
 
@@ -752,7 +785,9 @@ class DeleteControllerForm(forms.Form):
     helper = FormHelper()
     helper.form_class = "form-horizontal user-select"
     helper.layout = Layout(
-        FormActions(Submit("delete_controller", "Delete Controller", css_class="btn-danger"),)
+        FormActions(
+            Submit("delete_controller", "Delete Controller", css_class="btn-danger"),
+        )
     )
 
 
@@ -767,7 +802,9 @@ class ControllerForm(forms.ModelForm):
         Field("name", css_class="input-xlarge"),
         Field("model_name", css_class="input-xlarge"),
         Field("serial_number", css_class="input-xlarge"),
-        FormActions(Submit("submit_controller_form", "Save Controller", css_class="btn-success"),),
+        FormActions(
+            Submit("submit_controller_form", "Save Controller", css_class="btn-success"),
+        ),
     )
 
 
@@ -776,5 +813,8 @@ class LinkDeviceForm(forms.Form):
     helper = FormHelper()
     helper.form_class = "form-horizontal"
     helper.layout = Layout(
-        "code", FormActions(Submit("link_device", "Link Device", css_class="btn-success"),)
+        "code",
+        FormActions(
+            Submit("link_device", "Link Device", css_class="btn-success"),
+        ),
     )

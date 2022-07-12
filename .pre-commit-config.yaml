@@ -1,0 +1,22 @@
+default_language_version:
+  python: python3.10
+
+repos:
+  - repo: https://github.com/floatingpurr/sync_with_poetry
+    rev: '0.1.0' # the revision or tag to clone at
+    hooks:
+      - id: sync_with_poetry
+        args: [] # optional args
+        additional_dependencies: ['poetry']
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort (python)
+
+  - repo: https://github.com/psf/black
+    rev: 22.6.0
+    hooks:
+      - id: black
+

@@ -3,16 +3,15 @@
 import datetime
 import os
 
-from django.test import TransactionTestCase
 from django.core.files import File
-
-from . import kb_common
-from . import models
-from .testutils import make_datetime
+from django.test import TransactionTestCase
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core.testutils import get_filename
 from pykeg.util import units
+
+from . import kb_common, models
+from .testutils import make_datetime
 
 
 class CoreModelsTestCase(TransactionTestCase):
@@ -46,7 +45,10 @@ class CoreModelsTestCase(TransactionTestCase):
             full_volume_ml=2000,
         )
 
-        self.tap = models.KegTap.objects.create(name="Test Tap", current_keg=self.keg,)
+        self.tap = models.KegTap.objects.create(
+            name="Test Tap",
+            current_keg=self.keg,
+        )
 
         self.controller = models.Controller.objects.create(name="kegboard")
 
@@ -54,9 +56,13 @@ class CoreModelsTestCase(TransactionTestCase):
             controller=self.controller, port_name="flow0", ticks_per_ml=2.2, tap=self.tap
         )
 
-        self.user = models.User.objects.create(username="kb_tester",)
+        self.user = models.User.objects.create(
+            username="kb_tester",
+        )
 
-        self.user2 = models.User.objects.create(username="kb_tester2",)
+        self.user2 = models.User.objects.create(
+            username="kb_tester2",
+        )
 
     def testKegStuff(self):
         """Test basic keg relations that should always work."""
@@ -69,11 +75,15 @@ class CoreModelsTestCase(TransactionTestCase):
         self.assertEqual(2000, self.keg.remaining_volume_ml())
 
     def testDrinkAccounting(self):
-        d = self.backend.record_drink(self.tap, ticks=1200, username=self.user.username,)
+        d = self.backend.record_drink(
+            self.tap,
+            ticks=1200,
+            username=self.user.username,
+        )
         self.assertEqual(d.keg.served_volume(), d.volume_ml)
 
     def testDrinkSessions(self):
-        """ Checks for the DrinkingSession records. """
+        """Checks for the DrinkingSession records."""
         u1 = self.user
         u2 = self.user2
         units.Quantity(1200)
@@ -89,31 +99,49 @@ class CoreModelsTestCase(TransactionTestCase):
 
         # u=1 t=0
         self.backend.record_drink(
-            self.tap, ticks=1200, username=u1.username, pour_time=base_time,
+            self.tap,
+            ticks=1200,
+            username=u1.username,
+            pour_time=base_time,
         )
         # u=2 t=0
         self.backend.record_drink(
-            self.tap, ticks=1200, username=u2.username, pour_time=base_time,
+            self.tap,
+            ticks=1200,
+            username=u2.username,
+            pour_time=base_time,
         )
 
         # u=1 t=10
         self.backend.record_drink(
-            self.tap, ticks=1200, username=u1.username, pour_time=base_time + td_10m,
+            self.tap,
+            ticks=1200,
+            username=u1.username,
+            pour_time=base_time + td_10m,
         )
 
         # u=1 t=400
         self.backend.record_drink(
-            self.tap, ticks=1200, username=u1.username, pour_time=base_time + td_400m,
+            self.tap,
+            ticks=1200,
+            username=u1.username,
+            pour_time=base_time + td_400m,
         )
 
         # u=2 t=490
         self.backend.record_drink(
-            self.tap, ticks=1200, username=u2.username, pour_time=base_time + td_390m,
+            self.tap,
+            ticks=1200,
+            username=u2.username,
+            pour_time=base_time + td_390m,
         )
 
         # u=2 t=400
         self.backend.record_drink(
-            self.tap, ticks=1200, username=u2.username, pour_time=base_time + td_400m,
+            self.tap,
+            ticks=1200,
+            username=u2.username,
+            pour_time=base_time + td_400m,
         )
 
         drinks_u1 = u1.drinks.all().order_by("time")

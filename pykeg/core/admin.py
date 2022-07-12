@@ -1,6 +1,7 @@
 """Django admin site settings for core models."""
 
 from django.contrib import admin
+
 from pykeg.core import models
 from pykeg.core.util import CtoF
 

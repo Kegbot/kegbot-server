@@ -3,12 +3,11 @@
 import datetime
 import os
 
-from pykeg.backend.backends import KegbotBackend
-
+import vcr
 from django.conf import settings
 from django.utils import timezone
 
-import vcr
+from pykeg.backend.backends import KegbotBackend
 
 TESTDATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../testdata/"))
 CASSETTE_DIR = os.path.join(TESTDATA_DIR, "request_fixtures")

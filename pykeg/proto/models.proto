@@ -1,0 +1,620 @@
+syntax = "proto2";
+option java_package = "org.kegbot.proto";
+option optimize_for = CODE_SIZE;
+
+// An authentication token, which a drinker uses to authenticate to the system.
+message AuthenticationToken {
+  // The unique identifier for this token.
+  required uint32 id = 1;
+
+  // The name of the auth device that owns this token, such as ``core.onewire``
+  // or ``contrib.phidget.rfid``.
+  required string auth_device = 2;
+
+  // The unique key.
+  required string token_value = 3;
+
+  // The user owning the token.
+  optional string username = 4;
+
+  // An optional human-readable name for this token.
+  optional string nice_name = 5;
+
+  // True if the token is enabled.
+  optional bool enabled = 6;
+
+  // The date the token was created, as an ISO8061 UTC timestamp.
+  required string created_time = 7;
+
+  // The date after which the token is invalid, as an ISO8061 UTC timestamp.
+  // Only available to admin users.
+  optional string expire_time = 8;
+
+  // The token's pin, if any.
+  // Only available to admin users.
+  optional string pin = 9;
+
+  optional User user = 10;
+}
+
+// A beverage production company or brand.
+message BeverageProducer {
+
+  // The unique identifier for this producer.
+  required uint32 id = 1;
+
+  // The name of the brewer or production company.
+  required string name = 2;
+
+  // Country of origin.
+  optional string country = 3;
+
+  // State of origin.
+  optional string origin_state = 4;
+
+  // City of origin.
+  optional string origin_city = 5;
+
+  // True if this is a home producer.
+  optional bool is_homebrew = 6;
+
+  // URL for producer.
+  optional string url = 7;
+
+  // Free-form description.
+  optional string description = 8;
+
+  // Image.
+  optional Image picture = 9;
+
+}
+
+// A type of beer, coffee, wine, or other beverage.
+message Beverage {
+
+  // Unique id for this beverage.
+  required uint32 id = 1;
+
+  // Beverage name.
+  required string name = 2;
+
+  // Producer.
+  required BeverageProducer producer = 3;
+
+  // Type of beverage.
+  required string beverage_type = 4;
+
+  // Beverage style.
+  optional string style = 5;
+
+  // Free-form description.
+  optional string description = 6;
+
+  // Logo or other image.
+  optional Image picture = 7;
+
+  // Vintage.
+  optional uint32 vintage_year = 8;
+
+  // Alcohol by volume (0.0-100.0).
+  optional double abv_percent = 9;
+
+  // Calories.
+  optional double calories_per_ml = 10;
+
+  // Carbohydrates.
+  optional double carbs_per_ml = 11;
+
+  // Original gravity.
+  optional double original_gravity = 12;
+
+  // Specific gravity.
+  optional double specific_gravity = 13;
+
+  // Untappd id (for beers only).
+  optional string untappd_id = 14;
+
+  // Beverage backend.
+  optional string beverage_backend = 15;
+
+  // Id within beverage backend.
+  optional string beverage_backend_id = 16;
+
+  // v1.1 fields
+
+  optional string color_hex = 17;
+  optional double srm = 18;
+  optional double ibu = 19;
+  optional double star_rating = 20;
+
+}
+
+// A named beer style of beer, such as "India Pale Ale".
+message BeerStyle {
+
+  // The unique identifier for this beer style.
+  required uint32 id = 1;
+
+  // The name of the beer style.
+  required string name = 2;
+
+}
+
+// A specific kind of beer: describes the beer's name, style, and brewer.
+message BeerType {
+
+  // The unique identifier for this beer type.
+  required string id = 1;
+
+  // The brand name of the beer.
+  required string name = 2;
+
+  // Brewer information for the beer.  May refer to an 'unknown' or generic
+  // brewer record.
+  required string brewer_id = 3;
+
+  // Style information for the beer.  May refer to an 'unknown' or generic beer
+  // style.
+  required string style_id = 4;
+
+  // For seasonal or special edition beers, the year or other edition name.
+  optional string edition = 6;
+
+  // Alcohol by volume, as a percentage of the total volume.
+  optional double abv = 7;
+
+  // Number of calories per ounce of beverage.
+  optional double calories_oz = 8;
+
+  // Number of carbohydrates per ounce of beverage.
+  optional double carbs_oz = 9;
+
+  // Specific/final gravity of the beer, if known.
+  optional double specific_gravity = 10;
+
+  // Original gravity of the beer, if known.
+  optional double original_gravity = 11;
+
+  // Image for this beer.
+  optional Image image = 12;
+
+}
+
+// A specific producer of our favorite beverage.
+message Brewer {
+
+  // The unique identifier for this beer type.
+  required string id = 1;
+
+  // The name of the brewer.
+  required string name = 2;
+
+  // The country of the brewer's headquarters.
+  optional string country = 3 [default = ''];
+
+  // The state of the brewer's headquarters.
+  optional string origin_state = 4 [default = ''];
+
+  // The city of the brewer's headquarters.
+  optional string origin_city = 5 [default = ''];
+
+  // Type of production (usually either 'retail' or 'homebrew').
+  optional string production = 6 [default = ''];
+
+  // URL of brewer.
+  optional string url = 7 [default = ''];
+
+  // Free-form description.
+  optional string description = 8 [default = ''];
+
+  // Image or logo for this brewer.
+  optional Image image = 9;
+
+}
+
+// Describes a single recorded pour from the Kegbot.
+message Drink {
+
+  // The unique identifier for this drink.
+  required uint32 id = 1;
+
+  // The number of meter ticks recorded for the drink.
+  required uint32 ticks = 2;
+
+  // The volume of the drink, in milliliters.
+  required double volume_ml = 3;
+
+  // The session this drink belongs to.
+  required uint32 session_id = 4;
+
+  // UTC time when the drink was poured, as an ISO8061 UTC timestamp.
+  required string time = 5;
+
+  // Duration, in seconds, of the pour.
+  optional uint32 duration = 6;
+
+  // The Keg from which the drink was poured.  May be unset if the drink was
+  // not associated with a keg.
+  optional uint32 keg_id = 8;
+
+  // The User that poured the drink.  Snset if the drinker was unknown
+  // (anonymous pour).
+  optional string user_id = 9;
+
+  // Auth token value used to pour the drink, if known.
+  optional uint32 auth_token_id = 10;
+
+  // Canonical URL for this object.
+  optional string url = 11;
+
+  // Comment from the drinker at the time of the pour.
+  optional string shout = 12;
+
+  optional User user = 13;
+  optional Keg keg = 14;
+  optional Session session = 15;
+  repeated Image images = 16;
+
+  // Vector of tick updates. Format is: "<time>:<amount> [<time>:<amount> ...]",
+  // where "time" is the delta (in ms) from the previous reading, and "amount"
+  // is the delta in ticks from the previous reading.
+  optional string tick_time_series = 17;
+}
+
+// Describes an image.
+message Image {
+
+  // The default URL of this image.
+  required string url = 1;
+
+  // The width of the image in pixels.
+  optional uint32 width = 2;
+
+  // The height of the image in pixels.
+  optional uint32 height = 3;
+
+  // The date the picture was created.
+  optional string time = 4;
+
+  // The caption, if any.
+  optional string caption = 5;
+
+  // The user associated with this picture, if any.
+  optional string user_id = 6;
+
+  // The keg associated with this picture, if any.
+  optional uint32 keg_id = 7;
+
+  // The session associated with this picture, if any.
+  optional uint32 session_id = 8;
+
+  // The drink associated with this picture, if any.
+  optional uint32 drink_id = 9;
+
+  optional string thumbnail_url = 10;
+
+  optional string original_url = 11;
+
+  optional string small_resized_url = 13;
+}
+
+// A single instance of a Keg that was attached to the Kegbot.
+message Keg {
+
+  // The unique identifier for this keg.
+  required uint32 id = 1;
+
+  // Shell type.
+  required string keg_type = 2;
+
+  // Volume remaining in the keg, in milliliters.
+  required double remaining_volume_ml = 3;
+
+  // Initial volume.
+  required double full_volume_ml = 4;
+
+  // Served volume.
+  required double served_volume_ml = 5;
+
+  // Total portion of the original volume that was spoiled, in milliliters.
+  // Spilled volume is not attributed to any drink, but deducts from the keg
+  // total.
+  required double spilled_volume_ml = 6;
+
+  // Percentage of the keg that remains, as a value between 0 and 100.
+  required double percent_full = 7;
+
+  // UTC time when the keg was started or tapped, as an ISO8061 UTC timestamp.
+  optional string start_time = 8;
+
+  // Local time when the keg was completed, as an ISO8061 UTC timestamp.  This
+  // should be no sooner than the time of the most recent drink.  If the keg's
+  // `status` is not 'offline', this value is undefined.
+  optional string end_time = 9;
+
+  // True if the Keg is currently online.
+  optional bool online = 10;
+
+  // The adminstrator's description of this keg.
+  optional string description = 11;
+
+  // Beverage type.
+  optional Beverage beverage = 12;
+
+  optional string illustration_url = 21;
+  optional string illustration_thumbnail_url = 22;
+
+  optional BeerType type = 13 [deprecated = true];
+  optional string type_id = 14 [deprecated = true];
+  optional uint32 size_id = 15 [deprecated = true];
+  optional KegSize size = 16 [deprecated = true];
+  optional string size_name = 17 [deprecated = true];
+  optional double size_volume_ml = 18 [deprecated = true];
+  optional double volume_ml_remain = 19 [deprecated = true];
+  optional double spilled_ml = 20 [deprecated = true];
+
+}
+
+// A common keg size.
+message KegSize {
+
+  // The unique identifier for this keg size.
+  required uint32 id = 1;
+
+  // The name of the size ("Half Barrel", "Pony keg", ...)
+  required string name = 2;
+
+  // The volume of the size, in milliliters.
+  required double volume_ml = 3;
+
+}
+
+// Describes a hardware controller
+message Controller {
+  required uint32 id = 1;
+  required string name = 2;
+
+  optional string model_name = 3;
+  optional string serial_number = 4;
+}
+
+message FlowMeter {
+  required uint32 id = 1;
+  required string name = 2;
+  required string port_name = 3;
+  required double ticks_per_ml = 4;
+
+  optional Controller controller = 5;
+}
+
+message FlowToggle {
+  required uint32 id = 1;
+  required string name = 2;
+  required string port_name = 3;
+
+  optional Controller controller = 4;
+}
+
+// Describes a tap which is available for pouring beer.
+message KegTap {
+
+  // The unique identifier for this tap.
+  required uint32 id = 1;
+
+  // The name of the tap, a free-form string ("Main tap", "Wet bar", ...)
+  required string name = 2;
+
+  // The name of the flow meter assigned to this tap.
+  // Deprecated in favor of 'meter'
+  optional string meter_name = 3 [deprecated = true];
+
+  // The currently-connected meter, if any.
+  optional FlowMeter meter = 12;
+
+  // The currently-connected toggle, if any.
+  optional FlowToggle toggle = 13;
+
+  // The currently-connected temperature sensor, if any.
+  optional ThermoSensor thermo_sensor = 14;
+
+  // The relay name of the tap.
+  optional string relay_name = 4;
+
+  // Size of each flowmeter tick, in milliliters.
+  optional double ml_per_tick = 5;
+
+  // A longer description of the tap.
+  optional string description = 6;
+
+  // The temperature sensor for the tap, if any.
+  optional uint32 thermo_sensor_id = 8;
+
+  // The last temperature log, if any.
+  optional ThermoLog last_temperature = 9;
+
+  // The Keg currently assigned to the tap.  May be unset if there is no keg
+  // configured.
+  optional uint32 current_keg_id = 10;
+  optional Keg current_keg = 11;
+
+  optional uint32 sort_order = 15 [default = 0];
+}
+
+// A session is a group of drinks occuring within the same time window.  Every
+// poured drink will be associated with exactly one session.
+message Session {
+
+  // The unique identifier for this session.
+  required uint32 id = 1;
+
+  // The time this session was started, as an ISO8061 UTC timestamp.
+  required string start_time = 2;
+
+  // The time this session ended, as an ISO8061 UTC timestamp.
+  required string end_time = 3;
+
+  // Total volume poured during this session, in milliliters.
+  required double volume_ml = 4;
+
+  // A name for this session.
+  optional string name = 5;
+
+  // The slugified name of this session.
+  optional string slug = 6 [deprecated = true];
+
+  // Canonical URL for this object.
+  optional string url = 7;
+
+  // True if session is currently active.
+  optional bool is_active = 8;
+}
+
+// A log entry for a temperature sensor.
+message ThermoLog {
+
+  // The unique identifier for this log entry.
+  required uint32 id = 1;
+
+  // The sensor id that produced this log entry.
+  required uint32 sensor_id = 2;
+
+  // The temperature, in degrees C.
+  required double temperature_c = 3;
+
+  // The recording date, as an ISO8061 UTC timestamp.
+  required string time = 4;
+}
+
+// A temperature sensor configured in the system.
+message ThermoSensor {
+
+  // The unique identifier for this temperature sensor.
+  required uint32 id = 1;
+
+  // The raw/unique name of the sensor.
+  required string sensor_name = 2;
+
+  // The friendly name for the sensor.
+  optional string nice_name = 3;
+
+  // The most recent recording for this sensor.
+  optional ThermoLog last_log = 6;
+
+  optional double last_temp = 4 [deprecated = true];
+  optional string last_time = 5 [deprecated = true];
+}
+
+// A drinker registered in the kegbot system.
+message User {
+
+  // The user's unique username.
+  required string username = 1;
+
+  // A non-unique "display" name, if available.
+  optional string display_name = 13;
+
+  // The profile picture of the user.  May be unset if the user does not have a
+  // profile picture.
+  optional Image image = 2;
+
+  // True if the user is active.  This value will be false for accounts which
+  // have been disabled by the admin.
+  required bool is_active = 3 [default = true];
+
+  // The first name of the user.
+  // Not currently used.
+  optional string first_name = 4;
+
+  // The last name of the user.
+  // Not currently used.
+  optional string last_name = 5;
+
+  // The email address of the user.
+  // Only available to admin users.
+  optional string email = 6;
+
+  // The password of the user.
+  // Only available to admin users.
+  optional string password = 7;
+
+  // True if the user is a member of the system's staff.
+  // Only available to admin users.
+  optional bool is_staff = 8;
+
+  // True if the user is an administrator.
+  // Only available to admin users.
+  optional bool is_superuser = 9;
+
+  // UTC time for the user's last login, as ISO8061 string.
+  // Only available to admin users.
+  optional string last_login = 10;
+
+  // UTC time for the user's registration, as ISO8061 string.
+  // Only available to admin users.
+  optional string date_joined = 11;
+
+  // Canonical URL for this object.
+  optional string url = 12;
+}
+
+// Site information.
+
+message SiteInfo {
+  optional string title = 1;
+  optional string server_version = 2;
+}
+
+// Describes various events that happen in the system.
+message SystemEvent {
+
+  // The unqiue identifier for this event.
+  required uint32 id = 1;
+
+  // The kind of the event being reported. Current values: ``drink_poured``,
+  // ``session_started``, ``session_joined``, ``keg_tapped``, ``keg_ended``.
+  required string kind = 2;
+
+  // The time of this event, as an ISO8061 UTC timestamp.
+  required string time = 3;
+
+  // If a drink caused this event (as in ``drink_poured``, ``session_started``,
+  // and ``session_joined``), this field gives its id.
+  optional uint32 drink_id = 4;
+
+  // If this event relates to a specific keg (as in most events), this field
+  // gives its id.
+  optional uint32 keg_id = 5;
+
+  // If this event relates to a specific session (as in ``drink_poured``,
+  // ``session_started``, and ``session_joined``), this field gives its id.
+  optional uint32 session_id = 6;
+
+  // If this event relates to a specific user (as in ``drink_poured``,
+  // ``session_started``, and ``session_joined`` when the user is not
+  // anonymous), this field gives the user's id.
+  optional string user_id = 7;
+
+  optional Image image = 8;
+  optional User user = 9;
+  optional Drink drink = 10;
+  optional Keg keg = 11;
+  optional Session session = 12;
+}
+
+// An administrator-defined sound file to play for certain pour events.
+message SoundEvent {
+
+  // The name of this event.
+  required string event_name = 1;
+
+  // The predicate for the event.
+  // Not currently used.
+  optional string event_predicate = 2;
+
+  // The URL for the sound file to play during this event.
+  required string sound_url = 3;
+
+  // A specific username that this event applies to.
+  // Not currently used.
+  optional string user = 4;
+}

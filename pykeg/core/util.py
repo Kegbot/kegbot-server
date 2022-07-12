@@ -55,11 +55,6 @@ def CtoF(t):
 
 
 def get_plugin_template_dirs(plugin_list):
-    from django.utils import six
-
-    if not six.PY3:
-        fs_encoding = sys.getfilesystemencoding() or sys.getdefaultencoding()
-
     ret = []
     for plugin in plugin_list:
         plugin_module = ".".join(plugin.split(".")[:-1])
@@ -68,8 +63,6 @@ def get_plugin_template_dirs(plugin_list):
             raise ImproperlyConfigured('Cannot find plugin "%s"' % plugin)
         template_dir = os.path.join(os.path.dirname(pkg.path), "templates")
         if os.path.isdir(template_dir):
-            if not six.PY3:
-                template_dir = template_dir.decode(fs_encoding)
             ret.append(template_dir)
     return ret
 

@@ -47,11 +47,11 @@ Django = "<3"
 Pillow = "*"
 PyYAML = "*"
 mysqlclient = "*"
-future = "*"
 addict = "*"
 kegbot-api = "*"
 gevent = "*"
 psycopg2 = "*"
+future = "^0.18.2"
 
 [tool.poetry.dev-dependencies]
 black = "*"

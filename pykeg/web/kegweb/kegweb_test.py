@@ -1,5 +1,4 @@
 """General tests for the web interface."""
-from __future__ import print_function
 
 from django.core import mail
 from django.test import TransactionTestCase

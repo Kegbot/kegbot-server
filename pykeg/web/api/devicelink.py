@@ -22,13 +22,11 @@ Protocol:
        request handler discovers the token has been confirm, creates
        a new Device record and ApiKey, and returns the ApiKey.
 """
-from __future__ import division
 
 import random
 from builtins import range
 
 from django.core.cache import cache
-from past.utils import old_div
 
 from pykeg.core import models
 
@@ -57,7 +55,8 @@ class LinkExpiredException(Exception):
 
 def _build_code(size=DEFAULT_CODE_SIZE):
     code = "".join(random.choice(CODE_LETTERS) for i in range(size))
-    code = "{}-{}".format(code[: (old_div(size, 2))], code[(old_div(size, 2)) :])
+    mid = size // 2
+    code = "{}-{}".format(code[:mid], code[mid:])
     return code
 
 

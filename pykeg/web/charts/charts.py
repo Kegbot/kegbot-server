@@ -1,7 +1,6 @@
 import datetime
 
 from django.utils import timezone
-from past.builtins import cmp
 
 from pykeg.core import models
 from pykeg.core.util import CtoF
@@ -158,9 +157,6 @@ def chart_users_by_volume(stats, *args, **kwargs):
         volume, units = format_volume(volume, kwargs)
         label = "<b>%s</b> (%.1f %s)" % (username, volume, units)
         data.append((label, volume))
-
-    def _sort_vol_desc(a, b):
-        return cmp(b[1], a[1])
 
     other_vol = 0
     data.sort(key=lambda item: item[1])

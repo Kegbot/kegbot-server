@@ -8,7 +8,6 @@ import random
 import re
 import urllib.parse
 from builtins import object, str
-from distutils.version import StrictVersion
 from uuid import uuid4
 
 import pytz
@@ -24,9 +23,10 @@ from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from imagekit.models import ImageSpecField
 from imagekit.processors import Adjust, resize
+from packaging.version import Version
 
 from pykeg.backend import get_kegbot_backend
 from pykeg.core import colors, fields, kb_common, keg_sizes, managers
@@ -337,7 +337,7 @@ class KegbotSite(models.Model):
         rows = cls.objects.filter(name="default").values("server_version")
         if not rows:
             return None
-        return StrictVersion(rows[0].get("server_version", "0.0.0"))
+        return Version(rows[0].get("server_version", "0.0.0"))
 
     def get_stats(self):
         return Stats.get_latest_for_view()

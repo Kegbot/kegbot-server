@@ -2,24 +2,24 @@
 
 from django.dispatch import Signal
 
-user_created = Signal(providing_args=["user"])
+user_created = Signal()
 
-tap_created = Signal(providing_args=["tap"])
+tap_created = Signal()
 
-auth_token_created = Signal(providing_args=["token"])
+auth_token_created = Signal()
 
-drink_recorded = Signal(providing_args=["drink"])
+drink_recorded = Signal()
 
-drink_canceled = Signal(providing_args=["drink"])
+drink_canceled = Signal()
 
-drink_assigned = Signal(providing_args=["drink", "previous_user"])
+drink_assigned = Signal()
 
-drink_adjusted = Signal(providing_args=["drink", "previous_volume"])
+drink_adjusted = Signal()
 
-temperature_recorded = Signal(providing_args=["record"])
+temperature_recorded = Signal()
 
-keg_created = Signal(providing_args=["keg"])
+keg_created = Signal()
 
-keg_attached = Signal(providing_args=["keg", "tap"])
+keg_attached = Signal()
 
-keg_ended = Signal(providing_args=["keg"])
+keg_ended = Signal()

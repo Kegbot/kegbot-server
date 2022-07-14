@@ -291,3 +291,5 @@ TEMPLATES = [
 # Override any user-specified timezone: As of Kegbot 0.9.12, this is
 # specified in site settings.
 TIME_ZONE = "UTC"
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

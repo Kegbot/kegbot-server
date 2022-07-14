@@ -40,7 +40,7 @@ class KegwebTestCase(TransactionTestCase):
         drink_id = d.id
 
         response = self.client.get("/d/%s" % drink_id, follow=True)
-        self.assertRedirects(response, "/drinks/%s" % drink_id, status_code=301)
+        self.assertRedirects(response, "/drinks/%s/" % drink_id, status_code=301)
 
         session_id = d.session.id
         response = self.client.get("/s/%s" % session_id, follow=True)
@@ -76,8 +76,8 @@ class KegwebTestCase(TransactionTestCase):
             "/kegs/": "Keg List",
             "/stats/": "System Stats",
             "/sessions/": "All Sessions",
-            "/kegs/{}".format(keg.id): "Keg {}".format(keg.id),
-            "/drinks/{}".format(d.id): "Drink {}".format(d.id),
+            "/kegs/{}/".format(keg.id): "Keg {}".format(keg.id),
+            "/drinks/{}/".format(d.id): "Drink {}".format(d.id),
         }
 
         def test_urls(expect_fail, urls=urls):
@@ -234,8 +234,9 @@ class KegwebTestCase(TransactionTestCase):
             },
             follow=False,
         )
-        print(response)
-        self.assertContains(response, "The two password fields didn&#39;t match.", status_code=200)
+        self.assertContains(
+            response, "The two password fields didn't match.", status_code=200, html=True
+        )
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     @override_settings(DEFAULT_FROM_EMAIL="test-from@example")

@@ -289,17 +289,17 @@ class BackendsTestCase(TransactionTestCase):
             producer_name=FAKE_BREWER_NAME,
             style_name=FAKE_BEER_STYLE,
         )
-        self.assertEqual("http://example.com:8000/kegs/{}".format(keg.id), keg.full_url())
+        self.assertEqual("http://example.com:8000/kegs/{}/".format(keg.id), keg.full_url())
 
         drink = self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100, photo="foo")
-        self.assertEqual("http://example.com:8000/d/{}".format(drink.id), drink.short_url())
+        self.assertEqual("http://example.com:8000/d/{}/".format(drink.id), drink.short_url())
         self.assertEqual(
-            "http://example.com:8000/s/{}".format(drink.session.id), drink.session.short_url()
+            "http://example.com:8000/s/{}/".format(drink.session.id), drink.session.short_url()
         )
 
         start = drink.session.start_time
         datepart = "{}/{}/{}".format(start.year, start.month, start.day)
         self.assertEqual(
-            "http://example.com:8000/sessions/{}/{}".format(datepart, drink.session.id),
+            "http://example.com:8000/sessions/{}/{}/".format(datepart, drink.session.id),
             drink.session.full_url(),
         )

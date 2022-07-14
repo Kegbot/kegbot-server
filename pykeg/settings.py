@@ -124,6 +124,8 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "pykeg.web.middleware.ErrorLoggingMiddleware",
+    "pykeg.web.middleware.PathRewriteMiddleware",
     "pykeg.web.middleware.IsSetupMiddleware",
     "pykeg.web.middleware.CurrentRequestMiddleware",
     "pykeg.web.middleware.KegbotSiteMiddleware",

@@ -50,7 +50,7 @@ class EmailNotificationBackendTestCase(TestCase):
 
         expected_body_plain = """A new keg of Unknown by Unknown was just tapped on My Kegbot!
 
-Track it here: http://localhost:1234/kegs/%s
+Track it here: http://localhost:1234/kegs/%s/
 
 You are receiving this e-mail because you have notifications enabled
 on My Kegbot.  To change your settings, visit http://localhost:1234/account.""" % (
@@ -65,7 +65,7 @@ A new keg of <b>Unknown by Unknown</b> was just tapped on
 </p>
 
 <p>
-Track it <a href="http://localhost:1234/kegs/%s">here</a>.
+Track it <a href="http://localhost:1234/kegs/%s/">here</a>.
 </p>
 
 <p>
@@ -104,7 +104,7 @@ http://localhost:1234/account.
 
         expected_body_plain = """A new session was just kicked off on My Kegbot.
 
-You can follow the session here: http://localhost:1234/s/%s
+You can follow the session here: http://localhost:1234/s/%s/
 
 You are receiving this e-mail because you have notifications enabled
 on My Kegbot.  To change your settings, visit http://localhost:1234/account.""" % (
@@ -118,7 +118,7 @@ A new session was just kicked off on <a href="http://localhost:1234">My Kegbot</
 </p>
 
 <p>
-You can follow the session <a href="http://localhost:1234/s/%s">here</a>.
+You can follow the session <a href="http://localhost:1234/s/%s/">here</a>.
 </p>
 
 <p>
@@ -161,7 +161,7 @@ http://localhost:1234/account.
 
         expected_body_plain = """Keg %s (Unknown by Unknown) is 15.0%% full.
 
-See full statistics here: http://localhost:1234/kegs/%s
+See full statistics here: http://localhost:1234/kegs/%s/
 
 You are receiving this e-mail because you have notifications enabled
 on My Kegbot.  To change your settings, visit http://localhost:1234/account.""" % (
@@ -176,7 +176,7 @@ Keg %s (Unknown by Unknown) is <b>15.0</b>%% full.
 </p>
 
 <p>
-See full statistics <a href="http://localhost:1234/kegs/%s">here</a>.
+See full statistics <a href="http://localhost:1234/kegs/%s/">here</a>.
 </p>
 
 <p>
@@ -215,7 +215,7 @@ http://localhost:1234/account.
 
         expected_body_plain = """Keg %s of Unknown by Unknown was just finished on My Kegbot.
 
-See final statistics here: http://localhost:1234/kegs/%s
+See final statistics here: http://localhost:1234/kegs/%s/
 
 You are receiving this e-mail because you have notifications enabled
 on My Kegbot.  To change your settings, visit http://localhost:1234/account.""" % (
@@ -231,7 +231,7 @@ Keg %s (Unknown by Unknown) was just finished on
 </p>
 
 <p>
-See final statistics <a href="http://localhost:1234/kegs/%s">here</a>.
+See final statistics <a href="http://localhost:1234/kegs/%s/">here</a>.
 </p>
 
 <p>

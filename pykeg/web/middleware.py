@@ -1,5 +1,4 @@
 import logging
-from builtins import object, str
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -37,7 +36,7 @@ def _path_allowed(path, kbsite):
     return False
 
 
-class CurrentRequestMiddleware(object):
+class CurrentRequestMiddleware:
     """Set/clear the current request."""
 
     def __init__(self, get_response):
@@ -52,7 +51,46 @@ class CurrentRequestMiddleware(object):
         return response
 
 
-class IsSetupMiddleware(object):
+class ErrorLoggingMiddleware:
+    """Log uncaught exceptions to python logging."""
+
+    logger = logging.getLogger(__name__)
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            response = self.get_response(request)
+            return response
+        except:
+            self.logger.exception("Server error")
+            raise
+
+
+class PathRewriteMiddleware:
+    """Rewrites `request.path` to ignore trailing slashes for /api/ requests.
+
+    Earlier versions of kegbot-server tolerated an optional trailing slash.
+    We don't want to define every API url as an `re_path(r".../?")`.
+
+    Rewrite `request.{path,path_info}` so that onward request handling always
+    sees a path as if the client presented no trailing slash.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.path.startswith("/api") and not getattr(request, "path_rewritten", None):
+            if request.path.endswith("/"):
+                request.path = request.path[:-1]
+                request.path_info = request.path_info[:-1]
+                request.path_rewritten = True
+        return self.get_response(request)
+
+
+class IsSetupMiddleware:
     """Adds `.need_setup`, `.need_upgrade`, and `.kbsite` to the request."""
 
     def __init__(self, get_response):
@@ -123,7 +161,7 @@ class IsSetupMiddleware(object):
         return render(request, "setup_wizard/upgrade_required.html", context=context, status=403)
 
 
-class KegbotSiteMiddleware(object):
+class KegbotSiteMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -138,7 +176,7 @@ class KegbotSiteMiddleware(object):
         return self.get_response(request)
 
 
-class PrivacyMiddleware(object):
+class PrivacyMiddleware:
     """Enforces site privacy settings.
 
     Must be installed after ApiRequestMiddleware (in request order) to

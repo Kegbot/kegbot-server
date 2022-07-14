@@ -1,18 +1,10 @@
 """Routines from converting data to and from Protocol Buffer format."""
-from __future__ import division
 
-from builtins import str
-from past.utils import old_div
-import pytz
-
-from django.conf import settings
-
-from kegbot.api import api_pb2
-from kegbot.api import models_pb2
-from kegbot.api import protoutil
+from addict import Dict
 
 from pykeg.core import models
-from addict import Dict
+
+from . import api_pb2, models_pb2, protoutil
 
 _CONVERSION_MAP = {}
 
@@ -330,7 +322,7 @@ def KegTapToProto(tap, full=False):
 
     if meter:
         ret.meter_name = meter.meter_name()
-        ret.ml_per_tick = old_div(1, meter.ticks_per_ml)
+        ret.ml_per_tick = 1 / meter.ticks_per_ml
         ret.meter.MergeFrom(ToProto(meter))
     else:
         # TODO(mikey): Remove compatibility.

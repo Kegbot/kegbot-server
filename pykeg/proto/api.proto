@@ -1,0 +1,144 @@
+syntax = "proto2";
+option java_package = "org.kegbot.proto";
+option optimize_for = CODE_SIZE;
+
+import "models.proto";
+
+// Common
+
+message Meta {
+
+  // The total number of records available for this request.
+  optional uint32 total = 1;
+
+  // The maximum number of records returned in this request.
+  optional uint32 limit = 2;
+
+  // The position of the first record returned, among "total".
+  optional uint32 pos = 3;
+}
+
+// Requests
+
+message UserRegistrationRequest {
+
+  // Desired username.
+  required string username = 1;
+
+  // User's e-mail address.
+  required string email = 2;
+
+  // Initial password for logging in.  If unspecified, the account will be
+  // registered with a random password, which can be e-mailed to the user.
+  optional string password = 3;
+
+  // One of "male", "female".
+  optional string gender = 4;
+
+  // Twitter username.
+  optional string twitter_name = 5;
+}
+
+// Message used for recording a new drink on the backend.
+message RecordDrinkRequest {
+
+  // Name of the tap on which this drink was poured.  This information is
+  // required, but this field may be omitted when the tap name is given
+  // elsewhere.  (In the Kegweb API, the tap_name is part of the URL receiving
+  // the POST.)
+  optional string tap_name = 1;
+
+  // The number of ticks, as reported by the flowmeter.  Required.
+  required uint32 ticks = 2;
+
+  // The volume of the pour.  If unspecified, the backend will use the current
+  // tap configuration to compute the pour's volume based on the value of
+  // "ticks".
+  optional float volume_ml = 3;
+
+  // The username responsible for the pour.  If unspecified, this pour is
+  // treated as an anonymous pour.
+  optional string username = 4;
+
+  // The date and time of the pour, in seconds before "now", where "now" is the
+  // current time on the backend at the time the request is processed.  If this
+  // field is unspecified, a default value of "0" (meaning "now") is assumed.
+  // This value is ignored if "record_date" is specified.
+  optional uint32 seconds_ago = 5 [default = 0];
+
+  // The absolute date and time of the pour, as an ISO8061 UTC timestamp.  If
+  // specified and valid, this value supercedes any value given for
+  // "seconds_ago", which will be ignored.
+  optional string record_date = 6;
+
+  // The time taken, in seconds, to complete the pour.
+  optional uint32 duration_seconds = 7;
+
+  // The authentication token used to pour the drink.
+  optional string auth_token = 8;
+
+  // If true, the pour is recorded as "spilled": no drink record will be
+  // generated, and all fields other than "tap_name" and the volume ("ticks", or
+  // "volume_ml" if given) are ignored.  The volume will be added to the
+  // spilled total for the tap’s current keg.
+  optional bool spilled = 9;
+
+  // Optional message from the user about the pour.
+  optional string shout = 10;
+
+  // See Drink model.
+  optional string tick_time_series = 11;
+}
+
+// Message used for recording a temperature sensor reading on the backend.
+message RecordTemperatureRequest {
+
+  // The name of the sensor, as stored in the backend.
+  required string sensor_name = 1;
+
+  // The observed temperature, in degress centigrade.
+  required float temp_c = 2;
+
+  // The date of the reading, as an ISO8601 UTC timestamp.  If this field is
+  // unspecified, the record_date will be the current time on the backend at the
+  // time the request is processed.
+  optional string record_date = 3;
+}
+
+// Responses
+
+message SyncResponse {
+  // All configured controllers.
+  repeated Controller controllers = 1;
+
+  // Recently-poured drinks.
+  repeated Drink drinks = 2;
+
+  // Recent system events.
+  repeated SystemEvent events = 3;
+
+  // Kegs on tap.
+  repeated Keg active_kegs = 4;
+
+  // All configured meters.
+  repeated FlowMeter meters = 5;
+
+  // Site info.
+  optional SiteInfo site_info = 6;
+
+  // Sound events.
+  repeated SoundEvent sound_events = 7;
+
+  // All taps.
+  repeated KegTap taps = 8;
+
+  // All toggles.
+  repeated FlowToggle toggles = 9;
+
+  // Current session (if there is one).
+  optional Session active_session = 10;
+
+  // Currently-active users (if any).
+  repeated User active_users = 11;
+
+}

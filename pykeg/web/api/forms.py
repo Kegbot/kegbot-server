@@ -1,4 +1,5 @@
 from builtins import object
+
 from django import forms
 
 from pykeg.core import models

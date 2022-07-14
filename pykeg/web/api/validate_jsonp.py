@@ -5,10 +5,8 @@
 
 """Validate Javascript Identifiers for use as JSON-P callback parameters."""
 
-from builtins import str
-from builtins import chr
 import re
-
+from builtins import chr, str
 from unicodedata import category
 
 # ------------------------------------------------------------------------------

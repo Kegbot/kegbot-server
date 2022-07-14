@@ -3,10 +3,9 @@
 from django.core import mail
 from django.test import TestCase
 from django.test.utils import override_settings
+
 from pykeg.backend import get_kegbot_backend
-from pykeg.core import models
-from pykeg.core import defaults
-from pykeg.core import kb_common
+from pykeg.core import defaults, kb_common, models
 
 
 @override_settings(KEGBOT_BACKEND="pykeg.core.testutils.TestBackend")

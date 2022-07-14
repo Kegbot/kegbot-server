@@ -1,7 +1,7 @@
 from django.test import TransactionTestCase
 
-from pykeg.plugin import datastore
 from pykeg.core import models
+from pykeg.plugin import datastore
 
 
 class DatastoreTestCase(TransactionTestCase):

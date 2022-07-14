@@ -13,9 +13,12 @@ For a detailed look at what's new in version 1.3, see :ref:`version-13-release-n
 
 **Breaking Changes**
 
+Several features have been removed in order to lower code or documentation complexity, reduce maintenance, or both.
+
 * Settings are no longer read from `local_settings.py` and must instead be supplied by env.
 * The `setup-kegbot.py` tool is no longer supported.
-* Built-in production support and documentation for `supervisor` and `nginx` has been droped.
+* Built-in production support and documentation for `supervisor` and `nginx` has been dropped.
+* The Twitter, Foursquare, and Untappd plugins have been removed.
 * Optional support for Sentry has been removed.
 * Optional support for django-storages has been removed.
 * Optional support for memcache has been removed.
@@ -41,6 +44,7 @@ For a detailed look at what's new in version 1.3, see :ref:`version-13-release-n
 * Fix compatibility with with MySQL versions later than v5.7.5 (:issue:`356`)
 * Allow usernames with a period (:issue:`336`)
 * Update stats and sessions when admin deletes a drink (:issue:`371`)
+* Automatic checks for updates have been removed.
 
 **Other Changes**
 

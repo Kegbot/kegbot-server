@@ -1,10 +1,10 @@
-from __future__ import print_function
-
-from builtins import object
 import os
 import signal
 import sys
+from builtins import object
+
 from django.core.management.base import BaseCommand
+
 from pykeg.util.runner import Runner
 
 

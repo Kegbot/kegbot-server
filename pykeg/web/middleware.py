@@ -1,22 +1,18 @@
-from builtins import str
-from builtins import object
-from pykeg.backend import get_kegbot_backend
-from pykeg.core import models
-from pykeg import config
-from pykeg.core.util import get_version_object
-from pykeg.core.util import set_current_request
-from pykeg.core.util import must_upgrade
-from pykeg.util import dbstatus
-from pykeg.web.api.util import is_api_request
-
-from pykeg.plugin import util as plugin_util
+import logging
+from builtins import object, str
 
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 
-import logging
+from pykeg import config
+from pykeg.backend import get_kegbot_backend
+from pykeg.core import models
+from pykeg.core.util import get_version_object, must_upgrade, set_current_request
+from pykeg.plugin import util as plugin_util
+from pykeg.util import dbstatus
+from pykeg.web.api.util import is_api_request
 
 logger = logging.getLogger(__name__)
 

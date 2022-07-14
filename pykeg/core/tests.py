@@ -1,12 +1,11 @@
 """Generic unittests."""
-from __future__ import print_function
 
 import os
 import subprocess
-
 import unittest
-from django.test import TestCase
 from importlib import import_module
+
+from django.test import TestCase
 
 
 def path_for_import(name):

@@ -3,23 +3,21 @@
 # Note: imports should be limited to python stdlib, since methods here
 # may be used in models.py, settings.py, etc.
 
-from builtins import str
-from builtins import object
 import logging
-import pkgutil
 import os
-from importlib import metadata as importlib_metadata
-import requests
+import pkgutil
 import sys
 import tempfile
+from builtins import object, str
 from collections import OrderedDict
-from threading import current_thread
 from contextlib import closing
 from distutils.version import StrictVersion
+from importlib import metadata as importlib_metadata
+from threading import current_thread
 
-from redis.exceptions import RedisError
-
+import requests
 from django.core.exceptions import ImproperlyConfigured
+from redis.exceptions import RedisError
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +55,6 @@ def CtoF(t):
 
 
 def get_plugin_template_dirs(plugin_list):
-    from django.utils import six
-
-    if not six.PY3:
-        fs_encoding = sys.getfilesystemencoding() or sys.getdefaultencoding()
-
     ret = []
     for plugin in plugin_list:
         plugin_module = ".".join(plugin.split(".")[:-1])
@@ -70,8 +63,6 @@ def get_plugin_template_dirs(plugin_list):
             raise ImproperlyConfigured('Cannot find plugin "%s"' % plugin)
         template_dir = os.path.join(os.path.dirname(pkg.path), "templates")
         if os.path.isdir(template_dir):
-            if not six.PY3:
-                template_dir = template_dir.decode(fs_encoding)
             ret.append(template_dir)
     return ret
 

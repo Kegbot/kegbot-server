@@ -1,11 +1,10 @@
-from __future__ import print_function
-
 import os
 
 from django.core.files.storage import get_storage_class
 from django.core.management.base import BaseCommand
-from pykeg.backup import backup
+
 from pykeg.backend.backends import UnknownBaseUrlException
+from pykeg.backup import backup
 
 
 class Command(BaseCommand):

@@ -1,7 +1,5 @@
-from __future__ import division
-from builtins import object
-from past.utils import old_div
 import types
+from builtins import object
 from enum import Enum
 
 
@@ -105,4 +103,4 @@ class Quantity(object):
         if not units_to:
             raise ValueError("Bad units_to")
         amount_in_ml = float(amount) * units_from.value
-        return old_div(amount_in_ml, units_to.value)
+        return amount_in_ml / units_to.value

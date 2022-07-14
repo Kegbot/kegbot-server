@@ -1,26 +1,22 @@
 """Utilities for processing API views."""
 
-from builtins import str
-from django.conf import settings
-from django.http import Http404
-from django.http import HttpResponse
-from django.db.models.query import QuerySet
-from pykeg.proto import protolib
-from kegbot.api import protoutil
-from google.protobuf.message import Message
-
-from kegbot.api import kbapi
-from pykeg.util import kbjson
-from pykeg.core import models
-from pykeg.backend.exceptions import NoTokenError
-from addict import Dict
-
-from . import validate_jsonp
-
 import logging
 import sys
 import traceback
 import types
+
+from addict import Dict
+from django.conf import settings
+from django.db.models.query import QuerySet
+from django.http import Http404, HttpResponse
+from google.protobuf.message import Message
+
+from pykeg.backend.exceptions import NoTokenError
+from pykeg.core import models
+from pykeg.proto import kbapi, protolib, protoutil
+from pykeg.util import kbjson
+
+from . import validate_jsonp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -137,7 +133,10 @@ def wrap_exception(request, exception):
     LOGGER.error(
         "%s: %s" % (exception.__class__.__name__, exception),
         exc_info=exc_info,
-        extra={"status_code": 500, "request": request,},
+        extra={
+            "status_code": 500,
+            "request": request,
+        },
     )
 
     # Don't wrap the exception during debugging.

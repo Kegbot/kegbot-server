@@ -1,20 +1,14 @@
-from __future__ import print_function
-
+import sys
 from builtins import str
 from distutils.version import StrictVersion
-import sys
-
-from pykeg.core.util import get_version_object
-
-from django.core.management.base import BaseCommand
 
 from django.contrib.staticfiles.management.commands import collectstatic
+from django.core.management.base import BaseCommand
 from django.core.management.commands import migrate
-from pykeg.core.management.commands import regen_stats
 
 from pykeg.core import models
-from pykeg.core import checkin
-
+from pykeg.core.management.commands import regen_stats
+from pykeg.core.util import get_version_object
 
 # Versions earlier than this cannot be upgraded. History:
 #  v0.9.35 - migrations rebased to 0001
@@ -105,12 +99,6 @@ class Command(BaseCommand):
         site = models.KegbotSite.get()
         site.server_version = str(app_version)
         site.save()
-
-        # Refresh any news (since we have a new version).
-        try:
-            checkin.checkin(timeout=5.0, quiet=True)
-        except (checkin.CheckinError, Exception):
-            pass
 
         print("")
         print("Upgrade complete!")

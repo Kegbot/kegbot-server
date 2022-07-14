@@ -1,12 +1,9 @@
-from django.contrib.auth import authenticate
-from django.contrib.auth import login
-from django.shortcuts import redirect
-from django.shortcuts import render
+from django.contrib.auth import authenticate, login
+from django.shortcuts import redirect, render
 
-from pykeg.web.kbregistration.forms import KegbotRegistrationForm
 from pykeg.backend import get_kegbot_backend
-
 from pykeg.core import models
+from pykeg.web.kbregistration.forms import KegbotRegistrationForm
 
 """Kegbot-aware registration views."""
 

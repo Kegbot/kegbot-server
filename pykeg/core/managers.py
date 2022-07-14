@@ -1,4 +1,5 @@
 from django.db import models
+
 from pykeg.core import kb_common
 
 

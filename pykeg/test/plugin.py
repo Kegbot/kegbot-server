@@ -1,10 +1,10 @@
-import os
-import pytest
-import tempfile
 import logging
+import os
 import shutil
-from django.conf import settings
+import tempfile
 
+import pytest
+from django.conf import settings
 
 logger = logging.getLogger("pykeg.test.plugin")
 TEMP_DATA_DIR = None

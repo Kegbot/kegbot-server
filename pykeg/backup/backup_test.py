@@ -2,22 +2,20 @@
 
 import difflib
 import os
-import sys
 import shutil
+import sys
 import tempfile
 import unittest
-
-from pykeg.core import defaults
-from pykeg.core import models
 
 from django.core.files.storage import FileSystemStorage
 from django.test import TransactionTestCase
 
-from . import backup
+from pykeg.core import defaults, models
 from pykeg.core.testutils import make_datetime
 from pykeg.core.util import get_version
-
 from pykeg.util import kbjson
+
+from . import backup
 
 
 def run(cmd, args=[]):

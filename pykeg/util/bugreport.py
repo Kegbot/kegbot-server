@@ -1,21 +1,17 @@
-from __future__ import print_function
-
-from future import standard_library
-
-standard_library.install_aliases()
-from builtins import input
-from io import StringIO
 import datetime
-import isodate
 import json
 import os
-import redis
-import requests
 import stat
 import subprocess
 import sys
-from pykeg.core.util import get_version
+from builtins import input
+from io import StringIO
 
+import isodate
+import redis
+import requests
+
+from pykeg.core.util import get_version
 
 SEPARATOR = "-" * 72 + "\n"
 

@@ -4,9 +4,7 @@ from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.proto import protolib
 
-from . import forms
-from . import tasks
-from . import views
+from . import forms, tasks, views
 
 KEY_SITE_SETTINGS = "settings"
 

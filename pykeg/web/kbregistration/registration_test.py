@@ -3,9 +3,10 @@
 from django.core import mail
 from django.test import TestCase
 from django.test.utils import override_settings
+
 from pykeg.backend import get_kegbot_backend
-from pykeg.core import models as core_models
 from pykeg.core import defaults
+from pykeg.core import models as core_models
 
 
 class ForgotPasswordTest(TestCase):

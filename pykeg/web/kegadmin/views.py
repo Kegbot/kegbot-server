@@ -1,44 +1,35 @@
 #!/usr/bin/env python
 #
 import datetime
+import logging
 import os
 import re
+import subprocess
 import zipfile
+from operator import itemgetter
 
 import isodate
 import redis
-import subprocess
-
-from operator import itemgetter
-
 from django.conf import settings
 from django.contrib import messages
-from pykeg.web.decorators import staff_member_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.storage import get_storage_class
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
-from django.http import Http404
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from django.shortcuts import redirect
-from django.shortcuts import render
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from pykeg.util import kbjson
-
 from pykeg.backup import backup
-from pykeg.web.api import devicelink
 from pykeg.celery import app as celery_app
-from pykeg.core import checkin
 from pykeg.core import models
 from pykeg.core.util import get_runtime_version_info
 from pykeg.logging.handlers import RedisListHandler
+from pykeg.util import kbjson
 from pykeg.util.email import build_message
-
+from pykeg.web.api import devicelink
+from pykeg.web.decorators import staff_member_required
 from pykeg.web.kegadmin import forms
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +37,6 @@ logger = logging.getLogger(__name__)
 @staff_member_required
 def dashboard(request):
     context = {}
-
-    # Hack: Schedule an update checkin if it looks like it's been a while.
-    # This works around sites that are not running celerybeat.
-    checkin.schedule_checkin()
 
     email_backend = getattr(settings, "EMAIL_BACKEND", None)
     email_configured = (
@@ -65,17 +52,6 @@ def dashboard(request):
             r.ping()
         except redis.RedisError as e:
             context["redis_error"] = e.message if e.message else "Unknown error."
-
-    last_checkin_time, last_checkin = checkin.get_last_checkin()
-    context["last_checkin_time"] = last_checkin_time
-    context["checkin"] = last_checkin
-
-    if last_checkin:
-        for news in last_checkin.get("news", []):
-            try:
-                news["date"] = isodate.parse_datetime(news["date"])
-            except (KeyError, ValueError):
-                pass
 
     active_users = models.User.objects.filter(is_active=True).exclude(username="guest")
     context["num_users"] = len(active_users)

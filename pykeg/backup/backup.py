@@ -23,26 +23,25 @@ metadata.json consists of backup-related metadata:
 """
 
 import hashlib
+import json
 import logging
 import os
-import sys
-import isodate
-import tempfile
 import shutil
-import json
+import sys
+import tempfile
 import zipfile
+
+import isodate
+from django.conf import settings
+from django.core.files.storage import default_storage
+from django.db import connection, transaction
+from django.utils import timezone
+from django.utils.text import slugify
 
 from pykeg.core.util import get_version
 from pykeg.util import kbjson
 
-from .exceptions import BackupError, InvalidBackup, AlreadyInstalledError
-
-from django.conf import settings
-from django.core.files.storage import default_storage
-from django.db import connection
-from django.db import transaction
-from django.utils import timezone
-from django.utils.text import slugify
+from .exceptions import AlreadyInstalledError, BackupError, InvalidBackup
 
 logger = logging.getLogger(__name__)
 
@@ -196,7 +195,7 @@ def backup(storage=default_storage, include_media=True):
             # Append sha1sum.
             sha1 = hashlib.sha1()
             with open(temp_zip, "rb") as f:
-                for chunk in iter(lambda: f.read(2 ** 20), b""):
+                for chunk in iter(lambda: f.read(2**20), b""):
                     sha1.update(chunk)
             digest = sha1.hexdigest()
             saved_zip_name = os.path.join(BACKUPS_DIRNAME, "{}-{}.zip".format(backup_name, digest))

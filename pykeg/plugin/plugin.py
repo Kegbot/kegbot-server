@@ -1,7 +1,8 @@
 """Plugin interface for extending the Kegbot frontend."""
 
-from builtins import object
 import logging
+from builtins import object
+
 from pykeg.plugin.datastore import ModelDatastore
 
 

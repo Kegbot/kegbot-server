@@ -1,35 +1,31 @@
 """Kegweb RESTful API views."""
 
-from builtins import str
 import datetime
 import logging
+from builtins import str
 from functools import wraps
 
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
-from django.utils import timezone
-
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from kegbot.api import kbapi
-
 from pykeg import backend
-from pykeg.core import keg_sizes
-from pykeg.core import models
+from pykeg.core import keg_sizes, models
 from pykeg.core import util as core_util
-from pykeg.proto import protolib
-from pykeg.web.api import devicelink
-from pykeg.web.api import forms
-from pykeg.web.api import util
-from pykeg.web.kegadmin.forms import ChangeKegForm
-from pykeg.web.kegadmin.forms import ControllerForm
-from pykeg.web.kegadmin.forms import FlowToggleForm
-from pykeg.web.kegadmin.forms import NewFlowMeterForm
-from pykeg.web.kegadmin.forms import UpdateFlowMeterForm
+from pykeg.proto import kbapi, protolib
+from pykeg.web.api import devicelink, forms, util
+from pykeg.web.kegadmin.forms import (
+    ChangeKegForm,
+    ControllerForm,
+    FlowToggleForm,
+    NewFlowMeterForm,
+    UpdateFlowMeterForm,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -199,7 +195,9 @@ def get_flow_toggle(request, flow_toggle_id):
 def pictures(request):
     if request.method != "POST":
         raise Http404("Method not supported")
-    pic = models.Picture.objects.create(image=request.FILES["photo"],)
+    pic = models.Picture.objects.create(
+        image=request.FILES["photo"],
+    )
     return protolib.ToProto(pic, full=True)
 
 

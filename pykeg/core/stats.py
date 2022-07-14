@@ -1,15 +1,15 @@
 """Methods to generate cached statistics from drinks."""
 
-from builtins import str
-from builtins import object
 import copy
 import inspect
 import logging
-import pytz
+from builtins import object, str
 
-from django.utils.timezone import localtime
-from pykeg.core import models
+import pytz
 from addict import Dict
+from django.utils.timezone import localtime
+
+from pykeg.core import models
 
 STAT_MAP = {}
 

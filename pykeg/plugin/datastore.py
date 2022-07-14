@@ -1,7 +1,9 @@
 """Data storage interface and implementations for plugins."""
 
 from builtins import object
+
 from addict import Dict
+
 from pykeg.core import models
 
 

@@ -1,11 +1,11 @@
+import logging
 from builtins import object
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.cache import add_never_cache_headers
 
 from . import util
-
-import logging
 
 LOGGER = logging.getLogger(__name__)
 

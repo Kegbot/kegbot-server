@@ -1,22 +1,20 @@
-from functools import wraps
 import logging
 import traceback
+from functools import wraps
+
 from django.conf import settings
-from django.core import management
 from django.contrib import messages
 from django.contrib.auth import authenticate
+from django.core import management
 from django.http import Http404
-from django.shortcuts import redirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
 
-from pykeg.core import defaults
-from pykeg.core import models
-from pykeg.util import dbstatus
+from pykeg.core import defaults, models
 from pykeg.core.util import get_version_object
+from pykeg.util import dbstatus
 
-from .forms import AdminUserForm
-from .forms import MiniSiteSettingsForm
+from .forms import AdminUserForm, MiniSiteSettingsForm
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +114,7 @@ def upgrade(request):
 @setup_view
 @never_cache
 def setup_accounts(request):
-    """ Shows the enable/disable accounts toggle. """
+    """Shows the enable/disable accounts toggle."""
     context = {}
 
     if request.method == "POST":

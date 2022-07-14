@@ -1,27 +1,19 @@
 """High-level interface to Django backend."""
 
-from __future__ import absolute_import
 
-from builtins import object
 import datetime
 import logging
+from builtins import object
 
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
-from pykeg.core import keg_sizes
-from pykeg.core.util import SuppressTaskErrors
-from pykeg.web.auth import get_auth_backend
-from pykeg.web.auth import AuthException
-from pykeg.web.auth import UserExistsException
-
-from pykeg.core import kb_common
-from pykeg.core import models
-from pykeg.core import time_series
-from pykeg.core.util import get_current_request
 
 from pykeg.backend import exceptions
+from pykeg.core import kb_common, keg_sizes, models, time_series
+from pykeg.core.util import SuppressTaskErrors, get_current_request
 from pykeg.web import tasks
+from pykeg.web.auth import AuthException, UserExistsException, get_auth_backend
 
 from . import signals
 

@@ -1,11 +1,11 @@
 """Celery tasks for Webhook plugin."""
 
-from pykeg.celery import app
-from pykeg.plugin import util
-from pykeg.core.util import get_version
-from pykeg.util import kbjson
-
 import requests
+
+from pykeg.celery import app
+from pykeg.core.util import get_version
+from pykeg.plugin import util
+from pykeg.util import kbjson
 
 logger = util.get_logger(__name__)
 

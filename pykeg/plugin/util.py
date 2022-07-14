@@ -1,10 +1,10 @@
 import datetime
 from importlib import import_module
 
-from django.utils import timezone
-from django.core.exceptions import ImproperlyConfigured
-from django.conf.urls import url
 from django.conf import settings
+from django.conf.urls import url
+from django.core.exceptions import ImproperlyConfigured
+from django.utils import timezone
 
 from .plugin import Plugin
 

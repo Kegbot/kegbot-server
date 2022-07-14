@@ -1,8 +1,8 @@
-from pykeg.util.email import build_message
+import logging
+
 from pykeg.core import models as core_models
 from pykeg.notification.backends.base import BaseNotificationBackend
-
-import logging
+from pykeg.util.email import build_message
 
 logger = logging.getLogger("email-notification")
 

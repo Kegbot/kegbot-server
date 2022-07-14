@@ -1,11 +1,11 @@
 """MySQL-specific database backup/restore implementation."""
 
-from builtins import str
 import logging
 import subprocess
+from builtins import str
 
-from django.conf import settings
 from django.apps import apps
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,10 @@
-from __future__ import print_function
-
+import sys
 from builtins import input
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from pykeg.backup import backup
 
-import sys
+from pykeg.backup import backup
 
 
 class Command(BaseCommand):

@@ -1,12 +1,8 @@
 from django.conf.urls import url
+from django.contrib.auth.views import PasswordChangeDoneView, PasswordChangeView
 
 from pykeg.plugin import util
 from pykeg.web.account import views
-from django.contrib.auth.views import (
-    PasswordChangeView,
-    PasswordChangeDoneView,
-)
-
 
 urlpatterns = [
     url(r"^$", views.account_main, name="kb-account-main"),

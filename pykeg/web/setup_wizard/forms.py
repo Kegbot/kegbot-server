@@ -1,8 +1,9 @@
 from builtins import object
-from django import forms
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Field
+
 from crispy_forms.bootstrap import FormActions
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Field, Layout, Submit
+from django import forms
 
 from pykeg.core import models
 
@@ -31,7 +32,9 @@ class MiniSiteSettingsForm(forms.ModelForm):
         Field("timezone", css_class="span12"),
         Field("volume_display_units", css_class="span12"),
         Field("temperature_display_units", css_class="span12"),
-        FormActions(Submit("save_changes", "Continue", css_class="btn-primary"),),
+        FormActions(
+            Submit("save_changes", "Continue", css_class="btn-primary"),
+        ),
     )
 
 
@@ -58,7 +61,9 @@ class AdminUserForm(forms.Form):
         Field("email", css_class="span12"),
         Field("password", css_class="span12"),
         Field("confirm_password", css_class="span12"),
-        FormActions(Submit("save_changes", "Continue", css_class="btn-primary"),),
+        FormActions(
+            Submit("save_changes", "Continue", css_class="btn-primary"),
+        ),
     )
 
     def clean_confirm_password(self):

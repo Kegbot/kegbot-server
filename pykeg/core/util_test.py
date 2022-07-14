@@ -3,9 +3,9 @@
 from builtins import str
 from distutils.version import StrictVersion
 
-from pykeg.core import util
-
 from django.test import TestCase
+
+from pykeg.core import util
 
 
 class CoreTests(TestCase):

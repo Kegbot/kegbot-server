@@ -1,11 +1,12 @@
 """Test for email util module."""
 
-from builtins import str
 import time
-from pykeg.core import models
-from pykeg.util import email
+from builtins import str
 
 from django.test import TestCase
+
+from pykeg.core import models
+from pykeg.util import email
 
 
 class EmailUtilTests(TestCase):

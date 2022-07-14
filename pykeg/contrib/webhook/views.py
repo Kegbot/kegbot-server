@@ -1,6 +1,7 @@
 from django.contrib import messages
-from pykeg.web.decorators import staff_member_required
 from django.shortcuts import render
+
+from pykeg.web.decorators import staff_member_required
 
 from . import forms
 

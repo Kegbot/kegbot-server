@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 """Unittest for units module"""
-from __future__ import absolute_import
 
 import unittest
+
 from . import units
 
 UNITS = units.UNITS

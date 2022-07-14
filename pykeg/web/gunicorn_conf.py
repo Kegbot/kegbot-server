@@ -1,7 +1,7 @@
 import multiprocessing
-from importlib import metadata as importlib_metadata
-import sys
 import os
+import sys
+from importlib import metadata as importlib_metadata
 
 BANNER = """
 ██╗  ██╗███████╗ ██████╗ ██████╗  ██████╗ ████████╗

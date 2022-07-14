@@ -1,55 +1,39 @@
 # -*- coding: latin-1 -*-
-from __future__ import absolute_import
 
-from future import standard_library
 
-standard_library.install_aliases()
-from builtins import str
-from builtins import object
 import datetime
 import logging
 import os
-import pytz
 import random
 import re
 import urllib.parse
-from uuid import uuid4
+from builtins import object, str
 from distutils.version import StrictVersion
+from uuid import uuid4
 
+import pytz
+from addict import Dict
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser
-from django.contrib.auth.models import UserManager
-from django.urls import reverse, reverse_lazy
+from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.core import validators
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.core.mail import send_mail
-from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models.signals import post_save
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_save, pre_save
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-
+from django.utils.translation import ugettext_lazy as _
 from imagekit.models import ImageSpecField
-from imagekit.processors import Adjust
-from imagekit.processors import resize
+from imagekit.processors import Adjust, resize
 
 from pykeg.backend import get_kegbot_backend
-from pykeg.core import colors
-from pykeg.core import kb_common
-from pykeg.core import keg_sizes
-from pykeg.core import fields
-from pykeg.core import managers
-from pykeg.core.util import CtoF
-from pykeg.core.util import get_version
-from pykeg.util.email import build_message
-
-from pykeg.util import kbjson
-from pykeg.util import units
-from addict import Dict
-
+from pykeg.core import colors, fields, kb_common, keg_sizes, managers
 from pykeg.core.jsonfield import JSONField
-from django.utils.translation import ugettext_lazy as _
+from pykeg.core.util import CtoF, get_version
+from pykeg.util import kbjson, units
+from pykeg.util.email import build_message
 
 """Django models definition for the kegbot database."""
 
@@ -443,7 +427,7 @@ class ApiKey(models.Model):
     @classmethod
     def generate_key(cls):
         """Returns a new random key."""
-        return "%032x" % random.randint(0, 2 ** 128 - 1)
+        return "%032x" % random.randint(0, 2**128 - 1)
 
 
 def _sitesettings_post_save(sender, instance, **kwargs):
@@ -982,7 +966,7 @@ pre_save.connect(_keg_pre_save, sender=Keg)
 
 
 class Drink(models.Model):
-    """ Table of drinks records """
+    """Table of drinks records"""
 
     class Meta(object):
         get_latest_by = "time"
@@ -1138,7 +1122,7 @@ pre_save.connect(_auth_token_pre_save, sender=AuthenticationToken)
 
 
 class DrinkingSession(models.Model):
-    """A collection of contiguous drinks. """
+    """A collection of contiguous drinks."""
 
     class Meta(object):
         get_latest_by = "start_time"
@@ -1316,7 +1300,7 @@ class ThermoSensor(models.Model):
 
 
 class Thermolog(models.Model):
-    """ A log from an ITemperatureSensor device of periodic measurements. """
+    """A log from an ITemperatureSensor device of periodic measurements."""
 
     class Meta(object):
         get_latest_by = "time"

@@ -222,7 +222,7 @@ class BackendsTestCase(TransactionTestCase):
         new_keg = self.backend.start_keg(METER_NAME, beverage=beverage)
         tap = models.KegTap.get_from_meter_name(METER_NAME)
         self.assertIsNotNone(new_keg)
-        self.assertNotEquals(new_keg, keg)
+        self.assertNotEqual(new_keg, keg)
         self.assertTrue(tap.is_active())
         self.assertTrue(new_keg.is_on_tap())
 
@@ -240,7 +240,7 @@ class BackendsTestCase(TransactionTestCase):
         )
         self.assertEqual(new_keg_2.type.producer, keg.type.producer)
         self.assertEqual(new_keg_2.type.style, keg.type.style)
-        self.assertNotEquals(new_keg_2.type, keg.type)
+        self.assertNotEqual(new_keg_2.type, keg.type)
 
         # New brewer, identical beer name == new beer type.
         tap = models.KegTap.get_from_meter_name(METER_NAME)
@@ -252,9 +252,9 @@ class BackendsTestCase(TransactionTestCase):
             producer_name="Other Brewer",
             style_name=FAKE_BEER_STYLE,
         )
-        self.assertNotEquals(new_keg_3.type.producer, keg.type.producer)
+        self.assertNotEqual(new_keg_3.type.producer, keg.type.producer)
         self.assertEqual(new_keg_3.type.name, keg.type.name)
-        self.assertNotEquals(new_keg_3.type, keg.type)
+        self.assertNotEqual(new_keg_3.type, keg.type)
 
     def test_meters(self):
         tap = models.KegTap.objects.all()[0]
@@ -289,17 +289,17 @@ class BackendsTestCase(TransactionTestCase):
             producer_name=FAKE_BREWER_NAME,
             style_name=FAKE_BEER_STYLE,
         )
-        self.assertEqual("http://example.com:8000/kegs/{}".format(keg.id), keg.full_url())
+        self.assertEqual("http://example.com:8000/kegs/{}/".format(keg.id), keg.full_url())
 
         drink = self.backend.record_drink(METER_NAME, ticks=1, volume_ml=100, photo="foo")
-        self.assertEqual("http://example.com:8000/d/{}".format(drink.id), drink.short_url())
+        self.assertEqual("http://example.com:8000/d/{}/".format(drink.id), drink.short_url())
         self.assertEqual(
-            "http://example.com:8000/s/{}".format(drink.session.id), drink.session.short_url()
+            "http://example.com:8000/s/{}/".format(drink.session.id), drink.session.short_url()
         )
 
         start = drink.session.start_time
         datepart = "{}/{}/{}".format(start.year, start.month, start.day)
         self.assertEqual(
-            "http://example.com:8000/sessions/{}/{}".format(datepart, drink.session.id),
+            "http://example.com:8000/sessions/{}/{}/".format(datepart, drink.session.id),
             drink.session.full_url(),
         )

@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
@@ -18,7 +17,7 @@ urlpatterns = [
     path("accounts/", include(kbregistration_urls)),
     path("kegadmin/", include(kegadmin_urls)),
     # Shortcuts
-    url(r"^link/?$", RedirectView.as_view(pattern_name="kegadmin-link-device")),
+    path("link", RedirectView.as_view(pattern_name="kegadmin-link-device")),
 ]
 
 if "pykeg.web.setup_wizard" in settings.INSTALLED_APPS:

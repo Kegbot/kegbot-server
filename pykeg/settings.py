@@ -124,6 +124,8 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "pykeg.web.middleware.ErrorLoggingMiddleware",
+    "pykeg.web.middleware.PathRewriteMiddleware",
     "pykeg.web.middleware.IsSetupMiddleware",
     "pykeg.web.middleware.CurrentRequestMiddleware",
     "pykeg.web.middleware.KegbotSiteMiddleware",
@@ -291,3 +293,5 @@ TEMPLATES = [
 # Override any user-specified timezone: As of Kegbot 0.9.12, this is
 # specified in site settings.
 TIME_ZONE = "UTC"
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 # CountryField
 # Source: http://www.djangosnippets.org/snippets/1281/

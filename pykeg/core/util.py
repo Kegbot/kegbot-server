@@ -6,17 +6,17 @@
 import logging
 import os
 import pkgutil
-import sys
 import tempfile
 from builtins import object, str
 from collections import OrderedDict
 from contextlib import closing
-from distutils.version import StrictVersion
 from importlib import metadata as importlib_metadata
+from importlib.metadata import version
 from threading import current_thread
 
 import requests
 from django.core.exceptions import ImproperlyConfigured
+from packaging.version import Version
 from redis.exceptions import RedisError
 
 logger = logging.getLogger(__name__)
@@ -28,18 +28,18 @@ DOCKER_VERSION_INFO_FILE = "/etc/kegbot-version"
 
 def get_version():
     try:
-        return importlib_metadata.version("kegbot")
+        return version("kegbot")
     except importlib_metadata.PackageNotFoundError:
         return "0.0.0"
 
 
 def get_version_object():
-    return StrictVersion(get_version())
+    return Version(get_version())
 
 
 def must_upgrade(installed_version, new_version):
     # Compare major and minor (only).
-    return installed_version.version[:2] < new_version.version[:2]
+    return installed_version.release[:2] < new_version.release[:2]
 
 
 def should_upgrade(installed_verison, new_version):

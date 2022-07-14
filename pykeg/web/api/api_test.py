@@ -3,7 +3,7 @@
 from builtins import str
 
 from django.core import mail
-from django.test import TransactionTestCase
+from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
 
@@ -19,7 +19,7 @@ def create_site():
     return defaults.set_defaults(set_is_setup=True, create_controller=True)
 
 
-class BaseApiTestCase(TransactionTestCase):
+class BaseApiTestCase(TestCase):
     def get(self, subpath, data={}, follow=False, **extra):
         response = self.client.get("/api/%s" % subpath, data=data, follow=follow, **extra)
         return response, kbjson.loads(response.content)
@@ -65,6 +65,8 @@ class ApiClientTestCase(BaseApiTestCase):
 
         self.apikey = models.ApiKey.objects.create(user=self.admin, key="123")
         self.bad_apikey = models.ApiKey.objects.create(user=self.normal_user, key="456")
+
+        self.tap = models.KegTap.objects.all().first()
 
     def test_defaults(self):
         empty_endpoints = ("events/", "kegs/")
@@ -146,7 +148,7 @@ class ApiClientTestCase(BaseApiTestCase):
             self.assertEqual(data.meta.result, "ok")
 
     def test_record_drink(self):
-        response, data = self.get("taps/1")
+        response, data = self.get(f"taps/{self.tap.id}")
         self.assertEqual(data.meta.result, "ok")
         self.assertEqual(data.object.get("current_keg"), None)
 
@@ -160,22 +162,22 @@ class ApiClientTestCase(BaseApiTestCase):
             "producer_name": "Test Producer",
             "style_name": "Test Style,",
         }
-        response, data = self.post("taps/1/activate", data=new_keg_data)
+        response, data = self.post(f"taps/{self.tap.id}/activate", data=new_keg_data)
         self.assertEqual(data.meta.result, "error")
         self.assertEqual(data.error.code, "NoAuthTokenError")
 
         response, data = self.post(
-            "taps/1/activate", data=new_keg_data, HTTP_X_KEGBOT_API_KEY=self.apikey.key
+            f"taps/{self.tap.id}/activate", data=new_keg_data, HTTP_X_KEGBOT_API_KEY=self.apikey.key
         )
         self.assertEqual(data.meta.result, "ok")
         self.assertIsNotNone(data.object.get("current_keg"))
 
-        response, data = self.post("taps/1", data={"ticks": 1000})
+        response, data = self.post(f"taps/{self.tap.id}", data={"ticks": 1000})
         self.assertEqual(data.meta.result, "error")
         self.assertEqual(data.error.code, "NoAuthTokenError")
 
         response, data = self.post(
-            "taps/1",
+            f"taps/{self.tap.id}",
             HTTP_X_KEGBOT_API_KEY=self.apikey.key,
             data={"ticks": 1000, "username": self.normal_user.username},
         )
@@ -202,13 +204,13 @@ class ApiClientTestCase(BaseApiTestCase):
             "style_name": "Test Style,",
         }
         response, data = self.post(
-            "taps/1/activate", data=new_keg_data, HTTP_X_KEGBOT_API_KEY=self.apikey.key
+            f"taps/{self.tap.id}/activate", data=new_keg_data, HTTP_X_KEGBOT_API_KEY=self.apikey.key
         )
         self.assertEqual(data.meta.result, "ok")
 
         models.User.objects.create(username="test.123")
         response, data = self.post(
-            "taps/1",
+            f"taps/{self.tap.id}",
             HTTP_X_KEGBOT_API_KEY=self.apikey.key,
             data={"ticks": 1000, "username": "test.123"},
         )
@@ -267,10 +269,11 @@ class ApiClientTestCase(BaseApiTestCase):
 
         response, data = self.get("controllers", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
+        controllers = models.Controller.objects.all()
         expected = {
             "objects": [
                 {
-                    "id": 1,
+                    "id": controllers[0].id,
                     "name": "kegboard",
                 }
             ],
@@ -282,23 +285,24 @@ class ApiClientTestCase(BaseApiTestCase):
 
         response, data = self.get("flow-meters", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
+        meters = models.FlowMeter.objects.all()
         expected = {
             "objects": [
                 {
-                    "id": 1,
+                    "id": meters[0].id,
                     "ticks_per_ml": 2.724,
                     "port_name": "flow0",
                     "controller": {
-                        "id": 1,
+                        "id": controllers[0].id,
                         "name": "kegboard",
                     },
                     "name": "kegboard.flow0",
                 },
                 {
-                    "id": 2,
+                    "id": meters[1].id,
                     "ticks_per_ml": 2.724,
                     "port_name": "flow1",
-                    "controller": {"id": 1, "name": "kegboard"},
+                    "controller": {"id": controllers[0].id, "name": "kegboard"},
                     "name": "kegboard.flow1",
                 },
             ],
@@ -308,21 +312,22 @@ class ApiClientTestCase(BaseApiTestCase):
 
         response, data = self.get("flow-toggles", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
+        toggles = models.FlowToggle.objects.all()
         expected = {
             "objects": [
                 {
-                    "id": 1,
+                    "id": toggles[0].id,
                     "port_name": "relay0",
                     "controller": {
-                        "id": 1,
+                        "id": controllers[0].id,
                         "name": "kegboard",
                     },
                     "name": "kegboard.relay0",
                 },
                 {
-                    "id": 2,
+                    "id": toggles[1].id,
                     "port_name": "relay1",
-                    "controller": {"id": 1, "name": "kegboard"},
+                    "controller": {"id": controllers[0].id, "name": "kegboard"},
                     "name": "kegboard.relay1",
                 },
             ],
@@ -331,40 +336,49 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEqual(expected, data)
 
     def test_add_remove_meters(self):
-        response, data = self.get("taps/1", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        response, data = self.get(f"taps/{self.tap.id}", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
-        self.assertEqual(data.object.meter.id, 1)
+        meters = models.FlowMeter.objects.all()
+        self.assertEqual(data.object.meter.id, meters[0].id)
         original_data = data
 
-        response, data = self.post("taps/1/disconnect-meter", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        response, data = self.post(
+            f"taps/{self.tap.id}/disconnect-meter", HTTP_X_KEGBOT_API_KEY=self.apikey.key
+        )
         self.assertEqual(data.meta.result, "ok")
         self.assertEqual(data.object.get("meter"), None)
 
         response, data = self.post(
-            "taps/1/connect-meter", HTTP_X_KEGBOT_API_KEY=self.apikey.key, data={"meter": 1}
+            f"taps/{self.tap.id}/connect-meter",
+            HTTP_X_KEGBOT_API_KEY=self.apikey.key,
+            data={"meter": meters[0].id},
         )
         self.assertEqual(data.meta.result, "ok")
-        self.assertEqual(data.object.meter.id, 1)
+        meters = models.FlowMeter.objects.all()
+        self.assertEqual(data.object.meter.id, meters[0].id)
         self.assertEqual(original_data, data)
 
     def test_add_remove_toggles(self):
-        response, data = self.get("taps/1", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        response, data = self.get(f"taps/{self.tap.id}", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
-        self.assertEqual(data.object.toggle.id, 1)
+        toggles = models.FlowToggle.objects.all()
+        self.assertEqual(data.object.toggle.id, toggles[0].id)
 
         response, data = self.post(
-            "taps/1/disconnect-toggle", HTTP_X_KEGBOT_API_KEY=self.apikey.key
+            f"taps/{self.tap.id}/disconnect-toggle", HTTP_X_KEGBOT_API_KEY=self.apikey.key
         )
         self.assertEqual(data.meta.result, "ok")
         self.assertEqual(data.object.get("toggle"), None)
 
         response, data = self.post(
-            "taps/1/connect-toggle", HTTP_X_KEGBOT_API_KEY=self.apikey.key, data={"toggle": 1}
+            f"taps/{self.tap.id}/connect-toggle",
+            HTTP_X_KEGBOT_API_KEY=self.apikey.key,
+            data={"toggle": toggles[0].id},
         )
-        response, data = self.get("taps/1", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
+        response, data = self.get(f"taps/{self.tap.id}", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
         self.assertIsNotNone(data.object.get("toggle"))
-        self.assertEqual(data.object.toggle.id, 1)
+        self.assertEqual(data.object.toggle.id, toggles[0].id)
 
     def test_get_version(self):
         response, data = self.get("version")

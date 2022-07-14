@@ -7,7 +7,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.template import loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 try:
     from django.contrib.auth import get_user_model

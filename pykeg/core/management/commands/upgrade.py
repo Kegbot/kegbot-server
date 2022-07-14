@@ -1,10 +1,10 @@
 import sys
 from builtins import str
-from distutils.version import StrictVersion
 
 from django.contrib.staticfiles.management.commands import collectstatic
 from django.core.management.base import BaseCommand
 from django.core.management.commands import migrate
+from packaging.version import Version
 
 from pykeg.core import models
 from pykeg.core.management.commands import regen_stats
@@ -14,7 +14,7 @@ from pykeg.core.util import get_version_object
 #  v0.9.35 - migrations rebased to 0001
 #  v1.1.1  - last release with South-based migrations
 #  v1.2.0  - first Django 1.7 migrations
-MINIMUM_INSTALLED_VERSION = StrictVersion("1.1.1")
+MINIMUM_INSTALLED_VERSION = Version("1.1.1")
 
 
 def run(cmd, args=[]):
@@ -104,5 +104,5 @@ class Command(BaseCommand):
         print("Upgrade complete!")
 
     def do_version_upgrades(self, installed_version):
-        if installed_version.version < (1, 2, 0):
+        if installed_version.release < (1, 2, 0):
             print("Upgrading from v1.1.x")

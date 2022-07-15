@@ -6,7 +6,6 @@ import os
 from django.core.files import File
 from django.test import TransactionTestCase
 
-from pykeg.backend import get_kegbot_backend
 from pykeg.core.testutils import get_filename
 from pykeg.util import units
 
@@ -17,7 +16,6 @@ from .testutils import make_datetime
 class CoreModelsTestCase(TransactionTestCase):
     def setUp(self):
         models.KegbotSite.get()  # create the site
-        self.backend = get_kegbot_backend()
         self.producer = models.BeverageProducer.objects.create(
             name="Moonshine Beers",
             country="USA",
@@ -75,7 +73,7 @@ class CoreModelsTestCase(TransactionTestCase):
         self.assertEqual(2000, self.keg.remaining_volume_ml())
 
     def testDrinkAccounting(self):
-        d = self.backend.record_drink(
+        d = models.Drink.record_drink(
             self.tap,
             ticks=1200,
             username=self.user.username,
@@ -98,14 +96,14 @@ class CoreModelsTestCase(TransactionTestCase):
         self.assertEqual(models.DrinkingSession.objects.all().count(), 0)
 
         # u=1 t=0
-        self.backend.record_drink(
+        models.Drink.record_drink(
             self.tap,
             ticks=1200,
             username=u1.username,
             pour_time=base_time,
         )
         # u=2 t=0
-        self.backend.record_drink(
+        models.Drink.record_drink(
             self.tap,
             ticks=1200,
             username=u2.username,
@@ -113,7 +111,7 @@ class CoreModelsTestCase(TransactionTestCase):
         )
 
         # u=1 t=10
-        self.backend.record_drink(
+        models.Drink.record_drink(
             self.tap,
             ticks=1200,
             username=u1.username,
@@ -121,7 +119,7 @@ class CoreModelsTestCase(TransactionTestCase):
         )
 
         # u=1 t=400
-        self.backend.record_drink(
+        models.Drink.record_drink(
             self.tap,
             ticks=1200,
             username=u1.username,
@@ -129,7 +127,7 @@ class CoreModelsTestCase(TransactionTestCase):
         )
 
         # u=2 t=490
-        self.backend.record_drink(
+        models.Drink.record_drink(
             self.tap,
             ticks=1200,
             username=u2.username,
@@ -137,7 +135,7 @@ class CoreModelsTestCase(TransactionTestCase):
         )
 
         # u=2 t=400
-        self.backend.record_drink(
+        models.Drink.record_drink(
             self.tap,
             ticks=1200,
             username=u2.username,

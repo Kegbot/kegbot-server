@@ -23,3 +23,7 @@ keg_created = Signal()
 keg_attached = Signal()
 
 keg_ended = Signal()
+
+keg_deleted = Signal()
+
+events_created = Signal()

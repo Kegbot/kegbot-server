@@ -1,7 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect, render
 
-from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.web.kbregistration.forms import KegbotRegistrationForm
 
@@ -44,8 +43,7 @@ def register(request):
             email = form.cleaned_data["email"]
             password = form.cleaned_data.get("password1")
 
-            backend = get_kegbot_backend()
-            backend.create_new_user(username=username, email=email, password=password)
+            models.User.create_new_user(username=username, email=email, password=password)
 
             if invite:
                 invite.delete()

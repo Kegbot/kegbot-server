@@ -6,7 +6,6 @@ from crispy_forms.layout import HTML, Field, Layout, Submit
 from django import forms
 from django.contrib.humanize.templatetags.humanize import naturaltime
 
-from pykeg.backend import get_kegbot_backend
 from pykeg.core import keg_sizes, models
 from pykeg.util import units
 
@@ -73,10 +72,9 @@ class ChangeKegForm(forms.Form):
     def save(self, tap):
         if not self.is_valid():
             raise ValueError("Form is not valid.")
-        b = get_kegbot_backend()
 
         if tap.is_active():
-            b.end_keg(tap.current_keg)
+            tap.end_current_keg()
 
         keg_size = self.cleaned_data.get("keg_size")
         full_volume_ml = self.cleaned_data.get("full_volume_ml")
@@ -88,7 +86,7 @@ class ChangeKegForm(forms.Form):
 
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
-        keg = b.start_keg(
+        keg = models.Keg.start_keg(
             tap,
             beverage_name=cd["beverage_name"],
             producer_name=cd["producer_name"],
@@ -175,11 +173,10 @@ class TapForm(forms.ModelForm):
     def save(self, commit=True):
         if not commit:
             raise ValueError("TapForm does not support commit=False")
-        instance = super(TapForm, self).save(commit=True)
-        b = get_kegbot_backend()
-        b.connect_meter(instance, self.cleaned_data["meter"])
-        b.connect_toggle(instance, self.cleaned_data["toggle"])
-        return instance
+        tap = super(TapForm, self).save(commit=True)
+        tap.connect_meter(self.cleaned_data["meter"])
+        tap.connect_toggle(self.cleaned_data["toggle"])
+        return tap
 
     helper = FormHelper()
     helper.form_class = "form-horizontal"
@@ -294,8 +291,7 @@ class KegForm(forms.Form):
 
         # TODO(mikey): Support non-beer beverage types.
         cd = self.cleaned_data
-        b = get_kegbot_backend()
-        keg = b.create_keg(
+        keg = models.Keg.create_keg(
             beverage_name=cd["beverage_name"],
             producer_name=cd["producer_name"],
             beverage_type="beer",
@@ -309,8 +305,8 @@ class KegForm(forms.Form):
         tap = cd["connect_to"]
         if tap:
             if tap.is_active():
-                b.end_keg(tap.current_keg)
-            b.attach_keg(tap, keg)
+                tap.end_current_keg()
+            tap.attach_keg(keg)
 
         return keg
 
@@ -672,6 +668,19 @@ class DeleteDrinksForm(forms.Form):
 
 class ReassignDrinkForm(forms.Form):
     username = forms.CharField(required=True)
+
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        if username == "":
+            self.cleaned_data["user"] = None
+            return
+        try:
+            self.cleaned_data["user"] = models.User.objects.get(username=username)
+        except models.User.DoesNotExist:
+            raise forms.ValidationError(
+                "Invalid username; use a complete user name or leave blank."
+            )
+        return username
 
 
 class ChangeDrinkVolumeForm(forms.Form):

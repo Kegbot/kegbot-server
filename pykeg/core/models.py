@@ -1,6 +1,3 @@
-# -*- coding: latin-1 -*-
-
-
 import datetime
 import logging
 import os
@@ -19,7 +16,7 @@ from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.core.mail import send_mail
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import post_save, pre_save
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -28,12 +25,21 @@ from imagekit.models import ImageSpecField
 from imagekit.processors import Adjust, resize
 from packaging.version import Version
 
-from pykeg.backend import get_kegbot_backend
-from pykeg.core import colors, fields, kb_common, keg_sizes, managers
+from pykeg.core import (
+    colors,
+    fields,
+    kb_common,
+    keg_sizes,
+    managers,
+    signals,
+    time_series,
+)
 from pykeg.core.jsonfield import JSONField
 from pykeg.core.util import CtoF, get_version
 from pykeg.util import kbjson, units
 from pykeg.util.email import build_message
+from pykeg.web.auth import get_auth_backend
+from pykeg.web.util import get_base_url
 
 """Django models definition for the kegbot database."""
 
@@ -167,6 +173,16 @@ class User(AbstractBaseUser):
             user=self, defaults={"key": ApiKey.generate_key()}
         )
         return api_key.key
+
+    @classmethod
+    @transaction.atomic
+    def create_new_user(cls, username, email, password=None, photo=None):
+        """Creates and returns a User for the given username."""
+        user = get_auth_backend().register(
+            username=username, email=email, password=password, photo=photo
+        )
+        signals.user_created.send_robust(sender=cls, user=user)
+        return user
 
 
 def _user_pre_save(sender, instance, **kwargs):
@@ -347,7 +363,7 @@ class KegbotSite(models.Model):
 
     def base_url(self):
         """Returns the base address of this system."""
-        return get_kegbot_backend().get_base_url()
+        return get_base_url()
 
     def full_url(self, path):
         """Returns an absolute URL to the specified path."""
@@ -640,6 +656,138 @@ class KegTap(models.Model):
             if last_rec:
                 return last_rec[0]
         return None
+
+    @transaction.atomic
+    def connect_toggle(self, new_toggle):
+        """Assigns a FlowToggle to this tap.
+
+        Returns `True` if changed, `False` otherwise.
+        """
+        old_toggle = self.current_toggle()
+        if old_toggle == new_toggle:
+            return False
+
+        if old_toggle:
+            old_toggle.tap = None
+            old_toggle.save()
+
+        if new_toggle:
+            new_toggle.tap = self
+            new_toggle.save()
+
+        return True
+
+    @transaction.atomic
+    def connect_meter(self, new_meter):
+        """Assigns a FlowMeter to this tap.
+
+        Returns `True` if changed, `False` otherwise.
+        """
+        old_meter = self.current_meter()
+        if old_meter == new_meter:
+            return False
+
+        if old_meter:
+            old_meter.tap = None
+            old_meter.save()
+
+        if new_meter:
+            new_meter.tap = self
+            new_meter.save()
+
+        return True
+
+    @transaction.atomic
+    def connect_thermo(self, new_thermo):
+        """Assigns a ThermoSensor to this tap.
+
+        Returns `True` if changed, `False` otherwise.
+        """
+        old_thermo = self.temperature_sensor
+        if old_thermo == new_thermo:
+            return False
+
+        self.temperature_sensor = new_thermo
+        self.save()
+
+        return True
+
+    @transaction.atomic
+    def attach_keg(self, keg):
+        """Activates a keg at this tap.
+
+        The tap must be inactive (tap.current_keg == None), otherwise a
+        ValueError will be thrown.
+
+        Args:
+            keg: The keg to attach.
+
+        Returns:
+            `True` if the tap was changed, `False` otherwise.
+        """
+        if self.is_active():
+            raise ValueError("Tap is already active, must end keg first.")
+
+        if self.current_keg == keg:
+            return False
+
+        keg.start_time = timezone.now()
+        keg.status = keg.STATUS_ON_TAP
+        keg.save()
+
+        self.end_current_keg()
+        self.current_keg = keg
+        self.save()
+
+        events = SystemEvent.build_events_for_keg(keg)
+        signals.keg_attached.send_robust(sender=self.__class__, keg=keg, tap=self)
+        signals.events_created.send_robust(sender=self.__class__, events=events)
+        return keg
+
+    @transaction.atomic
+    def end_current_keg(self):
+        if self.current_keg:
+            keg = self.current_keg
+            self.current_keg = None
+            self.save()
+            keg.end_keg()
+        else:
+            keg = None
+        return keg
+
+    @classmethod
+    @transaction.atomic
+    def create_tap(cls, name, meter_name=None, toggle_name=None, ticks_per_ml=None):
+        """Creates and returns a new KegTap.
+
+        Args:
+          name: The human-meaningful name for the tap, for instance, "Main Tap".
+          meter_name: The unique sensor name for the tap, for instance,
+              "kegboard.flow0".
+          toggle_name: If the tap is connected to a relay, this specifies its
+              name, for instance, "kegboard.relay0".
+          ticks_per_ml: The number of flow meter ticks per milliliter of fluid
+              on this tap's meter.
+
+        Returns:
+            The new KegTap instance.
+        """
+        tap = cls.objects.create(name=name)
+        tap.save()
+
+        if meter_name:
+            meter = FlowMeter.get_or_create_from_meter_name(meter_name)
+            meter.tap = tap
+            if ticks_per_ml:
+                meter.ticks_per_ml = ticks_per_ml
+            meter.save()
+
+        if toggle_name:
+            toggle = models.FlowToggle.get_or_create_from_toggle_name(toggle_name)
+            tap.connect_toggle(toggle)
+
+        signals.tap_created.send_robust(sender=cls, tap=tap)
+        return tap
 
     @classmethod
     def get_from_meter_name(cls, meter_name):
@@ -937,6 +1085,181 @@ class Keg(models.Model):
         ret.sort(reverse=True)
         return ret
 
+    @transaction.atomic
+    def cancel(self):
+        """Permanently deletes this keg and ALL drinks."""
+        keg_drinks = self.drinks.all().order_by("id")
+
+        first_deleted_drink_id = None
+        if keg_drinks:
+            first_deleted_drink_id = keg_drinks[0].id
+            sessions = set()
+            for drink in keg_drinks:
+                sessions.add(drink.session)
+                drink.delete()
+            for session in sessions:
+                session.Rebuild()
+
+        keg_id = self.id
+        self.delete()
+
+        signals.keg_deleted.send_robust(
+            sender=self.__class__, keg_id=keg_id, first_deleted_drink_id=first_deleted_drink_id
+        )
+
+    @classmethod
+    @transaction.atomic
+    def start_keg(
+        cls,
+        tap_or_meter_name,
+        beverage=None,
+        keg_type=keg_sizes.HALF_BARREL,
+        full_volume_ml=None,
+        beverage_name=None,
+        beverage_type=None,
+        producer_name=None,
+        style_name=None,
+        when=None,
+    ):
+        """Creates and attaches a new keg."""
+        keg = cls.create_keg(
+            beverage,
+            keg_type,
+            full_volume_ml,
+            beverage_name,
+            beverage_type,
+            producer_name,
+            style_name,
+            notes=None,
+            description=None,
+            when=when,
+        )
+        if isinstance(tap_or_meter_name, str):
+            meter = FlowMeter.get_from_meter_name(tap_or_meter_name)
+            tap = meter.tap
+            if not tap:
+                raise ValueError(f"Meter {meter} has no tap configured")
+        else:
+            tap = tap_or_meter_name
+        tap.attach_keg(keg)
+        return keg
+
+    @classmethod
+    @transaction.atomic
+    def create_keg(
+        cls,
+        beverage=None,
+        keg_type=keg_sizes.HALF_BARREL,
+        full_volume_ml=None,
+        beverage_name=None,
+        beverage_type=None,
+        producer_name=None,
+        style_name=None,
+        notes=None,
+        description=None,
+        when=None,
+    ):
+        """Adds a new keg to the keg room (queue).
+
+        A beverage must be specified, either by providing an existing
+        Beverage instance as `beverage`, or by specifying values for
+        `beverage_type`, `beverage_name`, `producer_name`,
+        and `style_name`.
+
+        When using the latter form, the system will attempt to match
+        the string type parameters against an already-existing Beverage.
+        Otherwise, a new Beverage will be created.
+
+        Args:
+            beverage: The type of beverage, as a Beverage object.
+            keg_type: The type of physical keg, from keg_sizes.
+            full_volume_ml: The keg's original unserved volume.  If unspecified,
+                will be interpreted from keg_type.  It is an error to omit this
+                parameter when keg_type is OTHER.
+            beverage_name: The keg's beverage name.  Must be given with
+                `producer_name` and `style_name`;
+                `beverage` must be None.
+            beverage_type: The keg beverage type.
+            producer_name: The brewer or producer of this beverage.
+            style_name: The style of this beverage.
+            notes: Notes about this keg.
+            description: The keg description (private)
+
+        Returns:
+            The new keg instance.
+        """
+        if beverage:
+            if beverage_type or beverage_name or producer_name or style_name:
+                raise ValueError(
+                    "Cannot give beverage_type, beverage_name, producer_name, or style_name with beverage"
+                )
+        else:
+            if not beverage_type:
+                raise ValueError("Must supply beverage_type when beverage is None")
+            if not beverage_name:
+                raise ValueError("Must supply beverage_name when beverage is None")
+            if not producer_name:
+                raise ValueError("Must supply producer_name when beverage is None")
+            if not style_name:
+                raise ValueError("Must supply style_name when beverage is None")
+            producer = BeverageProducer.objects.get_or_create(name=producer_name)[0]
+            beverage = Beverage.objects.get_or_create(
+                name=beverage_name, beverage_type=beverage_type, producer=producer, style=style_name
+            )[0]
+
+        if keg_type not in keg_sizes.DESCRIPTIONS:
+            raise ValueError("Unrecognized keg type: %s" % keg_type)
+        if full_volume_ml is None:
+            full_volume_ml = keg_sizes.VOLUMES_ML[keg_type]
+        else:
+            full_volume_ml = full_volume_ml
+
+        if not when:
+            when = timezone.now()
+
+        keg = Keg.objects.create(
+            type=beverage,
+            keg_type=keg_type,
+            full_volume_ml=full_volume_ml,
+            start_time=when,
+            end_time=when,
+            notes=notes,
+            description=description,
+        )
+        signals.keg_created.send_robust(sender=cls, keg=keg)
+        return keg
+
+    @transaction.atomic
+    def reactivate_keg(self):
+        """Moves a keg to active status."""
+        if self.status != self.STATUS_FINISHED:
+            raise ValueError("Keg must be offline.")
+
+        self.status = self.STATUS_AVAILABLE
+        self.save()
+        return self
+
+    @transaction.atomic
+    def end_keg(self, when=None):
+        """Takes the given keg offline."""
+        if not when:
+            when = timezone.now()
+
+        try:
+            if self.current_tap:
+                raise ValueError(f"Keg is currently connected to tap {self.current_tap}")
+        except KegTap.DoesNotExist:
+            pass
+
+        self.status = self.STATUS_FINISHED
+        self.end_time = when
+        self.save()
+
+        events = SystemEvent.build_events_for_keg(self)
+        signals.events_created.send_robust(sender=self.__class__, events=events)
+        signals.keg_ended.send_robust(sender=self.__class__, keg=self)
+        return self
+
     def __str__(self):
         return "Keg #{} - {}".format(self.id, self.type)
 
@@ -1038,6 +1361,210 @@ class Drink(models.Model):
         ounces = self.Volume().InOunces()
         return self.keg.type.calories_oz * ounces
 
+    @transaction.atomic
+    def reassign(self, user):
+        """Assigns, or re-assigns, this pour.
+
+        Statistics and session data will be recomputed as a side-effect
+        of any change to user assignment.  (If the drink is already assigned
+        to the given user, this method is a no-op).
+
+        Args:
+            user: The `User` to set as the owner, or `None`.
+
+        Returns:
+            `True` if reassigned, `False` if no change.
+        """
+        previous_user = self.user
+        if previous_user == user:
+            return False
+
+        self.user = user
+        self.save()
+
+        for e in self.events.all():
+            e.user = user
+            e.save()
+        if self.picture:
+            self.picture.user = user
+            self.picture.save()
+
+        self.session.Rebuild()
+        signals.drink_assigned.send_robust(
+            sender=self.__class__, drink_id=self.id, previous_user=previous_user
+        )
+        return True
+
+    @transaction.atomic
+    def set_volume(self, volume_ml):
+        """Updates the drink volume."""
+        if volume_ml == self.volume_ml:
+            return
+
+        previous_volume = self.volume_ml
+
+        difference = volume_ml - self.volume_ml
+        self.volume_ml = volume_ml
+        self.save(update_fields=["volume_ml"])
+
+        keg = self.keg
+        keg.served_volume_ml += difference
+        keg.save(update_fields=["served_volume_ml"])
+
+        self.session.Rebuild()
+
+        signals.drink_adjusted.send_robust(
+            sender=self.__class__, drink_id=self.id, previous_volume=previous_volume
+        )
+
+    @classmethod
+    @transaction.atomic
+    def record_drink(
+        cls,
+        tap_or_meter_name,
+        ticks,
+        volume_ml=None,
+        username=None,
+        pour_time=None,
+        duration=0,
+        shout="",
+        tick_time_series="",
+        photo=None,
+        spilled=False,
+    ):
+        """Records a new drink against a given tap.
+
+        The tap must have a Keg assigned to it (KegTap.current_keg), and the keg
+        must be active.
+
+        Args:
+            tap_or_meter_name: A KegTap or meter name.
+            ticks: The number of ticks observed by the flow sensor for this drink.
+            volume_ml: The volume, in milliliters, of the pour.  If specified, this
+                value is saved as the Drink's actual value.  If not specified, a
+                volume is computed based on `ticks` and the meter's
+                `ticks_per_ml` setting.
+            username: The username with which to associate this Drink, or None for
+                an anonymous Drink.
+            pour_time: The datetime of the drink.  If not supplied, the current
+                date and time will be used.
+            duration: Number of seconds it took to pour this Drink.  This is
+                optional information not critical to the record.
+            shout: A short comment left by the user about this Drink.  Optional.
+            tick_time_series: Vector of flow update data, used for diagnostic
+                purposes.
+            spilled: If drink is recorded as spill, the volume is added to spilled_ml
+                and the "drink" is not saved as an event.
+
+        Returns:
+            The newly-created Drink instance.
+        """
+        if isinstance(tap_or_meter_name, str):
+            meter = FlowMeter.get_from_meter_name(tap_or_meter_name)
+            tap = meter.tap
+            if not tap:
+                raise ValueError(f"Meter {meter} has no tap configured")
+        else:
+            tap = tap_or_meter_name
+
+        if not tap.is_active or not tap.current_keg:
+            raise ValueError("No active keg at this tap")
+
+        keg = tap.current_keg
+
+        if spilled:
+            keg.spilled_ml += volume_ml
+            keg.save(update_fields=["spilled_ml"])
+            return None
+
+        if volume_ml is None:
+            meter = tap.current_meter()
+            if not meter:
+                raise ValueError("Tap has no meter, can't compute volume")
+            volume_ml = float(ticks) / meter.ticks_per_ml
+
+        user = None
+        if username:
+            user = User.objects.get(username=username)
+        else:
+            user = User.objects.get(username="guest")
+
+        if not pour_time:
+            pour_time = timezone.now()
+
+        if tick_time_series:
+            try:
+                # Validate the time series by parsing it; canonicalize it by generating
+                # it again.  If malformed, just junk it; it's non-essential information.
+                tick_time_series = time_series.to_string(time_series.from_string(tick_time_series))
+            except ValueError as e:
+                logger.warning("Time series invalid, ignoring. Error was: %s" % e)
+                tick_time_series = ""
+
+        d = Drink(
+            ticks=ticks,
+            keg=keg,
+            user=user,
+            volume_ml=volume_ml,
+            time=pour_time,
+            duration=duration,
+            shout=shout,
+            tick_time_series=tick_time_series,
+        )
+        DrinkingSession.AssignSessionForDrink(d)
+        d.save()
+
+        keg.served_volume_ml += volume_ml
+        keg.save(update_fields=["served_volume_ml"])
+
+        if photo:
+            pic = Picture.objects.create(image=photo, user=d.user, keg=d.keg, session=d.session)
+            d.picture = pic
+            d.save()
+
+        events = SystemEvent.build_events_for_drink(d)
+        signals.events_created.send_robust(sender=cls, events=events)
+        signals.drink_recorded.send_robust(sender=cls, drink=d)
+        return d
+
+    @transaction.atomic
+    def cancel_drink(self, spilled=False):
+        """Permanently deletes a Drink from the system.
+
+        Associated data, such as SystemEvent, Pictures, and other data, will
+        be destroyed along with the drink. Statistics and session data will be
+        recomputed after the drink is destroyed.
+
+        Args:
+            spilled: If True, after canceling the Drink, the drink's volume will
+                be added to its Keg's "spilled" total.  This is is typically useful
+                for removing test pours from the system while still accounting for
+                the lost volume.
+
+        Returns:
+            The deleted drink.
+        """
+        session = self.session
+        drink_id = self.id
+        keg = self.keg
+        volume_ml = self.volume_ml
+
+        keg_update_fields = ["served_volume_ml"]
+        keg.served_volume_ml -= volume_ml
+
+        # Transfer volume to spillage if requested.
+        if spilled and volume_ml and self.keg:
+            keg.spilled_ml += volume_ml
+            keg_update_fields.append("spilled_ml")
+
+        keg.save(update_fields=keg_update_fields)
+
+        # Delete the drink, including any objects related to it.
+        drink_id = self.id
+        self.delete()
+        session.Rebuild()
+        signals.drink_canceled.send_robust(sender=self.__class__, drink_id=drink_id)
+
     def __str__(self):
         return "Drink {} by {}".format(self.id, self.user)
 
@@ -1111,6 +1638,32 @@ class AuthenticationToken(models.Model):
         if not self.expire_time:
             return True
         return timezone.now() < self.expire_time
+
+    @classmethod
+    @transaction.atomic
+    def create_auth_token(cls, auth_device, token_value, username=None):
+        """Creates a new AuthenticationToken.
+
+        The combination of (auth_device, token_value) must be unique within the
+        system.
+
+        Args:
+            auth_device: The name of the authentication device, for instance,
+                "core.rfid".
+            token_value: The opaque string value of the token, which is typically
+                unique within the `auth_device` namespace.
+            username: The User with which to associate this Token.
+
+        Returns:
+            The newly-created AuthenticationToken.
+        """
+        token = cls.objects.create(auth_device=auth_device, token_value=token_value)
+        if username:
+            user = User.objects.get(username=username)
+            token.user = user
+        token.save()
+        signals.auth_token_created.send_robust(sender=cls, token=token)
+        return token
 
 
 def _auth_token_pre_save(sender, instance, **kwargs):
@@ -1297,6 +1850,59 @@ class ThermoSensor(models.Model):
             return self.thermolog_set.latest()
         except Thermolog.DoesNotExist:
             return None
+
+    @transaction.atomic
+    def log_sensor_reading(self, temperature, when=None):
+        """Logs a ThermoSensor reading.
+
+        To avoid an excessive number of entries, the system limits temperature
+        readings to one per minute.  If there is already a recording for the
+        given time period, that record will be updated with the current temperature
+        ("last one wins").
+
+        Regardless of this record's timestamp, any records older than
+        `kb_common.THERMO_SENSOR_HISTORY_MINUTES` will be deleted as a side effect
+        of this call.
+
+        Args:
+            temperature: Temperature, in celsius degrees.  Values outside of the
+                range specified in `kb_common.THERMO_SENSOR_RANGE` will be
+                rejected.
+            when: If specified, a datetime of the recording, otherwise the current
+                time is used.
+
+        Returns:
+            The record for this reading.
+        """
+        now = timezone.now()
+        if not when:
+            when = now
+
+        # The maximum resolution of ThermoSensor records is 1 minute.  Round the
+        # time down to the nearest minute; if a record already exists for this time,
+        # replace it.
+        when = when.replace(second=0, microsecond=0)
+
+        # If the temperature is out of bounds, reject it.
+        min_val = kb_common.THERMO_SENSOR_RANGE[0]
+        max_val = kb_common.THERMO_SENSOR_RANGE[1]
+        if temperature < min_val or temperature > max_val:
+            raise ValueError("Temperature out of bounds")
+
+        log_defaults = {
+            "temp": temperature,
+        }
+        record, _ = Thermolog.objects.get_or_create(sensor=self, time=when, defaults=log_defaults)
+        record.temp = temperature
+        record.save()
+
+        # Delete old entries.
+        keep_time = now - datetime.timedelta(minutes=kb_common.THERMO_SENSOR_HISTORY_MINUTES)
+        old_entries = Thermolog.objects.filter(time__lt=keep_time)
+        old_entries.delete()
+
+        signals.temperature_recorded.send_robust(sender=self.__class__, record=record)
+        return record
 
 
 class Thermolog(models.Model):

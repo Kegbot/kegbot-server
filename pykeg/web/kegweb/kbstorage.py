@@ -3,12 +3,12 @@ import urllib.parse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
+from pykeg.web.util import get_base_url
+
 try:
     from storages.backends.s3boto import S3BotoStorage
 except ImportError:
     S3BotoStorage = None
-
-from pykeg.backend import get_kegbot_backend
 
 S3_STATIC_BUCKET = getattr(settings, "S3_STATIC_BUCKET", None)
 
@@ -22,8 +22,7 @@ class KegbotFileSystemStorage(FileSystemStorage):
     """
 
     def url(self, name):
-        be = get_kegbot_backend()
-        base_url = be.get_base_url()
+        base_url = get_base_url()
         if not self.base_url.startswith(base_url):
             self.base_url = urllib.parse.urljoin(base_url, self.base_url)
         return super(KegbotFileSystemStorage, self).url(name)

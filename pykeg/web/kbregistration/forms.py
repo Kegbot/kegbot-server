@@ -9,6 +9,8 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 
+from pykeg.web.util import get_base_url
+
 try:
     from django.contrib.auth import get_user_model
 
@@ -16,7 +18,6 @@ try:
 except ImportError:
     from django.contrib.auth.models import User
 
-from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 
 
@@ -66,8 +67,7 @@ class PasswordResetForm(forms.Form):
                 continue
             from_email = settings.DEFAULT_FROM_EMAIL or from_email
 
-            be = get_kegbot_backend()
-            base_url = be.get_base_url()
+            base_url = get_base_url()
             parsed = urllib.parse.urlparse(base_url)
             domain = parsed.netloc
             protocol = parsed.scheme

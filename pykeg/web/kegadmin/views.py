@@ -8,7 +8,6 @@ import subprocess
 import zipfile
 from operator import itemgetter
 
-import isodate
 import redis
 from django.conf import settings
 from django.contrib import messages
@@ -22,7 +21,7 @@ from django.views.decorators.http import require_http_methods
 
 from pykeg.backup import backup
 from pykeg.celery import app as celery_app
-from pykeg.core import models
+from pykeg.core import models, tasks
 from pykeg.core.util import get_runtime_version_info
 from pykeg.logging.handlers import RedisListHandler
 from pykeg.util import kbjson
@@ -160,7 +159,7 @@ def export(request):
 
     if request.method == "POST":
         if "package_backup" in request.POST:
-            request.backend.build_backup()
+            tasks.build_backup.delay()
             messages.success(request, "The backup is being generated; please reload in a few.")
 
         elif "delete_backup" in request.POST:
@@ -365,7 +364,7 @@ def tap_detail(request, tap_id):
         if "submit_keg_choice" in request.POST:
             keg_id = request.POST.get("keg_id")
             keg = models.Keg.objects.get(id=keg_id)
-            d = request.backend.attach_keg(tap, keg)
+            d = tap.attach_keg(keg)
             messages.success(request, "The new keg was activated. Bottoms up!")
             return redirect("kegadmin-taps")
 
@@ -380,7 +379,7 @@ def tap_detail(request, tap_id):
             delete_form = forms.DeleteTapForm(request.POST)
             if delete_form.is_valid():
                 if tap.current_keg:
-                    request.backend.end_keg(tap.current_keg)
+                    tap.end_current_keg()
                 tap.delete()
                 messages.success(request, "Tap deleted.")
                 return redirect("kegadmin-taps")
@@ -388,7 +387,7 @@ def tap_detail(request, tap_id):
         elif "submit_end_keg_form" in request.POST:
             end_keg_form = forms.EndKegForm(request.POST)
             if end_keg_form.is_valid():
-                old_keg = request.backend.end_keg(tap.current_keg)
+                old_keg = tap.end_current_keg()
                 messages.success(request, "Keg %s was ended." % old_keg.id)
 
         elif "submit_record_drink" in request.POST:
@@ -396,7 +395,7 @@ def tap_detail(request, tap_id):
             if record_drink_form.is_valid():
                 user = record_drink_form.cleaned_data.get("user")
                 volume_ml = record_drink_form.cleaned_data.get("volume_ml")
-                d = request.backend.record_drink(tap, ticks=0, username=user, volume_ml=volume_ml)
+                d = models.Drink.record_drink(tap, ticks=0, username=user, volume_ml=volume_ml)
                 messages.success(request, "Drink %s recorded." % d.id)
             else:
                 messages.error(request, "Please enter a valid volume and user.")
@@ -406,7 +405,7 @@ def tap_detail(request, tap_id):
             if record_drink_form.is_valid():
                 user = record_drink_form.cleaned_data.get("user")
                 volume_ml = record_drink_form.cleaned_data.get("volume_ml")
-                d = request.backend.record_drink(
+                d = models.Drink.record_drink(
                     tap, ticks=0, username=user, volume_ml=volume_ml, spilled=True
                 )
                 messages.success(request, "Spill recorded.")
@@ -485,17 +484,17 @@ def keg_detail(request, keg_id):
                 return redirect("kegadmin-kegs")
 
         elif "submit_delete_keg" in request.POST:
-            request.backend.cancel_keg(keg)
+            keg.cancel()
             messages.success(request, "Keg deleted.")
             return redirect("kegadmin-kegs")
 
         elif "submit_reactivate" in request.POST:
-            request.backend.reactivate_keg(keg)
+            keg.reactivate_keg()
             messages.success(request, "Keg reactivated.")
             return redirect("kegadmin-edit-keg", keg_id=keg.id)
 
         elif "submit_end" in request.POST:
-            request.backend.end_keg(keg)
+            keg.end_keg()
             messages.success(request, "Keg ended.")
             return redirect("kegadmin-edit-keg", keg_id=keg.id)
 
@@ -638,7 +637,7 @@ def drink_list(request):
             delete_ids = request.POST.getlist("delete_ids[]")
             drinks = models.Drink.objects.filter(Q(id__in=delete_ids))
             for drink in drinks:
-                request.backend.cancel_drink(drink)
+                drink.cancel_drink()
             delete_ids.reverse()
             if len(delete_ids) == 1:
                 messages.success(request, "Drink " + delete_ids[0] + " has been deleted.")
@@ -682,7 +681,7 @@ def drink_edit(request, drink_id):
         form = forms.CancelDrinkForm(request.POST)
         old_keg = drink.keg
         if form.is_valid():
-            request.backend.cancel_drink(drink)
+            drink.cancel_drink()
             messages.success(request, "Drink %s was cancelled." % drink_id)
             return redirect(old_keg.get_absolute_url())
         else:
@@ -693,7 +692,7 @@ def drink_edit(request, drink_id):
         form = forms.CancelDrinkForm(request.POST)
         old_keg = drink.keg
         if form.is_valid():
-            request.backend.cancel_drink(drink, spilled=True)
+            drink.cancel_drink(spilled=True)
             messages.success(request, "Drink %s was spilled." % drink_id)
             return redirect(old_keg.get_absolute_url())
         else:
@@ -703,9 +702,9 @@ def drink_edit(request, drink_id):
     elif "submit_reassign" in request.POST:
         form = forms.ReassignDrinkForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get("username", None)
+            new_user = form.cleaned_data["user"]
             try:
-                request.backend.assign_drink(drink, username)
+                drink.reassign(new_user)
                 messages.success(request, "Drink %s was reassigned." % drink_id)
             except models.User.DoesNotExist:
                 messages.error(request, "No such user")
@@ -720,7 +719,7 @@ def drink_edit(request, drink_id):
             if volume_ml == drink.volume_ml:
                 messages.warning(request, "Drink volume unchanged.")
             else:
-                request.backend.set_drink_volume(drink, volume_ml)
+                drink.set_volume(volume_ml)
                 messages.success(request, "Drink %s was updated." % drink_id)
         else:
             messages.error(request, "Please provide a valid volume.")

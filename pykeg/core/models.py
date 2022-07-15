@@ -34,7 +34,6 @@ from pykeg.core import (
     signals,
     time_series,
 )
-from pykeg.core.jsonfield import JSONField
 from pykeg.core.util import CtoF, get_version
 from pykeg.util import kbjson, units
 from pykeg.util.email import build_message
@@ -1941,7 +1940,7 @@ class Stats(models.Model):
     """
 
     time = models.DateTimeField(default=timezone.now)
-    stats = JSONField(dump_kwargs={"cls": kbjson.JSONEncoder})
+    stats = models.JSONField(encoder=kbjson.JSONEncoder)
     drink = models.ForeignKey(Drink, on_delete=models.CASCADE)
 
     is_first = models.BooleanField(
@@ -2288,4 +2287,4 @@ class PluginData(models.Model):
 
     plugin_name = models.CharField(max_length=127, help_text="Plugin short name")
     key = models.CharField(max_length=127)
-    value = JSONField()
+    value = models.JSONField(encoder=kbjson.JSONEncoder)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from django.db import models, migrations
 import pykeg.core.fields
 import pykeg.core.models
@@ -8,7 +6,7 @@ import re
 import django.utils.timezone
 from django.conf import settings
 import django.core.validators
-import pykeg.core.jsonfield
+import pykeg.util.kbjson
 
 
 class Migration(migrations.Migration):
@@ -1771,7 +1769,7 @@ class Migration(migrations.Migration):
                 ),
                 ("plugin_name", models.CharField(help_text="Plugin short name", max_length=127)),
                 ("key", models.CharField(max_length=127)),
-                ("value", pykeg.core.jsonfield.JSONField()),
+                ("value", models.JSONField(encoder=pykeg.util.kbjson.JSONEncoder)),
             ],
             options={},
             bases=(models.Model,),
@@ -1786,7 +1784,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("time", models.DateTimeField(default=django.utils.timezone.now)),
-                ("stats", pykeg.core.jsonfield.JSONField()),
+                ("stats", models.JSONField(encoder=pykeg.util.kbjson.JSONEncoder)),
                 (
                     "is_first",
                     models.BooleanField(

@@ -50,6 +50,7 @@ addict = "*"
 gevent = "*"
 psycopg2 = "*"
 future = "^0.18.2"
+freezegun = "^1.2.1"
 
 [tool.poetry.dev-dependencies]
 black = "*"

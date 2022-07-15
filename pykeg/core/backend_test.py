@@ -19,24 +19,25 @@ FAKE_BEER_STYLE = "Test-Driven Pale Ale"
 class BackendsFixtureTestCase(TransactionTestCase):
     """Test backened using fixture (demo) data."""
 
-    fixtures = ["testdata/full_demo_site.json"]
+    fixtures = ["testdata/demo-site.json"]
 
     def test_delete_keg(self):
         site = models.KegbotSite.get()
         original_stats = site.get_stats()
-        self.assertEqual(755, original_stats["total_pours"])
+        self.assertEqual(50, original_stats["total_pours"])
 
         keg = models.Keg.objects.get(pk=2)
         keg_stats = keg.get_stats()
         keg_drinks = keg.drinks.all()
-        self.assertEqual(185, len(keg_drinks))
+        self.assertEqual(16, len(keg_drinks))
         keg.cancel()
 
         stats = site.get_stats()
-        self.assertEqual(755 - 185, stats["total_pours"])
-        self.assertEqual(
+        self.assertEqual(34, stats["total_pours"])
+        self.assertAlmostEqual(
             original_stats["total_volume_ml"] - keg_stats["total_volume_ml"],
             stats["total_volume_ml"],
+            places=6,
         )
 
 

@@ -27,6 +27,15 @@ jobs:
             echo ::set-output name=version::snapshot
           fi
           echo ::set-output name=build_date::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+      # Work around an armv7 -> qemu bug caused during rust compilation. Yeah.. See repo.
+      - name: Run Docker on tmpfs
+        uses: JonasAlfredsson/docker-on-tmpfs@v1
+        with:
+          tmpfs_size: 5
+          swap_size: 4
+          swap_location: '/mnt/swapfile'
+
       -
         name: Set up Docker Buildx
         id: buildx

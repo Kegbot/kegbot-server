@@ -3,8 +3,8 @@ import os
 from django.core.files.storage import get_storage_class
 from django.core.management.base import BaseCommand
 
-from pykeg.backend.backends import UnknownBaseUrlException
 from pykeg.backup import backup
+from pykeg.web.util import UnknownBaseUrlException
 
 
 class Command(BaseCommand):

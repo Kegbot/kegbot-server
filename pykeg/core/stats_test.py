@@ -4,31 +4,27 @@ from addict import Dict
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
-from pykeg.backend import get_kegbot_backend
-
 from . import models
 from .testutils import make_datetime
 
 
-@override_settings(KEGBOT_BACKEND="pykeg.core.testutils.TestBackend")
 class StatsTestCase(TransactionTestCase):
     reset_sequences = True
 
     def setUp(self):
-        self.backend = get_kegbot_backend()
         models.User.objects.create_user("guest")
 
         test_usernames = ("user1", "user2", "user3")
         self.users = [
-            self.backend.create_new_user(name, "%s@example.com" % name) for name in test_usernames
+            models.User.create_new_user(name, "%s@example.com" % name) for name in test_usernames
         ]
 
         self.taps = [
-            self.backend.create_tap("tap1", "kegboard.flow0", ticks_per_ml=2.2),
-            self.backend.create_tap("tap2", "kegboard.flow1", ticks_per_ml=2.2),
+            models.KegTap.create_tap("tap1", "kegboard.flow0", ticks_per_ml=2.2),
+            models.KegTap.create_tap("tap2", "kegboard.flow1", ticks_per_ml=2.2),
         ]
 
-        self.keg = self.backend.start_keg(
+        self.keg = models.Keg.start_keg(
             "kegboard.flow0",
             beverage_name="Unknown",
             beverage_type="beer",
@@ -44,7 +40,7 @@ class StatsTestCase(TransactionTestCase):
         now = make_datetime(2012, 1, 2, 12, 00)
         self.maxDiff = None
 
-        d = self.backend.record_drink(
+        d = models.Drink.record_drink(
             "kegboard.flow0", ticks=1, volume_ml=100, username="user1", pour_time=now
         )
         expected = Dict(
@@ -70,7 +66,7 @@ class StatsTestCase(TransactionTestCase):
         self.assertDictEqual(expected, stats)
 
         now = make_datetime(2012, 1, 3, 12, 00)
-        d = self.backend.record_drink(
+        d = models.Drink.record_drink(
             "kegboard.flow0", ticks=200, volume_ml=200, username="user2", pour_time=now
         )
         stats = site.get_stats()
@@ -90,7 +86,7 @@ class StatsTestCase(TransactionTestCase):
 
         self.assertDictEqual(expected, stats)
 
-        d = self.backend.record_drink(
+        d = models.Drink.record_drink(
             "kegboard.flow0", ticks=300, volume_ml=300, username="user2", pour_time=now
         )
 
@@ -111,12 +107,12 @@ class StatsTestCase(TransactionTestCase):
         self.assertDictEqual(expected, stats)
         previous_stats = copy.copy(stats)
 
-        d = self.backend.record_drink("kegboard.flow0", ticks=300, volume_ml=300, pour_time=now)
+        d = models.Drink.record_drink("kegboard.flow0", ticks=300, volume_ml=300, pour_time=now)
 
         stats = site.get_stats()
         self.assertTrue(stats.has_guest_pour)
 
-        self.backend.cancel_drink(d)
+        d.cancel_drink()
         stats = site.get_stats()
 
         self.assertDictEqual(previous_stats, stats)
@@ -133,7 +129,7 @@ class StatsTestCase(TransactionTestCase):
 
         now = make_datetime(2012, 1, 2, 12, 00)
         for volume_ml, user in drink_data:
-            d = self.backend.record_drink(
+            d = models.Drink.record_drink(
                 "kegboard.flow0",
                 ticks=volume_ml,
                 username=user.username,
@@ -148,13 +144,13 @@ class StatsTestCase(TransactionTestCase):
 
         self.assertEqual(1000, models.KegbotSite.get().get_stats().total_volume_ml)
 
-        self.backend.cancel_drink(drinks[0])
+        drinks[0].cancel_drink()
         self.assertEqual(500, self.users[0].get_stats().total_volume_ml)
         self.assertEqual(200, self.users[1].get_stats().total_volume_ml)
         self.assertEqual(200, self.users[2].get_stats().total_volume_ml)
         self.assertEqual(900, models.KegbotSite.get().get_stats().total_volume_ml)
 
-        self.backend.assign_drink(drinks[1], self.users[0])
+        drinks[1].reassign(self.users[0])
         self.assertEqual(700, self.users[0].get_stats().total_volume_ml)
         self.assertEqual({}, self.users[1].get_stats())
         self.assertEqual(200, self.users[2].get_stats().total_volume_ml)
@@ -164,7 +160,7 @@ class StatsTestCase(TransactionTestCase):
         # Start a new session.
         now = make_datetime(2013, 1, 2, 12, 00)
         for volume_ml, user in drink_data:
-            d = self.backend.record_drink(
+            d = models.Drink.record_drink(
                 "kegboard.flow0",
                 ticks=volume_ml,
                 username=user.username,
@@ -183,7 +179,7 @@ class StatsTestCase(TransactionTestCase):
         models.Stats.objects.filter(drink=drinks[-1]).delete()
         models.Stats.objects.filter(drink=drinks[-2]).delete()
 
-        d = self.backend.record_drink(
+        d = models.Drink.record_drink(
             "kegboard.flow0", ticks=1111, username=user.username, volume_ml=1111, pour_time=now
         )
         drinks.append(d)
@@ -209,7 +205,7 @@ class StatsTestCase(TransactionTestCase):
         # 1 AM UTC
         now = make_datetime(2012, 1, 2, 1, 0)
         for volume_ml, user in drink_data:
-            d = self.backend.record_drink(
+            d = models.Drink.record_drink(
                 "kegboard.flow0",
                 ticks=volume_ml,
                 username=user.username,

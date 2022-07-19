@@ -7,8 +7,6 @@ import vcr
 from django.conf import settings
 from django.utils import timezone
 
-from pykeg.backend.backends import KegbotBackend
-
 TESTDATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../testdata/"))
 CASSETTE_DIR = os.path.join(TESTDATA_DIR, "request_fixtures")
 
@@ -32,11 +30,3 @@ def get_vcr(test_name):
         record_mode="none",
         match_on=["uri", "method"],
     )
-
-
-class TestBackend(KegbotBackend):
-    def get_base_url(self):
-        static_url = getattr(settings, "KEGBOT_BASE_URL", None)
-        if static_url:
-            return static_url.rstrip("/")
-        return "http://localhost:1234"

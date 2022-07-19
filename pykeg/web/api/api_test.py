@@ -51,7 +51,6 @@ class ApiClientNoSiteTestCase(BaseApiTestCase):
             self.assertEqual(data.meta.result, "ok")
 
 
-@override_settings(KEGBOT_BACKEND="pykeg.core.testutils.TestBackend")
 class ApiClientTestCase(BaseApiTestCase):
     def setUp(self):
         self.site = create_site()
@@ -259,7 +258,7 @@ class ApiClientTestCase(BaseApiTestCase):
 
         picture = data["object"]
         picture_url = picture["url"]
-        self.assertTrue(picture_url.startswith("http://localhost:1234/media/"))
+        self.assertTrue(picture_url.startswith("http://test.example.com/media/"))
 
     def test_controller_data(self):
         for endpoint in ("controllers", "flow-meters"):

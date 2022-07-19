@@ -17,3 +17,4 @@ docs/build
 ### pykeg
 build
 dist
+test-db.sqlite

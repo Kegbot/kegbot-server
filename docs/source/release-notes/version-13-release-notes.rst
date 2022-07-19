@@ -9,14 +9,14 @@ The release is
 What's New
 ----------
 
-Simplified configuration from envrionment
+Simplified configuration from environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Previous releases required users to manage a ``local_settings.py`` file in the home
 directory of the user running Kegbot. This made Kegbot hard to run in an environment
 without a persistent disk (e.g. Heroku).
 
-Now all configuration variables can be given as envrionment variables. Optionally,
+Now all configuration variables can be given as environment variables. Optionally,
 a greatly simplified configuration file formal is supported, replacing
 ``local_settings.py``.
 

@@ -6,7 +6,6 @@ from django.test import TestCase
 from django.test.utils import override_settings
 
 from pykeg import notification
-from pykeg.backend import get_kegbot_backend
 from pykeg.core import defaults, models
 from pykeg.notification.backends.base import BaseNotificationBackend
 
@@ -51,7 +50,6 @@ class StandaloneNotificationTestCase(TestCase):
 
 class NotificationTestCase(TestCase):
     def setUp(self):
-        self.backend = get_kegbot_backend()
         defaults.set_defaults(set_is_setup=True)
 
         self.user = models.User.objects.create(username="notification_user", email="test@example")

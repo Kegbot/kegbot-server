@@ -5,11 +5,9 @@ from django.test import TransactionTestCase
 from django.test.utils import override_settings
 from django.urls import reverse
 
-from pykeg.backend import get_kegbot_backend
 from pykeg.core import defaults, models
 
 
-@override_settings(KEGBOT_BACKEND="pykeg.core.testutils.TestBackend")
 class KegwebTestCase(TransactionTestCase):
     def setUp(self):
         self.client.logout()
@@ -24,8 +22,7 @@ class KegwebTestCase(TransactionTestCase):
             response = self.client.get(endpoint)
             self.assertEqual(404, response.status_code)
 
-        b = get_kegbot_backend()
-        keg = b.start_keg(
+        keg = models.Keg.start_keg(
             "kegboard.flow0",
             beverage_name="Unknown",
             producer_name="Unknown",
@@ -36,7 +33,7 @@ class KegwebTestCase(TransactionTestCase):
         response = self.client.get("/kegs/")
         self.assertEqual(200, response.status_code)
 
-        d = b.record_drink("kegboard.flow0", ticks=100)
+        d = models.Drink.record_drink("kegboard.flow0", ticks=100)
         drink_id = d.id
 
         response = self.client.get("/d/%s" % drink_id, follow=True)
@@ -47,21 +44,19 @@ class KegwebTestCase(TransactionTestCase):
         self.assertRedirects(response, d.session.get_absolute_url(), status_code=301)
 
     def testShout(self):
-        b = get_kegbot_backend()
-        b.start_keg(
+        models.Keg.start_keg(
             "kegboard.flow0",
             beverage_name="Unknown",
             producer_name="Unknown",
             beverage_type="beer",
             style_name="Unknown",
         )
-        d = b.record_drink("kegboard.flow0", ticks=123, shout="_UNITTEST_")
+        d = models.Drink.record_drink("kegboard.flow0", ticks=123, shout="_UNITTEST_")
         response = self.client.get(d.get_absolute_url())
         self.assertContains(response, "<p>_UNITTEST_</p>", status_code=200)
 
     def test_privacy(self):
-        b = get_kegbot_backend()
-        keg = b.start_keg(
+        keg = models.Keg.start_keg(
             "kegboard.flow0",
             beverage_name="Unknown",
             producer_name="Unknown",
@@ -69,7 +64,7 @@ class KegwebTestCase(TransactionTestCase):
             style_name="Unknown",
         )
         self.assertIsNotNone(keg)
-        d = b.record_drink("kegboard.flow0", ticks=100)
+        d = models.Drink.record_drink("kegboard.flow0", ticks=100)
 
         # URLs to expected contents
         urls = {
@@ -90,8 +85,7 @@ class KegwebTestCase(TransactionTestCase):
                 else:
                     self.assertContains(response, expected_content, status_code=200, msg_prefix=url)
 
-        b = get_kegbot_backend()
-        user = b.create_new_user("testuser", "test@example.com", password="1234")
+        user = models.User.create_new_user("testuser", "test@example.com", password="1234")
 
         kbsite = models.KegbotSite.get()
         self.client.logout()
@@ -131,11 +125,10 @@ class KegwebTestCase(TransactionTestCase):
             self.assertNotContains(response, "denied", status_code=200, msg_prefix=url)
 
     def test_activation(self):
-        b = get_kegbot_backend()
         kbsite = models.KegbotSite.get()
         self.assertEqual("public", kbsite.privacy)
 
-        user = b.create_new_user("testuser", "test@example.com")
+        user = models.User.create_new_user("testuser", "test@example.com")
         self.assertIsNotNone(user.activation_key)
         self.assertFalse(user.has_usable_password())
 

@@ -96,6 +96,7 @@ def is_setup():
     return True
 
 
+Setting("KEGBOT_BASE_URL", "http://test.example.com" if IS_RUNNING_PYTEST else "")
 Setting("KEGBOT_ENV", "test" if IS_RUNNING_PYTEST else ENV_DEBUG)
 Setting("KEGBOT_EMAIL_FROM_ADDRESS", "")
 Setting("KEGBOT_EMAIL_URL", os.getenv("EMAIL_URL", "smtp:"))

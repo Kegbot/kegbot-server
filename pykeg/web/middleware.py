@@ -6,7 +6,6 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from pykeg import config
-from pykeg.backend import get_kegbot_backend
 from pykeg.core import models
 from pykeg.core.util import get_version_object, must_upgrade, set_current_request
 from pykeg.plugin import util as plugin_util
@@ -171,7 +170,6 @@ class KegbotSiteMiddleware:
             request.plugins = dict(
                 (p.get_short_name(), p) for p in list(plugin_util.get_plugins().values())
             )
-            request.backend = get_kegbot_backend()
 
         return self.get_response(request)
 

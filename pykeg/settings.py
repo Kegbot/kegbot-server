@@ -160,8 +160,6 @@ KEGBOT_PLUGINS = [
     "pykeg.contrib.webhook.plugin.WebhookPlugin",
 ]
 
-KEGBOT_BACKEND = "pykeg.backend.backends.KegbotBackend"
-
 # Celery
 
 BROKER_URL = KEGBOT["KEGBOT_REDIS_URL"]

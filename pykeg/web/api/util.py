@@ -11,7 +11,6 @@ from django.db.models.query import QuerySet
 from django.http import Http404, HttpResponse
 from google.protobuf.message import Message
 
-from pykeg.backend.exceptions import NoTokenError
 from pykeg.core import models
 from pykeg.proto import kbapi, protolib, protoutil
 from pykeg.util import kbjson
@@ -67,8 +66,6 @@ def to_json_error(e, exc_info):
         e = kbapi.NotFoundError(str(e))
     elif isinstance(e, ValueError):
         e = kbapi.BadRequestError(str(e))
-    elif isinstance(e, NoTokenError):
-        e = kbapi.NotFoundError(str(e))
 
     # Now determine the response based on the exception type.
     if isinstance(e, kbapi.Error):

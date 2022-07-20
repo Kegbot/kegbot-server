@@ -75,3 +75,16 @@ These settings all have defaults, which you may override.
     an API key. As the name suggests, it is insecure to use this feature,
     which is intended only for use in special standalone/embedded installs
     (e.g. a single-user, offline Raspberry Pi) where there is no risk of exposure.
+
+Advanced and experimental settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These settings control experimental features. They are subject to
+change and should only be needed by advanced users.
+
+.. data:: KEGBOT_ENABLE_V2_API
+
+    If set to ``true``, the new Kegbot Server API will be enabled (at
+    path ``/api/v2/...``). This API will replace the existing API implementation
+    in a future major Kegbot release. It is currently unfinished. Enable this
+    if you are a developer intending to work on or with this API.

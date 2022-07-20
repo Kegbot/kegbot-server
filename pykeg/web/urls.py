@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView
 
+from pykeg.api import urls as apiv2_urls
 from pykeg.web.account import urls as account_urls
 from pykeg.web.api import urls as api_urls
 from pykeg.web.kbregistration import urls as kbregistration_urls
@@ -19,6 +20,10 @@ urlpatterns = [
     # Shortcuts
     path("link", RedirectView.as_view(pattern_name="kegadmin-link-device")),
 ]
+
+# Enable the currently-experimental v2 api.
+if settings.KEGBOT["KEGBOT_ENABLE_V2_API"]:
+    urlpatterns += [path("api/v2/", include(apiv2_urls))]
 
 if "pykeg.web.setup_wizard" in settings.INSTALLED_APPS:
     urlpatterns += [

@@ -246,10 +246,13 @@ class KegbotSite(models.Model):
         ("f", "Fahrenheit"),
         ("c", "Celsius"),
     )
+    PRIVACY_CHOICE_PUBLIC = "public"
+    PRIVACY_CHOICE_MEMBERS = "members"
+    PRIVACY_CHOICE_STAFF = "staff"
     PRIVACY_CHOICES = (
-        ("public", "Public: Browsing does not require login"),
-        ("members", "Members only: Must log in to browse"),
-        ("staff", "Staff only: Only logged-in staff accounts may browse"),
+        (PRIVACY_CHOICE_PUBLIC, "Public: Browsing does not require login"),
+        (PRIVACY_CHOICE_MEMBERS, "Members only: Must log in to browse"),
+        (PRIVACY_CHOICE_STAFF, "Staff only: Only logged-in staff accounts may browse"),
     )
     REGISTRATION_MODE_CHOICES = (
         ("public", "Public: Anyone can register."),

@@ -10,7 +10,7 @@ from pykeg.core import models
 from pykeg.core.util import get_version_object, must_upgrade, set_current_request
 from pykeg.plugin import util as plugin_util
 from pykeg.util import dbstatus
-from pykeg.web.api.util import is_api_request
+from pykeg.web.api.util import is_api_v1_request
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,8 @@ PRIVACY_EXEMPT_PATHS = (
     "/setup/",
     "/sso/login",
     "/sso/logout",
+    # Enforced by v2 api auth layer
+    "/api/v2",
 )
 
 PRIVACY_EXEMPT_PATHS += getattr(settings, "KEGBOT_EXTRA_PRIVACY_EXEMPT_PATHS", ())
@@ -82,10 +84,11 @@ class PathRewriteMiddleware:
 
     def __call__(self, request):
         if request.path.startswith("/api") and not getattr(request, "path_rewritten", None):
-            if request.path.endswith("/"):
-                request.path = request.path[:-1]
-                request.path_info = request.path_info[:-1]
-                request.path_rewritten = True
+            if not request.path.startswith("/api/v2"):
+                if request.path.endswith("/"):
+                    request.path = request.path[:-1]
+                    request.path_info = request.path_info[:-1]
+                    request.path_rewritten = True
         return self.get_response(request)
 
 
@@ -139,7 +142,7 @@ class IsSetupMiddleware:
         return self.get_response(request)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        if is_api_request(request):
+        if is_api_v1_request(request):
             # API endpoints handle "setup required" differently.
             return None
 
@@ -178,7 +181,7 @@ class PrivacyMiddleware:
     """Enforces site privacy settings.
 
     Must be installed after ApiRequestMiddleware (in request order) to
-    access is_kb_api_request attribute.
+    access is_api_v1_request attribute.
     """
 
     def __init__(self, get_response):
@@ -192,7 +195,7 @@ class PrivacyMiddleware:
             return None
         elif _path_allowed(request.path, request.kbsite):
             return None
-        elif request.is_kb_api_request:
+        elif request.is_api_v1_request:
             # api.middleware will enforce access requirements.
             return None
 

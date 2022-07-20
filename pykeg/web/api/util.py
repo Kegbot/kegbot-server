@@ -22,8 +22,8 @@ LOGGER = logging.getLogger(__name__)
 ATTR_NEED_AUTH = "api_auth_required"
 
 
-def is_api_request(request):
-    return request.path.startswith("/api")
+def is_api_v1_request(request):
+    return request.path.startswith("/api") and not request.path.startswith("/api/v2")
 
 
 def needs_auth(viewfunc):

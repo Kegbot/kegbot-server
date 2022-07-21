@@ -61,6 +61,7 @@ requests-mock = "*"
 sphinx-issues = "*"
 sphinx = "*"
 vcrpy = "*"
+furo = {git = "https://github.com/Kegbot/furo", rev = "kegbot/kegbot"}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

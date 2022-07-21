@@ -8,7 +8,7 @@ and web UI for a Kegbot system. These instructions will guide you through
 installing a new Kegbot server.
 
 Prerequisites
-------------
+-------------
 
 Kegbot Server requires `Docker <https://get.docker.sh/>`_ to run, and
 runs on any operating system that supports Docker. We have tested these

@@ -1,5 +1,8 @@
 name: Docker Build
 
+env:
+  IMAGE_NAME: kegbot/server
+
 on:
   push:
     branches:
@@ -11,10 +14,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       -
         name: Checkout
         uses: actions/checkout@v2
+
+      - uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+
       -
         name: Prepare
         id: prepare
@@ -26,6 +36,7 @@ jobs:
           else
             echo ::set-output name=version::snapshot
           fi
+          echo ::set-output name=build_archs::linux/amd64
           echo ::set-output name=build_date::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
       # Work around an armv7 -> qemu bug caused during rust compilation. Yeah.. See repo.
@@ -36,56 +47,62 @@ jobs:
           swap_size: 4
           swap_location: '/mnt/swapfile'
 
-      -
-        name: Set up Docker Buildx
-        id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
         with:
-          version: latest
+          driver-opts: network=host
+
       -
-        name: Available platforms
-        run: echo ${{ steps.build.outputs.platforms }}
+        name: Set up docker tag names (local registry)
+        id: meta_local
+        uses: docker/metadata-action@v4
+        with:
+          images: localhost/${{ env.IMAGE_NAME }}
+
+      -
+        name: Set up public docker tag names (public registry)
+        id: meta_public
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.IMAGE_NAME }}
+
+      - name: Build locally
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          push: false
+          tags: ${{ steps.meta_local.outputs.tags }}
+          build-args: |
+            BUILD_DATE=${{ steps.prepare.outputs.build_date }}
+            GIT_SHORT_SHA=${GITHUB_SHA::8}
+            VERSION=${{ steps.prepare.outputs.version }}
+          platforms: |
+            linux/amd64
+            linux/arm/v7
+
       -
         name: Login to DockerHub Registry
         if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
         run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-      -
-        name: Build
+
+      - name: Build and push to public registry
         if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=false" \
-            --platform linux/amd64,linux/arm/v7 \
-            --cache-from=type=registry,ref=kegbot/server \
-            --cache-to=type=registry,ref=kegbot/server \
-            --build-arg "BUILD_DATE=${{ steps.prepare.outputs.build_date }}" \
-            --build-arg "GIT_SHORT_SHA=${GITHUB_SHA::8}" \
-            --build-arg "VERSION=${{ steps.prepare.outputs.version }}" \
-            --tag "kegbot/server:${{ steps.prepare.outputs.version }}" \
-            --tag "kegbot/server:latest" \
-            .
-      -
-        name: Build (no cache)
-        if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' == '' || '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=false" \
-            --platform linux/amd64,linux/arm/v7 \
-            --build-arg "BUILD_DATE=${{ steps.prepare.outputs.build_date }}" \
-            --build-arg "GIT_SHORT_SHA=${GITHUB_SHA::8}" \
-            --build-arg "VERSION=${{ steps.prepare.outputs.version }}" \
-            .
-      -
-        name: Publish
-        if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform linux/amd64,linux/arm/v7 \
-            --cache-from=type=registry,ref=kegbot/server \
-            --build-arg "BUILD_DATE=${{ steps.prepare.outputs.build_date }}" \
-            --build-arg "GIT_SHORT_SHA=${GITHUB_SHA::8}" \
-            --build-arg "VERSION=${{ steps.prepare.outputs.version }}" \
-            --tag "kegbot/server:${{ steps.prepare.outputs.version }}" \
-            --tag "kegbot/server:latest" \
-            .
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          push: true
+          tags: ${{ steps.meta_public.outputs.tags }}
+          build-args: |
+            BUILD_DATE=${{ steps.prepare.outputs.build_date }}
+            GIT_SHORT_SHA=${GITHUB_SHA::8}
+            VERSION=${{ steps.prepare.outputs.version }}
+          platforms: |
+            linux/amd64
+            linux/arm/v7

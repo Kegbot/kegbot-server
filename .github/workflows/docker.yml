@@ -57,7 +57,7 @@ jobs:
       # =================== ============================= =============
       # When                What                          Example
       # =================== ============================= =============
-      # All runs            <target-branch-name>-dev      master-dev
+      # All runs            "dev"                         dev
       # Merge to master     "latest"                      latest
       # Merge tag           <tag>                         v1.2.3b1
       # Merge semver tag    <semver>                      1.2.3
@@ -69,7 +69,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value={{base_ref}}-dev
+            type=raw,value=dev
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=tag
             type=semver,pattern={{version}}

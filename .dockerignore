@@ -1,4 +1,5 @@
-.git
+.git/
+.github/
 build/
 *.egg-info
 docs/build/

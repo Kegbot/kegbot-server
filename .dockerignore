@@ -6,3 +6,4 @@ docs/build/
 dist/
 kegbot-data/
 staticfiles/
+.readthedocs.yaml

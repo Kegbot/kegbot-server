@@ -1,13 +1,7 @@
-"""Loads Kegbot configuration from env or config files.
-"""
+"""Loads Kegbot configuration from env."""
 
-import configparser
 import os
 import sys
-
-SOURCE_ENV = "env"
-SOURCE_FILE = "file"
-SOURCE_DEFAULT = "default"
 
 ENV_TEST = "test"
 ENV_DEBUG = "debug"
@@ -34,45 +28,20 @@ def Setting(name, default, typefn=str):
     ALL_SETTINGS[name] = (default, typefn)
 
 
-def read_config(filename=None):
-    if not filename:
-        filename = os.path.join(getvalue("KEGBOT_DATA_DIR"), "kegbot.cfg")
-    config = configparser.ConfigParser()
-    try:
-        with open(filename) as fp:
-            config.readfp(fp)
-        return dict((i[0].upper(), i[1]) for i in config.items("config"))
-    except IOError:
-        return {}
-
-
 def get(name):
-    default, typefn = ALL_SETTINGS[name]
+    val, typefn = ALL_SETTINGS[name]
 
-    if name in os.environ or name == "KEGBOT_DATA_DIR":
-        raw = os.environ.get(name, None)
-        if raw is None:
-            val, err, source = default, None, SOURCE_DEFAULT
-        else:
-            try:
-                val, err, source = typefn(raw), None, SOURCE_ENV
-            except Exception as e:
-                val, err, source = None, e, SOURCE_ENV
-    else:
+    if name in os.environ:
+        raw = os.environ.get(name)
         try:
-            config = read_config()
-            raw = config.get(name)
-            if raw is None:
-                val, err, source = default, None, SOURCE_DEFAULT
-            else:
-                val, err, source = typefn(raw), None, SOURCE_FILE
+            val = typefn(raw)
         except Exception as e:
-            val, err, source = None, e, SOURCE_FILE
-    return val, err, source
+            return None, e
+    return val, None
 
 
 def getvalue(name):
-    val, err, _ = get(name)
+    val, err = get(name)
     if err:
         raise err
     return val

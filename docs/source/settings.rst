@@ -5,17 +5,18 @@ Settings
 
 Most Kegbot features and behaviors are controlled within the web application
 by using your admin account. However, a handful of settings are managed outside
-of the web application, and are described here.
+of the web application, as environment variables, and are described here.
 
 Available settings
 ------------------
 
-These values can be set in the shell environment of the server program.
+This section lists all settings (environment variables) the server recognizes.
 
 Required settings
 ~~~~~~~~~~~~~~~~~
 
-These settings have no default and must be set by you.
+These settings have no default and must be set by you. (When you use ``docker-compose``
+with the example configuration in these docs, all required values will be set.)
 
 .. data:: KEGBOT_DATABASE_URL
 
@@ -74,27 +75,3 @@ These settings all have defaults, which you may override.
     an API key. As the name suggests, it is insecure to use this feature,
     which is intended only for use in special standalone/embedded installs
     (e.g. a single-user, offline Raspberry Pi) where there is no risk of exposure.
-
-Configuration file
-------------------
-
-If you prefer, settings may be given in a config file instead. The
-configuration file must be located at ``$KEGBOT_DATA_DIR/kegbot.cfg``.
-
-The format is an `INI-style config file <https://en.wikipedia.org/wiki/INI_file>`_
-with a single section named ``config``. Any environment value may be
-given as a key in this section (with the exception of ``KEGBOT_DATA_DIR``,
-which can never be read from this file).
-
-Here is an example config file::
-
-  [config]
-  KEGBOT_SECRET_KEY = my-1337-s3kr3t
-  KEGBOT_DATABASE_URL = mysql://my_user@localhost:password/kegbot_test
-  KEGBOT_REDIS_URL = redis://localhost/0
-
-Precedence of settings
-----------------------
-
-When a value is specified in both the environment `and` the config file,
-the value from the environment takes precedence.

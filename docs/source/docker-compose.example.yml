@@ -1,15 +1,8 @@
-# Local developer docker-compose.
-#
-# IMPORTANT: If you commit changes to this file, please remember to
-# make the appropriate changes to `docs/source/docker-compose.example.yml`
-# as well.
-
 version: '3'
 services:
   kegbot:
-    image: kegbot-server
+    image: kegbot/server:1.3
     restart: unless-stopped
-    build: .
     ports:
       - "8000:8000"
     volumes:
@@ -19,7 +12,7 @@ services:
       - /var/tmp
     environment:
       KEGBOT_REDIS_URL: redis://redis:6379/0
-      KEGBOT_DATABASE_URL: mysql://kegbot_dev:changeme@mysql/kegbot_dev
+      KEGBOT_DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
       KEGBOT_ENV: "debug"
 
   workers:
@@ -33,7 +26,7 @@ services:
       - /var/tmp
     environment:
       KEGBOT_REDIS_URL: redis://redis:6379/0
-      KEGBOT_DATABASE_URL: mysql://kegbot_dev:changeme@mysql/kegbot_dev
+      KEGBOT_DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
       KEGBOT_SETUP_ENABLED: "true"
       KEGBOT_DEBUG: "true"
 
@@ -42,9 +35,9 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 'changeme'
-      MYSQL_USER: 'kegbot_dev'
+      MYSQL_USER: 'kegbot'
       MYSQL_PASSWORD: 'changeme'
-      MYSQL_DATABASE: 'kegbot_dev'
+      MYSQL_DATABASE: 'kegbot'
     tmpfs:
       - /tmp
       - /var/tmp

@@ -32,7 +32,6 @@ Several features have been removed in order to lower code or documentation compl
 * Add drinks tab to drinker details page (:issue:`347`)
 * Allow deleting drinks from Kegbot Admin drinks page (:issue:`348`)
 * Don't require user to be active in order to view the user's details and sessions (:issue:`350`)
-* Twitter plugin: option to tweet/disable system session join events (:issue:`363`)
 * Add a create controller view (:issue:`364`)
 
 **Bugfixes**
@@ -48,7 +47,7 @@ Several features have been removed in order to lower code or documentation compl
 
 **Other Changes**
 
-* Upgraded to Python 3 and Django 2.
+* Upgraded to Python 3 and Django 3.
 * Internal: Improved static file serving (:issue:`368`)
 * Internal: Developer tests now use ``pytest``
 

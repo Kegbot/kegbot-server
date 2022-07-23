@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - master    
@@ -19,11 +21,6 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-
-      - uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-${{ hashFiles('Dockerfile') }}
 
       -
         name: Prepare
@@ -52,31 +49,40 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-        with:
-          driver-opts: network=host
 
+      # Set up the tag(s) we will build/push. The `metadata-action` action has
+      # a bunch of rules and a little language for specifying this. This should
+      # be how it's configured:
+      #
+      # =================== ============================= =============
+      # When                What                          Example
+      # =================== ============================= =============
+      # All runs            <target-branch-name>-dev      master-dev
+      # Merge to master     "latest"                      latest
+      # Merge tag           <tag>                         v1.2.3b1
+      # Merge semver tag    <semver>                      1.2.3
+      # Merge semver tag    <major>.<minor>               1.2     
       -
-        name: Set up docker tag names (local registry)
-        id: meta_local
-        uses: docker/metadata-action@v4
-        with:
-          images: localhost/${{ env.IMAGE_NAME }}
-
-      -
-        name: Set up public docker tag names (public registry)
-        id: meta_public
+        name: Set up docker tag names
+        id: docker_meta
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value={{base_ref}}-dev
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
 
       - name: Build locally
         uses: docker/build-push-action@v3
         with:
           context: .
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: false
-          tags: ${{ steps.meta_local.outputs.tags }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
           build-args: |
             BUILD_DATE=${{ steps.prepare.outputs.build_date }}
             GIT_SHORT_SHA=${GITHUB_SHA::8}
@@ -86,19 +92,19 @@ jobs:
             linux/arm/v7
 
       -
-        name: Login to DockerHub Registry
+        name: Login to registry
         if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
         run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
 
-      - name: Build and push to public registry
+      - name: Build and push to registry
         if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
         uses: docker/build-push-action@v3
         with:
           context: .
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
-          tags: ${{ steps.meta_public.outputs.tags }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
           build-args: |
             BUILD_DATE=${{ steps.prepare.outputs.build_date }}
             GIT_SHORT_SHA=${GITHUB_SHA::8}

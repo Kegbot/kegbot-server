@@ -16,5 +16,5 @@ Contents:
    settings
    commands
    developers
-   upgrade-kegbot
-   release-notes/index
+   upgrade
+   releases/index

@@ -3,7 +3,7 @@
 Changelog
 =========
 
-**Upgrade Procedure:** Please follow :ref:`upgrading-kegbot` for general upgrade steps.
+**Upgrade Procedure:** Please follow :ref:`upgrading` for general upgrade steps.
 
 
 Current Version (in development)
@@ -15,9 +15,9 @@ For a detailed look at what's new in version 1.3, see :ref:`version-13-release-n
 
 Several features have been removed in order to lower code or documentation complexity, reduce maintenance, or both.
 
-* Settings are no longer read from `local_settings.py` and must instead be supplied by env.
-* The `setup-kegbot.py` tool is no longer supported.
-* Built-in production support and documentation for `supervisor` and `nginx` has been dropped.
+* Settings are no longer read from ``local_settings.py`` and must instead be supplied by env.
+* The ``setup-kegbot.py`` tool is no longer supported.
+* Built-in support and documentation for ``supervisor`` and ``nginx`` has been dropped.
 * The Twitter, Foursquare, and Untappd plugins have been removed.
 * Optional support for Sentry has been removed.
 * Optional support for django-storages has been removed.

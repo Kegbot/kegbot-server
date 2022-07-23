@@ -11,25 +11,20 @@ and managing kegged beverages.
 Super quick start instructions:
 
 ```
-$ cd git/kegbot-server
-$ poetry install
-$ poetry shell
-(kegbot-server)
-$ KEGBOT_DATABASE_URL=mysql://root@localhost/kegbot_dev kegbot runserver
-Development server is running at http://localhost:8000/
+$ docker-compose up
+$ open http://localhost:8000/
 ```
 
-For much more detail, see the complete [Kegbot Server documentation](https://kegbot-server.readthedocs.io/en/latest/).
+For much more detail, see the complete [Kegbot Server documentation](https://docs.kegbot.org/projects/kegbot-server/en/latest/).
 
 
 ## Documentation and Help
 
-* Main project page: https://kegbot.org
-* Documentation: https://kegbot-server.readthedocs.io/en/latest/
+* Main project page: https://kegbot.org/
+* Docs: https://docs.kegbot.org/
 * Discussion forum: https://forum.kegbot.org/
 * Discusion Slack group: [Slack link](https://join.slack.com/t/kegbot/shared_invite/zt-3t6rpu9t-AXLNNmL0vPelsbcU6afvjQ)
-* [@kegbot](http://twitter.com/kegbot) on
-Twitter
+* [@kegbot](http://twitter.com/kegbot) on Twitter
 
 
 ## Related Projects

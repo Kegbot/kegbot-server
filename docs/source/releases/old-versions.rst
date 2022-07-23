@@ -27,7 +27,7 @@ Kegbot Server::
   (kb) $ pip install -U kegbot
   (kb) $ kegbot upgrade
 
-See :ref:`upgrading-kegbot` for general instructions.
+See :ref:`upgrading` for general instructions.
 
 .. _old_changelog:
 
@@ -304,7 +304,7 @@ Version 0.9.7 (2013-01-10)
 --------------------------
 
 .. note::
-  This update requires a schema migration. See :ref:`upgrading-kegbot`.
+  This update requires a schema migration. See :ref:`upgrading`.
 
 * New tool: ``setup-kegbot.py``, to assist with first-time setup.
 * New web-based setup wizard, for finishing first-time setup.

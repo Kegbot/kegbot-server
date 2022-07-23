@@ -12,6 +12,39 @@ Available settings
 
 These values can be set in the shell environment of the server program.
 
+Required settings
+~~~~~~~~~~~~~~~~~
+
+These settings have no default and must be set by you.
+
+.. data:: KEGBOT_DATABASE_URL
+
+  Credentials to the Kegbot database. Should be a value of the form
+  ``mysql://USER:PASSWORD@HOST:PORT/NAME`` or ``postgres://USER:PASSWORD@HOST:PORT/NAME``.
+  ``PORT`` and ``PASSWORD`` are optional.
+
+  **Example:** ``mysql://kegbot@localhost/kegbot``
+
+.. data:: KEGBOT_REDIS_URL
+
+  URL to the Kegbot Redis instance, in the format ``redis://:PASSWORD@HOST:PORT/DATABASE``.
+  ``PASSWORD`` and ``PORT`` are optional.
+
+  **Example:** ``redis://localhost/0``
+
+.. data:: KEGBOT_SECRET_KEY
+
+    A random value, like a password, that will be used to generate and protect
+    certain values used by the web service, such as cookies. Changing this
+    value will cause all users to be logged out and will invalidate any
+    pending invitations. Generally, you should only change this value if it has
+    become compromised.
+
+Optional settings
+~~~~~~~~~~~~~~~~~
+
+These settings all have defaults, which you may override.
+
 .. data:: KEGBOT_ENV
 
   Controls debug mode and other settings. Should be ``production`` in production;
@@ -21,14 +54,6 @@ These values can be set in the shell environment of the server program.
 
   Filesystem path where Kegbot-specific data is stored and managed.
   Default: ``/kegbot-data``.
-
-.. data:: KEGBOT_DATABASE_URL
-
-  Credentials to the Kegbot database. Should be a value of the form
-  ``mysql://USER:PASSWORD@HOST:PORT/NAME`` or ``postgres://USER:PASSWORD@HOST:PORT/NAME``.
-  ``PORT`` and ``PASSWORD`` are optional.
-
-  **Example:** ``mysql://kegbot@localhost/kegbot``
 
 .. data:: KEGBOT_EMAIL_FROM_ADDRESS
 
@@ -43,34 +68,12 @@ These values can be set in the shell environment of the server program.
   **Gmail Example:** ``submission://kegbot%40kegbot.org:secretpassword@smtp.gmail.com``
   **Local Relay Example:** ``smtp:``
 
-.. data:: KEGBOT_REDIS_URL
-
-  URL to the Kegbot Redis instance, in the format ``redis://:PASSWORD@HOST:PORT/DATABASE``. ``PASSWORD`` and ``PORT`` are optional.
-
-  **Example:** ``redis://localhost/0``
-
-.. data:: KEGBOT_SECRET_KEY
-
-    A random value, like a password, that will be used to generate and protect
-    certain values used by the web service, such as cookies. Changing this
-    value will cause all users to be logged out and will invalidate any
-    pending invitations. Generally, you should only change this value if it has
-    become compromised.
-
 .. data:: KEGBOT_INSECURE_SHARED_API_KEY
 
     If set, a random value, like a password, that will always be accepted as
     an API key. As the name suggests, it is insecure to use this feature,
     which is intended only for use in special standalone/embedded installs
     (e.g. a single-user, offline Raspberry Pi) where there is no risk of exposure.
-
-.. data:: KEGBOT_SETUP_ENABLED
-
-    If set to ``true``, the server will enable "setup mode". The server can
-    only be configured and upgraded when this mode is enabled. For security
-    reasons, this mode is disabled by default and must be explicitly enabled
-    by an administrator.
-
 
 Configuration file
 ------------------

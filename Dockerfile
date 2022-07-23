@@ -56,8 +56,5 @@ RUN echo "GIT_SHORT_SHA=${GIT_SHORT_SHA}" \
 VOLUME  ["/kegbot-data"]
 
 EXPOSE 8000
-CMD [ \
-   "gunicorn", \
-   "pykeg.web.wsgi:application", \
-   "--config=python:pykeg.web.gunicorn_conf" \
-]
+ENTRYPOINT ["/app/bin/kegbot"]
+CMD ["run_server"]

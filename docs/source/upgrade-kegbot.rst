@@ -14,23 +14,18 @@ first.
 Upgrade procedure
 -----------------
 
-.. warning::
-  Always make a backup of your data prior to upgrading Kegbot.
+First, ensure the system has been stopped::
 
-1. If running from git, do a ``git pull``.
+    $ docker-compose down
 
-2. Step in to your virtualenv and upgrade to the new version.
+Next, restart just the database and redis::
 
-  If you used ``pip`` last time::
+    $ docker-compose up -d mysql redis
 
-    (kb) $ pip install --upgrade kegbot
+Next, run the upgrade command::
 
-  If you used ``setup.py`` last time::
+    $ docker-compose run kegbot upgrade
 
-    (kb) $ ./setup.py develop
-
-3. Run the upgrade script::
-
-    (kb) $ kegbot upgrade
-
-4. Restart the Kegbot web server and Celery.
+You will see upgrade progress, followed by the message  ``Upgrade complete!``. If
+you see the message ``Version <version> is already installed.``, then no upgrade
+was needed or performed.

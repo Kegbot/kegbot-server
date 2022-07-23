@@ -14,6 +14,7 @@ Contents:
    overview
    install
    settings
+   commands
    developers
    upgrade-kegbot
    release-notes/index

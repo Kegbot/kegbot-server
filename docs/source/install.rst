@@ -16,9 +16,11 @@ Create the data directory
 -------------------------
 
 Kegbot needs a place to store certain data, like image uploads. Create a place
-on your filesystem and remember the path; we'll need this in the next step::
+on your filesystem and remember the path; we'll need this in the next step:
 
- $ mkdir /home/user/kegbot-data
+.. code-block:: console
+    
+    $ mkdir /home/user/kegbot-data
 
 
 Create the config file
@@ -107,20 +109,26 @@ This will cause the Kegbot server to launch with various setup and debug
 features disabled, for security and performance purposes.
 
 Finally, restart the services with the ``-d`` (detach) flag to launch
-them in the background::
+them in the background:
 
+.. code-block:: console
+    
     $ docker-compose up -d
 
-This time, you should see only a few brief lines of output::
+This time, you should see only a few brief lines of output:
 
+.. code-block:: console
+    
     [+] Running 4/4
     ⠿ Container kegbot-server-kegbot-1   Started             0.6s
     ⠿ Container kegbot-server-mysql-1    Started             0.6s
     ⠿ Container kegbot-server-redis-1    Started             0.6s
     ⠿ Container kegbot-server-workers-1  Started             0.6s
 
-You can verify everything is running with the ``docker-compose ps`` command::
-    
+You can verify everything is running with the ``docker-compose ps`` command:
+
+.. code-block:: console
+        
     $ docker-compose ps
     NAME                      COMMAND                  SERVICE     STATUS      PORTS
     kegbot-server-kegbot-1    "gunicorn pykeg.web.…"   kegbot      running     0.0.0.0:8000->8000/tcp

@@ -11,45 +11,53 @@ Local environment
 
 Most likely, you'll want to run kegbot locally (outside of Docker) while
 developing. We use `Poetry` to manage the Python environment. Create
-your development environment this way::
+your development environment this way:
+
+.. code-block:: console
 
   $ poetry install
 
 This will fetch and install all dependencies, and create a virtual Python
 environment.
 
-Whenever you want to run code or tests, step into a development shell::
+Whenever you want to run code or tests, step into a development shell:
+
+.. code-block:: console
 
   $ poetry shell
-  (kegbot-server)
-  $ ./bin/kegbot version
+  (kegbot-server) $ ./bin/kegbot version
   1.3.0
 
 Running tests
 -------------
 
-We use `pytest` to run tests. Run all tests this way::
+We use `pytest` to run tests. Run all tests this way:
 
-  (kegbot-server)
-  $ pytest
+.. code-block:: console
+
+  (kegbot-server) $ pytest
 
 
 Code format
 -----------
 
-We use `black` to format all code. Run it this way::
+We use `black` to format all code. Run it this way:
 
-  $ black pykeg/
+.. code-block:: console
+
+  $ poetry shell
+  (kegbot-server) $ black pykeg/
 
 
 Building docs
 -------------
 
-We use `Sphinx` to build docs. You can create them this way::
+We use `Sphinx` to build docs. You can create them this way:
+
+.. code-block:: console
 
   $ poetry shell
-  (kegbot-server)
-  $ cd docs
-  $ make html
-  $ open build/html/index.html
+  (kegbot-server) $ cd docs
+  (kegbot-server) $ make html
+  (kegbot-server) $ open build/html/index.html
 

@@ -16,7 +16,7 @@ services:
       KEGBOT_ENV: "debug"
 
   workers:
-    image: kegbot-server
+    image: kegbot/server:1.3
     restart: unless-stopped
     command: bin/kegbot run_workers
     volumes:

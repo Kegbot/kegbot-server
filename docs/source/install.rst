@@ -31,7 +31,7 @@ Kegbot and its essential services will be configured and launched using the
 
 Create a new filed called ``docker-compose.yml`` starting with the following contents:
 
-.. include:: ../../docker-compose.yml
+.. include:: ./docker-compose.example.yml
    :literal:
 
 .. note::

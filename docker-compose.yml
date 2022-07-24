@@ -5,10 +5,12 @@
 # as well.
 
 version: '3'
+
 services:
   kegbot:
     image: kegbot-server
     restart: unless-stopped
+    command: run_server
     build: .
     ports:
       - "8000:8000"
@@ -25,7 +27,7 @@ services:
   workers:
     image: kegbot-server
     restart: unless-stopped
-    command: bin/kegbot run_workers
+    command: run_workers
     volumes:
       - kegbot-data:/kegbot-data
     tmpfs:
@@ -34,7 +36,6 @@ services:
     environment:
       KEGBOT_REDIS_URL: redis://redis:6379/0
       KEGBOT_DATABASE_URL: mysql://kegbot_dev:changeme@mysql/kegbot_dev
-      KEGBOT_SETUP_ENABLED: "true"
       KEGBOT_DEBUG: "true"
 
   mysql:

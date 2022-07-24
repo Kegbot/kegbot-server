@@ -303,9 +303,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "pykeg.api.permissions.IsAuthenticated",
     ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "pykeg.api.auth.ApiKeyBasicAuth",
         "rest_framework.authentication.SessionAuthentication",
-    ],
+    ),
 }
 
 CORS_ALLOWED_ORIGINS = [

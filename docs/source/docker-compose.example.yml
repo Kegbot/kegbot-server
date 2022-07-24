@@ -1,8 +1,10 @@
 version: '3'
+
 services:
   kegbot:
-    image: kegbot/server:1.3
+    image: kegbot/server:stable
     restart: unless-stopped
+    command: run_server
     ports:
       - "8000:8000"
     volumes:
@@ -11,24 +13,25 @@ services:
       - /tmp
       - /var/tmp
     environment:
-      KEGBOT_REDIS_URL: redis://redis:6379/0
-      KEGBOT_DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
       KEGBOT_ENV: "debug"
+      KEGBOT_SECRET_KEY: "changeme"
 
   workers:
-    image: kegbot/server:1.3
+    image: kegbot/server:stable
     restart: unless-stopped
-    command: bin/kegbot run_workers
+    command: run_workers
     volumes:
       - kegbot-data:/kegbot-data
     tmpfs:
       - /tmp
       - /var/tmp
     environment:
-      KEGBOT_REDIS_URL: redis://redis:6379/0
-      KEGBOT_DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
-      KEGBOT_SETUP_ENABLED: "true"
-      KEGBOT_DEBUG: "true"
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
+      KEGBOT_ENV: "debug"
+      KEGBOT_SECRET_KEY: "changeme"
 
   mysql:
     image: mysql:latest

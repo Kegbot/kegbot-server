@@ -50,7 +50,7 @@ configuration when needed.
 
 .. data:: run_server
 
-  Runs the internal web server process. See also ``run_all``.
+  Runs the internal web server process.
 
 .. data:: run_workers
 
@@ -61,5 +61,4 @@ configuration when needed.
 
     Runs both the web service process (``run_server``) and the worker process
     (``run_workers``).
-
 

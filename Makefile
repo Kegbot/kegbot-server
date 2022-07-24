@@ -1,4 +1,4 @@
-fixtures: export KEGBOT_DATABASE_URL = sqlite:///test-db.sqlite
+fixtures: export DATABASE_URL = sqlite:///test-db.sqlite
 fixtures: export KEGBOT_BASE_URL = http://fixture.example.com/
 fixtures: export KEGBOT_ENV = test
 fixtures:

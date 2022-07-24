@@ -40,8 +40,8 @@ jobs:
       - name: Run Docker on tmpfs
         uses: JonasAlfredsson/docker-on-tmpfs@v1
         with:
-          tmpfs_size: 5
-          swap_size: 4
+          tmpfs_size: 8
+          swap_size: 8
           swap_location: '/mnt/swapfile'
 
       - name: Set up QEMU
@@ -89,6 +89,7 @@ jobs:
             VERSION=${{ steps.prepare.outputs.version }}
           platforms: |
             linux/amd64
+            linux/arm64
             linux/arm/v7
 
       -
@@ -111,4 +112,5 @@ jobs:
             VERSION=${{ steps.prepare.outputs.version }}
           platforms: |
             linux/amd64
+            linux/arm64
             linux/arm/v7

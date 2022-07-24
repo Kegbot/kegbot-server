@@ -18,5 +18,10 @@ class Command(RunnerCommand):
     def get_commands(self, options):
         ret = []
         extra_options = options.get("gunicorn_options", "")
-        ret.append(("guincorn", "gunicorn pykeg.web.wsgi:application " + extra_options))
+        command_line = (
+            "gunicorn pykeg.web.wsgi:application "
+            "--config=python:pykeg.web.gunicorn_conf "
+            f"{extra_options}"
+        ).strip()
+        ret.append(("guincorn", command_line))
         return ret

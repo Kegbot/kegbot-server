@@ -55,9 +55,7 @@ RUN DATABASE_URL=mysql:// \
 ARG GIT_SHORT_SHA="unknown"
 ARG VERSION="unknown"
 ARG BUILD_DATE="unknown"
-RUN echo "GIT_SHORT_SHA=${GIT_SHORT_SHA}" \
-   && echo "VERSION=${VERSION}" \
-   && echo "BUILD_DATE=${BUILD_DATE}" /etc/kegbot-version
+RUN echo "GIT_SHORT_SHA=${GIT_SHORT_SHA}\nVERSION=${VERSION}\nBUILD_DATE=${BUILD_DATE}" > /etc/kegbot-version
 
 VOLUME  ["/kegbot-data"]
 

@@ -6,14 +6,23 @@ import signal
 import subprocess
 import sys
 import time
-from builtins import object
+from importlib import metadata as importlib_metadata
+
+from pykeg.core.util import get_runtime_version_info
 
 logger = logging.getLogger(__name__)
 
 POLL_INTERVAL_SECONDS = 1.0
 
 
-class Runner(object):
+def get_version():
+    try:
+        return importlib_metadata.version("kegbot")
+    except importlib_metadata.PackageNotFoundError:
+        return "0.0.0"
+
+
+class Runner:
     """Runs several commands together as a process group, acting as a watchdog
     while running.
 
@@ -31,6 +40,11 @@ class Runner(object):
         self.running = False
         self.logger = logger
 
+    def print_startup_line(self):
+        runtime_info = " ".join([f"{k}={v}" for k, v in get_runtime_version_info().items()])
+        runtime_info = f"server_version={get_version()} " + runtime_info
+        logger.info(f"{sys.argv[0]} {sys.argv[1]}: starting, {runtime_info.strip()}")
+
     def is_running(self):
         return self.running
 
@@ -44,6 +58,7 @@ class Runner(object):
         """Launches all commands, watching their pids."""
         assert not self.is_running(), "Already running!"
         self.running = True
+        self.print_startup_line()
 
         self.logger.info("Starting commands from pid={}".format(os.getpid()))
         dev_null_name = getattr(os, "devnull", "/dev/null")

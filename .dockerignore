@@ -2,7 +2,7 @@
 .github/
 build/
 *.egg-info
-docs/build/
+docs/
 dist/
 kegbot-data/
 staticfiles/

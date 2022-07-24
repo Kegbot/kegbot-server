@@ -2,6 +2,7 @@ name: Docker Build
 
 env:
   IMAGE_NAME: kegbot/server
+  REGISTRY: ghcr.io
 
 on:
   push:
@@ -33,7 +34,6 @@ jobs:
           else
             echo ::set-output name=version::snapshot
           fi
-          echo ::set-output name=build_archs::linux/amd64
           echo ::set-output name=build_date::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
       # Work around an armv7 -> qemu bug caused during rust compilation. Yeah.. See repo.
@@ -67,7 +67,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=dev
             type=raw,value=latest,enable={{is_default_branch}}
@@ -83,6 +83,7 @@ jobs:
           cache-to: type=gha,mode=max
           push: false
           tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_DATE=${{ steps.prepare.outputs.build_date }}
             GIT_SHORT_SHA=${GITHUB_SHA::8}
@@ -92,13 +93,16 @@ jobs:
             linux/arm64
             linux/arm/v7
 
-      -
-        name: Login to registry
-        if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
-        run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+      - name: Log in to container registry
+        if: ${{ '${{ secrets.GITHUB_TOKEN }}' != '' }}
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push to registry
-        if: ${{ '${{ secrets.DOCKER_HUB_PASSWORD }}' != '' && '${{ secrets.DOCKER_HUB_USERNAME }}' != '' }}
+      - name: Build and push to container registry
+        if: ${{ '${{ secrets.GITHUB_TOKEN }}' != '' }}
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -106,6 +110,7 @@ jobs:
           cache-to: type=gha,mode=max
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_DATE=${{ steps.prepare.outputs.build_date }}
             GIT_SHORT_SHA=${GITHUB_SHA::8}

@@ -48,6 +48,8 @@ INSTALLED_APPS = (
     "bootstrap_pagination",
     "imagekit",
     "gunicorn",
+    "corsheaders",
+    "rest_framework",
 )
 
 if KEGBOT_ENV == ENV_TEST:
@@ -122,6 +124,7 @@ ALLOWED_HOSTS = ["*"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "pykeg.web.middleware.ErrorLoggingMiddleware",
@@ -293,3 +296,27 @@ TEMPLATES = [
 TIME_ZONE = "UTC"
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "pykeg.api.pagination.CursorPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_PERMISSION_CLASSES": [
+        "pykeg.api.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "pykeg.api.auth.ApiKeyBasicAuth",
+        "rest_framework.authentication.SessionAuthentication",
+    ),
+}
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:1234",
+    "http://127.0.0.1:1234",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "localhost:1234",
+]
+CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_SAMESITE = None
+
+APPEND_SLASH = True

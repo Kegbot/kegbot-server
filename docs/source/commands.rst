@@ -16,7 +16,7 @@ the following general invocation:
 
     $ docker-compose run kegbot <command-name> [.. additional args ..]
 
-For an example, see the :ref:`upgrading-kegbot` section.
+For an example, see the :ref:`upgrading` section.
 
 Available commands
 ------------------
@@ -30,7 +30,7 @@ Kegbot Server.
 .. data:: upgrade
 
   Executes the upgrade process. Should only be called while the web process is
-  stopped. See :ref:`upgrading-kegbot`.
+  stopped. See :ref:`upgrading`.
 
 .. data:: regen_stats
 

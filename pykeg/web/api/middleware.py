@@ -32,7 +32,7 @@ class ApiRequestMiddleware(object):
     def __call__(self, request):
         response = self.get_response(request)
 
-        if util.is_api_request(request):
+        if util.is_api_v1_request(request):
             if not isinstance(response, HttpResponse):
                 data = util.prepare_data(response)
                 data["meta"] = {"result": "ok"}
@@ -43,8 +43,8 @@ class ApiRequestMiddleware(object):
         return response
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        request.is_kb_api_request = util.is_api_request(request)
-        if not request.is_kb_api_request:
+        request.is_api_v1_request = util.is_api_v1_request(request)
+        if not request.is_api_v1_request:
             # Not an API request. Skip me.
             return None
 
@@ -77,7 +77,7 @@ class ApiRequestMiddleware(object):
 
     def process_exception(self, request, exception):
         """Wraps exceptions for API requests."""
-        if util.is_api_request(request):
+        if util.is_api_v1_request(request):
             return util.wrap_exception(request, exception)
         return None
 

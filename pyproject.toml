@@ -51,6 +51,8 @@ gevent = "*"
 psycopg2 = "*"
 future = "^0.18.2"
 freezegun = "^1.2.1"
+djangorestframework = "^3.13.1"
+django-cors-headers = "^3.13.0"
 
 [tool.poetry.dev-dependencies]
 black = "*"

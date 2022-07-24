@@ -1,4 +1,4 @@
-.. _upgrading-kegbot:
+.. _upgrading:
 
 Upgrading
 =========

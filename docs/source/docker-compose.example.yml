@@ -2,7 +2,7 @@ version: '3'
 
 services:
   kegbot:
-    image: kegbot/server:stable
+    image: ghcr.io/kegbot/server:stable
     restart: unless-stopped
     command: run_server
     ports:
@@ -19,7 +19,7 @@ services:
       KEGBOT_SECRET_KEY: "changeme"
 
   workers:
-    image: kegbot/server:stable
+    image: ghcr.io/kegbot/server:stable
     restart: unless-stopped
     command: run_workers
     volumes:

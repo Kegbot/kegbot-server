@@ -13,8 +13,8 @@ services:
       - /tmp
       - /var/tmp
     environment:
-      KEGBOT_REDIS_URL: redis://redis:6379/0
-      KEGBOT_DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
       KEGBOT_ENV: "debug"
 
   workers:
@@ -27,8 +27,8 @@ services:
       - /tmp
       - /var/tmp
     environment:
-      KEGBOT_REDIS_URL: redis://redis:6379/0
-      KEGBOT_DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
       KEGBOT_ENV: "debug"
 
   mysql:

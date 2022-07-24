@@ -18,7 +18,7 @@ Required settings
 These settings have no default and must be set by you. (When you use ``docker-compose``
 with the example configuration in these docs, all required values will be set.)
 
-.. data:: KEGBOT_DATABASE_URL
+.. data:: DATABASE_URL
 
   Credentials to the Kegbot database. Should be a value of the form
   ``mysql://USER:PASSWORD@HOST:PORT/NAME`` or ``postgres://USER:PASSWORD@HOST:PORT/NAME``.
@@ -26,7 +26,7 @@ with the example configuration in these docs, all required values will be set.)
 
   **Example:** ``mysql://kegbot@localhost/kegbot``
 
-.. data:: KEGBOT_REDIS_URL
+.. data:: REDIS_URL
 
   URL to the Kegbot Redis instance, in the format ``redis://:PASSWORD@HOST:PORT/DATABASE``.
   ``PASSWORD`` and ``PORT`` are optional.

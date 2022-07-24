@@ -65,14 +65,14 @@ def is_setup():
     return True
 
 
-Setting("KEGBOT_BASE_URL", "http://test.example.com" if IS_RUNNING_PYTEST else "")
+Setting("DATABASE_URL", os.getenv("DATABASE_URL", "mysql://root@localhost/kegbot"))
+Setting("REDIS_URL", os.getenv("REDIS_URL", "redis://localhost:6379/0"))
 Setting("KEGBOT_ENV", "test" if IS_RUNNING_PYTEST else ENV_DEBUG)
+Setting("KEGBOT_BASE_URL", "http://test.example.com" if IS_RUNNING_PYTEST else "")
 Setting("KEGBOT_EMAIL_FROM_ADDRESS", "")
 Setting("KEGBOT_EMAIL_URL", os.getenv("EMAIL_URL", "smtp:"))
 Setting("KEGBOT_DATA_DIR", "/kegbot-data")
 Setting("KEGBOT_IN_DOCKER", False, typefn=boolstr)
 Setting("KEGBOT_SECRET_KEY", "not-configured")
 Setting("KEGBOT_INSECURE_SHARED_API_KEY", "")
-Setting("KEGBOT_DATABASE_URL", os.getenv("DATABASE_URL", "mysql://root@localhost/kegbot"))
-Setting("KEGBOT_REDIS_URL", os.getenv("REDIS_URL", "redis://localhost:6379/0"))
 Setting("KEGBOT_ENABLE_V2_API", True if IS_RUNNING_PYTEST else False, typefn=boolstr)

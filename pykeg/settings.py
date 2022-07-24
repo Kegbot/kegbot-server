@@ -24,7 +24,7 @@ DEBUG = KEGBOT_ENV != ENV_PRODUCTION
 
 SECRET_KEY = KEGBOT["KEGBOT_SECRET_KEY"]
 DATABASES = {
-    "default": dj_database_url.parse(KEGBOT["KEGBOT_DATABASE_URL"]),
+    "default": dj_database_url.parse(KEGBOT["DATABASE_URL"]),
 }
 
 INSTALLED_APPS = (
@@ -147,7 +147,7 @@ AUTHENTICATION_BACKENDS = ("pykeg.web.auth.local.LocalAuthBackend",)
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": KEGBOT["KEGBOT_REDIS_URL"],
+        "LOCATION": KEGBOT["REDIS_URL"],
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -165,8 +165,8 @@ KEGBOT_PLUGINS = [
 
 # Celery
 
-BROKER_URL = KEGBOT["KEGBOT_REDIS_URL"]
-CELERY_RESULT_BACKEND = KEGBOT["KEGBOT_REDIS_URL"]
+BROKER_URL = KEGBOT["REDIS_URL"]
+CELERY_RESULT_BACKEND = KEGBOT["REDIS_URL"]
 
 CELERY_QUEUES = {
     "default": {"exchange": "default", "binding_key": "default"},
@@ -200,7 +200,7 @@ LOGGING = {
             "level": "INFO",
             "class": "pykeg.logging.handlers.RedisListHandler",
             "key": "kb:log",
-            "url": KEGBOT["KEGBOT_REDIS_URL"],
+            "url": KEGBOT["REDIS_URL"],
             "max_messages": 100,
         },
     },

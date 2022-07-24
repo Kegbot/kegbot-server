@@ -23,6 +23,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       DATABASE_URL: mysql://kegbot_dev:changeme@mysql/kegbot_dev
       KEGBOT_ENV: "debug"
+      KEGBOT_SECRET_KEY: "changeme"
 
   workers:
     image: kegbot-server
@@ -37,6 +38,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       DATABASE_URL: mysql://kegbot_dev:changeme@mysql/kegbot_dev
       KEGBOT_DEBUG: "true"
+      KEGBOT_SECRET_KEY: "changeme"
 
   mysql:
     image: mysql:latest

@@ -43,7 +43,13 @@ RUN poetry config virtualenvs.create false && poetry install -n
 # Install the app itself.
 ADD bin ./bin
 ADD pykeg ./pykeg
-RUN poetry run python bin/kegbot collectstatic --noinput -v 0
+
+# Collect static files. Use fake versions of required env variables
+# since they're not relevant at this step.
+RUN DATABASE_URL=mysql:// \
+   REDIS_URL=redis:// \
+   KEGBOT_SECRET_KEY=changeme \
+   poetry run python bin/kegbot collectstatic --noinput -v 0
 
 # Tag the build with build information.
 ARG GIT_SHORT_SHA="unknown"

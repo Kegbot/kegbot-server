@@ -11,14 +11,17 @@ import os
 import dj_database_url
 import dj_email_url
 
-from pykeg.config import ENV_PRODUCTION, ENV_TEST, all_values
+from pykeg import config
+from pykeg.config import ENV_PRODUCTION, ENV_TEST
 from pykeg.logging.logger import RedisLogger
 
 logging.setLoggerClass(RedisLogger)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-KEGBOT = all_values()
+config.validate()
+
+KEGBOT = config.all()
 KEGBOT_ENV = KEGBOT["KEGBOT_ENV"]
 DEBUG = KEGBOT_ENV != ENV_PRODUCTION
 

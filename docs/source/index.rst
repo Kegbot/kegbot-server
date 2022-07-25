@@ -14,6 +14,7 @@ Contents:
    overview
    install
    settings
+   management
    commands
    developers
    upgrade

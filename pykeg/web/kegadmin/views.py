@@ -37,12 +37,7 @@ logger = logging.getLogger(__name__)
 def dashboard(request):
     context = {}
 
-    email_backend = getattr(settings, "EMAIL_BACKEND", None)
-    email_configured = (
-        email_backend and email_backend != "django.core.mail.backends.dummy.EmailBackend"
-    )
-    email_configured = email_configured and settings.DEFAULT_FROM_EMAIL
-
+    email_configured = request.kbsite.email_is_configured()
     context["email_configured"] = email_configured
 
     if settings.BROKER_URL.startswith("redis:"):

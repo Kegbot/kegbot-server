@@ -363,6 +363,9 @@ class KegbotSite(models.Model):
             return None
         return Version(rows[0].get("server_version", "0.0.0"))
 
+    def email_is_configured(self):
+        return self.email_config.startswith("smtp") or self.email_config.startswith("submission")
+
     def get_stats(self):
         return Stats.get_latest_for_view()
 

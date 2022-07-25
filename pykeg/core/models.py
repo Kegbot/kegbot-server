@@ -333,10 +333,16 @@ class KegbotSite(models.Model):
     )
     enable_users = models.BooleanField(default=True, help_text="Enable user pour tracking.")
 
-    check_for_updates = models.BooleanField(
-        default=True,
-        help_text="Periodically check for updates "
-        '(<a href="https://kegbot.org/about/checkin">more info</a>)',
+    email_config = models.TextField(
+        default="console:",
+        help_text="Backend email configuration",
+        validators=[
+            RegexValidator(
+                regex="^(console|smtp|submission|dummy|memory):",
+                message="Please enter a valid email configuration URI",
+                code="bad_uri",
+            ),
+        ],
     )
 
     def __str__(self):

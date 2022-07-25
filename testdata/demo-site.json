@@ -120,7 +120,7 @@
     "timezone": "UTC",
     "enable_sensing": true,
     "enable_users": true,
-    "check_for_updates": true
+    "email_config": "console:"
   }
 },
 {

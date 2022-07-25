@@ -27,6 +27,7 @@ Several features have been removed in order to lower code or documentation compl
 
 **New features**
 
+* Email configuration is now managed in the admin dashboard.
 * Allow deletion of tokens from web (:issue:`337`)
 * Add mini (5L) keg size (:issue:`331`)
 * Add drinks tab to drinker details page (:issue:`347`)
@@ -44,6 +45,7 @@ Several features have been removed in order to lower code or documentation compl
 * Allow usernames with a period (:issue:`336`)
 * Update stats and sessions when admin deletes a drink (:issue:`371`)
 * Automatic checks for updates have been removed.
+* Fixed pagination not rendering correctly in the dashboard.
 
 **Other Changes**
 

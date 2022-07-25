@@ -400,7 +400,7 @@ class AdvancedSiteSettingsForm(forms.ModelForm):
         fields = (
             "session_timeout_minutes",
             "google_analytics_id",
-            "check_for_updates",
+            "email_config",
         )
 
     helper = FormHelper()
@@ -408,7 +408,7 @@ class AdvancedSiteSettingsForm(forms.ModelForm):
     helper.layout = Layout(
         Field("session_timeout_minutes"),
         Field("google_analytics_id"),
-        Field("check_for_updates"),
+        Field("email_config"),
         FormActions(
             Submit("submit", "Save Settings", css_class="btn-primary"),
         ),

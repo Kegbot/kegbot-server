@@ -254,14 +254,9 @@ KEGBOT_STATSD_TO_TOOLBAR = False
 NOTIFICATION_BACKENDS = ["pykeg.notification.backends.email.EmailNotificationBackend"]
 
 # E-mail
-if KEGBOT_ENV == ENV_TEST:
-    EMAIL_BACKEND = "django.core.mail.backends.dummy.EmailBackend"
-else:
-    email_config = dj_email_url.parse(KEGBOT["KEGBOT_EMAIL_URL"])
-    vars().update(email_config)
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "pykeg.core.mail.KegbotEmailBackend"
 
-DEFAULT_FROM_EMAIL = KEGBOT["KEGBOT_EMAIL_FROM_ADDRESS"]
+DEFAULT_FROM_EMAIL = "no-reply@example.com"
 EMAIL_SUBJECT_PREFIX = ""
 
 # Imagekit

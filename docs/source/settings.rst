@@ -56,19 +56,6 @@ These settings all have defaults, which you may override.
   Filesystem path where Kegbot-specific data is stored and managed.
   Default: ``/kegbot-data``.
 
-.. data:: KEGBOT_EMAIL_FROM_ADDRESS
-
-  The "From:" address to use in emails from the system. No default.
-
-.. data:: KEGBOT_EMAIL_URL
-
-  SMTP configuration URL. Should be a value in the form
-  ``smtp://USER:PASSWORD@HOST:PORT`` or ``submission://USER:PASSWORD@HOST:PORT``.
-  Make sure to URL encode any special characters in USER and PASSWORD.
-
-  **Gmail Example:** ``submission://kegbot%40kegbot.org:secretpassword@smtp.gmail.com``
-  **Local Relay Example:** ``smtp:``
-
 .. data:: KEGBOT_INSECURE_SHARED_API_KEY
 
     If set, a random value, like a password, that will always be accepted as

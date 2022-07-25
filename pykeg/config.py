@@ -136,10 +136,6 @@ define_setting(
     required=False,
 )
 
-define_setting("KEGBOT_EMAIL_FROM_ADDRESS", default="", required=False)
-
-define_setting("KEGBOT_EMAIL_URL", default=os.getenv("EMAIL_URL", "smtp:"), required=False)
-
 define_setting("KEGBOT_DATA_DIR", default="/kegbot-data", required=False)
 
 define_setting("KEGBOT_IN_DOCKER", default=False, typefn=boolstr, required=False)

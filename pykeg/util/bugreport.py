@@ -1,19 +1,15 @@
 import datetime
 import json
 import os
-import stat
 import subprocess
 import sys
-from builtins import input
-from io import StringIO
 
 import isodate
 import redis
-import requests
 
 from pykeg.core.util import get_version
 
-SEPARATOR = "-" * 72 + "\n"
+SEPARATOR = "-" * 100 + "\n"
 
 
 def writeline(fd, data):
@@ -52,7 +48,11 @@ def writelog(fd, log):
 
 def get_output(cmd):
     try:
-        return subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True).strip()
+        return (
+            subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+            .decode("utf-8")
+            .strip()
+        )
     except subprocess.CalledProcessError as e:
         return "ERR ({})".format(e)
 
@@ -75,19 +75,24 @@ def bugreport(fd):
     writeline(fd, "\n")
 
     fd.write(SEPARATOR)
+    writeline(fd, "## `cat /etc/kegbot-version` output\n")
+    writeline(fd, get_output("cat /etc/kegbot-version"))
+    writeline(fd, "\n")
+
+    fd.write(SEPARATOR)
     writeline(fd, "## `pip freeze` output\n")
     writeline(fd, get_output("pip freeze"))
     writeline(fd, "\n")
 
     fd.write(SEPARATOR)
-    writeline(fd, "## `kegbot migrate --list` output\n")
-    writeline(fd, get_output("kegbot migrate --list --no-color --noinput"))
+    writeline(fd, "## `kegbot showmigrations` output\n")
+    writeline(fd, get_output("kegbot showmigrations --no-color"))
     writeline(fd, "\n")
 
     fd.write(SEPARATOR)
     writeline(fd, "## kegbot logs\n")
     try:
-        r = redis.Redis()
+        r = redis.Redis.from_url(os.getenv("REDIS_URL") or "redis://")
         logs = r.lrange("kb:log", 0, -1)
         for log in logs:
             try:
@@ -100,73 +105,14 @@ def bugreport(fd):
     writeline(fd, "\n")
 
     fd.write(SEPARATOR)
+    writeline(fd, "WARNING: There may be secrets/passwords above! Use caution if sharing.")
     writeline(fd, "\\m/ End of bugreport \\m/")
 
 
-def should_prompt():
-    if "--noinput" in sys.argv:
-        return False
-
-    mode = os.fstat(sys.stdin.fileno()).st_mode
-    if stat.S_ISFIFO(mode):
-        return False
-    elif stat.S_ISREG(mode):
-        return False
-    else:
-        return True
-
-
-def prompt_to_post():
-    sys.stderr.write("Bugreport collected!\n\n")
-
-    sys.stderr.write("Because bugreports can be quite large, we recommend posting it to\n")
-    sys.stderr.write("a pastebin rather than sharing directly on the Kegbot forum.\n\n")
-
-    sys.stderr.write("dpaste.com is a semi-public pastebin for sharing text files, which\n")
-    sys.stderr.write("this tool can automatically upload to. Please review the bugreport\n")
-    sys.stderr.write("for sensitive information before deciding to post.\n\n")
-
-    while True:
-        sys.stderr.write("Post this bugreport to dpaste.com for easy sharing (y/n)? ")
-        val = input()
-        val = val.strip().lower()
-        if not val or val[0] not in ("y", "n"):
-            sys.stderr.write('Please type "y" or "n" to continue.\n')
-            continue
-        break
-    return val[0] == "y"
-
-
-def post_report(value):
-    response = requests.post(
-        "http://dpaste.com/api/v2/", data={"content": value}, allow_redirects=False
-    )
-    result = response.headers.get("location", "unknown")
-    return result
-
-
 def take_bugreport():
-    prompt = should_prompt()
-
-    if prompt:
-        fd = StringIO()
-    else:
-        fd = sys.stdout
-
-    try:
-        bugreport(fd)
-
-        if prompt:
-            val = fd.getvalue()
-            print(val)
-            print("")
-            if prompt_to_post():
-                url = post_report(val)
-                sys.stderr.write("Bugreport posted: {}\n".format(url))
-        return 0
-    except KeyboardInterrupt:
-        sys.stderr.write("\nAlrighty then, I'll leave you alone...\n")
-        return 1
+    bugreport(sys.stdout)
+    print("")
+    return 0
 
 
 if __name__ == "__main__":

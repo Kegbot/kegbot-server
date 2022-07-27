@@ -41,7 +41,7 @@ ADD pykeg/__init__.py ./pykeg/
 RUN poetry config virtualenvs.create false && poetry install -n
 
 # Install the app itself.
-ADD bin ./bin
+ADD bin /usr/local/sbin/
 ADD pykeg ./pykeg
 
 # Collect static files. Use fake versions of required env variables
@@ -49,7 +49,7 @@ ADD pykeg ./pykeg
 RUN DATABASE_URL=mysql:// \
    REDIS_URL=redis:// \
    KEGBOT_SECRET_KEY=changeme \
-   poetry run python bin/kegbot collectstatic --noinput -v 0
+   kegbot collectstatic --noinput -v 0
 
 # Tag the build with build information.
 ARG GIT_SHORT_SHA="unknown"
@@ -60,5 +60,5 @@ RUN echo "GIT_SHORT_SHA=${GIT_SHORT_SHA}\nVERSION=${VERSION}\nBUILD_DATE=${BUILD
 VOLUME  ["/kegbot-data"]
 
 EXPOSE 8000
-ENTRYPOINT ["/app/bin/kegbot"]
+ENTRYPOINT ["/usr/local/sbin/kegbot"]
 CMD ["run_server"]

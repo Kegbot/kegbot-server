@@ -69,6 +69,13 @@ Advanced and experimental settings
 These settings control experimental features. They are subject to
 change and should only be needed by advanced users.
 
+.. data:: KEGBOT_MEDIA_URL
+    
+    If specified, images and other media served by Kegbot will
+    be prefixed by this URL. Otherwise, media will be served from
+    the same host as the server itself, under ``/media``. You may use
+    this setting to e.g. serve media links through a CDN.
+
 .. data:: KEGBOT_ENABLE_V2_API
 
     If set to ``true``, the new Kegbot Server API will be enabled (at

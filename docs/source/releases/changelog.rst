@@ -53,6 +53,7 @@ Several features have been removed in order to lower code or documentation compl
 * Upgraded to Python 3 and Django 3.
 * Internal: Improved static file serving (:issue:`368`)
 * Internal: Developer tests now use ``pytest``
+* Internal: Now using ``rq`` for worker queue
 
 Version 1.2.3 (2015-01-12)
 --------------------------

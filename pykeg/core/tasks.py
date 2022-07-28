@@ -1,16 +1,17 @@
 """Tasks for the Kegbot core."""
 
-from celery.utils.log import get_task_logger
+import logging
+
 from django.db import transaction
+from django_rq import job
 
 from pykeg import notification
 from pykeg.backup import backup
-from pykeg.celery import app
 from pykeg.plugin import util as plugin_util
 
 from . import stats
 
-logger = get_task_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def schedule_tasks(events):
@@ -23,7 +24,7 @@ def schedule_tasks(events):
     notification.handle_new_system_events(events)
 
 
-@app.task(name="build_stats", queue="stats", expires=60 * 60)
+@job("stats")
 def build_stats(drink_id, rebuild_following):
     logger.info("build_stats drink_id={} rebuild_following={}".format(drink_id, rebuild_following))
     with transaction.atomic():
@@ -33,8 +34,8 @@ def build_stats(drink_id, rebuild_following):
             stats.build_for_id(drink_id)
 
 
-@app.task(name="build_backup", bind=True)
-def build_backup(self):
+@job
+def build_backup():
     logger.info("build_backup")
     with transaction.atomic():
         backup.backup()

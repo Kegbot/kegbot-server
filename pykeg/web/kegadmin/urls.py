@@ -56,7 +56,6 @@ urlpatterns = [
     path("email/", views.email, name="kegadmin-email"),
     path("logs/", views.logs, name="kegadmin-logs"),
     path("users/create/", views.add_user, name="kegadmin-add-user"),
-    path("system/", views.system_status, name="kegadmin-system-status"),
 ]
 
 if util.get_plugins():

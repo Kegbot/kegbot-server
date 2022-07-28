@@ -1,4 +1,5 @@
 import datetime
+import logging
 from importlib import import_module
 
 from django.conf import settings
@@ -73,12 +74,4 @@ def is_stale(time, now=None):
 
 
 def get_logger(name):
-    try:
-        from celery.utils.log import get_task_logger
-
-        logger = get_task_logger(name)
-    except ImportError:
-        import logging
-
-        logger = logging.getLogger(name)
-    return logger
+    return logging.getLogger(name)

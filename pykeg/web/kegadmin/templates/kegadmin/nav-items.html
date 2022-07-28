@@ -45,7 +45,7 @@
 {% navitem "kegadmin-bugreport" "Bugreport" %}
 {% navitem "kegadmin-export" "Export Data" %}
 {% if KEGBOT_ENABLE_ADMIN %}
-{% navitem "kegadmin-system-status" "System Status" %}
 <li><a href='{% url "admin:index" %}' target="_blank">Database Admin &raquo;</a></li>
+<li><a href='/admin/rq' target="_blank">Workers &raquo;</a></li>
 {% endif %}
 <li><a href='https://github.com/Kegbot/kegbot-server/issues' target="_blank">Report a Bug &raquo;</a></li>

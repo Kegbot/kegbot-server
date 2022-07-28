@@ -21,7 +21,6 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.10.4"
-celery = "*"
 coloredlogs = "*"
 dj-database-url = "*"
 dj-email-url = "*"
@@ -53,6 +52,8 @@ future = "^0.18.2"
 freezegun = "^1.2.1"
 djangorestframework = "^3.13.1"
 django-cors-headers = "^3.13.0"
+rq = "^1.10.1"
+django-rq = "^2.5.1"
 
 [tool.poetry.dev-dependencies]
 black = "*"

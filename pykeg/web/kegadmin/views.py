@@ -20,7 +20,6 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from pykeg.backup import backup
-from pykeg.celery import app as celery_app
 from pykeg.core import models, tasks
 from pykeg.core.util import get_runtime_version_info
 from pykeg.logging.handlers import RedisListHandler
@@ -40,12 +39,11 @@ def dashboard(request):
     email_configured = request.kbsite.email_is_configured()
     context["email_configured"] = email_configured
 
-    if settings.BROKER_URL.startswith("redis:"):
-        try:
-            r = redis.StrictRedis.from_url(settings.BROKER_URL)
-            r.ping()
-        except redis.RedisError as e:
-            context["redis_error"] = e.message if e.message else "Unknown error."
+    try:
+        r = redis.StrictRedis.from_url(settings.KEGBOT["REDIS_URL"])
+        r.ping()
+    except redis.RedisError as e:
+        context["redis_error"] = e.message if e.message else "Unknown error."
 
     active_users = models.User.objects.filter(is_active=True).exclude(username="guest")
     context["num_users"] = len(active_users)
@@ -200,41 +198,6 @@ def bugreport(request):
     context["error"] = error
 
     return render(request, "kegadmin/bugreport.html", context=context)
-
-
-@staff_member_required
-def system_status(request):
-    context = {}
-
-    context["runtime_info"] = get_runtime_version_info()
-
-    try:
-        inspector = celery_app.control.inspect()
-        pings = inspector.ping() or {}
-        stats = inspector.stats() or {}
-        queues = inspector.active_queues() or {}
-    except redis.RedisError as e:
-        context["error"] = e
-
-    status = {}
-    if not pings and "error" not in context:
-        context["error"] = "No response from workers. Not running?"
-    else:
-        for k, v in list(pings.items()):
-            status[k] = {
-                "status": "ok" if v.get("ok") else "unknown",
-            }
-        for k, v in list(stats.items()):
-            if k in status:
-                status[k]["stats"] = v
-        for k, v in list(queues.items()):
-            if k in status:
-                status[k]["active_queues"] = v
-
-    context["worker_status"] = status
-    context["raw_stats"] = kbjson.dumps(context["worker_status"], indent=2)
-
-    return render(request, "kegadmin/system_status.html", context=context)
 
 
 @staff_member_required

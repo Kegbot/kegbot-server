@@ -38,6 +38,7 @@ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.KEGBOT_ENABLE_ADMIN:
     urlpatterns += [
+        path("admin/rq/", include("django_rq.urls")),
         path("admin/", admin.site.urls),
     ]
 

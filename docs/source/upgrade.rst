@@ -14,15 +14,31 @@ first.
 Upgrade procedure
 -----------------
 
+Step 1
+~~~~~~
+
 First, ensure the system has been stopped::
 
     $ docker-compose down
+
+Step 2
+~~~~~~
+
+Next, fetch the latest images::
+
+    $ docker-compose build --pull
+
+Step 3
+~~~~~~
 
 Next, restart just the database and redis::
 
     $ docker-compose up -d mysql redis
 
-Next, run the upgrade command::
+Step 4
+~~~~~~
+
+Finally, run the upgrade command::
 
     $ docker-compose run kegbot upgrade
 

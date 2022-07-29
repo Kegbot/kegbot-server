@@ -106,7 +106,7 @@
   "pk": 1,
   "fields": {
     "name": "default",
-    "server_version": "1.3.0b7",
+    "server_version": "1.3.0b8",
     "is_setup": true,
     "registration_id": "",
     "volume_display_units": "imperial",

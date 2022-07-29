@@ -10,7 +10,7 @@ exclude = '''
 
 [tool.poetry]
 name = "kegbot"
-version = "1.3.0b7"
+version = "1.3.0b8"
 description = "Kegbot Server"
 authors = ["The Kegbot Project contributors"]
 repository = "https://github.com/Kegbot/kegbot-server"

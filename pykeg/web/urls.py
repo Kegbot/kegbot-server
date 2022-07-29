@@ -34,7 +34,7 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Serve media uploads in all environments.
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static("/media/", document_root=settings.MEDIA_ROOT)
 
 if settings.KEGBOT_ENABLE_ADMIN:
     urlpatterns += [

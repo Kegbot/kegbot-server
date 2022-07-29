@@ -26,7 +26,7 @@ Step 2
 
 Next, fetch the latest images::
 
-    $ docker-compose build --pull
+    $ docker-compose pull
 
 Step 3
 ~~~~~~
@@ -38,10 +38,17 @@ Next, restart just the database and redis::
 Step 4
 ~~~~~~
 
-Finally, run the upgrade command::
+Next, run the upgrade command::
 
     $ docker-compose run kegbot upgrade
 
 You will see upgrade progress, followed by the message  ``Upgrade complete!``. If
 you see the message ``Version <version> is already installed.``, then no upgrade
 was needed or performed.
+
+Step 5
+~~~~~~
+
+Finally, restart the containers::
+
+    $ docker-compose up -d kegbot workers

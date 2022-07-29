@@ -35,11 +35,11 @@ with the example configuration in these docs, all required values will be set.)
 
 .. data:: KEGBOT_SECRET_KEY
 
-    A random value, like a password, that will be used to generate and protect
-    certain values used by the web service, such as cookies. Changing this
-    value will cause all users to be logged out and will invalidate any
-    pending invitations. Generally, you should only change this value if it has
-    become compromised.
+  A random value, like a password, that will be used to generate and protect
+  certain values used by the web service, such as cookies. Changing this
+  value will cause all users to be logged out and will invalidate any
+  pending invitations. Generally, you should only change this value if it has
+  become compromised.
 
 Optional settings
 ~~~~~~~~~~~~~~~~~
@@ -56,12 +56,19 @@ These settings all have defaults, which you may override.
   Filesystem path where Kegbot-specific data is stored and managed.
   Default: ``/kegbot-data``.
 
+.. data:: KEGBOT_BASE_URL
+  
+  The base public URL of this Kegbot system, for example
+  ``https://kegbot.example.com/``. If set, Kegbot will use this when
+  creating links to media and other events. If left blank (default),
+  the system will attempt to guess the correct address when needed.
+
 .. data:: KEGBOT_INSECURE_SHARED_API_KEY
 
-    If set, a random value, like a password, that will always be accepted as
-    an API key. As the name suggests, it is insecure to use this feature,
-    which is intended only for use in special standalone/embedded installs
-    (e.g. a single-user, offline Raspberry Pi) where there is no risk of exposure.
+  If set, a random value, like a password, that will always be accepted as
+  an API key. As the name suggests, it is insecure to use this feature,
+  which is intended only for use in special standalone/embedded installs
+  (e.g. a single-user, offline Raspberry Pi) where there is no risk of exposure.
 
 Advanced and experimental settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,15 +77,15 @@ These settings control experimental features. They are subject to
 change and should only be needed by advanced users.
 
 .. data:: KEGBOT_MEDIA_URL
-    
-    If specified, images and other media served by Kegbot will
-    be prefixed by this URL. Otherwise, media will be served from
-    the same host as the server itself, under ``/media``. You may use
-    this setting to e.g. serve media links through a CDN.
+
+  If specified, images and other media served by Kegbot will
+  be prefixed by this URL. Otherwise, media will be served from
+  the same host as the server itself, under ``/media``. You may use
+  this setting to e.g. serve media links through a CDN.
 
 .. data:: KEGBOT_ENABLE_V2_API
 
-    If set to ``true``, the new Kegbot Server API will be enabled (at
-    path ``/api/v2/...``). This API will replace the existing API implementation
-    in a future major Kegbot release. It is currently unfinished. Enable this
-    if you are a developer intending to work on or with this API.
+  If set to ``true``, the new Kegbot Server API will be enabled (at
+  path ``/api/v2/...``). This API will replace the existing API implementation
+  in a future major Kegbot release. It is currently unfinished. Enable this
+  if you are a developer intending to work on or with this API.

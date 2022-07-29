@@ -130,8 +130,6 @@ class Runner:
             os.setsid()
             # Set umask to default to safe file permissions for root.
             os.umask(0o27)
-            # Switch to a "safe" directory.
-            os.chdir("/")
 
         proc = subprocess.Popen(
             command,

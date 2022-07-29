@@ -1,8 +1,8 @@
-"""Celery tasks for Webhook plugin."""
+"""RQ tasks for Webhook plugin."""
 
 import requests
+from django_rq import job
 
-from pykeg.celery import app
 from pykeg.core.util import get_version
 from pykeg.plugin import util
 from pykeg.util import kbjson
@@ -10,7 +10,7 @@ from pykeg.util import kbjson
 logger = util.get_logger(__name__)
 
 
-@app.task(name="webhook_post", expires=180)
+@job
 def webhook_post(url, event_dict):
     """Posts an event to the supplied URL.
 

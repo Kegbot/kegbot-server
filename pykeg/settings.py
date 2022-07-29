@@ -53,11 +53,8 @@ INSTALLED_APPS = (
     "gunicorn",
     "corsheaders",
     "rest_framework",
+    "django_rq",
 )
-
-if KEGBOT_ENV == ENV_TEST:
-    # Run all celery tasks synchronously.
-    CELERY_ALWAYS_EAGER = True
 
 LOGIN_REDIRECT_URL = "/account/"
 
@@ -154,7 +151,16 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
-    }
+        "KEY_PREFIX": "kb:cache",
+    },
+    "rq": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": KEGBOT["REDIS_URL"],
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "KEY_PREFIX": "kb:rq",
+    },
 }
 
 INTERNAL_IPS = ("127.0.0.1",)
@@ -166,19 +172,18 @@ KEGBOT_PLUGINS = [
     "pykeg.contrib.webhook.plugin.WebhookPlugin",
 ]
 
-# Celery
+# RQ (workers)
 
-BROKER_URL = KEGBOT["REDIS_URL"]
-CELERY_RESULT_BACKEND = KEGBOT["REDIS_URL"]
-
-CELERY_QUEUES = {
-    "default": {"exchange": "default", "binding_key": "default"},
-    "stats": {"exchange": "default", "binding_key": "stats"},
+RQ_QUEUES = {
+    "default": {
+        "USE_REDIS_CACHE": "rq",
+        "ASYNC": KEGBOT_ENV != ENV_TEST,
+    },
+    "stats": {
+        "USE_REDIS_CACHE": "rq",
+        "ASYNC": KEGBOT_ENV != ENV_TEST,
+    },
 }
-
-CELERY_DEFAULT_QUEUE = "default"
-CELERYD_CONCURRENCY = 3
-
 
 # logging
 

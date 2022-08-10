@@ -22,3 +22,4 @@ jobs:
           days-before-pr-close: -1
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           ignore-updates: true
+          close-issue-reason: "not_planned"

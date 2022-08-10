@@ -31,7 +31,7 @@ Gmail
 ~~~~~
 
 To use a gmail account, you will first need to create an
-`app-specific password <https://support.google.com/accounts/answer/185833?hl=en>`
+`app-specific password <https://support.google.com/accounts/answer/185833?hl=en>`_
 for your gmail account. Then configure Kegbot as follows::
 
     submission://example@gmail.com:app-specific-password@smtp.gmail.com/?_default_from_email=example@gmail.com

@@ -6,8 +6,8 @@ Changelog
 **Upgrade Procedure:** Please follow :ref:`upgrading` for general upgrade steps.
 
 
-Current Version (in development)
---------------------------------
+Version 1.3.0 (2022-08-10)
+--------------------------
 
 For a detailed look at what's new in version 1.3, see :ref:`version-13-release-notes`.
 

@@ -1,8 +1,0 @@
-[run]
-source = pykeg
-
-[report]
-omit =
-    */python?.?/*
-    */site-packages/nose/*
-    */migrations/*

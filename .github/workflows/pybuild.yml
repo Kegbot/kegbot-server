@@ -3,10 +3,10 @@ name: Python Build & Test
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master    
+      - main
 
 jobs:
   py_build_and_test:

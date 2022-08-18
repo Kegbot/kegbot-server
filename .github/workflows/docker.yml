@@ -7,13 +7,13 @@ env:
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - 'v*'
       - stable
   pull_request:
     branches:
-      - master    
+      - main
 
 jobs:
   build:
@@ -59,7 +59,7 @@ jobs:
       # When                What                          Example
       # =================== ============================= =============
       # All runs            "dev"                         dev
-      # Merge to master     "latest"                      latest
+      # Merge to main       "latest"                      latest
       # Merge tag           <tag>                         v1.2.3b1
       # Merge semver tag    <semver>                      1.2.3
       # Merge semver tag    <major>.<minor>               1.2     

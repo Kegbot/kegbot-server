@@ -5,7 +5,6 @@ import os
 
 import vcr
 from django.conf import settings
-from django.utils import timezone
 
 TESTDATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../testdata/"))
 CASSETTE_DIR = os.path.join(TESTDATA_DIR, "request_fixtures")
@@ -17,7 +16,7 @@ def get_filename(f):
 
 def make_datetime(*args):
     if settings.USE_TZ:
-        return datetime.datetime(*args, tzinfo=timezone.utc)
+        return datetime.datetime(*args, tzinfo=datetime.timezone.utc)
     else:
         return datetime.datetime(*args)
 

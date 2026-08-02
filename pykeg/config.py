@@ -123,7 +123,9 @@ define_setting(
     "REDIS_URL",
     default=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
     typefn=uristr,
-    required=True,
+    # Optional under pytest so the suite can fall back to an in-process
+    # fakeredis (see settings.py) with no redis server; required otherwise.
+    required=not IS_RUNNING_PYTEST,
 )
 
 define_setting("KEGBOT_SECRET_KEY", default=None, required=True)

@@ -4,7 +4,7 @@ from functools import wraps
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from django.core import management
 from django.http import Http404
 from django.shortcuts import redirect, render
@@ -168,10 +168,15 @@ def admin(request):
         form = AdminUserForm(request.POST)
         if form.is_valid():
             form.save()
-            authenticate(
+            # Log the freshly-created admin in so setup continues as them. By
+            # this step the session table exists (migrated in the first step),
+            # so IsSetupMiddleware leaves the real session in place.
+            user = authenticate(
                 username=form.cleaned_data.get("username"),
                 password=form.cleaned_data.get("password"),
             )
+            if user is not None:
+                login(request, user)
             return redirect("setup_finish")
     context["form"] = form
     return render(request, "setup_wizard/admin.html", context=context)

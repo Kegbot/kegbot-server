@@ -3,8 +3,9 @@
 from django.core.cache import cache
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
+from django.urls import reverse
 
-from pykeg.core import defaults
+from pykeg.core import defaults, models
 
 
 class SetupWizardTestCase(TransactionTestCase):
@@ -31,6 +32,27 @@ class SetupWizardTestCase(TransactionTestCase):
 
         response = self.client.get("/setup/")
         self.assertEqual(response.status_code, 200)
+
+    @override_settings(DEBUG=True)
+    def test_admin_step_logs_in_new_admin(self):
+        """The admin-user step creates the admin and logs them in."""
+        defaults.set_defaults()  # site exists but is not yet set up
+
+        response = self.client.post(
+            reverse("setup_admin"),
+            {
+                "username": "wizadmin",
+                "email": "admin@example.com",
+                "password": "s3cret-pass",
+                "confirm_password": "s3cret-pass",
+            },
+        )
+        self.assertRedirects(response, reverse("setup_finish"), fetch_redirect_response=False)
+
+        admin = models.User.objects.get(username="wizadmin")
+        self.assertTrue(admin.is_superuser)
+        # The freshly-created admin should now be authenticated.
+        self.assertEqual(str(admin.pk), self.client.session.get("_auth_user_id"))
 
     def test_setup_not_shown(self):
         """Verify wizard is not shown on set-up site."""

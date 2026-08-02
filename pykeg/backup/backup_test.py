@@ -124,6 +124,6 @@ class BackupTestCase(TransactionTestCase):
             f1 = open(f1_full).read()
             f2 = open(f2_full).read()
             if f1 != f2:
-                message = 'Files not equal: "{}" and "{}" differ.'.format(f1_full, f2_full)
+                message = f'Files not equal: "{f1_full}" and "{f2_full}" differ.'
                 message += "\n" + "".join(difflib.ndiff(f1.splitlines(True), f2.splitlines(True)))
                 self.fail(message)

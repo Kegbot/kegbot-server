@@ -53,7 +53,7 @@ def define_setting(name, typefn=str, *, default, required):
         required: true if the setting _must_ be present in env
     """
     if name in ALL_SETTINGS:
-        raise ValueError("Bug: Setting {} registered more than once.".format(name))
+        raise ValueError(f"Bug: Setting {name} registered more than once.")
 
     ALL_SETTINGS[name] = (default, required, typefn)
 

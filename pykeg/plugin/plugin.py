@@ -1,12 +1,11 @@
 """Plugin interface for extending the Kegbot frontend."""
 
 import logging
-from builtins import object
 
 from pykeg.plugin.datastore import ModelDatastore
 
 
-class Plugin(object):
+class Plugin:
     """Interface class for plugins."""
 
     NAME = None

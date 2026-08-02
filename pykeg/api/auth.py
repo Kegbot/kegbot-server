@@ -4,7 +4,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from pykeg.core import models
 
 
-class ApiKeyAuthHolder(object):
+class ApiKeyAuthHolder:
     """DRF auth holder for our api keys."""
 
     def __init__(self, api_key):

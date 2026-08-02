@@ -2,7 +2,6 @@
 
 import datetime
 import logging
-from builtins import str
 from functools import wraps
 
 from django.contrib.auth import login as auth_login
@@ -350,7 +349,7 @@ def apply_since(request, query):
         try:
             since = int(since_str)
             return query.filter(id__gt=since)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             pass
     return query
 
@@ -799,7 +798,7 @@ def link_device_status(request, code):
 
 
 def default_handler(request):
-    raise Http404("Not an API endpoint: %s" % request.path[:100])
+    raise Http404(f"Not an API endpoint: {request.path[:100]}")
 
 
 def get_tap_from_meter_name_or_404(meter_name_or_id):

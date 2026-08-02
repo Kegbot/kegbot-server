@@ -36,11 +36,11 @@ class KegwebTestCase(TransactionTestCase):
         d = models.Drink.record_drink("kegboard.flow0", ticks=100)
         drink_id = d.id
 
-        response = self.client.get("/d/%s" % drink_id, follow=True)
-        self.assertRedirects(response, "/drinks/%s/" % drink_id, status_code=301)
+        response = self.client.get(f"/d/{drink_id}", follow=True)
+        self.assertRedirects(response, f"/drinks/{drink_id}/", status_code=301)
 
         session_id = d.session.id
-        response = self.client.get("/s/%s" % session_id, follow=True)
+        response = self.client.get(f"/s/{session_id}", follow=True)
         self.assertRedirects(response, d.session.get_absolute_url(), status_code=301)
 
     def testShout(self):
@@ -71,8 +71,8 @@ class KegwebTestCase(TransactionTestCase):
             "/kegs/": "Keg List",
             "/stats/": "System Stats",
             "/sessions/": "All Sessions",
-            "/kegs/{}/".format(keg.id): "Keg {}".format(keg.id),
-            "/drinks/{}/".format(d.id): "Drink {}".format(d.id),
+            f"/kegs/{keg.id}/": f"Keg {keg.id}",
+            f"/drinks/{d.id}/": f"Drink {d.id}",
         }
 
         def test_urls(expect_fail, urls=urls):

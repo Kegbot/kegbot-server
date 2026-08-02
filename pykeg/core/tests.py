@@ -20,10 +20,10 @@ class CoreTests(TestCase):
     def test_flake8(self):
         root_path = path_for_import("pykeg")
         config_file = os.path.join(root_path, "setup.cfg")
-        command = "flake8 --config={} {}".format(config_file, root_path)
+        command = f"flake8 --config={config_file} {root_path}"
         try:
             subprocess.check_output(command.split())
         except subprocess.CalledProcessError as e:
-            print("command: {}".format(command))
+            print(f"command: {command}")
             print(e.output)
-            self.fail("flake8 failed with return code {}.".format(e.returncode))
+            self.fail(f"flake8 failed with return code {e.returncode}.")

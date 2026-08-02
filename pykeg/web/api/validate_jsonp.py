@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-
 # Placed into the Public Domain by tav <tav@espians.com>
 # origin: https://raw.github.com/tav/scripts/master/validate_jsonp.py
 
 """Validate Javascript Identifiers for use as JSON-P callback parameters."""
 
 import re
-from builtins import chr, str
 from unicodedata import category
 
 # ------------------------------------------------------------------------------

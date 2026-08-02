@@ -1,5 +1,4 @@
 import sys
-from builtins import input
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -18,7 +17,7 @@ class Command(BaseCommand):
         print("  CANNOT BE UNDONE.")
         print("")
         print("    Database: {}".format(settings.DATABASES["default"]["NAME"]))
-        print("       Media: {}".format(settings.MEDIA_ROOT))
+        print(f"       Media: {settings.MEDIA_ROOT}")
         print("  ************************************************************************")
         print("")
         print("Are you SURE you want to continue? ")

@@ -1,5 +1,4 @@
 import sys
-from builtins import str
 
 from django.contrib.staticfiles.management.commands import collectstatic
 from django.core.management.base import BaseCommand
@@ -19,8 +18,8 @@ MINIMUM_INSTALLED_VERSION = Version("1.1.1")
 
 def run(cmd, args=[]):
     cmdname = cmd.__module__.split(".")[-1]
-    arg_str = " ".join("%s" % a for a in args)
-    print("--- Running command: %s %s" % (cmdname, arg_str))
+    arg_str = " ".join(f"{a}" for a in args)
+    print(f"--- Running command: {cmdname} {arg_str}")
     cmd.run_from_argv([sys.argv[0], cmdname] + args)
 
 
@@ -60,32 +59,26 @@ class Command(BaseCommand):
             sys.exit(1)
 
         if installed_version == app_version and not force:
-            print("Version {} already installed.".format(installed_version))
+            print(f"Version {installed_version} already installed.")
             return
 
         if installed_version > app_version:
-            print(
-                "Installed version {} is newer than app version {}".format(
-                    installed_version, app_version
-                )
-            )
+            print(f"Installed version {installed_version} is newer than app version {app_version}")
             sys.exit(1)
 
         if installed_version < MINIMUM_INSTALLED_VERSION:
             print("")
             print("ERROR: This version of Kegbot can only upgrade systems running on version")
             print(
-                "v{} or newer.  Please install Kegbot v{} and run `kegbot upgrade` again.".format(
-                    MINIMUM_INSTALLED_VERSION, MINIMUM_INSTALLED_VERSION
-                )
+                f"v{MINIMUM_INSTALLED_VERSION} or newer.  Please install Kegbot v{MINIMUM_INSTALLED_VERSION} and run `kegbot upgrade` again."
             )
-            print("(Existing version: {})".format(installed_version))
+            print(f"(Existing version: {installed_version})")
             print("")
             print("More help: https://github.com/Kegbot/kegbot-server/wiki/Upgrading-Old-Versions")
             print("")
             sys.exit(1)
 
-        print("Upgrading from {} to {}".format(installed_version, app_version))
+        print(f"Upgrading from {installed_version} to {app_version}")
         self.do_version_upgrades(installed_version)
 
         run(migrate.Command(), args=["--noinput", "-v", "0"])

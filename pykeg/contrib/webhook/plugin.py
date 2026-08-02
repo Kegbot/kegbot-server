@@ -24,7 +24,7 @@ class WebhookPlugin(plugin.Plugin):
             self.handle_event(event)
 
     def handle_event(self, event):
-        self.logger.info("Handling new event: %s" % event.id)
+        self.logger.info(f"Handling new event: {event.id}")
         settings = self.get_site_settings()
         urls = settings.get("webhook_urls", "").strip().split()
         event_dict = protolib.ToDict(event, full=True)

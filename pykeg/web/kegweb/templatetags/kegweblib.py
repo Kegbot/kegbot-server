@@ -1,5 +1,4 @@
 import zoneinfo
-from builtins import str
 
 from django.conf import settings
 from django.template import (
@@ -86,7 +85,7 @@ def navitem(parser, token):
     """{% navitem <viewname> <title> [exact] %}"""
     tokens = token.split_contents()
     if len(tokens) < 3:
-        raise TemplateSyntaxError("%s requires at least 3 tokens" % tokens[0])
+        raise TemplateSyntaxError(f"{tokens[0]} requires at least 3 tokens")
     return NavitemNode(*tokens[1:])
 
 
@@ -114,7 +113,7 @@ class NavitemNode(Node):
             res = '<li class="active">'
         else:
             res = "<li>"
-        res += '<a href="%s">%s</a></li>' % (urlbase, title)
+        res += f'<a href="{urlbase}">{title}</a></li>'
         return res
 
 
@@ -126,7 +125,7 @@ def timeago(parser, token):
     """{% timeago <timestamp> %}"""
     tokens = token.contents.split()
     if len(tokens) != 2:
-        raise TemplateSyntaxError("%s requires 2 tokens" % tokens[0])
+        raise TemplateSyntaxError(f"{tokens[0]} requires 2 tokens")
     return TimeagoNode(tokens[1])
 
 
@@ -148,7 +147,7 @@ class TimeagoNode(Node):
 
         iso = ts.isoformat()
         alt = timezone.localtime(ts).strftime("%A, %B %d, %Y %I:%M%p")
-        return '<abbr class="timeago" title="%s">%s</abbr>' % (iso, alt)
+        return f'<abbr class="timeago" title="{iso}">{alt}</abbr>'
 
 
 # temperature
@@ -159,7 +158,7 @@ def temperature_tag(parser, token):
     """{% temperature <temp_c> %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise TemplateSyntaxError("%s requires at least 2 tokens" % tokens[0])
+        raise TemplateSyntaxError(f"{tokens[0]} requires at least 2 tokens")
     return TemperatureNode(tokens[1])
 
 
@@ -173,7 +172,7 @@ class TemperatureNode(Node):
         v = Variable(self.varname)
         try:
             amount = v.resolve(context)
-        except (VariableDoesNotExist, ValueError):
+        except VariableDoesNotExist, ValueError:
             raise
             amount = "unknown"
 
@@ -194,7 +193,7 @@ def volumetag(parser, token):
     """{% volume <amount> %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise TemplateSyntaxError("%s requires at least 2 tokens" % tokens[0])
+        raise TemplateSyntaxError(f"{tokens[0]} requires at least 2 tokens")
     return VolumeNode(tokens[1], tokens[2:])
 
 
@@ -213,7 +212,7 @@ class VolumeNode(Node):
         tv = Variable(self._volume_varname)
         try:
             num = float(tv.resolve(context))
-        except (VariableDoesNotExist, ValueError):
+        except VariableDoesNotExist, ValueError:
             num = "unknown"
         unit = "mL"
         make_badge = "badge" in self._extra_args
@@ -226,7 +225,7 @@ class VolumeNode(Node):
         ctx = {
             "units": units,
             "amount": amount,
-            "title": "%s %s" % (amount, units),
+            "title": f"{amount} {units}",
             "extra_css": "badge " if make_badge else "",
         }
         return cls.TEMPLATE % ctx
@@ -240,7 +239,7 @@ def drinker_name_tag(parser, token):
     """{% drinker_name <drink_or_user_obj> [nolink] %}"""
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise TemplateSyntaxError("%s requires at least 2 tokens" % tokens[0])
+        raise TemplateSyntaxError(f"{tokens[0]} requires at least 2 tokens")
     return DrinkerNameNode(tokens[1], tokens[2:])
 
 
@@ -253,7 +252,7 @@ class DrinkerNameNode(Node):
         obj = Variable(self._varname)
         try:
             obj = obj.resolve(context)
-        except (VariableDoesNotExist, ValueError):
+        except VariableDoesNotExist, ValueError:
             obj = None
 
         user = None
@@ -266,7 +265,7 @@ class DrinkerNameNode(Node):
             if "nolink" in self._extra_args:
                 return user.get_full_name()
             else:
-                return '<a href="%s">%s</a>' % (
+                return '<a href="{}">{}</a>'.format(
                     reverse("kb-drinker", args=[user.username]),
                     user.get_full_name(),
                 )
@@ -324,7 +323,7 @@ class ChartNode(Node):
         self._height = height
         self._args = args
 
-        self._chart_fn = getattr(charts, "chart_%s" % (self._charttype,), None)
+        self._chart_fn = getattr(charts, f"chart_{self._charttype}", None)
 
     def _get_chart_id(self, context):
         # TODO(mikey): Is there a better way to store _CHART_ID?
@@ -344,7 +343,7 @@ class ChartNode(Node):
 
     def render(self, context):
         if not self._chart_fn:
-            return self.show_error("Unknown chart type: %s" % self._charttype)
+            return self.show_error(f"Unknown chart type: {self._charttype}")
 
         chart_id = self._get_chart_id(context)
         obj = Variable(self._args[0]).resolve(context)
@@ -363,7 +362,7 @@ class ChartNode(Node):
             "chart": {
                 "borderColor": "#eeeeff",
                 "borderWidth": 0,
-                "renderTo": "chart-%s-container" % chart_id,
+                "renderTo": f"chart-{chart_id}-container",
             },
             "credits": {
                 "enabled": False,
@@ -422,5 +421,5 @@ def volume(text, fmt="pints"):
     elif fmt == "halfbarrels":
         res = vol.InHalfBarrelKegs()
     else:
-        raise TemplateSyntaxError("Unknown volume format: %s" % fmt)
+        raise TemplateSyntaxError(f"Unknown volume format: {fmt}")
     return float(res)

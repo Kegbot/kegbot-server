@@ -1,7 +1,5 @@
 """Unittests for pykeg.web.api"""
 
-from builtins import str
-
 from django.core import mail
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -21,15 +19,15 @@ def create_site():
 
 class BaseApiTestCase(TestCase):
     def get(self, subpath, data={}, follow=False, **extra):
-        response = self.client.get("/api/%s" % subpath, data=data, follow=follow, **extra)
+        response = self.client.get(f"/api/{subpath}", data=data, follow=follow, **extra)
         return response, kbjson.loads(response.content)
 
     def post(self, subpath, data={}, follow=False, **extra):
-        response = self.client.post("/api/%s" % subpath, data=data, follow=follow, **extra)
+        response = self.client.post(f"/api/{subpath}", data=data, follow=follow, **extra)
         return response, kbjson.loads(response.content)
 
     def delete(self, subpath, data={}, follow=False, **extra):
-        response = self.client.delete("/api/%s" % subpath, data=data, follow=follow, **extra)
+        response = self.client.delete(f"/api/{subpath}", data=data, follow=follow, **extra)
         return response, kbjson.loads(response.content)
 
 
@@ -82,10 +80,10 @@ class ApiClientTestCase(BaseApiTestCase):
         self.assertEqual("kegboard.flow1", taps[1].meter_name)
 
         for tap in taps:
-            response1, data1 = self.get("taps/%s" % tap.meter_name)
+            response1, data1 = self.get(f"taps/{tap.meter_name}")
             self.assertEqual(data1.meta.result, "ok")
 
-            response2, data2 = self.get("taps/%s" % tap.id)
+            response2, data2 = self.get(f"taps/{tap.id}")
             self.assertEqual(data2.meta.result, "ok")
 
             self.assertEqual(data1, data2)

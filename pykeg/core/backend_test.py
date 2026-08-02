@@ -1,7 +1,5 @@
 """Unittests for backends module."""
 
-from builtins import range
-
 from django.test import TransactionTestCase
 
 from pykeg.core import defaults, models
@@ -283,17 +281,17 @@ class BackendsTestCase(TransactionTestCase):
             producer_name=FAKE_BREWER_NAME,
             style_name=FAKE_BEER_STYLE,
         )
-        self.assertEqual("http://test.example.com/kegs/{}/".format(keg.id), keg.full_url())
+        self.assertEqual(f"http://test.example.com/kegs/{keg.id}/", keg.full_url())
 
         drink = models.Drink.record_drink(METER_NAME, ticks=1, volume_ml=100, photo="foo")
-        self.assertEqual("http://test.example.com/d/{}/".format(drink.id), drink.short_url())
+        self.assertEqual(f"http://test.example.com/d/{drink.id}/", drink.short_url())
         self.assertEqual(
-            "http://test.example.com/s/{}/".format(drink.session.id), drink.session.short_url()
+            f"http://test.example.com/s/{drink.session.id}/", drink.session.short_url()
         )
 
         start = drink.session.start_time
-        datepart = "{}/{}/{}".format(start.year, start.month, start.day)
+        datepart = f"{start.year}/{start.month}/{start.day}"
         self.assertEqual(
-            "http://test.example.com/sessions/{}/{}/".format(datepart, drink.session.id),
+            f"http://test.example.com/sessions/{datepart}/{drink.session.id}/",
             drink.session.full_url(),
         )

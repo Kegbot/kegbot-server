@@ -20,7 +20,7 @@ def webhook_post(url, event_dict):
 
     Event payloads are in the same format as the /api/events/ endpoint.
     """
-    logger.info("Posting webhook: url=%s event=%s" % (url, event_dict))
+    logger.info(f"Posting webhook: url={url} event={event_dict}")
 
     hook_dict = {
         "type": "event",
@@ -29,11 +29,11 @@ def webhook_post(url, event_dict):
 
     headers = {
         "content-type": "application/json",
-        "user-agent": "Kegbot/%s" % get_version(),
+        "user-agent": f"Kegbot/{get_version()}",
     }
 
     try:
         return requests.post(url, data=kbjson.dumps(hook_dict), headers=headers)
     except requests.exceptions.RequestException as e:
-        logger.warning("Error posting hook: %s" % e)
+        logger.warning(f"Error posting hook: {e}")
         return False

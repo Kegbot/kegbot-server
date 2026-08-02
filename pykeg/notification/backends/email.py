@@ -13,11 +13,11 @@ class EmailNotificationBackend(BaseNotificationBackend):
         return "pykeg.notification.backends.email.EmailNotificationBackend"
 
     def notify(self, event, user):
-        logger.info("Event %s -> user %s" % (event, user))
+        logger.info(f"Event {event} -> user {user}")
 
         to_address = user.email
         if not to_address:
-            logger.warning("No e-mail address available for user %s" % user)
+            logger.warning(f"No e-mail address available for user {user}")
             return
 
         context = {}
@@ -45,7 +45,7 @@ class EmailNotificationBackend(BaseNotificationBackend):
             template_name = "notification/email_keg_volume_low.html"
             context["url"] = event.keg.full_url()
         else:
-            logger.info("Skipping unknown event type: %s" % event.kind)
+            logger.info(f"Skipping unknown event type: {event.kind}")
             return
 
         message = build_message(to_address, template_name, context)
@@ -55,5 +55,5 @@ class EmailNotificationBackend(BaseNotificationBackend):
         self.send_message(message)
 
     def send_message(self, message):
-        logger.info("Sending message: %s" % message)
+        logger.info(f"Sending message: {message}")
         message.send(fail_silently=True)

@@ -74,7 +74,7 @@ def to_json_error(e, exc_info):
     else:
         code = "ServerError"
         http_code = 500
-        message = "An internal error occurred: %s" % str(e)
+        message = f"An internal error occurred: {str(e)}"
     result = {"error": {"code": code, "message": message}}
     if settings.DEBUG:
         result["error"]["traceback"] = "".join(traceback.format_exception(*exc_info))
@@ -90,10 +90,10 @@ def build_response(request, result_data, response_code=200):
 
     json_str = kbjson.dumps(result_data, indent=indent)
     if callback and validate_jsonp.is_valid_jsonp_callback_value(callback):
-        json_str = "%s(%s);" % (callback, json_str)
+        json_str = f"{callback}({json_str});"
 
     if format == "html" or (settings.DEBUG and debug):
-        html = "<html><body><pre>%s</pre></body></html>" % json_str
+        html = f"<html><body><pre>{json_str}</pre></body></html>"
         return HttpResponse(html, content_type="text/html", status=response_code)
     else:
         return HttpResponse(json_str, content_type="application/json", status=response_code)
@@ -127,7 +127,7 @@ def wrap_exception(request, exception):
     exc_info = sys.exc_info()
 
     LOGGER.error(
-        "%s: %s" % (exception.__class__.__name__, exception),
+        f"{exception.__class__.__name__}: {exception}",
         exc_info=exc_info,
         extra={
             "status_code": 500,

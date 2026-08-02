@@ -20,13 +20,13 @@ def schedule_tasks(events):
         try:
             plugin.handle_new_events(events)
         except Exception:
-            logger.exception("Error dispatching events to plugin {}".format(plugin.get_name()))
+            logger.exception(f"Error dispatching events to plugin {plugin.get_name()}")
     notification.handle_new_system_events(events)
 
 
 @job("stats")
 def build_stats(drink_id, rebuild_following):
-    logger.info("build_stats drink_id={} rebuild_following={}".format(drink_id, rebuild_following))
+    logger.info(f"build_stats drink_id={drink_id} rebuild_following={rebuild_following}")
     with transaction.atomic():
         if rebuild_following:
             stats.rebuild_from_id(drink_id)

@@ -1,7 +1,5 @@
 """Test for util module."""
 
-from builtins import str
-
 from django.test import TestCase
 from packaging.version import Version
 

@@ -5,7 +5,7 @@ class AttrDict(dict):
     """
 
     def __init__(self, mapping=None):
-        super(AttrDict, self).__init__()
+        super().__init__()
         if mapping is not None:
             for key, value in mapping.items():
                 self.__setitem__(key, value)
@@ -13,7 +13,7 @@ class AttrDict(dict):
     def __setitem__(self, key, value):
         if isinstance(value, dict):
             value = AttrDict(value)
-        super(AttrDict, self).__setitem__(key, value)
+        super().__setitem__(key, value)
         self.__dict__[key] = value  # for code completion in editors
 
     def __getattr__(self, item):

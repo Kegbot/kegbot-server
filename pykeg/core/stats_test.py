@@ -15,7 +15,7 @@ class StatsTestCase(TransactionTestCase):
 
         test_usernames = ("user1", "user2", "user3")
         self.users = [
-            models.User.create_new_user(name, "%s@example.com" % name) for name in test_usernames
+            models.User.create_new_user(name, f"{name}@example.com") for name in test_usernames
         ]
 
         self.taps = [

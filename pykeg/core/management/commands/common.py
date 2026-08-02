@@ -1,7 +1,6 @@
 import os
 import signal
 import sys
-from builtins import object
 
 from django.core.management.base import BaseCommand
 
@@ -25,21 +24,21 @@ def progbar(title, pos, total, width=40):
         chars = int((float(pos) / total) * width)
     rem = width - chars
     inner = "+" * chars + " " * rem
-    sys.stdout.write("%-30s  [%s] %i/%i\r" % (title, inner, pos, total))
+    sys.stdout.write(f"{title:<30}  [{inner}] {pos}/{total}\r")
     sys.stdout.flush()
 
 
 def check_and_create_pid_file(pid_file):
     if os.path.exists(pid_file):
-        print("Error: already running ({})".format(pid_file))
+        print(f"Error: already running ({pid_file})")
         sys.exit(1)
 
     f = open(pid_file, "w")
-    f.write("{}\n".format(os.getpid()))
+    f.write(f"{os.getpid()}\n")
     f.close()
 
 
-class check_pidfile(object):
+class check_pidfile:
     """Context manager that creates a pidfile, or fails if it exists."""
 
     def __init__(self, pid_file):
@@ -47,9 +46,9 @@ class check_pidfile(object):
 
     def __enter__(self):
         if os.path.exists(self.pid_file):
-            raise RuntimeError("Error: already running ({})".format(self.pid_file))
+            raise RuntimeError(f"Error: already running ({self.pid_file})")
         f = open(self.pid_file, "w")
-        f.write("{}\n".format(os.getpid()))
+        f.write(f"{os.getpid()}\n")
         f.close()
 
     def __exit__(self, exc_type, exc_val, exc_tb):

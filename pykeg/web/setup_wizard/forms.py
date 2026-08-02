@@ -1,5 +1,3 @@
-from builtins import object
-
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Field, Layout, Submit
@@ -9,7 +7,7 @@ from pykeg.core import models
 
 
 class MiniSiteSettingsForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.KegbotSite
         fields = (
             "title",

@@ -1,9 +1,7 @@
 """Base notification module."""
 
-from builtins import object
 
-
-class BaseNotificationBackend(object):
+class BaseNotificationBackend:
     """Base class for notification backend implementations."""
 
     def name(self):

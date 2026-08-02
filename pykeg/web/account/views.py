@@ -105,7 +105,7 @@ def notifications(request):
                     )
                     message.send()
                     messages.success(
-                        request, "An e-mail confirmation has been sent to {}".format(new_email)
+                        request, f"An e-mail confirmation has been sent to {new_email}"
                     )
 
         else:
@@ -184,7 +184,7 @@ def regenerate_api_key(request):
 def plugin_settings(request, plugin_name):
     plugin = request.plugins.get(plugin_name, None)
     if not plugin:
-        raise Http404('Plugin "%s" not loaded' % plugin_name)
+        raise Http404(f'Plugin "{plugin_name}" not loaded')
 
     view = plugin.get_user_settings_view()
     if not view:

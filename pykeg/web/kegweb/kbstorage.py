@@ -25,7 +25,7 @@ class KegbotFileSystemStorage(FileSystemStorage):
         base_url = get_base_url()
         if not self.base_url.startswith(base_url):
             self.base_url = urllib.parse.urljoin(base_url, self.base_url)
-        return super(KegbotFileSystemStorage, self).url(name)
+        return super().url(name)
 
 
 if S3BotoStorage:
@@ -35,4 +35,4 @@ if S3BotoStorage:
 
         def __init__(self, *args, **kwargs):
             kwargs["bucket"] = S3_STATIC_BUCKET
-            super(S3StaticStorage, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)

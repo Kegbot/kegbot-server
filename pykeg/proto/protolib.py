@@ -32,7 +32,7 @@ def ToProto(obj, full=False):
     elif kind in _CONVERSION_MAP:
         return _CONVERSION_MAP[kind](obj, full)
     else:
-        raise ValueError("Unknown object type: %s" % kind)
+        raise ValueError(f"Unknown object type: {kind}")
 
 
 def ToDict(obj, full=False):
@@ -326,7 +326,7 @@ def KegTapToProto(tap, full=False):
         ret.meter.MergeFrom(ToProto(meter))
     else:
         # TODO(mikey): Remove compatibility.
-        ret.meter_name = "unknown.%s" % tap.id
+        ret.meter_name = f"unknown.{tap.id}"
         ret.ml_per_tick = 0
 
     toggle = tap.current_toggle()

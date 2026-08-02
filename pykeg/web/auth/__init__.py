@@ -1,7 +1,5 @@
 """Kegbot authentication backend interface."""
 
-from builtins import object
-
 from django.contrib import auth
 from django.core.exceptions import ImproperlyConfigured
 
@@ -10,7 +8,7 @@ def get_auth_backend():
     """Returns the sole authentication backend."""
     backends = auth.get_backends()
     if len(backends) != 1:
-        raise ImproperlyConfigured("Expected exactly 1 backend (found {})".format(len(backends)))
+        raise ImproperlyConfigured(f"Expected exactly 1 backend (found {len(backends)})")
     return backends[0]
 
 
@@ -22,7 +20,7 @@ class UserExistsException(AuthException):
     """Registration error indicating this username/email is taken."""
 
 
-class AuthBackend(object):
+class AuthBackend:
     # Django methods
 
     def authenticate(self, **credentials):

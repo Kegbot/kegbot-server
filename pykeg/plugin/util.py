@@ -20,7 +20,7 @@ def get_plugin_class(name):
         module = import_module(module_path)
         cls = getattr(module, member_name)
     except (ValueError, ImportError, AttributeError) as e:
-        raise ImproperlyConfigured("Could not import plugin %s: %s" % (name, e))
+        raise ImproperlyConfigured(f"Could not import plugin {name}: {e}")
 
     if not issubclass(cls, Plugin):
         raise ImproperlyConfigured("%s does not subclass plugin.Plugin", name)
@@ -38,7 +38,7 @@ def get_plugins():
             cls = get_plugin_class(name)
             plugin_obj = cls(plugin_registry=_CACHED_PLUGINS)
             short_name = plugin_obj.get_short_name()
-            assert short_name not in plugins, "Multiple plugins named {}".format(short_name)
+            assert short_name not in plugins, f"Multiple plugins named {short_name}"
             plugins[short_name] = plugin_obj
         _CACHED_PLUGINS = plugins
     return _CACHED_PLUGINS
@@ -61,8 +61,8 @@ def get_account_urls():
 def _to_urls(urllist, short_name):
     urls = []
     for regex, fn, viewname in urllist:
-        regex = "plugin/%s/%s" % (short_name, regex)
-        viewname = "plugin-%s-%s" % (short_name, viewname)
+        regex = f"plugin/{short_name}/{regex}"
+        viewname = f"plugin-{short_name}-{viewname}"
         urls.append(re_path(regex, fn, name=viewname))
     return urls
 

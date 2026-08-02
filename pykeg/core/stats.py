@@ -4,7 +4,6 @@ import copy
 import inspect
 import logging
 import zoneinfo
-from builtins import object, str
 
 from addict import Dict
 from django.utils.timezone import localtime
@@ -16,7 +15,7 @@ STAT_MAP = {}
 logger = logging.getLogger(__name__)
 
 
-class StatsView(object):
+class StatsView:
     def __init__(self, user=None, session=None, keg=None):
         self.user = user
         self.session = session
@@ -27,11 +26,11 @@ class StatsView(object):
         if not self.user and not self.keg and not self.session:
             ret += "system"
         if self.user:
-            ret += "user={} ".format(self.user.username)
+            ret += f"user={self.user.username} "
         if self.session:
-            ret += "session={} ".format(self.session.id)
+            ret += f"session={self.session.id} "
         if self.keg:
-            ret += "keg={}".format(self.keg.id)
+            ret += f"keg={self.keg.id}"
         return ret
 
     def as_tuple(self):
@@ -57,7 +56,7 @@ class StatsView(object):
         return qs.order_by("-id")
 
 
-class StatsBuilder(object):
+class StatsBuilder:
     """Derives statistics from drinks."""
 
     def __init__(self):
@@ -70,7 +69,7 @@ class StatsBuilder(object):
         if previous_stats is None:
             previous_stats = Dict()
 
-        logger.debug("build: drink={}".format(drink.id))
+        logger.debug(f"build: drink={drink.id}")
         stats = Dict()
 
         for statname, fn in self.functions:
@@ -81,7 +80,7 @@ class StatsBuilder(object):
                 val = fn(drink, previous_stats)
 
             if val is None:
-                raise ValueError("Stat generator for %s returned None" % statname)
+                raise ValueError(f"Stat generator for {statname} returned None")
             stats[statname] = val
         return stats
 
@@ -180,7 +179,7 @@ BUILDER = StatsBuilder()
 
 def invalidate(drink_id):
     """Clears all statistics starting from (and including) drink_id."""
-    logger.debug("--- Invalidating stats since id {}".format(drink_id))
+    logger.debug(f"--- Invalidating stats since id {drink_id}")
     models.Stats.objects.filter(drink_id__gte=drink_id).delete()
 
 
@@ -196,7 +195,7 @@ def build_for_id(drink_id):
     try:
         drink = models.Drink.objects.get(pk=drink_id)
     except models.Drink.DoesNotExist:
-        logger.warning("No drink exists with id={}".format(drink_id))
+        logger.warning(f"No drink exists with id={drink_id}")
         return
     _build_all_views(drink)
 
@@ -224,7 +223,7 @@ def _build_single_view(drink, view, prior_stats=None):
             indicates that the prior stats are unknown.  When prior stats
             are unknown, they will be queried or generated as needed.
     """
-    logger.debug(">>> Building stats for {}".format(view))
+    logger.debug(f">>> Building stats for {view}")
 
     build_list = [drink]
     if prior_stats is None:
@@ -249,7 +248,7 @@ def _build_single_view(drink, view, prior_stats=None):
 
     # Build all drinks on the hit list.
     for build_drink in build_list:
-        logger.debug("  - operating on drink {}".format(build_drink.id))
+        logger.debug(f"  - operating on drink {build_drink.id}")
         stats = BUILDER.build(drink=build_drink, previous_stats=prior_stats)
         models.Stats.objects.create(
             drink=build_drink,

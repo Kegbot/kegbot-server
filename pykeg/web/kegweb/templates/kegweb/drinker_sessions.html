@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load kegweblib %}
-{% load bootstrap_pagination %}
 
 {% block title %}Drinker Sessions: {{ drinker.username }} | {{ block.super }}{% endblock %}
 {% block pagetitle %}Drinker Sessions: {{ drinker.username }}{% endblock %}
@@ -24,7 +23,7 @@
           {% include "kegweb/keg-session.html" %}
         {% endwith %}
       {% endfor %}
-      {% bootstrap_paginate chunks %}
+      {% include "kegweb/_pagination.html" with page=chunks %}
     {% endif %}
   </div>
 </div>

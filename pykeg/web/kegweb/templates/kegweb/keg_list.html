@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load kegweblib %}
-{% load bootstrap_pagination %}
 
 {% block title %}Keg List | {{ block.super }}{% endblock %}
 {% block pagetitle %}Keg List{% endblock %}
@@ -15,6 +14,6 @@
   </div>
 {% endfor %}
 
-{% bootstrap_paginate page_obj range=10 %}
+{% include "kegweb/_pagination.html" with page=page_obj %}
 
 {% endblock %}

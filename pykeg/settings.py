@@ -49,7 +49,6 @@ INSTALLED_APPS = (
     "crispy_forms",
     "crispy_bootstrap4",
     "imagekit",
-    "gunicorn",
     "corsheaders",
     "rest_framework",
     "django_rq",

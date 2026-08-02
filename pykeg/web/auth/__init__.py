@@ -23,7 +23,6 @@ class UserExistsException(AuthException):
 
 
 class AuthBackend(object):
-
     # Django methods
 
     def authenticate(self, **credentials):

@@ -47,12 +47,10 @@ repository = "https://github.com/Kegbot/kegbot-server"
 
 [dependency-groups]
 dev = [
-    "black",
-    "flake8",
-    "isort",
     "pytest",
     "pytest-django",
     "requests-mock",
+    "ruff",
     "vcrpy",
 ]
 
@@ -63,15 +61,27 @@ package = true
 # lock for CI/Docker but skip locally where those libs are absent, e.g.:
 #   uv sync --no-install-package mysqlclient --no-install-package psycopg2
 
-[tool.black]
+[tool.ruff]
 line-length = 100
-target_version = ['py310']
-include = 'pykeg/.*\.pyi?$'
-exclude = '''
-(
-  .*/migrations/.*
-)
-'''
+target-version = "py310"
+exclude = [
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+    "migrations",
+    # Generated protobuf code (regenerated from kegbot-api .proto sources).
+    "pykeg/proto/*_pb2.py",
+]
+
+[tool.ruff.format]
+quote-style = "preserve"
+
+[tool.ruff.lint]
+# UP (pyupgrade) is added in the Python 3.14 phase; keep this to format +
+# pycodestyle/pyflakes/isort for the tooling swap.
+select = ["E", "F", "I"]
+ignore = ["E501"]
 
 [build-system]
 requires = ["hatchling"]

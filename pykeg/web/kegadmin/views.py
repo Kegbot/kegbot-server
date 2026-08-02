@@ -21,7 +21,6 @@ from django.views.decorators.http import require_http_methods
 
 from pykeg.backup import backup
 from pykeg.core import models, tasks
-from pykeg.core.util import get_runtime_version_info
 from pykeg.logging.handlers import RedisListHandler
 from pykeg.util import kbjson
 from pykeg.util.email import build_message

@@ -5,7 +5,6 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 
-from pykeg import config
 from pykeg.core import models
 from pykeg.core.util import get_version_object, must_upgrade, set_current_request
 from pykeg.plugin import util as plugin_util

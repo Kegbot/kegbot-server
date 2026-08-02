@@ -9,7 +9,6 @@ import logging
 import os
 
 import dj_database_url
-import dj_email_url
 
 from pykeg import config
 from pykeg.config import ENV_PRODUCTION, ENV_TEST
@@ -283,7 +282,7 @@ IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = "imagekit.imagecache.NonValidatingImageCa
 # Storage
 DEFAULT_FILE_STORAGE = "pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage"
 
-from pykeg.core.util import get_plugin_template_dirs
+from pykeg.core.util import get_plugin_template_dirs  # noqa: E402  (needs KEGBOT_PLUGINS above)
 
 TEMPLATES = [
     {

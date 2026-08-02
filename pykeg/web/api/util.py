@@ -3,7 +3,6 @@
 import logging
 import sys
 import traceback
-import types
 
 from addict import Dict
 from django.conf import settings

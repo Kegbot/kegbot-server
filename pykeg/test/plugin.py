@@ -4,7 +4,6 @@ import shutil
 import tempfile
 
 import pytest
-from django.conf import settings
 
 logger = logging.getLogger("pykeg.test.plugin")
 TEMP_DATA_DIR = None

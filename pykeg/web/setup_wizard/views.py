@@ -168,7 +168,7 @@ def admin(request):
         form = AdminUserForm(request.POST)
         if form.is_valid():
             form.save()
-            user = authenticate(
+            authenticate(
                 username=form.cleaned_data.get("username"),
                 password=form.cleaned_data.get("password"),
             )

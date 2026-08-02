@@ -1,6 +1,3 @@
-import logging
-import re
-
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 

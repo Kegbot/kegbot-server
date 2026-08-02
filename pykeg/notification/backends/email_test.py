@@ -50,9 +50,7 @@ class EmailNotificationBackendTestCase(TestCase):
 Track it here: http://test.example.com/kegs/%s/
 
 You are receiving this e-mail because you have notifications enabled
-on My Kegbot.  To change your settings, visit http://test.example.com/account.""" % (
-            keg.id,
-        )
+on My Kegbot.  To change your settings, visit http://test.example.com/account.""" % (keg.id,)
 
         self.assertMultiLineEqual(expected_body_plain, msg.body)
 
@@ -69,9 +67,7 @@ Track it <a href="http://test.example.com/kegs/%s/">here</a>.
 You are receiving this e-mail because you have notifications enabled
 on <a href="http://test.example.com">My Kegbot</a>.  To change your settings, visit
 http://test.example.com/account.
-</p>""" % (
-            keg.id,
-        )
+</p>""" % (keg.id,)
 
         self.assertEqual(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])
@@ -122,9 +118,7 @@ You can follow the session <a href="http://test.example.com/s/%s/">here</a>.
 You are receiving this e-mail because you have notifications enabled
 on <a href="http://test.example.com">My Kegbot</a>.  To change your settings, visit
 http://test.example.com/account.
-</p>""" % (
-            drink.session.id,
-        )
+</p>""" % (drink.session.id,)
 
         self.assertEqual(1, len(msg.alternatives))
         self.assertMultiLineEqual(expected_body_html, msg.alternatives[0][0])

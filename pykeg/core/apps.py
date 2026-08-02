@@ -6,4 +6,4 @@ class CoreApp(AppConfig):
 
     def ready(self):
         # Implicitly connect signal handlers decorated with @receiver.
-        from . import signal_handlers
+        from . import signal_handlers  # noqa: F401  (import registers signal receivers)

@@ -2,7 +2,6 @@ import copy
 
 from addict import Dict
 from django.test import TransactionTestCase
-from django.test.utils import override_settings
 
 from . import models
 from .testutils import make_datetime

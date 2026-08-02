@@ -1,6 +1,5 @@
 """Base notification module."""
 
-
 from builtins import object
 
 

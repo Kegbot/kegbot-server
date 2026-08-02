@@ -1,7 +1,6 @@
 """Local Django authentication backend."""
 
 import uuid
-from builtins import str
 
 from django.contrib.auth.backends import ModelBackend
 from django.db import IntegrityError

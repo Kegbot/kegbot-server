@@ -155,7 +155,7 @@ def chart_users_by_volume(stats, *args, **kwargs):
         if not username:
             username = "Guest"
         volume, units = format_volume(volume, kwargs)
-        label = "<b>%s</b> (%.1f %s)" % (username, volume, units)
+        label = f"<b>{username}</b> ({volume:.1f} {units})"
         data.append((label, volume))
 
     other_vol = 0
@@ -166,7 +166,7 @@ def chart_users_by_volume(stats, *args, **kwargs):
     data.reverse()
 
     if other_vol:
-        label = "<b>%s</b> (%.1f)" % ("all others", other_vol)
+        label = "<b>{}</b> ({:.1f})".format("all others", other_vol)
         data.append((label, other_vol))
 
     res = {

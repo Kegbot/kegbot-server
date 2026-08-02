@@ -1,7 +1,6 @@
 """Test for email util module."""
 
 import time
-from builtins import str
 
 from django.test import TestCase
 

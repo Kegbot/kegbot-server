@@ -1,13 +1,11 @@
 """Data storage interface and implementations for plugins."""
 
-from builtins import object
-
 from addict import Dict
 
 from pykeg.core import models
 
 
-class PluginDatastore(object):
+class PluginDatastore:
     """Interface for plugins to persist plugin-specific data."""
 
     def __init__(self, plugin_name):
@@ -27,13 +25,13 @@ class PluginDatastore(object):
     def save_form(self, form, prefix):
         """Helper method to save a form using the specified per-field prefix."""
         for field_name, value in list(form.cleaned_data.items()):
-            self.set("%s:%s" % (prefix, field_name), value)
+            self.set(f"{prefix}:{field_name}", value)
 
     def load_form(self, form_cls, prefix, form_kwargs={}):
         """Helper method to load a form using the specified per-field prefix."""
         data = Dict()
         for field_name, field in list(form_cls.base_fields.items()):
-            initial = self.get("%s:%s" % (prefix, field_name))
+            initial = self.get(f"{prefix}:{field_name}")
             if initial is not None:
                 data[field_name] = field.to_python(initial)
             else:
@@ -72,12 +70,12 @@ class ModelDatastore(PluginDatastore):
 
 class InMemoryDatastore(PluginDatastore):
     def __init__(self, *args, **kwargs):
-        super(InMemoryDatastore, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.data = {}
 
     def _keyname(self, key):
         """Returns the datastore-namespaced key name."""
-        return "{}:{}".format(self.plugin_name, key)
+        return f"{self.plugin_name}:{key}"
 
     def set(self, key, value):
         if value is None:

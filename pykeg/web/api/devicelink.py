@@ -24,7 +24,6 @@ Protocol:
 """
 
 import random
-from builtins import range
 
 from django.core.cache import cache
 
@@ -56,7 +55,7 @@ class LinkExpiredException(Exception):
 def _build_code(size=DEFAULT_CODE_SIZE):
     code = "".join(random.choice(CODE_LETTERS) for i in range(size))
     mid = size // 2
-    code = "{}-{}".format(code[:mid], code[mid:])
+    code = f"{code[:mid]}-{code[mid:]}"
     return code
 
 

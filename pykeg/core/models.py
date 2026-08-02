@@ -4,7 +4,6 @@ import os
 import random
 import re
 import urllib.parse
-from builtins import object, str
 from uuid import uuid4
 
 from addict import Dict
@@ -131,7 +130,7 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]
 
-    class Meta(object):
+    class Meta:
         verbose_name = _("user")
         verbose_name_plural = _("users")
 
@@ -308,7 +307,7 @@ class KegbotSite(models.Model):
         default=kb_common.DRINK_SESSION_TIME_MINUTES,
         help_text="Maximum time, in minutes, that a session may be idle (no pours) "
         "before it is considered to be finished.  "
-        "Recommended value is %s." % kb_common.DRINK_SESSION_TIME_MINUTES,
+        f"Recommended value is {kb_common.DRINK_SESSION_TIME_MINUTES}.",
     )
     privacy = models.CharField(
         max_length=63,
@@ -390,10 +389,10 @@ class KegbotSite(models.Model):
     def format_volume(self, volume_ml):
         if self.volume_display_units == "metric":
             if volume_ml < 500:
-                return "%d mL" % int(volume_ml)
-            return "%.1f L" % (volume_ml / 1000.0)
+                return f"{int(volume_ml)} mL"
+            return f"{volume_ml / 1000.0:.1f} L"
         else:
-            return "%1.f oz" % units.Quantity(volume_ml).InOunces()
+            return f"{units.Quantity(volume_ml).InOunces():1.0f} oz"
 
     def can_invite(self, user):
         if not user:
@@ -455,7 +454,7 @@ class ApiKey(models.Model):
     @classmethod
     def generate_key(cls):
         """Returns a new random key."""
-        return "%032x" % random.randint(0, 2**128 - 1)
+        return f"{random.randint(0, 2**128 - 1):032x}"
 
 
 def _sitesettings_post_save(sender, instance, **kwargs):
@@ -495,7 +494,7 @@ class BeverageProducer(models.Model):
         max_length=255, blank=True, null=True, help_text="Future use."
     )
 
-    class Meta(object):
+    class Meta:
         ordering = ("name",)
 
     def __str__(self):
@@ -605,17 +604,17 @@ class Beverage(models.Model):
         max_length=255, blank=True, null=True, help_text="Future use."
     )
 
-    class Meta(object):
+    class Meta:
         ordering = ("name",)
 
     def __str__(self):
-        return "{} by {}".format(self.name, self.producer)
+        return f"{self.name} by {self.producer}"
 
 
 class KegTap(models.Model):
     """A physical tap of beer."""
 
-    class Meta(object):
+    class Meta:
         ordering = ("sort_order", "id")
 
     name = models.CharField(
@@ -642,7 +641,7 @@ class KegTap(models.Model):
     )
 
     def __str__(self):
-        return "{}: {}".format(self.name, self.current_keg)
+        return f"{self.name}: {self.current_keg}"
 
     def is_active(self):
         """Returns True if the tap has an active Keg."""
@@ -825,11 +824,11 @@ class Controller(models.Model):
     )
 
     def __str__(self):
-        return "Controller: {}".format(self.name)
+        return f"Controller: {self.name}"
 
 
 class FlowMeter(models.Model):
-    class Meta(object):
+    class Meta:
         unique_together = ("controller", "port_name")
 
     controller = models.ForeignKey(
@@ -851,12 +850,12 @@ class FlowMeter(models.Model):
     )
     ticks_per_ml = models.FloatField(
         default=kb_common.DEFAULT_TICKS_PER_ML,
-        help_text="Flow meter pulses per mL of fluid.  Common values: %s "
-        "(FT330-RJ), 5.4 (SF800)" % kb_common.DEFAULT_TICKS_PER_ML,
+        help_text=f"Flow meter pulses per mL of fluid.  Common values: {kb_common.DEFAULT_TICKS_PER_ML} "
+        "(FT330-RJ), 5.4 (SF800)",
     )
 
     def meter_name(self):
-        return "{}.{}".format(self.controller.name, self.port_name)
+        return f"{self.controller.name}.{self.port_name}"
 
     def __str__(self):
         return self.meter_name()
@@ -881,20 +880,20 @@ class FlowMeter(models.Model):
     def get_from_meter_name(cls, meter_name):
         idx = meter_name.find(".")
         if idx <= 0:
-            raise cls.DoesNotExist("Illegal meter_name: %s" % repr(meter_name))
+            raise cls.DoesNotExist(f"Illegal meter_name: {repr(meter_name)}")
         controller_name = meter_name[:idx]
         port_name = meter_name[idx + 1 :]
 
         try:
             controller = Controller.objects.get(name=controller_name)
         except Controller.DoesNotExist:
-            raise cls.DoesNotExist("No such controller: %s" % repr(controller_name))
+            raise cls.DoesNotExist(f"No such controller: {repr(controller_name)}")
 
         return cls.objects.get(controller=controller, port_name=port_name)
 
 
 class FlowToggle(models.Model):
-    class Meta(object):
+    class Meta:
         unique_together = ("controller", "port_name")
 
     controller = models.ForeignKey(
@@ -916,10 +915,10 @@ class FlowToggle(models.Model):
     )
 
     def toggle_name(self):
-        return "{}.{}".format(self.controller.name, self.port_name)
+        return f"{self.controller.name}.{self.port_name}"
 
     def __str__(self):
-        return "{} (tap: {})".format(self.toggle_name(), self.tap)
+        return f"{self.toggle_name()} (tap: {self.tap})"
 
     @classmethod
     def get_or_create_from_toggle_name(cls, toggle_name):
@@ -941,14 +940,14 @@ class FlowToggle(models.Model):
     def get_from_toggle_name(cls, toggle_name):
         idx = toggle_name.find(".")
         if idx <= 0:
-            raise cls.DoesNotExist("Illegal toggle_name: %s" % repr(toggle_name))
+            raise cls.DoesNotExist(f"Illegal toggle_name: {repr(toggle_name)}")
         controller_name = toggle_name[:idx]
         port_name = toggle_name[idx + 1 :]
 
         try:
             controller = Controller.objects.get(name=controller_name)
         except Controller.DoesNotExist:
-            raise cls.DoesNotExist("No such controller: %s" % repr(controller_name))
+            raise cls.DoesNotExist(f"No such controller: {repr(controller_name)}")
 
         return cls.objects.get(controller=controller, port_name=port_name)
 
@@ -1063,7 +1062,7 @@ class Keg(models.Model):
         else:
             level = 0
         kind = "thumb" if thumbnail else "full"
-        img_path = "images/keg/{}/keg-srm14-{}.png".format(kind, level)
+        img_path = f"images/keg/{kind}/keg-srm14-{level}.png"
 
         url = urllib.parse.urljoin(settings.STATIC_URL, img_path)
         if not urllib.parse.urlparse(url).scheme:
@@ -1220,7 +1219,7 @@ class Keg(models.Model):
             )[0]
 
         if keg_type not in keg_sizes.DESCRIPTIONS:
-            raise ValueError("Unrecognized keg type: %s" % keg_type)
+            raise ValueError(f"Unrecognized keg type: {keg_type}")
         if full_volume_ml is None:
             full_volume_ml = keg_sizes.VOLUMES_ML[keg_type]
         else:
@@ -1273,7 +1272,7 @@ class Keg(models.Model):
         return self
 
     def __str__(self):
-        return "Keg #{} - {}".format(self.id, self.type)
+        return f"Keg #{self.id} - {self.type}"
 
 
 def _keg_pre_save(sender, instance, **kwargs):
@@ -1308,7 +1307,7 @@ pre_save.connect(_keg_pre_save, sender=Keg)
 class Drink(models.Model):
     """Table of drinks records"""
 
-    class Meta(object):
+    class Meta:
         get_latest_by = "time"
         ordering = ("-time",)
 
@@ -1515,7 +1514,7 @@ class Drink(models.Model):
                 # it again.  If malformed, just junk it; it's non-essential information.
                 tick_time_series = time_series.to_string(time_series.from_string(tick_time_series))
             except ValueError as e:
-                logger.warning("Time series invalid, ignoring. Error was: %s" % e)
+                logger.warning(f"Time series invalid, ignoring. Error was: {e}")
                 tick_time_series = ""
 
         d = Drink(
@@ -1583,13 +1582,13 @@ class Drink(models.Model):
         signals.drink_canceled.send_robust(sender=self.__class__, drink_id=drink_id)
 
     def __str__(self):
-        return "Drink {} by {}".format(self.id, self.user)
+        return f"Drink {self.id} by {self.user}"
 
 
 class AuthenticationToken(models.Model):
     """A secret token to authenticate a user, optionally pin-protected."""
 
-    class Meta(object):
+    class Meta:
         unique_together = ("auth_device", "token_value")
 
     auth_device = models.CharField(max_length=64, help_text="Namespace for this token.")
@@ -1633,9 +1632,9 @@ class AuthenticationToken(models.Model):
         elif auth_device == "core.onewire":
             auth_device = "OneWire"
 
-        ret = "{} {}".format(auth_device, self.token_value)
+        ret = f"{auth_device} {self.token_value}"
         if self.nice_name:
-            ret += " ({})".format(self.nice_name)
+            ret += f" ({self.nice_name})"
         return ret
 
     def get_auth_device(self):
@@ -1694,7 +1693,7 @@ pre_save.connect(_auth_token_pre_save, sender=AuthenticationToken)
 class DrinkingSession(models.Model):
     """A collection of contiguous drinks."""
 
-    class Meta(object):
+    class Meta:
         get_latest_by = "start_time"
         ordering = ("-start_time",)
 
@@ -1707,7 +1706,7 @@ class DrinkingSession(models.Model):
     name = models.CharField(max_length=256, blank=True, null=True)
 
     def __str__(self):
-        return "Session #{}: {}".format(self.id, self.start_time)
+        return f"Session #{self.id}: {self.start_time}"
 
     def Duration(self):
         return self.end_time - self.start_time
@@ -1776,18 +1775,18 @@ class DrinkingSession(models.Model):
             ret = "{}, {} and {}".format(*names)
         else:
             if guest_trailer:
-                return "%s, %s and at least %i others" % (names[0], names[1], num - 2)
+                return f"{names[0]}, {names[1]} and at least {num - 2} others"
             else:
-                return "%s, %s and %i others" % (names[0], names[1], num - 2)
+                return f"{names[0]}, {names[1]} and {num - 2} others"
 
-        return "%s%s" % (ret, guest_trailer)
+        return f"{ret}{guest_trailer}"
 
     def GetTitle(self):
         if self.name:
             return self.name
         else:
             if self.id:
-                return "Session %s" % (self.id,)
+                return f"Session {self.id}"
             else:
                 # Not yet saved.
                 return "New Session"
@@ -1859,7 +1858,7 @@ class ThermoSensor(models.Model):
 
     def __str__(self):
         if self.nice_name:
-            return "{} ({})".format(self.nice_name, self.raw_name)
+            return f"{self.nice_name} ({self.raw_name})"
         return self.raw_name
 
     def LastLog(self):
@@ -1925,7 +1924,7 @@ class ThermoSensor(models.Model):
 class Thermolog(models.Model):
     """A log from an ITemperatureSensor device of periodic measurements."""
 
-    class Meta(object):
+    class Meta:
         get_latest_by = "time"
         ordering = ("-time",)
 
@@ -1934,7 +1933,7 @@ class Thermolog(models.Model):
     time = models.DateTimeField()
 
     def __str__(self):
-        return "%.2f C / %.2f F [%s]" % (self.TempC(), self.TempF(), self.time)
+        return f"{self.TempC():.2f} C / {self.TempF():.2f} F [{self.time}]"
 
     def TempC(self):
         return self.temp
@@ -1972,7 +1971,7 @@ class Stats(models.Model):
         DrinkingSession, related_name="stats", null=True, on_delete=models.CASCADE
     )
 
-    class Meta(object):
+    class Meta:
         get_latest_by = "id"
         unique_together = ("drink", "user", "keg", "session")
 
@@ -1983,7 +1982,7 @@ class Stats(models.Model):
         def safe_get_user(pk):
             try:
                 return User.objects.get(pk=pk)
-            except (User.DoesNotExist, ValueError):
+            except User.DoesNotExist, ValueError:
                 return None
 
         orig = stats.get("registered_drinkers", [])
@@ -2015,7 +2014,7 @@ class Stats(models.Model):
 
 
 class SystemEvent(models.Model):
-    class Meta(object):
+    class Meta:
         ordering = ("-id",)
         get_latest_by = "time"
 
@@ -2074,22 +2073,22 @@ class SystemEvent(models.Model):
 
     def __str__(self):
         if self.kind == self.DRINK_POURED:
-            ret = "Drink {} poured".format(self.drink.id)
+            ret = f"Drink {self.drink.id} poured"
         elif self.kind == self.SESSION_STARTED:
-            ret = "Session {} started by drink {}".format(self.session.id, self.drink.id)
+            ret = f"Session {self.session.id} started by drink {self.drink.id}"
         elif self.kind == self.SESSION_JOINED:
-            ret = "Session {} joined by {} (drink {})".format(
-                self.session.id, self.user.username, self.drink.id
+            ret = (
+                f"Session {self.session.id} joined by {self.user.username} (drink {self.drink.id})"
             )
         elif self.kind == self.KEG_TAPPED:
-            ret = "Keg {} tapped".format(self.keg.id)
+            ret = f"Keg {self.keg.id} tapped"
         elif self.kind == self.KEG_VOLUME_LOW:
-            ret = "Keg {} volume low".format(self.keg.id)
+            ret = f"Keg {self.keg.id} volume low"
         elif self.kind == self.KEG_ENDED:
-            ret = "Keg {} ended".format(self.keg.id)
+            ret = f"Keg {self.keg.id} ended"
         else:
-            ret = "Unknown event type ({})".format(self.kind)
-        return "Event {}: {}".format(self.id, ret)
+            ret = f"Unknown event type ({self.kind})"
+        return f"Event {self.id}: {ret}"
 
     @classmethod
     def build_events_for_keg(cls, keg):
@@ -2173,7 +2172,7 @@ def _pics_file_name(instance, filename, now=None, uuid_str=None):
         uuid_str = str(uuid4()).replace("-", "")
     date_str = now.strftime("%Y%m%d%H%M%S")
     ext = os.path.splitext(filename)[1]
-    new_filename = "%s-%s%s" % (date_str, uuid_str, ext)
+    new_filename = f"{date_str}-{uuid_str}{ext}"
 
     return os.path.join("pics", new_filename)
 
@@ -2233,16 +2232,16 @@ class Picture(models.Model):
     )
 
     def __str__(self):
-        return "Picture: {}".format(self.image)
+        return f"Picture: {self.image}"
 
     def get_caption(self):
         if self.caption:
             return self.caption
         elif self.drink:
             if self.user:
-                return "{} pouring drink {}".format(self.user.username, self.drink.id)
+                return f"{self.user.username} pouring drink {self.drink.id}"
             else:
-                return "An unknown drinker pouring drink {}".format(self.drink.id)
+                return f"An unknown drinker pouring drink {self.drink.id}"
         return ""
 
     def erase_and_delete(self):
@@ -2252,27 +2251,19 @@ class Picture(models.Model):
                 exists = bool(image_file)
                 if not exists:
                     logger.debug(
-                        "erase_and_delete: image.id={} spec={}: does not exist".format(
-                            self.id, spec
-                        )
+                        f"erase_and_delete: image.id={self.id} spec={spec}: does not exist"
                     )
                     continue
-                logger.debug(
-                    "erase_and_delete: image.id={} spec={}: deleting ...".format(self.id, spec)
-                )
+                logger.debug(f"erase_and_delete: image.id={self.id} spec={spec}: deleting ...")
 
                 try:
                     try:
                         default_storage.delete(image_file.path)
                     except NotImplementedError:
                         default_storage.delete(image_file.name)
-                    logger.debug(
-                        "erase_and_delete: image.id={} spec={}: deleted".format(self.id, spec)
-                    )
-                except IOError as e:
-                    logger.warning(
-                        "erase_and_delete: image.id={} spec={}: error: {}".format(self.id, spec, e)
-                    )
+                    logger.debug(f"erase_and_delete: image.id={self.id} spec={spec}: deleted")
+                except OSError as e:
+                    logger.warning(f"erase_and_delete: image.id={self.id} spec={spec}: error: {e}")
         finally:
             self.delete()
 
@@ -2280,7 +2271,7 @@ class Picture(models.Model):
 class NotificationSettings(models.Model):
     """Stores a user's notification settings for a notification backend."""
 
-    class Meta(object):
+    class Meta:
         unique_together = ("user", "backend")
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="User for these settings.")
@@ -2300,7 +2291,7 @@ class NotificationSettings(models.Model):
 class PluginData(models.Model):
     """Key/value JSON data store for plugins."""
 
-    class Meta(object):
+    class Meta:
         unique_together = ("plugin_name", "key")
 
     plugin_name = models.CharField(max_length=127, help_text="Plugin short name")

@@ -81,11 +81,11 @@ admin.site.register(models.ThermoSensor, ThermoSensorAdmin)
 
 
 def thermolog_deg_c(obj):
-    return "%.2f C" % (obj.temp,)
+    return f"{obj.temp:.2f} C"
 
 
 def thermolog_deg_f(obj):
-    return "%.2f F" % (CtoF(obj.temp),)
+    return f"{CtoF(obj.temp):.2f} F"
 
 
 class ThermologAdmin(admin.ModelAdmin):

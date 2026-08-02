@@ -1,5 +1,4 @@
 import logging
-from builtins import str
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -30,8 +29,8 @@ def handle_new_system_events(events):
         None
     """
     backends = get_backends()
-    logger.info("Handling %s event(s)" % len(events))
-    logger.info("Num backends: %s" % len(backends))
+    logger.info(f"Handling {len(events)} event(s)")
+    logger.info(f"Num backends: {len(backends)}")
     for event in events:
         handle_single_event(event, backends)
 
@@ -40,7 +39,7 @@ def handle_single_event(event, backends):
     from pykeg.core import models as core_models
 
     kind = event.kind
-    logger.info("Processing event: %s" % event.kind)
+    logger.info(f"Processing event: {event.kind}")
 
     for backend in backends:
         backend_name = backend.name()
@@ -55,14 +54,14 @@ def handle_single_event(event, backends):
         elif kind == event.KEG_ENDED:
             prefs = prefs.filter(keg_ended=True)
         else:
-            logger.info("Unknown kind: %s" % kind)
+            logger.info(f"Unknown kind: {kind}")
             prefs = []
 
-        logger.debug("Matching prefs: %s" % str(prefs))
+        logger.debug(f"Matching prefs: {str(prefs)}")
         for matching_pref in prefs:
             user = matching_pref.user
             if not user.is_active:
-                logger.info("Skipping notification for inactive user %s" % user)
+                logger.info(f"Skipping notification for inactive user {user}")
                 continue
-            logger.info("Notifying %s for event %s" % (user, kind))
+            logger.info(f"Notifying {user} for event {kind}")
             backend.notify(event, user)

@@ -34,7 +34,7 @@ def writelog(fd, log):
         method = request_info.get("method")
         path = request_info.get("request_path")
         addr = request_info.get("addr")
-        writeline(fd, "    * Request: {} {} ({})".format(method, path, addr))
+        writeline(fd, f"    * Request: {method} {path} ({addr})")
 
     traceback = log.get("traceback")
     if traceback:
@@ -54,13 +54,13 @@ def get_output(cmd):
             .strip()
         )
     except subprocess.CalledProcessError as e:
-        return "ERR ({})".format(e)
+        return f"ERR ({e})"
 
 
 def bugreport(fd):
     now = datetime.datetime.now()
-    writeline(fd, "Kegbot Server {} Bugreport".format(get_version()))
-    writeline(fd, "Generated {}".format(isodate.datetime_isoformat(now)))
+    writeline(fd, f"Kegbot Server {get_version()} Bugreport")
+    writeline(fd, f"Generated {isodate.datetime_isoformat(now)}")
 
     fd.write(SEPARATOR)
     writeline(fd, "## System info\n")
@@ -101,7 +101,7 @@ def bugreport(fd):
                 continue
             writelog(fd, log)
     except redis.RedisError as e:
-        writeline(fd, "ERR ({})".format(e))
+        writeline(fd, f"ERR ({e})")
     writeline(fd, "\n")
 
     fd.write(SEPARATOR)

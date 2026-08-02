@@ -49,7 +49,7 @@ class Runner:
         return self.running
 
     def add_command(self, command_name, command):
-        logger.debug('Adding command "{}": {}'.format(command_name, command))
+        logger.debug(f'Adding command "{command_name}": {command}')
         if command_name in self.commands:
             raise ValueError("Command already installed")
         self.commands[command_name] = command
@@ -60,7 +60,7 @@ class Runner:
         self.running = True
         self.print_startup_line()
 
-        self.logger.info("Starting commands from pid={}".format(os.getpid()))
+        self.logger.info(f"Starting commands from pid={os.getpid()}")
         dev_null_name = getattr(os, "devnull", "/dev/null")
         dev_null = os.open(dev_null_name, os.O_RDWR)
 
@@ -69,7 +69,7 @@ class Runner:
         if sys.argv[0]:
             d = os.path.dirname(sys.argv[0])
             if d not in path.split(":"):
-                path = "{}:{}".format(d, path)
+                path = f"{d}:{path}"
 
         user = os.environ.get("USER", "")
         if not user:
@@ -82,27 +82,25 @@ class Runner:
         env["PATH"] = path
         env["USER"] = user
 
-        self.logger.debug("env={}".format(repr(env)))
+        self.logger.debug(f"env={repr(env)}")
 
         for command_name, command in list(self.commands.items()):
             proc = self._launch_command(command_name, command, dev_null, env)
-            self.logger.info("Started {} (pid={})".format(command_name, proc.pid))
+            self.logger.info(f"Started {command_name} (pid={proc.pid})")
             self.watched_procs[command_name] = proc
 
         self.watch_commands()
 
     def watch_commands(self):
-        self.logger.info("Watching {} processes.".format(len(self.commands)))
+        self.logger.info(f"Watching {len(self.commands)} processes.")
         while True:
             abort = False
             for command_name, proc in list(self.watched_procs.items()):
-                self.logger.debug("Pinging {} (pid={})".format(command_name, proc.pid))
+                self.logger.debug(f"Pinging {command_name} (pid={proc.pid})")
                 proc.poll()
                 if proc.returncode is not None:
                     self.logger.info(
-                        'Process "{}" exited with returncode {}'.format(
-                            command_name, proc.returncode
-                        )
+                        f'Process "{command_name}" exited with returncode {proc.returncode}'
                     )
                     abort = True
             if abort:
@@ -114,16 +112,16 @@ class Runner:
         self.logger.info("Abort called, killing remaining processes ...")
         for command_name, proc in list(self.watched_procs.items()):
             if proc.returncode is None:
-                self.logger.info("Killing {} (pid={})".format(command_name, proc.pid))
+                self.logger.info(f"Killing {command_name} (pid={proc.pid})")
                 os.killpg(proc.pid, signal.SIGTERM)
         for command_name, proc in list(self.watched_procs.items()):
-            self.logger.info("Waiting for {} to exit (pid={}) ...".format(command_name, proc.pid))
+            self.logger.info(f"Waiting for {command_name} to exit (pid={proc.pid}) ...")
             proc.wait()
             self.logger.info("... done.")
         self.logger.info("All processes exited.")
 
     def _launch_command(self, command_name, command, dev_null, env=None):
-        self.logger.info("Launching command: {}: {}".format(command_name, command))
+        self.logger.info(f"Launching command: {command_name}: {command}")
 
         def preexec():
             # Set session id.

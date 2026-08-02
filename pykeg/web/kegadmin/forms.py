@@ -1,5 +1,3 @@
-from builtins import object, str
-
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Layout, Submit
@@ -118,14 +116,14 @@ class TapForm(forms.ModelForm):
     class FlowMeterModelChoiceField(forms.ModelChoiceField):
         def label_from_instance(self, meter):
             if meter.tap:
-                return "{} (connected to {})".format(meter, meter.tap.name)
+                return f"{meter} (connected to {meter.tap.name})"
             else:
                 return str(meter)
 
     class FlowToggleModelChoiceField(forms.ModelChoiceField):
         def label_from_instance(self, toggle):
             if toggle.tap:
-                return "{} (connected to {})".format(toggle, toggle.tap.name)
+                return f"{toggle} (connected to {toggle.tap.name})"
             else:
                 return str(toggle)
 
@@ -133,7 +131,7 @@ class TapForm(forms.ModelForm):
         def label_from_instance(self, sensor):
             last_log = sensor.LastLog()
             if last_log:
-                return "{} (Last report: {})".format(sensor, naturaltime(last_log.time))
+                return f"{sensor} (Last report: {naturaltime(last_log.time)})"
             else:
                 return str(sensor)
 
@@ -158,12 +156,12 @@ class TapForm(forms.ModelForm):
         help_text="Optional sensor monitoring the temperature at this tap.",
     )
 
-    class Meta(object):
+    class Meta:
         model = models.KegTap
         fields = ("name", "notes", "temperature_sensor", "sort_order")
 
     def __init__(self, *args, **kwargs):
-        super(TapForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if self.instance:
             self.fields["meter"].initial = self.instance.current_meter()
@@ -173,7 +171,7 @@ class TapForm(forms.ModelForm):
     def save(self, commit=True):
         if not commit:
             raise ValueError("TapForm does not support commit=False")
-        tap = super(TapForm, self).save(commit=True)
+        tap = super().save(commit=True)
         tap.connect_meter(self.cleaned_data["meter"])
         tap.connect_toggle(self.cleaned_data["toggle"])
         return tap
@@ -312,7 +310,7 @@ class KegForm(forms.Form):
 
 
 class EditKegForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.Keg
         fields = (
             "type",
@@ -347,7 +345,7 @@ class EditKegForm(forms.ModelForm):
 
 
 class GeneralSiteSettingsForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.KegbotSite
         fields = (
             "title",
@@ -374,7 +372,7 @@ class GeneralSiteSettingsForm(forms.ModelForm):
 class LocationSiteSettingsForm(forms.ModelForm):
     guest_image = forms.ImageField(required=False, help_text='Custom image for the "guest" user.')
 
-    class Meta(object):
+    class Meta:
         model = models.KegbotSite
         fields = (
             "volume_display_units",
@@ -395,7 +393,7 @@ class LocationSiteSettingsForm(forms.ModelForm):
 
 
 class AdvancedSiteSettingsForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.KegbotSite
         fields = (
             "session_timeout_minutes",
@@ -416,7 +414,7 @@ class AdvancedSiteSettingsForm(forms.ModelForm):
 
 
 class BeverageForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.Beverage
         fields = (
             "name",
@@ -460,7 +458,7 @@ class BeverageForm(forms.ModelForm):
 
 
 class BeverageProducerForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.BeverageProducer
         fields = (
             "name",
@@ -492,7 +490,7 @@ class FindUserForm(forms.Form):
 
 
 class UserForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.User
         fields = (
             "username",
@@ -515,14 +513,14 @@ class UserForm(forms.ModelForm):
 
 
 class UserProfileForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.User
         fields = ("username", "display_name", "email")
 
     new_mugshot = forms.ImageField(required=False)
 
     def save(self, *args, **kwargs):
-        user = super(UserProfileForm, self).save(*args, **kwargs)
+        user = super().save(*args, **kwargs)
         image = self.cleaned_data.get("new_mugshot")
         if image:
             pic = models.Picture.objects.create(user=user)
@@ -534,7 +532,7 @@ class UserProfileForm(forms.ModelForm):
 
 
 class TokenForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.AuthenticationToken
         fields = (
             "nice_name",
@@ -579,7 +577,7 @@ class DeleteTokenForm(forms.Form):
 
 
 class AddTokenForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.AuthenticationToken
         fields = (
             "auth_device",
@@ -740,19 +738,19 @@ class TestEmailForm(forms.Form):
 
 
 class NewFlowMeterForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.FlowMeter
         fields = ("port_name", "ticks_per_ml", "controller")
 
 
 class UpdateFlowMeterForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.FlowMeter
         fields = ("ticks_per_ml",)
 
 
 class AddFlowMeterForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.FlowMeter
         fields = ("port_name", "ticks_per_ml", "controller")
 
@@ -769,13 +767,13 @@ class AddFlowMeterForm(forms.ModelForm):
 
 
 class FlowToggleForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.FlowToggle
         fields = ("port_name", "controller")
 
 
 class AddFlowToggleForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.FlowToggle
         fields = ("port_name", "controller")
 
@@ -801,7 +799,7 @@ class DeleteControllerForm(forms.Form):
 
 
 class ControllerForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.Controller
         fields = ("name", "model_name", "serial_number")
 

@@ -11,12 +11,12 @@ class Command(RunnerCommand):
 
         server_command = "kegbot run_server"
         if logs_dir:
-            server_command += " --logs_dir={}".format(logs_dir)
+            server_command += f" --logs_dir={logs_dir}"
         ret.append(("server", server_command))
 
         workers_command = "kegbot run_workers"
         if logs_dir:
-            workers_command += " --logs_dir={}".format(logs_dir)
+            workers_command += f" --logs_dir={logs_dir}"
         ret.append(("workers", workers_command))
 
         return ret

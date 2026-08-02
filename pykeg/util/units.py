@@ -1,4 +1,3 @@
-from builtins import object
 from enum import Enum
 
 
@@ -19,7 +18,7 @@ class UNITS(Enum):
     Hogshead = 238480.9434
 
 
-class Quantity(object):
+class Quantity:
     def __init__(self, amount, units=UNITS.Milliliter, from_units=None):
         self._units = units
         self._amount = self.convert(amount, units, from_units) if from_units else amount
@@ -28,10 +27,10 @@ class Quantity(object):
             def fn(unit=unit):
                 return self.ConvertTo(unit)._amount
 
-            setattr(self, "In{}s".format(unit.name), fn)
+            setattr(self, f"In{unit.name}s", fn)
 
     def __str__(self):
-        return "{} {}".format(self._amount, self._units.name)
+        return f"{self._amount} {self._units.name}"
 
     def __add__(self, other, subtract=False):
         val = 0

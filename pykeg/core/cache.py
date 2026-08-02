@@ -1,5 +1,4 @@
 import time
-from builtins import object, str
 
 from django.conf import settings
 from django.core.cache import cache as django_cache
@@ -10,7 +9,7 @@ from django.core.cache import cache as django_cache
 SEP = ":"
 
 
-class KegbotCache(object):
+class KegbotCache:
     """Wrapper around django cache, supporting Kegbot-specific features.
 
     Primarily, this wrapper facilitates "generational" or "namespaced" caching,

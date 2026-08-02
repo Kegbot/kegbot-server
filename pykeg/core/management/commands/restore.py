@@ -15,7 +15,7 @@ class Command(BaseCommand):
             raise CommandError("Must provide a zipfile path")
         backup_path = os.path.normpath(os.path.expanduser(args[0]))
         if not os.path.exists(backup_path):
-            raise CommandError("Archive does not exist: {}".format(backup_path))
+            raise CommandError(f"Archive does not exist: {backup_path}")
 
         try:
             backup.restore(backup_path)

@@ -1,5 +1,4 @@
 import logging
-from builtins import object
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -25,7 +24,7 @@ WHITELISTED_API_PATHS = (
 WHITELISTED_API_PATHS += getattr(settings, "KEGBOT_EXTRA_WHITELISTED_API_PATHS", ())
 
 
-class ApiRequestMiddleware(object):
+class ApiRequestMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -83,4 +82,4 @@ class ApiRequestMiddleware(object):
 
 
 def cache_key(request):
-    return "api:%s" % request.get_full_path()
+    return f"api:{request.get_full_path()}"

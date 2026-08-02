@@ -1,7 +1,5 @@
 """Kegweb main views."""
 
-from builtins import range, str
-
 from django.contrib import messages
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.shortcuts import get_object_or_404, redirect, render
@@ -262,7 +260,7 @@ class SessionDateDetailView(DateDetailView):
 
     def get_context_data(self, **kwargs):
         """Adds `stats` to the context."""
-        ret = super(SessionDateDetailView, self).get_context_data(**kwargs)
+        ret = super().get_context_data(**kwargs)
         stats = ret[self.context_object_name].get_stats()
         ret["stats"] = stats
         ret["kegs"] = [models.Keg.objects.get(pk=pk) for pk in stats.get("keg_ids", [])]

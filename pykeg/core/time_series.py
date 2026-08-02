@@ -20,11 +20,11 @@ def from_string(s):
         time = int(time)
         amount = int(amount)
         if time < 0:
-            raise ValueError("Time cannot be less than zero: %s" % time)
+            raise ValueError(f"Time cannot be less than zero: {time}")
         ret.append((time, amount))
     return ret
 
 
 def to_string(pairs):
     """Converts a series of (int, int) tuples to a time series string."""
-    return " ".join("%i:%i" % pair for pair in pairs)
+    return " ".join(f"{pair[0]}:{pair[1]}" for pair in pairs)

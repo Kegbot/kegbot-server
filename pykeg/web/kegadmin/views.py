@@ -136,7 +136,7 @@ def email(request):
                 context["settings_url"] = context["site_url"] + "/account"
                 message = build_message(address, "notification/email_test.html", context)
                 message.send(fail_silently=True)
-                messages.success(request, "E-mail successfully sent to %s" % address)
+                messages.success(request, f"E-mail successfully sent to {address}")
 
     context["email_configured"] = email_configured
 
@@ -345,7 +345,7 @@ def tap_detail(request, tap_id):
             end_keg_form = forms.EndKegForm(request.POST)
             if end_keg_form.is_valid():
                 old_keg = tap.end_current_keg()
-                messages.success(request, "Keg %s was ended." % old_keg.id)
+                messages.success(request, f"Keg {old_keg.id} was ended.")
 
         elif "submit_record_drink" in request.POST:
             record_drink_form = forms.RecordDrinkForm(request.POST)
@@ -353,7 +353,7 @@ def tap_detail(request, tap_id):
                 user = record_drink_form.cleaned_data.get("user")
                 volume_ml = record_drink_form.cleaned_data.get("volume_ml")
                 d = models.Drink.record_drink(tap, ticks=0, username=user, volume_ml=volume_ml)
-                messages.success(request, "Drink %s recorded." % d.id)
+                messages.success(request, f"Drink {d.id} recorded.")
             else:
                 messages.error(request, "Please enter a valid volume and user.")
 
@@ -492,7 +492,7 @@ def user_list(request):
                 user = models.User.objects.get(username=username)
                 return redirect("kegadmin-edit-user", user.id)
             except models.User.DoesNotExist:
-                messages.error(request, 'User "%s" does not exist.' % username)
+                messages.error(request, f'User "{username}" does not exist.')
 
     users = models.User.objects.exclude(username="guest").order_by("-id")
     paginator = Paginator(users, 25)
@@ -519,7 +519,7 @@ def add_user(request):
             instance = form.save(commit=False)
             instance.set_password(form.cleaned_data.get("password"))
             instance.save()
-            messages.success(request, 'User "%s" created.' % instance.username)
+            messages.success(request, f'User "{instance.username}" created.')
             return redirect("kegadmin-users")
     context["form"] = form
     return render(request, "kegadmin/add_user.html", context=context)
@@ -538,7 +538,7 @@ def user_detail(request, user_id):
             else:
                 edit_user.is_active = True
                 edit_user.save()
-                messages.success(request, "User %s was enabled." % edit_user.username)
+                messages.success(request, f"User {edit_user.username} was enabled.")
 
         elif "submit_disable" in request.POST:
             if edit_user.is_guest():
@@ -548,7 +548,7 @@ def user_detail(request, user_id):
             else:
                 edit_user.is_active = False
                 edit_user.save()
-                messages.success(request, "User %s was disabled." % edit_user.username)
+                messages.success(request, f"User {edit_user.username} was disabled.")
 
         elif "submit_add_staff" in request.POST:
             if edit_user.is_staff:
@@ -556,7 +556,7 @@ def user_detail(request, user_id):
             else:
                 edit_user.is_staff = True
                 edit_user.save()
-                messages.success(request, "User %s staff status enabled." % edit_user.username)
+                messages.success(request, f"User {edit_user.username} staff status enabled.")
 
         elif "submit_remove_staff" in request.POST:
             if edit_user.is_guest():
@@ -566,13 +566,13 @@ def user_detail(request, user_id):
             else:
                 edit_user.is_staff = False
                 edit_user.save()
-                messages.success(request, "User %s staff status disabled." % edit_user.username)
+                messages.success(request, f"User {edit_user.username} staff status disabled.")
 
         elif "submit_update_profile" in request.POST:
             profile_form = forms.UserProfileForm(request.POST, request.FILES, instance=edit_user)
             if profile_form.is_valid():
                 profile_form.save()
-                messages.success(request, "User %s e-profile updated" % edit_user.username)
+                messages.success(request, f"User {edit_user.username} e-profile updated")
 
         else:
             messages.error(request, "Unknown form submitted.")
@@ -639,7 +639,7 @@ def drink_edit(request, drink_id):
         old_keg = drink.keg
         if form.is_valid():
             drink.cancel_drink()
-            messages.success(request, "Drink %s was cancelled." % drink_id)
+            messages.success(request, f"Drink {drink_id} was cancelled.")
             return redirect(old_keg.get_absolute_url())
         else:
             messages.error(request, "Invalid request")
@@ -650,7 +650,7 @@ def drink_edit(request, drink_id):
         old_keg = drink.keg
         if form.is_valid():
             drink.cancel_drink(spilled=True)
-            messages.success(request, "Drink %s was spilled." % drink_id)
+            messages.success(request, f"Drink {drink_id} was spilled.")
             return redirect(old_keg.get_absolute_url())
         else:
             messages.error(request, "Invalid request")
@@ -662,7 +662,7 @@ def drink_edit(request, drink_id):
             new_user = form.cleaned_data["user"]
             try:
                 drink.reassign(new_user)
-                messages.success(request, "Drink %s was reassigned." % drink_id)
+                messages.success(request, f"Drink {drink_id} was reassigned.")
             except models.User.DoesNotExist:
                 messages.error(request, "No such user")
         else:
@@ -677,7 +677,7 @@ def drink_edit(request, drink_id):
                 messages.warning(request, "Drink volume unchanged.")
             else:
                 drink.set_volume(volume_ml)
-                messages.success(request, "Drink %s was updated." % drink_id)
+                messages.success(request, f"Drink {drink_id} was updated.")
         else:
             messages.error(request, "Please provide a valid volume.")
         return redirect(drink.get_absolute_url())
@@ -967,7 +967,7 @@ def autocomplete_token(request):
 def plugin_settings(request, plugin_name):
     plugin = request.plugins.get(plugin_name, None)
     if not plugin:
-        raise Http404('Plugin "%s" not loaded' % plugin_name)
+        raise Http404(f'Plugin "{plugin_name}" not loaded')
 
     view = plugin.get_admin_settings_view()
     if not view:
@@ -1003,11 +1003,11 @@ def link_device(request):
             result = re.match("^([A-Z1-9]{3})-?([A-Z1-9]{3})$", code.upper())
             if not result:
                 messages.error('Link code is not in the form of "XXX-XXX"')
-            code = "{}-{}".format(result.group(1), result.group(2))
+            code = f"{result.group(1)}-{result.group(2)}"
             try:
                 status = devicelink.confirm_link(code)
                 name = status.get("name", "New device")
-                messages.success(request, "{} linked!".format(name))
+                messages.success(request, f"{name} linked!")
             except devicelink.LinkExpiredException:
                 messages.error(request, "Code incorrect or expired.")
             return redirect("kegadmin-link-device")

@@ -16,7 +16,7 @@ class NeedMigration(DatabaseStatusError):
     """Thrown when a migration is needed."""
 
     def __init__(self, migration_name):
-        super(NeedMigration, self).__init__('Migration "{}" not applied'.format(migration_name))
+        super().__init__(f'Migration "{migration_name}" not applied')
         self.migration_name = migration_name
 
 

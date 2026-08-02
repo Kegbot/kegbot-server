@@ -1,5 +1,3 @@
-from builtins import object
-
 from django import forms
 
 from pykeg.core import models
@@ -40,7 +38,7 @@ class ThermoPostForm(forms.Form):
 
 
 class CreateKegTapForm(forms.ModelForm):
-    class Meta(object):
+    class Meta:
         model = models.KegTap
         fields = ("name", "notes")
 

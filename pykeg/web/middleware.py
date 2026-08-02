@@ -217,6 +217,4 @@ class PrivacyMiddleware:
                 return render(request, "kegweb/members_only.html", status=401)
             return None
 
-        return HttpResponse(
-            "Server misconfigured, unknown privacy setting:%s" % privacy, status=500
-        )
+        return HttpResponse(f"Server misconfigured, unknown privacy setting:{privacy}", status=500)

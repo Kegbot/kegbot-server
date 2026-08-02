@@ -14,10 +14,10 @@ def pytest_load_initial_conftests(early_config, parser, args):
     global TEMP_DATA_DIR
     TEMP_DATA_DIR = tempfile.mkdtemp()
     os.environ["KEGBOT_DATA_DIR"] = TEMP_DATA_DIR
-    logger.info("setting KEGBOT_DATA_DIR to {}".format(TEMP_DATA_DIR))
+    logger.info(f"setting KEGBOT_DATA_DIR to {TEMP_DATA_DIR}")
 
 
 @pytest.hookimpl
 def pytest_sessionfinish(session, exitstatus):
-    logger.info("removing KEGBOT_DATA_DIR {}".format(TEMP_DATA_DIR))
+    logger.info(f"removing KEGBOT_DATA_DIR {TEMP_DATA_DIR}")
     shutil.rmtree(TEMP_DATA_DIR)

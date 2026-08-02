@@ -22,9 +22,9 @@ class Command(BaseCommand):
             try:
                 user = models.User.objects.get(username=from_username)
             except models.User.DoesNotExist:
-                raise CommandError('User named "{}" does not exist'.format(from_username))
+                raise CommandError(f'User named "{from_username}" does not exist')
 
             user.username = to_username
             user.save()
 
-        print('"{}" has been renamed "{}"'.format(from_username, to_username))
+        print(f'"{from_username}" has been renamed "{to_username}"')

@@ -27,8 +27,8 @@ class Command(BaseCommand):
         if hasattr(storage, "location"):
             path = os.path.join(storage.location, path)
         print("Backup complete!")
-        print("Path: {}".format(path))
+        print(f"Path: {path}")
         try:
-            print("URL: {}".format(storage.url(location)))
-        except (NotImplementedError, UnknownBaseUrlException):
+            print(f"URL: {storage.url(location)}")
+        except NotImplementedError, UnknownBaseUrlException:
             pass

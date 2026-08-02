@@ -15,11 +15,11 @@ def kbsite(request):
 
     sso_login_url = getattr(settings, "SSO_LOGIN_URL", "")
     if sso_login_url:
-        sso_login_url = "{}?{}".format(sso_login_url, redir)
+        sso_login_url = f"{sso_login_url}?{redir}"
 
     sso_logout_url = getattr(settings, "SSO_LOGOUT_URL", "")
     if sso_logout_url:
-        sso_logout_url = "{}?{}".format(sso_logout_url, redir)
+        sso_logout_url = f"{sso_logout_url}?{redir}"
 
     ret = {
         "DEBUG": settings.DEBUG,

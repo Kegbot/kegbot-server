@@ -2,7 +2,6 @@
 
 import logging
 import subprocess
-from builtins import str
 
 from django.apps import apps
 from django.conf import settings
@@ -40,9 +39,9 @@ def is_installed():
     args += ["-e", "'show tables like \"core_kegbotsite\";'"]
 
     cmd = " ".join(args)
-    logger.info("command: {}".format(cmd))
+    logger.info(f"command: {cmd}")
     output = subprocess.check_output(cmd, shell=True)
-    logger.info("result: {}".format(output))
+    logger.info(f"result: {output}")
     return "core_kegbotsite" in output
 
 
@@ -87,10 +86,10 @@ def erase():
 
     # Build the sql command.
     tables = [str(model._meta.db_table) for model in apps.get_models()]
-    query = ["DROP TABLE IF EXISTS {};".format(t) for t in tables]
+    query = [f"DROP TABLE IF EXISTS {t};" for t in tables]
     query = ["SET FOREIGN_KEY_CHECKS=0;"] + query + ["SET FOREIGN_KEY_CHECKS=1;"]
     query = " ".join(query)
 
-    cmd = " ".join(args + ["-e", "'{}'".format(query)])
+    cmd = " ".join(args + ["-e", f"'{query}'"])
     logger.info(cmd)
     subprocess.check_call(cmd, shell=True)

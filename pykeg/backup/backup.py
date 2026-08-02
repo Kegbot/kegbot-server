@@ -125,7 +125,7 @@ def create_backup_tree(date, storage, include_media=True):
                 os.makedirs(output_dirname)
             with storage.open(full_filename, "r") as srcfile:
                 with open(output_filename, "w") as dstfile:
-                    logger.debug("+++ Creating {}".format(output_filename))
+                    logger.debug(f"+++ Creating {output_filename}")
                     shutil.copyfileobj(srcfile, dstfile)
                     metadata[META_NUM_MEDIA_FILES] += 1
         for subdir in subdirs:
@@ -171,7 +171,7 @@ def create_backup_zip(backup_dir, backup_name):
             rel_path = os.path.relpath(full_path, backup_dir)
             archive_path = os.path.join(backup_name, rel_path)
             zf.write(full_path, archive_path)
-            logger.debug("Added to zip: {}".format(archive_path))
+            logger.debug(f"Added to zip: {archive_path}")
 
     zf.close()
     return zipfile_path
@@ -186,7 +186,7 @@ def backup(storage=default_storage, include_media=True):
     date = timezone.now()
     site_slug = slugify(get_title())
     date_str = date.strftime("%Y%m%d-%H%M%S")
-    backup_name = "{slug}-{date}".format(slug=site_slug, date=date_str)
+    backup_name = f"{site_slug}-{date_str}"
 
     backup_dir = create_backup_tree(date=date, storage=storage, include_media=include_media)
     try:
@@ -198,8 +198,8 @@ def backup(storage=default_storage, include_media=True):
                 for chunk in iter(lambda: f.read(2**20), b""):
                     sha1.update(chunk)
             digest = sha1.hexdigest()
-            saved_zip_name = os.path.join(BACKUPS_DIRNAME, "{}-{}.zip".format(backup_name, digest))
-            with open(temp_zip, "r") as temp_zip_file:
+            saved_zip_name = os.path.join(BACKUPS_DIRNAME, f"{backup_name}-{digest}.zip")
+            with open(temp_zip) as temp_zip_file:
                 ret = storage.save(saved_zip_name, temp_zip_file)
                 return ret
         finally:
@@ -211,7 +211,7 @@ def backup(storage=default_storage, include_media=True):
 def extract_backup(backup_file):
     assert sys.version_info[:3] >= (2, 7, 4), "Unsafe to extract ZIPs in this Python version"
     backup_dir = tempfile.mkdtemp()
-    logger.debug("Extracting backup to {}".format(backup_dir))
+    logger.debug(f"Extracting backup to {backup_dir}")
     zf = zipfile.ZipFile(backup_file, mode="r")
     zf.extractall(path=backup_dir)
     return backup_dir
@@ -225,10 +225,10 @@ def verify_backup_directory(backup_dir):
     if not os.path.exists(metadata_file):
         raise InvalidBackup("SQL dumpfile does not exist")
 
-    metadata = kbjson.loads(open(metadata_file, "r").read())
+    metadata = kbjson.loads(open(metadata_file).read())
     format = metadata.get(META_BACKUP_FORMAT)
     if format != BACKUP_FORMAT:
-        raise InvalidBackup("Unsupported backup format: {}".format(format))
+        raise InvalidBackup(f"Unsupported backup format: {format}")
 
     return metadata
 
@@ -240,13 +240,13 @@ def restore_media(backup_dir, storage):
         for filename in files:
             full_path = os.path.join(dirname, filename)
             rel_path = os.path.relpath(full_path, media_dir)
-            with open(full_path, "r") as data:
-                logger.debug("+++ Restoring file {}".format(rel_path))
+            with open(full_path) as data:
+                logger.debug(f"+++ Restoring file {rel_path}")
                 storage.save(rel_path, data)
 
 
 def restore_from_directory(backup_dir, storage=default_storage):
-    logger.info("Restoring from {} ...".format(backup_dir))
+    logger.info(f"Restoring from {backup_dir} ...")
 
     if db_impl.is_installed():
         raise AlreadyInstalledError("You must erase this system before restoring.")
@@ -255,12 +255,10 @@ def restore_from_directory(backup_dir, storage=default_storage):
     current_engine = db_impl.engine_name()
     saved_engine = metadata[META_DB_ENGINE]
     if current_engine != saved_engine:
-        raise BackupError(
-            "Current DB is {}; cannot restore from {}".format(current_engine, db_impl)
-        )
+        raise BackupError(f"Current DB is {current_engine}; cannot restore from {db_impl}")
 
     input_filename = os.path.join(backup_dir, SQL_FILENAME)
-    with open(input_filename, "r") as in_fd:
+    with open(input_filename) as in_fd:
         db_impl.restore(in_fd)
 
     restore_media(backup_dir, storage)
@@ -277,7 +275,7 @@ def restore(backup_file):
         restore_from_directory(backup_file)
         return
 
-    logger.info("Restoring from {} ...".format(backup_file))
+    logger.info(f"Restoring from {backup_file} ...")
     unzipped_dir = extract_backup(backup_file)
     try:
         dirs = os.listdir(unzipped_dir)
@@ -298,7 +296,7 @@ def erase(storage=default_storage):
         subdirs, files = storage.listdir(dirname)
         for filename in files:
             full_name = os.path.join(dirname, filename)
-            logger.debug("Deleting file: {}".format(full_name))
+            logger.debug(f"Deleting file: {full_name}")
             storage.delete(full_name)
         for subdir in subdirs:
             delete_files(dirname)

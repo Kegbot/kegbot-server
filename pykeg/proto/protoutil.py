@@ -2,8 +2,6 @@
 
 import datetime
 
-TIME_ZONE = "UTC"
-
 
 def ProtoMessageToDict(message):
     ret = {}
@@ -43,10 +41,10 @@ def DictToProtoMessage(values, out_message):
                 out = getattr(out_message, name)
                 for v in value:
                     if isinstance(v, datetime.datetime):
-                        v = util.datetime_to_iso8601str(v, TIME_ZONE)
+                        v = v.isoformat()
                     out.append(v)
             else:
                 if isinstance(value, datetime.datetime):
-                    value = util.datetime_to_iso8601str(value, TIME_ZONE)
+                    value = value.isoformat()
                 setattr(out_message, name, value)
     return out_message

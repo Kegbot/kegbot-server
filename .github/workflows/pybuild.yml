@@ -2,32 +2,83 @@ name: Python Build & Test
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  py_build_and_test:
+  test:
+    name: 'Build and test (${{ matrix.database }})'
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [sqlite, mysql, postgres]
+        include:
+          - database: sqlite
+            database_url: sqlite:///test-db.sqlite
+          - database: mysql
+            database_url: mysql://root:cipass@127.0.0.1/kegbot_ci
+          - database: postgres
+            database_url: postgres://postgres:cipass@127.0.0.1/kegbot_ci
 
-      - name: Setup Python
-        uses: actions/setup-python@v1
+    services:
+      mysql:
+        image: ${{ matrix.database == 'mysql' && 'mysql:8' || '' }}
+        env:
+          MYSQL_ROOT_PASSWORD: cipass
+          MYSQL_DATABASE: kegbot_ci
+        ports:
+          - 3306:3306
+        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
+
+      postgres:
+        image: ${{ matrix.database == 'postgres' && 'postgres:16' || '' }}
+        env:
+          POSTGRES_PASSWORD: cipass
+          POSTGRES_DB: kegbot_ci
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 10
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: ${{ matrix.database_url }}
+      REDIS_URL: redis://localhost:6379/0
+      KEGBOT_SECRET_KEY: changeme
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: '3.14'
+
+      - name: Install system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            default-libmysqlclient-dev libpq-dev pkg-config
 
       - name: Install dependencies
-        run: |
-          pip install poetry docker-compose
-          poetry install -n
+        run: uv sync --all-groups
 
-      - name: Run mysql & redis
-        run: |
-          docker-compose -f testdata/test-docker-compose.yml up -d
-          sleep 10 && ./bin/wait-for-container.sh testdata_mysql_1
+      - name: Run migrations
+        run: uv run bin/kegbot migrate --noinput
 
-      - name: pytest
-        run: DATABASE_URL=mysql://root:changeme@127.0.0.1:3306/kegbot_dev REDIS_URL=redis:// KEGBOT_SECRET_KEY=changeme poetry run pytest
+      - name: Collect static files
+        run: uv run bin/kegbot collectstatic --noinput -v 0
+
+      - name: Run tests
+        run: uv run pytest
+
+      - name: Run lint checks
+        run: uv run ruff check

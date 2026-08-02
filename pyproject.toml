@@ -22,8 +22,6 @@ dependencies = [
     "fakeredis",
     "freezegun>=1.2.1,<2",
     "future>=0.18.2,<0.19",
-    "gevent",
-    "gunicorn",
     "httplib2",
     "isodate",
     "mysqlclient",
@@ -38,6 +36,7 @@ dependencies = [
     "requests",
     "requests-oauthlib",
     "rq>=2,<3",
+    "waitress>=3,<4",
     "whitenoise",
 ]
 

@@ -163,6 +163,19 @@ CACHES = {
     },
 }
 
+# When running the test suite without an explicit REDIS_URL, back every redis
+# cache with an in-process fakeredis so the suite needs no redis server. CI sets
+# REDIS_URL and continues to exercise a real redis.
+if config.IS_RUNNING_PYTEST and "REDIS_URL" not in os.environ:
+    import fakeredis
+
+    for _cache in CACHES.values():
+        if _cache.get("BACKEND") == "django_redis.cache.RedisCache":
+            _cache["LOCATION"] = "redis://localhost:6379/0"
+            _cache["OPTIONS"]["CONNECTION_POOL_KWARGS"] = {
+                "connection_class": fakeredis.FakeConnection
+            }
+
 INTERNAL_IPS = ("127.0.0.1",)
 
 # Set to true if the database admin module should be enabled.

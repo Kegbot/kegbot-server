@@ -1,7 +1,6 @@
 {% extends "kegadmin/base.html" %}
 {% load kegweblib %}
 {% load crispy_forms_tags %}
-{% load bootstrap_pagination %}
 
 {% block title %}Kegbot Admin: Users | {{ block.super }}{% endblock %}
 {% block pagetitle %}Kegbot Admin: Users{% endblock %}
@@ -50,6 +49,6 @@
 </tr>
 </tbody>
 </table>
-{% bootstrap_paginate users %}
+{% include "kegweb/_pagination.html" with page=users %}
 
 {% endblock %}

@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load kegweblib %}
-{% load bootstrap_pagination %}
 
 {% block content %}
 <div class="row">
@@ -24,7 +23,7 @@
 
 <div class="row">
 <div class="span8">
-{% bootstrap_paginate page_obj range=10 %}
+{% include "kegweb/_pagination.html" with page=page_obj %}
 </div>
 </div>
 

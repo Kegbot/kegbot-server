@@ -1,7 +1,6 @@
 {% extends "kegadmin/base.html" %}
 {% load kegweblib %}
 {% load crispy_forms_tags %}
-{% load bootstrap_pagination %}
 
 {% block title %}Kegbot Admin: Brewers | {{ block.super }}{% endblock %}
 {% block pagetitle %}Kegbot Admin: Brewers{% endblock %}
@@ -38,6 +37,6 @@
 </tbody>
 </table>
 
-{% bootstrap_paginate brewers %}
+{% include "kegweb/_pagination.html" with page=brewers %}
 
 {% endblock %}

@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load kegweblib %}
-{% load bootstrap_pagination %}
 
 {% block title %}Keg {{ keg.id }}: Sessions | {{ block.super }}{% endblock %}
 {% block pagetitle %}Keg {{ keg.id }}: Sessions{% endblock %}
@@ -12,7 +11,7 @@
     {% for session in sessions %}
       {% include "kegweb/keg-session.html" %}
     {% endfor %}
-    {% bootstrap_paginate sessions %}
+    {% include "kegweb/_pagination.html" with page=sessions %}
     {% endif %}
   </div>
 

@@ -1,7 +1,6 @@
 {% extends "kegadmin/base.html" %}
 {% load kegweblib %}
 {% load crispy_forms_tags %}
-{% load bootstrap_pagination %}
 
 {% block title %}Kegbot Admin: Drinks | {{ block.super }}{% endblock %}
 {% block pagetitle %}Kegbot Admin: Drinks{% endblock %}
@@ -9,7 +8,7 @@
 {% block kegadmin-main %}
 
 {% crispy delete_drinks_form %}
-{% bootstrap_paginate drinks %}
+{% include "kegweb/_pagination.html" with page=drinks %}
 
 {% endblock %}
 

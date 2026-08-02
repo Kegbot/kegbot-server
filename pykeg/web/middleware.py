@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.db import connection
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -104,8 +105,13 @@ class IsSetupMiddleware:
 
         # Skip all checks if we're in the setup wizard.
         if request.path.startswith("/setup"):
-            request.session = {}
-            request.session["_auth_user_backend"] = None
+            # On a fresh install the session table doesn't exist yet, so a real
+            # session read/write would crash; stub it out until migrations (run
+            # in the wizard's first step) create the table. Once it exists, keep
+            # the real session so the wizard can log the new admin in.
+            if "django_session" not in connection.introspection.table_names():
+                request.session = {}
+                request.session["_auth_user_backend"] = None
             return self.get_response(request)
 
         # First confirm the database is working.

@@ -8,7 +8,7 @@ def ProtoMessageToDict(message):
     # if not message.IsInitialized():
     #  raise ValueError, 'Message not initialized'
     for descriptor, value in message.ListFields():
-        if descriptor.label == descriptor.LABEL_REPEATED:
+        if descriptor.is_repeated:
             if descriptor.type == descriptor.TYPE_MESSAGE:
                 ret[descriptor.name] = [ProtoMessageToDict(v) for v in value]
             else:
@@ -24,20 +24,20 @@ def ProtoMessageToDict(message):
 def DictToProtoMessage(values, out_message):
     for name, field in out_message.DESCRIPTOR.fields_by_name.items():
         if name not in values:
-            if field.label == field.LABEL_REQUIRED:
+            if field.is_required:
                 raise ValueError(f"Missing required field {name}")
             continue
 
         value = values.get(name)
         if field.type == field.TYPE_MESSAGE:
             inner_message = getattr(out_message, name)
-            if field.label == field.LABEL_REPEATED:
+            if field.is_repeated:
                 for subval in value:
                     DictToProtoMessage(subval, inner_message.add())
             else:
                 DictToProtoMessage(value, inner_message)
         else:
-            if field.label == field.LABEL_REPEATED:
+            if field.is_repeated:
                 out = getattr(out_message, name)
                 for v in value:
                     if isinstance(v, datetime.datetime):

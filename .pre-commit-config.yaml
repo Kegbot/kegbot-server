@@ -1,6 +1,5 @@
 default_language_version:
-  # Bumped to python3.14 in the Python 3.14 phase.
-  python: python3.11
+  python: python3.14
 
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv

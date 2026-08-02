@@ -3,7 +3,6 @@
 import os
 import subprocess
 import sys
-from builtins import *
 
 import django
 from django.core import management
@@ -13,7 +12,7 @@ from pykeg.util import bugreport
 
 if sys.version_info < (2, 7):
     sys.stderr.write(
-        "Error: Kegbot needs Python 2.7 or newer.\n\n" "Current version: %s\n" % sys.version
+        "Error: Kegbot needs Python 2.7 or newer.\n\nCurrent version: %s\n" % sys.version
     )
     sys.exit(1)
 

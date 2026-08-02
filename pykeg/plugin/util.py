@@ -3,8 +3,8 @@ import logging
 from importlib import import_module
 
 from django.conf import settings
-from django.conf.urls import url
 from django.core.exceptions import ImproperlyConfigured
+from django.urls import re_path
 from django.utils import timezone
 
 from .plugin import Plugin
@@ -63,7 +63,7 @@ def _to_urls(urllist, short_name):
     for regex, fn, viewname in urllist:
         regex = "plugin/%s/%s" % (short_name, regex)
         viewname = "plugin-%s-%s" % (short_name, viewname)
-        urls.append(url(regex, fn, name=viewname))
+        urls.append(re_path(regex, fn, name=viewname))
     return urls
 
 

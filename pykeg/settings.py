@@ -47,7 +47,7 @@ INSTALLED_APPS = (
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "crispy_forms",
-    "bootstrap_pagination",
+    "crispy_bootstrap4",
     "imagekit",
     "gunicorn",
     "corsheaders",
@@ -72,13 +72,27 @@ if KEGBOT_ENV == ENV_TEST:
     # During tests, whitenoise's manifest will not be available and
     # errors will be thrown while trying to access static files.
     # Use the default static backend to work around this.
-    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+    _STATICFILES_BACKEND = "django.contrib.staticfiles.storage.StaticFilesStorage"
 else:
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    _STATICFILES_BACKEND = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Storage backends (Django 5.1+ replaced DEFAULT_FILE_STORAGE / STATICFILES_STORAGE).
+STORAGES = {
+    "default": {
+        "BACKEND": "pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": _STATICFILES_BACKEND,
+    },
+}
+
+# crispy-forms 2.x template pack (Bootstrap 4).
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
+CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 # Default session serialization.
 
-SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
+SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
 
 # Kegweb specific stuff
 
@@ -197,6 +211,11 @@ RQ_QUEUES = {
     },
 }
 
+# django-rq defers enqueue until the DB transaction commits. Under pytest the
+# suite runs inside TestCase (which rolls back and never fires on_commit), so
+# enqueue immediately there to keep synchronous (ASYNC=False) jobs running inline.
+RQ = {"COMMIT_MODE": "auto" if config.IS_RUNNING_PYTEST else "on_db_commit"}
+
 # logging
 
 LOGGING = {
@@ -279,8 +298,7 @@ EMAIL_SUBJECT_PREFIX = ""
 # Imagekit
 IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = "imagekit.imagecache.NonValidatingImageCacheBackend"
 
-# Storage
-DEFAULT_FILE_STORAGE = "pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage"
+# Storage is configured via STORAGES above (Django 5.1+).
 
 from pykeg.core.util import get_plugin_template_dirs  # noqa: E402  (needs KEGBOT_PLUGINS above)
 
@@ -329,7 +347,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:1234",
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "localhost:1234",
+    "http://localhost:1234",
+    "http://127.0.0.1:1234",
 ]
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = None

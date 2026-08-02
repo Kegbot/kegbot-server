@@ -7,7 +7,6 @@ import urllib.parse
 from builtins import object, str
 from uuid import uuid4
 
-import pytz
 from addict import Dict
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager
@@ -34,6 +33,7 @@ from pykeg.core import (
     signals,
     time_series,
 )
+from pykeg.core.timezones import COMMON_TIMEZONES
 from pykeg.core.util import CtoF, get_version
 from pykeg.util import kbjson, units
 from pykeg.util.email import build_message
@@ -42,7 +42,11 @@ from pykeg.web.util import get_base_url
 
 """Django models definition for the kegbot database."""
 
-TIMEZONE_CHOICES = ((z, z) for z in pytz.common_timezones)
+# TODO(temporary): COMMON_TIMEZONES is the historical pytz.common_timezones list,
+# vendored so this field's `choices` stay byte-for-byte identical and we avoid a
+# data-only migration during the 2.0 upgrade. Replace with a zoneinfo-derived
+# list (and ship the accompanying migration) as a follow-up.
+TIMEZONE_CHOICES = ((z, z) for z in COMMON_TIMEZONES)
 
 logger = logging.getLogger(__name__)
 
@@ -1276,6 +1280,11 @@ def _keg_pre_save(sender, instance, **kwargs):
     keg = instance
     # We don't need to do anything if the keg is still online.
     if keg.status == keg.STATUS_ON_TAP:
+        return
+
+    # A brand-new (unsaved) keg has no drinks yet; Django 5.x also forbids
+    # using a reverse relation before the instance has a primary key.
+    if keg.pk is None:
         return
 
     # Determine first drink date & set keg start date to it if earlier.

@@ -11,7 +11,7 @@ from operator import itemgetter
 import redis
 from django.conf import settings
 from django.contrib import messages
-from django.core.files.storage import get_storage_class
+from django.core.files.storage import default_storage
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
 from django.http import Http404, HttpResponse
@@ -147,7 +147,7 @@ def email(request):
 def export(request):
     context = {}
     backups = []
-    storage = get_storage_class()()
+    storage = default_storage
 
     if request.method == "POST":
         if "package_backup" in request.POST:

@@ -1,6 +1,6 @@
+import zoneinfo
 from builtins import str
 
-import pytz
 from django.conf import settings
 from django.template import (
     Library,
@@ -141,9 +141,9 @@ class TimeagoNode(Node):
         # Try to set time zone information.
         if settings.TIME_ZONE and not settings.USE_TZ:
             try:
-                tz = pytz.timezone(settings.TIME_ZONE)
-                ts = tz.localize(ts)
-            except pytz.UnknownTimeZoneError:
+                tz = zoneinfo.ZoneInfo(settings.TIME_ZONE)
+                ts = ts.replace(tzinfo=tz)
+            except zoneinfo.ZoneInfoNotFoundError:
                 pass
 
         iso = ts.isoformat()

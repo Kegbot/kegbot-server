@@ -3,9 +3,9 @@
 import copy
 import inspect
 import logging
+import zoneinfo
 from builtins import object, str
 
-import pytz
 from addict import Dict
 from django.utils.timezone import localtime
 
@@ -117,7 +117,7 @@ class StatsBuilder(object):
 
     def volume_by_day_of_week(self, drink, previous_stats, previous_value={}):
         ret = copy.copy(previous_value)
-        tz = pytz.timezone(drink.session.timezone)
+        tz = zoneinfo.ZoneInfo(drink.session.timezone)
         local_time = localtime(drink.session.start_time, timezone=tz)
         drink_weekday = str(local_time.strftime("%w"))
         ret[drink_weekday] = ret.get(drink_weekday, 0) + drink.volume_ml

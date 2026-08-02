@@ -54,8 +54,8 @@ class Command(BaseCommand):
         beverage1 = models.Beverage.objects.create(name="Test Beverage 1", producer=producer1)
         beverage2 = models.Beverage.objects.create(name="Test Beverage 2", producer=producer2)
 
-        keg1 = models.Keg.start_keg("kegboard.flow0", beverage1)
-        keg2 = models.Keg.start_keg("kegboard.flow1", beverage2)
+        models.Keg.start_keg("kegboard.flow0", beverage1)
+        models.Keg.start_keg("kegboard.flow1", beverage2)
 
         users = {"alice": None, "bob": None, "carol": None, "mallory": None}
         for username in users.keys():

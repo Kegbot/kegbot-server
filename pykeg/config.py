@@ -34,7 +34,7 @@ def boolstr(val):
 def uristr(val):
     parsed = urllib.parse.urlparse(val)
     if not parsed.scheme:
-        raise ValueError(f"not a URI")
+        raise ValueError("not a URI")
     return val
 
 

@@ -3,7 +3,6 @@
 from builtins import range
 
 from django.test import TransactionTestCase
-from django.test.utils import override_settings
 
 from pykeg.core import defaults, models
 from pykeg.web.util import get_base_url

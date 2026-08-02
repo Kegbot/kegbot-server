@@ -116,7 +116,6 @@ def is_valid_javascript_identifier(identifier, escape=r"\u", ucd_cat=category):
             return False
 
     if escape in identifier:
-
         new = []
         add_char = new.append
         split_id = identifier.split(escape)

@@ -6,8 +6,32 @@ from builtins import object
 import gflags
 import requests
 
-from .exceptions import *
+from .exceptions import (
+    BadApiKeyError,
+    BadRequestError,
+    Error,
+    ErrorCodeToException,
+    NoAuthTokenError,
+    NotFoundError,
+    PermissionDeniedError,
+    RequestError,
+    ServerError,
+)
 from .util import AttrDict
+
+# Exceptions are re-exported here so callers can `from pykeg.proto import kbapi`
+# and reference e.g. `kbapi.NoAuthTokenError`.
+__all__ = [
+    "BadApiKeyError",
+    "BadRequestError",
+    "Error",
+    "ErrorCodeToException",
+    "NoAuthTokenError",
+    "NotFoundError",
+    "PermissionDeniedError",
+    "RequestError",
+    "ServerError",
+]
 
 gflags.DEFINE_float(
     "api_timeout",

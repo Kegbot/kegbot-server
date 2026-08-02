@@ -6,7 +6,6 @@ datetime instances to ISO8601 strings, and decoding them back.
 
 import datetime
 import json
-import types
 
 import isodate
 from addict import Dict
@@ -32,7 +31,7 @@ def _ToAttrDict(obj):
     format used in JSONEncoder.  If it does not parse, the value will be left as a
     string.
     """
-    if type(obj) == dict:
+    if type(obj) is dict:
         # Try to convert any "time" or "date" fields into datetime objects.  If the
         # format doesn't match, just leave it alone.
         for k, v in list(obj.items()):

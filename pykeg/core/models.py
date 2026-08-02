@@ -73,7 +73,7 @@ class User(AbstractBaseUser):
         _("superuser status"),
         default=False,
         help_text=_(
-            "Designates that this user has all permissions without " "explicitly assigning them."
+            "Designates that this user has all permissions without explicitly assigning them."
         ),
     )
 
@@ -81,9 +81,7 @@ class User(AbstractBaseUser):
         _("username"),
         max_length=30,
         unique=True,
-        help_text=_(
-            "Required. 30 characters or fewer. Letters, numbers and " "@/./+/-/_ characters"
-        ),
+        help_text=_("Required. 30 characters or fewer. Letters, numbers and @/./+/-/_ characters"),
         validators=[
             validators.RegexValidator(
                 re.compile(kb_common.USERNAME_REGEX), _("Enter a valid username."), "invalid"
@@ -100,7 +98,7 @@ class User(AbstractBaseUser):
     is_staff = models.BooleanField(
         _("staff status"),
         default=False,
-        help_text=_("Designates whether the user can log into this admin " "site."),
+        help_text=_("Designates whether the user can log into this admin site."),
     )
     is_active = models.BooleanField(
         _("active"),
@@ -237,7 +235,6 @@ class Invitation(models.Model):
 
 
 class KegbotSite(models.Model):
-
     VOLUME_DISPLAY_UNITS_CHOICES = (
         ("metric", "Metric (mL, L)"),
         ("imperial", "Imperial (oz, pint)"),
@@ -301,7 +298,7 @@ class KegbotSite(models.Model):
         blank=True,
         null=True,
         max_length=64,
-        help_text="Set to your Google Analytics ID to enable tracking. " "Example: UA-XXXX-y",
+        help_text="Set to your Google Analytics ID to enable tracking. Example: UA-XXXX-y",
     )
     session_timeout_minutes = models.PositiveIntegerField(
         default=kb_common.DRINK_SESSION_TIME_MINUTES,

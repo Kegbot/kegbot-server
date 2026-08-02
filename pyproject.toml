@@ -4,7 +4,7 @@ version = "1.3.0"
 description = "Kegbot Server"
 authors = [{ name = "The Kegbot Project contributors" }]
 license = "MIT"
-requires-python = ">=3.10.4,<4"
+requires-python = ">=3.14,<4"
 dependencies = [
     "addict",
     "coloredlogs",
@@ -28,9 +28,8 @@ dependencies = [
     "oauthlib",
     "Pillow",
     "pilkit",
-    "protobuf==3.20.0",
+    "protobuf>=5,<7",
     "psycopg2",
-    "python-gflags",
     "PyYAML",
     "redis",
     "requests",
@@ -62,7 +61,7 @@ package = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py314"
 exclude = [
     ".git",
     ".venv",
@@ -77,9 +76,7 @@ exclude = [
 quote-style = "preserve"
 
 [tool.ruff.lint]
-# UP (pyupgrade) is added in the Python 3.14 phase; keep this to format +
-# pycodestyle/pyflakes/isort for the tooling swap.
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "UP"]
 ignore = ["E501"]
 
 [build-system]

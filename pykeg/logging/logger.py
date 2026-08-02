@@ -32,7 +32,6 @@ import getpass
 import inspect
 import logging
 import socket
-from builtins import str
 
 from pykeg.core.util import get_current_request
 
@@ -109,7 +108,7 @@ class RedisLogRecord(logging.LogRecord):
             "line_no": self.lineno,
             "msg": str(msg),
             "args": list(args),
-            "time": datetime.datetime.utcnow(),
+            "time": datetime.datetime.now(datetime.UTC),
             "username": self.username,
             "funcname": self.funcname,
             "hostname": self.hostname,
@@ -137,6 +136,6 @@ class RedisLogger(logging.getLoggerClass()):
         if extra:
             for key in extra:
                 if (key in ["message", "asctime"]) or (key in record.__dict__):
-                    raise KeyError("Attempt to overwrite %r in RedisLogRecord" % key)
+                    raise KeyError(f"Attempt to overwrite {key!r} in RedisLogRecord")
                 record.__dict__[key] = extra[key]
         return record

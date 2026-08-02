@@ -185,7 +185,7 @@ if config.IS_RUNNING_PYTEST and "REDIS_URL" not in os.environ:
         if _cache.get("BACKEND") == "django_redis.cache.RedisCache":
             _cache["LOCATION"] = "redis://localhost:6379/0"
             _cache["OPTIONS"]["CONNECTION_POOL_KWARGS"] = {
-                "connection_class": fakeredis.FakeConnection
+                "connection_class": fakeredis.FakeRedisConnection
             }
 
 INTERNAL_IPS = ("127.0.0.1",)

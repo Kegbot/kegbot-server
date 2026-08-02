@@ -3,11 +3,10 @@
 # Note: imports should be limited to python stdlib, since methods here
 # may be used in models.py, settings.py, etc.
 
+import importlib.util
 import logging
 import os
-import pkgutil
 import tempfile
-from builtins import object, str
 from collections import OrderedDict
 from contextlib import closing
 from importlib import metadata as importlib_metadata
@@ -47,7 +46,7 @@ def should_upgrade(installed_verison, new_version):
 
 
 def get_user_agent():
-    return "KegbotServer/%s" % get_version()
+    return f"KegbotServer/{get_version()}"
 
 
 def CtoF(t):
@@ -58,10 +57,10 @@ def get_plugin_template_dirs(plugin_list):
     ret = []
     for plugin in plugin_list:
         plugin_module = ".".join(plugin.split(".")[:-1])
-        pkg = pkgutil.get_loader(plugin_module)
-        if not pkg:
-            raise ImproperlyConfigured('Cannot find plugin "%s"' % plugin)
-        template_dir = os.path.join(os.path.dirname(pkg.path), "templates")
+        spec = importlib.util.find_spec(plugin_module)
+        if not spec or not spec.origin:
+            raise ImproperlyConfigured(f'Cannot find plugin "{plugin}"')
+        template_dir = os.path.join(os.path.dirname(spec.origin), "templates")
         if os.path.isdir(template_dir):
             ret.append(template_dir)
     return ret
@@ -89,14 +88,14 @@ def download_to_tempfile(url):
         r = requests.get(url, stream=True)
         ext = os.path.splitext(url)[1]
         fd, pathname = tempfile.mkstemp(suffix=ext)
-        logger.info("Downloading file %s to path %s" % (url, pathname))
+        logger.info(f"Downloading file {url} to path {pathname}")
         with closing(os.fdopen(fd, "wb")):
             for chunk in r.iter_content(chunk_size=1024):
                 if chunk:
                     os.write(fd, chunk)
         return str(pathname)
     except requests.exceptions.RequestException as e:
-        raise IOError("Could not download file: {}".format(e))
+        raise OSError(f"Could not download file: {e}")
 
 
 def get_runtime_version_info():
@@ -111,7 +110,7 @@ def get_runtime_version_info():
     return OrderedDict(sorted(ret.items()))
 
 
-class SuppressTaskErrors(object):
+class SuppressTaskErrors:
     """Suppresses certain errors that occur while scheduling tasks."""
 
     def __init__(self, logger=None):
@@ -123,6 +122,6 @@ class SuppressTaskErrors(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         exc_info = (exc_type, exc_val, exc_tb)
         if isinstance(exc_val, RedisError):
-            self.logger.error("Error scheduling task: {}".format(exc_val), exc_info=exc_info)
+            self.logger.error(f"Error scheduling task: {exc_val}", exc_info=exc_info)
             return True
         return False

@@ -1,48 +1,50 @@
-FROM python:3.10.5-bullseye
+FROM python:3.14-slim
 
 RUN mkdir /app
 WORKDIR /app
 
 ENV SHELL=/bin/sh \
-   PIP_NO_CACHE_DIR=1 \
    KEGBOT_DATA_DIR=/kegbot-data \
    KEGBOT_IN_DOCKER=True \
    KEGBOT_ENV=debug
 
-# Install toolchains. Mostly, image libraries that Python PIL/Pillow will require.
+# Build/runtime libraries: MySQL + Postgres client headers (mysqlclient,
+# psycopg2 build from source) and the image libraries Pillow needs.
 RUN apt-get -qq update \
-   && DEBIAN_FRONTEND=noninteractive apt-get -y install \
-      curl \
-      libffi-dev \
+   && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
+      build-essential \
+      pkg-config \
+      default-libmysqlclient-dev \
+      libpq-dev \
+      libjpeg-dev \
       libfreetype6-dev \
-      libfribidi-dev \
-      libharfbuzz-dev \
-      libjpeg-turbo-progs \
-      libjpeg62-turbo-dev \
       liblcms2-dev \
       libopenjp2-7-dev \
-      libtiff5-dev \
+      libtiff-dev \
       libwebp-dev \
-      libssl-dev \
       zlib1g-dev \
-  && rm -rf /var/lib/apt/lists/* \
-  && python -m pip install -U pip \
-  # The cryptography build requires rust, which adds >1GB to the image. \
-  # Install it only to install cryptography, then remove it. \
-  && curl https://sh.rustup.rs -sSf | sh -s -- -y \
-  && PATH=/root/.cargo/bin:$PATH pip install cryptography \
-  && rm -rf /root/.rustup /root/.cargo \
-  && pip install poetry \
-  && rm -rf /root/.cache
+  && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies.
-COPY pyproject.toml poetry.lock ./
-ADD pykeg/__init__.py ./pykeg/
-RUN poetry config virtualenvs.create false && poetry install -n
+# uv, configured to install into the system Python (no venv).
+COPY --from=ghcr.io/astral-sh/uv:0.11 /uv /uvx /bin/
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_NO_DEV=1 \
+    UV_PYTHON_DOWNLOADS=0 \
+    UV_PROJECT_ENVIRONMENT=/usr/local
+
+# Install dependencies first (cached) using only the lockfile + manifest.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project
 
 # Install the app itself.
-ADD bin /usr/local/sbin/
-ADD pykeg ./pykeg
+COPY bin /usr/local/sbin/
+COPY pykeg ./pykeg
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked
 
 # Collect static files. Use fake versions of required env variables
 # since they're not relevant at this step.
@@ -55,7 +57,7 @@ RUN DATABASE_URL=mysql:// \
 ARG GIT_SHORT_SHA="unknown"
 ARG VERSION="unknown"
 ARG BUILD_DATE="unknown"
-RUN echo "GIT_SHORT_SHA=${GIT_SHORT_SHA}\nVERSION=${VERSION}\nBUILD_DATE=${BUILD_DATE}" > /etc/kegbot-version
+RUN printf "GIT_SHORT_SHA=%s\nVERSION=%s\nBUILD_DATE=%s\n" "${GIT_SHORT_SHA}" "${VERSION}" "${BUILD_DATE}" > /etc/kegbot-version
 
 VOLUME  ["/kegbot-data"]
 

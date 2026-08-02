@@ -4,6 +4,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 
 from pykeg.core import models
+from pykeg.core.util import get_version
 
 
 class ApiClient:
@@ -35,6 +36,10 @@ class V2ApiTestCase(TestCase):
     def setUp(self):
         self.client = ApiClient()
         self.site = models.KegbotSite.objects.all().first()
+        # The fixture bakes in an older server_version; keep it current so the
+        # "upgrade required" gate doesn't intercept API requests under test.
+        self.site.server_version = get_version()
+        self.site.save()
         self.user = models.User.objects.all().first()
         self.api_key = models.ApiKey.objects.get_or_create(user=self.user)[0]
 

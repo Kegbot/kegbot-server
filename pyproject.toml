@@ -47,6 +47,7 @@ repository = "https://github.com/Kegbot/kegbot-server"
 
 [dependency-groups]
 dev = [
+    "pre-commit",
     "pytest",
     "pytest-django",
     "requests-mock",

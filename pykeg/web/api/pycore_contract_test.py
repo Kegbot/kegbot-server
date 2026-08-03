@@ -24,12 +24,12 @@ class PycoreContractTestCase(TestCase):
 
     def get(self, subpath, data={}):
         data = dict(data, api_key=API_KEY)
-        response = self.client.get(f"/api/{subpath}", data=data)
+        response = self.client.get(f"/api/v1/{subpath}", data=data)
         return response, kbjson.loads(response.content)
 
     def post(self, subpath, data={}):
         data = dict(data, api_key=API_KEY)
-        response = self.client.post(f"/api/{subpath}", data=data)
+        response = self.client.post(f"/api/v1/{subpath}", data=data)
         return response, kbjson.loads(response.content)
 
     def start_keg(self):

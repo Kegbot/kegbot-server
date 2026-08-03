@@ -25,11 +25,15 @@ brought up to date.
   accepts legacy format-1 backups (created by Kegbot v1.1.x) and upgrades
   their data in one step; no intermediate 1.2/1.3 install is needed.
 * Time zone choices are now derived from the system time zone database.
-* **The legacy HTTP API (``/api/v1``) is deprecated.** It now serves only
-  the endpoints used by kegbot-pycore (plus the events feed); every other
-  endpoint returns ``410 Gone``, and all legacy responses carry a
-  ``Deprecation`` header. Protocol Buffers are no longer used anywhere in
-  the server.
+* **A new REST API is served at ``/api/``** (previously the experimental
+  ``/api/v2/``, now always enabled).
+* **The legacy HTTP API is deprecated and now lives only at ``/api/v1/``.**
+  It serves only the endpoints used by kegbot-pycore (plus the events
+  feed); every other endpoint returns ``410 Gone``, and all legacy
+  responses carry a ``Deprecation`` header. Protocol Buffers are no longer
+  used anywhere in the server. **kegbot-pycore users:** set the api url to
+  ``http://<server>/api/v1/`` (the bare ``/api/`` prefix no longer serves
+  the legacy endpoints).
 
 **Upgrade notes**
 

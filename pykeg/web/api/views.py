@@ -698,9 +698,11 @@ def cancel_drink(request):
     if not form.is_valid():
         raise kbapi.BadRequestError(_form_errors(form))
     cd = form.cleaned_data
-    drink = models.Drink.objects.get(id=cd["id"])
-    res = drink.cancel_drink(spilled=cd.get("spilled", False))
-    return protolib.ToProto(res, full=True)
+    drink = get_object_or_404(models.Drink, id=cd["id"])
+    # Serialize before canceling: cancel_drink deletes the record.
+    result = protolib.ToDict(drink, full=True)
+    drink.cancel_drink(spilled=cd.get("spilled", False))
+    return result
 
 
 @require_http_methods(["POST"])

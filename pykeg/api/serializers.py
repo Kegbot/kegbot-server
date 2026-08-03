@@ -421,3 +421,54 @@ class SystemStatusSerializer(serializers.Serializer):
     site = KegbotSiteSerializer()
     taps = KegTapSerializer(many=True)
     events = SystemEventSerializer(many=True)
+
+
+class PluginInfoSerializer(serializers.Serializer):
+    short_name = serializers.CharField()
+    name = serializers.CharField()
+
+
+class SiteConfigSerializer(serializers.ModelSerializer):
+    """The privacy-safe subset of site settings, embedded in the boot payload.
+
+    Unlike `KegbotSiteSerializer`, this contains no data derived from pours
+    (no stats): it is served to anonymous users regardless of site privacy,
+    since the frontend needs it to render the login and interstitial screens.
+    """
+
+    class Meta:
+        model = models.KegbotSite
+        fields = [
+            "server_version",
+            "title",
+            "privacy",
+            "registration_mode",
+            "volume_display_units",
+            "temperature_display_units",
+            "timezone",
+            "session_timeout_minutes",
+            "enable_sensing",
+            "enable_users",
+            "google_analytics_id",
+            "background_image",
+        ]
+
+    background_image = PictureSerializer(read_only=True)
+
+
+class MeSerializer(serializers.Serializer):
+    """The boot payload: current user plus always-needed site metadata.
+
+    Served to every caller with status 200; `user` is null when the caller
+    is not authenticated. Static constants (choice lists, keg sizes, and
+    similar) are NOT served here: they are baked into the frontend build
+    via the `print_constants` management command.
+    """
+
+    user = CurrentUserSerializer(allow_null=True)
+    site = SiteConfigSerializer()
+    can_invite = serializers.BooleanField()
+    have_sessions = serializers.BooleanField()
+    sso_login_url = serializers.CharField(allow_blank=True)
+    sso_logout_url = serializers.CharField(allow_blank=True)
+    plugins = PluginInfoSerializer(many=True)

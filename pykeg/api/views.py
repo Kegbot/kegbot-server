@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
+from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
@@ -275,9 +277,33 @@ def logout(request):
     return Response(True)
 
 
-@extend_schema(responses=serializers.CurrentUserSerializer)
+@ensure_csrf_cookie
+@extend_schema(responses=serializers.MeSerializer)
 @api_view(["GET"])
-def current_user(request):
-    user = request.user
-    serializer = serializers.CurrentUserSerializer(instance=user)
-    return Response(serializer.data)
+@permission_classes(())
+def me(request):
+    """The frontend boot endpoint.
+
+    Always responds 200, regardless of authentication and site privacy:
+    `user` is null for anonymous callers, and the rest of the payload is
+    limited to privacy-safe configuration the frontend always needs (to
+    render login screens, privacy interstitials, forms, and navigation).
+
+    Also sets the CSRF cookie, so a fresh browser session can make
+    authenticated POSTs after calling this.
+    """
+    user = request.user if request.user.is_authenticated else None
+    site = getattr(request, "kbsite", None) or models.KegbotSite.get()
+    plugins = getattr(request, "plugins", {}) or {}
+    payload = {
+        "user": user,
+        "site": site,
+        "can_invite": site.can_invite(user),
+        "have_sessions": models.DrinkingSession.objects.exists(),
+        "sso_login_url": getattr(settings, "SSO_LOGIN_URL", "") or "",
+        "sso_logout_url": getattr(settings, "SSO_LOGOUT_URL", "") or "",
+        "plugins": [
+            {"short_name": p.get_short_name(), "name": p.get_name()} for p in plugins.values()
+        ],
+    }
+    return Response(serializers.MeSerializer(instance=payload).data)

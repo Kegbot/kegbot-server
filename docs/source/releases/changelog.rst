@@ -25,6 +25,11 @@ brought up to date.
   accepts legacy format-1 backups (created by Kegbot v1.1.x) and upgrades
   their data in one step; no intermediate 1.2/1.3 install is needed.
 * Time zone choices are now derived from the system time zone database.
+* **The legacy HTTP API (``/api/v1``) is deprecated.** It now serves only
+  the endpoints used by kegbot-pycore (plus the events feed); every other
+  endpoint returns ``410 Gone``, and all legacy responses carry a
+  ``Deprecation`` header. Protocol Buffers are no longer used anywhere in
+  the server.
 
 **Upgrade notes**
 
@@ -40,6 +45,9 @@ brought up to date.
   arm64 only).
 * The legacy gflags-based Python API client was removed from the server
   package; it lives in the separate kegbot-api project.
+* The old Kegbot mobile apps depended on now-retired API endpoints (device
+  linking, registration, drink lists) and no longer work against this
+  server.
 
 
 Version 1.3.0 (2022-08-10)

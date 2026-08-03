@@ -28,6 +28,8 @@ class ApiRequestMiddleware:
                 response = util.build_response(request, data, 200)
 
             add_never_cache_headers(response)
+            # The v1 api is deprecated; it only serves kegbot-pycore.
+            response.headers["Deprecation"] = "true"
 
         return response
 

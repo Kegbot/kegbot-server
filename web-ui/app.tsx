@@ -9,6 +9,7 @@ import { CurrentUserProvider } from "@/components/current-user-context";
 import { SnackbarProvider } from "@/components/snackbar-context";
 import { AppRoutes } from "@/routes";
 import { theme } from "@/theme/theme";
+import { SetupApp } from "@/views/setup/setup-app";
 
 export function App() {
   // A single splat route delegates to a classic <Routes> tree; the data
@@ -19,7 +20,7 @@ export function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <SnackbarProvider>
-        <ConfigProvider>
+        <ConfigProvider renderSetup={(kind) => <SetupApp kind={kind} />}>
           <CurrentUserProvider>
             <ConfirmProvider>
               <RouterProvider router={router} />

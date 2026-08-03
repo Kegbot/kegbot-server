@@ -317,7 +317,7 @@ def erase(storage=default_storage):
             logger.debug(f"Deleting file: {full_name}")
             storage.delete(full_name)
         for subdir in subdirs:
-            delete_files(dirname)
+            delete_files(os.path.join(dirname, subdir))
 
     logger.info("Erasing media ...")
     for media_dir in MEDIA_WHITELIST:

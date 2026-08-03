@@ -281,3 +281,8 @@ class RetiredEndpointsTestCase(BaseApiTestCase):
             self.assertEqual(410, response.status_code, f"expected 410 for {endpoint}")
             self.assertEqual("error", data.meta.result)
             self.assertEqual("GoneError", data.error.code)
+
+    def test_deprecation_header(self):
+        for endpoint in ("taps/", "version"):
+            response, data = self.get(endpoint)
+            self.assertEqual("true", response.headers.get("Deprecation"))

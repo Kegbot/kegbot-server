@@ -13,5 +13,8 @@ class CursorPagination(BaseCursorPagination):
     cursor. We can fix the implementation later.
     """
 
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
     def get_ordering(self, request, queryset, view):
         return ("-id",)

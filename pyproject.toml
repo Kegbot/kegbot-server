@@ -12,6 +12,7 @@ dependencies = [
     "dj-email-url",
     "django-cors-headers>=4.9,<5",
     "django-crispy-forms>=2.4,<3",
+    "django-filter>=25.1",
     "crispy-bootstrap4>=2024.10",
     "django-imagekit",
     "django-redis>=5.4",

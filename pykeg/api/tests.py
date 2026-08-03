@@ -1,6 +1,8 @@
 import base64
+import datetime
 
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from pykeg.core import models
@@ -155,6 +157,116 @@ class V2ApiPermissionsTestCase(TestCase):
         status, data = self.client.get("/api/notification-settings")
         self.assertEqual(200, status)
         self.assertEqual([], data["results"])
+
+
+class FilteringTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+        self.admin = models.User.objects.filter(is_staff=True).first()
+        self.admin_key = models.ApiKey.objects.get_or_create(user=self.admin)[0]
+
+    def test_drinks_filtered_by_username(self):
+        drink = models.Drink.objects.exclude(user__isnull=True).first()
+        username = drink.user.username
+        expected = models.Drink.objects.filter(user__username=username).count()
+
+        status, data = self.client.get(f"/api/drinks?username={username}&page_size=100")
+        self.assertEqual(200, status)
+        self.assertEqual(expected, len(data["results"]))
+
+        status, data = self.client.get("/api/drinks?username=no-such-user")
+        self.assertEqual(200, status)
+        self.assertEqual([], data["results"])
+
+    def test_drinks_filtered_by_keg_and_session(self):
+        drink = models.Drink.objects.exclude(session__isnull=True).first()
+
+        status, data = self.client.get(f"/api/drinks?keg={drink.keg_id}&page_size=100")
+        self.assertEqual(200, status)
+        self.assertGreater(len(data["results"]), 0)
+        self.assertTrue(all(d["keg"]["id"] == drink.keg_id for d in data["results"]))
+
+        status, data = self.client.get(f"/api/drinks?session={drink.session_id}&page_size=100")
+        self.assertEqual(200, status)
+        self.assertGreater(len(data["results"]), 0)
+        self.assertTrue(all(d["session_id"] == drink.session_id for d in data["results"]))
+
+    def test_kegs_filtered_by_status(self):
+        expected = models.Keg.objects.filter(status=models.Keg.STATUS_ON_TAP).count()
+        status, data = self.client.get("/api/kegs?status=on_tap&page_size=100")
+        self.assertEqual(200, status)
+        self.assertEqual(expected, len(data["results"]))
+
+    def test_sessions_filtered_by_date(self):
+        session = models.DrinkingSession.objects.first()
+        dt = session.start_time
+        status, data = self.client.get(
+            f"/api/sessions?year={dt.year}&month={dt.month}&page_size=100"
+        )
+        self.assertEqual(200, status)
+        self.assertIn(session.id, [s["id"] for s in data["results"]])
+
+        status, data = self.client.get("/api/sessions?year=1999")
+        self.assertEqual(200, status)
+        self.assertEqual([], data["results"])
+
+    def test_events_filtered_by_since(self):
+        max_id = models.SystemEvent.objects.latest("id").id
+        status, data = self.client.get(f"/api/events?since={max_id}")
+        self.assertEqual(200, status)
+        self.assertEqual([], data["results"])
+
+        status, data = self.client.get(f"/api/events?since={max_id - 2}")
+        self.assertEqual(200, status)
+        self.assertEqual(2, len(data["results"]))
+
+    def test_users_search(self):
+        self.client.api_key = self.admin_key.key
+        status, data = self.client.get("/api/users?search=alic&page_size=100")
+        self.assertEqual(200, status)
+        self.assertEqual(["alice"], [u["username"] for u in data["results"]])
+
+    def test_page_size_is_honored_and_capped(self):
+        total = models.Drink.objects.count()
+        self.assertGreater(total, 10)
+
+        status, data = self.client.get("/api/drinks?page_size=100")
+        self.assertEqual(200, status)
+        self.assertEqual(total, len(data["results"]))
+
+        status, data = self.client.get("/api/drinks?page_size=3")
+        self.assertEqual(200, status)
+        self.assertEqual(3, len(data["results"]))
+
+
+class CurrentSessionTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+
+    def test_no_active_session_returns_404(self):
+        # Fixture sessions are long in the past.
+        status, _ = self.client.get("/api/sessions/current")
+        self.assertEqual(404, status)
+
+    def test_active_session_is_returned(self):
+        session = models.DrinkingSession.objects.latest()
+        session.start_time = timezone.now() - datetime.timedelta(minutes=10)
+        session.end_time = timezone.now() + datetime.timedelta(minutes=10)
+        session.save()
+
+        status, data = self.client.get("/api/sessions/current")
+        self.assertEqual(200, status)
+        self.assertEqual(session.id, data["id"])
 
 
 class SchemaTestCase(TestCase):

@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     "rest_framework",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "django_filters",
     "django_rq",
 )
 
@@ -335,6 +336,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "pykeg.api.pagination.CursorPagination",
     "PAGE_SIZE": 10,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
     "DEFAULT_PERMISSION_CLASSES": [
         "pykeg.api.permissions.IsAuthenticated",
     ],

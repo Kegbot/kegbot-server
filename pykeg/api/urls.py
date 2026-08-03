@@ -27,9 +27,10 @@ router.register("thermo-sensors", views.ThermoSensorViewSet)
 router.register("users", views.UserViewSet)
 
 urlpatterns = [
+    # Must precede the router so it wins over the users/{pk} detail route.
+    path("users/me", views.me),
     path("", include(router.urls)),
     path("auth/api-auth/", include("rest_framework.urls", namespace="rest_framework")),
-    path("auth/current-user", views.current_user),
     path("auth/login", views.login),
     path("auth/logout", views.logout),
     path("status", views.system_status),

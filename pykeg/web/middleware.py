@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.db import connection
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -150,6 +150,10 @@ class IsSetupMiddleware:
             # API endpoints handle "setup required" differently.
             return None
 
+        if request.path.startswith("/api/setup"):
+            # The setup API is how the frontend performs setup/upgrade.
+            return None
+
         if request.need_setup:
             return self._setup_required(request)
         elif request.need_upgrade:
@@ -158,11 +162,19 @@ class IsSetupMiddleware:
         return None
 
     def _setup_required(self, request):
+        if request.path.startswith("/api/"):
+            return JsonResponse({"error": "setup_required"}, status=403)
         return render(request, "setup_wizard/setup_required.html", status=403)
 
     def _upgrade_required(self, request):
+        installed_version = getattr(request, "installed_version_string", None)
+        if request.path.startswith("/api/"):
+            return JsonResponse(
+                {"error": "upgrade_required", "installed_version": installed_version},
+                status=403,
+            )
         context = {
-            "installed_version": getattr(request, "installed_version_string", None),
+            "installed_version": installed_version,
         }
         return render(request, "setup_wizard/upgrade_required.html", context=context, status=403)
 

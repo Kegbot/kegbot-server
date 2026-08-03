@@ -50,7 +50,6 @@ INSTALLED_APPS = (
     "crispy_forms",
     "crispy_bootstrap4",
     "imagekit",
-    "corsheaders",
     "rest_framework",
     "drf_spectacular",
     "drf_spectacular_sidecar",
@@ -140,7 +139,6 @@ ALLOWED_HOSTS = ["*"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "pykeg.web.middleware.ErrorLoggingMiddleware",
@@ -359,16 +357,5 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
 }
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:1234",
-    "http://127.0.0.1:1234",
-]
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:1234",
-    "http://127.0.0.1:1234",
-]
-CORS_ALLOW_CREDENTIALS = True
-SESSION_COOKIE_SAMESITE = None
 
 APPEND_SLASH = True

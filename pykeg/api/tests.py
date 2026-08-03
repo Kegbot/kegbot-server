@@ -269,6 +269,76 @@ class CurrentSessionTestCase(TestCase):
         self.assertEqual(session.id, data["id"])
 
 
+class MeEndpointTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+        self.user = models.User.objects.get(username="alice")
+        self.api_key = models.ApiKey.objects.get_or_create(user=self.user)[0]
+
+    def test_anonymous_caller_gets_null_user_even_on_private_site(self):
+        self.site.privacy = models.KegbotSite.PRIVACY_CHOICE_STAFF
+        self.site.save()
+
+        status, data = self.client.get("/api/users/me")
+        self.assertEqual(200, status)
+        self.assertIsNone(data["user"])
+        self.assertEqual("staff", data["site"]["privacy"])
+        self.assertEqual(self.site.title, data["site"]["title"])
+        # The boot payload must not leak pour-derived data.
+        self.assertNotIn("stats", data["site"])
+
+    def test_authenticated_caller_gets_user(self):
+        self.client.api_key = self.api_key.key
+        status, data = self.client.get("/api/users/me")
+        self.assertEqual(200, status)
+        self.assertEqual("alice", data["user"]["username"])
+
+    def test_metadata_fields_are_present(self):
+        status, data = self.client.get("/api/users/me")
+        self.assertEqual(200, status)
+        self.assertTrue(data["have_sessions"])
+        self.assertIn("can_invite", data)
+        self.assertEqual(
+            ["webhook"],
+            [p["short_name"] for p in data["plugins"]],
+        )
+
+    def test_sets_csrf_cookie(self):
+        response = self.client.client.get("/api/users/me")
+        self.assertEqual(200, response.status_code)
+        self.assertIn("csrftoken", response.cookies)
+
+
+class SetupGateTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+
+    def test_setup_required_returns_json(self):
+        self.site.is_setup = False
+        self.site.save()
+        status, data = self.client.get("/api/users/me")
+        self.assertEqual(403, status)
+        self.assertEqual({"error": "setup_required"}, data)
+
+    def test_upgrade_required_returns_json(self):
+        self.site.server_version = "0.0.1"
+        self.site.save()
+        status, data = self.client.get("/api/status")
+        self.assertEqual(403, status)
+        self.assertEqual("upgrade_required", data["error"])
+        self.assertEqual("0.0.1", data["installed_version"])
+
+
 class SchemaTestCase(TestCase):
     fixtures = ["testdata/demo-site.json"]
 

@@ -19,22 +19,16 @@ dependencies = [
     "django-rq>=3,<5",
     "djangorestframework>=3.16,<4",
     "Django>=5.2,<5.3",
-    "fakeredis",
     "freezegun>=1.2.1,<2",
-    "future>=0.18.2,<0.19",
-    "httplib2",
     "isodate",
     "mysqlclient",
-    "oauthlib",
     "packaging",
     "Pillow",
-    "pilkit",
     "protobuf>=5,<7",
     "psycopg2",
     "PyYAML",
     "redis",
     "requests",
-    "requests-oauthlib",
     "rq>=2,<3",
     "waitress>=3,<4",
     "whitenoise",
@@ -44,7 +38,14 @@ dependencies = [
 repository = "https://github.com/Kegbot/kegbot-server"
 
 [dependency-groups]
+docs = [
+    "furo",
+    "sphinx",
+    "sphinx-autobuild",
+    "sphinx-issues",
+]
 dev = [
+    "fakeredis",
     "pre-commit",
     "pytest",
     "pytest-django",

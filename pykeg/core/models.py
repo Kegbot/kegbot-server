@@ -807,6 +807,9 @@ class KegTap(models.Model):
 
 
 class Controller(models.Model):
+    class Meta:
+        ordering = ("name",)
+
     name = models.CharField(
         max_length=128, unique=True, help_text="Identifying name for this device; must be unique."
     )
@@ -824,6 +827,7 @@ class Controller(models.Model):
 class FlowMeter(models.Model):
     class Meta:
         unique_together = ("controller", "port_name")
+        ordering = ("controller", "port_name")
 
     controller = models.ForeignKey(
         Controller,
@@ -889,6 +893,7 @@ class FlowMeter(models.Model):
 class FlowToggle(models.Model):
     class Meta:
         unique_together = ("controller", "port_name")
+        ordering = ("controller", "port_name")
 
     controller = models.ForeignKey(
         Controller,
@@ -1847,6 +1852,9 @@ class DrinkingSession(models.Model):
 
 
 class ThermoSensor(models.Model):
+    class Meta:
+        ordering = ("raw_name",)
+
     raw_name = models.CharField(max_length=256)
     nice_name = models.CharField(max_length=128)
 

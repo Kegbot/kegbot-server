@@ -4,15 +4,13 @@ import logging
 import sys
 import traceback
 
-from addict import Dict
 from django.conf import settings
 from django.db.models.query import QuerySet
 from django.http import Http404, HttpResponse
-from google.protobuf.message import Message
 
 from pykeg.core import models
-from pykeg.proto import kbapi, protolib, protoutil
 from pykeg.util import kbjson
+from pykeg.web.api import exceptions, serialize
 
 from . import validate_jsonp
 
@@ -39,7 +37,7 @@ def check_api_key(request):
     if not keystr:
         keystr = request.POST.get("api_key", request.GET.get("api_key", None))
     if not keystr:
-        raise kbapi.NoAuthTokenError('The parameter "api_key" is required')
+        raise exceptions.NoAuthTokenError('The parameter "api_key" is required')
 
     shared_key = settings.KEGBOT["KEGBOT_INSECURE_SHARED_API_KEY"]
     if shared_key and keystr == shared_key:
@@ -48,26 +46,26 @@ def check_api_key(request):
     try:
         api_key = models.ApiKey.objects.get(key=keystr)
     except models.ApiKey.DoesNotExist:
-        raise kbapi.BadApiKeyError("API key does not exist")
+        raise exceptions.BadApiKeyError("API key does not exist")
 
     if not api_key.is_active():
-        raise kbapi.BadApiKeyError("Key and/or user is inactive")
+        raise exceptions.BadApiKeyError("Key and/or user is inactive")
 
     # TODO: remove me.
     if api_key.user and (not api_key.user.is_staff and not api_key.user.is_superuser):
-        raise kbapi.PermissionDeniedError("User is not staff/superuser")
+        raise exceptions.PermissionDeniedError("User is not staff/superuser")
 
 
 def to_json_error(e, exc_info):
     """Converts an exception to an API error response."""
-    # Wrap some common exception types into kbapi types
+    # Wrap some common exception types into API error types
     if isinstance(e, Http404):
-        e = kbapi.NotFoundError(str(e))
+        e = exceptions.NotFoundError(str(e))
     elif isinstance(e, ValueError):
-        e = kbapi.BadRequestError(str(e))
+        e = exceptions.BadRequestError(str(e))
 
     # Now determine the response based on the exception type.
-    if isinstance(e, kbapi.Error):
+    if isinstance(e, exceptions.Error):
         code = e.__class__.__name__
         http_code = e.HTTP_CODE
         message = e.Message()
@@ -117,9 +115,7 @@ def prepare_data(data, inner=False):
 
 
 def to_dict(data):
-    if not isinstance(data, Message):
-        data = protolib.ToProto(data, full=True)
-    return Dict(protoutil.ProtoMessageToDict(data))
+    return serialize.to_dict(data, full=True)
 
 
 def wrap_exception(request, exception):

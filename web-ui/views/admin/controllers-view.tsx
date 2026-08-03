@@ -22,7 +22,7 @@ import {
   flowTogglesCreate,
   flowTogglesDestroy,
   flowTogglesList,
-} from "@/api";
+} from "@/api-client";
 import { useConfirm } from "@/components/confirm-context";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";

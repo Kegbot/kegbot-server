@@ -1,7 +1,7 @@
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
 import Typography from "@mui/material/Typography";
-import type { Keg } from "@/api";
+import type { Keg } from "@/api-client";
 import { useFormatters } from "@/components/use-formatters";
 import { kegPercentFull } from "@/lib/format";
 

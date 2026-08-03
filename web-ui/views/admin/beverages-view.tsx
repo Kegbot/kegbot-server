@@ -13,14 +13,14 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import { useState } from "react";
-import type { Beverage } from "@/api";
+import type { Beverage } from "@/api-client";
 import {
   beverageProducersList,
   beveragesCreate,
   beveragesList,
   beveragesPartialUpdate,
   beveragesPictureCreate,
-} from "@/api";
+} from "@/api-client";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";

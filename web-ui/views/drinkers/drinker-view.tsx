@@ -6,7 +6,7 @@ import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useParams } from "react-router";
-import { drinksList, usersRetrieve, usersStatsRetrieve } from "@/api";
+import { drinksList, usersRetrieve, usersStatsRetrieve } from "@/api-client";
 import { VolumeByWeekdayChart } from "@/components/charts/volume-by-weekday-chart";
 import { DrinkList } from "@/components/drink-list";
 import { LoadMoreButton } from "@/components/load-more-button";

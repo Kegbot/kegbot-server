@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { adminBugreportRetrieve } from "@/api";
+import { adminBugreportRetrieve } from "@/api-client";
 import { Page } from "@/components/page";
 import { toErrorMessage, unwrap } from "@/lib/api";
 

@@ -3,7 +3,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { type FormEvent, useEffect, useState } from "react";
-import { siteBackgroundImageCreate } from "@/api";
+import { siteBackgroundImageCreate } from "@/api-client";
 import { LoadingZone } from "@/components/loading-zone";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";

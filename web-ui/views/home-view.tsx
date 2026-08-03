@@ -1,7 +1,7 @@
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { statusRetrieve } from "@/api";
+import { statusRetrieve } from "@/api-client";
 import { EventTimeline } from "@/components/event-timeline";
 import { Page } from "@/components/page";
 import { TapCardLive } from "@/components/tap-card-live";

@@ -8,13 +8,13 @@ import FormGroup from "@mui/material/FormGroup";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { type FormEvent, useEffect, useState } from "react";
-import type { NotificationSettings } from "@/api";
+import type { NotificationSettings } from "@/api-client";
 import {
   accountEmailCreate,
   notificationSettingsCreate,
   notificationSettingsList,
   notificationSettingsPartialUpdate,
-} from "@/api";
+} from "@/api-client";
 import { useCurrentUser } from "@/components/current-user-context";
 import { LoadingZone } from "@/components/loading-zone";
 import { Page } from "@/components/page";

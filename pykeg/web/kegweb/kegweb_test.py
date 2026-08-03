@@ -36,11 +36,13 @@ class KegwebTestCase(TransactionTestCase):
         d = models.Drink.record_drink("kegboard.flow0", ticks=100)
         drink_id = d.id
 
-        response = self.client.get(f"/d/{drink_id}", follow=True)
+        # Slash-less short links now land on the SPA catch-all (which
+        # redirects client-side), so exercise the canonical slashed form.
+        response = self.client.get(f"/d/{drink_id}/", follow=True)
         self.assertRedirects(response, f"/drinks/{drink_id}/", status_code=301)
 
         session_id = d.session.id
-        response = self.client.get(f"/s/{session_id}", follow=True)
+        response = self.client.get(f"/s/{session_id}/", follow=True)
         self.assertRedirects(response, d.session.get_absolute_url(), status_code=301)
 
     def testShout(self):

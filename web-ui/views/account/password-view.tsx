@@ -3,7 +3,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { type FormEvent, useState } from "react";
-import { accountPasswordCreate } from "@/api";
+import { accountPasswordCreate } from "@/api-client";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";
 import type { FormErrors } from "@/lib/api";

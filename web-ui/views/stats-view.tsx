@@ -6,7 +6,7 @@ import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
-import { statsSystemRetrieve } from "@/api";
+import { statsSystemRetrieve } from "@/api-client";
 import { VolumeByDrinkerChart } from "@/components/charts/volume-by-drinker-chart";
 import { VolumeByWeekdayChart } from "@/components/charts/volume-by-weekday-chart";
 import { Page } from "@/components/page";

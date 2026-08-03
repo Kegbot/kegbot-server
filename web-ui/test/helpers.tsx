@@ -1,4 +1,4 @@
-import type { Me } from "@/api";
+import type { Me } from "@/api-client";
 
 export interface MockResponse {
   status: number;

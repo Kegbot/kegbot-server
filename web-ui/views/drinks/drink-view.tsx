@@ -5,7 +5,7 @@ import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Link, useParams } from "react-router";
-import { drinksPictureDestroy, drinksRetrieve } from "@/api";
+import { drinksPictureDestroy, drinksRetrieve } from "@/api-client";
 import { useConfirm } from "@/components/confirm-context";
 import { useCurrentUser } from "@/components/current-user-context";
 import { Page } from "@/components/page";

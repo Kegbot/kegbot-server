@@ -30,8 +30,10 @@ DATABASES = {
 }
 
 INSTALLED_APPS = (
-    "whitenoise.runserver_nostatic",
+    # pykeg.core precedes whitenoise so its runserver override (default
+    # port 8001, behind the vite dev server on 8000) wins.
     "pykeg.core",
+    "whitenoise.runserver_nostatic",
     "pykeg.web",
     "pykeg.web.api",
     "pykeg.web.account",
@@ -128,6 +130,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = "/static/"
+
+# The built frontend (vite output) is collected alongside app statics.
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "web-ui", "dist")]
 
 # URL prefix for admin static files -- CSS, JavaScript and images.
 # Make sure to use a trailing slash.

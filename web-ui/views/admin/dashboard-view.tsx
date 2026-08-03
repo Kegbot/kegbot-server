@@ -6,7 +6,7 @@ import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
-import { adminDashboardRetrieve } from "@/api";
+import { adminDashboardRetrieve } from "@/api-client";
 import { Page } from "@/components/page";
 import { unwrap } from "@/lib/api";
 import { useAsyncData } from "@/lib/use-async-data";

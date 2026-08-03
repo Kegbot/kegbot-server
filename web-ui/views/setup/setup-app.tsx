@@ -20,7 +20,7 @@ import {
   setupSettingsCreate,
   setupStatusRetrieve,
   setupUpgradeCreate,
-} from "@/api";
+} from "@/api-client";
 import { LoadingZone } from "@/components/loading-zone";
 import { toErrorMessage, unwrap } from "@/lib/api";
 import SHARED from "@/lib/shared-constants";

@@ -6,7 +6,7 @@ import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
-import type { KegTap } from "@/api";
+import type { KegTap } from "@/api-client";
 import { KegProgress } from "@/components/keg-progress";
 
 export interface TapCardProps {

@@ -3,7 +3,7 @@ import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useEffect } from "react";
-import { statusRetrieve } from "@/api";
+import { statusRetrieve } from "@/api-client";
 import { useConfig } from "@/components/config-context";
 import { EventTimeline } from "@/components/event-timeline";
 import { LoadingZone } from "@/components/loading-zone";

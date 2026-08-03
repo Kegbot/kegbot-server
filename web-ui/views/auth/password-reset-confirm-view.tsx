@@ -6,7 +6,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { type FormEvent, useState } from "react";
 import { Link, useParams } from "react-router";
-import { authPasswordResetConfirmCreate } from "@/api";
+import { authPasswordResetConfirmCreate } from "@/api-client";
 import type { FormErrors } from "@/lib/api";
 import { unwrap } from "@/lib/api";
 import { fieldError, formErrorsFromException, nonFieldErrors } from "@/lib/forms";

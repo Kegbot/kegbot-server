@@ -1,4 +1,4 @@
-import { client } from "@/api/client.gen";
+import { client } from "@/api-client/client.gen";
 
 /** DRF-style field errors: `{fieldName: ["message", ...]}`. */
 export type FormErrors = Record<string, string[]>;

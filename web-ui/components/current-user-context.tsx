@@ -1,6 +1,6 @@
 import { createContext, type ReactNode, useContext, useMemo } from "react";
-import type { CurrentUser } from "@/api";
-import { authLoginCreate, authLogoutCreate } from "@/api";
+import type { CurrentUser } from "@/api-client";
+import { authLoginCreate, authLogoutCreate } from "@/api-client";
 import { useConfig } from "@/components/config-context";
 import { unwrap } from "@/lib/api";
 

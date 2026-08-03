@@ -11,7 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import { type FormEvent, useState } from "react";
 import { Link } from "react-router";
-import { tapsCreate, tapsList } from "@/api";
+import { tapsCreate, tapsList } from "@/api-client";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";
 import { toErrorMessage, unwrap } from "@/lib/api";

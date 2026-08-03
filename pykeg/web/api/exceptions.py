@@ -51,3 +51,9 @@ class PermissionDeniedError(Error):
     """The api_key given does not have permission for this resource."""
 
     HTTP_CODE = 401
+
+
+class GoneError(Error):
+    """This endpoint has been retired."""
+
+    HTTP_CODE = 410

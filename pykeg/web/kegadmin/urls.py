@@ -14,7 +14,6 @@ urlpatterns = [
     path("beers/", views.beverages_list, name="kegadmin-beverages"),
     path("beers/add/", views.beverage_add, name="kegadmin-add-beverage"),
     path("beers/<int:beer_id>/", views.beverage_detail, name="kegadmin-edit-beverage"),
-    path("devices/link/", views.link_device, name="kegadmin-link-device"),
     path("kegs/", views.keg_list, name="kegadmin-kegs"),
     path("kegs/online/", views.keg_list_online, name="kegadmin-kegs-online"),
     path("kegs/available/", views.keg_list_available, name="kegadmin-kegs-available"),

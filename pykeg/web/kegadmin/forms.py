@@ -817,15 +817,3 @@ class ControllerForm(forms.ModelForm):
             Submit("submit_controller_form", "Save Controller", css_class="btn-success"),
         ),
     )
-
-
-class LinkDeviceForm(forms.Form):
-    code = forms.CharField(required=True, help_text="Link code shown on device.")
-    helper = FormHelper()
-    helper.form_class = "form-horizontal"
-    helper.layout = Layout(
-        "code",
-        FormActions(
-            Submit("link_device", "Link Device", css_class="btn-success"),
-        ),
-    )

@@ -4,7 +4,6 @@ from importlib import import_module
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.urls import re_path
 from django.utils import timezone
 
 from .plugin import Plugin
@@ -42,29 +41,6 @@ def get_plugins():
             plugins[short_name] = plugin_obj
         _CACHED_PLUGINS = plugins
     return _CACHED_PLUGINS
-
-
-def get_admin_urls():
-    urls = []
-    for plugin in list(get_plugins().values()):
-        urls += _to_urls(plugin.get_extra_admin_views(), plugin.get_short_name())
-    return urls
-
-
-def get_account_urls():
-    urls = []
-    for plugin in list(get_plugins().values()):
-        urls += _to_urls(plugin.get_extra_user_views(), plugin.get_short_name())
-    return urls
-
-
-def _to_urls(urllist, short_name):
-    urls = []
-    for regex, fn, viewname in urllist:
-        regex = f"plugin/{short_name}/{regex}"
-        viewname = f"plugin-{short_name}-{viewname}"
-        urls.append(re_path(regex, fn, name=viewname))
-    return urls
 
 
 def is_stale(time, now=None):

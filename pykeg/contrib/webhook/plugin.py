@@ -4,7 +4,7 @@ from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
 from pykeg.web.api import serialize
 
-from . import forms, tasks, views
+from . import forms, tasks
 
 KEY_SITE_SETTINGS = "settings"
 
@@ -15,9 +15,6 @@ class WebhookPlugin(plugin.Plugin):
     DESCRIPTION = "Posts each system event to configured URLs"
     URL = "http://kegbot.org"
     VERSION = "1.0.0"
-
-    def get_admin_settings_view(self):
-        return views.admin_settings
 
     def handle_new_events(self, events):
         for event in events:

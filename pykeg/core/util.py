@@ -3,7 +3,6 @@
 # Note: imports should be limited to python stdlib, since methods here
 # may be used in models.py, settings.py, etc.
 
-import importlib.util
 import logging
 import os
 import tempfile
@@ -14,7 +13,6 @@ from importlib.metadata import version
 from threading import current_thread
 
 import requests
-from django.core.exceptions import ImproperlyConfigured
 from packaging.version import Version
 from redis.exceptions import RedisError
 
@@ -51,19 +49,6 @@ def get_user_agent():
 
 def CtoF(t):
     return ((9.0 / 5.0) * t) + 32
-
-
-def get_plugin_template_dirs(plugin_list):
-    ret = []
-    for plugin in plugin_list:
-        plugin_module = ".".join(plugin.split(".")[:-1])
-        spec = importlib.util.find_spec(plugin_module)
-        if not spec or not spec.origin:
-            raise ImproperlyConfigured(f'Cannot find plugin "{plugin}"')
-        template_dir = os.path.join(os.path.dirname(spec.origin), "templates")
-        if os.path.isdir(template_dir):
-            ret.append(template_dir)
-    return ret
 
 
 def get_current_request():

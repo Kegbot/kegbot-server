@@ -27,9 +27,9 @@ from rest_framework.throttling import AnonRateThrottle
 from pykeg.core import models
 from pykeg.util import email as email_util
 from pykeg.web.auth import UserExistsException
-from pykeg.web.kbregistration.forms import PasswordResetForm
 
 from . import serializers
+from .forms import PasswordResetForm
 
 
 class AuthAttemptThrottle(AnonRateThrottle):

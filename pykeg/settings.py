@@ -360,6 +360,11 @@ SPECTACULAR_SETTINGS = {
     # Serve the docs UI assets locally (no CDN).
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    # Names for enums whose auto-derived names would be too generic.
+    "ENUM_NAME_OVERRIDES": {
+        "KegStatusEnum": "pykeg.core.models.Keg.STATUS_CHOICES",
+        "SystemEventKindEnum": "pykeg.core.models.SystemEvent.KINDS",
+    },
 }
 
 APPEND_SLASH = True

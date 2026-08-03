@@ -1,5 +1,7 @@
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import (
     api_view,
@@ -212,6 +214,7 @@ class PluginDataViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser]
 
 
+@extend_schema(responses=serializers.SystemStatusSerializer)
 @api_view(["GET"])
 @permission_classes([permissions.DashboardViewer])
 def system_status(request):
@@ -232,6 +235,7 @@ def system_status(request):
     return Response(serializer.data)
 
 
+@extend_schema(request=serializers.LoginSerializer, responses=serializers.CurrentUserSerializer)
 @api_view(["POST"])
 @authentication_classes(())
 @permission_classes(())
@@ -243,12 +247,14 @@ def login(request):
     return Response(serializers.CurrentUserSerializer(user).data)
 
 
+@extend_schema(request=None, responses=OpenApiTypes.BOOL)
 @api_view(["POST"])
 def logout(request):
     auth_logout(request)
     return Response(True)
 
 
+@extend_schema(responses=serializers.CurrentUserSerializer)
 @api_view(["GET"])
 def current_user(request):
     user = request.user

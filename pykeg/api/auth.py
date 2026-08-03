@@ -1,3 +1,4 @@
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -40,3 +41,17 @@ class ApiKeyBasicAuth(authentication.BasicAuthentication):
                 'For Basic Auth, provide "api" as the username and an API key as the password.'
             )
         return validate_api_key(password)
+
+
+class ApiKeyBasicAuthScheme(OpenApiAuthenticationExtension):
+    """Describes ApiKeyBasicAuth in the OpenAPI schema."""
+
+    target_class = "pykeg.api.auth.ApiKeyBasicAuth"
+    name = "apiKeyBasicAuth"
+
+    def get_security_definition(self, auto_schema):
+        return {
+            "type": "http",
+            "scheme": "basic",
+            "description": 'Use "api" as the username and an API key as the password.',
+        }

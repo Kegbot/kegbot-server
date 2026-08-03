@@ -46,11 +46,14 @@ INSTALLED_APPS = (
     "django.contrib.messages",
     "django.contrib.sessions",
     "django.contrib.staticfiles",
+    "pykeg.api",
     "crispy_forms",
     "crispy_bootstrap4",
     "imagekit",
     "corsheaders",
     "rest_framework",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     "django_rq",
 )
 
@@ -339,6 +342,18 @@ REST_FRAMEWORK = {
         "pykeg.api.auth.ApiKeyBasicAuth",
         "rest_framework.authentication.SessionAuthentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Kegbot Server API",
+    "DESCRIPTION": "The Kegbot Server REST API.",
+    "VERSION": None,
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    # Serve the docs UI assets locally (no CDN).
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
 }
 
 CORS_ALLOWED_ORIGINS = [

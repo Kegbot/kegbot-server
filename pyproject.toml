@@ -18,6 +18,8 @@ dependencies = [
     "django-registration>=5.1",
     "django-rq>=3,<5",
     "djangorestframework>=3.16,<4",
+    "drf-spectacular>=0.28",
+    "drf-spectacular-sidecar",
     "Django>=5.2,<5.3",
     "freezegun>=1.2.1,<2",
     "isodate",

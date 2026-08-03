@@ -5,9 +5,9 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
 import type { Drink } from "@/api-client";
+import { EmptyState } from "@/components/empty-state";
 import { useFormatters } from "@/components/use-formatters";
 import { UserLink } from "@/components/user-link";
 import { formatDateTime } from "@/lib/format";
@@ -24,7 +24,7 @@ export interface DrinkListProps {
 export function DrinkList({ drinks, hideKeg, hideUser }: DrinkListProps) {
   const { volume } = useFormatters();
   if (drinks.length === 0) {
-    return <Typography color="text.secondary">No drinks yet.</Typography>;
+    return <EmptyState title="No drinks yet." hint="Pours will show up here as they happen." />;
   }
   return (
     <TableContainer sx={{ overflowX: "auto" }}>

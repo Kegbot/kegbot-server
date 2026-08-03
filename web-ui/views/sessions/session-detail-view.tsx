@@ -10,6 +10,7 @@ import { VolumeByDrinkerChart } from "@/components/charts/volume-by-drinker-char
 import { DrinkList } from "@/components/drink-list";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
+import { Section } from "@/components/section";
 import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
@@ -57,11 +58,12 @@ export function SessionDetailView() {
               </Grid>
             </Grid>
           )}
-          <Stack spacing={1}>
-            <Typography variant="h5">Drinks</Typography>
-            <DrinkList drinks={drinks.items} />
-            <LoadMoreButton list={drinks} />
-          </Stack>
+          <Section label="Drinks">
+            <Stack spacing={1}>
+              <DrinkList drinks={drinks.items} />
+              <LoadMoreButton list={drinks} />
+            </Stack>
+          </Section>
         </Stack>
       )}
     </Page>

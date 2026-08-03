@@ -6,10 +6,10 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 import { Link, useParams } from "react-router";
 import type { DrinkingSession } from "@/api-client";
 import { sessionsList } from "@/api-client";
+import { EmptyState } from "@/components/empty-state";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
 import { useFormatters } from "@/components/use-formatters";
@@ -44,7 +44,7 @@ export function SessionListView() {
     <Page title={title} loading={list.loading} error={list.error}>
       <Stack spacing={2}>
         {list.items.length === 0 && !list.loading && (
-          <Typography color="text.secondary">No sessions found.</Typography>
+          <EmptyState title="No sessions found." hint="Try a wider date range." />
         )}
         {list.items.length > 0 && (
           <TableContainer sx={{ overflowX: "auto" }}>

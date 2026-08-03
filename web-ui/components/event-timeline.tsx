@@ -5,6 +5,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
 import type { SystemEvent } from "@/api-client";
+import { EmptyState } from "@/components/empty-state";
 import { useFormatters } from "@/components/use-formatters";
 import { UserLink } from "@/components/user-link";
 
@@ -74,7 +75,7 @@ function EventItem({ event }: { event: SystemEvent }) {
 /** Feed of recent SystemEvents ("Now Drinking" timeline). */
 export function EventTimeline({ events }: { events: SystemEvent[] }) {
   if (events.length === 0) {
-    return <Typography color="text.secondary">No activity yet.</Typography>;
+    return <EmptyState title="No activity yet." hint="Events appear as soon as beer flows." />;
   }
   return (
     <List disablePadding>

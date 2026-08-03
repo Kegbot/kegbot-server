@@ -4,8 +4,8 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
+import { EmptyState } from "@/components/empty-state";
 import { useFormatters } from "@/components/use-formatters";
 
 /**
@@ -20,7 +20,7 @@ export function SessionVolumeList({
   const { volume } = useFormatters();
   const entries = Object.entries(volumeBySession).sort(([a], [b]) => Number(b) - Number(a));
   if (entries.length === 0) {
-    return <Typography color="text.secondary">No sessions yet.</Typography>;
+    return <EmptyState title="No sessions yet." />;
   }
   return (
     <TableContainer sx={{ overflowX: "auto" }}>

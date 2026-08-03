@@ -6,6 +6,7 @@ import { RouterProvider } from "react-router/dom";
 import { ConfigProvider } from "@/components/config-context";
 import { ConfirmProvider } from "@/components/confirm-context";
 import { CurrentUserProvider } from "@/components/current-user-context";
+import { PromptProvider } from "@/components/prompt-context";
 import { SnackbarProvider } from "@/components/snackbar-context";
 import { AppRoutes } from "@/routes";
 import { theme } from "@/theme/theme";
@@ -17,13 +18,15 @@ export function App() {
   // router is created per mount so it reads the current location.
   const [router] = useState(() => createBrowserRouter([{ path: "*", element: <AppRoutes /> }]));
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ThemeProvider theme={theme} defaultMode="system" noSsr>
+      <CssBaseline enableColorScheme />
       <SnackbarProvider>
         <ConfigProvider renderSetup={(kind) => <SetupApp kind={kind} />}>
           <CurrentUserProvider>
             <ConfirmProvider>
-              <RouterProvider router={router} />
+              <PromptProvider>
+                <RouterProvider router={router} />
+              </PromptProvider>
             </ConfirmProvider>
           </CurrentUserProvider>
         </ConfigProvider>

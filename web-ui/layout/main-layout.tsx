@@ -8,11 +8,12 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { ColorModeToggle } from "@/components/color-mode-toggle";
 import { useConfig } from "@/components/config-context";
 import { useCurrentUser } from "@/components/current-user-context";
+import { Wordmark } from "@/components/wordmark";
 
 function UserMenu() {
   const { me } = useConfig();
@@ -46,7 +47,7 @@ function UserMenu() {
     <>
       <IconButton color="inherit" onClick={(e) => setAnchor(e.currentTarget)} size="large">
         {mugshotUrl ? (
-          <Avatar src={mugshotUrl} sx={{ width: 32, height: 32 }} />
+          <Avatar src={mugshotUrl} sx={{ width: 30, height: 30 }} />
         ) : (
           <AccountCircleIcon />
         )}
@@ -90,32 +91,54 @@ const NAV_ITEMS: Array<{ label: string; to: string }> = [
   { label: "Stats", to: "/stats" },
 ];
 
+function NavButton({ label, to }: { label: string; to: string }) {
+  const location = useLocation();
+  const active = location.pathname === to || location.pathname.startsWith(`${to}/`);
+  return (
+    <Button
+      component={Link}
+      to={to}
+      size="small"
+      sx={{
+        color: active ? "text.primary" : "text.secondary",
+        px: 1.25,
+        "&:hover": { color: "text.primary", bgcolor: "transparent" },
+      }}
+    >
+      {label}
+    </Button>
+  );
+}
+
 export function MainLayout() {
   const { me } = useConfig();
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <AppBar position="sticky">
-        <Toolbar>
-          <Typography
-            variant="h6"
-            component={Link}
-            to="/"
-            sx={{ color: "inherit", textDecoration: "none", mr: 3 }}
-          >
-            {me.site.title}
-          </Typography>
-          <Box sx={{ flexGrow: 1, display: "flex", gap: 1, overflowX: "auto" }}>
+      <AppBar
+        position="sticky"
+        sx={{
+          bgcolor: "background.paper",
+          color: "text.primary",
+          borderBottom: 1,
+          borderColor: "divider",
+          backgroundImage: "none",
+        }}
+      >
+        <Toolbar variant="dense" sx={{ gap: 1, minHeight: 56 }}>
+          <Box component={Link} to="/" sx={{ textDecoration: "none", mr: 2, minWidth: 0 }}>
+            <Wordmark siteTitle={me.site.title} />
+          </Box>
+          <Box sx={{ display: "flex", gap: 0.5, overflowX: "auto", flexGrow: 1 }}>
             {NAV_ITEMS.map((item) => (
-              <Button key={item.to} color="inherit" component={Link} to={item.to}>
-                {item.label}
-              </Button>
+              <NavButton key={item.to} {...item} />
             ))}
           </Box>
+          <ColorModeToggle />
           <UserMenu />
         </Toolbar>
       </AppBar>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 }, flexGrow: 1 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2.5, md: 4 }, flexGrow: 1 }}>
         <Outlet />
       </Container>
     </Box>

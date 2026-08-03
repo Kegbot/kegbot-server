@@ -1,12 +1,12 @@
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useEffect } from "react";
 import { statusRetrieve } from "@/api-client";
 import { useConfig } from "@/components/config-context";
 import { EventTimeline } from "@/components/event-timeline";
 import { LoadingZone } from "@/components/loading-zone";
+import { Section } from "@/components/section";
 import { TapCardLive } from "@/components/tap-card-live";
 import { unwrap } from "@/lib/api";
 import { useAsyncData } from "@/lib/use-async-data";
@@ -41,10 +41,9 @@ export function FullscreenView() {
               </Grid>
             </Grid>
             <Grid size={{ xs: 12, md: 5 }}>
-              <Stack spacing={2}>
-                <Typography variant="h5">Recent Activity</Typography>
+              <Section label="Recent activity">
                 <EventTimeline events={status.data.events.slice(0, 10)} />
-              </Stack>
+              </Section>
             </Grid>
           </Grid>
         )}

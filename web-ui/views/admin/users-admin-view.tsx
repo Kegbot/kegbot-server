@@ -21,6 +21,7 @@ import type { User } from "@/api-client";
 import { usersCreate, usersList, usersPartialUpdate, usersSetPasswordCreate } from "@/api-client";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
+import { usePrompt } from "@/components/prompt-context";
 import { useSnackbar } from "@/components/snackbar-context";
 import { UserLink } from "@/components/user-link";
 import { toErrorMessage, unwrap } from "@/lib/api";
@@ -28,6 +29,7 @@ import { useCursorList } from "@/lib/use-cursor-list";
 
 function UserActions({ user, onChanged }: { user: User; onChanged: () => void }) {
   const { showMessage } = useSnackbar();
+  const prompt = usePrompt();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
 
   const patch = async (body: Record<string, unknown>, message: string) => {
@@ -43,7 +45,12 @@ function UserActions({ user, onChanged }: { user: User; onChanged: () => void })
 
   const setPassword = async () => {
     setAnchor(null);
-    const password = window.prompt(`New password for ${user.username}:`);
+    const password = await prompt({
+      title: `Set password for ${user.username}`,
+      label: "New password",
+      type: "password",
+      confirmText: "Set password",
+    });
     if (!password) {
       return;
     }

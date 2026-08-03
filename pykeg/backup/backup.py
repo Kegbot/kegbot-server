@@ -125,13 +125,13 @@ def create_backup_tree(date, storage, include_media=True):
             output_dirname = os.path.dirname(output_filename)
             if not os.path.exists(output_dirname):
                 os.makedirs(output_dirname)
-            with storage.open(full_filename, "r") as srcfile:
-                with open(output_filename, "w") as dstfile:
+            with storage.open(full_filename, "rb") as srcfile:
+                with open(output_filename, "wb") as dstfile:
                     logger.debug(f"+++ Creating {output_filename}")
                     shutil.copyfileobj(srcfile, dstfile)
                     metadata[META_NUM_MEDIA_FILES] += 1
         for subdir in subdirs:
-            add_files(storage, os.path.join((dirname, subdir)), destdir)
+            add_files(storage, os.path.join(dirname, subdir), destdir)
 
     if include_media:
         destdir = os.path.join(backup_dir, "media")
@@ -164,7 +164,7 @@ def create_backup_tree(date, storage, include_media=True):
 def create_backup_zip(backup_dir, backup_name):
     """Creates a zipfile based on a tree created with `create_backup_tree()`."""
     zipfile_fileno, zipfile_path = tempfile.mkstemp()
-    zipfile_fd = os.fdopen(zipfile_fileno, "w")
+    zipfile_fd = os.fdopen(zipfile_fileno, "wb")
     zf = zipfile.ZipFile(zipfile_fd, "w")
 
     for dirname, subdirs, files in os.walk(backup_dir):

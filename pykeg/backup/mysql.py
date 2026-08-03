@@ -40,7 +40,7 @@ def is_installed():
 
     cmd = " ".join(args)
     logger.info(f"command: {cmd}")
-    output = subprocess.check_output(cmd, shell=True)
+    output = subprocess.check_output(cmd, shell=True, text=True)
     logger.info(f"result: {output}")
     return "core_kegbotsite" in output
 

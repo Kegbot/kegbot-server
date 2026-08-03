@@ -1,6 +1,6 @@
 import os
 
-from django.core.files.storage import get_storage_class
+from django.core.files.storage import default_storage
 from django.core.management.base import BaseCommand
 
 from pykeg.backup import backup
@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         location = backup.backup(include_media=not options.get("no_media"))
-        storage = get_storage_class()()
+        storage = default_storage
 
         path = location
         if hasattr(storage, "location"):

@@ -18,3 +18,5 @@ docs/build
 build
 dist
 test-db.sqlite
+
+/tmp

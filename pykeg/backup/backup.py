@@ -34,6 +34,7 @@ import zipfile
 import isodate
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.core.management import call_command
 from django.db import connection, transaction
 from django.utils import timezone
 from django.utils.text import slugify
@@ -41,6 +42,7 @@ from django.utils.text import slugify
 from pykeg.core.util import get_version
 from pykeg.util import kbjson
 
+from . import legacy
 from .exceptions import AlreadyInstalledError, BackupError, InvalidBackup
 
 logger = logging.getLogger(__name__)
@@ -199,7 +201,7 @@ def backup(storage=default_storage, include_media=True):
                     sha1.update(chunk)
             digest = sha1.hexdigest()
             saved_zip_name = os.path.join(BACKUPS_DIRNAME, f"{backup_name}-{digest}.zip")
-            with open(temp_zip) as temp_zip_file:
+            with open(temp_zip, "rb") as temp_zip_file:
                 ret = storage.save(saved_zip_name, temp_zip_file)
                 return ret
         finally:
@@ -222,7 +224,7 @@ def verify_backup_directory(backup_dir):
     if not os.path.exists(metadata_file):
         raise InvalidBackup("Metadata file does not exist")
 
-    if not os.path.exists(metadata_file):
+    if not os.path.exists(os.path.join(backup_dir, SQL_FILENAME)):
         raise InvalidBackup("SQL dumpfile does not exist")
 
     metadata = kbjson.loads(open(metadata_file).read())
@@ -233,6 +235,13 @@ def verify_backup_directory(backup_dir):
     return metadata
 
 
+def read_metadata_from_directory(backup_dir):
+    metadata_file = os.path.join(backup_dir, METADATA_FILENAME)
+    if not os.path.exists(metadata_file):
+        raise InvalidBackup("Metadata file does not exist")
+    return kbjson.loads(open(metadata_file).read())
+
+
 def restore_media(backup_dir, storage):
     media_dir = os.path.join(backup_dir, "media")
 
@@ -240,13 +249,22 @@ def restore_media(backup_dir, storage):
         for filename in files:
             full_path = os.path.join(dirname, filename)
             rel_path = os.path.relpath(full_path, media_dir)
-            with open(full_path) as data:
+            with open(full_path, "rb") as data:
                 logger.debug(f"+++ Restoring file {rel_path}")
                 storage.save(rel_path, data)
 
 
 def restore_from_directory(backup_dir, storage=default_storage):
     logger.info(f"Restoring from {backup_dir} ...")
+
+    if read_metadata_from_directory(backup_dir).get(META_BACKUP_FORMAT) == 1:
+        # Legacy (v1.1.x) backups have no SQL dump; data is restored
+        # through the ORM into a freshly migrated database.
+        call_command("migrate", interactive=False, verbosity=0)
+        legacy.restore_data(backup_dir)
+        restore_media(backup_dir, storage)
+        logger.info("Restore completed successfully.")
+        return
 
     if db_impl.is_installed():
         raise AlreadyInstalledError("You must erase this system before restoring.")

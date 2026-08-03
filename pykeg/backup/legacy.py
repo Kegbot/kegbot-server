@@ -111,8 +111,10 @@ def load_data(objects):
         call_command("loaddata", fixture_path, verbosity=0)
 
     # Rows were inserted with explicit pks; realign auto-increment
-    # sequences (needed on postgres; a no-op elsewhere).
-    sequence_sql = connection.ops.sequence_reset_sql(no_style(), apps.get_models())
+    # sequences (needed on postgres; a no-op elsewhere). Only the loaded
+    # models: other apps may have models without tables.
+    loaded_models = {apps.get_model(o["model"]) for o in objects}
+    sequence_sql = connection.ops.sequence_reset_sql(no_style(), sorted(loaded_models, key=str))
     if sequence_sql:
         with connection.cursor() as cursor:
             for statement in sequence_sql:

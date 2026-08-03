@@ -19,6 +19,9 @@ up to date.
 - **Very old backups can now be restored directly.** `kegbot restore` accepts
   legacy format-1 backups (created by Kegbot v1.1.x) and upgrades their data in
   one step; no intermediate 1.2/1.3 install is needed.
+- Time zone choices are now derived from the system time zone database, so
+  newly added zones appear automatically. (Includes a database migration; run
+  `kegbot upgrade` as usual.)
 
 ### Upgrade notes (for existing installs)
 

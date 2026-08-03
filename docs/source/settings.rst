@@ -82,10 +82,3 @@ change and should only be needed by advanced users.
   be prefixed by this URL. Otherwise, media will be served from
   the same host as the server itself, under ``/media``. You may use
   this setting to e.g. serve media links through a CDN.
-
-.. data:: KEGBOT_ENABLE_V2_API
-
-  If set to ``true``, the new Kegbot Server API will be enabled (at
-  path ``/api/v2/...``). This API will replace the existing API implementation
-  in a future major Kegbot release. It is currently unfinished. Enable this
-  if you are a developer intending to work on or with this API.

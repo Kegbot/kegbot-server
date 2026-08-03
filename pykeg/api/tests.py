@@ -27,7 +27,7 @@ class ApiClient:
         return response.status_code, response.json()
 
     def get_events(self):
-        return self.get("/api/v2/events")
+        return self.get("/api/events")
 
 
 class V2ApiTestCase(TestCase):

@@ -145,10 +145,3 @@ define_setting("KEGBOT_IN_DOCKER", default=False, typefn=boolstr, required=False
 define_setting("KEGBOT_MEDIA_URL", default="", required=False)
 
 define_setting("KEGBOT_INSECURE_SHARED_API_KEY", default="", required=False)
-
-define_setting(
-    "KEGBOT_ENABLE_V2_API",
-    default=True if IS_RUNNING_PYTEST else False,
-    typefn=boolstr,
-    required=False,
-)

@@ -20,7 +20,7 @@ ATTR_NEED_AUTH = "api_auth_required"
 
 
 def is_api_v1_request(request):
-    return request.path.startswith("/api") and not request.path.startswith("/api/v2")
+    return request.path.startswith("/api/v1")
 
 
 def needs_auth(viewfunc):

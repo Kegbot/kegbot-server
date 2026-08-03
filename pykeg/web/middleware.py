@@ -23,8 +23,8 @@ PRIVACY_EXEMPT_PATHS = (
     "/setup/",
     "/sso/login",
     "/sso/logout",
-    # Enforced by v2 api auth layer
-    "/api/v2",
+    # Both apis enforce their own privacy rules.
+    "/api/",
 )
 
 PRIVACY_EXEMPT_PATHS += getattr(settings, "KEGBOT_EXTRA_PRIVACY_EXEMPT_PATHS", ())
@@ -70,7 +70,7 @@ class ErrorLoggingMiddleware:
 
 
 class PathRewriteMiddleware:
-    """Rewrites `request.path` to ignore trailing slashes for /api/ requests.
+    """Rewrites `request.path` to ignore trailing slashes for legacy api requests.
 
     Earlier versions of kegbot-server tolerated an optional trailing slash.
     We don't want to define every API url as an `re_path(r".../?")`.
@@ -83,12 +83,11 @@ class PathRewriteMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.path.startswith("/api") and not getattr(request, "path_rewritten", None):
-            if not request.path.startswith("/api/v2"):
-                if request.path.endswith("/"):
-                    request.path = request.path[:-1]
-                    request.path_info = request.path_info[:-1]
-                    request.path_rewritten = True
+        if request.path.startswith("/api/v1") and not getattr(request, "path_rewritten", None):
+            if request.path.endswith("/"):
+                request.path = request.path[:-1]
+                request.path_info = request.path_info[:-1]
+                request.path_rewritten = True
         return self.get_response(request)
 
 

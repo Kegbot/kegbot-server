@@ -14,11 +14,11 @@ def create_site():
 
 class BaseApiTestCase(TestCase):
     def get(self, subpath, data={}, follow=False, **extra):
-        response = self.client.get(f"/api/{subpath}", data=data, follow=follow, **extra)
+        response = self.client.get(f"/api/v1/{subpath}", data=data, follow=follow, **extra)
         return response, kbjson.loads(response.content)
 
     def post(self, subpath, data={}, follow=False, **extra):
-        response = self.client.post(f"/api/{subpath}", data=data, follow=follow, **extra)
+        response = self.client.post(f"/api/v1/{subpath}", data=data, follow=follow, **extra)
         return response, kbjson.loads(response.content)
 
 

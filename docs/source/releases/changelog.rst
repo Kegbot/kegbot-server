@@ -14,6 +14,24 @@ brought up to date.
 
 **Highlights**
 
+* **The web interface is completely new.** A React single-page app
+  (Material UI) replaces the server-rendered Django UI. Every part of the
+  interface was rebuilt: browsing (home, kegs, drinkers, drinks, session
+  archives, system stats with charts), the fullscreen/kiosk mode (which now
+  updates in place instead of reloading), account management, registration
+  and password flows, the full admin area, and the setup wizard (which now
+  also works in production, not just ``DEBUG``). Public URLs are preserved,
+  including short links (``/d/<id>``, ``/s/<id>``) and links in older
+  notification e-mails.
+* **The new API now covers everything the web UI does**, including:
+  list filtering and page sizing; a ``/api/users/me`` boot endpoint;
+  per-user/keg/session/system stats; keg and tap lifecycle operations
+  (attach/start/end kegs, record drinks and spills, connect hardware);
+  drink management and picture uploads; account self-service and
+  authentication flows (registration, password reset, e-mail change,
+  activation); admin user management and site settings; backups, logs,
+  test e-mail, and bugreport endpoints; an API-driven setup wizard; and
+  plugin settings.
 * Python 3.14 is now required (was 3.10).
 * Django 5.2 LTS (was 3.2).
 * Web server switched from gunicorn/gevent to waitress.
@@ -45,6 +63,19 @@ brought up to date.
   jobs are handed to the worker only after the surrounding database
   transaction commits. Ensure ``run_workers`` is running (unchanged) to
   process them.
+* **Building from source now requires** `bun <https://bun.sh>`_ **for the
+  frontend.** Run ``bun install && bun run build`` before
+  ``kegbot collectstatic``; the Docker image does this automatically. For
+  development, run ``bun run dev`` (vite, http://localhost:8000) alongside
+  ``kegbot runserver`` (Django, now defaulting to port 8001); the dev
+  server proxies API requests to Django.
+* **Site privacy is now enforced by the API** and rendered by the frontend;
+  the server-side privacy interstitials (and
+  ``KEGBOT_EXTRA_PRIVACY_EXEMPT_PATHS``) are gone.
+* Plugins no longer provide Django template views; plugin settings are
+  managed through the plugin settings API. The webhook plugin is otherwise
+  unchanged.
+* The legacy ``ga.js`` Google Analytics snippet is no longer emitted.
 * ``run_gunicorn`` was removed. Use ``kegbot run_server`` (now waitress).
 * The Docker image no longer publishes a ``linux/arm/v7`` variant (amd64 and
   arm64 only).

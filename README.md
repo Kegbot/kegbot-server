@@ -18,6 +18,31 @@ $ open http://localhost:8000/
 For much more detail, see the complete [Kegbot Server documentation](https://docs.kegbot.org/projects/kegbot-server/en/latest/).
 
 
+## Development
+
+The web interface is a React single-page app (in `web-ui/`) served by the
+Django backend (in `pykeg/`). For development, run both servers and browse
+the vite dev server, which proxies API requests to Django:
+
+```
+$ uv sync                  # python dependencies
+$ bun install              # frontend dependencies
+$ kegbot runserver         # django, on port 8001
+$ bun run dev              # vite, on http://localhost:8000  <-- browse here
+```
+
+Other useful commands:
+
+```
+$ uv run pytest                  # backend tests
+$ bun run test                   # frontend tests
+$ bun run check                  # frontend lint + typecheck
+$ bun run build                  # production frontend build (web-ui/dist)
+$ bun run generate-api           # regenerate the API client from the schema
+$ bun run generate-constants     # regenerate web-ui/lib/shared-constants.ts
+```
+
+
 ## Documentation and Help
 
 * Main project page: https://kegbot.org/

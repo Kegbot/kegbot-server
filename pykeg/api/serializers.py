@@ -556,6 +556,35 @@ class SetPasswordRequestSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=1)
 
 
+class SetupStatusSerializer(serializers.Serializer):
+    need_setup = serializers.BooleanField()
+    need_upgrade = serializers.BooleanField()
+    installed_version = serializers.CharField(allow_null=True)
+    current_version = serializers.CharField()
+
+
+class SetupSiteSettingsRequestSerializer(serializers.ModelSerializer):
+    """The subset of site settings collected during the setup wizard."""
+
+    class Meta:
+        model = models.KegbotSite
+        fields = [
+            "title",
+            "privacy",
+            "timezone",
+            "volume_display_units",
+            "temperature_display_units",
+            "enable_sensing",
+            "enable_users",
+        ]
+
+
+class SetupAdminUserRequestSerializer(serializers.Serializer):
+    username = serializers.RegexField(regex=kb_common.USERNAME_REGEX, max_length=30)
+    email = serializers.EmailField()
+    password = serializers.CharField(min_length=1)
+
+
 class AdminDashboardSerializer(serializers.Serializer):
     email_configured = serializers.BooleanField()
     redis_error = serializers.CharField(allow_null=True)

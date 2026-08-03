@@ -1177,6 +1177,97 @@ class SetupGateTestCase(TestCase):
         self.assertEqual("0.0.1", data["installed_version"])
 
 
+class SetupApiTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.api = APIClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+
+    def test_endpoints_closed_when_site_is_setup(self):
+        response = self.api.get("/api/setup/status")
+        self.assertEqual(403, response.status_code)
+        response = self.api.post("/api/setup/finish")
+        self.assertEqual(403, response.status_code)
+
+    def test_setup_flow(self):
+        self.site.is_setup = False
+        self.site.save()
+
+        response = self.api.get("/api/setup/status")
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertTrue(data["need_setup"])
+        self.assertEqual(get_version(), data["current_version"])
+
+        response = self.api.post("/api/setup/migrate")
+        self.assertEqual(200, response.status_code)
+
+        response = self.api.post(
+            "/api/setup/settings",
+            {
+                "title": "Fresh Bar",
+                "privacy": "members",
+                "timezone": "America/Los_Angeles",
+                "volume_display_units": "metric",
+                "enable_sensing": True,
+                "enable_users": False,
+            },
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        self.site.refresh_from_db()
+        self.assertEqual("Fresh Bar", self.site.title)
+        self.assertEqual("members", self.site.privacy)
+        self.assertFalse(self.site.enable_users)
+
+        response = self.api.post(
+            "/api/setup/admin-user",
+            {"username": "root", "email": "root@example.com", "password": "adminpw"},
+            format="json",
+        )
+        self.assertEqual(201, response.status_code)
+        user = models.User.objects.get(username="root")
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
+        self.assertTrue(user.check_password("adminpw"))
+
+        response = self.api.post("/api/setup/finish")
+        self.assertEqual(200, response.status_code)
+        self.site.refresh_from_db()
+        self.assertTrue(self.site.is_setup)
+
+        # The wizard is closed once setup completes.
+        response = self.api.get("/api/setup/status")
+        self.assertEqual(403, response.status_code)
+
+    def test_upgrade_flow(self):
+        self.site.server_version = "0.0.1"
+        self.site.save()
+
+        response = self.api.get("/api/setup/status")
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertTrue(data["need_upgrade"])
+        self.assertEqual("0.0.1", data["installed_version"])
+
+        response = self.api.post("/api/setup/upgrade")
+        self.assertEqual(200, response.status_code)
+        self.site.refresh_from_db()
+        self.assertEqual(get_version(), self.site.server_version)
+
+        response = self.api.post("/api/setup/upgrade")
+        self.assertEqual(403, response.status_code)
+
+    def test_settings_conflict_when_only_upgrade_needed(self):
+        self.site.server_version = "0.0.1"
+        self.site.save()
+        response = self.api.post("/api/setup/settings", {"title": "X"}, format="json")
+        self.assertEqual(409, response.status_code)
+
+
 class SchemaTestCase(TestCase):
     fixtures = ["testdata/demo-site.json"]
 

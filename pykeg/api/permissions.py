@@ -53,6 +53,22 @@ class AdminWriteDashboardRead(DashboardViewer):
         return bool(request.user and request.user.is_staff)
 
 
+class SetupAccess(permissions.BasePermission):
+    """Setup endpoints are open while setup/upgrade is required.
+
+    Once the site is set up and current, they respond 403: setup views use
+    no authenticators (the database may not exist yet), so nobody — staff
+    included — can reach them afterwards.
+    """
+
+    message = "Setup is not required"
+
+    def has_permission(self, request, view):
+        return bool(
+            getattr(request, "need_setup", False) or getattr(request, "need_upgrade", False)
+        )
+
+
 class IsOwnerOrAdmin(IsAuthenticated):
     """Requires the object's owning user (its `user` attribute) or an admin."""
 

@@ -2,7 +2,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 
-from . import views, views_account, views_admin
+from . import views, views_account, views_admin, views_setup
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register("api-keys", views.ApiKeyViewSet)
@@ -50,6 +50,12 @@ urlpatterns = [
     path("auth/register", views_account.register),
     path("site", views.site_settings),
     path("site/background-image", views.site_background_image),
+    path("setup/status", views_setup.setup_status),
+    path("setup/migrate", views_setup.migrate),
+    path("setup/settings", views_setup.site_settings),
+    path("setup/admin-user", views_setup.admin_user),
+    path("setup/finish", views_setup.finish),
+    path("setup/upgrade", views_setup.upgrade),
     path("status", views.system_status),
     path("schema", SpectacularAPIView.as_view(), name="api-schema"),
     path("docs", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),

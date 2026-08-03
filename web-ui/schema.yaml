@@ -15,13 +15,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActivateAccountRequest'
+              $ref: '#/components/schemas/ActivateAccountRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ActivateAccountRequest'
+              $ref: '#/components/schemas/ActivateAccountRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ActivateAccountRequest'
+              $ref: '#/components/schemas/ActivateAccountRequestRequest'
         required: true
       responses:
         '200':
@@ -41,13 +41,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConfirmEmailRequest'
+              $ref: '#/components/schemas/ConfirmEmailRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ConfirmEmailRequest'
+              $ref: '#/components/schemas/ConfirmEmailRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ConfirmEmailRequest'
+              $ref: '#/components/schemas/ConfirmEmailRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -70,13 +70,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmailChangeRequest'
+              $ref: '#/components/schemas/EmailChangeRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/EmailChangeRequest'
+              $ref: '#/components/schemas/EmailChangeRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/EmailChangeRequest'
+              $ref: '#/components/schemas/EmailChangeRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -98,10 +98,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -123,13 +123,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordChangeRequest'
+              $ref: '#/components/schemas/PasswordChangeRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PasswordChangeRequest'
+              $ref: '#/components/schemas/PasswordChangeRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PasswordChangeRequest'
+              $ref: '#/components/schemas/PasswordChangeRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -252,13 +252,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmailTestRequest'
+              $ref: '#/components/schemas/EmailTestRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/EmailTestRequest'
+              $ref: '#/components/schemas/EmailTestRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/EmailTestRequest'
+              $ref: '#/components/schemas/EmailTestRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -409,13 +409,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApiKey'
+              $ref: '#/components/schemas/ApiKeyRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ApiKey'
+              $ref: '#/components/schemas/ApiKeyRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ApiKey'
+              $ref: '#/components/schemas/ApiKeyRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -466,13 +466,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApiKey'
+              $ref: '#/components/schemas/ApiKeyRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ApiKey'
+              $ref: '#/components/schemas/ApiKeyRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ApiKey'
+              $ref: '#/components/schemas/ApiKeyRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -500,13 +500,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedApiKey'
+              $ref: '#/components/schemas/PatchedApiKeyRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedApiKey'
+              $ref: '#/components/schemas/PatchedApiKeyRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedApiKey'
+              $ref: '#/components/schemas/PatchedApiKeyRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -589,13 +589,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthenticationToken'
+              $ref: '#/components/schemas/AuthenticationTokenRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AuthenticationToken'
+              $ref: '#/components/schemas/AuthenticationTokenRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AuthenticationToken'
+              $ref: '#/components/schemas/AuthenticationTokenRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -646,13 +646,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthenticationToken'
+              $ref: '#/components/schemas/AuthenticationTokenRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AuthenticationToken'
+              $ref: '#/components/schemas/AuthenticationTokenRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AuthenticationToken'
+              $ref: '#/components/schemas/AuthenticationTokenRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -680,13 +680,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedAuthenticationToken'
+              $ref: '#/components/schemas/PatchedAuthenticationTokenRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedAuthenticationToken'
+              $ref: '#/components/schemas/PatchedAuthenticationTokenRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedAuthenticationToken'
+              $ref: '#/components/schemas/PatchedAuthenticationTokenRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -724,13 +724,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Login'
+              $ref: '#/components/schemas/LoginRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Login'
+              $ref: '#/components/schemas/LoginRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Login'
+              $ref: '#/components/schemas/LoginRequest'
         required: true
       responses:
         '200':
@@ -764,13 +764,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
         required: true
       responses:
         '200':
@@ -789,13 +789,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+              $ref: '#/components/schemas/PasswordResetConfirmRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+              $ref: '#/components/schemas/PasswordResetConfirmRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+              $ref: '#/components/schemas/PasswordResetConfirmRequestRequest'
         required: true
       responses:
         '200':
@@ -814,13 +814,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterRequest'
+              $ref: '#/components/schemas/RegisterRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/RegisterRequest'
+              $ref: '#/components/schemas/RegisterRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/RegisterRequest'
+              $ref: '#/components/schemas/RegisterRequestRequest'
         required: true
       responses:
         '200':
@@ -867,13 +867,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BeverageProducer'
+              $ref: '#/components/schemas/BeverageProducerRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/BeverageProducer'
+              $ref: '#/components/schemas/BeverageProducerRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/BeverageProducer'
+              $ref: '#/components/schemas/BeverageProducerRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -924,13 +924,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BeverageProducer'
+              $ref: '#/components/schemas/BeverageProducerRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/BeverageProducer'
+              $ref: '#/components/schemas/BeverageProducerRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/BeverageProducer'
+              $ref: '#/components/schemas/BeverageProducerRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -958,13 +958,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedBeverageProducer'
+              $ref: '#/components/schemas/PatchedBeverageProducerRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedBeverageProducer'
+              $ref: '#/components/schemas/PatchedBeverageProducerRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedBeverageProducer'
+              $ref: '#/components/schemas/PatchedBeverageProducerRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -1010,10 +1010,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -1063,13 +1063,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Beverage'
+              $ref: '#/components/schemas/BeverageRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Beverage'
+              $ref: '#/components/schemas/BeverageRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Beverage'
+              $ref: '#/components/schemas/BeverageRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -1120,13 +1120,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Beverage'
+              $ref: '#/components/schemas/BeverageRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Beverage'
+              $ref: '#/components/schemas/BeverageRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Beverage'
+              $ref: '#/components/schemas/BeverageRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -1154,13 +1154,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedBeverage'
+              $ref: '#/components/schemas/PatchedBeverageRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedBeverage'
+              $ref: '#/components/schemas/PatchedBeverageRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedBeverage'
+              $ref: '#/components/schemas/PatchedBeverageRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -1206,10 +1206,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -1259,13 +1259,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Controller'
+              $ref: '#/components/schemas/ControllerRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Controller'
+              $ref: '#/components/schemas/ControllerRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Controller'
+              $ref: '#/components/schemas/ControllerRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -1316,13 +1316,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Controller'
+              $ref: '#/components/schemas/ControllerRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Controller'
+              $ref: '#/components/schemas/ControllerRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Controller'
+              $ref: '#/components/schemas/ControllerRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -1350,13 +1350,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedController'
+              $ref: '#/components/schemas/PatchedControllerRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedController'
+              $ref: '#/components/schemas/PatchedControllerRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedController'
+              $ref: '#/components/schemas/PatchedControllerRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -1429,13 +1429,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Device'
+              $ref: '#/components/schemas/DeviceRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Device'
+              $ref: '#/components/schemas/DeviceRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Device'
+              $ref: '#/components/schemas/DeviceRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -1491,13 +1491,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Device'
+              $ref: '#/components/schemas/DeviceRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Device'
+              $ref: '#/components/schemas/DeviceRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Device'
+              $ref: '#/components/schemas/DeviceRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -1527,13 +1527,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedDevice'
+              $ref: '#/components/schemas/PatchedDeviceRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedDevice'
+              $ref: '#/components/schemas/PatchedDeviceRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedDevice'
+              $ref: '#/components/schemas/PatchedDeviceRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -1664,13 +1664,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedDrinkUpdateRequest'
+              $ref: '#/components/schemas/PatchedDrinkUpdateRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedDrinkUpdateRequest'
+              $ref: '#/components/schemas/PatchedDrinkUpdateRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedDrinkUpdateRequest'
+              $ref: '#/components/schemas/PatchedDrinkUpdateRequestRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -1721,10 +1721,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -1771,13 +1771,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DrinkReassignRequest'
+              $ref: '#/components/schemas/DrinkReassignRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/DrinkReassignRequest'
+              $ref: '#/components/schemas/DrinkReassignRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/DrinkReassignRequest'
+              $ref: '#/components/schemas/DrinkReassignRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -1919,13 +1919,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FlowMeter'
+              $ref: '#/components/schemas/FlowMeterRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/FlowMeter'
+              $ref: '#/components/schemas/FlowMeterRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/FlowMeter'
+              $ref: '#/components/schemas/FlowMeterRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -1976,13 +1976,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FlowMeter'
+              $ref: '#/components/schemas/FlowMeterRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/FlowMeter'
+              $ref: '#/components/schemas/FlowMeterRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/FlowMeter'
+              $ref: '#/components/schemas/FlowMeterRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -2010,13 +2010,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedFlowMeter'
+              $ref: '#/components/schemas/PatchedFlowMeterRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedFlowMeter'
+              $ref: '#/components/schemas/PatchedFlowMeterRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedFlowMeter'
+              $ref: '#/components/schemas/PatchedFlowMeterRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -2083,13 +2083,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FlowToggle'
+              $ref: '#/components/schemas/FlowToggleRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/FlowToggle'
+              $ref: '#/components/schemas/FlowToggleRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/FlowToggle'
+              $ref: '#/components/schemas/FlowToggleRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -2140,13 +2140,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FlowToggle'
+              $ref: '#/components/schemas/FlowToggleRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/FlowToggle'
+              $ref: '#/components/schemas/FlowToggleRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/FlowToggle'
+              $ref: '#/components/schemas/FlowToggleRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -2174,13 +2174,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedFlowToggle'
+              $ref: '#/components/schemas/PatchedFlowToggleRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedFlowToggle'
+              $ref: '#/components/schemas/PatchedFlowToggleRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedFlowToggle'
+              $ref: '#/components/schemas/PatchedFlowToggleRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -2255,13 +2255,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Invitation'
+              $ref: '#/components/schemas/InvitationRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Invitation'
+              $ref: '#/components/schemas/InvitationRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Invitation'
+              $ref: '#/components/schemas/InvitationRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -2378,13 +2378,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KegCreateRequest'
+              $ref: '#/components/schemas/KegCreateRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/KegCreateRequest'
+              $ref: '#/components/schemas/KegCreateRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/KegCreateRequest'
+              $ref: '#/components/schemas/KegCreateRequestRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -2442,13 +2442,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Keg'
+              $ref: '#/components/schemas/KegRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Keg'
+              $ref: '#/components/schemas/KegRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Keg'
+              $ref: '#/components/schemas/KegRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -2479,13 +2479,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedKeg'
+              $ref: '#/components/schemas/PatchedKegRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedKeg'
+              $ref: '#/components/schemas/PatchedKegRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedKeg'
+              $ref: '#/components/schemas/PatchedKegRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -2581,13 +2581,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KegSpillRequest'
+              $ref: '#/components/schemas/KegSpillRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/KegSpillRequest'
+              $ref: '#/components/schemas/KegSpillRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/KegSpillRequest'
+              $ref: '#/components/schemas/KegSpillRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -2661,13 +2661,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NotificationSettings'
+              $ref: '#/components/schemas/NotificationSettingsRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/NotificationSettings'
+              $ref: '#/components/schemas/NotificationSettingsRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/NotificationSettings'
+              $ref: '#/components/schemas/NotificationSettingsRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -2718,13 +2718,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NotificationSettings'
+              $ref: '#/components/schemas/NotificationSettingsRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/NotificationSettings'
+              $ref: '#/components/schemas/NotificationSettingsRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/NotificationSettings'
+              $ref: '#/components/schemas/NotificationSettingsRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -2752,13 +2752,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedNotificationSettings'
+              $ref: '#/components/schemas/PatchedNotificationSettingsRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedNotificationSettings'
+              $ref: '#/components/schemas/PatchedNotificationSettingsRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedNotificationSettings'
+              $ref: '#/components/schemas/PatchedNotificationSettingsRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -2831,13 +2831,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PluginData'
+              $ref: '#/components/schemas/PluginDataRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PluginData'
+              $ref: '#/components/schemas/PluginDataRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PluginData'
+              $ref: '#/components/schemas/PluginDataRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -2894,13 +2894,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PluginData'
+              $ref: '#/components/schemas/PluginDataRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PluginData'
+              $ref: '#/components/schemas/PluginDataRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PluginData'
+              $ref: '#/components/schemas/PluginDataRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -2931,13 +2931,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedPluginData'
+              $ref: '#/components/schemas/PatchedPluginDataRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedPluginData'
+              $ref: '#/components/schemas/PatchedPluginDataRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedPluginData'
+              $ref: '#/components/schemas/PatchedPluginDataRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -3083,13 +3083,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SetupAdminUserRequest'
+              $ref: '#/components/schemas/SetupAdminUserRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SetupAdminUserRequest'
+              $ref: '#/components/schemas/SetupAdminUserRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SetupAdminUserRequest'
+              $ref: '#/components/schemas/SetupAdminUserRequestRequest'
         required: true
       responses:
         '200':
@@ -3135,13 +3135,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SetupSiteSettingsRequest'
+              $ref: '#/components/schemas/SetupSiteSettingsRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SetupSiteSettingsRequest'
+              $ref: '#/components/schemas/SetupSiteSettingsRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SetupSiteSettingsRequest'
+              $ref: '#/components/schemas/SetupSiteSettingsRequestRequest'
       responses:
         '200':
           content:
@@ -3201,13 +3201,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedSiteSettings'
+              $ref: '#/components/schemas/PatchedSiteSettingsRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedSiteSettings'
+              $ref: '#/components/schemas/PatchedSiteSettingsRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedSiteSettings'
+              $ref: '#/components/schemas/PatchedSiteSettingsRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -3228,10 +3228,10 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PictureUploadRequest'
+              $ref: '#/components/schemas/PictureUploadRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3380,13 +3380,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KegTap'
+              $ref: '#/components/schemas/KegTapRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/KegTap'
+              $ref: '#/components/schemas/KegTapRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/KegTap'
+              $ref: '#/components/schemas/KegTapRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3445,13 +3445,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KegTap'
+              $ref: '#/components/schemas/KegTapRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/KegTap'
+              $ref: '#/components/schemas/KegTapRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/KegTap'
+              $ref: '#/components/schemas/KegTapRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3483,13 +3483,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedKegTap'
+              $ref: '#/components/schemas/PatchedKegTapRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedKegTap'
+              $ref: '#/components/schemas/PatchedKegTapRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedKegTap'
+              $ref: '#/components/schemas/PatchedKegTapRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -3539,13 +3539,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TapAttachKegRequest'
+              $ref: '#/components/schemas/TapAttachKegRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TapAttachKegRequest'
+              $ref: '#/components/schemas/TapAttachKegRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TapAttachKegRequest'
+              $ref: '#/components/schemas/TapAttachKegRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3574,13 +3574,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TapConnectMeterRequest'
+              $ref: '#/components/schemas/TapConnectMeterRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TapConnectMeterRequest'
+              $ref: '#/components/schemas/TapConnectMeterRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TapConnectMeterRequest'
+              $ref: '#/components/schemas/TapConnectMeterRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3609,13 +3609,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TapConnectThermoRequest'
+              $ref: '#/components/schemas/TapConnectThermoRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TapConnectThermoRequest'
+              $ref: '#/components/schemas/TapConnectThermoRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TapConnectThermoRequest'
+              $ref: '#/components/schemas/TapConnectThermoRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3644,13 +3644,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TapConnectToggleRequest'
+              $ref: '#/components/schemas/TapConnectToggleRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TapConnectToggleRequest'
+              $ref: '#/components/schemas/TapConnectToggleRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TapConnectToggleRequest'
+              $ref: '#/components/schemas/TapConnectToggleRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3706,13 +3706,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TapRecordDrinkRequest'
+              $ref: '#/components/schemas/TapRecordDrinkRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TapRecordDrinkRequest'
+              $ref: '#/components/schemas/TapRecordDrinkRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TapRecordDrinkRequest'
+              $ref: '#/components/schemas/TapRecordDrinkRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3741,13 +3741,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewKegRequest'
+              $ref: '#/components/schemas/NewKegRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/NewKegRequest'
+              $ref: '#/components/schemas/NewKegRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/NewKegRequest'
+              $ref: '#/components/schemas/NewKegRequestRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -3862,13 +3862,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ThermoSensor'
+              $ref: '#/components/schemas/ThermoSensorRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ThermoSensor'
+              $ref: '#/components/schemas/ThermoSensorRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ThermoSensor'
+              $ref: '#/components/schemas/ThermoSensorRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3919,13 +3919,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ThermoSensor'
+              $ref: '#/components/schemas/ThermoSensorRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ThermoSensor'
+              $ref: '#/components/schemas/ThermoSensorRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ThermoSensor'
+              $ref: '#/components/schemas/ThermoSensorRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -3953,13 +3953,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedThermoSensor'
+              $ref: '#/components/schemas/PatchedThermoSensorRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedThermoSensor'
+              $ref: '#/components/schemas/PatchedThermoSensorRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedThermoSensor'
+              $ref: '#/components/schemas/PatchedThermoSensorRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -4052,13 +4052,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AdminUserCreateRequest'
+              $ref: '#/components/schemas/AdminUserCreateRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AdminUserCreateRequest'
+              $ref: '#/components/schemas/AdminUserCreateRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AdminUserCreateRequest'
+              $ref: '#/components/schemas/AdminUserCreateRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -4123,13 +4123,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedAdminUserUpdateRequest'
+              $ref: '#/components/schemas/PatchedAdminUserUpdateRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedAdminUserUpdateRequest'
+              $ref: '#/components/schemas/PatchedAdminUserUpdateRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedAdminUserUpdateRequest'
+              $ref: '#/components/schemas/PatchedAdminUserUpdateRequestRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -4157,13 +4157,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SetPasswordRequest'
+              $ref: '#/components/schemas/SetPasswordRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SetPasswordRequest'
+              $ref: '#/components/schemas/SetPasswordRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SetPasswordRequest'
+              $ref: '#/components/schemas/SetPasswordRequestRequest'
         required: true
       security:
       - apiKeyBasicAuth: []
@@ -4244,13 +4244,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedProfileUpdateRequest'
+              $ref: '#/components/schemas/PatchedProfileUpdateRequestRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedProfileUpdateRequest'
+              $ref: '#/components/schemas/PatchedProfileUpdateRequestRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedProfileUpdateRequest'
+              $ref: '#/components/schemas/PatchedProfileUpdateRequestRequest'
       security:
       - apiKeyBasicAuth: []
       - cookieAuth: []
@@ -4263,11 +4263,12 @@ paths:
           description: ''
 components:
   schemas:
-    ActivateAccountRequest:
+    ActivateAccountRequestRequest:
       type: object
       properties:
         activation_key:
           type: string
+          minLength: 1
         password:
           type: string
           minLength: 1
@@ -4291,11 +4292,12 @@ components:
       - num_new_users
       - num_users
       - redis_error
-    AdminUserCreateRequest:
+    AdminUserCreateRequestRequest:
       type: object
       properties:
         username:
           type: string
+          minLength: 1
           maxLength: 30
           pattern: ^[\w.@+-]+$
         email:
@@ -4349,6 +4351,21 @@ components:
       - is_active
       - key
       - user_id
+    ApiKeyRequest:
+      type: object
+      properties:
+        is_active:
+          type: boolean
+        description:
+          type: string
+          nullable: true
+          description: Information about this key.
+        created_time:
+          type: string
+          format: date-time
+          description: Time the key was created.
+      required:
+      - is_active
     AuthenticationToken:
       type: object
       properties:
@@ -4373,10 +4390,6 @@ components:
           nullable: true
           description: A secret value necessary to authenticate with this token.
           maxLength: 256
-        user:
-          type: integer
-          writeOnly: true
-          nullable: true
         user_id:
           type: integer
           nullable: true
@@ -4401,6 +4414,44 @@ components:
       - id
       - token_value
       - user_id
+    AuthenticationTokenRequest:
+      type: object
+      properties:
+        auth_device:
+          type: string
+          minLength: 1
+          description: Namespace for this token.
+          maxLength: 64
+        token_value:
+          type: string
+          minLength: 1
+          description: Actual value of the token, unique within an auth_device.
+          maxLength: 128
+        nice_name:
+          type: string
+          nullable: true
+          description: A human-readable alias for the token, for example "Guest Key".
+          maxLength: 256
+        pin:
+          type: string
+          nullable: true
+          description: A secret value necessary to authenticate with this token.
+          maxLength: 256
+        user:
+          type: integer
+          writeOnly: true
+          nullable: true
+        enabled:
+          type: boolean
+          description: Whether this token is considered active.
+        expire_time:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date after which token is treated as disabled.
+      required:
+      - auth_device
+      - token_value
     Beverage:
       type: object
       properties:
@@ -4415,9 +4466,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/BeverageProducer'
           readOnly: true
-        producer_id:
-          type: integer
-          writeOnly: true
         beverage_type:
           $ref: '#/components/schemas/BeverageTypeEnum'
         style:
@@ -4501,7 +4549,6 @@ components:
       - name
       - picture
       - producer
-      - producer_id
     BeverageProducer:
       type: object
       properties:
@@ -4788,6 +4835,373 @@ components:
       - id
       - name
       - picture
+    BeverageProducerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Name of the brewer
+          maxLength: 255
+        country:
+          allOf:
+          - $ref: '#/components/schemas/CountryEnum'
+          description: |-
+            Country of origin
+
+            * `AFG` - Afghanistan
+            * `ALA` - Aland Islands
+            * `ALB` - Albania
+            * `DZA` - Algeria
+            * `ASM` - American Samoa
+            * `AND` - Andorra
+            * `AGO` - Angola
+            * `AIA` - Anguilla
+            * `ATG` - Antigua and Barbuda
+            * `ARG` - Argentina
+            * `ARM` - Armenia
+            * `ABW` - Aruba
+            * `AUS` - Australia
+            * `AUT` - Austria
+            * `AZE` - Azerbaijan
+            * `BHS` - Bahamas
+            * `BHR` - Bahrain
+            * `BGD` - Bangladesh
+            * `BRB` - Barbados
+            * `BLR` - Belarus
+            * `BEL` - Belgium
+            * `BLZ` - Belize
+            * `BEN` - Benin
+            * `BMU` - Bermuda
+            * `BTN` - Bhutan
+            * `BOL` - Bolivia
+            * `BIH` - Bosnia and Herzegovina
+            * `BWA` - Botswana
+            * `BRA` - Brazil
+            * `VGB` - British Virgin Islands
+            * `BRN` - Brunei Darussalam
+            * `BGR` - Bulgaria
+            * `BFA` - Burkina Faso
+            * `BDI` - Burundi
+            * `KHM` - Cambodia
+            * `CMR` - Cameroon
+            * `CAN` - Canada
+            * `CPV` - Cape Verde
+            * `CYM` - Cayman Islands
+            * `CAF` - Central African Republic
+            * `TCD` - Chad
+            * `CIL` - Channel Islands
+            * `CHL` - Chile
+            * `CHN` - China
+            * `HKG` - China - Hong Kong
+            * `MAC` - China - Macao
+            * `COL` - Colombia
+            * `COM` - Comoros
+            * `COG` - Congo
+            * `COK` - Cook Islands
+            * `CRI` - Costa Rica
+            * `CIV` - Cote d'Ivoire
+            * `HRV` - Croatia
+            * `CUB` - Cuba
+            * `CYP` - Cyprus
+            * `CZE` - Czech Republic
+            * `PRK` - Democratic People's Republic of Korea
+            * `COD` - Democratic Republic of the Congo
+            * `DNK` - Denmark
+            * `DJI` - Djibouti
+            * `DMA` - Dominica
+            * `DOM` - Dominican Republic
+            * `ECU` - Ecuador
+            * `EGY` - Egypt
+            * `SLV` - El Salvador
+            * `GNQ` - Equatorial Guinea
+            * `ERI` - Eritrea
+            * `EST` - Estonia
+            * `ETH` - Ethiopia
+            * `FRO` - Faeroe Islands
+            * `FLK` - Falkland Islands (Malvinas)
+            * `FJI` - Fiji
+            * `FIN` - Finland
+            * `FRA` - France
+            * `GUF` - French Guiana
+            * `PYF` - French Polynesia
+            * `GAB` - Gabon
+            * `GMB` - Gambia
+            * `GEO` - Georgia
+            * `DEU` - Germany
+            * `GHA` - Ghana
+            * `GIB` - Gibraltar
+            * `GRC` - Greece
+            * `GRL` - Greenland
+            * `GRD` - Grenada
+            * `GLP` - Guadeloupe
+            * `GUM` - Guam
+            * `GTM` - Guatemala
+            * `GGY` - Guernsey
+            * `GIN` - Guinea
+            * `GNB` - Guinea-Bissau
+            * `GUY` - Guyana
+            * `HTI` - Haiti
+            * `VAT` - Holy See (Vatican City)
+            * `HND` - Honduras
+            * `HUN` - Hungary
+            * `ISL` - Iceland
+            * `IND` - India
+            * `IDN` - Indonesia
+            * `IRN` - Iran
+            * `IRQ` - Iraq
+            * `IRL` - Ireland
+            * `IMN` - Isle of Man
+            * `ISR` - Israel
+            * `ITA` - Italy
+            * `JAM` - Jamaica
+            * `JPN` - Japan
+            * `JEY` - Jersey
+            * `JOR` - Jordan
+            * `KAZ` - Kazakhstan
+            * `KEN` - Kenya
+            * `KIR` - Kiribati
+            * `KWT` - Kuwait
+            * `KGZ` - Kyrgyzstan
+            * `LAO` - Lao People's Democratic Republic
+            * `LVA` - Latvia
+            * `LBN` - Lebanon
+            * `LSO` - Lesotho
+            * `LBR` - Liberia
+            * `LBY` - Libyan Arab Jamahiriya
+            * `LIE` - Liechtenstein
+            * `LTU` - Lithuania
+            * `LUX` - Luxembourg
+            * `MKD` - Macedonia
+            * `MDG` - Madagascar
+            * `MWI` - Malawi
+            * `MYS` - Malaysia
+            * `MDV` - Maldives
+            * `MLI` - Mali
+            * `MLT` - Malta
+            * `MHL` - Marshall Islands
+            * `MTQ` - Martinique
+            * `MRT` - Mauritania
+            * `MUS` - Mauritius
+            * `MYT` - Mayotte
+            * `MEX` - Mexico
+            * `FSM` - Micronesia, Federated States of
+            * `MCO` - Monaco
+            * `MNG` - Mongolia
+            * `MNE` - Montenegro
+            * `MSR` - Montserrat
+            * `MAR` - Morocco
+            * `MOZ` - Mozambique
+            * `MMR` - Myanmar
+            * `NAM` - Namibia
+            * `NRU` - Nauru
+            * `NPL` - Nepal
+            * `NLD` - Netherlands
+            * `ANT` - Netherlands Antilles
+            * `NCL` - New Caledonia
+            * `NZL` - New Zealand
+            * `NIC` - Nicaragua
+            * `NER` - Niger
+            * `NGA` - Nigeria
+            * `NIU` - Niue
+            * `NFK` - Norfolk Island
+            * `MNP` - Northern Mariana Islands
+            * `NOR` - Norway
+            * `PSE` - Occupied Palestinian Territory
+            * `OMN` - Oman
+            * `PAK` - Pakistan
+            * `PLW` - Palau
+            * `PAN` - Panama
+            * `PNG` - Papua New Guinea
+            * `PRY` - Paraguay
+            * `PER` - Peru
+            * `PHL` - Philippines
+            * `PCN` - Pitcairn
+            * `POL` - Poland
+            * `PRT` - Portugal
+            * `PRI` - Puerto Rico
+            * `QAT` - Qatar
+            * `KOR` - Republic of Korea
+            * `MDA` - Republic of Moldova
+            * `REU` - Reunion
+            * `ROU` - Romania
+            * `RUS` - Russian Federation
+            * `RWA` - Rwanda
+            * `BLM` - Saint-Barthelemy
+            * `SHN` - Saint Helena
+            * `KNA` - Saint Kitts and Nevis
+            * `LCA` - Saint Lucia
+            * `MAF` - Saint-Martin (French part)
+            * `SPM` - Saint Pierre and Miquelon
+            * `VCT` - Saint Vincent and the Grenadines
+            * `WSM` - Samoa
+            * `SMR` - San Marino
+            * `STP` - Sao Tome and Principe
+            * `SAU` - Saudi Arabia
+            * `SEN` - Senegal
+            * `SRB` - Serbia
+            * `SYC` - Seychelles
+            * `SLE` - Sierra Leone
+            * `SGP` - Singapore
+            * `SVK` - Slovakia
+            * `SVN` - Slovenia
+            * `SLB` - Solomon Islands
+            * `SOM` - Somalia
+            * `ZAF` - South Africa
+            * `ESP` - Spain
+            * `LKA` - Sri Lanka
+            * `SDN` - Sudan
+            * `SUR` - Suriname
+            * `SJM` - Svalbard and Jan Mayen Islands
+            * `SWZ` - Swaziland
+            * `SWE` - Sweden
+            * `CHE` - Switzerland
+            * `SYR` - Syrian Arab Republic
+            * `TJK` - Tajikistan
+            * `THA` - Thailand
+            * `TLS` - Timor-Leste
+            * `TGO` - Togo
+            * `TKL` - Tokelau
+            * `TON` - Tonga
+            * `TTO` - Trinidad and Tobago
+            * `TUN` - Tunisia
+            * `TUR` - Turkey
+            * `TKM` - Turkmenistan
+            * `TCA` - Turks and Caicos Islands
+            * `TUV` - Tuvalu
+            * `UGA` - Uganda
+            * `UKR` - Ukraine
+            * `ARE` - United Arab Emirates
+            * `GBR` - United Kingdom
+            * `TZA` - United Republic of Tanzania
+            * `USA` - United States of America
+            * `VIR` - United States Virgin Islands
+            * `URY` - Uruguay
+            * `UZB` - Uzbekistan
+            * `VUT` - Vanuatu
+            * `VEN` - Venezuela (Bolivarian Republic of)
+            * `VNM` - Viet Nam
+            * `WLF` - Wallis and Futuna Islands
+            * `ESH` - Western Sahara
+            * `YEM` - Yemen
+            * `ZMB` - Zambia
+            * `ZWE` - Zimbabwe
+        origin_state:
+          type: string
+          nullable: true
+          description: State of origin, if applicable
+          maxLength: 128
+        origin_city:
+          type: string
+          nullable: true
+          description: City of origin, if known
+          maxLength: 128
+        is_homebrew:
+          type: boolean
+        url:
+          nullable: true
+          description: Brewer's home page
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+          nullable: true
+          description: A short description of the brewer
+      required:
+      - name
+    BeverageRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Name of the beverage, such as "Potrero Pale".
+          maxLength: 255
+        producer_id:
+          type: integer
+          writeOnly: true
+        beverage_type:
+          $ref: '#/components/schemas/BeverageTypeEnum'
+        style:
+          type: string
+          nullable: true
+          description: Beverage style within type, eg "Pale Ale", "Pinot Noir".
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+          description: Free-form description of the beverage.
+        vintage_year:
+          type: string
+          format: date
+          nullable: true
+          description: Date of production, for wines or special/seasonal editions
+        abv_percent:
+          type: number
+          format: double
+          nullable: true
+          title: ABV Percentage
+          description: Alcohol by volume, as percentage (0.0-100.0).
+        calories_per_ml:
+          type: number
+          format: double
+          nullable: true
+          description: Calories per mL of beverage.
+        carbs_per_ml:
+          type: number
+          format: double
+          nullable: true
+          description: Carbohydrates per mL of beverage.
+        color_hex:
+          type: string
+          minLength: 1
+          title: Color (Hex Value)
+          description: Approximate beverage color
+          pattern: (^#[0-9a-zA-Z]{3}$)|(^#[0-9a-zA-Z]{6}$)
+          maxLength: 16
+        original_gravity:
+          type: number
+          format: double
+          nullable: true
+          description: Original gravity (beer only).
+        specific_gravity:
+          type: number
+          format: double
+          nullable: true
+          description: Final gravity (beer only).
+        srm:
+          type: number
+          format: double
+          nullable: true
+          title: SRM Value
+          description: Standard Reference Method value (beer only).
+        ibu:
+          type: number
+          format: double
+          nullable: true
+          title: IBUs
+          description: International Bittering Units value (beer only).
+        star_rating:
+          type: number
+          format: double
+          maximum: 5.0
+          minimum: 0.0
+          nullable: true
+          description: 'Star rating for beverage (0: worst, 5: best)'
+        untappd_beer_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Untappd.com resource ID (beer only).
+      required:
+      - name
+      - producer_id
     BeverageTypeEnum:
       enum:
       - beer
@@ -4802,11 +5216,12 @@ components:
         * `soda` - Soda
         * `kombucha` - Kombucha
         * `other` - Other/Unknown
-    ConfirmEmailRequest:
+    ConfirmEmailRequestRequest:
       type: object
       properties:
         token:
           type: string
+          minLength: 1
       required:
       - token
     Controller:
@@ -4831,6 +5246,26 @@ components:
           maxLength: 128
       required:
       - id
+      - name
+    ControllerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Identifying name for this device; must be unique.
+          maxLength: 128
+        model_name:
+          type: string
+          nullable: true
+          description: Type of controller (optional).
+          maxLength: 128
+        serial_number:
+          type: string
+          nullable: true
+          description: Serial number (optional).
+          maxLength: 128
+      required:
       - name
     CountryEnum:
       enum:
@@ -5368,6 +5803,17 @@ components:
           description: Time the device was created.
       required:
       - id
+    DeviceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        created_time:
+          type: string
+          format: date-time
+          description: Time the device was created.
     Drink:
       type: object
       properties:
@@ -5423,11 +5869,12 @@ components:
       - time
       - user
       - volume_ml
-    DrinkReassignRequest:
+    DrinkReassignRequestRequest:
       type: object
       properties:
         username:
           type: string
+          minLength: 1
       required:
       - username
     DrinkingSession:
@@ -5459,20 +5906,22 @@ components:
       - id
       - start_time
       - stats
-    EmailChangeRequest:
+    EmailChangeRequestRequest:
       type: object
       properties:
         email:
           type: string
           format: email
+          minLength: 1
       required:
       - email
-    EmailTestRequest:
+    EmailTestRequestRequest:
       type: object
       properties:
         address:
           type: string
           format: email
+          minLength: 1
       required:
       - address
     FlowMeter:
@@ -5504,6 +5953,21 @@ components:
       - id
       - port_name
       - tap_id
+    FlowMeterRequest:
+      type: object
+      properties:
+        port_name:
+          type: string
+          minLength: 1
+          description: Controller-specific data port name for this meter.
+          maxLength: 128
+        ticks_per_ml:
+          type: number
+          format: double
+          description: 'Flow meter pulses per mL of fluid.  Common values: 2.724 (FT330-RJ),
+            5.4 (SF800)'
+      required:
+      - port_name
     FlowToggle:
       type: object
       properties:
@@ -5528,6 +5992,16 @@ components:
       - id
       - port_name
       - tap_id
+    FlowToggleRequest:
+      type: object
+      properties:
+        port_name:
+          type: string
+          minLength: 1
+          description: Controller-specific data port name for this toggle.
+          maxLength: 128
+      required:
+      - port_name
     Invitation:
       type: object
       properties:
@@ -5558,6 +6032,22 @@ components:
       - id
       - invited_date
       - is_expired
+    InvitationRequest:
+      type: object
+      properties:
+        for_email:
+          type: string
+          format: email
+          minLength: 1
+          description: Address this invitation was sent to.
+          maxLength: 254
+        expires_date:
+          type: string
+          format: date-time
+          title: Date expries
+          description: Date and time after which the invitation is considered expired
+      required:
+      - for_email
     Keg:
       type: object
       properties:
@@ -5648,7 +6138,7 @@ components:
       - start_time
       - stats
       - status
-    KegCreateRequest:
+    KegCreateRequestRequest:
       type: object
       description: |-
         Parameters for creating a keg.
@@ -5687,7 +6177,39 @@ components:
         notes:
           type: string
           default: ''
-    KegSpillRequest:
+    KegRequest:
+      type: object
+      properties:
+        keg_type:
+          allOf:
+          - $ref: '#/components/schemas/KegTypeEnum'
+          description: |-
+            Keg container type, used to initialize keg's full volume
+
+            * `mini` - Mini Keg (5 L)
+            * `corny-2_5-gal` - Corny Keg (2.5 gal)
+            * `corny-3-gal` - Corny Keg (3.0 gal)
+            * `corny` - Corny Keg (5 gal)
+            * `sixth` - Sixth Barrel (5.17 gal)
+            * `euro-30-liter` - European DIN (30 L)
+            * `euro-half` - European Half Barrel (50 L)
+            * `quarter` - Quarter Barrel (7.75 gal)
+            * `euro` - European Full Barrel (100 L)
+            * `half-barrel` - Half Barrel (15.5 gal)
+            * `other` - Other
+        full_volume_ml:
+          type: number
+          format: double
+          description: Full volume of this Keg; usually set automatically from keg_type.
+        description:
+          type: string
+          nullable: true
+          description: User-visible description of the Keg.
+        notes:
+          type: string
+          nullable: true
+          description: Private notes about this keg, viewable only by admins.
+    KegSpillRequestRequest:
       type: object
       properties:
         volume_ml:
@@ -5742,6 +6264,26 @@ components:
       - id
       - name
       - temperature_sensor_id
+    KegTapRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: The display name for this tap, for example, "Main Tap".
+          maxLength: 128
+        notes:
+          type: string
+          nullable: true
+          description: Private notes about this tap.
+        sort_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Position relative to other taps when sorting (0=first).
+      required:
+      - name
     KegTypeEnum:
       enum:
       - mini
@@ -6376,13 +6918,15 @@ components:
       - name
       - server_version
       - stats
-    Login:
+    LoginRequest:
       type: object
       properties:
         username:
           type: string
+          minLength: 1
         password:
           type: string
+          minLength: 1
       required:
       - password
       - username
@@ -6422,7 +6966,7 @@ components:
       - sso_login_url
       - sso_logout_url
       - user
-    NewKegRequest:
+    NewKegRequestRequest:
       type: object
       description: |-
         Parameters for creating a keg.
@@ -6485,6 +7029,28 @@ components:
       - backend
       - id
       - user_id
+    NotificationSettingsRequest:
+      type: object
+      properties:
+        backend:
+          type: string
+          minLength: 1
+          description: Notification backend (dotted path) for these settings.
+          maxLength: 255
+        keg_tapped:
+          type: boolean
+          description: Sent when a keg is activated.
+        session_started:
+          type: boolean
+          description: Sent when a new drinking session starts.
+        keg_volume_low:
+          type: boolean
+          description: Sent when a keg becomes low.
+        keg_ended:
+          type: boolean
+          description: Sent when a keg has been taken offline.
+      required:
+      - backend
     PaginatedApiKeyList:
       type: object
       required:
@@ -6865,24 +7431,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
-    PasswordChangeRequest:
+    PasswordChangeRequestRequest:
       type: object
       properties:
         current_password:
           type: string
+          minLength: 1
         new_password:
           type: string
           minLength: 1
       required:
       - current_password
       - new_password
-    PasswordResetConfirmRequest:
+    PasswordResetConfirmRequestRequest:
       type: object
       properties:
         uid:
           type: string
+          minLength: 1
         token:
           type: string
+          minLength: 1
         new_password:
           type: string
           minLength: 1
@@ -6890,15 +7459,16 @@ components:
       - new_password
       - token
       - uid
-    PasswordResetRequest:
+    PasswordResetRequestRequest:
       type: object
       properties:
         email:
           type: string
           format: email
+          minLength: 1
       required:
       - email
-    PatchedAdminUserUpdateRequest:
+    PatchedAdminUserUpdateRequestRequest:
       type: object
       properties:
         email:
@@ -6914,27 +7484,11 @@ components:
           type: boolean
         is_active:
           type: boolean
-    PatchedApiKey:
+    PatchedApiKeyRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        user_id:
-          type: integer
-          nullable: true
-          description: User receiving API access.
-          readOnly: true
-        device_id:
-          type: integer
-          nullable: true
-          description: Device this key is associated with.
-          readOnly: true
         is_active:
           type: boolean
-        key:
-          type: string
-          readOnly: true
         description:
           type: string
           nullable: true
@@ -6943,18 +7497,17 @@ components:
           type: string
           format: date-time
           description: Time the key was created.
-    PatchedAuthenticationToken:
+    PatchedAuthenticationTokenRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         auth_device:
           type: string
+          minLength: 1
           description: Namespace for this token.
           maxLength: 64
         token_value:
           type: string
+          minLength: 1
           description: Actual value of the token, unique within an auth_device.
           maxLength: 128
         nice_name:
@@ -6971,127 +7524,20 @@ components:
           type: integer
           writeOnly: true
           nullable: true
-        user_id:
-          type: integer
-          nullable: true
-          description: User in possession of and authenticated by this token.
-          readOnly: true
         enabled:
           type: boolean
           description: Whether this token is considered active.
-        created_time:
-          type: string
-          format: date-time
-          readOnly: true
-          description: Date token was first added to the system.
         expire_time:
           type: string
           format: date-time
           nullable: true
           description: Date after which token is treated as disabled.
-    PatchedBeverage:
+    PatchedBeverageProducerRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         name:
           type: string
-          description: Name of the beverage, such as "Potrero Pale".
-          maxLength: 255
-        producer:
-          allOf:
-          - $ref: '#/components/schemas/BeverageProducer'
-          readOnly: true
-        producer_id:
-          type: integer
-          writeOnly: true
-        beverage_type:
-          $ref: '#/components/schemas/BeverageTypeEnum'
-        style:
-          type: string
-          nullable: true
-          description: Beverage style within type, eg "Pale Ale", "Pinot Noir".
-          maxLength: 255
-        description:
-          type: string
-          nullable: true
-          description: Free-form description of the beverage.
-        picture:
-          allOf:
-          - $ref: '#/components/schemas/Picture'
-          readOnly: true
-        vintage_year:
-          type: string
-          format: date
-          nullable: true
-          description: Date of production, for wines or special/seasonal editions
-        abv_percent:
-          type: number
-          format: double
-          nullable: true
-          title: ABV Percentage
-          description: Alcohol by volume, as percentage (0.0-100.0).
-        calories_per_ml:
-          type: number
-          format: double
-          nullable: true
-          description: Calories per mL of beverage.
-        carbs_per_ml:
-          type: number
-          format: double
-          nullable: true
-          description: Carbohydrates per mL of beverage.
-        color_hex:
-          type: string
-          title: Color (Hex Value)
-          description: Approximate beverage color
-          pattern: (^#[0-9a-zA-Z]{3}$)|(^#[0-9a-zA-Z]{6}$)
-          maxLength: 16
-        original_gravity:
-          type: number
-          format: double
-          nullable: true
-          description: Original gravity (beer only).
-        specific_gravity:
-          type: number
-          format: double
-          nullable: true
-          description: Final gravity (beer only).
-        srm:
-          type: number
-          format: double
-          nullable: true
-          title: SRM Value
-          description: Standard Reference Method value (beer only).
-        ibu:
-          type: number
-          format: double
-          nullable: true
-          title: IBUs
-          description: International Bittering Units value (beer only).
-        star_rating:
-          type: number
-          format: double
-          maximum: 5.0
-          minimum: 0.0
-          nullable: true
-          description: 'Star rating for beverage (0: worst, 5: best)'
-        untappd_beer_id:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: -9223372036854775808
-          format: int64
-          nullable: true
-          description: Untappd.com resource ID (beer only).
-    PatchedBeverageProducer:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
+          minLength: 1
           description: Name of the brewer
           maxLength: 255
         country:
@@ -7362,18 +7808,98 @@ components:
           type: string
           nullable: true
           description: A short description of the brewer
-        picture:
-          allOf:
-          - $ref: '#/components/schemas/Picture'
-          readOnly: true
-    PatchedController:
+    PatchedBeverageRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         name:
           type: string
+          minLength: 1
+          description: Name of the beverage, such as "Potrero Pale".
+          maxLength: 255
+        producer_id:
+          type: integer
+          writeOnly: true
+        beverage_type:
+          $ref: '#/components/schemas/BeverageTypeEnum'
+        style:
+          type: string
+          nullable: true
+          description: Beverage style within type, eg "Pale Ale", "Pinot Noir".
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+          description: Free-form description of the beverage.
+        vintage_year:
+          type: string
+          format: date
+          nullable: true
+          description: Date of production, for wines or special/seasonal editions
+        abv_percent:
+          type: number
+          format: double
+          nullable: true
+          title: ABV Percentage
+          description: Alcohol by volume, as percentage (0.0-100.0).
+        calories_per_ml:
+          type: number
+          format: double
+          nullable: true
+          description: Calories per mL of beverage.
+        carbs_per_ml:
+          type: number
+          format: double
+          nullable: true
+          description: Carbohydrates per mL of beverage.
+        color_hex:
+          type: string
+          minLength: 1
+          title: Color (Hex Value)
+          description: Approximate beverage color
+          pattern: (^#[0-9a-zA-Z]{3}$)|(^#[0-9a-zA-Z]{6}$)
+          maxLength: 16
+        original_gravity:
+          type: number
+          format: double
+          nullable: true
+          description: Original gravity (beer only).
+        specific_gravity:
+          type: number
+          format: double
+          nullable: true
+          description: Final gravity (beer only).
+        srm:
+          type: number
+          format: double
+          nullable: true
+          title: SRM Value
+          description: Standard Reference Method value (beer only).
+        ibu:
+          type: number
+          format: double
+          nullable: true
+          title: IBUs
+          description: International Bittering Units value (beer only).
+        star_rating:
+          type: number
+          format: double
+          maximum: 5.0
+          minimum: 0.0
+          nullable: true
+          description: 'Star rating for beverage (0: worst, 5: best)'
+        untappd_beer_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Untappd.com resource ID (beer only).
+    PatchedControllerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
           description: Identifying name for this device; must be unique.
           maxLength: 128
         model_name:
@@ -7386,20 +7912,18 @@ components:
           nullable: true
           description: Serial number (optional).
           maxLength: 128
-    PatchedDevice:
+    PatchedDeviceRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         name:
           type: string
+          minLength: 1
           maxLength: 255
         created_time:
           type: string
           format: date-time
           description: Time the device was created.
-    PatchedDrinkUpdateRequest:
+    PatchedDrinkUpdateRequestRequest:
       type: object
       properties:
         shout:
@@ -7408,59 +7932,30 @@ components:
           type: number
           format: double
           minimum: 0.0
-    PatchedFlowMeter:
+    PatchedFlowMeterRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        controller_id:
-          type: integer
-          description: Controller that owns this meter.
-          readOnly: true
         port_name:
           type: string
+          minLength: 1
           description: Controller-specific data port name for this meter.
           maxLength: 128
-        tap_id:
-          type: integer
-          nullable: true
-          description: Tap to which this meter is currently bound.
-          readOnly: true
         ticks_per_ml:
           type: number
           format: double
           description: 'Flow meter pulses per mL of fluid.  Common values: 2.724 (FT330-RJ),
             5.4 (SF800)'
-    PatchedFlowToggle:
+    PatchedFlowToggleRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        controller_id:
-          type: integer
-          description: Controller that owns this toggle.
-          readOnly: true
         port_name:
           type: string
+          minLength: 1
           description: Controller-specific data port name for this toggle.
           maxLength: 128
-        tap_id:
-          type: integer
-          nullable: true
-          description: Tap to which this toggle is currently bound.
-          readOnly: true
-    PatchedKeg:
+    PatchedKegRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        beverage:
-          allOf:
-          - $ref: '#/components/schemas/Beverage'
-          readOnly: true
         keg_type:
           allOf:
           - $ref: '#/components/schemas/KegTypeEnum'
@@ -7478,100 +7973,42 @@ components:
             * `euro` - European Full Barrel (100 L)
             * `half-barrel` - Half Barrel (15.5 gal)
             * `other` - Other
-        served_volume_ml:
-          type: number
-          format: double
-          readOnly: true
-          description: Computed served volume.
         full_volume_ml:
           type: number
           format: double
           description: Full volume of this Keg; usually set automatically from keg_type.
-        start_time:
-          type: string
-          format: date-time
-          readOnly: true
-          description: Time the Keg was first tapped.
-        end_time:
-          type: string
-          format: date-time
-          readOnly: true
-          description: Time the Keg was finished or disconnected.
-        status:
-          allOf:
-          - $ref: '#/components/schemas/KegStatusEnum'
-          readOnly: true
-          description: |-
-            Current keg state.
-
-            * `available` - Available
-            * `on_tap` - On tap
-            * `finished` - Finished
         description:
           type: string
           nullable: true
           description: User-visible description of the Keg.
-        spilled_ml:
-          type: number
-          format: double
-          readOnly: true
-          description: Amount of beverage poured without an associated Drink.
         notes:
           type: string
           nullable: true
           description: Private notes about this keg, viewable only by admins.
-        illustration:
-          type: string
-          format: uri
-          readOnly: true
-        illustration_thumbnail:
-          type: string
-          format: uri
-          readOnly: true
-        stats:
-          readOnly: true
-    PatchedKegTap:
+    PatchedKegTapRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         name:
           type: string
+          minLength: 1
           description: The display name for this tap, for example, "Main Tap".
           maxLength: 128
         notes:
           type: string
           nullable: true
           description: Private notes about this tap.
-        current_keg_id:
-          type: integer
-          readOnly: true
-        temperature_sensor_id:
-          type: integer
-          readOnly: true
         sort_order:
           type: integer
           maximum: 9223372036854775807
           minimum: 0
           format: int64
           description: Position relative to other taps when sorting (0=first).
-        current_keg:
-          allOf:
-          - $ref: '#/components/schemas/Keg'
-          readOnly: true
-    PatchedNotificationSettings:
+    PatchedNotificationSettingsRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
-        user_id:
-          type: integer
-          description: User for these settings.
-          readOnly: true
         backend:
           type: string
+          minLength: 1
           description: Notification backend (dotted path) for these settings.
           maxLength: 255
         keg_tapped:
@@ -7586,40 +8023,32 @@ components:
         keg_ended:
           type: boolean
           description: Sent when a keg has been taken offline.
-    PatchedPluginData:
+    PatchedPluginDataRequest:
       type: object
       properties:
         plugin_name:
           type: string
+          minLength: 1
           description: Plugin short name
           maxLength: 127
         key:
           type: string
+          minLength: 1
           maxLength: 127
         value: {}
-    PatchedProfileUpdateRequest:
+    PatchedProfileUpdateRequestRequest:
       type: object
       properties:
         display_name:
           type: string
           maxLength: 127
-    PatchedSiteSettings:
+    PatchedSiteSettingsRequest:
       type: object
       description: Admin-editable site settings, covering the old settings forms.
       properties:
-        name:
-          type: string
-          readOnly: true
-        server_version:
-          type: string
-          readOnly: true
-          nullable: true
-        is_setup:
-          type: boolean
-          readOnly: true
-          description: True if the site has completed setup.
         title:
           type: string
+          minLength: 1
           description: The title of this site.
           maxLength: 64
         privacy:
@@ -8202,23 +8631,19 @@ components:
           maxLength: 64
         email_config:
           type: string
+          minLength: 1
           description: Backend email configuration
           pattern: '^(console|smtp|submission|dummy|memory):'
-        background_image:
-          allOf:
-          - $ref: '#/components/schemas/Picture'
-          readOnly: true
-    PatchedThermoSensor:
+    PatchedThermoSensorRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
         raw_name:
           type: string
+          minLength: 1
           maxLength: 256
         nice_name:
           type: string
+          minLength: 1
           maxLength: 128
     Picture:
       type: object
@@ -8269,12 +8694,20 @@ components:
       - thumbnail_png_url
       - thumbnail_url
       - user_id
-    PictureUploadRequest:
+    PictureRequest:
+      type: object
+      properties:
+        caption:
+          type: string
+          minLength: 1
+      required:
+      - caption
+    PictureUploadRequestRequest:
       type: object
       properties:
         image:
           type: string
-          format: uri
+          format: binary
         caption:
           type: string
           default: ''
@@ -8289,6 +8722,23 @@ components:
           maxLength: 127
         key:
           type: string
+          maxLength: 127
+        value: {}
+      required:
+      - key
+      - plugin_name
+      - value
+    PluginDataRequest:
+      type: object
+      properties:
+        plugin_name:
+          type: string
+          minLength: 1
+          description: Plugin short name
+          maxLength: 127
+        key:
+          type: string
+          minLength: 1
           maxLength: 127
         value: {}
       required:
@@ -8315,16 +8765,18 @@ components:
         * `public` - Public: Browsing does not require login
         * `members` - Members only: Must log in to browse
         * `staff` - Staff only: Only logged-in staff accounts may browse
-    RegisterRequest:
+    RegisterRequestRequest:
       type: object
       properties:
         username:
           type: string
+          minLength: 1
           maxLength: 30
           pattern: ^[\w.@+-]+$
         email:
           type: string
           format: email
+          minLength: 1
         password:
           type: string
           minLength: 1
@@ -8345,7 +8797,7 @@ components:
         * `public` - Public: Anyone can register.
         * `member-invite-only` - Member Invite: Must be invited by an existing member.
         * `staff-invite-only` - Staff Invite Only: Must be invited by a staff member.
-    SetPasswordRequest:
+    SetPasswordRequestRequest:
       type: object
       properties:
         password:
@@ -8353,16 +8805,18 @@ components:
           minLength: 1
       required:
       - password
-    SetupAdminUserRequest:
+    SetupAdminUserRequestRequest:
       type: object
       properties:
         username:
           type: string
+          minLength: 1
           maxLength: 30
           pattern: ^[\w.@+-]+$
         email:
           type: string
           format: email
+          minLength: 1
         password:
           type: string
           minLength: 1
@@ -8376,6 +8830,571 @@ components:
       properties:
         title:
           type: string
+          description: The title of this site.
+          maxLength: 64
+        privacy:
+          allOf:
+          - $ref: '#/components/schemas/PrivacyEnum'
+          description: |-
+            Who can view Kegbot data?
+
+            * `public` - Public: Browsing does not require login
+            * `members` - Members only: Must log in to browse
+            * `staff` - Staff only: Only logged-in staff accounts may browse
+        timezone:
+          allOf:
+          - $ref: '#/components/schemas/TimezoneEnum'
+          description: |-
+            Time zone for this system.
+
+            * `Africa/Abidjan` - Africa/Abidjan
+            * `Africa/Accra` - Africa/Accra
+            * `Africa/Addis_Ababa` - Africa/Addis_Ababa
+            * `Africa/Algiers` - Africa/Algiers
+            * `Africa/Asmara` - Africa/Asmara
+            * `Africa/Asmera` - Africa/Asmera
+            * `Africa/Bamako` - Africa/Bamako
+            * `Africa/Bangui` - Africa/Bangui
+            * `Africa/Banjul` - Africa/Banjul
+            * `Africa/Bissau` - Africa/Bissau
+            * `Africa/Blantyre` - Africa/Blantyre
+            * `Africa/Brazzaville` - Africa/Brazzaville
+            * `Africa/Bujumbura` - Africa/Bujumbura
+            * `Africa/Cairo` - Africa/Cairo
+            * `Africa/Casablanca` - Africa/Casablanca
+            * `Africa/Ceuta` - Africa/Ceuta
+            * `Africa/Conakry` - Africa/Conakry
+            * `Africa/Dakar` - Africa/Dakar
+            * `Africa/Dar_es_Salaam` - Africa/Dar_es_Salaam
+            * `Africa/Djibouti` - Africa/Djibouti
+            * `Africa/Douala` - Africa/Douala
+            * `Africa/El_Aaiun` - Africa/El_Aaiun
+            * `Africa/Freetown` - Africa/Freetown
+            * `Africa/Gaborone` - Africa/Gaborone
+            * `Africa/Harare` - Africa/Harare
+            * `Africa/Johannesburg` - Africa/Johannesburg
+            * `Africa/Juba` - Africa/Juba
+            * `Africa/Kampala` - Africa/Kampala
+            * `Africa/Khartoum` - Africa/Khartoum
+            * `Africa/Kigali` - Africa/Kigali
+            * `Africa/Kinshasa` - Africa/Kinshasa
+            * `Africa/Lagos` - Africa/Lagos
+            * `Africa/Libreville` - Africa/Libreville
+            * `Africa/Lome` - Africa/Lome
+            * `Africa/Luanda` - Africa/Luanda
+            * `Africa/Lubumbashi` - Africa/Lubumbashi
+            * `Africa/Lusaka` - Africa/Lusaka
+            * `Africa/Malabo` - Africa/Malabo
+            * `Africa/Maputo` - Africa/Maputo
+            * `Africa/Maseru` - Africa/Maseru
+            * `Africa/Mbabane` - Africa/Mbabane
+            * `Africa/Mogadishu` - Africa/Mogadishu
+            * `Africa/Monrovia` - Africa/Monrovia
+            * `Africa/Nairobi` - Africa/Nairobi
+            * `Africa/Ndjamena` - Africa/Ndjamena
+            * `Africa/Niamey` - Africa/Niamey
+            * `Africa/Nouakchott` - Africa/Nouakchott
+            * `Africa/Ouagadougou` - Africa/Ouagadougou
+            * `Africa/Porto-Novo` - Africa/Porto-Novo
+            * `Africa/Sao_Tome` - Africa/Sao_Tome
+            * `Africa/Timbuktu` - Africa/Timbuktu
+            * `Africa/Tripoli` - Africa/Tripoli
+            * `Africa/Tunis` - Africa/Tunis
+            * `Africa/Windhoek` - Africa/Windhoek
+            * `America/Adak` - America/Adak
+            * `America/Anchorage` - America/Anchorage
+            * `America/Anguilla` - America/Anguilla
+            * `America/Antigua` - America/Antigua
+            * `America/Araguaina` - America/Araguaina
+            * `America/Argentina/Buenos_Aires` - America/Argentina/Buenos_Aires
+            * `America/Argentina/Catamarca` - America/Argentina/Catamarca
+            * `America/Argentina/ComodRivadavia` - America/Argentina/ComodRivadavia
+            * `America/Argentina/Cordoba` - America/Argentina/Cordoba
+            * `America/Argentina/Jujuy` - America/Argentina/Jujuy
+            * `America/Argentina/La_Rioja` - America/Argentina/La_Rioja
+            * `America/Argentina/Mendoza` - America/Argentina/Mendoza
+            * `America/Argentina/Rio_Gallegos` - America/Argentina/Rio_Gallegos
+            * `America/Argentina/Salta` - America/Argentina/Salta
+            * `America/Argentina/San_Juan` - America/Argentina/San_Juan
+            * `America/Argentina/San_Luis` - America/Argentina/San_Luis
+            * `America/Argentina/Tucuman` - America/Argentina/Tucuman
+            * `America/Argentina/Ushuaia` - America/Argentina/Ushuaia
+            * `America/Aruba` - America/Aruba
+            * `America/Asuncion` - America/Asuncion
+            * `America/Atikokan` - America/Atikokan
+            * `America/Atka` - America/Atka
+            * `America/Bahia` - America/Bahia
+            * `America/Bahia_Banderas` - America/Bahia_Banderas
+            * `America/Barbados` - America/Barbados
+            * `America/Belem` - America/Belem
+            * `America/Belize` - America/Belize
+            * `America/Blanc-Sablon` - America/Blanc-Sablon
+            * `America/Boa_Vista` - America/Boa_Vista
+            * `America/Bogota` - America/Bogota
+            * `America/Boise` - America/Boise
+            * `America/Buenos_Aires` - America/Buenos_Aires
+            * `America/Cambridge_Bay` - America/Cambridge_Bay
+            * `America/Campo_Grande` - America/Campo_Grande
+            * `America/Cancun` - America/Cancun
+            * `America/Caracas` - America/Caracas
+            * `America/Catamarca` - America/Catamarca
+            * `America/Cayenne` - America/Cayenne
+            * `America/Cayman` - America/Cayman
+            * `America/Chicago` - America/Chicago
+            * `America/Chihuahua` - America/Chihuahua
+            * `America/Ciudad_Juarez` - America/Ciudad_Juarez
+            * `America/Coral_Harbour` - America/Coral_Harbour
+            * `America/Cordoba` - America/Cordoba
+            * `America/Costa_Rica` - America/Costa_Rica
+            * `America/Coyhaique` - America/Coyhaique
+            * `America/Creston` - America/Creston
+            * `America/Cuiaba` - America/Cuiaba
+            * `America/Curacao` - America/Curacao
+            * `America/Danmarkshavn` - America/Danmarkshavn
+            * `America/Dawson` - America/Dawson
+            * `America/Dawson_Creek` - America/Dawson_Creek
+            * `America/Denver` - America/Denver
+            * `America/Detroit` - America/Detroit
+            * `America/Dominica` - America/Dominica
+            * `America/Edmonton` - America/Edmonton
+            * `America/Eirunepe` - America/Eirunepe
+            * `America/El_Salvador` - America/El_Salvador
+            * `America/Ensenada` - America/Ensenada
+            * `America/Fort_Nelson` - America/Fort_Nelson
+            * `America/Fort_Wayne` - America/Fort_Wayne
+            * `America/Fortaleza` - America/Fortaleza
+            * `America/Glace_Bay` - America/Glace_Bay
+            * `America/Godthab` - America/Godthab
+            * `America/Goose_Bay` - America/Goose_Bay
+            * `America/Grand_Turk` - America/Grand_Turk
+            * `America/Grenada` - America/Grenada
+            * `America/Guadeloupe` - America/Guadeloupe
+            * `America/Guatemala` - America/Guatemala
+            * `America/Guayaquil` - America/Guayaquil
+            * `America/Guyana` - America/Guyana
+            * `America/Halifax` - America/Halifax
+            * `America/Havana` - America/Havana
+            * `America/Hermosillo` - America/Hermosillo
+            * `America/Indiana/Indianapolis` - America/Indiana/Indianapolis
+            * `America/Indiana/Knox` - America/Indiana/Knox
+            * `America/Indiana/Marengo` - America/Indiana/Marengo
+            * `America/Indiana/Petersburg` - America/Indiana/Petersburg
+            * `America/Indiana/Tell_City` - America/Indiana/Tell_City
+            * `America/Indiana/Vevay` - America/Indiana/Vevay
+            * `America/Indiana/Vincennes` - America/Indiana/Vincennes
+            * `America/Indiana/Winamac` - America/Indiana/Winamac
+            * `America/Indianapolis` - America/Indianapolis
+            * `America/Inuvik` - America/Inuvik
+            * `America/Iqaluit` - America/Iqaluit
+            * `America/Jamaica` - America/Jamaica
+            * `America/Jujuy` - America/Jujuy
+            * `America/Juneau` - America/Juneau
+            * `America/Kentucky/Louisville` - America/Kentucky/Louisville
+            * `America/Kentucky/Monticello` - America/Kentucky/Monticello
+            * `America/Knox_IN` - America/Knox_IN
+            * `America/Kralendijk` - America/Kralendijk
+            * `America/La_Paz` - America/La_Paz
+            * `America/Lima` - America/Lima
+            * `America/Los_Angeles` - America/Los_Angeles
+            * `America/Louisville` - America/Louisville
+            * `America/Lower_Princes` - America/Lower_Princes
+            * `America/Maceio` - America/Maceio
+            * `America/Managua` - America/Managua
+            * `America/Manaus` - America/Manaus
+            * `America/Marigot` - America/Marigot
+            * `America/Martinique` - America/Martinique
+            * `America/Matamoros` - America/Matamoros
+            * `America/Mazatlan` - America/Mazatlan
+            * `America/Mendoza` - America/Mendoza
+            * `America/Menominee` - America/Menominee
+            * `America/Merida` - America/Merida
+            * `America/Metlakatla` - America/Metlakatla
+            * `America/Mexico_City` - America/Mexico_City
+            * `America/Miquelon` - America/Miquelon
+            * `America/Moncton` - America/Moncton
+            * `America/Monterrey` - America/Monterrey
+            * `America/Montevideo` - America/Montevideo
+            * `America/Montreal` - America/Montreal
+            * `America/Montserrat` - America/Montserrat
+            * `America/Nassau` - America/Nassau
+            * `America/New_York` - America/New_York
+            * `America/Nipigon` - America/Nipigon
+            * `America/Nome` - America/Nome
+            * `America/Noronha` - America/Noronha
+            * `America/North_Dakota/Beulah` - America/North_Dakota/Beulah
+            * `America/North_Dakota/Center` - America/North_Dakota/Center
+            * `America/North_Dakota/New_Salem` - America/North_Dakota/New_Salem
+            * `America/Nuuk` - America/Nuuk
+            * `America/Ojinaga` - America/Ojinaga
+            * `America/Panama` - America/Panama
+            * `America/Pangnirtung` - America/Pangnirtung
+            * `America/Paramaribo` - America/Paramaribo
+            * `America/Phoenix` - America/Phoenix
+            * `America/Port-au-Prince` - America/Port-au-Prince
+            * `America/Port_of_Spain` - America/Port_of_Spain
+            * `America/Porto_Acre` - America/Porto_Acre
+            * `America/Porto_Velho` - America/Porto_Velho
+            * `America/Puerto_Rico` - America/Puerto_Rico
+            * `America/Punta_Arenas` - America/Punta_Arenas
+            * `America/Rainy_River` - America/Rainy_River
+            * `America/Rankin_Inlet` - America/Rankin_Inlet
+            * `America/Recife` - America/Recife
+            * `America/Regina` - America/Regina
+            * `America/Resolute` - America/Resolute
+            * `America/Rio_Branco` - America/Rio_Branco
+            * `America/Rosario` - America/Rosario
+            * `America/Santa_Isabel` - America/Santa_Isabel
+            * `America/Santarem` - America/Santarem
+            * `America/Santiago` - America/Santiago
+            * `America/Santo_Domingo` - America/Santo_Domingo
+            * `America/Sao_Paulo` - America/Sao_Paulo
+            * `America/Scoresbysund` - America/Scoresbysund
+            * `America/Shiprock` - America/Shiprock
+            * `America/Sitka` - America/Sitka
+            * `America/St_Barthelemy` - America/St_Barthelemy
+            * `America/St_Johns` - America/St_Johns
+            * `America/St_Kitts` - America/St_Kitts
+            * `America/St_Lucia` - America/St_Lucia
+            * `America/St_Thomas` - America/St_Thomas
+            * `America/St_Vincent` - America/St_Vincent
+            * `America/Swift_Current` - America/Swift_Current
+            * `America/Tegucigalpa` - America/Tegucigalpa
+            * `America/Thule` - America/Thule
+            * `America/Thunder_Bay` - America/Thunder_Bay
+            * `America/Tijuana` - America/Tijuana
+            * `America/Toronto` - America/Toronto
+            * `America/Tortola` - America/Tortola
+            * `America/Vancouver` - America/Vancouver
+            * `America/Virgin` - America/Virgin
+            * `America/Whitehorse` - America/Whitehorse
+            * `America/Winnipeg` - America/Winnipeg
+            * `America/Yakutat` - America/Yakutat
+            * `America/Yellowknife` - America/Yellowknife
+            * `Antarctica/Casey` - Antarctica/Casey
+            * `Antarctica/Davis` - Antarctica/Davis
+            * `Antarctica/DumontDUrville` - Antarctica/DumontDUrville
+            * `Antarctica/Macquarie` - Antarctica/Macquarie
+            * `Antarctica/Mawson` - Antarctica/Mawson
+            * `Antarctica/McMurdo` - Antarctica/McMurdo
+            * `Antarctica/Palmer` - Antarctica/Palmer
+            * `Antarctica/Rothera` - Antarctica/Rothera
+            * `Antarctica/South_Pole` - Antarctica/South_Pole
+            * `Antarctica/Syowa` - Antarctica/Syowa
+            * `Antarctica/Troll` - Antarctica/Troll
+            * `Antarctica/Vostok` - Antarctica/Vostok
+            * `Arctic/Longyearbyen` - Arctic/Longyearbyen
+            * `Asia/Aden` - Asia/Aden
+            * `Asia/Almaty` - Asia/Almaty
+            * `Asia/Amman` - Asia/Amman
+            * `Asia/Anadyr` - Asia/Anadyr
+            * `Asia/Aqtau` - Asia/Aqtau
+            * `Asia/Aqtobe` - Asia/Aqtobe
+            * `Asia/Ashgabat` - Asia/Ashgabat
+            * `Asia/Ashkhabad` - Asia/Ashkhabad
+            * `Asia/Atyrau` - Asia/Atyrau
+            * `Asia/Baghdad` - Asia/Baghdad
+            * `Asia/Bahrain` - Asia/Bahrain
+            * `Asia/Baku` - Asia/Baku
+            * `Asia/Bangkok` - Asia/Bangkok
+            * `Asia/Barnaul` - Asia/Barnaul
+            * `Asia/Beirut` - Asia/Beirut
+            * `Asia/Bishkek` - Asia/Bishkek
+            * `Asia/Brunei` - Asia/Brunei
+            * `Asia/Calcutta` - Asia/Calcutta
+            * `Asia/Chita` - Asia/Chita
+            * `Asia/Choibalsan` - Asia/Choibalsan
+            * `Asia/Chongqing` - Asia/Chongqing
+            * `Asia/Chungking` - Asia/Chungking
+            * `Asia/Colombo` - Asia/Colombo
+            * `Asia/Dacca` - Asia/Dacca
+            * `Asia/Damascus` - Asia/Damascus
+            * `Asia/Dhaka` - Asia/Dhaka
+            * `Asia/Dili` - Asia/Dili
+            * `Asia/Dubai` - Asia/Dubai
+            * `Asia/Dushanbe` - Asia/Dushanbe
+            * `Asia/Famagusta` - Asia/Famagusta
+            * `Asia/Gaza` - Asia/Gaza
+            * `Asia/Harbin` - Asia/Harbin
+            * `Asia/Hebron` - Asia/Hebron
+            * `Asia/Ho_Chi_Minh` - Asia/Ho_Chi_Minh
+            * `Asia/Hong_Kong` - Asia/Hong_Kong
+            * `Asia/Hovd` - Asia/Hovd
+            * `Asia/Irkutsk` - Asia/Irkutsk
+            * `Asia/Istanbul` - Asia/Istanbul
+            * `Asia/Jakarta` - Asia/Jakarta
+            * `Asia/Jayapura` - Asia/Jayapura
+            * `Asia/Jerusalem` - Asia/Jerusalem
+            * `Asia/Kabul` - Asia/Kabul
+            * `Asia/Kamchatka` - Asia/Kamchatka
+            * `Asia/Karachi` - Asia/Karachi
+            * `Asia/Kashgar` - Asia/Kashgar
+            * `Asia/Kathmandu` - Asia/Kathmandu
+            * `Asia/Katmandu` - Asia/Katmandu
+            * `Asia/Khandyga` - Asia/Khandyga
+            * `Asia/Kolkata` - Asia/Kolkata
+            * `Asia/Krasnoyarsk` - Asia/Krasnoyarsk
+            * `Asia/Kuala_Lumpur` - Asia/Kuala_Lumpur
+            * `Asia/Kuching` - Asia/Kuching
+            * `Asia/Kuwait` - Asia/Kuwait
+            * `Asia/Macao` - Asia/Macao
+            * `Asia/Macau` - Asia/Macau
+            * `Asia/Magadan` - Asia/Magadan
+            * `Asia/Makassar` - Asia/Makassar
+            * `Asia/Manila` - Asia/Manila
+            * `Asia/Muscat` - Asia/Muscat
+            * `Asia/Nicosia` - Asia/Nicosia
+            * `Asia/Novokuznetsk` - Asia/Novokuznetsk
+            * `Asia/Novosibirsk` - Asia/Novosibirsk
+            * `Asia/Omsk` - Asia/Omsk
+            * `Asia/Oral` - Asia/Oral
+            * `Asia/Phnom_Penh` - Asia/Phnom_Penh
+            * `Asia/Pontianak` - Asia/Pontianak
+            * `Asia/Pyongyang` - Asia/Pyongyang
+            * `Asia/Qatar` - Asia/Qatar
+            * `Asia/Qostanay` - Asia/Qostanay
+            * `Asia/Qyzylorda` - Asia/Qyzylorda
+            * `Asia/Rangoon` - Asia/Rangoon
+            * `Asia/Riyadh` - Asia/Riyadh
+            * `Asia/Saigon` - Asia/Saigon
+            * `Asia/Sakhalin` - Asia/Sakhalin
+            * `Asia/Samarkand` - Asia/Samarkand
+            * `Asia/Seoul` - Asia/Seoul
+            * `Asia/Shanghai` - Asia/Shanghai
+            * `Asia/Singapore` - Asia/Singapore
+            * `Asia/Srednekolymsk` - Asia/Srednekolymsk
+            * `Asia/Taipei` - Asia/Taipei
+            * `Asia/Tashkent` - Asia/Tashkent
+            * `Asia/Tbilisi` - Asia/Tbilisi
+            * `Asia/Tehran` - Asia/Tehran
+            * `Asia/Tel_Aviv` - Asia/Tel_Aviv
+            * `Asia/Thimbu` - Asia/Thimbu
+            * `Asia/Thimphu` - Asia/Thimphu
+            * `Asia/Tokyo` - Asia/Tokyo
+            * `Asia/Tomsk` - Asia/Tomsk
+            * `Asia/Ujung_Pandang` - Asia/Ujung_Pandang
+            * `Asia/Ulaanbaatar` - Asia/Ulaanbaatar
+            * `Asia/Ulan_Bator` - Asia/Ulan_Bator
+            * `Asia/Urumqi` - Asia/Urumqi
+            * `Asia/Ust-Nera` - Asia/Ust-Nera
+            * `Asia/Vientiane` - Asia/Vientiane
+            * `Asia/Vladivostok` - Asia/Vladivostok
+            * `Asia/Yakutsk` - Asia/Yakutsk
+            * `Asia/Yangon` - Asia/Yangon
+            * `Asia/Yekaterinburg` - Asia/Yekaterinburg
+            * `Asia/Yerevan` - Asia/Yerevan
+            * `Atlantic/Azores` - Atlantic/Azores
+            * `Atlantic/Bermuda` - Atlantic/Bermuda
+            * `Atlantic/Canary` - Atlantic/Canary
+            * `Atlantic/Cape_Verde` - Atlantic/Cape_Verde
+            * `Atlantic/Faeroe` - Atlantic/Faeroe
+            * `Atlantic/Faroe` - Atlantic/Faroe
+            * `Atlantic/Jan_Mayen` - Atlantic/Jan_Mayen
+            * `Atlantic/Madeira` - Atlantic/Madeira
+            * `Atlantic/Reykjavik` - Atlantic/Reykjavik
+            * `Atlantic/South_Georgia` - Atlantic/South_Georgia
+            * `Atlantic/St_Helena` - Atlantic/St_Helena
+            * `Atlantic/Stanley` - Atlantic/Stanley
+            * `Australia/ACT` - Australia/ACT
+            * `Australia/Adelaide` - Australia/Adelaide
+            * `Australia/Brisbane` - Australia/Brisbane
+            * `Australia/Broken_Hill` - Australia/Broken_Hill
+            * `Australia/Canberra` - Australia/Canberra
+            * `Australia/Currie` - Australia/Currie
+            * `Australia/Darwin` - Australia/Darwin
+            * `Australia/Eucla` - Australia/Eucla
+            * `Australia/Hobart` - Australia/Hobart
+            * `Australia/LHI` - Australia/LHI
+            * `Australia/Lindeman` - Australia/Lindeman
+            * `Australia/Lord_Howe` - Australia/Lord_Howe
+            * `Australia/Melbourne` - Australia/Melbourne
+            * `Australia/NSW` - Australia/NSW
+            * `Australia/North` - Australia/North
+            * `Australia/Perth` - Australia/Perth
+            * `Australia/Queensland` - Australia/Queensland
+            * `Australia/South` - Australia/South
+            * `Australia/Sydney` - Australia/Sydney
+            * `Australia/Tasmania` - Australia/Tasmania
+            * `Australia/Victoria` - Australia/Victoria
+            * `Australia/West` - Australia/West
+            * `Australia/Yancowinna` - Australia/Yancowinna
+            * `Brazil/Acre` - Brazil/Acre
+            * `Brazil/DeNoronha` - Brazil/DeNoronha
+            * `Brazil/East` - Brazil/East
+            * `Brazil/West` - Brazil/West
+            * `Canada/Atlantic` - Canada/Atlantic
+            * `Canada/Central` - Canada/Central
+            * `Canada/Eastern` - Canada/Eastern
+            * `Canada/Mountain` - Canada/Mountain
+            * `Canada/Newfoundland` - Canada/Newfoundland
+            * `Canada/Pacific` - Canada/Pacific
+            * `Canada/Saskatchewan` - Canada/Saskatchewan
+            * `Canada/Yukon` - Canada/Yukon
+            * `Chile/Continental` - Chile/Continental
+            * `Chile/EasterIsland` - Chile/EasterIsland
+            * `Europe/Amsterdam` - Europe/Amsterdam
+            * `Europe/Andorra` - Europe/Andorra
+            * `Europe/Astrakhan` - Europe/Astrakhan
+            * `Europe/Athens` - Europe/Athens
+            * `Europe/Belfast` - Europe/Belfast
+            * `Europe/Belgrade` - Europe/Belgrade
+            * `Europe/Berlin` - Europe/Berlin
+            * `Europe/Bratislava` - Europe/Bratislava
+            * `Europe/Brussels` - Europe/Brussels
+            * `Europe/Bucharest` - Europe/Bucharest
+            * `Europe/Budapest` - Europe/Budapest
+            * `Europe/Busingen` - Europe/Busingen
+            * `Europe/Chisinau` - Europe/Chisinau
+            * `Europe/Copenhagen` - Europe/Copenhagen
+            * `Europe/Dublin` - Europe/Dublin
+            * `Europe/Gibraltar` - Europe/Gibraltar
+            * `Europe/Guernsey` - Europe/Guernsey
+            * `Europe/Helsinki` - Europe/Helsinki
+            * `Europe/Isle_of_Man` - Europe/Isle_of_Man
+            * `Europe/Istanbul` - Europe/Istanbul
+            * `Europe/Jersey` - Europe/Jersey
+            * `Europe/Kaliningrad` - Europe/Kaliningrad
+            * `Europe/Kiev` - Europe/Kiev
+            * `Europe/Kirov` - Europe/Kirov
+            * `Europe/Kyiv` - Europe/Kyiv
+            * `Europe/Lisbon` - Europe/Lisbon
+            * `Europe/Ljubljana` - Europe/Ljubljana
+            * `Europe/London` - Europe/London
+            * `Europe/Luxembourg` - Europe/Luxembourg
+            * `Europe/Madrid` - Europe/Madrid
+            * `Europe/Malta` - Europe/Malta
+            * `Europe/Mariehamn` - Europe/Mariehamn
+            * `Europe/Minsk` - Europe/Minsk
+            * `Europe/Monaco` - Europe/Monaco
+            * `Europe/Moscow` - Europe/Moscow
+            * `Europe/Nicosia` - Europe/Nicosia
+            * `Europe/Oslo` - Europe/Oslo
+            * `Europe/Paris` - Europe/Paris
+            * `Europe/Podgorica` - Europe/Podgorica
+            * `Europe/Prague` - Europe/Prague
+            * `Europe/Riga` - Europe/Riga
+            * `Europe/Rome` - Europe/Rome
+            * `Europe/Samara` - Europe/Samara
+            * `Europe/San_Marino` - Europe/San_Marino
+            * `Europe/Sarajevo` - Europe/Sarajevo
+            * `Europe/Saratov` - Europe/Saratov
+            * `Europe/Simferopol` - Europe/Simferopol
+            * `Europe/Skopje` - Europe/Skopje
+            * `Europe/Sofia` - Europe/Sofia
+            * `Europe/Stockholm` - Europe/Stockholm
+            * `Europe/Tallinn` - Europe/Tallinn
+            * `Europe/Tirane` - Europe/Tirane
+            * `Europe/Tiraspol` - Europe/Tiraspol
+            * `Europe/Ulyanovsk` - Europe/Ulyanovsk
+            * `Europe/Uzhgorod` - Europe/Uzhgorod
+            * `Europe/Vaduz` - Europe/Vaduz
+            * `Europe/Vatican` - Europe/Vatican
+            * `Europe/Vienna` - Europe/Vienna
+            * `Europe/Vilnius` - Europe/Vilnius
+            * `Europe/Volgograd` - Europe/Volgograd
+            * `Europe/Warsaw` - Europe/Warsaw
+            * `Europe/Zagreb` - Europe/Zagreb
+            * `Europe/Zaporozhye` - Europe/Zaporozhye
+            * `Europe/Zurich` - Europe/Zurich
+            * `Indian/Antananarivo` - Indian/Antananarivo
+            * `Indian/Chagos` - Indian/Chagos
+            * `Indian/Christmas` - Indian/Christmas
+            * `Indian/Cocos` - Indian/Cocos
+            * `Indian/Comoro` - Indian/Comoro
+            * `Indian/Kerguelen` - Indian/Kerguelen
+            * `Indian/Mahe` - Indian/Mahe
+            * `Indian/Maldives` - Indian/Maldives
+            * `Indian/Mauritius` - Indian/Mauritius
+            * `Indian/Mayotte` - Indian/Mayotte
+            * `Indian/Reunion` - Indian/Reunion
+            * `Mexico/BajaNorte` - Mexico/BajaNorte
+            * `Mexico/BajaSur` - Mexico/BajaSur
+            * `Mexico/General` - Mexico/General
+            * `Pacific/Apia` - Pacific/Apia
+            * `Pacific/Auckland` - Pacific/Auckland
+            * `Pacific/Bougainville` - Pacific/Bougainville
+            * `Pacific/Chatham` - Pacific/Chatham
+            * `Pacific/Chuuk` - Pacific/Chuuk
+            * `Pacific/Easter` - Pacific/Easter
+            * `Pacific/Efate` - Pacific/Efate
+            * `Pacific/Enderbury` - Pacific/Enderbury
+            * `Pacific/Fakaofo` - Pacific/Fakaofo
+            * `Pacific/Fiji` - Pacific/Fiji
+            * `Pacific/Funafuti` - Pacific/Funafuti
+            * `Pacific/Galapagos` - Pacific/Galapagos
+            * `Pacific/Gambier` - Pacific/Gambier
+            * `Pacific/Guadalcanal` - Pacific/Guadalcanal
+            * `Pacific/Guam` - Pacific/Guam
+            * `Pacific/Honolulu` - Pacific/Honolulu
+            * `Pacific/Johnston` - Pacific/Johnston
+            * `Pacific/Kanton` - Pacific/Kanton
+            * `Pacific/Kiritimati` - Pacific/Kiritimati
+            * `Pacific/Kosrae` - Pacific/Kosrae
+            * `Pacific/Kwajalein` - Pacific/Kwajalein
+            * `Pacific/Majuro` - Pacific/Majuro
+            * `Pacific/Marquesas` - Pacific/Marquesas
+            * `Pacific/Midway` - Pacific/Midway
+            * `Pacific/Nauru` - Pacific/Nauru
+            * `Pacific/Niue` - Pacific/Niue
+            * `Pacific/Norfolk` - Pacific/Norfolk
+            * `Pacific/Noumea` - Pacific/Noumea
+            * `Pacific/Pago_Pago` - Pacific/Pago_Pago
+            * `Pacific/Palau` - Pacific/Palau
+            * `Pacific/Pitcairn` - Pacific/Pitcairn
+            * `Pacific/Pohnpei` - Pacific/Pohnpei
+            * `Pacific/Ponape` - Pacific/Ponape
+            * `Pacific/Port_Moresby` - Pacific/Port_Moresby
+            * `Pacific/Rarotonga` - Pacific/Rarotonga
+            * `Pacific/Saipan` - Pacific/Saipan
+            * `Pacific/Samoa` - Pacific/Samoa
+            * `Pacific/Tahiti` - Pacific/Tahiti
+            * `Pacific/Tarawa` - Pacific/Tarawa
+            * `Pacific/Tongatapu` - Pacific/Tongatapu
+            * `Pacific/Truk` - Pacific/Truk
+            * `Pacific/Wake` - Pacific/Wake
+            * `Pacific/Wallis` - Pacific/Wallis
+            * `Pacific/Yap` - Pacific/Yap
+            * `US/Alaska` - US/Alaska
+            * `US/Aleutian` - US/Aleutian
+            * `US/Arizona` - US/Arizona
+            * `US/Central` - US/Central
+            * `US/East-Indiana` - US/East-Indiana
+            * `US/Eastern` - US/Eastern
+            * `US/Hawaii` - US/Hawaii
+            * `US/Indiana-Starke` - US/Indiana-Starke
+            * `US/Michigan` - US/Michigan
+            * `US/Mountain` - US/Mountain
+            * `US/Pacific` - US/Pacific
+            * `US/Samoa` - US/Samoa
+            * `UTC` - UTC
+        volume_display_units:
+          allOf:
+          - $ref: '#/components/schemas/VolumeDisplayUnitsEnum'
+          description: |-
+            Unit system to use when displaying volumetric data.
+
+            * `metric` - Metric (mL, L)
+            * `imperial` - Imperial (oz, pint)
+        temperature_display_units:
+          allOf:
+          - $ref: '#/components/schemas/TemperatureDisplayUnitsEnum'
+          description: |-
+            Unit system to use when displaying temperature data.
+
+            * `f` - Fahrenheit
+            * `c` - Celsius
+        enable_sensing:
+          type: boolean
+          description: Enable and show features related to volume sensing.
+        enable_users:
+          type: boolean
+          description: Enable user pour tracking.
+    SetupSiteSettingsRequestRequest:
+      type: object
+      description: The subset of site settings collected during the setup wizard.
+      properties:
+        title:
+          type: string
+          minLength: 1
           description: The title of this site.
           maxLength: 64
         privacy:
@@ -10272,14 +11291,14 @@ components:
       - events
       - site
       - taps
-    TapAttachKegRequest:
+    TapAttachKegRequestRequest:
       type: object
       properties:
         keg_id:
           type: integer
       required:
       - keg_id
-    TapConnectMeterRequest:
+    TapConnectMeterRequestRequest:
       type: object
       properties:
         meter_id:
@@ -10287,7 +11306,7 @@ components:
           nullable: true
       required:
       - meter_id
-    TapConnectThermoRequest:
+    TapConnectThermoRequestRequest:
       type: object
       properties:
         thermo_sensor_id:
@@ -10295,7 +11314,7 @@ components:
           nullable: true
       required:
       - thermo_sensor_id
-    TapConnectToggleRequest:
+    TapConnectToggleRequestRequest:
       type: object
       properties:
         toggle_id:
@@ -10303,7 +11322,7 @@ components:
           nullable: true
       required:
       - toggle_id
-    TapRecordDrinkRequest:
+    TapRecordDrinkRequestRequest:
       type: object
       properties:
         volume_ml:
@@ -10351,6 +11370,20 @@ components:
           maxLength: 128
       required:
       - id
+      - nice_name
+      - raw_name
+    ThermoSensorRequest:
+      type: object
+      properties:
+        raw_name:
+          type: string
+          minLength: 1
+          maxLength: 256
+        nice_name:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
       - nice_name
       - raw_name
     Thermolog:

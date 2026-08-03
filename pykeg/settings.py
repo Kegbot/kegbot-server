@@ -360,6 +360,9 @@ SPECTACULAR_SETTINGS = {
     # Serve the docs UI assets locally (no CDN).
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    # Emit separate request components (no readonly fields, binary
+    # uploads typed as files) so generated clients get correct types.
+    "COMPONENT_SPLIT_REQUEST": True,
     # Names for enums whose auto-derived names would be too generic.
     "ENUM_NAME_OVERRIDES": {
         "KegStatusEnum": "pykeg.core.models.Keg.STATUS_CHOICES",

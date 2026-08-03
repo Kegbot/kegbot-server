@@ -335,8 +335,8 @@ class ApiClientTestCase(BaseApiTestCase):
     def test_add_remove_meters(self):
         response, data = self.get(f"taps/{self.tap.id}", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
-        meters = models.FlowMeter.objects.all()
-        self.assertEqual(data.object.meter.id, meters[0].id)
+        meter = models.FlowMeter.objects.get(tap=self.tap)
+        self.assertEqual(data.object.meter.id, meter.id)
         original_data = data
 
         response, data = self.post(
@@ -348,18 +348,17 @@ class ApiClientTestCase(BaseApiTestCase):
         response, data = self.post(
             f"taps/{self.tap.id}/connect-meter",
             HTTP_X_KEGBOT_API_KEY=self.apikey.key,
-            data={"meter": meters[0].id},
+            data={"meter": meter.id},
         )
         self.assertEqual(data.meta.result, "ok")
-        meters = models.FlowMeter.objects.all()
-        self.assertEqual(data.object.meter.id, meters[0].id)
+        self.assertEqual(data.object.meter.id, meter.id)
         self.assertEqual(original_data, data)
 
     def test_add_remove_toggles(self):
         response, data = self.get(f"taps/{self.tap.id}", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
-        toggles = models.FlowToggle.objects.all()
-        self.assertEqual(data.object.toggle.id, toggles[0].id)
+        toggle = models.FlowToggle.objects.get(tap=self.tap)
+        self.assertEqual(data.object.toggle.id, toggle.id)
 
         response, data = self.post(
             f"taps/{self.tap.id}/disconnect-toggle", HTTP_X_KEGBOT_API_KEY=self.apikey.key
@@ -370,12 +369,12 @@ class ApiClientTestCase(BaseApiTestCase):
         response, data = self.post(
             f"taps/{self.tap.id}/connect-toggle",
             HTTP_X_KEGBOT_API_KEY=self.apikey.key,
-            data={"toggle": toggles[0].id},
+            data={"toggle": toggle.id},
         )
         response, data = self.get(f"taps/{self.tap.id}", HTTP_X_KEGBOT_API_KEY=self.apikey.key)
         self.assertEqual(data.meta.result, "ok")
         self.assertIsNotNone(data.object.get("toggle"))
-        self.assertEqual(data.object.toggle.id, toggles[0].id)
+        self.assertEqual(data.object.toggle.id, toggle.id)
 
     def test_get_version(self):
         response, data = self.get("version")

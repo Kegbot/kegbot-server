@@ -512,6 +512,131 @@ class KegOperationsTestCase(TestCase):
         self.assertFalse(models.Drink.objects.filter(keg_id=keg.id).exists())
 
 
+TINY_GIF = base64.b64decode("R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==")
+
+
+class DrinkManagementTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+        self.admin = models.User.objects.get(username="admin")
+        self.admin.is_staff = True
+        self.admin.save()
+        self.admin_key = models.ApiKey.objects.get_or_create(user=self.admin)[0]
+        self.alice = models.User.objects.get(username="alice")
+        self.alice_key = models.ApiKey.objects.get_or_create(user=self.alice)[0]
+        self.bob = models.User.objects.get(username="bob")
+        self.bob_key = models.ApiKey.objects.get_or_create(user=self.bob)[0]
+        self.alice_drink = models.Drink.objects.filter(user=self.alice).first()
+
+    def as_user(self, key):
+        self.client.api_key = key
+        self.client.add_auth()
+        return self.client.client
+
+    def test_owner_may_edit_shout(self):
+        response = self.as_user(self.alice_key.key).patch(
+            f"/api/drinks/{self.alice_drink.id}", {"shout": "tasty"}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.alice_drink.refresh_from_db()
+        self.assertEqual("tasty", self.alice_drink.shout)
+
+    def test_non_owner_may_not_edit_shout(self):
+        response = self.as_user(self.bob_key.key).patch(
+            f"/api/drinks/{self.alice_drink.id}", {"shout": "graffiti"}, format="json"
+        )
+        self.assertEqual(403, response.status_code)
+
+    def test_volume_adjustment_is_admin_only(self):
+        response = self.as_user(self.alice_key.key).patch(
+            f"/api/drinks/{self.alice_drink.id}", {"volume_ml": 9999.0}, format="json"
+        )
+        self.assertEqual(403, response.status_code)
+
+        keg = self.alice_drink.keg
+        served_before = keg.served_volume_ml
+        old_volume = self.alice_drink.volume_ml
+        response = self.as_user(self.admin_key.key).patch(
+            f"/api/drinks/{self.alice_drink.id}", {"volume_ml": old_volume + 10}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        keg.refresh_from_db()
+        self.assertEqual(served_before + 10, keg.served_volume_ml)
+
+    def test_reassign(self):
+        response = self.as_user(self.alice_key.key).post(
+            f"/api/drinks/{self.alice_drink.id}/reassign", {"username": "bob"}, format="json"
+        )
+        self.assertEqual(403, response.status_code)
+
+        response = self.as_user(self.admin_key.key).post(
+            f"/api/drinks/{self.alice_drink.id}/reassign", {"username": "bob"}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("bob", response.json()["user"]["username"])
+
+    def test_destroy_is_admin_only_and_supports_spill(self):
+        response = self.as_user(self.alice_key.key).delete(f"/api/drinks/{self.alice_drink.id}")
+        self.assertEqual(403, response.status_code)
+
+        keg = self.alice_drink.keg
+        spilled_before = keg.spilled_ml
+        volume = self.alice_drink.volume_ml
+        response = self.as_user(self.admin_key.key).delete(
+            f"/api/drinks/{self.alice_drink.id}?spilled=true"
+        )
+        self.assertEqual(204, response.status_code)
+        self.assertFalse(models.Drink.objects.filter(id=self.alice_drink.id).exists())
+        keg.refresh_from_db()
+        self.assertEqual(spilled_before + volume, keg.spilled_ml)
+
+    def test_picture_upload_and_delete(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        image = SimpleUploadedFile("pour.gif", TINY_GIF, content_type="image/gif")
+        response = self.as_user(self.alice_key.key).post(
+            f"/api/drinks/{self.alice_drink.id}/picture", {"image": image}, format="multipart"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json()["picture"])
+        self.alice_drink.refresh_from_db()
+        self.assertIsNotNone(self.alice_drink.picture)
+
+        response = self.as_user(self.bob_key.key).delete(
+            f"/api/drinks/{self.alice_drink.id}/picture"
+        )
+        self.assertEqual(403, response.status_code)
+
+        response = self.as_user(self.alice_key.key).delete(
+            f"/api/drinks/{self.alice_drink.id}/picture"
+        )
+        self.assertEqual(204, response.status_code)
+        self.alice_drink.refresh_from_db()
+        self.assertIsNone(self.alice_drink.picture)
+
+    def test_beverage_picture_upload(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        beverage = models.Beverage.objects.first()
+        image = SimpleUploadedFile("label.gif", TINY_GIF, content_type="image/gif")
+        response = self.as_user(self.alice_key.key).post(
+            f"/api/beverages/{beverage.id}/picture", {"image": image}, format="multipart"
+        )
+        self.assertEqual(403, response.status_code)
+
+        image = SimpleUploadedFile("label.gif", TINY_GIF, content_type="image/gif")
+        response = self.as_user(self.admin_key.key).post(
+            f"/api/beverages/{beverage.id}/picture", {"image": image}, format="multipart"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json()["picture"])
+
+
 class StatsEndpointsTestCase(TestCase):
     fixtures = ["testdata/demo-site.json"]
 

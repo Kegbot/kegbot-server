@@ -4,14 +4,15 @@ from django.contrib.auth import logout as auth_logout
 from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import (
     action,
     api_view,
     authentication_classes,
     permission_classes,
 )
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from pykeg.core import models
@@ -97,7 +98,29 @@ class ApiKeyViewSet(viewsets.ModelViewSet):
         )
 
 
-class BeverageProducerViewSet(viewsets.ModelViewSet):
+class PictureAttachMixin:
+    """Adds a POST {id}/picture action that sets the object's picture."""
+
+    @extend_schema(request=serializers.PictureUploadRequestSerializer)
+    @action(
+        detail=True,
+        methods=["post"],
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def picture(self, request, pk=None):
+        """Uploads and sets this object's picture."""
+        obj = self.get_object()
+        req = serializers.PictureUploadRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        obj.picture = models.Picture.objects.create(
+            image=req.validated_data["image"],
+            caption=req.validated_data["caption"],
+        )
+        obj.save(update_fields=["picture"])
+        return Response(self.get_serializer(obj).data)
+
+
+class BeverageProducerViewSet(PictureAttachMixin, viewsets.ModelViewSet):
     """Lists all beverage producers in the system."""
 
     queryset = models.BeverageProducer.objects.all()
@@ -105,7 +128,7 @@ class BeverageProducerViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AdminWriteDashboardRead]
 
 
-class BeverageViewSet(viewsets.ModelViewSet):
+class BeverageViewSet(PictureAttachMixin, viewsets.ModelViewSet):
     """Lists all beverages in the system."""
 
     queryset = models.Beverage.objects.all()
@@ -359,13 +382,103 @@ class KegViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(keg).data)
 
 
-class DrinkViewSet(viewsets.ReadOnlyModelViewSet):
-    """Lists all Drinks in the system."""
+class DrinkViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Lists all Drinks in the system.
+
+    Drinks are created by pours (or the tap record-drink endpoint), never
+    directly. The drink's owner may edit its shout and manage its picture;
+    volume adjustment, reassignment, and deletion are admin operations.
+    """
 
     queryset = models.Drink.objects.all()
     serializer_class = serializers.DrinkSerializer
     permission_classes = [permissions.DashboardViewer]
     filterset_class = filters.DrinkFilter
+
+    def get_permissions(self):
+        if self.action in ("destroy", "reassign"):
+            return [permissions.IsAdminUser()]
+        if self.action in ("partial_update", "picture"):
+            return [permissions.IsOwnerOrAdmin()]
+        return super().get_permissions()
+
+    def perform_destroy(self, instance):
+        """Cancels the drink; pass ?spilled=true to move its volume to spillage."""
+        spilled = self.request.query_params.get("spilled") in ("1", "true")
+        instance.cancel_drink(spilled=spilled)
+
+    @extend_schema(
+        request=serializers.DrinkUpdateRequestSerializer,
+        responses=serializers.DrinkSerializer,
+    )
+    def partial_update(self, request, pk=None):
+        drink = self.get_object()
+        req = serializers.DrinkUpdateRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        data = req.validated_data
+        if "volume_ml" in data and data["volume_ml"] != drink.volume_ml:
+            if not request.user.is_staff:
+                raise PermissionDenied("Only admins may adjust drink volume.")
+            drink.set_volume(data["volume_ml"])
+        if "shout" in data:
+            drink.shout = data["shout"]
+            drink.save(update_fields=["shout"])
+        return Response(self.get_serializer(drink).data)
+
+    @extend_schema(
+        request=serializers.DrinkReassignRequestSerializer,
+        responses=serializers.DrinkSerializer,
+    )
+    @action(detail=True, methods=["post"])
+    def reassign(self, request, pk=None):
+        """Reassigns this drink to another user."""
+        drink = self.get_object()
+        req = serializers.DrinkReassignRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        user = models.User.objects.get(username=req.validated_data["username"])
+        drink.reassign(user)
+        drink.refresh_from_db()
+        return Response(self.get_serializer(drink).data)
+
+    @extend_schema(
+        request=serializers.PictureUploadRequestSerializer,
+        responses=serializers.DrinkSerializer,
+    )
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def picture(self, request, pk=None):
+        """Attaches (POST) or erases (DELETE) this drink's picture."""
+        drink = self.get_object()
+        old_picture = drink.picture
+
+        if request.method == "DELETE":
+            if old_picture:
+                old_picture.erase_and_delete()
+                drink.refresh_from_db()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        req = serializers.PictureUploadRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        picture = models.Picture.objects.create(
+            image=req.validated_data["image"],
+            caption=req.validated_data["caption"],
+            user=drink.user,
+            keg=drink.keg,
+            session=drink.session,
+        )
+        drink.picture = picture
+        drink.save(update_fields=["picture"])
+        if old_picture:
+            old_picture.erase_and_delete()
+        return Response(self.get_serializer(drink).data)
 
 
 class AuthenticationTokenViewSet(viewsets.ModelViewSet):

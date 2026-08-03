@@ -49,18 +49,22 @@ jobs:
       # When                What                          Example
       # =================== ============================= =============
       # All runs            "dev"                         dev
-      # Merge to main       "latest"                      latest
       # Merge tag           <tag>                         v1.2.3b1
       # Merge semver tag    <semver>                      1.2.3
       # Merge semver tag    <major>.<minor>               1.2
+      # Merge semver tag    "latest" (non-prerelease)     latest
+      #
+      # Note that "latest" follows tagged releases (via `flavor: latest=auto`),
+      # NOT merges to main; main merges publish only "dev".
       - name: Set up docker tag names
         id: docker_meta
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=auto
           tags: |
             type=raw,value=dev
-            type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=tag
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}

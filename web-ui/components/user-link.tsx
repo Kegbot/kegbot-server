@@ -3,7 +3,7 @@ import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
-import type { User } from "@/api";
+import type { User } from "@/api-client";
 
 export interface UserLinkProps {
   user: User | null | undefined;

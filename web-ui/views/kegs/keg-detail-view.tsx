@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useParams } from "react-router";
-import { drinksList, kegsRetrieve, kegsStatsRetrieve } from "@/api";
+import { drinksList, kegsRetrieve, kegsStatsRetrieve } from "@/api-client";
 import { VolumeByDrinkerChart } from "@/components/charts/volume-by-drinker-chart";
 import { DrinkList } from "@/components/drink-list";
 import { KegProgress } from "@/components/keg-progress";

@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 
 from pykeg.api import urls as api_urls
+from pykeg.web import spa
 from pykeg.web.account import urls as account_urls
 from pykeg.web.api import urls as legacy_api_urls
 from pykeg.web.kbregistration import urls as kbregistration_urls
@@ -41,4 +42,10 @@ if settings.KEGBOT_ENABLE_ADMIN:
 # main kegweb urls
 urlpatterns += [
     path("", include(kegweb_urls)),
+]
+
+# Anything not matched above is (deep-linkable) SPA territory. The
+# exclusions keep API, asset, and admin 404s as real 404s.
+urlpatterns += [
+    re_path(r"^(?!api(?:$|/)|media/|static/|admin(?:$|/)).*$", spa.spa_index, name="spa-index"),
 ]

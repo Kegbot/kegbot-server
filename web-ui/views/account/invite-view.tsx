@@ -10,7 +10,7 @@ import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { type FormEvent, useState } from "react";
-import { invitationsCreate, invitationsDestroy, invitationsList } from "@/api";
+import { invitationsCreate, invitationsDestroy, invitationsList } from "@/api-client";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";
 import type { FormErrors } from "@/lib/api";

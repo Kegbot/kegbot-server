@@ -9,7 +9,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { adminBackupsCreate, adminBackupsDestroy, adminBackupsRetrieve } from "@/api";
+import { adminBackupsCreate, adminBackupsDestroy, adminBackupsRetrieve } from "@/api-client";
 import { useConfirm } from "@/components/confirm-context";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";

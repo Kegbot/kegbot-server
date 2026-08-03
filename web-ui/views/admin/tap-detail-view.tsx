@@ -25,7 +25,7 @@ import {
   tapsStartKegCreate,
   thermoSensorsList,
   usersList,
-} from "@/api";
+} from "@/api-client";
 import { useConfirm } from "@/components/confirm-context";
 import { KegProgress } from "@/components/keg-progress";
 import { Page } from "@/components/page";

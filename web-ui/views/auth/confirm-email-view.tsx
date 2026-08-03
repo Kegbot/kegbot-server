@@ -5,7 +5,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "react-router";
-import { accountConfirmEmailCreate } from "@/api";
+import { accountConfirmEmailCreate } from "@/api-client";
 import { useConfig } from "@/components/config-context";
 import { useCurrentUser } from "@/components/current-user-context";
 import { toErrorMessage, unwrap } from "@/lib/api";

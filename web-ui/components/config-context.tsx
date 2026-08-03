@@ -3,8 +3,8 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
-import type { Me } from "@/api";
-import { usersMeRetrieve } from "@/api";
+import type { Me } from "@/api-client";
+import { usersMeRetrieve } from "@/api-client";
 import { toErrorMessage, unwrap } from "@/lib/api";
 
 export interface ConfigValue {

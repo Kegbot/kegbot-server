@@ -1,5 +1,5 @@
 import { LineChart } from "@mui/x-charts/LineChart";
-import type { Thermolog } from "@/api";
+import type { Thermolog } from "@/api-client";
 import { useConfig } from "@/components/config-context";
 import { useFormatters } from "@/components/use-formatters";
 

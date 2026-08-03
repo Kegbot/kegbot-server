@@ -6,7 +6,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { accountRegenerateApiKeyCreate, apiKeysList } from "@/api";
+import { accountRegenerateApiKeyCreate, apiKeysList } from "@/api-client";
 import { useConfirm } from "@/components/confirm-context";
 import { useCurrentUser } from "@/components/current-user-context";
 import { Page } from "@/components/page";

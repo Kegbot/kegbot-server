@@ -1,7 +1,7 @@
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { adminLogsRetrieve } from "@/api";
+import { adminLogsRetrieve } from "@/api-client";
 import { Page } from "@/components/page";
 import { unwrap } from "@/lib/api";
 import { useAsyncData } from "@/lib/use-async-data";

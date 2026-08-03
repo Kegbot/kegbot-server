@@ -15,7 +15,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { type FormEvent, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import type { Keg } from "@/api";
+import type { Keg } from "@/api-client";
 import {
   kegsCreate,
   kegsDestroy,
@@ -24,7 +24,7 @@ import {
   kegsPartialUpdate,
   kegsReactivateCreate,
   kegsSpillCreate,
-} from "@/api";
+} from "@/api-client";
 import { useConfirm } from "@/components/confirm-context";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";

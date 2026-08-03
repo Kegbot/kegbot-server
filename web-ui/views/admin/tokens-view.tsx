@@ -15,14 +15,14 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import { useState } from "react";
-import type { AuthenticationToken } from "@/api";
+import type { AuthenticationToken } from "@/api-client";
 import {
   authTokensCreate,
   authTokensDestroy,
   authTokensList,
   authTokensPartialUpdate,
   usersList,
-} from "@/api";
+} from "@/api-client";
 import { useConfirm } from "@/components/confirm-context";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";

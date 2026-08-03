@@ -1,0 +1,13 @@
+{% load static %}<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kegbot</title>
+    {% for css in entry_css %}<link rel="stylesheet" href="{% static css %}" />{% endfor %}
+    <script type="module" src="{% static entry_js %}"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

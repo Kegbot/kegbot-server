@@ -3,7 +3,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { type FormEvent, useState } from "react";
-import { adminEmailTestCreate } from "@/api";
+import { adminEmailTestCreate } from "@/api-client";
 import { LoadingZone } from "@/components/loading-zone";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";

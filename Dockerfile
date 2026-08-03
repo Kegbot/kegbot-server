@@ -1,3 +1,13 @@
+# Frontend build stage: compiles the web-ui bundle with bun + vite.
+FROM oven/bun:1-slim AS frontend
+WORKDIR /build
+COPY package.json bun.lockb bunfig.toml ./
+RUN bun install --frozen-lockfile
+COPY vite.config.ts tsconfig.json openapi-ts.config.ts ./
+COPY web-ui ./web-ui
+RUN bun run build
+
+
 FROM python:3.14-slim
 
 RUN mkdir /app
@@ -50,8 +60,9 @@ COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked
 
-# Collect static files. Use fake versions of required env variables
-# since they're not relevant at this step.
+# Bring in the built frontend, then collect static files. Use fake
+# versions of required env variables since they're not relevant here.
+COPY --from=frontend /build/web-ui/dist ./web-ui/dist
 RUN DATABASE_URL=mysql:// \
    REDIS_URL=redis:// \
    KEGBOT_SECRET_KEY=changeme \

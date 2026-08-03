@@ -7,7 +7,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
-import type { Drink } from "@/api";
+import type { Drink } from "@/api-client";
 import { useFormatters } from "@/components/use-formatters";
 import { UserLink } from "@/components/user-link";
 import { formatDateTime } from "@/lib/format";

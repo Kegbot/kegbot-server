@@ -3,7 +3,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { adminPluginsSettingsRetrieve, adminPluginsSettingsUpdate } from "@/api";
+import { adminPluginsSettingsRetrieve, adminPluginsSettingsUpdate } from "@/api-client";
 import { useConfig } from "@/components/config-context";
 import { LoadingZone } from "@/components/loading-zone";
 import { Page } from "@/components/page";

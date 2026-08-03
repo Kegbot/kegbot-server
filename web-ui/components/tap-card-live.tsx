@@ -1,5 +1,5 @@
-import type { KegTap } from "@/api";
-import { thermoLogsList } from "@/api";
+import type { KegTap } from "@/api-client";
+import { thermoLogsList } from "@/api-client";
 import { TapCard } from "@/components/tap-card";
 import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";

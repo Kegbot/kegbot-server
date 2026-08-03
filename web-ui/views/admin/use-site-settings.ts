@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { PatchedSiteSettingsRequest } from "@/api";
-import { sitePartialUpdate, siteRetrieve } from "@/api";
+import type { PatchedSiteSettingsRequest } from "@/api-client";
+import { sitePartialUpdate, siteRetrieve } from "@/api-client";
 import { useConfig } from "@/components/config-context";
 import { useSnackbar } from "@/components/snackbar-context";
 import type { FormErrors } from "@/lib/api";

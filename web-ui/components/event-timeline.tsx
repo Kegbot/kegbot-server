@@ -4,7 +4,7 @@ import ListItem from "@mui/material/ListItem";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
-import type { SystemEvent } from "@/api";
+import type { SystemEvent } from "@/api-client";
 import { useFormatters } from "@/components/use-formatters";
 import { UserLink } from "@/components/user-link";
 

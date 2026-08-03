@@ -6,7 +6,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { type FormEvent, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { accountActivateCreate } from "@/api";
+import { accountActivateCreate } from "@/api-client";
 import { useConfig } from "@/components/config-context";
 import type { FormErrors } from "@/lib/api";
 import { unwrap } from "@/lib/api";

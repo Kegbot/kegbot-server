@@ -556,6 +556,17 @@ class SetPasswordRequestSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=1)
 
 
+class AdminDashboardSerializer(serializers.Serializer):
+    email_configured = serializers.BooleanField()
+    redis_error = serializers.CharField(allow_null=True)
+    num_users = serializers.IntegerField()
+    num_new_users = serializers.IntegerField()
+
+
+class EmailTestRequestSerializer(serializers.Serializer):
+    address = serializers.EmailField()
+
+
 class SiteSettingsSerializer(serializers.ModelSerializer):
     """Admin-editable site settings, covering the old settings forms."""
 

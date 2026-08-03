@@ -2,7 +2,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 
-from . import views, views_account
+from . import views, views_account, views_admin
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register("api-keys", views.ApiKeyViewSet)
@@ -30,6 +30,12 @@ urlpatterns = [
     # Must precede the router so it wins over the users/{pk} detail route.
     path("users/me", views.me),
     path("", include(router.urls)),
+    path("admin/backups", views_admin.backups),
+    path("admin/backups/<str:filename>", views_admin.delete_backup),
+    path("admin/bugreport", views_admin.bugreport),
+    path("admin/dashboard", views_admin.dashboard),
+    path("admin/email-test", views_admin.email_test),
+    path("admin/logs", views_admin.logs),
     path("account/activate", views_account.activate),
     path("account/confirm-email", views_account.confirm_email),
     path("account/email", views_account.change_email),

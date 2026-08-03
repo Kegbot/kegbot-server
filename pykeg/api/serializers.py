@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -26,15 +28,19 @@ class PictureSerializer(serializers.ModelSerializer):
     thumbnail_png_url = serializers.SerializerMethodField()
     caption = serializers.CharField()
 
+    @extend_schema_field(OpenApiTypes.URI)
     def get_resized_url(self, picture):
         return picture.resized.url if picture else None
 
+    @extend_schema_field(OpenApiTypes.URI)
     def get_resized_png_url(self, picture):
         return picture.resized_png.url if picture else None
 
+    @extend_schema_field(OpenApiTypes.URI)
     def get_thumbnail_url(self, picture):
         return picture.thumbnail.url if picture else None
 
+    @extend_schema_field(OpenApiTypes.URI)
     def get_thumbnail_png_url(self, picture):
         return picture.thumbnail_png.url if picture else None
 
@@ -93,6 +99,8 @@ class InvitationSerializer(serializers.ModelSerializer):
             "expires_date",
             "is_expired",
         ]
+
+    is_expired = serializers.BooleanField(read_only=True)
 
 
 class DeviceSerializer(serializers.ModelSerializer):

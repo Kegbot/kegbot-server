@@ -155,3 +155,21 @@ class V2ApiPermissionsTestCase(TestCase):
         status, data = self.client.get("/api/notification-settings")
         self.assertEqual(200, status)
         self.assertEqual([], data["results"])
+
+
+class SchemaTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        site = models.KegbotSite.objects.all().first()
+        site.server_version = get_version()
+        site.save()
+
+    def test_schema(self):
+        response = self.client.get("/api/schema")
+        self.assertEqual(200, response.status_code)
+        self.assertIn("openapi", response.headers["Content-Type"])
+
+    def test_docs(self):
+        response = self.client.get("/api/docs")
+        self.assertEqual(200, response.status_code)

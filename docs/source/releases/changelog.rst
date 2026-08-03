@@ -26,7 +26,8 @@ brought up to date.
   their data in one step; no intermediate 1.2/1.3 install is needed.
 * Time zone choices are now derived from the system time zone database.
 * **A new REST API is served at ``/api/``** (previously the experimental
-  ``/api/v2/``, now always enabled).
+  ``/api/v2/``, now always enabled). An OpenAPI schema is available at
+  ``/api/schema``, with interactive documentation at ``/api/docs``.
 * **The legacy HTTP API is deprecated and now lives only at ``/api/v1/``.**
   It serves only the endpoints used by kegbot-pycore (plus the events
   feed); every other endpoint returns ``410 Gone``, and all legacy

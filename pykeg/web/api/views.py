@@ -18,7 +18,7 @@ from django.views.decorators.http import require_http_methods
 from pykeg.core import models
 from pykeg.core import util as core_util
 from pykeg.web.api import exceptions, forms, serialize, util
-from pykeg.web.kegadmin.forms import ControllerForm, NewFlowMeterForm
+from pykeg.web.api.forms import ControllerForm, NewFlowMeterForm
 
 _LOGGER = logging.getLogger(__name__)
 

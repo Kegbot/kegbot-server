@@ -36,11 +36,6 @@ INSTALLED_APPS = (
     "whitenoise.runserver_nostatic",
     "pykeg.web",
     "pykeg.web.api",
-    "pykeg.web.account",
-    "pykeg.web.kbregistration",
-    "pykeg.web.kegadmin",
-    "pykeg.web.kegweb",
-    "pykeg.web.setup_wizard",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -49,8 +44,6 @@ INSTALLED_APPS = (
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "pykeg.api",
-    "crispy_forms",
-    "crispy_bootstrap4",
     "imagekit",
     "rest_framework",
     "drf_spectacular",
@@ -58,10 +51,6 @@ INSTALLED_APPS = (
     "django_filters",
     "django_rq",
 )
-
-LOGIN_REDIRECT_URL = "/account/"
-
-KEGBOT_ADMIN_LOGIN_URL = "login"
 
 AUTH_USER_MODEL = "core.User"
 
@@ -83,16 +72,12 @@ else:
 # Storage backends (Django 5.1+ replaced DEFAULT_FILE_STORAGE / STATICFILES_STORAGE).
 STORAGES = {
     "default": {
-        "BACKEND": "pykeg.web.kegweb.kbstorage.KegbotFileSystemStorage",
+        "BACKEND": "pykeg.web.kbstorage.KegbotFileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": _STATICFILES_BACKEND,
     },
 }
-
-# crispy-forms 2.x template pack (Bootstrap 4).
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
-CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 # Default session serialization.
 
@@ -158,7 +143,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "pykeg.web.api.middleware.ApiRequestMiddleware",
-    "pykeg.web.middleware.PrivacyMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = ("pykeg.web.auth.local.LocalAuthBackend",)
@@ -306,12 +290,10 @@ IMAGEKIT_DEFAULT_IMAGE_CACHE_BACKEND = "imagekit.imagecache.NonValidatingImageCa
 
 # Storage is configured via STORAGES above (Django 5.1+).
 
-from pykeg.core.util import get_plugin_template_dirs  # noqa: E402  (needs KEGBOT_PLUGINS above)
-
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["web/templates"] + get_plugin_template_dirs(KEGBOT_PLUGINS),
+        "DIRS": ["web/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -323,7 +305,6 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "pykeg.web.context_processors.kbsite",
             ],
             "debug": DEBUG,
         },

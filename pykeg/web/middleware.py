@@ -1,9 +1,7 @@
 import logging
 
-from django.conf import settings
 from django.db import connection
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.http import JsonResponse
 from django.utils import timezone
 
 from pykeg.core import models
@@ -13,28 +11,6 @@ from pykeg.util import dbstatus
 from pykeg.web.api.util import is_api_v1_request
 
 logger = logging.getLogger(__name__)
-
-# Requests are always allowed for these path prefixes.
-PRIVACY_EXEMPT_PATHS = (
-    "/account/activate",
-    "/accounts/",
-    "/admin/",
-    "/media/",
-    "/setup/",
-    "/sso/login",
-    "/sso/logout",
-    # Both apis enforce their own privacy rules.
-    "/api/",
-)
-
-PRIVACY_EXEMPT_PATHS += getattr(settings, "KEGBOT_EXTRA_PRIVACY_EXEMPT_PATHS", ())
-
-
-def _path_allowed(path, kbsite):
-    for p in PRIVACY_EXEMPT_PATHS:
-        if path.startswith(p):
-            return True
-    return False
 
 
 class CurrentRequestMiddleware:
@@ -102,16 +78,15 @@ class IsSetupMiddleware:
         request.need_upgrade = False
         request.kbsite = None
 
-        # Skip all checks if we're in the setup wizard.
-        if request.path.startswith("/setup"):
-            # On a fresh install the session table doesn't exist yet, so a real
-            # session read/write would crash; stub it out until migrations (run
-            # in the wizard's first step) create the table. Once it exists, keep
-            # the real session so the wizard can log the new admin in.
+        # On a fresh install the session table doesn't exist yet, so a
+        # real session read/write would crash; stub it out for the setup
+        # api until migrations (run in the first setup step) create the
+        # table. Once it exists, keep the real session so setup can log
+        # the new admin in.
+        if request.path.startswith("/api/setup"):
             if "django_session" not in connection.introspection.table_names():
                 request.session = {}
                 request.session["_auth_user_backend"] = None
-            return self.get_response(request)
 
         # First confirm the database is working.
         try:
@@ -146,37 +121,36 @@ class IsSetupMiddleware:
         return self.get_response(request)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
+        """Gates API requests while setup/upgrade is required.
+
+        Only API paths are intercepted (with a JSON 403 the frontend
+        understands); everything else falls through to the SPA shell,
+        which reads the same signal from its boot request and renders
+        the setup flow.
+        """
         if is_api_v1_request(request):
-            # API endpoints handle "setup required" differently.
+            # The legacy API handles "setup required" differently.
             return None
 
         if request.path.startswith("/api/setup"):
             # The setup API is how the frontend performs setup/upgrade.
             return None
 
+        if not request.path.startswith("/api/"):
+            return None
+
         if request.need_setup:
-            return self._setup_required(request)
-        elif request.need_upgrade:
-            return self._upgrade_required(request)
-
-        return None
-
-    def _setup_required(self, request):
-        if request.path.startswith("/api/"):
             return JsonResponse({"error": "setup_required"}, status=403)
-        return render(request, "setup_wizard/setup_required.html", status=403)
-
-    def _upgrade_required(self, request):
-        installed_version = getattr(request, "installed_version_string", None)
-        if request.path.startswith("/api/"):
+        elif request.need_upgrade:
             return JsonResponse(
-                {"error": "upgrade_required", "installed_version": installed_version},
+                {
+                    "error": "upgrade_required",
+                    "installed_version": getattr(request, "installed_version_string", None),
+                },
                 status=403,
             )
-        context = {
-            "installed_version": installed_version,
-        }
-        return render(request, "setup_wizard/upgrade_required.html", context=context, status=403)
+
+        return None
 
 
 class KegbotSiteMiddleware:
@@ -191,41 +165,3 @@ class KegbotSiteMiddleware:
             )
 
         return self.get_response(request)
-
-
-class PrivacyMiddleware:
-    """Enforces site privacy settings.
-
-    Must be installed after ApiRequestMiddleware (in request order) to
-    access is_api_v1_request attribute.
-    """
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        return self.get_response(request)
-
-    def process_view(self, request, view_func, view_args, view_kwargs):
-        if not hasattr(request, "kbsite"):
-            return None
-        elif _path_allowed(request.path, request.kbsite):
-            return None
-        elif request.is_api_v1_request:
-            # api.middleware will enforce access requirements.
-            return None
-
-        privacy = request.kbsite.privacy
-
-        if privacy == "public":
-            return None
-        elif privacy == "staff":
-            if not request.user.is_staff:
-                return render(request, "kegweb/staff_only.html", status=401)
-            return None
-        elif privacy == "members":
-            if not request.user.is_authenticated or not request.user.is_active:
-                return render(request, "kegweb/members_only.html", status=401)
-            return None
-
-        return HttpResponse(f"Server misconfigured, unknown privacy setting:{privacy}", status=500)

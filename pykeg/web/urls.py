@@ -5,27 +5,14 @@ from django.urls import include, path, re_path
 
 from pykeg.api import urls as api_urls
 from pykeg.web import spa
-from pykeg.web.account import urls as account_urls
 from pykeg.web.api import urls as legacy_api_urls
-from pykeg.web.kbregistration import urls as kbregistration_urls
-from pykeg.web.kegadmin import urls as kegadmin_urls
-from pykeg.web.kegweb import urls as kegweb_urls
-from pykeg.web.setup_wizard import urls as setup_wizard_urls
 
 urlpatterns = [
     # The deprecated legacy api is served only at api/v1/; everything else
     # under api/ is the current api.
     path("api/v1/", include(legacy_api_urls)),
     path("api/", include(api_urls)),
-    path("account/", include(account_urls)),
-    path("accounts/", include(kbregistration_urls)),
-    path("kegadmin/", include(kegadmin_urls)),
 ]
-
-if "pykeg.web.setup_wizard" in settings.INSTALLED_APPS:
-    urlpatterns += [
-        path("setup/", include(setup_wizard_urls)),
-    ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
@@ -39,13 +26,34 @@ if settings.KEGBOT_ENABLE_ADMIN:
         path("admin/", admin.site.urls),
     ]
 
-# main kegweb urls
+# Named SPA routes: these exist so server-side code that builds URLs
+# (get_absolute_url, e-mail links) keeps working; the SPA handles the
+# actual routing client-side.
 urlpatterns += [
-    path("", include(kegweb_urls)),
+    path("", spa.spa_index, name="kb-home"),
+    path("kegs/<int:keg_id>/", spa.spa_index, name="kb-keg"),
+    path("drinks/<int:drink_id>/", spa.spa_index, name="kb-drink"),
+    path("d/<int:drink_id>/", spa.spa_index, name="kb-drink-short"),
+    path("s/<int:session_id>/", spa.spa_index, name="kb-session-short"),
+    path(
+        "sessions/<int:year>/<int:month>/<int:day>/<int:pk>/",
+        spa.spa_index,
+        name="kb-session-detail",
+    ),
+    path("drinkers/<str:username>/", spa.spa_index, name="kb-drinker"),
+    path("account/", spa.spa_index, name="kb-account-main"),
+    path("account/confirm-email/<str:token>", spa.spa_index, name="account-confirm-email"),
+    path("account/activate/<str:activation_key>/", spa.spa_index, name="activate-account"),
+    path("accounts/register/", spa.spa_index, name="registration_register"),
+    path(
+        "accounts/password/reset/confirm/<str:uidb64>-<str:token>/",
+        spa.spa_index,
+        name="password_reset_confirm",
+    ),
 ]
 
-# Anything not matched above is (deep-linkable) SPA territory. The
-# exclusions keep API, asset, and admin 404s as real 404s.
+# Everything else (except API, asset, and admin paths, whose 404s stay
+# real 404s) is SPA territory.
 urlpatterns += [
     re_path(r"^(?!api(?:$|/)|media/|static/|admin(?:$|/)).*$", spa.spa_index, name="spa-index"),
 ]

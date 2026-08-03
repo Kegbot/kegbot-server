@@ -1,5 +1,6 @@
 from django import forms
 
+from pykeg.core import models
 from pykeg.core.kb_common import USERNAME_REGEX
 
 
@@ -34,3 +35,19 @@ class ThermoPostForm(forms.Form):
 
 class TapCreateForm(forms.Form):
     name = forms.CharField()
+
+
+class ControllerForm(forms.ModelForm):
+    """Relocated from the old kegadmin app; used by legacy POSTs."""
+
+    class Meta:
+        model = models.Controller
+        fields = ("name", "model_name", "serial_number")
+
+
+class NewFlowMeterForm(forms.ModelForm):
+    """Relocated from the old kegadmin app; used by legacy POSTs."""
+
+    class Meta:
+        model = models.FlowMeter
+        fields = ("port_name", "ticks_per_ml", "controller")

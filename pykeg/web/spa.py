@@ -23,8 +23,12 @@ def _cached_manifest():
 
 
 @ensure_csrf_cookie
-def spa_index(request):
+def spa_index(request, **kwargs):
     """Renders the SPA shell for any non-API route.
+
+    Captured URL kwargs (from the named routes that preserve legacy URL
+    names for e-mail links and get_absolute_url) are ignored: routing
+    happens client-side.
 
     Asset names come from vite's build manifest and are emitted through
     {% static %}, so hashed-manifest storage resolves them correctly in

@@ -81,42 +81,6 @@ class Plugin:
 
     # Plugin methods
 
-    def get_admin_settings_view(self):
-        """Returns the view instance for the main admin settings for this
-        plugin, or None.
-        """
-        return None
-
-    def get_extra_admin_views(self):
-        """Returns an iterable of additional views to be installed in the admin
-        site section this plugin.
-
-        Each item should be a 3-tuple of the form:
-          (regex, view name, url name)
-
-        Each view will be installed with the name
-        "plugin-<plugin name>-<url name>"
-        """
-        return []
-
-    def get_user_settings_view(self):
-        """Returns the view instance for the main user settings for this
-        plugin, or None.
-        """
-        return None
-
-    def get_extra_user_views(self):
-        """Returns an iterable of additional views to be installed in the
-        user section for this plugin.
-
-        Each item should be a 3-tuple of the form:
-          (regex, view name, url name)
-
-        Each view will be installed with the name
-        "plugin-<plugin name>-<url name>"
-        """
-        return []
-
     def handle_new_events(self, event):
         """Called synchronously when new events are posted.
 

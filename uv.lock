@@ -171,28 +171,6 @@ wheels = [
 ]
 
 [[package]]
-name = "confusable-homoglyphs"
-version = "3.3.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/0d/10/1358fca1ee2d97d4f2877df9ffbe6d124da666fef3b2f75e771a4c1afee6/confusable_homoglyphs-3.3.1.tar.gz", hash = "sha256:b995001c9b2e1b4cea0cf5f3840a7c79188a8cbbad053d693572bd8c1c1ec460", size = 325480, upload-time = "2024-01-30T10:10:27.47Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/6e/c0fcbb7d341a46cf4241a6aa9e6a737734f0657521fc1bcd074953fe4eea/confusable_homoglyphs-3.3.1-py2.py3-none-any.whl", hash = "sha256:84c92cb79dc7f55aa290d0762b2349abd8dee4c16fbe6f99eac978d394e2e6a1", size = 144755, upload-time = "2024-01-30T10:10:24.857Z" },
-]
-
-[[package]]
-name = "crispy-bootstrap4"
-version = "2026.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "django-crispy-forms" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/5b/cc/638d36595da9fbb2c9d0be98bf6007442a65a521b614cf4645d04311b061/crispy_bootstrap4-2026.2.tar.gz", hash = "sha256:66f8f14bf9c2c16ed94243236ed253a94e5a625afa1ee64022ce29db98c6cd85", size = 34645, upload-time = "2026-02-11T22:45:05.422Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/6d/b90d601ea2449cc6b35b4b08be90fb1f6ca1baf2be383ed195f7bfa91a32/crispy_bootstrap4-2026.2-py3-none-any.whl", hash = "sha256:4b2b99dfe3e3cacb548702159462110901bd38792b650b770e50c62284ac2227", size = 23178, upload-time = "2026-02-11T22:45:04.108Z" },
-]
-
-[[package]]
 name = "croniter"
 version = "6.2.4"
 source = { registry = "https://pypi.org/simple" }
@@ -262,18 +240,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-crispy-forms"
-version = "2.7"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/bc/f5/b79e3ed7cae871d5d71bf3448d627e1fabab769358bb90808bec056556fe/django_crispy_forms-2.7.tar.gz", hash = "sha256:4c59bed60417375cba26cebb2c67ab350b655934670270b1c89dbcd7e60f1b4c", size = 1097842, upload-time = "2026-07-29T11:12:12.081Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/44/50335d09c4deb70affee0c54feef07ba458df015e32e45490615d9dc5b6b/django_crispy_forms-2.7-py3-none-any.whl", hash = "sha256:42a7ecb05ac3fd050d006dfe7aeceb7f318c30e5b5124ff619e2be252f36f096", size = 31478, upload-time = "2026-07-29T11:12:11.052Z" },
-]
-
-[[package]]
 name = "django-filter"
 version = "26.1"
 source = { registry = "https://pypi.org/simple" }
@@ -309,19 +275,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/83/9d/2272742fdd9d0a9f0b28cd995b0539430c9467a2192e4de2cea9ea6ad38c/django-redis-5.4.0.tar.gz", hash = "sha256:6a02abaa34b0fea8bf9b707d2c363ab6adc7409950b2db93602e6cb292818c42", size = 52567, upload-time = "2023-10-01T20:22:01.221Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/f1/63caad7c9222c26a62082f4f777de26389233b7574629996098bf6d25a4d/django_redis-5.4.0-py3-none-any.whl", hash = "sha256:ebc88df7da810732e2af9987f7f426c96204bf89319df4c6da6ca9a2942edd5b", size = 31119, upload-time = "2023-10-01T20:21:33.009Z" },
-]
-
-[[package]]
-name = "django-registration"
-version = "5.2.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "confusable-homoglyphs" },
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/9a/a0/f6e6d0a59b94eb4ab14983853334cb25401d677c5a3799aaca6819acf2eb/django_registration-5.2.1.tar.gz", hash = "sha256:06864f9da0bc4d7b073fb2da98d95d12428357ab0bc46e33f79c26707ec06bbe", size = 94187, upload-time = "2025-04-07T05:54:48.558Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/78/5d/aa2f82b3c809db66eb986963db1d4b89de190b4eac2e3021a725112e3b13/django_registration-5.2.1-py3-none-any.whl", hash = "sha256:7079e2364b15fc6bef18b81ae94c5e947b556abdbbfb19c9bcca14feafde6a3d", size = 105277, upload-time = "2025-04-07T05:54:46.981Z" },
 ]
 
 [[package]]
@@ -559,15 +512,12 @@ source = { editable = "." }
 dependencies = [
     { name = "addict" },
     { name = "coloredlogs" },
-    { name = "crispy-bootstrap4" },
     { name = "dj-database-url" },
     { name = "dj-email-url" },
     { name = "django" },
-    { name = "django-crispy-forms" },
     { name = "django-filter" },
     { name = "django-imagekit" },
     { name = "django-redis" },
-    { name = "django-registration" },
     { name = "django-rq" },
     { name = "djangorestframework" },
     { name = "drf-spectacular" },
@@ -607,15 +557,12 @@ docs = [
 requires-dist = [
     { name = "addict" },
     { name = "coloredlogs" },
-    { name = "crispy-bootstrap4", specifier = ">=2024.10" },
     { name = "dj-database-url" },
     { name = "dj-email-url" },
     { name = "django", specifier = ">=5.2,<5.3" },
-    { name = "django-crispy-forms", specifier = ">=2.4,<3" },
     { name = "django-filter", specifier = ">=25.1" },
     { name = "django-imagekit" },
     { name = "django-redis", specifier = ">=5.4" },
-    { name = "django-registration", specifier = ">=5.1" },
     { name = "django-rq", specifier = ">=3,<5" },
     { name = "djangorestframework", specifier = ">=3.16,<4" },
     { name = "drf-spectacular", specifier = ">=0.28" },

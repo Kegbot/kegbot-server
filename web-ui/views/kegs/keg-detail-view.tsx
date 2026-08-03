@@ -1,6 +1,3 @@
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -38,45 +35,51 @@ export function KegDetailView() {
     [kegId],
   );
 
-  const title = keg.data ? keg.data.beverage.name : `Keg #${kegId}`;
+  const beverage = keg.data?.beverage;
+  const metadata = beverage
+    ? [beverage.producer.name, beverage.style].filter(Boolean).join(" · ")
+    : "";
 
   return (
-    <Page title={title} loading={keg.loading} error={keg.error}>
+    <Page
+      title={beverage?.name ?? `Keg #${kegId}`}
+      eyebrow={`Keg #${kegId}`}
+      meta={
+        keg.data && (
+          <>
+            {metadata}
+            {metadata && " · "}first tapped {formatDate(keg.data.start_time)}
+          </>
+        )
+      }
+      headerRight={keg.data && kegStatusChip(keg.data)}
+      width="content"
+      loading={keg.loading}
+      error={keg.error}
+    >
       {keg.data && (
-        <Stack spacing={3}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-            {kegStatusChip(keg.data)}
-            <Typography color="text.secondary">
-              {keg.data.beverage.producer.name}
-              {keg.data.beverage.style ? ` · ${keg.data.beverage.style}` : ""} · first tapped{" "}
-              {formatDate(keg.data.start_time)}
-            </Typography>
-          </Stack>
+        <Stack spacing={4}>
           {keg.data.description && <Typography>{keg.data.description}</Typography>}
-          <Grid container spacing={3}>
+          <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 6 }}>
-              <Card variant="outlined">
-                <CardHeader title="Keg" />
-                <CardContent>
-                  <Stack spacing={1}>
-                    <KegProgress keg={keg.data} />
-                    <Typography variant="body2" color="text.secondary">
-                      {volume(keg.data.served_volume_ml)} served
-                      {keg.data.spilled_ml > 0 ? ` · ${volume(keg.data.spilled_ml)} spilled` : ""}
-                    </Typography>
-                  </Stack>
-                </CardContent>
-              </Card>
+              <Section label="Fill">
+                <Stack spacing={1}>
+                  <KegProgress keg={keg.data} />
+                  <Typography variant="body2" color="text.secondary">
+                    {volume(keg.data.served_volume_ml)} served
+                    {(keg.data.spilled_ml ?? 0) > 0
+                      ? ` · ${volume(keg.data.spilled_ml ?? 0)} spilled`
+                      : ""}
+                  </Typography>
+                </Stack>
+              </Section>
             </Grid>
             {stats.data?.volume_by_drinker &&
               Object.keys(stats.data.volume_by_drinker).length > 0 && (
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Card variant="outlined">
-                    <CardHeader title="Top drinkers" />
-                    <CardContent>
-                      <VolumeByDrinkerChart data={stats.data.volume_by_drinker} limit={5} />
-                    </CardContent>
-                  </Card>
+                  <Section label="Top drinkers">
+                    <VolumeByDrinkerChart data={stats.data.volume_by_drinker} limit={5} />
+                  </Section>
                 </Grid>
               )}
           </Grid>

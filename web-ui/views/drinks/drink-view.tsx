@@ -51,19 +51,22 @@ export function DrinkView() {
   };
 
   return (
-    <Page title={`Drink #${drinkId}`} loading={drink.loading} error={drink.error}>
-      {drink.data && (
-        <Stack spacing={2}>
-          <Typography>
-            <UserLink user={drink.data.user} /> poured {volume(drink.data.volume_ml)} of{" "}
-            <MuiLink component={Link} to={`/kegs/${drink.data.keg.id}`} underline="hover">
-              {drink.data.keg.beverage.name}
-            </MuiLink>{" "}
-            on {formatDateTime(drink.data.time)}
+    <Page
+      title={
+        drink.data
+          ? `${volume(drink.data.volume_ml)} of ${drink.data.keg.beverage.name}`
+          : `Drink #${drinkId}`
+      }
+      eyebrow={`Drink #${drinkId}`}
+      meta={
+        drink.data && (
+          <>
+            poured by <UserLink user={drink.data.user} avatarSize={0} /> ·{" "}
+            {formatDateTime(drink.data.time)}
             {drink.data.session_id != null && (
               <>
                 {" "}
-                during{" "}
+                · during{" "}
                 <MuiLink
                   component={Link}
                   to={`/sessions/id/${drink.data.session_id}`}
@@ -73,10 +76,27 @@ export function DrinkView() {
                 </MuiLink>
               </>
             )}
-            .
-          </Typography>
+          </>
+        )
+      }
+      width="content"
+      loading={drink.loading}
+      error={drink.error}
+    >
+      {drink.data && (
+        <Stack spacing={2.5}>
           {drink.data.shout && (
-            <Typography variant="h6" sx={{ fontStyle: "italic" }}>
+            <Typography
+              variant="h5"
+              component="blockquote"
+              sx={{
+                fontStyle: "italic",
+                fontWeight: 500,
+                borderLeft: 2,
+                borderColor: "primary.main",
+                pl: 2,
+              }}
+            >
               “{drink.data.shout}”
             </Typography>
           )}
@@ -94,6 +114,13 @@ export function DrinkView() {
               )}
             </Card>
           )}
+          <Typography variant="body2" color="text.secondary">
+            Poured from{" "}
+            <MuiLink component={Link} to={`/kegs/${drink.data.keg.id}`} underline="hover">
+              keg #{drink.data.keg.id} — {drink.data.keg.beverage.name}
+            </MuiLink>
+            .
+          </Typography>
         </Stack>
       )}
     </Page>

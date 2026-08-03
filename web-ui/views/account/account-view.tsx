@@ -76,14 +76,18 @@ export function AccountView() {
   const { user } = useCurrentUser();
 
   return (
-    <Page title="My Account" hideHeading>
+    <Page
+      title={user?.display_name || user?.username || "My Account"}
+      meta={[user?.username, user?.email].filter(Boolean).join(" · ")}
+    >
       <Stack spacing={3}>
-        <Typography variant="h4">Hello, {user?.display_name || user?.username}</Typography>
-        <Typography color="text.secondary">
-          Username: {user?.username}
-          {user?.email ? ` · ${user.email}` : ""}
-        </Typography>
-        {user?.is_staff && <ApiKeySection />}
+        {user?.is_staff ? (
+          <ApiKeySection />
+        ) : (
+          <Typography color="text.secondary">
+            Manage your profile, password, and notifications from the menu.
+          </Typography>
+        )}
       </Stack>
     </Page>
   );

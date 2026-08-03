@@ -1,0 +1,72 @@
+# Generates the frozen v1.3 backup fixtures under testdata/legacy-backups/.
+# Run via `bin/generate-legacy-backups.sh` from the repo root.
+#
+# The generate services run the real server image (built from the local
+# checkout) against pinned database images, so the fixtures are
+# reproducible regardless of what is installed on the host.
+
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: changeme
+      MYSQL_DATABASE: kegbot
+    healthcheck:
+      # Ping over TCP: during init the image runs a socket-only temporary
+      # server that would pass a plain socket ping too early.
+      test: ["CMD", "mysqladmin", "ping", "-h127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: kegbot
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis
+
+  generate-mysql:
+    build:
+      context: ..
+    entrypoint: []
+    working_dir: /app
+    command: ["bin/build-legacy-backup.sh", "testdata/legacy-backups/kegbot-v1.3-mysql.zip"]
+    environment:
+      DATABASE_URL: mysql://root:changeme@mysql/kegbot
+      REDIS_URL: redis://redis:6379/0
+      KEGBOT_SECRET_KEY: changeme
+    volumes:
+      - ../bin:/app/bin:ro
+      - ../testdata:/app/testdata
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  generate-postgres:
+    build:
+      context: ..
+    entrypoint: []
+    working_dir: /app
+    command: ["bin/build-legacy-backup.sh", "testdata/legacy-backups/kegbot-v1.3-postgres.zip"]
+    environment:
+      DATABASE_URL: postgres://postgres:changeme@postgres/kegbot
+      REDIS_URL: redis://redis:6379/0
+      KEGBOT_SECRET_KEY: changeme
+    volumes:
+      - ../bin:/app/bin:ro
+      - ../testdata:/app/testdata
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started

@@ -1,3 +1,6 @@
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router";
 import { PrivacyGate } from "@/components/privacy-gate";
 import { RequireAuth } from "@/components/require-auth";
@@ -29,6 +32,17 @@ import { StatsView } from "@/views/stats-view";
 function RedirectWithParam({ to }: { to: (params: Record<string, string | undefined>) => string }) {
   const params = useParams();
   return <Navigate to={to(params)} replace />;
+}
+
+// The admin area loads as its own chunk; staff-only.
+const AdminRoutes = lazy(() => import("@/views/admin/admin-routes"));
+
+function AdminFallback() {
+  return (
+    <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+      <CircularProgress />
+    </Box>
+  );
 }
 
 export function AppRoutes() {
@@ -100,6 +114,16 @@ export function AppRoutes() {
           <Route path="notifications" element={<NotificationsView />} />
           <Route path="invite" element={<InviteView />} />
         </Route>
+        <Route
+          path="/kegadmin/*"
+          element={
+            <RequireAuth staff>
+              <Suspense fallback={<AdminFallback />}>
+                <AdminRoutes />
+              </Suspense>
+            </RequireAuth>
+          }
+        />
       </Route>
 
       {/* Legacy short URLs. */}

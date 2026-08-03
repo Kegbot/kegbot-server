@@ -1,7 +1,14 @@
 import { Navigate, Route, Routes, useParams } from "react-router";
 import { PrivacyGate } from "@/components/privacy-gate";
+import { RequireAuth } from "@/components/require-auth";
 import { MainLayout } from "@/layout/main-layout";
 import { MinimalLayout } from "@/layout/minimal-layout";
+import { AccountLayout } from "@/views/account/account-layout";
+import { AccountView } from "@/views/account/account-view";
+import { InviteView } from "@/views/account/invite-view";
+import { NotificationsView } from "@/views/account/notifications-view";
+import { PasswordView } from "@/views/account/password-view";
+import { ProfileView } from "@/views/account/profile-view";
 import { ActivateView } from "@/views/auth/activate-view";
 import { ConfirmEmailView } from "@/views/auth/confirm-email-view";
 import { LoginView } from "@/views/auth/login-view";
@@ -79,6 +86,20 @@ export function AppRoutes() {
         <Route path="/sessions/id/:id" element={<SessionDetailView />} />
         <Route path="/sessions/:year/:month/:day/:id" element={<SessionDetailView />} />
         <Route path="/accounts/logout" element={<LogoutView />} />
+        <Route
+          path="/account"
+          element={
+            <RequireAuth>
+              <AccountLayout />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<AccountView />} />
+          <Route path="profile" element={<ProfileView />} />
+          <Route path="password" element={<PasswordView />} />
+          <Route path="notifications" element={<NotificationsView />} />
+          <Route path="invite" element={<InviteView />} />
+        </Route>
       </Route>
 
       {/* Legacy short URLs. */}

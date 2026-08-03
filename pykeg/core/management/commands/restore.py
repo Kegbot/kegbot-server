@@ -8,12 +8,12 @@ from pykeg.backup import backup
 
 class Command(BaseCommand):
     help = "Restores a zipfile backup of the current Kegbot system."
-    args = "<zipfile>"
+
+    def add_arguments(self, parser):
+        parser.add_argument("zipfile")
 
     def handle(self, *args, **options):
-        if len(args) != 1:
-            raise CommandError("Must provide a zipfile path")
-        backup_path = os.path.normpath(os.path.expanduser(args[0]))
+        backup_path = os.path.normpath(os.path.expanduser(options["zipfile"]))
         if not os.path.exists(backup_path):
             raise CommandError(f"Archive does not exist: {backup_path}")
 
@@ -25,6 +25,6 @@ class Command(BaseCommand):
             sys.exit(1)
         except backup.BackupError as e:
             sys.stderr.write("Error: ")
-            sys.stderr.write(e)
+            sys.stderr.write(str(e))
             sys.stderr.write("\n")
             sys.exit(1)

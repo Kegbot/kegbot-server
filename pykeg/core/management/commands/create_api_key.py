@@ -1,15 +1,14 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from pykeg.core import models
 
 
 class Command(BaseCommand):
-    args = "<description>"
     help = "Creates an API key with the given description."
 
-    def handle(self, *args, **options):
-        if len(args) < 1:
-            raise CommandError("Must specify description")
+    def add_arguments(self, parser):
+        parser.add_argument("description")
 
-        key = models.ApiKey.objects.create(description=args[0])
+    def handle(self, *args, **options):
+        key = models.ApiKey.objects.create(description=options["description"])
         print(key.key)

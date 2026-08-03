@@ -9,12 +9,12 @@ This section describes commonly-used commands that are available from the
 Running commands
 ----------------
 
-When using ``docker-compose``, you can run the ``kegbot`` command line using
+When using ``docker compose``, you can run the ``kegbot`` command line using
 the following general invocation:
 
 .. code-block:: console
 
-    $ docker-compose run kegbot <command-name> [.. additional args ..]
+    $ docker compose run kegbot <command-name> [.. additional args ..]
 
 For an example, see the :ref:`upgrading` section.
 
@@ -40,11 +40,22 @@ Kegbot Server.
 
   Change the password of the given user.
 
+.. data:: backup
+
+  Creates a zipfile backup of the database and stored media. The backup is
+  written to the ``backups/`` folder of the site's media storage.
+
+.. data:: restore <zipfile>
+
+  Restores a backup zipfile into a fresh (erased) system. Backups created
+  by Kegbot v1.1.x are upgraded automatically during restore; see
+  :ref:`upgrade-legacy`.
+
 
 Internal commands
 ~~~~~~~~~~~~~~~~~
 
-These commands are what makes the Kegbot Server run. When using ``docker-compose``,
+These commands are what makes the Kegbot Server run. When using ``docker compose``,
 you should not need to call these commands directly, as they're invoked by that
 configuration when needed.
 

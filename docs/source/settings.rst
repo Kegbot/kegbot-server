@@ -15,7 +15,7 @@ This section lists all settings (environment variables) the server recognizes.
 Required settings
 ~~~~~~~~~~~~~~~~~
 
-These settings have no default and must be set by you. (When you use ``docker-compose``
+These settings have no default and must be set by you. (When you use ``docker compose``
 with the example configuration in these docs, all required values will be set.)
 
 .. data:: DATABASE_URL

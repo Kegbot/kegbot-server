@@ -46,6 +46,25 @@ const RELATIVE_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
   ["minute", 60],
 ];
 
+const COMPACT_UNITS: Array<[string, number]> = [
+  ["y", 365 * 24 * 3600],
+  ["mo", 30 * 24 * 3600],
+  ["d", 24 * 3600],
+  ["h", 3600],
+  ["m", 60],
+];
+
+/** Compact relative time for tight gutters: "now", "4m", "2h", "3d". */
+export function formatCompactRelative(iso: string, now: Date = new Date()): string {
+  const seconds = Math.abs((now.getTime() - new Date(iso).getTime()) / 1000);
+  for (const [suffix, unitSeconds] of COMPACT_UNITS) {
+    if (seconds >= unitSeconds) {
+      return `${Math.round(seconds / unitSeconds)}${suffix}`;
+    }
+  }
+  return "now";
+}
+
 export function formatRelativeTime(iso: string, now: Date = new Date()): string {
   const seconds = (new Date(iso).getTime() - now.getTime()) / 1000;
   const magnitude = Math.abs(seconds);

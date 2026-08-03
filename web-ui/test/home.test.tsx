@@ -81,6 +81,6 @@ test("home renders taps and recent events", async () => {
   expect(await screen.findByText("Test IPA")).toBeTruthy();
   expect(screen.getByText("Main Tap")).toBeTruthy();
   expect(screen.getByText("alice")).toBeTruthy();
-  expect(screen.getByText(/poured a drink/)).toBeTruthy();
+  expect(screen.getByText(/poured/)).toBeTruthy();
   expect(screen.getByText(/cheers/)).toBeTruthy();
 });

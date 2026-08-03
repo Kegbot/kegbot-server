@@ -1,5 +1,5 @@
+import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import Stack from "@mui/material/Stack";
 import { statusRetrieve } from "@/api-client";
 import { EmptyState } from "@/components/empty-state";
 import { EventTimeline } from "@/components/event-timeline";
@@ -15,28 +15,30 @@ export function HomeView() {
   return (
     <Page title="Home" hideHeading loading={status.loading} error={status.error}>
       {status.data && (
-        <Grid container spacing={4}>
-          <Grid size={{ xs: 12, md: 5 }}>
-            <Section label="On tap">
-              <Stack spacing={2}>
-                {status.data.taps.length === 0 && (
-                  <EmptyState
-                    title="No taps configured."
-                    hint="Admins can add taps under Admin → Taps."
-                  />
-                )}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          {/* The tap deck is the hero: what's pouring, and how much is left. */}
+          <Section label="On tap">
+            {status.data.taps.length === 0 ? (
+              <EmptyState
+                title="No taps configured."
+                hint="Admins can add taps under Admin → Taps."
+              />
+            ) : (
+              <Grid container spacing={2.5}>
                 {status.data.taps.map((tap) => (
-                  <TapCardLive key={tap.id} tap={tap} />
+                  <Grid key={tap.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+                    <TapCardLive tap={tap} />
+                  </Grid>
                 ))}
-              </Stack>
-            </Section>
-          </Grid>
-          <Grid size={{ xs: 12, md: 7 }}>
-            <Section label="Recent activity">
+              </Grid>
+            )}
+          </Section>
+          <Section label="Recent activity">
+            <Box sx={{ maxWidth: 680 }}>
               <EventTimeline events={status.data.events} />
-            </Section>
-          </Grid>
-        </Grid>
+            </Box>
+          </Section>
+        </Box>
       )}
     </Page>
   );

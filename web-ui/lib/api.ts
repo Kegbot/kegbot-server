@@ -14,7 +14,6 @@ export function getCsrfToken(): string | null {
 client.setConfig({
   baseUrl: "/",
   credentials: "include",
-  throwOnError: true,
 });
 
 client.interceptors.request.use((request) => {
@@ -24,6 +23,18 @@ client.interceptors.request.use((request) => {
   }
   return request;
 });
+
+/**
+ * Awaits a generated-client call, returning `data` or throwing `error`
+ * (the parsed response body — e.g. a DRF field-error object).
+ */
+export async function unwrap<D>(promise: Promise<{ data?: D; error?: unknown }>): Promise<D> {
+  const { data, error } = await promise;
+  if (error !== undefined) {
+    throw error;
+  }
+  return data as D;
+}
 
 /**
  * Returns DRF field errors from a thrown API error, or null when the

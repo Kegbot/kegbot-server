@@ -9,6 +9,7 @@ from rest_framework.decorators import (
     action,
     api_view,
     authentication_classes,
+    parser_classes,
     permission_classes,
 )
 from rest_framework.exceptions import (
@@ -25,12 +26,19 @@ from pykeg.core import models
 from . import filters, permissions, serializers
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     """Lists all users in the system.
 
     Individual users (and their stats) are viewable by anyone the site
     privacy setting admits, mirroring the public drinker pages; the full
-    user listing requires authentication.
+    user listing requires authentication. User management (create, edit,
+    enable/disable, staff status, set-password) is admin-only; there is
+    no delete — accounts are disabled instead.
     """
 
     queryset = models.User.objects.all()
@@ -44,6 +52,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     def get_permissions(self):
         if self.action in ("retrieve", "stats"):
             return [permissions.DashboardViewer()]
+        if self.action in ("create", "partial_update", "set_password"):
+            return [permissions.IsAdminUser()]
         return super().get_permissions()
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
@@ -51,6 +61,52 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     def stats(self, request, username=None):
         """Returns the latest stats blob for this user."""
         return Response(self.get_object().get_stats())
+
+    @extend_schema(
+        request=serializers.AdminUserCreateRequestSerializer,
+        responses=serializers.UserSerializer,
+    )
+    def create(self, request, *args, **kwargs):
+        req = serializers.AdminUserCreateRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        data = req.validated_data
+        if models.User.objects.filter(username=data["username"]).exists():
+            raise ValidationError({"username": ["A user with that username already exists."]})
+        user = models.User.create_new_user(
+            username=data["username"], email=data["email"], password=data["password"]
+        )
+        if data["is_staff"]:
+            user.is_staff = True
+            user.save(update_fields=["is_staff"])
+        return Response(self.get_serializer(user).data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        request=serializers.AdminUserUpdateRequestSerializer,
+        responses=serializers.UserSerializer,
+    )
+    def partial_update(self, request, username=None):
+        user = self.get_object()
+        req = serializers.AdminUserUpdateRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        data = req.validated_data
+        if user.is_guest() and ("is_active" in data or "is_staff" in data):
+            raise ValidationError("The guest account cannot be disabled or made staff.")
+        for field in ("email", "display_name", "is_staff", "is_active"):
+            if field in data:
+                setattr(user, field, data[field])
+        user.save()
+        return Response(self.get_serializer(user).data)
+
+    @extend_schema(request=serializers.SetPasswordRequestSerializer, responses=OpenApiTypes.BOOL)
+    @action(detail=True, methods=["post"], url_path="set-password")
+    def set_password(self, request, username=None):
+        """Sets a new password for this user."""
+        user = self.get_object()
+        req = serializers.SetPasswordRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        user.set_password(req.validated_data["password"])
+        user.save()
+        return Response(True)
 
 
 class InvitationViewSet(
@@ -624,6 +680,41 @@ def system_status(request):
         }
     )
     return Response(serializer.data)
+
+
+@extend_schema(
+    request=serializers.SiteSettingsSerializer, responses=serializers.SiteSettingsSerializer
+)
+@api_view(["GET", "PATCH"])
+@permission_classes([permissions.IsAdminUser])
+def site_settings(request):
+    """Reads (GET) or updates (PATCH) the site settings singleton."""
+    site = getattr(request, "kbsite", None) or models.KegbotSite.get()
+    if request.method == "PATCH":
+        serializer = serializers.SiteSettingsSerializer(site, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+    return Response(serializers.SiteSettingsSerializer(site).data)
+
+
+@extend_schema(
+    request=serializers.PictureUploadRequestSerializer,
+    responses=serializers.SiteSettingsSerializer,
+)
+@api_view(["POST"])
+@permission_classes([permissions.IsAdminUser])
+@parser_classes([MultiPartParser, FormParser])
+def site_background_image(request):
+    """Uploads and sets the site background image."""
+    site = getattr(request, "kbsite", None) or models.KegbotSite.get()
+    req = serializers.PictureUploadRequestSerializer(data=request.data)
+    req.is_valid(raise_exception=True)
+    site.background_image = models.Picture.objects.create(
+        image=req.validated_data["image"],
+        caption=req.validated_data["caption"],
+    )
+    site.save()
+    return Response(serializers.SiteSettingsSerializer(site).data)
 
 
 @extend_schema(request=serializers.LoginSerializer, responses=serializers.CurrentUserSerializer)

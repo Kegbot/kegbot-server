@@ -9,7 +9,15 @@ import { LogoutView } from "@/views/auth/logout-view";
 import { PasswordResetConfirmView } from "@/views/auth/password-reset-confirm-view";
 import { PasswordResetView } from "@/views/auth/password-reset-view";
 import { RegisterView } from "@/views/auth/register-view";
+import { DrinkerView } from "@/views/drinkers/drinker-view";
+import { DrinkView } from "@/views/drinks/drink-view";
+import { FullscreenView } from "@/views/fullscreen-view";
 import { HomeView } from "@/views/home-view";
+import { KegDetailView } from "@/views/kegs/keg-detail-view";
+import { KegListView } from "@/views/kegs/keg-list-view";
+import { SessionDetailView } from "@/views/sessions/session-detail-view";
+import { SessionListView } from "@/views/sessions/session-list-view";
+import { StatsView } from "@/views/stats-view";
 
 function RedirectWithParam({ to }: { to: (params: Record<string, string | undefined>) => string }) {
   const params = useParams();
@@ -32,6 +40,16 @@ export function AppRoutes() {
         <Route path="/account/confirm-email/:token" element={<ConfirmEmailView />} />
       </Route>
 
+      {/* Kiosk mode: gated but chrome-free. */}
+      <Route
+        path="/fullscreen"
+        element={
+          <PrivacyGate>
+            <FullscreenView />
+          </PrivacyGate>
+        }
+      />
+
       {/* Main site: gated by the site privacy setting. */}
       <Route
         element={
@@ -41,12 +59,32 @@ export function AppRoutes() {
         }
       >
         <Route path="/" element={<HomeView />} />
+        <Route path="/stats" element={<StatsView />} />
+        <Route path="/kegs" element={<KegListView />} />
+        <Route path="/kegs/:id" element={<KegDetailView />} />
+        <Route
+          path="/kegs/:id/sessions"
+          element={<RedirectWithParam to={(p) => `/kegs/${p.id}`} />}
+        />
+        <Route path="/drinkers/:username" element={<DrinkerView />} />
+        <Route
+          path="/drinkers/:username/sessions"
+          element={<RedirectWithParam to={(p) => `/drinkers/${p.username}`} />}
+        />
+        <Route path="/drinks/:id" element={<DrinkView />} />
+        <Route path="/sessions" element={<SessionListView />} />
+        <Route path="/sessions/:year" element={<SessionListView />} />
+        <Route path="/sessions/:year/:month" element={<SessionListView />} />
+        <Route path="/sessions/:year/:month/:day" element={<SessionListView />} />
+        <Route path="/sessions/id/:id" element={<SessionDetailView />} />
+        <Route path="/sessions/:year/:month/:day/:id" element={<SessionDetailView />} />
         <Route path="/accounts/logout" element={<LogoutView />} />
       </Route>
 
       {/* Legacy short URLs. */}
       <Route path="/drink/:id" element={<RedirectWithParam to={(p) => `/drinks/${p.id}`} />} />
       <Route path="/d/:id" element={<RedirectWithParam to={(p) => `/drinks/${p.id}`} />} />
+      <Route path="/s/:id" element={<RedirectWithParam to={(p) => `/sessions/id/${p.id}`} />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

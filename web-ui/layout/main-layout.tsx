@@ -84,6 +84,12 @@ function UserMenu() {
   );
 }
 
+const NAV_ITEMS: Array<{ label: string; to: string }> = [
+  { label: "Kegs", to: "/kegs" },
+  { label: "Sessions", to: "/sessions" },
+  { label: "Stats", to: "/stats" },
+];
+
 export function MainLayout() {
   const { me } = useConfig();
 
@@ -95,10 +101,17 @@ export function MainLayout() {
             variant="h6"
             component={Link}
             to="/"
-            sx={{ color: "inherit", textDecoration: "none", flexGrow: 1 }}
+            sx={{ color: "inherit", textDecoration: "none", mr: 3 }}
           >
             {me.site.title}
           </Typography>
+          <Box sx={{ flexGrow: 1, display: "flex", gap: 1, overflowX: "auto" }}>
+            {NAV_ITEMS.map((item) => (
+              <Button key={item.to} color="inherit" component={Link} to={item.to}>
+                {item.label}
+              </Button>
+            ))}
+          </Box>
           <UserMenu />
         </Toolbar>
       </AppBar>

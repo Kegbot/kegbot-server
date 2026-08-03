@@ -9,13 +9,17 @@ ENV SHELL=/bin/sh \
    KEGBOT_ENV=debug
 
 # Build/runtime libraries: MySQL + Postgres client headers (mysqlclient,
-# psycopg2 build from source) and the image libraries Pillow needs.
+# psycopg2 build from source), client tools (`kegbot backup`/`restore`
+# shell out to mysqldump/mysql/pg_dump/psql), and the image libraries
+# Pillow needs.
 RUN apt-get -qq update \
    && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
       build-essential \
       pkg-config \
       default-libmysqlclient-dev \
+      default-mysql-client \
       libpq-dev \
+      postgresql-client \
       libjpeg-dev \
       libfreetype6-dev \
       liblcms2-dev \

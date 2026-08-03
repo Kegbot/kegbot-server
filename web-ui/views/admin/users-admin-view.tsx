@@ -169,7 +169,7 @@ export function UsersAdminView() {
                 .map((user) => (
                   <TableRow key={user.id} hover>
                     <TableCell>
-                      <UserLink user={user} />
+                      <UserLink user={user} muted />
                     </TableCell>
                     <TableCell>{user.display_name}</TableCell>
                     <TableCell>

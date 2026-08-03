@@ -41,7 +41,7 @@ def is_installed():
     args += ["-qt", "-c \"select * from pg_tables where schemaname='public';\"", PARAMS["db"]]
     cmd = " ".join(args)
     logger.info(cmd)
-    output = subprocess.check_output(cmd, env=DEFAULT_ENV, shell=True)
+    output = subprocess.check_output(cmd, env=DEFAULT_ENV, shell=True, text=True)
     return "core_" in output
 
 
@@ -58,7 +58,7 @@ def restore(input_fd):
     args.append(PARAMS["db"])
     cmd = " ".join(args)
     logger.info(cmd)
-    return subprocess.check_call(cmd, stdin=input_fd, shell=True)
+    return subprocess.check_call(cmd, stdin=input_fd, env=DEFAULT_ENV, shell=True)
 
 
 def erase():
@@ -66,4 +66,4 @@ def erase():
     args += [PARAMS["db"], "-c 'drop schema public cascade; create schema public;'"]
     cmd = " ".join(args)
     logger.info(cmd)
-    subprocess.check_call(cmd, shell=True)
+    subprocess.check_call(cmd, env=DEFAULT_ENV, shell=True)

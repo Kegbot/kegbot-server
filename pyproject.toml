@@ -26,6 +26,7 @@ dependencies = [
     "isodate",
     "mysqlclient",
     "oauthlib",
+    "packaging",
     "Pillow",
     "pilkit",
     "protobuf>=5,<7",

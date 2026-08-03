@@ -29,6 +29,13 @@ if PARAMS.get("host"):
 if PARAMS.get("port"):
     DEFAULT_ARGS.append("--port={}".format(PARAMS["port"]))
 
+# MariaDB 11.4+ clients verify server certificates by default, which fails
+# against the self-signed certs MySQL servers auto-generate. Keep TLS but
+# skip verification, matching how the Django connection behaves. The
+# "loose-" prefix makes clients without this option (Oracle mysql) warn
+# instead of exit.
+DEFAULT_ARGS.append("--loose-ssl-verify-server-cert=0")
+
 
 def engine_name():
     return "mysql"
@@ -46,16 +53,7 @@ def is_installed():
 
 
 def dump(output_fd):
-    args = ["mysqldump", "--skip-dump-date", "--single-transaction"]
-    if PARAMS.get("user"):
-        args.append("--user={}".format(PARAMS["user"]))
-    if PARAMS.get("password"):
-        args.append("--password={}".format(PARAMS["password"]))
-    if PARAMS.get("host"):
-        args.append("--host={}".format(PARAMS["host"]))
-    if PARAMS.get("port"):
-        args.append("--port={}".format(PARAMS["port"]))
-
+    args = ["mysqldump", "--skip-dump-date", "--single-transaction"] + DEFAULT_ARGS
     args.append(PARAMS["db"])
     cmd = " ".join(args)
     logger.info(cmd)
@@ -72,17 +70,7 @@ def restore(input_fd):
 
 
 def erase():
-    args = ["mysql"]
-    if PARAMS.get("user"):
-        args.append("--user={}".format(PARAMS["user"]))
-    if PARAMS.get("password"):
-        args.append("--password={}".format(PARAMS["password"]))
-    if PARAMS.get("host"):
-        args.append("--host={}".format(PARAMS["host"]))
-    if PARAMS.get("port"):
-        args.append("--port={}".format(PARAMS["port"]))
-
-    args += [PARAMS["db"]]
+    args = ["mysql"] + DEFAULT_ARGS + [PARAMS["db"]]
 
     # Build the sql command.
     tables = [str(model._meta.db_table) for model in apps.get_models()]

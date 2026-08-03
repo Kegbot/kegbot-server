@@ -1,0 +1,107 @@
+name: Legacy Upgrade Test
+
+# Restores the frozen v1.3 backup zips committed under
+# testdata/legacy-backups/, runs `kegbot upgrade`, and verifies the
+# result. Because the committed zips are frozen, any future migration is
+# tested against a database as it existed at v1.3.
+#
+# The zips are built locally with bin/generate-legacy-backups.sh (docker
+# compose). The steps below self-skip while no zips are committed.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REDIS_URL: redis://localhost:6379/0
+  KEGBOT_SECRET_KEY: changeme
+
+jobs:
+  upgrade:
+    name: 'Upgrade from v1.3 (${{ matrix.database }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [mysql, postgres]
+        include:
+          - database: mysql
+            database_url: mysql://root:cipass@127.0.0.1/kegbot_ci
+          - database: postgres
+            database_url: postgres://postgres:cipass@127.0.0.1/kegbot_ci
+
+    services:
+      mysql:
+        image: ${{ matrix.database == 'mysql' && 'mysql:8' || '' }}
+        env:
+          MYSQL_ROOT_PASSWORD: cipass
+          MYSQL_DATABASE: kegbot_ci
+        ports:
+          - 3306:3306
+        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
+
+      postgres:
+        image: ${{ matrix.database == 'postgres' && 'postgres:16' || '' }}
+        env:
+          POSTGRES_PASSWORD: cipass
+          POSTGRES_DB: kegbot_ci
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 10
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: ${{ matrix.database_url }}
+      KEGBOT_DATA_DIR: ${{ github.workspace }}/kegbot-data
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check for frozen backup
+        id: frozen
+        run: |
+          if [ -f "testdata/legacy-backups/kegbot-v1.3-${{ matrix.database }}.zip" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No frozen backup committed yet; skipping."
+          fi
+
+      - name: Install uv
+        if: steps.frozen.outputs.present == 'true'
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python 3.14
+        if: steps.frozen.outputs.present == 'true'
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Install system libraries
+        if: steps.frozen.outputs.present == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            default-libmysqlclient-dev libpq-dev pkg-config
+
+      - name: Install dependencies
+        if: steps.frozen.outputs.present == 'true'
+        run: uv sync --all-groups
+
+      - name: Restore v1.3 backup
+        if: steps.frozen.outputs.present == 'true'
+        run: uv run bin/kegbot restore testdata/legacy-backups/kegbot-v1.3-${{ matrix.database }}.zip
+
+      - name: Run upgrade
+        if: steps.frozen.outputs.present == 'true'
+        run: uv run bin/kegbot upgrade
+
+      - name: Verify upgraded site
+        if: steps.frozen.outputs.present == 'true'
+        run: uv run python bin/check-upgraded-site.py

@@ -13,10 +13,11 @@ from pykeg.core import models
 from . import permissions, serializers
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """Lists all users in the system.
 
-    Public view for any authenticated caller.
+    Read-only view for any authenticated caller; user management happens
+    in the admin dashboard.
     """
 
     queryset = models.User.objects.all()
@@ -24,11 +25,11 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class InvitationViewSet(viewsets.ModelViewSet):
+class InvitationViewSet(viewsets.ReadOnlyModelViewSet):
     """Lists all of the *current user's* invitations."""
 
     queryset = models.Invitation.objects.all()
-    serializer_class = serializers.UserSerializer
+    serializer_class = serializers.InvitationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -60,6 +61,9 @@ class ApiKeyViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ApiKeySerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
     def get_queryset(self):
         return (
             super()
@@ -76,7 +80,7 @@ class BeverageProducerViewSet(viewsets.ModelViewSet):
 
     queryset = models.BeverageProducer.objects.all()
     serializer_class = serializers.BeverageProducerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AdminWriteDashboardRead]
 
 
 class BeverageViewSet(viewsets.ModelViewSet):
@@ -84,7 +88,7 @@ class BeverageViewSet(viewsets.ModelViewSet):
 
     queryset = models.Beverage.objects.all()
     serializer_class = serializers.BeverageSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AdminWriteDashboardRead]
 
 
 class KegTapViewSet(viewsets.ReadOnlyModelViewSet):
@@ -159,16 +163,16 @@ class ThermoSensorViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser]
 
 
-class ThermologViewSet(viewsets.ModelViewSet):
+class ThermologViewSet(viewsets.ReadOnlyModelViewSet):
     """Lists all Thermologs in the system."""
 
     queryset = models.Thermolog.objects.all()
     serializer_class = serializers.ThermologSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.DashboardViewer]
 
 
 class StatsViewSet(viewsets.ReadOnlyModelViewSet):
-    """Lists all Statss in the system."""
+    """Lists all stats snapshots in the system."""
 
     queryset = models.Stats.objects.all()
     serializer_class = serializers.StatsSerializer
@@ -184,19 +188,28 @@ class SystemEventViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class NotificationSettingsViewSet(viewsets.ModelViewSet):
-    """Lists all NotificationSettingss in the system."""
+    """Lists the *current user's* notification settings."""
 
     queryset = models.NotificationSettings.objects.all()
     serializer_class = serializers.NotificationSettingsSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
 
 class PluginDataViewSet(viewsets.ModelViewSet):
-    """Lists all PluginDatas in the system."""
+    """Lists all PluginData in the system.
+
+    Admin-only: plugin data may contain plugin credentials.
+    """
 
     queryset = models.PluginData.objects.all()
     serializer_class = serializers.PluginDataSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAdminUser]
 
 
 @api_view(["GET"])

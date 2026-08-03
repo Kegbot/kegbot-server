@@ -32,11 +32,7 @@ class DashboardViewer(permissions.BasePermission):
 
 
 class IsAuthenticated(DashboardViewer):
-    """Permission for API resources which respects site-privacy.
-
-    Resources are readable without authentication, *unless* the site's
-    `.privacy` setting is non-public.
-    """
+    """Requires an authenticated user who also passes the site-privacy check."""
 
     message = "You must log in to do that"
 
@@ -44,3 +40,14 @@ class IsAuthenticated(DashboardViewer):
         if not super().has_permission(request, view):
             return False
         return bool(request.user and request.user.is_authenticated)
+
+
+class AdminWriteDashboardRead(DashboardViewer):
+    """Reads follow site-privacy; writes require a staff user."""
+
+    message = "You must be an admin to do that"
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return super().has_permission(request, view)
+        return bool(request.user and request.user.is_staff)

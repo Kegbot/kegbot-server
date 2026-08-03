@@ -16,6 +16,7 @@ import { drinksDestroy, drinksList, drinksReassignCreate } from "@/api-client";
 import { useConfirm } from "@/components/confirm-context";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
+import { usePrompt } from "@/components/prompt-context";
 import { useSnackbar } from "@/components/snackbar-context";
 import { useFormatters } from "@/components/use-formatters";
 import { UserLink } from "@/components/user-link";
@@ -25,6 +26,7 @@ import { useCursorList } from "@/lib/use-cursor-list";
 
 function DrinkActions({ drink, onChanged }: { drink: Drink; onChanged: () => void }) {
   const confirm = useConfirm();
+  const prompt = usePrompt();
   const { showMessage } = useSnackbar();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
 
@@ -56,7 +58,11 @@ function DrinkActions({ drink, onChanged }: { drink: Drink; onChanged: () => voi
 
   const reassign = async () => {
     setAnchor(null);
-    const username = window.prompt("Reassign this drink to username:");
+    const username = await prompt({
+      title: `Reassign drink #${drink.id}`,
+      label: "Username",
+      confirmText: "Reassign",
+    });
     if (!username) {
       return;
     }

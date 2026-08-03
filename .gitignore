@@ -23,3 +23,6 @@ test-db.sqlite
 node_modules/
 
 /tmp
+
+### vite dev cache
+.vite/

@@ -11,6 +11,7 @@ import { VolumeByWeekdayChart } from "@/components/charts/volume-by-weekday-char
 import { DrinkList } from "@/components/drink-list";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
+import { Section } from "@/components/section";
 import { SessionVolumeList } from "@/components/session-volume-list";
 import { StatBadges } from "@/components/stat-badges";
 import { unwrap } from "@/lib/api";
@@ -77,11 +78,12 @@ export function DrinkerView() {
               </Grid>
             )}
           </Grid>
-          <Stack spacing={1}>
-            <Typography variant="h5">Drinks</Typography>
-            <DrinkList drinks={drinks.items} hideUser />
-            <LoadMoreButton list={drinks} />
-          </Stack>
+          <Section label="Drinks">
+            <Stack spacing={1}>
+              <DrinkList drinks={drinks.items} hideUser />
+              <LoadMoreButton list={drinks} />
+            </Stack>
+          </Section>
         </Stack>
       )}
     </Page>

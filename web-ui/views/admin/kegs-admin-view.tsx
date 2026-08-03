@@ -28,6 +28,7 @@ import {
 import { useConfirm } from "@/components/confirm-context";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
+import { usePrompt } from "@/components/prompt-context";
 import { useSnackbar } from "@/components/snackbar-context";
 import { useFormatters } from "@/components/use-formatters";
 import { toErrorMessage, unwrap } from "@/lib/api";
@@ -37,6 +38,7 @@ import { kegStatusChip } from "@/views/kegs/keg-list-view";
 
 function KegActions({ keg, onChanged }: { keg: Keg; onChanged: () => void }) {
   const confirm = useConfirm();
+  const prompt = usePrompt();
   const { showMessage } = useSnackbar();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
 
@@ -81,7 +83,12 @@ function KegActions({ keg, onChanged }: { keg: Keg; onChanged: () => void }) {
         <MenuItem
           onClick={async () => {
             setAnchor(null);
-            const volume = window.prompt("Spill volume (mL)?");
+            const volume = await prompt({
+              title: `Record spill against keg #${keg.id}`,
+              label: "Volume (mL)",
+              type: "number",
+              confirmText: "Record spill",
+            });
             if (!volume) {
               return;
             }
@@ -120,12 +127,17 @@ function KegActions({ keg, onChanged }: { keg: Keg; onChanged: () => void }) {
 
 function EditableNotes({ keg, onChanged }: { keg: Keg; onChanged: () => void }) {
   const { showMessage } = useSnackbar();
+  const prompt = usePrompt();
   return (
     <MuiLink
       component="button"
       type="button"
       onClick={async () => {
-        const description = window.prompt("Keg description:", keg.description ?? "");
+        const description = await prompt({
+          title: `Keg #${keg.id} description`,
+          label: "Description",
+          initialValue: keg.description ?? "",
+        });
         if (description === null) {
           return;
         }

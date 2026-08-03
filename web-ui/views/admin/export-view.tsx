@@ -7,10 +7,10 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { adminBackupsCreate, adminBackupsDestroy, adminBackupsRetrieve } from "@/api-client";
 import { useConfirm } from "@/components/confirm-context";
+import { EmptyState } from "@/components/empty-state";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";
 import { toErrorMessage, unwrap } from "@/lib/api";
@@ -83,7 +83,7 @@ export function ExportView() {
       }
     >
       {backups.data && backups.data.length === 0 ? (
-        <Typography color="text.secondary">No backups yet.</Typography>
+        <EmptyState title="No backups yet." hint="Build one and it will appear here." />
       ) : (
         <Stack spacing={2}>
           <TableContainer sx={{ overflowX: "auto" }}>

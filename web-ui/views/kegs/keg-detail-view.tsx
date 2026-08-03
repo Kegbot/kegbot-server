@@ -11,6 +11,7 @@ import { DrinkList } from "@/components/drink-list";
 import { KegProgress } from "@/components/keg-progress";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
+import { Section } from "@/components/section";
 import { SessionVolumeList } from "@/components/session-volume-list";
 import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
@@ -80,16 +81,16 @@ export function KegDetailView() {
               )}
           </Grid>
           {stats.data?.volume_by_session && (
-            <Stack spacing={1}>
-              <Typography variant="h5">Sessions</Typography>
+            <Section label="Sessions">
               <SessionVolumeList volumeBySession={stats.data.volume_by_session} />
-            </Stack>
+            </Section>
           )}
-          <Stack spacing={1}>
-            <Typography variant="h5">Drinks</Typography>
-            <DrinkList drinks={drinks.items} hideKeg />
-            <LoadMoreButton list={drinks} />
-          </Stack>
+          <Section label="Drinks">
+            <Stack spacing={1}>
+              <DrinkList drinks={drinks.items} hideKeg />
+              <LoadMoreButton list={drinks} />
+            </Stack>
+          </Section>
         </Stack>
       )}
     </Page>

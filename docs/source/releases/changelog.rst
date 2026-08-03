@@ -50,6 +50,74 @@ brought up to date.
   arm64 only).
 * The legacy gflags-based Python API client was removed from the server
   package; it lives in the separate kegbot-api project.
+* **Breaking change: the following legacy API endpoints have been
+  removed** and now return ``410 Gone``:
+
+  * ``GET /api/v1/version``
+  * ``POST /api/v1/login``
+  * ``GET|POST /api/v1/logout``
+  * ``GET /api/v1/get-api-key``
+  * ``POST /api/v1/devices/link``
+  * ``GET /api/v1/devices/link/status``
+  * ``GET /api/v1/devices/link/status/:code``
+  * ``POST /api/v1/auth-tokens/:auth_device/:token_value/assign``
+  * ``GET|POST|DELETE /api/v1/controllers/:id``
+  * ``GET /api/v1/drinks``
+  * ``GET /api/v1/drinks/last``
+  * ``GET /api/v1/drinks/:id``
+  * ``POST /api/v1/drinks/:id/add-photo``
+  * ``GET|POST|DELETE /api/v1/flow-meters/:id``
+  * ``GET|POST /api/v1/flow-toggles``
+  * ``GET|POST|DELETE /api/v1/flow-toggles/:id``
+  * ``GET /api/v1/kegs``
+  * ``GET /api/v1/kegs/:id``
+  * ``POST /api/v1/kegs/:id/end``
+  * ``GET /api/v1/kegs/:id/drinks``
+  * ``GET /api/v1/kegs/:id/events``
+  * ``GET /api/v1/kegs/:id/sessions``
+  * ``GET /api/v1/kegs/:id/stats``
+  * ``GET /api/v1/keg-sizes``
+  * ``POST /api/v1/pictures``
+  * ``GET /api/v1/sessions``
+  * ``GET /api/v1/sessions/current``
+  * ``GET /api/v1/sessions/:id``
+  * ``GET /api/v1/sessions/:id/stats``
+  * ``DELETE /api/v1/taps/:meter_name_or_id``
+  * ``POST /api/v1/taps/:meter_name_or_id/activate``
+  * ``POST /api/v1/taps/:meter_name_or_id/calibrate``
+  * ``POST /api/v1/taps/:meter_name_or_id/spill``
+  * ``POST /api/v1/taps/:meter_name_or_id/connect-meter``
+  * ``POST /api/v1/taps/:meter_name_or_id/disconnect-meter``
+  * ``POST /api/v1/taps/:meter_name_or_id/connect-toggle``
+  * ``POST /api/v1/taps/:meter_name_or_id/disconnect-toggle``
+  * ``POST /api/v1/taps/:meter_name_or_id/connect-thermo``
+  * ``POST /api/v1/taps/:meter_name_or_id/disconnect-thermo``
+  * ``GET /api/v1/thermo-sensors``
+  * ``GET /api/v1/thermo-sensors/:sensor_name/logs``
+  * ``GET /api/v1/users``
+  * ``GET /api/v1/users/:username``
+  * ``GET /api/v1/users/:username/drinks``
+  * ``GET /api/v1/users/:username/events``
+  * ``GET /api/v1/users/:username/stats``
+  * ``GET|POST /api/v1/users/:username/photo``
+  * ``POST /api/v1/new-user``
+  * ``GET /api/v1/stats``
+  * ``GET /api/v1/sound-events``
+
+* The following legacy API endpoints are deprecated, but remain supported
+  for compatibility with kegbot-pycore. They will be removed in a future
+  release:
+
+  * ``GET /api/v1/status``
+  * ``GET /api/v1/auth-tokens/:auth_device/:token_value``
+  * ``POST /api/v1/cancel-drink``
+  * ``GET|POST /api/v1/controllers``
+  * ``GET /api/v1/events``
+  * ``GET|POST /api/v1/flow-meters``
+  * ``GET|POST /api/v1/taps``
+  * ``GET|POST /api/v1/taps/:meter_name_or_id``
+  * ``GET|POST /api/v1/thermo-sensors/:sensor_name``
+
 * The old Kegbot mobile apps depended on now-retired API endpoints (device
   linking, registration, drink lists) and no longer work against this
   server.

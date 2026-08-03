@@ -3,7 +3,6 @@
 import difflib
 import os
 import shutil
-import sys
 import tempfile
 import unittest
 
@@ -17,13 +16,12 @@ from pykeg.util import kbjson
 
 from . import backup
 
+# Dump/restore shell out to engine-specific tools; there is no sqlite
+# implementation.
+ENGINE_SUPPORTED = "mysql" in backup.engine or "postgres" in backup.engine
 
-def run(cmd, args=[]):
-    cmdname = cmd.__module__.split(".")[-1]
-    cmd.run_from_argv([sys.argv[0], cmdname] + args)
 
-
-@unittest.skip("backup tests failing")
+@unittest.skipUnless(ENGINE_SUPPORTED, "backup requires a mysql or postgres database")
 class BackupTestCase(TransactionTestCase):
     def setUp(self):
         self.temp_storage_location = tempfile.mkdtemp(dir=os.environ.get("DJANGO_TEST_TEMP_DIR"))
@@ -100,6 +98,16 @@ class BackupTestCase(TransactionTestCase):
         finally:
             shutil.rmtree(backup_dir)
 
+    def normalize_dump(self, contents):
+        # pg_dump >= 17.6 emits `\restrict <token>` / `\unrestrict <token>`
+        # lines with a token randomized on every dump (CVE-2025-8714), so
+        # drop them before comparing.
+        return "".join(
+            line
+            for line in contents.splitlines(True)
+            if not line.startswith(("\\restrict ", "\\unrestrict "))
+        )
+
     def recursive_diff(self, dir1, dir2):
         dir1_files = set()
         dir2_files = set()
@@ -121,8 +129,8 @@ class BackupTestCase(TransactionTestCase):
         for relfile in dir1_files:
             f1_full = os.path.join(dir1, relfile)
             f2_full = os.path.join(dir2, relfile)
-            f1 = open(f1_full).read()
-            f2 = open(f2_full).read()
+            f1 = self.normalize_dump(open(f1_full).read())
+            f2 = self.normalize_dump(open(f2_full).read())
             if f1 != f2:
                 message = f'Files not equal: "{f1_full}" and "{f2_full}" differ.'
                 message += "\n" + "".join(difflib.ndiff(f1.splitlines(True), f2.splitlines(True)))

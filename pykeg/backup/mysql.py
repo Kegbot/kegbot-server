@@ -10,31 +10,38 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_DB = "default"
 
-# Common command-line arguments
-PARAMS = {
-    "db": settings.DATABASES[DEFAULT_DB].get("NAME"),
-    "user": settings.DATABASES[DEFAULT_DB].get("USER"),
-    "password": settings.DATABASES[DEFAULT_DB].get("PASSWORD"),
-    "host": settings.DATABASES[DEFAULT_DB].get("HOST"),
-    "port": settings.DATABASES[DEFAULT_DB].get("PORT"),
-}
 
-DEFAULT_ARGS = []
-if PARAMS.get("user"):
-    DEFAULT_ARGS.append("--user={}".format(PARAMS["user"]))
-if PARAMS.get("password"):
-    DEFAULT_ARGS.append("--password={}".format(PARAMS["password"]))
-if PARAMS.get("host"):
-    DEFAULT_ARGS.append("--host={}".format(PARAMS["host"]))
-if PARAMS.get("port"):
-    DEFAULT_ARGS.append("--port={}".format(PARAMS["port"]))
+def db_params():
+    """Reads connection parameters lazily: under test, the database name is
+    swapped for the test database after this module is imported."""
+    db = settings.DATABASES[DEFAULT_DB]
+    return {
+        "db": db.get("NAME"),
+        "user": db.get("USER"),
+        "password": db.get("PASSWORD"),
+        "host": db.get("HOST"),
+        "port": db.get("PORT"),
+    }
 
-# MariaDB 11.4+ clients verify server certificates by default, which fails
-# against the self-signed certs MySQL servers auto-generate. Keep TLS but
-# skip verification, matching how the Django connection behaves. The
-# "loose-" prefix makes clients without this option (Oracle mysql) warn
-# instead of exit.
-DEFAULT_ARGS.append("--loose-ssl-verify-server-cert=0")
+
+def common_args(params):
+    args = []
+    if params.get("user"):
+        args.append("--user={}".format(params["user"]))
+    if params.get("password"):
+        args.append("--password={}".format(params["password"]))
+    if params.get("host"):
+        args.append("--host={}".format(params["host"]))
+    if params.get("port"):
+        args.append("--port={}".format(params["port"]))
+
+    # MariaDB 11.4+ clients verify server certificates by default, which
+    # fails against the self-signed certs MySQL servers auto-generate. Keep
+    # TLS but skip verification, matching how the Django connection behaves.
+    # The "loose-" prefix makes clients without this option (Oracle mysql)
+    # warn instead of exit.
+    args.append("--loose-ssl-verify-server-cert=0")
+    return args
 
 
 def engine_name():
@@ -42,7 +49,8 @@ def engine_name():
 
 
 def is_installed():
-    args = ["mysql", "--batch"] + DEFAULT_ARGS + [PARAMS["db"]]
+    params = db_params()
+    args = ["mysql", "--batch"] + common_args(params) + [params["db"]]
     args += ["-e", "'show tables like \"core_kegbotsite\";'"]
 
     cmd = " ".join(args)
@@ -53,24 +61,25 @@ def is_installed():
 
 
 def dump(output_fd):
-    args = ["mysqldump", "--skip-dump-date", "--single-transaction"] + DEFAULT_ARGS
-    args.append(PARAMS["db"])
+    params = db_params()
+    args = ["mysqldump", "--skip-dump-date", "--single-transaction"] + common_args(params)
+    args.append(params["db"])
     cmd = " ".join(args)
     logger.info(cmd)
     return subprocess.check_call(cmd, stdout=output_fd, shell=True)
 
 
 def restore(input_fd):
-    args = ["mysql"] + DEFAULT_ARGS
-
-    args.append(PARAMS["db"])
+    params = db_params()
+    args = ["mysql"] + common_args(params) + [params["db"]]
     cmd = " ".join(args)
     logger.info(cmd)
     return subprocess.check_call(cmd, stdin=input_fd, shell=True)
 
 
 def erase():
-    args = ["mysql"] + DEFAULT_ARGS + [PARAMS["db"]]
+    params = db_params()
+    args = ["mysql"] + common_args(params) + [params["db"]]
 
     # Build the sql command.
     tables = [str(model._meta.db_table) for model in apps.get_models()]

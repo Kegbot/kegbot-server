@@ -51,3 +51,14 @@ class AdminWriteDashboardRead(DashboardViewer):
         if request.method in permissions.SAFE_METHODS:
             return super().has_permission(request, view)
         return bool(request.user and request.user.is_staff)
+
+
+class IsOwnerOrAdmin(IsAuthenticated):
+    """Requires the object's owning user (its `user` attribute) or an admin."""
+
+    message = "You must own this object or be an admin to do that"
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_staff:
+            return True
+        return getattr(obj, "user", None) == request.user

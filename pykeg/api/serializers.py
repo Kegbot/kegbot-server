@@ -145,6 +145,8 @@ class BeverageProducerSerializer(serializers.ModelSerializer):
             "picture",
         ]
 
+    picture = PictureSerializer(read_only=True)
+
 
 class BeverageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -175,6 +177,7 @@ class BeverageSerializer(serializers.ModelSerializer):
     producer_id = serializers.PrimaryKeyRelatedField(
         queryset=models.BeverageProducer.objects.all(), source="producer", write_only=True
     )
+    picture = PictureSerializer(read_only=True)
 
 
 class ControllerSerializer(serializers.ModelSerializer):
@@ -469,6 +472,25 @@ class TapRecordDrinkRequestSerializer(serializers.Serializer):
 
 class KegSpillRequestSerializer(serializers.Serializer):
     volume_ml = serializers.FloatField(min_value=0.0)
+
+
+class DrinkUpdateRequestSerializer(serializers.Serializer):
+    shout = serializers.CharField(required=False, allow_blank=True)
+    volume_ml = serializers.FloatField(required=False, min_value=0.0)
+
+
+class DrinkReassignRequestSerializer(serializers.Serializer):
+    username = serializers.CharField()
+
+    def validate_username(self, value):
+        if not models.User.objects.filter(username=value).exists():
+            raise ValidationError("No such user.")
+        return value
+
+
+class PictureUploadRequestSerializer(serializers.Serializer):
+    image = serializers.ImageField()
+    caption = serializers.CharField(required=False, allow_blank=True, default="")
 
 
 class LoginSerializer(serializers.Serializer):

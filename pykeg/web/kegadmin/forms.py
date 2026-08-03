@@ -458,6 +458,10 @@ class BeverageForm(forms.ModelForm):
 
 
 class BeverageProducerForm(forms.ModelForm):
+    # Django 6.0 changes the default scheme to https; set it explicitly to
+    # silence the transition warning.
+    url = forms.URLField(assume_scheme="https", required=False, help_text="Brewer's home page")
+
     class Meta:
         model = models.BeverageProducer
         fields = (

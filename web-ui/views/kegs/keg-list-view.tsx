@@ -16,6 +16,7 @@ import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { useCursorList } from "@/lib/use-cursor-list";
+import { MONO_FONT } from "@/theme/typography";
 
 export function kegStatusChip(keg: Keg) {
   const color =
@@ -53,8 +54,12 @@ export function KegListView() {
                   </TableCell>
                   <TableCell>{keg.beverage.name}</TableCell>
                   <TableCell>{kegStatusChip(keg)}</TableCell>
-                  <TableCell align="right">{volume(keg.served_volume_ml)}</TableCell>
-                  <TableCell>{formatDate(keg.start_time)}</TableCell>
+                  <TableCell align="right" sx={{ fontFamily: MONO_FONT, whiteSpace: "nowrap" }}>
+                    {volume(keg.served_volume_ml)}
+                  </TableCell>
+                  <TableCell sx={{ color: "text.secondary", whiteSpace: "nowrap" }}>
+                    {formatDate(keg.start_time)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

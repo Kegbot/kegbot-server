@@ -16,6 +16,7 @@ import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import { useCursorList } from "@/lib/use-cursor-list";
+import { MONO_FONT } from "@/theme/typography";
 
 export function sessionTitle(session: DrinkingSession): string {
   return session.name || `Session #${session.id}`;
@@ -64,8 +65,12 @@ export function SessionListView() {
                         {sessionTitle(session)}
                       </MuiLink>
                     </TableCell>
-                    <TableCell>{formatDateTime(session.start_time)}</TableCell>
-                    <TableCell align="right">{volume(session.volume_ml ?? 0)}</TableCell>
+                    <TableCell sx={{ color: "text.secondary", whiteSpace: "nowrap" }}>
+                      {formatDateTime(session.start_time)}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontFamily: MONO_FONT, whiteSpace: "nowrap" }}>
+                      {volume(session.volume_ml ?? 0)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

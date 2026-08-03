@@ -23,6 +23,7 @@ import { UserLink } from "@/components/user-link";
 import { toErrorMessage, unwrap } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import { useCursorList } from "@/lib/use-cursor-list";
+import { MONO_FONT } from "@/theme/typography";
 
 function DrinkActions({ drink, onChanged }: { drink: Drink; onChanged: () => void }) {
   const confirm = useConfirm();
@@ -116,11 +117,15 @@ export function DrinksAdminView() {
                       #{drink.id}
                     </MuiLink>
                   </TableCell>
-                  <TableCell>{formatDateTime(drink.time)}</TableCell>
-                  <TableCell>
-                    <UserLink user={drink.user} />
+                  <TableCell sx={{ color: "text.secondary", whiteSpace: "nowrap" }}>
+                    {formatDateTime(drink.time)}
                   </TableCell>
-                  <TableCell align="right">{volume(drink.volume_ml)}</TableCell>
+                  <TableCell>
+                    <UserLink user={drink.user} muted />
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontFamily: MONO_FONT, whiteSpace: "nowrap" }}>
+                    {volume(drink.volume_ml)}
+                  </TableCell>
                   <TableCell>{drink.keg.beverage.name}</TableCell>
                   <TableCell align="right">
                     <DrinkActions drink={drink} onChanged={drinks.reload} />

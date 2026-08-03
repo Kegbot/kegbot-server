@@ -11,7 +11,12 @@ from rest_framework.decorators import (
     authentication_classes,
     permission_classes,
 )
-from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.exceptions import (
+    NotAuthenticated,
+    NotFound,
+    PermissionDenied,
+    ValidationError,
+)
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
@@ -48,8 +53,18 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(self.get_object().get_stats())
 
 
-class InvitationViewSet(viewsets.ReadOnlyModelViewSet):
-    """Lists all of the *current user's* invitations."""
+class InvitationViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Lists all of the *current user's* invitations.
+
+    Creating an invitation (when the site's registration mode allows the
+    caller to invite) also sends the invitation e-mail.
+    """
 
     queryset = models.Invitation.objects.all()
     serializer_class = serializers.InvitationSerializer
@@ -64,6 +79,13 @@ class InvitationViewSet(viewsets.ReadOnlyModelViewSet):
                 invited_by__isnull=False,
             )
         )
+
+    def perform_create(self, serializer):
+        site = getattr(self.request, "kbsite", None) or models.KegbotSite.get()
+        if not site.can_invite(self.request.user):
+            raise PermissionDenied("You may not send invitations.")
+        invitation = serializer.save(invited_by=self.request.user)
+        invitation.send()
 
 
 class DeviceViewSet(viewsets.ModelViewSet):
@@ -624,20 +646,32 @@ def logout(request):
 
 
 @ensure_csrf_cookie
-@extend_schema(responses=serializers.MeSerializer)
-@api_view(["GET"])
+@extend_schema(
+    request=serializers.ProfileUpdateRequestSerializer, responses=serializers.MeSerializer
+)
+@api_view(["GET", "PATCH"])
 @permission_classes(())
 def me(request):
     """The frontend boot endpoint.
 
-    Always responds 200, regardless of authentication and site privacy:
-    `user` is null for anonymous callers, and the rest of the payload is
-    limited to privacy-safe configuration the frontend always needs (to
-    render login screens, privacy interstitials, forms, and navigation).
+    GET always responds 200, regardless of authentication and site
+    privacy: `user` is null for anonymous callers, and the rest of the
+    payload is limited to privacy-safe configuration the frontend always
+    needs (to render login screens, privacy interstitials, forms, and
+    navigation). It also sets the CSRF cookie, so a fresh browser session
+    can make authenticated POSTs after calling this.
 
-    Also sets the CSRF cookie, so a fresh browser session can make
-    authenticated POSTs after calling this.
+    PATCH updates the current user's profile and returns the same payload.
     """
+    if request.method == "PATCH":
+        if not request.user.is_authenticated:
+            raise NotAuthenticated()
+        req = serializers.ProfileUpdateRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        if "display_name" in req.validated_data:
+            request.user.display_name = req.validated_data["display_name"]
+            request.user.save(update_fields=["display_name"])
+
     user = request.user if request.user.is_authenticated else None
     site = getattr(request, "kbsite", None) or models.KegbotSite.get()
     plugins = getattr(request, "plugins", {}) or {}

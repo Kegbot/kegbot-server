@@ -344,6 +344,10 @@ REST_FRAMEWORK = {
         "pykeg.api.auth.ApiKeyBasicAuth",
         "rest_framework.authentication.SessionAuthentication",
     ),
+    "DEFAULT_THROTTLE_RATES": {
+        # Unauthenticated auth flows (register, password reset, activate).
+        "auth": "30/min",
+    },
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 

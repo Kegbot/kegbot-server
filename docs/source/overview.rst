@@ -10,7 +10,7 @@ installing a new Kegbot server.
 Prerequisites
 -------------
 
-Kegbot Server requires `Docker <https://get.docker.sh/>`_ to run, and
+Kegbot Server requires `Docker <https://docs.docker.com/get-docker/>`_ to run, and
 runs on any operating system that supports Docker. We have tested these
 instructions on Linux and Mac OS X machines.
 

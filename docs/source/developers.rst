@@ -10,44 +10,59 @@ Local environment
 -----------------
 
 Most likely, you'll want to run kegbot locally (outside of Docker) while
-developing. We use `Poetry` to manage the Python environment. Create
-your development environment this way:
+developing. We use `uv <https://docs.astral.sh/uv/>`_ to manage the Python
+environment. Create your development environment this way:
 
 .. code-block:: console
 
-  $ poetry install
+  $ uv sync --all-groups
 
-This will fetch and install all dependencies, and create a virtual Python
-environment.
+This will fetch and install all dependencies into a virtual Python
+environment at ``.venv``.
 
-Whenever you want to run code or tests, step into a development shell:
+A few settings are required even in development. A minimal configuration,
+using sqlite and a local redis:
 
 .. code-block:: console
 
-  $ poetry shell
-  (kegbot-server) $ ./bin/kegbot version
-  1.3.0
+  $ export KEGBOT_SECRET_KEY=changeme
+  $ export DATABASE_URL=sqlite:///kegbot-dev.db
+  $ export REDIS_URL=redis://localhost:6379/0
+
+Run the server, or any other command, through ``uv run``:
+
+.. code-block:: console
+
+  $ uv run bin/kegbot version
+  $ uv run bin/kegbot migrate
+  $ uv run bin/kegbot run_server
 
 Running tests
 -------------
 
-We use `pytest` to run tests. Run all tests this way:
+We use `pytest` to run tests. The test suite runs against sqlite and needs
+no redis server:
 
 .. code-block:: console
 
-  (kegbot-server) $ pytest
+  $ uv run pytest
 
+Code format and lint
+--------------------
 
-Code format
------------
-
-We use `black` to format all code. Run it this way:
+We use `ruff` to format and lint all code:
 
 .. code-block:: console
 
-  $ poetry shell
-  (kegbot-server) $ black pykeg/
+  $ uv run ruff format
+  $ uv run ruff check
 
+To run these checks automatically before each commit, install the
+`pre-commit` hooks:
+
+.. code-block:: console
+
+  $ uv run pre-commit install
 
 Building docs
 -------------
@@ -56,8 +71,5 @@ We use `Sphinx` to build docs. You can create them this way:
 
 .. code-block:: console
 
-  $ poetry shell
-  (kegbot-server) $ cd docs
-  (kegbot-server) $ make html
-  (kegbot-server) $ open build/html/index.html
-
+  $ uv run sphinx-build -b html docs/source docs/build/html
+  $ open docs/build/html/index.html

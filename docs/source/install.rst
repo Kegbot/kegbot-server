@@ -7,7 +7,7 @@ Prerequisites
 -------------
 
 Kegbot Server is installed and supported through `Docker <https://docs.docker.com/get-docker/>`_
-and `docker-compose <https://docs.docker.com/compose/>`_, which are available for Mac,
+and `Docker Compose <https://docs.docker.com/compose/>`_, which are available for Mac,
 Windows, and Linux.
 
 Ensure you have both of these installed before continuing.
@@ -27,9 +27,9 @@ Create the config file
 ----------------------
 
 Kegbot and its essential services will be configured and launched using the
-``docker-compose`` tool and a corresponding config file, ``docker-compose.yml``.
+``docker compose`` tool and a corresponding config file, ``docker-compose.yml``.
 
-Create a new filed called ``docker-compose.yml`` starting with the following contents:
+Create a new file called ``docker-compose.yml`` starting with the following contents:
 
 .. include:: ./docker-compose.example.yml
    :literal:
@@ -53,10 +53,10 @@ To this::
 Start the services
 ------------------
 
-Now, ask ``docker-compose`` to launch these services. We will launch them in the
+Now, ask ``docker compose`` to launch these services. We will launch them in the
 foreground::
 
-    $ docker-compose up
+    $ docker compose up
 
 This may take a while, as the Docker system works to download the images it needs.
 Eventually, you should start seeing a series of output like the following::
@@ -113,7 +113,7 @@ them in the background:
 
 .. code-block:: console
     
-    $ docker-compose up -d
+    $ docker compose up -d
 
 This time, you should see only a few brief lines of output:
 
@@ -125,13 +125,13 @@ This time, you should see only a few brief lines of output:
     ⠿ Container kegbot-server-redis-1    Started             0.6s
     ⠿ Container kegbot-server-workers-1  Started             0.6s
 
-You can verify everything is running with the ``docker-compose ps`` command:
+You can verify everything is running with the ``docker compose ps`` command:
 
 .. code-block:: console
         
-    $ docker-compose ps
+    $ docker compose ps
     NAME                      COMMAND                  SERVICE     STATUS      PORTS
-    kegbot-server-kegbot-1    "gunicorn pykeg.web.…"   kegbot      running     0.0.0.0:8000->8000/tcp
+    kegbot-server-kegbot-1    "/usr/local/sbin/kegbo…"   kegbot      running     0.0.0.0:8000->8000/tcp
     kegbot-server-mysql-1     "docker-entrypoint.s…"   mysql       running     3306/tcp, 33060/tcp
     kegbot-server-redis-1     "docker-entrypoint.s…"   redis       running     6379/tcp
-    kegbot-server-workers-1   "bin/kegbot run_work…"   workers     running     8000/tcp
+    kegbot-server-workers-1   "/usr/local/sbin/kegbo…"   workers     running     8000/tcp

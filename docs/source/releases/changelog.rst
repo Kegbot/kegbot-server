@@ -6,6 +6,41 @@ Changelog
 **Upgrade Procedure:** Please follow :ref:`upgrading` for general upgrade steps.
 
 
+Version 2.0.0 (unreleased)
+--------------------------
+
+A modernization release. The runtime, framework, and toolchain were all
+brought up to date.
+
+**Highlights**
+
+* Python 3.14 is now required (was 3.10).
+* Django 5.2 LTS (was 3.2).
+* Web server switched from gunicorn/gevent to waitress.
+* Packaging moved from Poetry to uv; linting and formatting moved to ruff.
+* protobuf upgraded to the 6.x series.
+* Docker images are published to ``ghcr.io/kegbot/server``.
+* **Very old backups can now be restored directly.** ``kegbot restore``
+  accepts legacy format-1 backups (created by Kegbot v1.1.x) and upgrades
+  their data in one step; no intermediate 1.2/1.3 install is needed.
+* Time zone choices are now derived from the system time zone database.
+
+**Upgrade notes**
+
+* **Everyone is logged out once.** Sessions now use the JSON serializer, so
+  existing session cookies are invalidated on upgrade. Users simply log in
+  again.
+* **Background jobs enqueue on database commit.** Stats and notification
+  jobs are handed to the worker only after the surrounding database
+  transaction commits. Ensure ``run_workers`` is running (unchanged) to
+  process them.
+* ``run_gunicorn`` was removed. Use ``kegbot run_server`` (now waitress).
+* The Docker image no longer publishes a ``linux/arm/v7`` variant (amd64 and
+  arm64 only).
+* The legacy gflags-based Python API client was removed from the server
+  package; it lives in the separate kegbot-api project.
+
+
 Version 1.3.0 (2022-08-10)
 --------------------------
 

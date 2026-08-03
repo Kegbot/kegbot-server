@@ -32,7 +32,7 @@ from pykeg.core import (
     signals,
     time_series,
 )
-from pykeg.core.timezones import COMMON_TIMEZONES
+from pykeg.core.timezones import timezone_choices
 from pykeg.core.util import CtoF, get_version
 from pykeg.util import kbjson, units
 from pykeg.util.email import build_message
@@ -40,12 +40,6 @@ from pykeg.web.auth import get_auth_backend
 from pykeg.web.util import get_base_url
 
 """Django models definition for the kegbot database."""
-
-# TODO(temporary): COMMON_TIMEZONES is the historical pytz.common_timezones list,
-# vendored so this field's `choices` stay byte-for-byte identical and we avoid a
-# data-only migration during the 2.0 upgrade. Replace with a zoneinfo-derived
-# list (and ship the accompanying migration) as a follow-up.
-TIMEZONE_CHOICES = ((z, z) for z in COMMON_TIMEZONES)
 
 logger = logging.getLogger(__name__)
 
@@ -323,7 +317,7 @@ class KegbotSite(models.Model):
     )
     timezone = models.CharField(
         max_length=255,
-        choices=TIMEZONE_CHOICES,
+        choices=timezone_choices,
         default="UTC",
         help_text="Time zone for this system.",
     )

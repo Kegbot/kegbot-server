@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -59,8 +60,8 @@ class KegbotSiteSerializer(serializers.ModelSerializer):
             "stats",
         ]
 
-    background_image = PictureSerializer()
-    stats = serializers.JSONField(source="get_stats")
+    background_image = PictureSerializer(read_only=True)
+    stats = serializers.JSONField(source="get_stats", read_only=True)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -79,7 +80,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
         ]
 
-    picture = PictureSerializer(source="mugshot")
+    picture = PictureSerializer(source="mugshot", read_only=True)
 
 
 class InvitationSerializer(serializers.ModelSerializer):
@@ -118,6 +119,7 @@ class ApiKeySerializer(serializers.ModelSerializer):
         ]
 
     is_active = serializers.BooleanField(source="active")
+    key = serializers.CharField(read_only=True)
 
 
 class BeverageProducerSerializer(serializers.ModelSerializer):
@@ -143,6 +145,7 @@ class BeverageSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "producer",
+            "producer_id",
             "beverage_type",
             "style",
             "description",
@@ -160,7 +163,10 @@ class BeverageSerializer(serializers.ModelSerializer):
             "untappd_beer_id",
         ]
 
-    producer = BeverageProducerSerializer()
+    producer = BeverageProducerSerializer(read_only=True)
+    producer_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.BeverageProducer.objects.all(), source="producer", write_only=True
+    )
 
 
 class ControllerSerializer(serializers.ModelSerializer):
@@ -230,10 +236,10 @@ class KegSerializer(serializers.ModelSerializer):
             "stats",
         ]
 
-    beverage = BeverageSerializer(source="type")
-    illustration = serializers.URLField(source="get_illustration")
-    illustration_thumbnail = serializers.URLField(source="get_illustration_thumb")
-    stats = serializers.JSONField(source="get_stats")
+    beverage = BeverageSerializer(source="type", read_only=True)
+    illustration = serializers.URLField(source="get_illustration", read_only=True)
+    illustration_thumbnail = serializers.URLField(source="get_illustration_thumb", read_only=True)
+    stats = serializers.JSONField(source="get_stats", read_only=True)
 
 
 class KegTapSerializer(serializers.ModelSerializer):
@@ -249,7 +255,7 @@ class KegTapSerializer(serializers.ModelSerializer):
             "current_keg",
         ]
 
-    current_keg = KegSerializer()
+    current_keg = KegSerializer(read_only=True)
 
 
 class DrinkSerializer(serializers.ModelSerializer):
@@ -268,9 +274,9 @@ class DrinkSerializer(serializers.ModelSerializer):
             "picture",
         ]
 
-    picture = PictureSerializer()
-    user = UserSerializer()
-    keg = KegSerializer()
+    picture = PictureSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
+    keg = KegSerializer(read_only=True)
 
 
 class AuthenticationTokenSerializer(serializers.ModelSerializer):
@@ -302,7 +308,7 @@ class DrinkingSessionSerializer(serializers.ModelSerializer):
             "stats",
         ]
 
-    stats = serializers.JSONField(source="get_stats")
+    stats = serializers.JSONField(source="get_stats", read_only=True)
 
 
 class ThermoSensorSerializer(serializers.ModelSerializer):
@@ -338,10 +344,10 @@ class SystemEventSerializer(serializers.ModelSerializer):
             "session",
         ]
 
-    drink = DrinkSerializer()
-    keg = KegSerializer()
-    user = UserSerializer()
-    session = DrinkingSessionSerializer()
+    drink = DrinkSerializer(read_only=True)
+    keg = KegSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
+    session = DrinkingSessionSerializer(read_only=True)
 
 
 class NotificationSettingsSerializer(serializers.ModelSerializer):
@@ -373,13 +379,8 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
     def validate(self, data):
-        username = data["username"]
-        password = data["password"]
-        try:
-            user = models.User.objects.get(username=username)
-        except models.User.DoesNotExist:
-            raise ValidationError("Incorrect username/password")
-        if not user.check_password(password):
+        user = authenticate(username=data["username"], password=data["password"])
+        if not user:
             raise ValidationError("Incorrect username/password")
         data["user"] = user
         return data
@@ -403,7 +404,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "email",
         ]
 
-    picture = PictureSerializer(source="mugshot")
+    picture = PictureSerializer(source="mugshot", read_only=True)
 
 
 class SystemStatusSerializer(serializers.Serializer):

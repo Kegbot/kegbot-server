@@ -16,7 +16,6 @@ class ApiClient:
         if self.api_key:
             credentials = f"api:{self.api_key}"
             base64_credentials = base64.b64encode(credentials.encode()).decode()
-            print("credentials", base64_credentials)
             self.client.credentials(HTTP_AUTHORIZATION=f"Basic {base64_credentials}")
         else:
             self.client.credentials()
@@ -117,3 +116,42 @@ class V2ApiTestCase(TestCase):
         self.user.save()
         status, _ = self.client.get_events()
         self.assertEqual(403, status)
+
+
+class V2ApiPermissionsTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+        self.member = models.User.objects.get(username="alice")
+        self.member_key = models.ApiKey.objects.get_or_create(user=self.member)[0]
+
+    def test_users_are_read_only(self):
+        self.client.api_key = self.member_key.key
+        self.client.add_auth()
+        response = self.client.client.patch(
+            f"/api/users/{self.member.id}", {"display_name": "hax"}, format="json"
+        )
+        self.assertEqual(405, response.status_code)
+
+    def test_plugin_data_requires_admin(self):
+        self.client.api_key = self.member_key.key
+        status, _ = self.client.get("/api/plugin-data")
+        self.assertEqual(403, status)
+
+    def test_beverages_require_admin_to_write(self):
+        self.client.api_key = self.member_key.key
+        self.client.add_auth()
+        response = self.client.client.post("/api/beverages", {"name": "Nope"}, format="json")
+        self.assertEqual(403, response.status_code)
+
+    def test_notification_settings_are_scoped_to_caller(self):
+        other = models.User.objects.get(username="bob")
+        models.NotificationSettings.objects.create(user=other, backend="test", keg_tapped=True)
+        self.client.api_key = self.member_key.key
+        status, data = self.client.get("/api/notification-settings")
+        self.assertEqual(200, status)
+        self.assertEqual([], data["results"])

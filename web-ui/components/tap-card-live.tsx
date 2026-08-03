@@ -6,7 +6,7 @@ import { unwrap } from "@/lib/api";
 import { useAsyncData } from "@/lib/use-async-data";
 
 /** TapCard that also fetches the latest temperature for the tap's sensor. */
-export function TapCardLive({ tap }: { tap: KegTap }) {
+export function TapCardLive({ tap, large }: { tap: KegTap; large?: boolean }) {
   const { temperature } = useFormatters();
   const sensorId = tap.temperature_sensor_id;
   const reading = useAsyncData(
@@ -23,6 +23,7 @@ export function TapCardLive({ tap }: { tap: KegTap }) {
       tap={tap}
       temperatureC={tempC}
       temperatureLabel={tempC != null ? temperature(tempC) : undefined}
+      large={large}
     />
   );
 }

@@ -1,9 +1,5 @@
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
-import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import { useParams } from "react-router";
 import { drinksList, sessionsRetrieve } from "@/api-client";
 import { VolumeByDrinkerChart } from "@/components/charts/volume-by-drinker-chart";
@@ -37,26 +33,27 @@ export function SessionDetailView() {
   return (
     <Page
       title={session.data ? sessionTitle(session.data) : `Session #${sessionId}`}
+      eyebrow={`Session #${sessionId}`}
+      meta={
+        session.data && (
+          <>
+            {formatDateTime(session.data.start_time)} — {formatDateTime(session.data.end_time)} ·{" "}
+            {volume(session.data.volume_ml ?? 0)} poured
+          </>
+        )
+      }
+      width="content"
       loading={session.loading}
       error={session.error}
     >
       {session.data && (
-        <Stack spacing={3}>
-          <Typography color="text.secondary">
-            {formatDateTime(session.data.start_time)} — {formatDateTime(session.data.end_time)} ·{" "}
-            {volume(session.data.volume_ml ?? 0)} poured
-          </Typography>
+        <Stack spacing={4}>
           {stats?.volume_by_drinker && Object.keys(stats.volume_by_drinker).length > 0 && (
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 7 }}>
-                <Card variant="outlined">
-                  <CardHeader title="Drinkers" />
-                  <CardContent>
-                    <VolumeByDrinkerChart data={stats.volume_by_drinker} />
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
+            <Section label="Drinkers">
+              <Box sx={{ maxWidth: 560 }}>
+                <VolumeByDrinkerChart data={stats.volume_by_drinker} />
+              </Box>
+            </Section>
           )}
           <Section label="Drinks">
             <Stack spacing={1}>

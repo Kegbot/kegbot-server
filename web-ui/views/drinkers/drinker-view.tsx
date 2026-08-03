@@ -1,10 +1,6 @@
 import Avatar from "@mui/material/Avatar";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import { useParams } from "react-router";
 import { drinksList, usersRetrieve, usersStatsRetrieve } from "@/api-client";
 import { VolumeByWeekdayChart } from "@/components/charts/volume-by-weekday-chart";
@@ -36,45 +32,37 @@ export function DrinkerView() {
   );
 
   const displayName = user.data?.display_name || username;
+  const showUsername = user.data?.display_name && user.data.display_name !== username;
 
   return (
-    <Page title={displayName} hideHeading loading={user.loading} error={user.error}>
+    <Page
+      title={displayName}
+      meta={showUsername ? username : undefined}
+      avatar={
+        <Avatar src={user.data?.picture?.resized_url ?? undefined} sx={{ width: 56, height: 56 }}>
+          {displayName.charAt(0).toUpperCase()}
+        </Avatar>
+      }
+      width="content"
+      loading={user.loading}
+      error={user.error}
+    >
       {user.data && (
-        <Stack spacing={3}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-            <Avatar
-              src={user.data.picture?.resized_url ?? undefined}
-              sx={{ width: 64, height: 64 }}
-            >
-              {displayName.charAt(0).toUpperCase()}
-            </Avatar>
-            <Stack>
-              <Typography variant="h4">{displayName}</Typography>
-              {user.data.display_name && user.data.display_name !== username && (
-                <Typography color="text.secondary">{username}</Typography>
-              )}
-            </Stack>
-          </Stack>
+        <Stack spacing={4}>
           {stats.data && <StatBadges stats={stats.data} />}
-          <Grid container spacing={3}>
+          <Grid container spacing={4}>
             {stats.data?.volume_by_day_of_week && (
               <Grid size={{ xs: 12, md: 6 }}>
-                <Card variant="outlined">
-                  <CardHeader title="Volume by day of week" />
-                  <CardContent>
-                    <VolumeByWeekdayChart data={stats.data.volume_by_day_of_week} />
-                  </CardContent>
-                </Card>
+                <Section label="Volume by day of week">
+                  <VolumeByWeekdayChart data={stats.data.volume_by_day_of_week} />
+                </Section>
               </Grid>
             )}
             {stats.data?.volume_by_session && (
               <Grid size={{ xs: 12, md: 6 }}>
-                <Card variant="outlined">
-                  <CardHeader title="Sessions" />
-                  <CardContent>
-                    <SessionVolumeList volumeBySession={stats.data.volume_by_session} />
-                  </CardContent>
-                </Card>
+                <Section label="Sessions">
+                  <SessionVolumeList volumeBySession={stats.data.volume_by_session} />
+                </Section>
               </Grid>
             )}
           </Grid>

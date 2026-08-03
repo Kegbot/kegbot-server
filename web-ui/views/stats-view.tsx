@@ -1,6 +1,3 @@
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
 import Grid from "@mui/material/Grid";
 import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
@@ -10,6 +7,7 @@ import { statsSystemRetrieve } from "@/api-client";
 import { VolumeByDrinkerChart } from "@/components/charts/volume-by-drinker-chart";
 import { VolumeByWeekdayChart } from "@/components/charts/volume-by-weekday-chart";
 import { Page } from "@/components/page";
+import { Section } from "@/components/section";
 import { StatBadges } from "@/components/stat-badges";
 import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
@@ -24,27 +22,21 @@ export function StatsView() {
   return (
     <Page title="Statistics" loading={result.loading} error={result.error}>
       {stats && (
-        <Stack spacing={3}>
+        <Stack spacing={4}>
           <StatBadges stats={stats} />
-          <Grid container spacing={3}>
+          <Grid container spacing={4}>
             {stats.volume_by_drinker && Object.keys(stats.volume_by_drinker).length > 0 && (
               <Grid size={{ xs: 12, md: 6 }}>
-                <Card variant="outlined">
-                  <CardHeader title="Top drinkers" />
-                  <CardContent>
-                    <VolumeByDrinkerChart data={stats.volume_by_drinker} />
-                  </CardContent>
-                </Card>
+                <Section label="Top drinkers">
+                  <VolumeByDrinkerChart data={stats.volume_by_drinker} />
+                </Section>
               </Grid>
             )}
             {stats.volume_by_day_of_week && (
               <Grid size={{ xs: 12, md: 6 }}>
-                <Card variant="outlined">
-                  <CardHeader title="Volume by day of week" />
-                  <CardContent>
-                    <VolumeByWeekdayChart data={stats.volume_by_day_of_week} />
-                  </CardContent>
-                </Card>
+                <Section label="Volume by day of week">
+                  <VolumeByWeekdayChart data={stats.volume_by_day_of_week} />
+                </Section>
               </Grid>
             )}
           </Grid>

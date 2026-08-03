@@ -1,8 +1,6 @@
-version: '3'
-
 services:
   kegbot:
-    image: ghcr.io/kegbot/server:stable
+    image: ghcr.io/kegbot/server:latest
     restart: unless-stopped
     command: run_server
     ports:
@@ -17,9 +15,14 @@ services:
       DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
       KEGBOT_ENV: "debug"
       KEGBOT_SECRET_KEY: "changeme"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   workers:
-    image: ghcr.io/kegbot/server:stable
+    image: ghcr.io/kegbot/server:latest
     restart: unless-stopped
     command: run_workers
     volumes:
@@ -32,15 +35,27 @@ services:
       DATABASE_URL: mysql://kegbot:changeme@mysql/kegbot
       KEGBOT_ENV: "debug"
       KEGBOT_SECRET_KEY: "changeme"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   mysql:
-    image: mysql:latest
+    image: mysql:8
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 'changeme'
       MYSQL_USER: 'kegbot'
       MYSQL_PASSWORD: 'changeme'
       MYSQL_DATABASE: 'kegbot'
+    healthcheck:
+      # Ping over TCP: during init the image runs a socket-only temporary
+      # server that would pass a plain socket ping too early.
+      test: ["CMD", "mysqladmin", "ping", "-h127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
     tmpfs:
       - /tmp
       - /var/tmp

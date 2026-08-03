@@ -19,4 +19,7 @@ build
 dist
 test-db.sqlite
 
+### frontend
+node_modules/
+
 /tmp

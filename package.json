@@ -1,0 +1,37 @@
+{
+  "name": "kegbot-server-ui",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "bun test web-ui/",
+    "typecheck": "tsc --noEmit",
+    "check": "biome check web-ui && tsc --noEmit",
+    "format": "biome format --write web-ui",
+    "generate-api": "uv run python bin/kegbot spectacular --file web-ui/schema.yaml && openapi-ts",
+    "generate-constants": "uv run python bin/kegbot print_constants"
+  },
+  "dependencies": {
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@mui/icons-material": "^9",
+    "@mui/material": "^9",
+    "@mui/x-charts": "^9",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-router": "^8"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2",
+    "@happy-dom/global-registrator": "^18",
+    "@hey-api/openapi-ts": "^0.80",
+    "@testing-library/react": "^16",
+    "@types/bun": "^1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4",
+    "typescript": "^5",
+    "vite": "^7"
+  }
+}

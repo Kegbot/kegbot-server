@@ -1037,6 +1037,76 @@ class AdminUsersAndSiteTestCase(TestCase):
         self.assertIsNone(token.user)
 
 
+@override_settings(EMAIL_BACKEND="pykeg.core.mail.KegbotEmailBackend")
+class AdminOpsTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.email_config = "memory://?_default_from_email=test@example.com"
+        self.site.save()
+        self.admin = models.User.objects.get(username="admin")
+        self.admin.is_staff = True
+        self.admin.save()
+        self.admin_key = models.ApiKey.objects.get_or_create(user=self.admin)[0]
+        self.alice = models.User.objects.get(username="alice")
+        self.alice_key = models.ApiKey.objects.get_or_create(user=self.alice)[0]
+
+    def as_admin(self):
+        self.client.api_key = self.admin_key.key
+        self.client.add_auth()
+        return self.client.client
+
+    def test_ops_require_admin(self):
+        self.client.api_key = self.alice_key.key
+        for path in ("/api/admin/dashboard", "/api/admin/backups", "/api/admin/logs"):
+            status_code, _ = self.client.get(path)
+            self.assertEqual(403, status_code, path)
+
+    def test_dashboard(self):
+        response = self.as_admin().get("/api/admin/dashboard")
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        expected_users = (
+            models.User.objects.filter(is_active=True).exclude(username="guest").count()
+        )
+        self.assertEqual(expected_users, data["num_users"])
+        self.assertIn("email_configured", data)
+        self.assertIn("redis_error", data)
+
+    def test_backups_list_empty(self):
+        response = self.as_admin().get("/api/admin/backups")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([], response.json())
+
+    def test_backup_build_is_enqueued(self):
+        from unittest import mock
+
+        with mock.patch("pykeg.core.tasks.build_backup.delay") as delay:
+            response = self.as_admin().post("/api/admin/backups")
+        self.assertEqual(202, response.status_code)
+        delay.assert_called_once()
+
+    def test_delete_unknown_backup(self):
+        response = self.as_admin().delete("/api/admin/backups/nope.zip")
+        self.assertEqual(404, response.status_code)
+
+    def test_logs(self):
+        response = self.as_admin().get("/api/admin/logs")
+        self.assertEqual(200, response.status_code)
+        self.assertIn("logs", response.json())
+
+    def test_email_test(self):
+        response = self.as_admin().post(
+            "/api/admin/email-test", {"address": "check@example.com"}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, len(django_mail.outbox))
+        self.assertEqual(["check@example.com"], django_mail.outbox[0].to)
+
+
 class MeEndpointTestCase(TestCase):
     fixtures = ["testdata/demo-site.json"]
 

@@ -2,7 +2,7 @@
 
 from pykeg.core.util import SuppressTaskErrors
 from pykeg.plugin import plugin
-from pykeg.proto import protolib
+from pykeg.web.api import serialize
 
 from . import forms, tasks, views
 
@@ -27,7 +27,7 @@ class WebhookPlugin(plugin.Plugin):
         self.logger.info(f"Handling new event: {event.id}")
         settings = self.get_site_settings()
         urls = settings.get("webhook_urls", "").strip().split()
-        event_dict = protolib.ToDict(event, full=True)
+        event_dict = serialize.to_dict(event, full=True)
         for url in urls:
             with SuppressTaskErrors(self.logger):
                 tasks.webhook_post.delay(url, event_dict)

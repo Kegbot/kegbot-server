@@ -24,7 +24,6 @@ dependencies = [
     "mysqlclient",
     "packaging",
     "Pillow",
-    "protobuf>=5,<7",
     "psycopg2",
     "PyYAML",
     "redis",
@@ -70,8 +69,6 @@ exclude = [
     "build",
     "dist",
     "migrations",
-    # Generated protobuf code (regenerated from kegbot-api .proto sources).
-    "pykeg/proto/*_pb2.py",
 ]
 
 [tool.ruff.format]

@@ -1,3 +1,6 @@
+"""Exception types for the legacy API, mapped to HTTP error responses."""
+
+
 class Error(Exception):
     """An error occurred."""
 
@@ -10,7 +13,7 @@ class Error(Exception):
         if self.message:
             return self.message
         m = self.__class__.__doc__
-        m = m.split('\n', 1)[0]
+        m = m.split("\n", 1)[0]
         return m
 
 
@@ -18,10 +21,6 @@ class NotFoundError(Error):
     """The requested object could not be found."""
 
     HTTP_CODE = 404
-
-
-class RequestError(Error):
-    """There was an error fufilling the request."""
 
 
 class ServerError(Error):
@@ -52,11 +51,3 @@ class PermissionDeniedError(Error):
     """The api_key given does not have permission for this resource."""
 
     HTTP_CODE = 401
-
-
-MAP_NAME_TO_EXCEPTION = dict((c.__name__, c) for c in Error.__subclasses__())
-
-
-def ErrorCodeToException(code, message=ServerError):
-    cls = MAP_NAME_TO_EXCEPTION.get(code, Error)
-    return cls(message)

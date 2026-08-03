@@ -23,10 +23,12 @@ export default defineConfig(({ command }) => ({
   },
   server: {
     port: 8000,
+    // Segment-anchored regexes: a bare "/api" key is a prefix match and
+    // would also capture source modules under /api-client/.
     proxy: {
-      "/api": DJANGO,
-      "/media": DJANGO,
-      "/static": DJANGO,
+      "^/api(?:/|$)": DJANGO,
+      "^/media(?:/|$)": DJANGO,
+      "^/static(?:/|$)": DJANGO,
     },
   },
   build: {

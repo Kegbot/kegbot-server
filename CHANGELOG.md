@@ -16,6 +16,9 @@ up to date.
   pre-flight checks run via **pre-commit**.
 - protobuf upgraded to the 6.x series.
 - Docker image rebuilt on `python:3.14-slim` with uv.
+- **Very old backups can now be restored directly.** `kegbot restore` accepts
+  legacy format-1 backups (created by Kegbot v1.1.x) and upgrades their data in
+  one step; no intermediate 1.2/1.3 install is needed.
 
 ### Upgrade notes (for existing installs)
 

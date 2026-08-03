@@ -4,7 +4,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from pykeg.core import keg_sizes, models
+from pykeg.core import kb_common, keg_sizes, models
 
 
 class PictureSerializer(serializers.ModelSerializer):
@@ -491,6 +491,45 @@ class DrinkReassignRequestSerializer(serializers.Serializer):
 class PictureUploadRequestSerializer(serializers.Serializer):
     image = serializers.ImageField()
     caption = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class ProfileUpdateRequestSerializer(serializers.Serializer):
+    display_name = serializers.CharField(required=False, allow_blank=True, max_length=127)
+
+
+class PasswordChangeRequestSerializer(serializers.Serializer):
+    current_password = serializers.CharField()
+    new_password = serializers.CharField(min_length=1)
+
+
+class EmailChangeRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class ConfirmEmailRequestSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+
+class ActivateAccountRequestSerializer(serializers.Serializer):
+    activation_key = serializers.CharField()
+    password = serializers.CharField(min_length=1)
+
+
+class RegisterRequestSerializer(serializers.Serializer):
+    username = serializers.RegexField(regex=kb_common.USERNAME_REGEX, max_length=30)
+    email = serializers.EmailField()
+    password = serializers.CharField(min_length=1)
+    invite_code = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmRequestSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=1)
 
 
 class LoginSerializer(serializers.Serializer):

@@ -1,8 +1,15 @@
 import base64
 import datetime
+import re
 
+from django.contrib.auth.tokens import default_token_generator
+from django.core import mail as django_mail
+from django.core.cache import cache
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from rest_framework.test import APIClient
 
 from pykeg.core import models
@@ -680,6 +687,237 @@ class StatsEndpointsTestCase(TestCase):
         username = models.Drink.objects.exclude(user__isnull=True).first().user.username
         status, _ = self.client.get(f"/api/users/{username}/stats")
         self.assertEqual(403, status)
+
+
+@override_settings(EMAIL_BACKEND="pykeg.core.mail.KegbotEmailBackend")
+class AccountFlowsTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        cache.clear()  # Reset auth-endpoint throttle state between tests.
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.email_config = "memory://?_default_from_email=test@example.com"
+        self.site.save()
+        self.alice = models.User.objects.get(username="alice")
+        self.alice.set_password("oldpassword")
+        self.alice.email = "alice@example.com"
+        self.alice.save()
+        self.alice_key = models.ApiKey.objects.get_or_create(user=self.alice)[0]
+
+    def as_alice(self):
+        self.client.api_key = self.alice_key.key
+        self.client.add_auth()
+        return self.client.client
+
+    def as_anon(self):
+        self.client.api_key = None
+        self.client.add_auth()
+        return self.client.client
+
+    def test_update_profile(self):
+        response = self.as_alice().patch(
+            "/api/users/me", {"display_name": "Alice A."}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("Alice A.", response.json()["user"]["display_name"])
+        self.alice.refresh_from_db()
+        self.assertEqual("Alice A.", self.alice.display_name)
+
+    def test_update_profile_requires_auth(self):
+        response = self.as_anon().patch("/api/users/me", {"display_name": "Nope"}, format="json")
+        self.assertIn(response.status_code, (401, 403))
+
+    def test_change_password(self):
+        response = self.as_alice().post(
+            "/api/account/password",
+            {"current_password": "wrong", "new_password": "newpassword"},
+            format="json",
+        )
+        self.assertEqual(400, response.status_code)
+
+        response = self.as_alice().post(
+            "/api/account/password",
+            {"current_password": "oldpassword", "new_password": "newpassword"},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        self.alice.refresh_from_db()
+        self.assertTrue(self.alice.check_password("newpassword"))
+
+    def test_change_email_and_confirm(self):
+        response = self.as_alice().post(
+            "/api/account/email", {"email": "alice-new@example.com"}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, len(django_mail.outbox))
+        body = django_mail.outbox[0].body
+        match = re.search(r"/account/confirm-email/(\S+)", body)
+        self.assertIsNotNone(match, body)
+        token = match.group(1).rstrip("/")
+
+        response = self.as_alice().post(
+            "/api/account/confirm-email", {"token": token}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.alice.refresh_from_db()
+        self.assertEqual("alice-new@example.com", self.alice.email)
+
+    def test_mugshot_upload(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        image = SimpleUploadedFile("me.gif", TINY_GIF, content_type="image/gif")
+        response = self.as_alice().post(
+            "/api/account/mugshot", {"image": image}, format="multipart"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json()["picture"])
+        self.alice.refresh_from_db()
+        self.assertIsNotNone(self.alice.mugshot)
+
+    def test_regenerate_api_key(self):
+        old_key = self.alice_key.key
+        response = self.as_alice().post("/api/account/regenerate-api-key")
+        self.assertEqual(200, response.status_code)
+        self.assertNotEqual(old_key, response.json()["key"])
+
+    def test_register_public(self):
+        response = self.as_anon().post(
+            "/api/auth/register",
+            {"username": "newuser", "email": "new@example.com", "password": "s3cret"},
+            format="json",
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual("newuser", response.json()["username"])
+        user = models.User.objects.get(username="newuser")
+        self.assertTrue(user.check_password("s3cret"))
+
+    def test_register_duplicate_username(self):
+        response = self.as_anon().post(
+            "/api/auth/register",
+            {"username": "alice", "email": "x@example.com", "password": "pw"},
+            format="json",
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_register_invite_only(self):
+        self.site.registration_mode = "staff-invite-only"
+        self.site.save()
+
+        response = self.as_anon().post(
+            "/api/auth/register",
+            {"username": "invitee", "email": "i@example.com", "password": "pw"},
+            format="json",
+        )
+        self.assertEqual(403, response.status_code)
+
+        invite = models.Invitation.objects.create(for_email="i@example.com", invited_by=self.alice)
+        response = self.as_anon().post(
+            "/api/auth/register",
+            {
+                "username": "invitee",
+                "email": "i@example.com",
+                "password": "pw",
+                "invite_code": invite.invite_code,
+            },
+            format="json",
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertFalse(models.Invitation.objects.filter(id=invite.id).exists())
+
+    def test_register_bad_invite_code(self):
+        self.site.registration_mode = "staff-invite-only"
+        self.site.save()
+        response = self.as_anon().post(
+            "/api/auth/register",
+            {
+                "username": "invitee",
+                "email": "i@example.com",
+                "password": "pw",
+                "invite_code": "bogus",
+            },
+            format="json",
+        )
+        self.assertEqual(403, response.status_code)
+
+    def test_password_reset_sends_mail(self):
+        response = self.as_anon().post(
+            "/api/auth/password-reset", {"email": "alice@example.com"}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, len(django_mail.outbox))
+
+        django_mail.outbox.clear()
+        response = self.as_anon().post(
+            "/api/auth/password-reset", {"email": "nobody@example.com"}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(django_mail.outbox))
+
+    def test_password_reset_confirm(self):
+        uid = urlsafe_base64_encode(force_bytes(self.alice.pk))
+        token = default_token_generator.make_token(self.alice)
+
+        response = self.as_anon().post(
+            "/api/auth/password-reset-confirm",
+            {"uid": uid, "token": "bad-token", "new_password": "resetpw"},
+            format="json",
+        )
+        self.assertEqual(400, response.status_code)
+
+        response = self.as_anon().post(
+            "/api/auth/password-reset-confirm",
+            {"uid": uid, "token": token, "new_password": "resetpw"},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        self.alice.refresh_from_db()
+        self.assertTrue(self.alice.check_password("resetpw"))
+
+    def test_activate_account(self):
+        user = models.User.objects.create(username="pending", email="p@example.com")
+        user.set_unusable_password()
+        user.activation_key = "activation123"
+        user.save()
+
+        response = self.as_anon().post(
+            "/api/account/activate",
+            {"activation_key": "activation123", "password": "mypw"},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("pending", response.json()["username"])
+        user.refresh_from_db()
+        self.assertIsNone(user.activation_key)
+        self.assertTrue(user.check_password("mypw"))
+
+        # Key is single-use.
+        response = self.as_anon().post(
+            "/api/account/activate",
+            {"activation_key": "activation123", "password": "mypw"},
+            format="json",
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_invitation_create_and_destroy(self):
+        response = self.as_alice().post(
+            "/api/invitations", {"for_email": "friend@example.com"}, format="json"
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, len(django_mail.outbox))
+        invite_id = response.json()["id"]
+
+        response = self.as_alice().delete(f"/api/invitations/{invite_id}")
+        self.assertEqual(204, response.status_code)
+
+    def test_invitation_denied_when_not_allowed(self):
+        self.site.registration_mode = "staff-invite-only"
+        self.site.save()
+        response = self.as_alice().post(
+            "/api/invitations", {"for_email": "friend@example.com"}, format="json"
+        )
+        self.assertEqual(403, response.status_code)
 
 
 class MeEndpointTestCase(TestCase):

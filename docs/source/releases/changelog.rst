@@ -19,7 +19,8 @@ brought up to date.
 * Web server switched from gunicorn/gevent to waitress.
 * Packaging moved from Poetry to uv; linting and formatting moved to ruff.
 * protobuf upgraded to the 6.x series.
-* Docker images are published to ``ghcr.io/kegbot/server``.
+* Docker image rebuilt on ``python:3.14-slim`` with uv; images are published
+  to ``ghcr.io/kegbot/server``.
 * **Very old backups can now be restored directly.** ``kegbot restore``
   accepts legacy format-1 backups (created by Kegbot v1.1.x) and upgrades
   their data in one step; no intermediate 1.2/1.3 install is needed.

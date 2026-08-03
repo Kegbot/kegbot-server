@@ -4,15 +4,17 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import (
+    action,
     api_view,
     authentication_classes,
     permission_classes,
 )
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from pykeg.core import models
 
-from . import permissions, serializers
+from . import filters, permissions, serializers
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -25,6 +27,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.User.objects.all()
     serializer_class = serializers.UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filterset_class = filters.UserFilter
 
 
 class InvitationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -131,6 +134,7 @@ class KegViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Keg.objects.all()
     serializer_class = serializers.KegSerializer
     permission_classes = [permissions.DashboardViewer]
+    filterset_class = filters.KegFilter
 
 
 class DrinkViewSet(viewsets.ReadOnlyModelViewSet):
@@ -139,6 +143,7 @@ class DrinkViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Drink.objects.all()
     serializer_class = serializers.DrinkSerializer
     permission_classes = [permissions.DashboardViewer]
+    filterset_class = filters.DrinkFilter
 
 
 class AuthenticationTokenViewSet(viewsets.ModelViewSet):
@@ -147,6 +152,7 @@ class AuthenticationTokenViewSet(viewsets.ModelViewSet):
     queryset = models.AuthenticationToken.objects.all()
     serializer_class = serializers.AuthenticationTokenSerializer
     permission_classes = [permissions.IsAdminUser]
+    filterset_class = filters.AuthenticationTokenFilter
 
 
 class DrinkingSessionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -155,6 +161,19 @@ class DrinkingSessionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.DrinkingSession.objects.all()
     serializer_class = serializers.DrinkingSessionSerializer
     permission_classes = [permissions.DashboardViewer]
+    filterset_class = filters.DrinkingSessionFilter
+
+    @extend_schema(responses=serializers.DrinkingSessionSerializer)
+    @action(detail=False)
+    def current(self, request):
+        """Returns the currently-active session, or 404 if there is none."""
+        try:
+            latest = models.DrinkingSession.objects.latest()
+        except models.DrinkingSession.DoesNotExist:
+            latest = None
+        if not latest or not latest.IsActiveNow():
+            raise NotFound("There is no active session.")
+        return Response(self.get_serializer(latest).data)
 
 
 class ThermoSensorViewSet(viewsets.ModelViewSet):
@@ -171,6 +190,7 @@ class ThermologViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Thermolog.objects.all()
     serializer_class = serializers.ThermologSerializer
     permission_classes = [permissions.DashboardViewer]
+    filterset_class = filters.ThermologFilter
 
 
 class StatsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -187,6 +207,7 @@ class SystemEventViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.SystemEvent.objects.all()
     serializer_class = serializers.SystemEventSerializer
     permission_classes = [permissions.DashboardViewer]
+    filterset_class = filters.SystemEventFilter
 
 
 class NotificationSettingsViewSet(viewsets.ModelViewSet):

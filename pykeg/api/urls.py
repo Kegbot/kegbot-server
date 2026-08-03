@@ -42,6 +42,8 @@ urlpatterns = [
     path("auth/password-reset", views_account.password_reset),
     path("auth/password-reset-confirm", views_account.password_reset_confirm),
     path("auth/register", views_account.register),
+    path("site", views.site_settings),
+    path("site/background-image", views.site_background_image),
     path("status", views.system_status),
     path("schema", SpectacularAPIView.as_view(), name="api-schema"),
     path("docs", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),

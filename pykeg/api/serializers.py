@@ -310,11 +310,17 @@ class AuthenticationTokenSerializer(serializers.ModelSerializer):
             "token_value",
             "nice_name",
             "pin",
+            "user",
             "user_id",
             "enabled",
             "created_time",
             "expire_time",
         ]
+
+    # Assign/unassign the token's user by pk on writes; reads use user_id.
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=models.User.objects.all(), allow_null=True, required=False, write_only=True
+    )
 
 
 class DrinkingSessionSerializer(serializers.ModelSerializer):
@@ -530,6 +536,50 @@ class PasswordResetConfirmRequestSerializer(serializers.Serializer):
     uid = serializers.CharField()
     token = serializers.CharField()
     new_password = serializers.CharField(min_length=1)
+
+
+class AdminUserCreateRequestSerializer(serializers.Serializer):
+    username = serializers.RegexField(regex=kb_common.USERNAME_REGEX, max_length=30)
+    email = serializers.EmailField(required=False, allow_blank=True, default="")
+    password = serializers.CharField(min_length=1)
+    is_staff = serializers.BooleanField(default=False)
+
+
+class AdminUserUpdateRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False, allow_blank=True)
+    display_name = serializers.CharField(required=False, allow_blank=True, max_length=127)
+    is_staff = serializers.BooleanField(required=False)
+    is_active = serializers.BooleanField(required=False)
+
+
+class SetPasswordRequestSerializer(serializers.Serializer):
+    password = serializers.CharField(min_length=1)
+
+
+class SiteSettingsSerializer(serializers.ModelSerializer):
+    """Admin-editable site settings, covering the old settings forms."""
+
+    class Meta:
+        model = models.KegbotSite
+        fields = [
+            "name",
+            "server_version",
+            "is_setup",
+            "title",
+            "privacy",
+            "registration_mode",
+            "enable_sensing",
+            "enable_users",
+            "volume_display_units",
+            "temperature_display_units",
+            "timezone",
+            "session_timeout_minutes",
+            "google_analytics_id",
+            "email_config",
+            "background_image",
+        ]
+
+    background_image = PictureSerializer(read_only=True)
 
 
 class LoginSerializer(serializers.Serializer):

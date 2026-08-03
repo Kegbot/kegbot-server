@@ -138,13 +138,13 @@ class V2ApiPermissionsTestCase(TestCase):
         self.member = models.User.objects.get(username="alice")
         self.member_key = models.ApiKey.objects.get_or_create(user=self.member)[0]
 
-    def test_users_are_read_only(self):
+    def test_users_are_not_editable_by_members(self):
         self.client.api_key = self.member_key.key
         self.client.add_auth()
         response = self.client.client.patch(
             f"/api/users/{self.member.username}", {"display_name": "hax"}, format="json"
         )
-        self.assertEqual(405, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_user_detail_is_looked_up_by_username(self):
         status, data = self.client.get(f"/api/users/{self.member.username}")
@@ -918,6 +918,123 @@ class AccountFlowsTestCase(TestCase):
             "/api/invitations", {"for_email": "friend@example.com"}, format="json"
         )
         self.assertEqual(403, response.status_code)
+
+
+class AdminUsersAndSiteTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+        self.admin = models.User.objects.get(username="admin")
+        self.admin.is_staff = True
+        self.admin.save()
+        self.admin_key = models.ApiKey.objects.get_or_create(user=self.admin)[0]
+        self.alice = models.User.objects.get(username="alice")
+        self.alice_key = models.ApiKey.objects.get_or_create(user=self.alice)[0]
+
+    def as_admin(self):
+        self.client.api_key = self.admin_key.key
+        self.client.add_auth()
+        return self.client.client
+
+    def as_member(self):
+        self.client.api_key = self.alice_key.key
+        self.client.add_auth()
+        return self.client.client
+
+    def test_admin_creates_user(self):
+        response = self.as_member().post(
+            "/api/users", {"username": "nope", "password": "pw"}, format="json"
+        )
+        self.assertEqual(403, response.status_code)
+
+        response = self.as_admin().post(
+            "/api/users",
+            {"username": "staffer", "password": "pw", "is_staff": True},
+            format="json",
+        )
+        self.assertEqual(201, response.status_code)
+        user = models.User.objects.get(username="staffer")
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.check_password("pw"))
+
+    def test_admin_edits_user(self):
+        response = self.as_admin().patch(
+            "/api/users/alice", {"is_active": False, "is_staff": True}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.alice.refresh_from_db()
+        self.assertFalse(self.alice.is_active)
+        self.assertTrue(self.alice.is_staff)
+
+    def test_guest_cannot_be_disabled(self):
+        response = self.as_admin().patch("/api/users/guest", {"is_active": False}, format="json")
+        self.assertEqual(400, response.status_code)
+
+    def test_admin_sets_password(self):
+        response = self.as_admin().post(
+            "/api/users/alice/set-password", {"password": "newpw"}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.alice.refresh_from_db()
+        self.assertTrue(self.alice.check_password("newpw"))
+
+    def test_site_settings_read_and_update(self):
+        response = self.as_member().get("/api/site")
+        self.assertEqual(403, response.status_code)
+
+        response = self.as_admin().get("/api/site")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(self.site.title, response.json()["title"])
+
+        response = self.as_admin().patch(
+            "/api/site",
+            {"title": "Renamed Bar", "privacy": "members", "session_timeout_minutes": 30},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        self.site.refresh_from_db()
+        self.assertEqual("Renamed Bar", self.site.title)
+        self.assertEqual("members", self.site.privacy)
+        self.assertEqual(30, self.site.session_timeout_minutes)
+
+    def test_site_settings_rejects_bad_email_config(self):
+        response = self.as_admin().patch("/api/site", {"email_config": "bogus:"}, format="json")
+        self.assertEqual(400, response.status_code)
+
+    def test_site_background_image(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        image = SimpleUploadedFile("bg.gif", TINY_GIF, content_type="image/gif")
+        response = self.as_admin().post(
+            "/api/site/background-image", {"image": image}, format="multipart"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json()["background_image"])
+        self.site.refresh_from_db()
+        self.assertIsNotNone(self.site.background_image)
+
+    def test_token_user_assignment(self):
+        response = self.as_admin().post(
+            "/api/auth-tokens",
+            {"auth_device": "core.rfid", "token_value": "deadbeef", "user": self.alice.id},
+            format="json",
+        )
+        self.assertEqual(201, response.status_code)
+        token = models.AuthenticationToken.objects.get(
+            auth_device="core.rfid", token_value="deadbeef"
+        )
+        self.assertEqual(self.alice, token.user)
+
+        response = self.as_admin().patch(
+            f"/api/auth-tokens/{token.id}", {"user": None}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        token.refresh_from_db()
+        self.assertIsNone(token.user)
 
 
 class MeEndpointTestCase(TestCase):

@@ -4,7 +4,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from pykeg.core import models
+from pykeg.core import keg_sizes, models
 
 
 class PictureSerializer(serializers.ModelSerializer):
@@ -243,6 +243,14 @@ class KegSerializer(serializers.ModelSerializer):
             "illustration_thumbnail",
             "stats",
         ]
+        # Status and volumes change only through the keg lifecycle
+        # endpoints (attach/end/reactivate/spill), never by direct edit.
+        read_only_fields = [
+            "status",
+            "spilled_ml",
+            "start_time",
+            "end_time",
+        ]
 
     beverage = BeverageSerializer(source="type", read_only=True)
     illustration = serializers.URLField(source="get_illustration", read_only=True)
@@ -264,6 +272,9 @@ class KegTapSerializer(serializers.ModelSerializer):
         ]
 
     current_keg = KegSerializer(read_only=True)
+    # Connections change only through the attach-keg/connect-* endpoints.
+    current_keg_id = serializers.IntegerField(read_only=True)
+    temperature_sensor_id = serializers.IntegerField(read_only=True)
 
 
 class DrinkSerializer(serializers.ModelSerializer):
@@ -380,6 +391,84 @@ class PluginDataSerializer(serializers.ModelSerializer):
             "key",
             "value",
         ]
+
+
+class TapAttachKegRequestSerializer(serializers.Serializer):
+    keg_id = serializers.PrimaryKeyRelatedField(queryset=models.Keg.objects.all(), source="keg")
+
+
+class NewKegRequestSerializer(serializers.Serializer):
+    """Parameters for creating a keg.
+
+    The beverage may be given as an existing `beverage_id`, or described by
+    the (`beverage_name`, `producer_name`, `style_name`, `beverage_type`)
+    tuple, which matches or creates one.
+    """
+
+    beverage_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Beverage.objects.all(),
+        source="beverage",
+        required=False,
+        allow_null=True,
+        default=None,
+    )
+    beverage_name = serializers.CharField(required=False, allow_blank=True, default="")
+    beverage_type = serializers.ChoiceField(
+        choices=models.Beverage.TYPES, required=False, default=models.Beverage.TYPE_BEER
+    )
+    producer_name = serializers.CharField(required=False, allow_blank=True, default="")
+    style_name = serializers.CharField(required=False, allow_blank=True, default="")
+    keg_type = serializers.ChoiceField(choices=keg_sizes.CHOICES, default=keg_sizes.HALF_BARREL)
+    full_volume_ml = serializers.FloatField(required=False, allow_null=True, default=None)
+
+    def validate(self, data):
+        if not data.get("beverage") and not data.get("beverage_name"):
+            raise ValidationError(
+                "Give either beverage_id, or beverage_name with "
+                "producer_name/style_name/beverage_type."
+            )
+        return data
+
+
+class KegCreateRequestSerializer(NewKegRequestSerializer):
+    description = serializers.CharField(required=False, allow_blank=True, default="")
+    notes = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class TapConnectMeterRequestSerializer(serializers.Serializer):
+    meter_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.FlowMeter.objects.all(), source="meter", allow_null=True
+    )
+
+
+class TapConnectToggleRequestSerializer(serializers.Serializer):
+    toggle_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.FlowToggle.objects.all(), source="toggle", allow_null=True
+    )
+
+
+class TapConnectThermoRequestSerializer(serializers.Serializer):
+    thermo_sensor_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.ThermoSensor.objects.all(), source="thermo_sensor", allow_null=True
+    )
+
+
+class TapRecordDrinkRequestSerializer(serializers.Serializer):
+    volume_ml = serializers.FloatField(min_value=0.0)
+    username = serializers.CharField(required=False, allow_blank=True, default="")
+    pour_time = serializers.DateTimeField(required=False, allow_null=True, default=None)
+    duration = serializers.IntegerField(required=False, min_value=0, default=0)
+    shout = serializers.CharField(required=False, allow_blank=True, default="")
+    spilled = serializers.BooleanField(default=False)
+
+    def validate_username(self, value):
+        if value and not models.User.objects.filter(username=value).exists():
+            raise ValidationError("No such user.")
+        return value
+
+
+class KegSpillRequestSerializer(serializers.Serializer):
+    volume_ml = serializers.FloatField(min_value=0.0)
 
 
 class LoginSerializer(serializers.Serializer):

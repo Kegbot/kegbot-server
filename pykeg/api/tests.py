@@ -1106,6 +1106,36 @@ class AdminOpsTestCase(TestCase):
         self.assertEqual(1, len(django_mail.outbox))
         self.assertEqual(["check@example.com"], django_mail.outbox[0].to)
 
+    def test_plugin_list(self):
+        self.client.api_key = self.alice_key.key
+        status_code, _ = self.client.get("/api/admin/plugins")
+        self.assertEqual(403, status_code)
+
+        response = self.as_admin().get("/api/admin/plugins")
+        self.assertEqual(200, response.status_code)
+        plugins = response.json()
+        self.assertEqual(["webhook"], [p["short_name"] for p in plugins])
+        self.assertTrue(plugins[0]["has_settings"])
+
+    def test_plugin_settings_roundtrip(self):
+        response = self.as_admin().get("/api/admin/plugins/webhook/settings")
+        self.assertEqual(200, response.status_code)
+
+        response = self.as_admin().put(
+            "/api/admin/plugins/webhook/settings",
+            {"webhook_urls": "http://example.com/hook"},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("http://example.com/hook", response.json()["webhook_urls"])
+
+        response = self.as_admin().get("/api/admin/plugins/webhook/settings")
+        self.assertEqual("http://example.com/hook", response.json()["webhook_urls"])
+
+    def test_unknown_plugin_settings(self):
+        response = self.as_admin().get("/api/admin/plugins/nope/settings")
+        self.assertEqual(404, response.status_code)
+
 
 class MeEndpointTestCase(TestCase):
     fixtures = ["testdata/demo-site.json"]

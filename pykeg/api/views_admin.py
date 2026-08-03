@@ -19,7 +19,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 
 from pykeg.backup import backup as backup_lib
@@ -135,6 +135,55 @@ def email_test(request):
     message = build_message(req.validated_data["address"], "notification/email_test.html", context)
     message.send(fail_silently=True)
     return Response(True)
+
+
+@extend_schema(responses=OpenApiTypes.OBJECT)
+@api_view(["GET"])
+@permission_classes([permissions.IsAdminUser])
+def plugins(request):
+    """Lists installed plugins."""
+    installed = getattr(request, "plugins", {}) or {}
+    results = [
+        {
+            "short_name": p.get_short_name(),
+            "name": p.get_name(),
+            "description": p.get_description(),
+            "version": p.get_version(),
+            "url": p.get_url(),
+            "has_settings": hasattr(p, "get_site_settings_form"),
+        }
+        for p in installed.values()
+    ]
+    return Response(results)
+
+
+@extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
+@api_view(["GET", "PUT"])
+@permission_classes([permissions.IsAdminUser])
+def plugin_settings(request, short_name):
+    """Reads or updates a plugin's site settings.
+
+    Writes are validated through the plugin's own settings form; field
+    errors come back in standard DRF shape.
+    """
+    installed = getattr(request, "plugins", {}) or {}
+    plugin = installed.get(short_name)
+    if not plugin:
+        raise NotFound(f"Plugin {short_name!r} is not installed.")
+    if not hasattr(plugin, "get_site_settings_form"):
+        raise NotFound(f"Plugin {short_name!r} has no settings.")
+
+    if request.method == "PUT":
+        form_cls = type(plugin.get_site_settings_form())
+        form = form_cls(request.data)
+        if not form.is_valid():
+            raise ValidationError(dict(form.errors))
+        if hasattr(plugin, "save_site_settings_form"):
+            plugin.save_site_settings_form(form)
+        else:
+            plugin.save_form(form, "settings")
+
+    return Response(plugin.get_site_settings_form().initial)
 
 
 @extend_schema(responses=OpenApiTypes.OBJECT)

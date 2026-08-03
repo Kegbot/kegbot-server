@@ -36,6 +36,8 @@ urlpatterns = [
     path("admin/dashboard", views_admin.dashboard),
     path("admin/email-test", views_admin.email_test),
     path("admin/logs", views_admin.logs),
+    path("admin/plugins", views_admin.plugins),
+    path("admin/plugins/<str:short_name>/settings", views_admin.plugin_settings),
     path("account/activate", views_account.activate),
     path("account/confirm-email", views_account.confirm_email),
     path("account/email", views_account.change_email),

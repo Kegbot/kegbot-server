@@ -4,14 +4,14 @@ from django.contrib.auth import logout as auth_logout
 from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import (
     action,
     api_view,
     authentication_classes,
     permission_classes,
 )
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 
 from pykeg.core import models
@@ -113,12 +113,146 @@ class BeverageViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AdminWriteDashboardRead]
 
 
-class KegTapViewSet(viewsets.ReadOnlyModelViewSet):
-    """Lists all KegTaps in the system."""
+class KegTapViewSet(viewsets.ModelViewSet):
+    """Lists all KegTaps in the system.
+
+    Reads follow site privacy; tap management (including the keg and
+    hardware-connection operations below) requires an admin.
+    """
 
     queryset = models.KegTap.objects.all()
     serializer_class = serializers.KegTapSerializer
-    permission_classes = [permissions.DashboardViewer]
+    permission_classes = [permissions.AdminWriteDashboardRead]
+
+    def _tap_response(self, tap):
+        tap.refresh_from_db()
+        return Response(self.get_serializer(tap).data)
+
+    @extend_schema(
+        request=serializers.TapAttachKegRequestSerializer,
+        responses=serializers.KegTapSerializer,
+    )
+    @action(detail=True, methods=["post"], url_path="attach-keg")
+    def attach_keg(self, request, pk=None):
+        """Attaches an existing (available) keg to this tap."""
+        tap = self.get_object()
+        req = serializers.TapAttachKegRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        try:
+            tap.attach_keg(req.validated_data["keg"])
+        except ValueError as e:
+            raise ValidationError(str(e)) from e
+        return self._tap_response(tap)
+
+    @extend_schema(
+        request=serializers.NewKegRequestSerializer,
+        responses=serializers.KegTapSerializer,
+    )
+    @action(detail=True, methods=["post"], url_path="start-keg")
+    def start_keg(self, request, pk=None):
+        """Creates a new keg and attaches it to this tap."""
+        tap = self.get_object()
+        req = serializers.NewKegRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        params = req.validated_data
+        try:
+            models.Keg.start_keg(
+                tap,
+                beverage=params["beverage"],
+                keg_type=params["keg_type"],
+                full_volume_ml=params["full_volume_ml"],
+                beverage_name=params["beverage_name"] or None,
+                beverage_type=params["beverage_type"] if not params["beverage"] else None,
+                producer_name=params["producer_name"] or None,
+                style_name=params["style_name"] or None,
+            )
+        except ValueError as e:
+            raise ValidationError(str(e)) from e
+        return self._tap_response(tap)
+
+    @extend_schema(request=None, responses=serializers.KegTapSerializer)
+    @action(detail=True, methods=["post"], url_path="end-keg")
+    def end_keg(self, request, pk=None):
+        """Takes the tap's current keg offline."""
+        tap = self.get_object()
+        if not tap.current_keg:
+            raise ValidationError("Tap has no active keg.")
+        tap.end_current_keg()
+        return self._tap_response(tap)
+
+    @extend_schema(
+        request=serializers.TapConnectMeterRequestSerializer,
+        responses=serializers.KegTapSerializer,
+    )
+    @action(detail=True, methods=["post"], url_path="connect-meter")
+    def connect_meter(self, request, pk=None):
+        """Assigns a flow meter to this tap (null to disconnect)."""
+        tap = self.get_object()
+        req = serializers.TapConnectMeterRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        tap.connect_meter(req.validated_data["meter"])
+        return self._tap_response(tap)
+
+    @extend_schema(
+        request=serializers.TapConnectToggleRequestSerializer,
+        responses=serializers.KegTapSerializer,
+    )
+    @action(detail=True, methods=["post"], url_path="connect-toggle")
+    def connect_toggle(self, request, pk=None):
+        """Assigns a flow toggle to this tap (null to disconnect)."""
+        tap = self.get_object()
+        req = serializers.TapConnectToggleRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        tap.connect_toggle(req.validated_data["toggle"])
+        return self._tap_response(tap)
+
+    @extend_schema(
+        request=serializers.TapConnectThermoRequestSerializer,
+        responses=serializers.KegTapSerializer,
+    )
+    @action(detail=True, methods=["post"], url_path="connect-thermo")
+    def connect_thermo(self, request, pk=None):
+        """Assigns a temperature sensor to this tap (null to disconnect)."""
+        tap = self.get_object()
+        req = serializers.TapConnectThermoRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        tap.connect_thermo(req.validated_data["thermo_sensor"])
+        return self._tap_response(tap)
+
+    @extend_schema(
+        request=serializers.TapRecordDrinkRequestSerializer,
+        responses=serializers.DrinkSerializer,
+    )
+    @action(detail=True, methods=["post"], url_path="record-drink")
+    def record_drink(self, request, pk=None):
+        """Manually records a drink (or spill) against this tap's keg.
+
+        Returns the new drink (201), or no content (204) when recorded
+        as a spill.
+        """
+        tap = self.get_object()
+        req = serializers.TapRecordDrinkRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        params = req.validated_data
+        try:
+            drink = models.Drink.record_drink(
+                tap,
+                ticks=0,
+                volume_ml=params["volume_ml"],
+                username=params["username"] or None,
+                pour_time=params["pour_time"],
+                duration=params["duration"],
+                shout=params["shout"],
+                spilled=params["spilled"],
+            )
+        except ValueError as e:
+            raise ValidationError(str(e)) from e
+        if drink is None:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            serializers.DrinkSerializer(drink).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class ControllerViewSet(viewsets.ModelViewSet):
@@ -145,19 +279,84 @@ class FlowToggleViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser]
 
 
-class KegViewSet(viewsets.ReadOnlyModelViewSet):
-    """Lists all Kegs in the system."""
+class KegViewSet(viewsets.ModelViewSet):
+    """Lists all Kegs in the system.
+
+    Reads follow site privacy; keg management requires an admin. Deleting
+    a keg permanently destroys it and ALL of its drinks.
+    """
 
     queryset = models.Keg.objects.all()
     serializer_class = serializers.KegSerializer
-    permission_classes = [permissions.DashboardViewer]
+    permission_classes = [permissions.AdminWriteDashboardRead]
     filterset_class = filters.KegFilter
+
+    @extend_schema(request=serializers.KegCreateRequestSerializer)
+    def create(self, request, *args, **kwargs):
+        """Adds a new keg to the keg room (unattached)."""
+        req = serializers.KegCreateRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        params = req.validated_data
+        try:
+            keg = models.Keg.create_keg(
+                beverage=params["beverage"],
+                keg_type=params["keg_type"],
+                full_volume_ml=params["full_volume_ml"],
+                beverage_name=params["beverage_name"] or None,
+                beverage_type=params["beverage_type"] if not params["beverage"] else None,
+                producer_name=params["producer_name"] or None,
+                style_name=params["style_name"] or None,
+                notes=params["notes"] or None,
+                description=params["description"] or None,
+            )
+        except ValueError as e:
+            raise ValidationError(str(e)) from e
+        return Response(self.get_serializer(keg).data, status=status.HTTP_201_CREATED)
+
+    def perform_destroy(self, instance):
+        instance.cancel()
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     @action(detail=True)
     def stats(self, request, pk=None):
         """Returns the latest stats blob for this keg."""
         return Response(self.get_object().get_stats())
+
+    @extend_schema(request=None, responses=serializers.KegSerializer)
+    @action(detail=True, methods=["post"])
+    def end(self, request, pk=None):
+        """Marks an untapped keg as finished."""
+        keg = self.get_object()
+        try:
+            keg.end_keg()
+        except ValueError as e:
+            raise ValidationError(str(e)) from e
+        return Response(self.get_serializer(keg).data)
+
+    @extend_schema(request=None, responses=serializers.KegSerializer)
+    @action(detail=True, methods=["post"])
+    def reactivate(self, request, pk=None):
+        """Returns a finished keg to the available pool."""
+        keg = self.get_object()
+        try:
+            keg.reactivate_keg()
+        except ValueError as e:
+            raise ValidationError(str(e)) from e
+        return Response(self.get_serializer(keg).data)
+
+    @extend_schema(
+        request=serializers.KegSpillRequestSerializer,
+        responses=serializers.KegSerializer,
+    )
+    @action(detail=True, methods=["post"])
+    def spill(self, request, pk=None):
+        """Records spilled volume against this keg."""
+        keg = self.get_object()
+        req = serializers.KegSpillRequestSerializer(data=request.data)
+        req.is_valid(raise_exception=True)
+        keg.spilled_ml += req.validated_data["volume_ml"]
+        keg.save(update_fields=["spilled_ml"])
+        return Response(self.get_serializer(keg).data)
 
 
 class DrinkViewSet(viewsets.ReadOnlyModelViewSet):

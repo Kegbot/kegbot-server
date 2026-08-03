@@ -282,6 +282,236 @@ class CurrentSessionTestCase(TestCase):
         self.assertEqual(session.id, data["id"])
 
 
+class KegTapOperationsTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+        self.admin = models.User.objects.get(username="admin")
+        self.admin.is_staff = True
+        self.admin.save()
+        self.admin_key = models.ApiKey.objects.get_or_create(user=self.admin)[0]
+        self.member = models.User.objects.get(username="alice")
+        self.member_key = models.ApiKey.objects.get_or_create(user=self.member)[0]
+        self.tap = models.KegTap.objects.get(name="Main Tap")
+
+    def post(self, path, data=None, key=None):
+        self.client.api_key = key or self.admin_key.key
+        self.client.add_auth()
+        return self.client.client.post(path, data or {}, format="json")
+
+    def test_tap_operations_require_admin(self):
+        for path in (
+            f"/api/taps/{self.tap.id}/end-keg",
+            f"/api/taps/{self.tap.id}/attach-keg",
+            "/api/taps",
+        ):
+            response = self.post(path, key=self.member_key.key)
+            self.assertEqual(403, response.status_code, path)
+
+    def test_end_and_attach_keg(self):
+        keg = self.tap.current_keg
+        response = self.post(f"/api/taps/{self.tap.id}/end-keg")
+        self.assertEqual(200, response.status_code)
+        self.assertIsNone(response.json()["current_keg"])
+        keg.refresh_from_db()
+        self.assertEqual(models.Keg.STATUS_FINISHED, keg.status)
+
+        response = self.post(f"/api/taps/{self.tap.id}/end-keg")
+        self.assertEqual(400, response.status_code)
+
+        response = self.post(f"/api/taps/{self.tap.id}/attach-keg", {"keg_id": keg.id})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(keg.id, response.json()["current_keg"]["id"])
+        keg.refresh_from_db()
+        self.assertEqual(models.Keg.STATUS_ON_TAP, keg.status)
+
+    def test_attach_fails_when_tap_active(self):
+        other_keg = models.Keg.objects.exclude(id=self.tap.current_keg_id).first()
+        response = self.post(f"/api/taps/{self.tap.id}/attach-keg", {"keg_id": other_keg.id})
+        self.assertEqual(400, response.status_code)
+
+    def test_start_keg_creates_and_attaches(self):
+        self.post(f"/api/taps/{self.tap.id}/end-keg")
+        response = self.post(
+            f"/api/taps/{self.tap.id}/start-keg",
+            {
+                "beverage_name": "Test Brew",
+                "producer_name": "Test Brewery",
+                "style_name": "IPA",
+                "keg_type": "half-barrel",
+            },
+        )
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertEqual("Test Brew", data["current_keg"]["beverage"]["name"])
+        self.assertEqual("on_tap", data["current_keg"]["status"])
+
+    def test_start_keg_requires_beverage(self):
+        self.post(f"/api/taps/{self.tap.id}/end-keg")
+        response = self.post(f"/api/taps/{self.tap.id}/start-keg", {})
+        self.assertEqual(400, response.status_code)
+
+    def test_record_drink_and_spill(self):
+        keg = self.tap.current_keg
+        served_before = keg.served_volume_ml
+
+        response = self.post(
+            f"/api/taps/{self.tap.id}/record-drink",
+            {"volume_ml": 400.0, "username": "alice", "shout": "cheers!"},
+        )
+        self.assertEqual(201, response.status_code)
+        data = response.json()
+        self.assertEqual("alice", data["user"]["username"])
+        self.assertEqual("cheers!", data["shout"])
+        keg.refresh_from_db()
+        self.assertEqual(served_before + 400.0, keg.served_volume_ml)
+
+        spilled_before = keg.spilled_ml
+        response = self.post(
+            f"/api/taps/{self.tap.id}/record-drink",
+            {"volume_ml": 100.0, "spilled": True},
+        )
+        self.assertEqual(204, response.status_code)
+        keg.refresh_from_db()
+        self.assertEqual(spilled_before + 100.0, keg.spilled_ml)
+
+    def test_record_drink_unknown_user(self):
+        response = self.post(
+            f"/api/taps/{self.tap.id}/record-drink",
+            {"volume_ml": 100.0, "username": "nobody"},
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_connect_meter(self):
+        other_meter = models.FlowMeter.objects.exclude(tap=self.tap).first()
+        response = self.post(f"/api/taps/{self.tap.id}/connect-meter", {"meter_id": other_meter.id})
+        self.assertEqual(200, response.status_code)
+        other_meter.refresh_from_db()
+        self.assertEqual(self.tap, other_meter.tap)
+
+        response = self.post(f"/api/taps/{self.tap.id}/connect-meter", {"meter_id": None})
+        self.assertEqual(200, response.status_code)
+        other_meter.refresh_from_db()
+        self.assertIsNone(other_meter.tap)
+
+    def test_tap_crud(self):
+        response = self.post("/api/taps", {"name": "Third Tap"})
+        self.assertEqual(201, response.status_code)
+        tap_id = response.json()["id"]
+
+        self.client.add_auth()
+        response = self.client.client.patch(
+            f"/api/taps/{tap_id}", {"name": "Renamed Tap"}, format="json"
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("Renamed Tap", response.json()["name"])
+
+        response = self.client.client.delete(f"/api/taps/{tap_id}")
+        self.assertEqual(204, response.status_code)
+        self.assertFalse(models.KegTap.objects.filter(id=tap_id).exists())
+
+
+class KegOperationsTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+        self.admin = models.User.objects.get(username="admin")
+        self.admin.is_staff = True
+        self.admin.save()
+        self.admin_key = models.ApiKey.objects.get_or_create(user=self.admin)[0]
+
+    def post(self, path, data=None):
+        self.client.api_key = self.admin_key.key
+        self.client.add_auth()
+        return self.client.client.post(path, data or {}, format="json")
+
+    def test_create_keg_with_existing_beverage(self):
+        beverage = models.Beverage.objects.first()
+        response = self.post(
+            "/api/kegs",
+            {"beverage_id": beverage.id, "keg_type": "corny", "description": "spare"},
+        )
+        self.assertEqual(201, response.status_code)
+        data = response.json()
+        self.assertEqual("available", data["status"])
+        self.assertEqual(beverage.name, data["beverage"]["name"])
+        self.assertEqual("spare", data["description"])
+
+    def test_create_keg_with_new_beverage(self):
+        response = self.post(
+            "/api/kegs",
+            {
+                "beverage_name": "New Beer",
+                "producer_name": "New Brewery",
+                "style_name": "Stout",
+            },
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual("New Beer", response.json()["beverage"]["name"])
+
+    def test_end_and_reactivate(self):
+        keg = models.Keg.objects.create(
+            type=models.Beverage.objects.first(), status=models.Keg.STATUS_AVAILABLE
+        )
+        response = self.post(f"/api/kegs/{keg.id}/end")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("finished", response.json()["status"])
+
+        response = self.post(f"/api/kegs/{keg.id}/reactivate")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("available", response.json()["status"])
+
+        # Reactivate requires a finished keg.
+        response = self.post(f"/api/kegs/{keg.id}/reactivate")
+        self.assertEqual(400, response.status_code)
+
+    def test_end_fails_while_on_tap(self):
+        keg = models.KegTap.objects.get(name="Main Tap").current_keg
+        response = self.post(f"/api/kegs/{keg.id}/end")
+        self.assertEqual(400, response.status_code)
+
+    def test_spill(self):
+        keg = models.Keg.objects.first()
+        before = keg.spilled_ml
+        response = self.post(f"/api/kegs/{keg.id}/spill", {"volume_ml": 250.0})
+        self.assertEqual(200, response.status_code)
+        keg.refresh_from_db()
+        self.assertEqual(before + 250.0, keg.spilled_ml)
+
+    def test_edit_keg_notes_but_not_status(self):
+        keg = models.Keg.objects.first()
+        self.client.api_key = self.admin_key.key
+        self.client.add_auth()
+        response = self.client.client.patch(
+            f"/api/kegs/{keg.id}",
+            {"notes": "updated", "status": "finished"},
+            format="json",
+        )
+        self.assertEqual(200, response.status_code)
+        keg.refresh_from_db()
+        self.assertEqual("updated", keg.notes)
+        # Status is read-only on direct edits.
+        self.assertEqual(models.Keg.STATUS_ON_TAP, keg.status)
+
+    def test_delete_keg_destroys_drinks(self):
+        keg = models.KegTap.objects.get(name="Main Tap").current_keg
+        self.assertTrue(keg.drinks.exists())
+        self.client.api_key = self.admin_key.key
+        self.client.add_auth()
+        response = self.client.client.delete(f"/api/kegs/{keg.id}")
+        self.assertEqual(204, response.status_code)
+        self.assertFalse(models.Keg.objects.filter(id=keg.id).exists())
+        self.assertFalse(models.Drink.objects.filter(keg_id=keg.id).exists())
+
+
 class StatsEndpointsTestCase(TestCase):
     fixtures = ["testdata/demo-site.json"]
 

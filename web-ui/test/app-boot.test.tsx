@@ -49,10 +49,29 @@ test("staff-only site blocks a logged-in non-staff member", async () => {
   expect(await screen.findByText("Staff only")).toBeTruthy();
 });
 
-test("setup-required responses render the setup notice", async () => {
+test("setup-required responses render the setup wizard", async () => {
   ({ restore } = mockApi({
     "GET /api/users/me": { status: 403, body: { error: "setup_required" } },
   }));
   render(<App />);
-  expect(await screen.findByText(/needs to be set up/)).toBeTruthy();
+  expect(await screen.findByText("Welcome to Kegbot!")).toBeTruthy();
+  expect(screen.getByText("Set up database")).toBeTruthy();
+});
+
+test("upgrade-required responses render the upgrade flow", async () => {
+  ({ restore } = mockApi({
+    "GET /api/users/me": { status: 403, body: { error: "upgrade_required" } },
+    "GET /api/setup/status": {
+      status: 200,
+      body: {
+        need_setup: false,
+        need_upgrade: true,
+        installed_version: "1.0.0",
+        current_version: "2.0.0",
+      },
+    },
+  }));
+  render(<App />);
+  expect(await screen.findByText("Upgrade required")).toBeTruthy();
+  expect(await screen.findByText(/1\.0\.0/)).toBeTruthy();
 });

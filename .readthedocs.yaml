@@ -5,12 +5,16 @@
 # Required
 version: 2
 
+# Install the docs toolchain with uv (from the `docs` dependency group) and
+# build with sphinx. The project itself is not installed: the docs use no
+# autodoc, so the heavyweight runtime deps (mysqlclient, etc.) are unneeded.
 build:
-  os: ubuntu-20.04
+  os: ubuntu-24.04
   tools:
-    python: '3.10'
-  jobs:
-    post_install:
-      - pip install poetry
-      - poetry config virtualenvs.create false
-      - poetry install
+    python: '3.13'
+  commands:
+    - asdf plugin add uv
+    - asdf install uv latest
+    - asdf global uv latest
+    - uv sync --only-group docs --frozen
+    - uv run --no-sync sphinx-build -T -b html docs/source $READTHEDOCS_OUTPUT/html

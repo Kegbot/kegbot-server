@@ -22,14 +22,29 @@ from . import filters, permissions, serializers
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """Lists all users in the system.
 
-    Read-only view for any authenticated caller; user management happens
-    in the admin dashboard.
+    Individual users (and their stats) are viewable by anyone the site
+    privacy setting admits, mirroring the public drinker pages; the full
+    user listing requires authentication.
     """
 
     queryset = models.User.objects.all()
     serializer_class = serializers.UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_class = filters.UserFilter
+    lookup_field = "username"
+    # Default lookup regex excludes ".", which usernames may contain.
+    lookup_value_regex = "[^/]+"
+
+    def get_permissions(self):
+        if self.action in ("retrieve", "stats"):
+            return [permissions.DashboardViewer()]
+        return super().get_permissions()
+
+    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @action(detail=True)
+    def stats(self, request, username=None):
+        """Returns the latest stats blob for this user."""
+        return Response(self.get_object().get_stats())
 
 
 class InvitationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -138,6 +153,12 @@ class KegViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.DashboardViewer]
     filterset_class = filters.KegFilter
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @action(detail=True)
+    def stats(self, request, pk=None):
+        """Returns the latest stats blob for this keg."""
+        return Response(self.get_object().get_stats())
+
 
 class DrinkViewSet(viewsets.ReadOnlyModelViewSet):
     """Lists all Drinks in the system."""
@@ -177,6 +198,12 @@ class DrinkingSessionViewSet(viewsets.ReadOnlyModelViewSet):
             raise NotFound("There is no active session.")
         return Response(self.get_serializer(latest).data)
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @action(detail=True)
+    def stats(self, request, pk=None):
+        """Returns the latest stats blob for this session."""
+        return Response(self.get_object().get_stats())
+
 
 class ThermoSensorViewSet(viewsets.ModelViewSet):
     """Lists all ThermoSensors in the system."""
@@ -201,6 +228,13 @@ class StatsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Stats.objects.all()
     serializer_class = serializers.StatsSerializer
     permission_classes = [permissions.DashboardViewer]
+
+    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @action(detail=False)
+    def system(self, request):
+        """Returns the latest system-wide (all-time) stats blob."""
+        site = getattr(request, "kbsite", None) or models.KegbotSite.get()
+        return Response(site.get_stats())
 
 
 class SystemEventViewSet(viewsets.ReadOnlyModelViewSet):

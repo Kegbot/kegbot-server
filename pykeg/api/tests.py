@@ -135,9 +135,22 @@ class V2ApiPermissionsTestCase(TestCase):
         self.client.api_key = self.member_key.key
         self.client.add_auth()
         response = self.client.client.patch(
-            f"/api/users/{self.member.id}", {"display_name": "hax"}, format="json"
+            f"/api/users/{self.member.username}", {"display_name": "hax"}, format="json"
         )
         self.assertEqual(405, response.status_code)
+
+    def test_user_detail_is_looked_up_by_username(self):
+        status, data = self.client.get(f"/api/users/{self.member.username}")
+        self.assertEqual(200, status)
+        self.assertEqual(self.member.id, data["id"])
+
+    def test_user_list_requires_authentication(self):
+        status, _ = self.client.get("/api/users")
+        self.assertEqual(403, status)
+
+        self.client.api_key = self.member_key.key
+        status, _ = self.client.get("/api/users")
+        self.assertEqual(200, status)
 
     def test_plugin_data_requires_admin(self):
         self.client.api_key = self.member_key.key
@@ -267,6 +280,51 @@ class CurrentSessionTestCase(TestCase):
         status, data = self.client.get("/api/sessions/current")
         self.assertEqual(200, status)
         self.assertEqual(session.id, data["id"])
+
+
+class StatsEndpointsTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+
+    def test_system_stats(self):
+        status, data = self.client.get("/api/stats/system")
+        self.assertEqual(200, status)
+        self.assertEqual(models.Drink.objects.count(), data["total_pours"])
+        # Drinker keys must be usernames, not numeric user ids.
+        for name in data["volume_by_drinker"]:
+            self.assertFalse(name.isdigit(), name)
+
+    def test_user_stats(self):
+        drink = models.Drink.objects.exclude(user__isnull=True).first()
+        username = drink.user.username
+        expected = models.Drink.objects.filter(user__username=username).count()
+        status, data = self.client.get(f"/api/users/{username}/stats")
+        self.assertEqual(200, status)
+        self.assertEqual(expected, data["total_pours"])
+
+    def test_keg_stats(self):
+        keg = models.Keg.objects.first()
+        status, data = self.client.get(f"/api/kegs/{keg.id}/stats")
+        self.assertEqual(200, status)
+        self.assertEqual(models.Drink.objects.filter(keg=keg).count(), data["total_pours"])
+
+    def test_session_stats(self):
+        session = models.DrinkingSession.objects.first()
+        status, data = self.client.get(f"/api/sessions/{session.id}/stats")
+        self.assertEqual(200, status)
+        self.assertEqual(models.Drink.objects.filter(session=session).count(), data["total_pours"])
+
+    def test_user_stats_respect_site_privacy(self):
+        self.site.privacy = models.KegbotSite.PRIVACY_CHOICE_MEMBERS
+        self.site.save()
+        username = models.Drink.objects.exclude(user__isnull=True).first().user.username
+        status, _ = self.client.get(f"/api/users/{username}/stats")
+        self.assertEqual(403, status)
 
 
 class MeEndpointTestCase(TestCase):

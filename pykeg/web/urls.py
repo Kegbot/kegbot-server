@@ -2,7 +2,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
-from django.views.generic.base import RedirectView
 
 from pykeg.api import urls as apiv2_urls
 from pykeg.web.account import urls as account_urls
@@ -13,12 +12,12 @@ from pykeg.web.kegweb import urls as kegweb_urls
 from pykeg.web.setup_wizard import urls as setup_wizard_urls
 
 urlpatterns = [
-    re_path(r"^api/(?:v1/)?", include(api_urls)),
+    # The legacy api is served at api/ and api/v1/; the negative lookahead
+    # keeps its catch-all from shadowing api/v2/.
+    re_path(r"^api/(?!v2/)(?:v1/)?", include(api_urls)),
     path("account/", include(account_urls)),
     path("accounts/", include(kbregistration_urls)),
     path("kegadmin/", include(kegadmin_urls)),
-    # Shortcuts
-    path("link", RedirectView.as_view(pattern_name="kegadmin-link-device")),
 ]
 
 # Enable the currently-experimental v2 api.

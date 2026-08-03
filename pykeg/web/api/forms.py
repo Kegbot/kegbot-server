@@ -1,11 +1,6 @@
 from django import forms
 
-from pykeg.core import models
 from pykeg.core.kb_common import USERNAME_REGEX
-
-ALL_METERS = models.FlowMeter.objects.all()
-ALL_TOGGLES = models.FlowToggle.objects.all()
-ALL_THERMOS = models.ThermoSensor.objects.all()
 
 
 class DrinkPostForm(forms.Form):
@@ -37,47 +32,5 @@ class ThermoPostForm(forms.Form):
     now = forms.IntegerField(required=False)
 
 
-class CreateKegTapForm(forms.ModelForm):
-    class Meta:
-        model = models.KegTap
-        fields = ("name", "notes")
-
-
-class CalibrateTapForm(forms.Form):
-    ml_per_tick = forms.FloatField()
-
-
 class TapCreateForm(forms.Form):
     name = forms.CharField()
-
-
-class TapSpillForm(forms.Form):
-    volume_ml = forms.FloatField()
-
-
-class DebugLogForm(forms.Form):
-    message = forms.CharField()
-    client_name = forms.CharField(required=False)
-
-
-class RegisterForm(forms.Form):
-    username = forms.RegexField(max_length=30, regex=r"^[\w-]+$")
-    email = forms.EmailField()
-    password = forms.CharField(required=False)
-    photo = forms.ImageField(required=False)
-
-
-class AssignTokenForm(forms.Form):
-    username = forms.RegexField(max_length=30, regex=r"^[\w-]+$")
-
-
-class ConnectMeterForm(forms.Form):
-    meter = forms.ModelChoiceField(queryset=ALL_METERS, required=True)
-
-
-class ConnectToggleForm(forms.Form):
-    toggle = forms.ModelChoiceField(queryset=ALL_TOGGLES, required=True)
-
-
-class ConnectThermoForm(forms.Form):
-    thermo = forms.ModelChoiceField(queryset=ALL_THERMOS, required=True)

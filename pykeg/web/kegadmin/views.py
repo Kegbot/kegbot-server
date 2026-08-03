@@ -3,7 +3,6 @@
 import datetime
 import logging
 import os
-import re
 import subprocess
 import zipfile
 from operator import itemgetter
@@ -24,7 +23,6 @@ from pykeg.core import models, tasks
 from pykeg.logging.handlers import RedisListHandler
 from pykeg.util import kbjson
 from pykeg.util.email import build_message
-from pykeg.web.api import devicelink
 from pykeg.web.decorators import staff_member_required
 from pykeg.web.kegadmin import forms
 
@@ -990,26 +988,3 @@ def logs(request):
 
     context["logs"] = logs
     return render(request, "kegadmin/logs.html", context=context)
-
-
-@staff_member_required
-def link_device(request):
-    context = {}
-    form = forms.LinkDeviceForm()
-    if request.method == "POST":
-        form = forms.LinkDeviceForm(request.POST)
-        if form.is_valid():
-            code = form.cleaned_data.get("code")
-            result = re.match("^([A-Z1-9]{3})-?([A-Z1-9]{3})$", code.upper())
-            if not result:
-                messages.error('Link code is not in the form of "XXX-XXX"')
-            code = f"{result.group(1)}-{result.group(2)}"
-            try:
-                status = devicelink.confirm_link(code)
-                name = status.get("name", "New device")
-                messages.success(request, f"{name} linked!")
-            except devicelink.LinkExpiredException:
-                messages.error(request, "Code incorrect or expired.")
-            return redirect("kegadmin-link-device")
-    context["form"] = form
-    return render(request, "kegadmin/link_device.html", context=context)

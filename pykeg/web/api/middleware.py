@@ -9,19 +9,9 @@ from . import util
 LOGGER = logging.getLogger(__name__)
 
 # These paths are allowed without authorization, regardless of
-# site privacy settings.
-WHITELISTED_API_PATHS = (
-    "/api/devices/link",
-    "/api/v1/devices/link",
-    "/api/login",
-    "/api/v1/login",
-    "/api/version",
-    "/api/v1/version",
-    "/api/get-api-key",
-    "/api/v1/get-api-key",
-)
-
-WHITELISTED_API_PATHS += getattr(settings, "KEGBOT_EXTRA_WHITELISTED_API_PATHS", ())
+# site privacy settings. All built-in whitelisted endpoints were
+# retired with the legacy API trim.
+WHITELISTED_API_PATHS = tuple(getattr(settings, "KEGBOT_EXTRA_WHITELISTED_API_PATHS", ()))
 
 
 class ApiRequestMiddleware:

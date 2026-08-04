@@ -278,6 +278,33 @@ class CurrentSessionTestCase(TestCase):
         status, _ = self.client.get("/api/sessions/current")
         self.assertEqual(404, status)
 
+    def test_directory_enumerates_session_dates(self):
+        status, data = self.client.get("/api/sessions/directory")
+        self.assertEqual(200, status)
+        years = data["years"]
+        self.assertGreater(len(years), 0)
+
+        total = 0
+        for year in years:
+            self.assertGreater(len(year["months"]), 0)
+            year_total = 0
+            for month in year["months"]:
+                self.assertGreater(len(month["days"]), 0)
+                self.assertEqual(sorted(month["days"], reverse=True), month["days"])
+                year_total += month["count"]
+            self.assertEqual(year_total, year["count"])
+            total += year["count"]
+        self.assertEqual(models.DrinkingSession.objects.count(), total)
+
+        # Every directory bucket matches its filtered listing.
+        first_year = years[0]
+        first_month = first_year["months"][0]
+        status, listing = self.client.get(
+            f"/api/sessions?year={first_year['year']}&month={first_month['month']}&page_size=100"
+        )
+        self.assertEqual(200, status)
+        self.assertEqual(first_month["count"], len(listing["results"]))
+
     def test_active_session_is_returned(self):
         session = models.DrinkingSession.objects.latest()
         session.start_time = timezone.now() - datetime.timedelta(minutes=10)

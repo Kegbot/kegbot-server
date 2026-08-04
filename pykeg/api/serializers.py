@@ -402,6 +402,24 @@ class PluginDataSerializer(serializers.ModelSerializer):
         ]
 
 
+class SessionDirectoryMonthSerializer(serializers.Serializer):
+    month = serializers.IntegerField()
+    days = serializers.ListField(child=serializers.IntegerField())
+    count = serializers.IntegerField()
+
+
+class SessionDirectoryYearSerializer(serializers.Serializer):
+    year = serializers.IntegerField()
+    months = SessionDirectoryMonthSerializer(many=True)
+    count = serializers.IntegerField()
+
+
+class SessionDirectorySerializer(serializers.Serializer):
+    """The session archive tree: which dates have sessions."""
+
+    years = SessionDirectoryYearSerializer(many=True)
+
+
 class TapAttachKegRequestSerializer(serializers.Serializer):
     keg_id = serializers.PrimaryKeyRelatedField(queryset=models.Keg.objects.all(), source="keg")
 

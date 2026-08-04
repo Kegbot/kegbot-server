@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
+from django.db.models import Count
+from django.db.models.functions import ExtractDay, ExtractMonth, ExtractYear
 from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
@@ -593,6 +595,41 @@ class DrinkingSessionViewSet(viewsets.ReadOnlyModelViewSet):
     def stats(self, request, pk=None):
         """Returns the latest stats blob for this session."""
         return Response(self.get_object().get_stats())
+
+    @extend_schema(responses=serializers.SessionDirectorySerializer)
+    @action(detail=False)
+    def directory(self, request):
+        """Enumerates the dates that have sessions, newest first.
+
+        Buckets use the site's active timezone — the same conversion the
+        year/month/day list filters apply — so a directory entry always
+        matches the corresponding filtered listing.
+        """
+        rows = (
+            models.DrinkingSession.objects.annotate(
+                year=ExtractYear("start_time"),
+                month=ExtractMonth("start_time"),
+                day=ExtractDay("start_time"),
+            )
+            .values("year", "month", "day")
+            .annotate(count=Count("id"))
+            .order_by("-year", "-month", "-day")
+        )
+
+        years: list[dict] = []
+        for row in rows:
+            if not years or years[-1]["year"] != row["year"]:
+                years.append({"year": row["year"], "months": [], "count": 0})
+            year_entry = years[-1]
+            months = year_entry["months"]
+            if not months or months[-1]["month"] != row["month"]:
+                months.append({"month": row["month"], "days": [], "count": 0})
+            month_entry = months[-1]
+            month_entry["days"].append(row["day"])
+            month_entry["count"] += row["count"]
+            year_entry["count"] += row["count"]
+
+        return Response(serializers.SessionDirectorySerializer(instance={"years": years}).data)
 
 
 class ThermoSensorViewSet(viewsets.ModelViewSet):

@@ -83,6 +83,11 @@ export interface DateParts {
   day: number;
 }
 
+/** Localized month name for a 1-12 month number. */
+export function monthName(month: number, style: "long" | "short" = "long"): string {
+  return new Date(2000, month - 1, 1).toLocaleString(undefined, { month: style });
+}
+
 /**
  * Calendar date of an instant in the given IANA timezone (falls back
  * to the browser's). The session archive buckets by the *site's*

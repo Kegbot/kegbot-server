@@ -77,6 +77,41 @@ export function formatRelativeTime(iso: string, now: Date = new Date()): string 
   return "just now";
 }
 
+export interface DateParts {
+  year: number;
+  month: number;
+  day: number;
+}
+
+/**
+ * Calendar date of an instant in the given IANA timezone (falls back
+ * to the browser's). The session archive buckets by the *site's*
+ * timezone, so archive links must be derived with it.
+ */
+export function datePartsInZone(iso: string, timeZone?: string | null): DateParts {
+  const date = new Date(iso);
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timeZone ?? undefined,
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    }).formatToParts(date);
+    const part = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+    const result = { year: part("year"), month: part("month"), day: part("day") };
+    if (
+      Number.isFinite(result.year) &&
+      Number.isFinite(result.month) &&
+      Number.isFinite(result.day)
+    ) {
+      return result;
+    }
+  } catch {
+    // Unknown timezone id; fall through to browser-local.
+  }
+  return { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };
+}
+
 /** Pour duration in seconds → "8s", "1m 12s"; em dash when unknown. */
 export function formatDuration(seconds: number | null | undefined): string {
   if (!seconds || seconds <= 0) {

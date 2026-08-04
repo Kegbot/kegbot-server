@@ -819,6 +819,14 @@ class Controller(models.Model):
     serial_number = models.CharField(
         max_length=128, blank=True, null=True, help_text="Serial number (optional)."
     )
+    auth_token = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        unique=True,
+        editable=False,
+        help_text="Bearer token for the kegboard event protocol; set when the device is paired.",
+    )
 
     def __str__(self):
         return f"Controller: {self.name}"
@@ -1350,6 +1358,14 @@ class Drink(models.Model):
         editable=False,
         help_text="Tick update sequence that generated this drink (diagnostic data).",
     )
+    pour_id = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        unique=True,
+        editable=False,
+        help_text="Device-assigned pour identifier (kegboard event protocol).",
+    )
     picture = models.OneToOneField(
         "Picture",
         blank=True,
@@ -1446,6 +1462,7 @@ class Drink(models.Model):
         tick_time_series="",
         photo=None,
         spilled=False,
+        pour_id=None,
     ):
         """Records a new drink against a given tap.
 
@@ -1525,6 +1542,7 @@ class Drink(models.Model):
             duration=duration,
             shout=shout,
             tick_time_series=tick_time_series,
+            pour_id=pour_id or None,
         )
         DrinkingSession.AssignSessionForDrink(d)
         d.save()

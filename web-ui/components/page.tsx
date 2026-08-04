@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { type ReactNode, useEffect } from "react";
+import { Breadcrumbs, type Crumb } from "@/components/breadcrumbs";
 import { useConfig } from "@/components/config-context";
 import { LoadingZone } from "@/components/loading-zone";
 
@@ -20,6 +21,8 @@ export interface PageProps {
   hideHeading?: boolean;
   /** Mono label above the title ("KEG #12"). */
   eyebrow?: string;
+  /** Breadcrumb trail above the title; replaces the eyebrow slot. */
+  breadcrumbs?: Crumb[];
   /** Metadata line under the title; may contain links/chips. */
   meta?: ReactNode;
   /** Leading visual beside the title (an Avatar, usually). */
@@ -42,6 +45,7 @@ export function Page({
   title,
   hideHeading,
   eyebrow,
+  breadcrumbs,
   meta,
   avatar,
   headerRight,
@@ -60,10 +64,16 @@ export function Page({
     <Stack spacing={3} sx={{ maxWidth: WIDTHS[width] }}>
       {!hideHeading && (
         <Box>
-          {eyebrow && (
-            <Typography variant="overline" color="text.secondary" component="div">
-              {eyebrow}
-            </Typography>
+          {breadcrumbs ? (
+            <Box sx={{ mb: 1 }}>
+              <Breadcrumbs crumbs={breadcrumbs} />
+            </Box>
+          ) : (
+            eyebrow && (
+              <Typography variant="overline" color="text.secondary" component="div">
+                {eyebrow}
+              </Typography>
+            )
           )}
           <Box
             sx={{

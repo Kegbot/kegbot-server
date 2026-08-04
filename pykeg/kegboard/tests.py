@@ -97,6 +97,23 @@ class EnvelopeTest(KegboardTestCase):
         )
         self.assertEqual(400, response.status_code)
 
+    def test_rejected_batch_is_pinned_to_the_roster(self):
+        # A board whose batches all 400 still surfaces on the dashboard,
+        # with the rejection reason, instead of silently "pairing" forever.
+        response = self.client.post(
+            ENDPOINT,
+            data=json.dumps({"v": 1, "device": DEVICE, "events": []}),
+            content_type="application/json",
+        )
+        self.assertEqual(400, response.status_code)
+        entry = state.get_device(DEVICE)
+        self.assertIn("invalid batch", entry["last_error"])
+        self.assertTrue(entry["last_seen"])
+
+        # A good batch clears the error.
+        self.post([self.status_event()])
+        self.assertIsNone(state.get_device(DEVICE)["last_error"])
+
     def test_oversized_batch(self):
         big = "x" * (17 * 1024)
         response = self.client.post(

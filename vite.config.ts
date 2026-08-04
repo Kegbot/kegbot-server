@@ -25,10 +25,13 @@ export default defineConfig(({ command }) => ({
     port: 8000,
     // Segment-anchored regexes: a bare "/api" key is a prefix match and
     // would also capture source modules under /api-client/.
+    //
+    // changeOrigin must stay off (string shorthands turn it on): Django
+    // must see the browser's Host so its CSRF origin check passes.
     proxy: {
-      "^/api(?:/|$)": DJANGO,
-      "^/media(?:/|$)": DJANGO,
-      "^/static(?:/|$)": DJANGO,
+      "^/api(?:/|$)": { target: DJANGO, changeOrigin: false },
+      "^/media(?:/|$)": { target: DJANGO, changeOrigin: false },
+      "^/static(?:/|$)": { target: DJANGO, changeOrigin: false },
     },
   },
   build: {

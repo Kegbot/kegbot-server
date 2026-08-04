@@ -1420,6 +1420,25 @@ export type KegTapRequest = {
  */
 export type KegTypeEnum = 'mini' | 'corny-2_5-gal' | 'corny-3-gal' | 'corny' | 'sixth' | 'euro-30-liter' | 'euro-half' | 'quarter' | 'euro' | 'half-barrel' | 'other';
 
+/**
+ * A kegboard on the pairing dashboard: roster entry + health.
+ */
+export type KegboardDevice = {
+    device: string;
+    state: string;
+    first_seen?: string;
+    last_seen?: string;
+    ip?: string | null;
+    fw_version?: string | null;
+    uptime_ms?: number | null;
+    wifi_rssi_dbm?: number | null;
+    events_dropped?: number | null;
+    config?: {
+        [key: string]: unknown;
+    } | null;
+    controller_id?: number | null;
+};
+
 export type KegbotSite = {
     readonly name: string;
     readonly server_version: string | null;
@@ -7389,6 +7408,83 @@ export type AdminEmailTestCreateResponses = {
 };
 
 export type AdminEmailTestCreateResponse = AdminEmailTestCreateResponses[keyof AdminEmailTestCreateResponses];
+
+export type AdminKegboardsListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/admin/kegboards';
+};
+
+export type AdminKegboardsListResponses = {
+    200: Array<KegboardDevice>;
+};
+
+export type AdminKegboardsListResponse = AdminKegboardsListResponses[keyof AdminKegboardsListResponses];
+
+export type AdminKegboardsDestroyData = {
+    body?: never;
+    path: {
+        device: string;
+    };
+    query?: never;
+    url: '/api/admin/kegboards/{device}';
+};
+
+export type AdminKegboardsDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type AdminKegboardsDestroyResponse = AdminKegboardsDestroyResponses[keyof AdminKegboardsDestroyResponses];
+
+export type AdminKegboardsAllowCreateData = {
+    body?: never;
+    path: {
+        device: string;
+    };
+    query?: never;
+    url: '/api/admin/kegboards/{device}/allow';
+};
+
+export type AdminKegboardsAllowCreateResponses = {
+    200: KegboardDevice;
+};
+
+export type AdminKegboardsAllowCreateResponse = AdminKegboardsAllowCreateResponses[keyof AdminKegboardsAllowCreateResponses];
+
+export type AdminKegboardsDenyCreateData = {
+    body?: never;
+    path: {
+        device: string;
+    };
+    query?: never;
+    url: '/api/admin/kegboards/{device}/deny';
+};
+
+export type AdminKegboardsDenyCreateResponses = {
+    200: KegboardDevice;
+};
+
+export type AdminKegboardsDenyCreateResponse = AdminKegboardsDenyCreateResponses[keyof AdminKegboardsDenyCreateResponses];
+
+export type AdminKegboardsRevokeCreateData = {
+    body?: never;
+    path: {
+        device: string;
+    };
+    query?: never;
+    url: '/api/admin/kegboards/{device}/revoke';
+};
+
+export type AdminKegboardsRevokeCreateResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
 
 export type AdminLogsRetrieveData = {
     body?: never;

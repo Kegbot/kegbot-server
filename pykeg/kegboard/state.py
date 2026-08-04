@@ -35,6 +35,8 @@ POUR_UPDATE_TTL = 10
 
 STATE_PENDING = "pending"
 STATE_DENIED = "denied"
+# Approved from the dashboard; token staged but not yet picked up.
+STATE_ALLOWED = "allowed"
 STATE_PAIRED = "paired"
 
 
@@ -54,8 +56,11 @@ def get_device(name):
 
 
 def list_devices():
-    keys = cache.keys(ROSTER_KEY.format(name="*"))
-    entries = [cache.get(key) for key in keys]
+    # cache.keys() returns decorated raw keys (prefix/version); recover
+    # the device name from the suffix and re-fetch through the cache api.
+    marker = ROSTER_KEY.format(name="")
+    names = [key.rsplit(marker, 1)[1] for key in cache.keys(ROSTER_KEY.format(name="*"))]
+    entries = [get_device(name) for name in sorted(set(names))]
     return sorted(
         (entry for entry in entries if entry),
         key=lambda entry: entry.get("last_seen") or "",

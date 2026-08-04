@@ -614,6 +614,22 @@ class EmailTestRequestSerializer(serializers.Serializer):
     address = serializers.EmailField()
 
 
+class KegboardDeviceSerializer(serializers.Serializer):
+    """A kegboard on the pairing dashboard: roster entry + health."""
+
+    device = serializers.CharField()
+    state = serializers.CharField()
+    first_seen = serializers.DateTimeField(required=False)
+    last_seen = serializers.DateTimeField(required=False)
+    ip = serializers.CharField(required=False, allow_null=True)
+    fw_version = serializers.CharField(required=False, allow_null=True)
+    uptime_ms = serializers.IntegerField(required=False, allow_null=True)
+    wifi_rssi_dbm = serializers.IntegerField(required=False, allow_null=True)
+    events_dropped = serializers.IntegerField(required=False, allow_null=True)
+    config = serializers.DictField(required=False, allow_null=True)
+    controller_id = serializers.IntegerField(required=False, allow_null=True)
+
+
 class SiteSettingsSerializer(serializers.ModelSerializer):
     """Admin-editable site settings, covering the old settings forms."""
 

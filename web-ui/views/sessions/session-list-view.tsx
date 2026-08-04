@@ -1,4 +1,5 @@
 import Chip from "@mui/material/Chip";
+import Grid from "@mui/material/Grid";
 import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Table from "@mui/material/Table";
@@ -15,20 +16,17 @@ import type { Crumb } from "@/components/breadcrumbs";
 import { useConfig } from "@/components/config-context";
 import { EmptyState } from "@/components/empty-state";
 import { LoadMoreButton } from "@/components/load-more-button";
+import { MonthCalendar } from "@/components/month-calendar";
 import { Page } from "@/components/page";
 import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
-import { datePartsInZone, formatDateTime } from "@/lib/format";
+import { datePartsInZone, formatDateTime, monthName } from "@/lib/format";
 import { useAsyncData } from "@/lib/use-async-data";
 import { useCursorList } from "@/lib/use-cursor-list";
 import { MONO_FONT } from "@/theme/typography";
 
 export function sessionTitle(session: DrinkingSession): string {
   return session.name || `Session #${session.id}`;
-}
-
-export function monthName(month: number, style: "long" | "short" = "long"): string {
-  return new Date(2000, month - 1, 1).toLocaleString(undefined, { month: style });
 }
 
 /** Date-hierarchy breadcrumb trail for a (year, month, day) position. */
@@ -60,51 +58,16 @@ export function sessionArchiveCrumbs(
   return crumbs;
 }
 
-interface DrillTarget {
-  label: string;
-  to: string;
-}
-
-/** Next-level drilldown targets from the server's archive directory. */
-function drillTargets(
-  directory: SessionDirectory | null,
-  year?: number,
-  month?: number,
-  day?: number,
-): DrillTarget[] {
-  if (!directory || day !== undefined) {
-    return [];
-  }
-  if (year === undefined) {
-    return directory.years.map((entry) => ({
-      label: String(entry.year),
-      to: `/sessions/${entry.year}`,
-    }));
-  }
-  const yearEntry = directory.years.find((entry) => entry.year === year);
-  if (!yearEntry) {
-    return [];
-  }
-  if (month === undefined) {
-    return yearEntry.months.map((entry) => ({
-      label: monthName(entry.month, "short"),
-      to: `/sessions/${year}/${entry.month}`,
-    }));
-  }
-  const monthEntry = yearEntry.months.find((entry) => entry.month === month);
-  if (!monthEntry) {
-    return [];
-  }
-  return monthEntry.days.map((d) => ({
-    label: `${monthName(month, "short")} ${d}`,
-    to: `/sessions/${year}/${month}/${d}`,
-  }));
+/** Session days for (year, month) from the archive directory. */
+function activeDays(directory: SessionDirectory | null, year: number, month: number): number[] {
+  const yearEntry = directory?.years.find((entry) => entry.year === year);
+  return yearEntry?.months.find((entry) => entry.month === month)?.days ?? [];
 }
 
 /**
  * Session archive. Optional :year/:month/:day route params narrow the
- * range, mirroring the old date-hierarchy URLs; breadcrumbs and drill
- * chips expose the hierarchy.
+ * range, mirroring the old date-hierarchy URLs. Breadcrumbs, year
+ * chips, and weekday-aligned calendars expose the hierarchy.
  */
 export function SessionListView() {
   const params = useParams();
@@ -129,9 +92,8 @@ export function SessionListView() {
           ? `${monthName(month)} ${year}`
           : `${monthName(month)} ${day}, ${year}`;
 
-  const drills = drillTargets(directory.data, year, month, day);
-  const drillLabel =
-    year === undefined ? "Browse by year" : month === undefined ? "Months" : "Days";
+  const today = datePartsInZone(new Date().toISOString(), me.site.timezone);
+  const years = directory.data?.years ?? [];
 
   return (
     <Page
@@ -140,24 +102,51 @@ export function SessionListView() {
       loading={list.loading}
       error={list.error}
     >
-      <Stack spacing={2.5}>
-        {drills.length > 0 && (
+      <Stack spacing={3}>
+        {/* Root: years with sessions. */}
+        {year === undefined && years.length > 0 && (
           <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
             <Typography variant="overline" color="text.secondary">
-              {drillLabel}
+              Browse by year
             </Typography>
-            {drills.map((drill) => (
+            {years.map((entry) => (
               <Chip
-                key={drill.to}
-                label={drill.label}
+                key={entry.year}
+                label={entry.year}
                 component={Link}
-                to={drill.to}
+                to={`/sessions/${entry.year}`}
                 clickable
                 size="small"
                 variant="outlined"
               />
             ))}
           </Stack>
+        )}
+        {/* Year: every month as a mini calendar. */}
+        {year !== undefined && month === undefined && directory.data && (
+          <Grid container spacing={3}>
+            {Array.from({ length: 12 }, (_, index) => index + 1).map((m) => (
+              <Grid key={m} size={{ xs: 6, sm: 4, md: 3 }}>
+                <MonthCalendar
+                  year={year}
+                  month={m}
+                  activeDays={activeDays(directory.data, year, m)}
+                  compact
+                  linkMonth
+                  today={today}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+        {/* Month: one full calendar. */}
+        {year !== undefined && month !== undefined && day === undefined && directory.data && (
+          <MonthCalendar
+            year={year}
+            month={month}
+            activeDays={activeDays(directory.data, year, month)}
+            today={today}
+          />
         )}
         {list.items.length === 0 && !list.loading && (
           <EmptyState title="No sessions found." hint="Try a wider date range." />

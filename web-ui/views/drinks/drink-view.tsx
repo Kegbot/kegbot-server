@@ -5,7 +5,8 @@ import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Link, useParams } from "react-router";
-import { drinksList, drinksPictureDestroy, drinksRetrieve } from "@/api-client";
+import { drinksList, drinksPictureDestroy, drinksRetrieve, sessionsRetrieve } from "@/api-client";
+import { useConfig } from "@/components/config-context";
 import { useConfirm } from "@/components/confirm-context";
 import { useCurrentUser } from "@/components/current-user-context";
 import { DrinkList } from "@/components/drink-list";
@@ -16,8 +17,9 @@ import { StatStrip } from "@/components/stat-badges";
 import { useFormatters } from "@/components/use-formatters";
 import { UserLink } from "@/components/user-link";
 import { toErrorMessage, unwrap } from "@/lib/api";
-import { formatDateTime, formatDuration } from "@/lib/format";
+import { datePartsInZone, formatDateTime, formatDuration } from "@/lib/format";
 import { useAsyncData } from "@/lib/use-async-data";
+import { sessionArchiveCrumbs } from "@/views/sessions/session-list-view";
 
 export function DrinkView() {
   const params = useParams();
@@ -31,7 +33,32 @@ export function DrinkView() {
     deps: [drinkId],
   });
 
+  const { me } = useConfig();
   const sessionId = drink.data?.session_id ?? null;
+  // Fetched for its start_time: the archive buckets by the session's
+  // start date, which can differ from the drink's own date.
+  const session = useAsyncData(() => unwrap(sessionsRetrieve({ path: { id: sessionId ?? 0 } })), {
+    deps: [sessionId],
+    enabled: sessionId != null,
+  });
+  const crumbs = (() => {
+    if (sessionId == null || !session.data) {
+      return undefined;
+    }
+    const started = datePartsInZone(session.data.start_time, me.site.timezone);
+    const trail = sessionArchiveCrumbs(
+      started.year,
+      started.month,
+      started.day,
+      `Session #${sessionId}`,
+    );
+    const sessionCrumb = trail[trail.length - 1];
+    if (sessionCrumb) {
+      sessionCrumb.to = `/sessions/id/${sessionId}`;
+    }
+    trail.push({ label: `Drink #${drinkId}` });
+    return trail;
+  })();
   const sessionDrinks = useAsyncData(
     async () => {
       if (sessionId == null) {
@@ -73,6 +100,7 @@ export function DrinkView() {
           : `Drink #${drinkId}`
       }
       eyebrow={`Drink #${drinkId}`}
+      breadcrumbs={crumbs}
       meta={
         drink.data && (
           <>

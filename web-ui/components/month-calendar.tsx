@@ -37,8 +37,10 @@ export function MonthCalendar({
   const dayCount = new Date(year, month, 0).getDate();
   const firstWeekday = new Date(year, month - 1, 1).getDay();
   const active = new Set(activeDays);
-  const cell = compact ? 26 : 36;
-  const fontSize = compact ? "0.6875rem" : "0.8125rem";
+  // Compact calendars have fixed small cells; full-size ones fill their
+  // container with square cells.
+  const cellSize = compact ? { height: 26 } : { aspectRatio: "1 / 1", minHeight: 40 };
+  const fontSize = compact ? "0.6875rem" : "0.875rem";
 
   const title = linkMonth ? (
     <MuiLink
@@ -54,7 +56,7 @@ export function MonthCalendar({
   );
 
   return (
-    <Box sx={{ maxWidth: cell * 7 + 6 * 2 }}>
+    <Box sx={{ width: "100%", maxWidth: compact ? 26 * 7 + 6 * 2 : undefined }}>
       <Typography variant="subtitle2" component="div" sx={{ mb: 0.5 }}>
         {title}
       </Typography>
@@ -91,7 +93,7 @@ export function MonthCalendar({
           const day = index + 1;
           const isToday = today?.year === year && today.month === month && today.day === day;
           const common = {
-            height: cell,
+            ...cellSize,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

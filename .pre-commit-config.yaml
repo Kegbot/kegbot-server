@@ -15,3 +15,17 @@ repos:
         args: [--fix]
       # Run the formatter.
       - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: biome check
+        entry: bun run biome check --write --files-ignore-unknown=true --no-errors-on-unmatched
+        language: system
+        types_or: [javascript, jsx, ts, tsx, json, css]
+      - id: typecheck
+        name: tsc typecheck
+        entry: bun run typecheck
+        language: system
+        types_or: [ts, tsx]
+        pass_filenames: false

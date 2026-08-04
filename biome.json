@@ -10,8 +10,8 @@
       "web-ui/**",
       "vite.config.ts",
       "openapi-ts.config.ts",
-      "!web-ui/api-client/**",
-      "!web-ui/dist/**",
+      "!web-ui/api-client",
+      "!web-ui/dist",
       "!web-ui/lib/shared-constants.ts"
     ]
   },

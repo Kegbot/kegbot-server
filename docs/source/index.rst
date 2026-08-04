@@ -14,6 +14,7 @@ Contents:
    overview
    install
    settings
+   kegboards
    management
    commands
    developers

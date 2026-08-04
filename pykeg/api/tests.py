@@ -687,6 +687,9 @@ class StatsEndpointsTestCase(TestCase):
         # Drinker keys must be usernames, not numeric user ids.
         for name in data["volume_by_drinker"]:
             self.assertFalse(name.isdigit(), name)
+        # Weekday keys are strftime("%w") strings; the frontend relies on this.
+        for key in data["volume_by_day_of_week"]:
+            self.assertIn(key, {"0", "1", "2", "3", "4", "5", "6"})
 
     def test_user_stats(self):
         drink = models.Drink.objects.exclude(user__isnull=True).first()

@@ -12,7 +12,7 @@ export interface StatsBlob {
   average_volume_ml?: number;
   greatest_volume_ml?: number;
   greatest_volume_id?: number;
-  /** Keys are day names ("monday" .. "sunday"). */
+  /** Keys are strftime("%w") strings: "0" (Sunday) .. "6" (Saturday). */
   volume_by_day_of_week?: Record<string, number>;
   /** Usernames (ids are translated server-side). */
   registered_drinkers?: string[];

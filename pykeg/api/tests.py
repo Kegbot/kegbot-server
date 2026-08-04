@@ -1150,6 +1150,9 @@ class AdminOpsTestCase(TestCase):
     def test_plugin_settings_roundtrip(self):
         response = self.as_admin().get("/api/admin/plugins/webhook/settings")
         self.assertEqual(200, response.status_code)
+        # Unconfigured fields are still present, so the settings page
+        # has an input to fill in.
+        self.assertIn("webhook_urls", response.json())
 
         response = self.as_admin().put(
             "/api/admin/plugins/webhook/settings",

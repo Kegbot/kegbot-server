@@ -3,7 +3,7 @@
 
 Run after `kegbot restore <legacy zip>` + `kegbot upgrade`. Compares the
 database against testdata/demo-site.json (the data the legacy backups were
-built from) and smoke-tests key pages. Exits nonzero on any failure.
+built from) and smoke-tests key API endpoints. Exits nonzero on any failure.
 """
 
 import json
@@ -45,8 +45,14 @@ check("site is_setup", True, site.is_setup)
 check("kegs on tap", 2, models.Keg.objects.filter(status=models.Keg.STATUS_ON_TAP).count())
 
 client = Client()
-for url in ["/", "/kegs/", "/stats/", "/sessions/", "/accounts/login/"]:
-    response = client.get(url, follow=True)
+for url in [
+    "/api/users/me",
+    "/api/status",
+    "/api/kegs",
+    "/api/sessions",
+    "/api/stats/system",
+]:
+    response = client.get(url)
     check(f"GET {url}", 200, response.status_code)
 
 api_key = models.ApiKey.objects.first()

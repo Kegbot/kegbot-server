@@ -2,14 +2,16 @@ import { BarChart } from "@mui/x-charts/BarChart";
 import { useChartColors } from "@/components/charts/chart-colors";
 import { useFormatters } from "@/components/use-formatters";
 
-const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
-const LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// Blob keys are strftime("%w"): "0" (Sunday) through "6" (Saturday).
+// Sunday-first display matches the archive calendars.
+const DAY_KEYS = ["0", "1", "2", "3", "4", "5", "6"];
+const LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /** Bar chart of poured volume by day of week. */
 export function VolumeByWeekdayChart({ data }: { data: Record<string, number> }) {
   const { volume } = useFormatters();
   const colors = useChartColors();
-  const values = DAYS.map((day) => data[day] ?? 0);
+  const values = DAY_KEYS.map((key) => data[key] ?? 0);
   return (
     <BarChart
       xAxis={[{ data: LABELS, scaleType: "band", disableLine: true, disableTicks: true }]}

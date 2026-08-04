@@ -1,4 +1,3 @@
-import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -6,9 +5,10 @@ import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import { type FormEvent, useEffect, useState } from "react";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import { LoadingZone } from "@/components/loading-zone";
 import { Page } from "@/components/page";
-import { fieldError, nonFieldErrors } from "@/lib/forms";
+import { fieldError } from "@/lib/forms";
 import SHARED from "@/lib/shared-constants";
 import { useSiteSettings } from "@/views/admin/use-site-settings";
 
@@ -46,11 +46,7 @@ export function SettingsGeneralView() {
       <LoadingZone loading={settings.loading} error={settings.error}>
         <form onSubmit={onSubmit}>
           <Stack spacing={2} sx={{ maxWidth: 560 }}>
-            {nonFieldErrors(errors, ["title", "privacy", "registration_mode"]).map((message) => (
-              <Alert key={message} severity="error">
-                {message}
-              </Alert>
-            ))}
+            <FormErrorAlert errors={errors} fields={["title", "privacy", "registration_mode"]} />
             <TextField
               label="Site title"
               value={title}

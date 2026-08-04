@@ -4,6 +4,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { type FormEvent, useEffect, useState } from "react";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import { LoadingZone } from "@/components/loading-zone";
 import { Page } from "@/components/page";
 import { fieldError } from "@/lib/forms";
@@ -40,6 +41,10 @@ export function SettingsLocationView() {
       <LoadingZone loading={settings.loading} error={settings.error}>
         <form onSubmit={onSubmit}>
           <Stack spacing={2} sx={{ maxWidth: 560 }}>
+            <FormErrorAlert
+              errors={errors}
+              fields={["volume_display_units", "temperature_display_units", "timezone"]}
+            />
             <TextField
               select
               label="Volume units"

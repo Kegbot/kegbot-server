@@ -7,9 +7,10 @@ import Typography from "@mui/material/Typography";
 import { type FormEvent, useState } from "react";
 import { Link, useParams } from "react-router";
 import { authPasswordResetConfirmCreate } from "@/api-client";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import type { FormErrors } from "@/lib/api";
 import { unwrap } from "@/lib/api";
-import { fieldError, formErrorsFromException, nonFieldErrors } from "@/lib/forms";
+import { fieldError, formErrorsFromException } from "@/lib/forms";
 
 /**
  * Splits the `uidb64-token` path segment. The token is always the last
@@ -81,11 +82,7 @@ export function PasswordResetConfirmView() {
         <form onSubmit={onSubmit}>
           <Stack spacing={2}>
             <Typography variant="h5">Choose a new password</Typography>
-            {nonFieldErrors(errors, ["new_password"]).map((message) => (
-              <Alert key={message} severity="error">
-                {message}
-              </Alert>
-            ))}
+            <FormErrorAlert errors={errors} fields={["new_password"]} />
             <TextField
               label="New password"
               type="password"

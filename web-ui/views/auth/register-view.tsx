@@ -8,9 +8,10 @@ import { type FormEvent, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { authRegisterCreate } from "@/api-client";
 import { useConfig } from "@/components/config-context";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import type { FormErrors } from "@/lib/api";
 import { unwrap } from "@/lib/api";
-import { fieldError, formErrorsFromException, nonFieldErrors } from "@/lib/forms";
+import { fieldError, formErrorsFromException } from "@/lib/forms";
 
 const FIELDS = ["username", "email", "password"];
 
@@ -71,11 +72,7 @@ export function RegisterView() {
       <form onSubmit={onSubmit}>
         <Stack spacing={2}>
           <Typography variant="h5">Create an account</Typography>
-          {nonFieldErrors(errors, FIELDS).map((message) => (
-            <Alert key={message} severity="error">
-              {message}
-            </Alert>
-          ))}
+          <FormErrorAlert errors={errors} fields={FIELDS} />
           <TextField
             label="Username"
             value={username}

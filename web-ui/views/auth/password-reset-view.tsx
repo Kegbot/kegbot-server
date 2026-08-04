@@ -6,6 +6,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { type FormEvent, useState } from "react";
 import { authPasswordResetCreate } from "@/api-client";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import type { FormErrors } from "@/lib/api";
 import { unwrap } from "@/lib/api";
 import { fieldError, formErrorsFromException } from "@/lib/forms";
@@ -43,6 +44,7 @@ export function PasswordResetView() {
         <form onSubmit={onSubmit}>
           <Stack spacing={2}>
             <Typography variant="h5">Reset your password</Typography>
+            <FormErrorAlert errors={errors} fields={["email"]} />
             <TextField
               label="E-mail address"
               type="email"

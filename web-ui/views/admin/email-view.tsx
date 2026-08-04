@@ -4,6 +4,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { type FormEvent, useState } from "react";
 import { adminEmailTestCreate } from "@/api-client";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import { LoadingZone } from "@/components/loading-zone";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";
@@ -49,20 +50,23 @@ export function EmailView() {
             </Alert>
           )}
           <form onSubmit={onSubmit}>
-            <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-              <TextField
-                label="Send a test e-mail to"
-                type="email"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                error={Boolean(fieldError(errors, "address"))}
-                helperText={fieldError(errors, "address")}
-                required
-                sx={{ flexGrow: 1 }}
-              />
-              <Button type="submit" variant="contained" disabled={busy} sx={{ mt: 1 }}>
-                Send
-              </Button>
+            <Stack spacing={2}>
+              <FormErrorAlert errors={errors} fields={["address"]} />
+              <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
+                <TextField
+                  label="Send a test e-mail to"
+                  type="email"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  error={Boolean(fieldError(errors, "address"))}
+                  helperText={fieldError(errors, "address")}
+                  required
+                  sx={{ flexGrow: 1 }}
+                />
+                <Button type="submit" variant="contained" disabled={busy} sx={{ mt: 1 }}>
+                  Send
+                </Button>
+              </Stack>
             </Stack>
           </form>
         </Stack>

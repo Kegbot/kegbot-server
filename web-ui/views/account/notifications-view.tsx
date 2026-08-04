@@ -16,6 +16,7 @@ import {
   notificationSettingsPartialUpdate,
 } from "@/api-client";
 import { useCurrentUser } from "@/components/current-user-context";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import { LoadingZone } from "@/components/loading-zone";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";
@@ -135,6 +136,7 @@ function ChangeEmailSection() {
       <CardContent>
         <form onSubmit={onSubmit}>
           <Stack spacing={2} sx={{ maxWidth: 480 }}>
+            <FormErrorAlert errors={errors} fields={["email"]} />
             <TextField
               label="E-mail address"
               type="email"

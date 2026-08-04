@@ -20,6 +20,25 @@ export function formatVolume(volumeMl: number, units: VolumeUnits): string {
   return `${(volumeMl / ML_PER_PINT).toFixed(1)} pints`;
 }
 
+/** Terse volume for chart axis ticks: "12 oz", "3 pt", "1.5 L". */
+export function formatVolumeTick(volumeMl: number, units: VolumeUnits): string {
+  const short = (value: number) => {
+    const rounded = value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
+    return String(rounded);
+  };
+  if (units === "metric") {
+    if (volumeMl < 1000) {
+      return `${Math.round(volumeMl)} mL`;
+    }
+    return `${short(volumeMl / 1000)} L`;
+  }
+  const ounces = volumeMl / ML_PER_OUNCE;
+  if (ounces < 32) {
+    return `${short(ounces)} oz`;
+  }
+  return `${short(volumeMl / ML_PER_PINT)} pt`;
+}
+
 export function formatTemperature(tempC: number, units: TemperatureUnits): string {
   if (units === "f") {
     return `${((tempC * 9) / 5 + 32).toFixed(1)}° F`;

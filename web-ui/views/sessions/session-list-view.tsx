@@ -1,6 +1,6 @@
-import Chip from "@mui/material/Chip";
 import Grid from "@mui/material/Grid";
 import MuiLink from "@mui/material/Link";
+import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -103,24 +103,42 @@ export function SessionListView() {
       error={list.error}
     >
       <Stack spacing={3}>
-        {/* Root: years with sessions. */}
+        {/* Root: years with sessions, as chunky tiles. */}
         {year === undefined && years.length > 0 && (
-          <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-            <Typography variant="overline" color="text.secondary">
-              Browse by year
-            </Typography>
+          <Grid container spacing={2}>
             {years.map((entry) => (
-              <Chip
-                key={entry.year}
-                label={entry.year}
-                component={Link}
-                to={`/sessions/${entry.year}`}
-                clickable
-                size="small"
-                variant="outlined"
-              />
+              <Grid key={entry.year} size={{ xs: 6, sm: 4, md: 3 }}>
+                <Paper
+                  variant="outlined"
+                  component={Link}
+                  to={`/sessions/${entry.year}`}
+                  sx={{
+                    display: "block",
+                    px: 2.5,
+                    py: 2,
+                    textDecoration: "none",
+                    color: "inherit",
+                    transition: "border-color 120ms ease",
+                    "&:hover": { borderColor: "primary.main" },
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontFamily: MONO_FONT,
+                      fontWeight: 600,
+                      fontSize: "1.75rem",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {entry.year}
+                  </Typography>
+                  <Typography variant="overline" color="text.secondary" component="div">
+                    {entry.count === 1 ? "1 session" : `${entry.count} sessions`}
+                  </Typography>
+                </Paper>
+              </Grid>
             ))}
-          </Stack>
+          </Grid>
         )}
         {/* Year: every month as a mini calendar. */}
         {year !== undefined && month === undefined && directory.data && (

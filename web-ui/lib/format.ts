@@ -77,6 +77,19 @@ export function formatRelativeTime(iso: string, now: Date = new Date()): string 
   return "just now";
 }
 
+/** Pour duration in seconds → "8s", "1m 12s"; em dash when unknown. */
+export function formatDuration(seconds: number | null | undefined): string {
+  if (!seconds || seconds <= 0) {
+    return "—";
+  }
+  if (seconds < 60) {
+    return `${Math.round(seconds)}s`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const rest = Math.round(seconds % 60);
+  return rest > 0 ? `${minutes}m ${rest}s` : `${minutes}m`;
+}
+
 /** Percent (0-100) of a keg remaining, clamped. */
 export function kegPercentFull(servedMl: number, spilledMl: number, fullMl: number): number {
   if (!fullMl) {

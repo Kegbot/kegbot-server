@@ -23,8 +23,8 @@ export function KegProgress({ keg }: { keg: Keg }) {
       <Box
         sx={{
           position: "relative",
-          height: 12,
-          borderRadius: 6,
+          height: 22,
+          borderRadius: 1.5,
           bgcolor: "action.hover",
           border: 1,
           borderColor: "divider",
@@ -55,9 +55,12 @@ export function KegProgress({ keg }: { keg: Keg }) {
           />
         ))}
       </Box>
-      <Stack direction="row" sx={{ justifyContent: "space-between", mt: 0.5 }}>
+      <Stack
+        direction="row"
+        sx={{ justifyContent: "space-between", alignItems: "baseline", mt: 0.75 }}
+      >
         <Typography
-          variant="caption"
+          variant="body2"
           sx={{ fontFamily: MONO_FONT, fontWeight: 600, color: readoutColor }}
         >
           {percent.toFixed(0)}% FULL

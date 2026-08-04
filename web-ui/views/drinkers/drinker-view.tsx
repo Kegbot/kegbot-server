@@ -1,7 +1,8 @@
 import Avatar from "@mui/material/Avatar";
 import Grid from "@mui/material/Grid";
+import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { drinksList, usersRetrieve, usersStatsRetrieve } from "@/api-client";
 import { VolumeByWeekdayChart } from "@/components/charts/volume-by-weekday-chart";
 import { DrinkList } from "@/components/drink-list";
@@ -9,7 +10,8 @@ import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
 import { Section } from "@/components/section";
 import { SessionVolumeList } from "@/components/session-volume-list";
-import { StatBadges } from "@/components/stat-badges";
+import { StatStrip } from "@/components/stat-badges";
+import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
 import { asStats } from "@/lib/stats";
 import { useAsyncData } from "@/lib/use-async-data";
@@ -18,6 +20,7 @@ import { useCursorList } from "@/lib/use-cursor-list";
 export function DrinkerView() {
   const params = useParams();
   const username = params.username ?? "";
+  const { volume } = useFormatters();
 
   const user = useAsyncData(() => unwrap(usersRetrieve({ path: { username } })), {
     deps: [username],
@@ -49,7 +52,31 @@ export function DrinkerView() {
     >
       {user.data && (
         <Stack spacing={4}>
-          {stats.data && <StatBadges stats={stats.data} />}
+          {stats.data && (
+            <StatStrip
+              cells={[
+                { value: volume(stats.data.total_volume_ml ?? 0), caption: "total poured" },
+                { value: stats.data.total_pours ?? 0, caption: "pours" },
+                { value: stats.data.sessions_count ?? 0, caption: "sessions" },
+                {
+                  value:
+                    stats.data.greatest_volume_id != null ? (
+                      <MuiLink
+                        component={Link}
+                        to={`/drinks/${stats.data.greatest_volume_id}`}
+                        underline="hover"
+                        color="inherit"
+                      >
+                        {volume(stats.data.greatest_volume_ml ?? 0)}
+                      </MuiLink>
+                    ) : (
+                      volume(stats.data.greatest_volume_ml ?? 0)
+                    ),
+                  caption: "biggest pour",
+                },
+              ]}
+            />
+          )}
           <Grid container spacing={4}>
             {stats.data?.volume_by_day_of_week && (
               <Grid size={{ xs: 12, md: 6 }}>

@@ -6,7 +6,12 @@ import { useFormatters } from "@/components/use-formatters";
 import type { StatsBlob } from "@/lib/stats";
 import { MONO_FONT } from "@/theme/typography";
 
-function Cell({ value, caption, index }: { value: ReactNode; caption: string; index: number }) {
+export interface StatCell {
+  value: ReactNode;
+  caption: string;
+}
+
+function Cell({ value, caption, index }: StatCell & { index: number }) {
   return (
     <Box
       sx={{
@@ -18,10 +23,19 @@ function Cell({ value, caption, index }: { value: ReactNode; caption: string; in
         borderStyle: "solid",
         borderRight: 0,
         borderBottom: 0,
+        minWidth: 0,
       }}
     >
       <Typography
-        sx={{ fontFamily: MONO_FONT, fontWeight: 600, fontSize: "1.5rem", lineHeight: 1.3 }}
+        sx={{
+          fontFamily: MONO_FONT,
+          fontWeight: 600,
+          fontSize: "1.5rem",
+          lineHeight: 1.3,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
       >
         {value}
       </Typography>
@@ -33,20 +47,13 @@ function Cell({ value, caption, index }: { value: ReactNode; caption: string; in
 }
 
 /** Headline stat strip: one surface, hairline-divided cells. */
-export function StatBadges({ stats }: { stats: StatsBlob }) {
-  const { volume } = useFormatters();
-  const cells: Array<{ value: ReactNode; caption: string }> = [
-    { value: volume(stats.total_volume_ml ?? 0), caption: "total poured" },
-    { value: stats.total_pours ?? 0, caption: "pours" },
-    { value: stats.registered_drinkers?.length ?? 0, caption: "drinkers" },
-    { value: stats.sessions_count ?? 0, caption: "sessions" },
-  ];
+export function StatStrip({ cells }: { cells: StatCell[] }) {
   return (
     <Paper
       variant="outlined"
       sx={{
         display: "grid",
-        gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
+        gridTemplateColumns: { xs: "1fr 1fr", sm: `repeat(${cells.length}, 1fr)` },
         overflow: "hidden",
       }}
     >
@@ -54,5 +61,20 @@ export function StatBadges({ stats }: { stats: StatsBlob }) {
         <Cell key={cell.caption} {...cell} index={index} />
       ))}
     </Paper>
+  );
+}
+
+/** Site-wide headline stats derived from a stats blob. */
+export function StatBadges({ stats }: { stats: StatsBlob }) {
+  const { volume } = useFormatters();
+  return (
+    <StatStrip
+      cells={[
+        { value: volume(stats.total_volume_ml ?? 0), caption: "total poured" },
+        { value: stats.total_pours ?? 0, caption: "pours" },
+        { value: stats.registered_drinkers?.length ?? 0, caption: "drinkers" },
+        { value: stats.sessions_count ?? 0, caption: "sessions" },
+      ]}
+    />
   );
 }

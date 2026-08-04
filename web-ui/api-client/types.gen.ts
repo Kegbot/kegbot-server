@@ -3400,6 +3400,25 @@ export type RegisterRequestRequest = {
  */
 export type RegistrationModeEnum = 'public' | 'member-invite-only' | 'staff-invite-only';
 
+/**
+ * The session archive tree: which dates have sessions.
+ */
+export type SessionDirectory = {
+    years: Array<SessionDirectoryYear>;
+};
+
+export type SessionDirectoryMonth = {
+    month: number;
+    days: Array<number>;
+    count: number;
+};
+
+export type SessionDirectoryYear = {
+    year: number;
+    months: Array<SessionDirectoryMonth>;
+    count: number;
+};
+
 export type SetPasswordRequestRequest = {
     password: string;
 };
@@ -9179,6 +9198,19 @@ export type SessionsCurrentRetrieveResponses = {
 };
 
 export type SessionsCurrentRetrieveResponse = SessionsCurrentRetrieveResponses[keyof SessionsCurrentRetrieveResponses];
+
+export type SessionsDirectoryRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/sessions/directory';
+};
+
+export type SessionsDirectoryRetrieveResponses = {
+    200: SessionDirectory;
+};
+
+export type SessionsDirectoryRetrieveResponse = SessionsDirectoryRetrieveResponses[keyof SessionsDirectoryRetrieveResponses];
 
 export type SetupAdminUserCreateData = {
     body: SetupAdminUserRequestRequest;

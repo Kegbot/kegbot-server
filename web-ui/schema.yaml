@@ -3073,6 +3073,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/DrinkingSession'
           description: ''
+  /api/sessions/directory:
+    get:
+      operationId: sessions_directory_retrieve
+      description: |-
+        Enumerates the dates that have sessions, newest first.
+
+        Buckets use the site's active timezone — the same conversion the
+        year/month/day list filters apply — so a directory entry always
+        matches the corresponding filtered listing.
+      tags:
+      - sessions
+      security:
+      - apiKeyBasicAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDirectory'
+          description: ''
   /api/setup/admin-user:
     post:
       operationId: setup_admin_user_create
@@ -8797,6 +8818,46 @@ components:
         * `public` - Public: Anyone can register.
         * `member-invite-only` - Member Invite: Must be invited by an existing member.
         * `staff-invite-only` - Staff Invite Only: Must be invited by a staff member.
+    SessionDirectory:
+      type: object
+      description: 'The session archive tree: which dates have sessions.'
+      properties:
+        years:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionDirectoryYear'
+      required:
+      - years
+    SessionDirectoryMonth:
+      type: object
+      properties:
+        month:
+          type: integer
+        days:
+          type: array
+          items:
+            type: integer
+        count:
+          type: integer
+      required:
+      - count
+      - days
+      - month
+    SessionDirectoryYear:
+      type: object
+      properties:
+        year:
+          type: integer
+        months:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionDirectoryMonth'
+        count:
+          type: integer
+      required:
+      - count
+      - months
+      - year
     SetPasswordRequestRequest:
       type: object
       properties:

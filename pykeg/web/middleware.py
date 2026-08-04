@@ -136,6 +136,11 @@ class IsSetupMiddleware:
             # The setup API is how the frontend performs setup/upgrade.
             return None
 
+        if request.path.startswith("/api/kegboard-event"):
+            # The kegboard endpoint answers setup mode itself (503, so
+            # devices keep events queued instead of dropping the batch).
+            return None
+
         if not request.path.startswith("/api/"):
             return None
 

@@ -2,6 +2,8 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 
+from pykeg.kegboard import views as kegboard_views
+
 from . import views, views_account, views_admin, views_setup
 
 router = routers.DefaultRouter(trailing_slash=False)
@@ -30,6 +32,8 @@ urlpatterns = [
     # Must precede the router so it wins over the users/{pk} detail route.
     path("users/me", views.me),
     path("", include(router.urls)),
+    # Device-facing kegboard event protocol endpoint (schema-excluded).
+    path("kegboard-event", kegboard_views.kegboard_event, name="kegboard-event"),
     path("admin/backups", views_admin.backups),
     path("admin/backups/<str:filename>", views_admin.delete_backup),
     path("admin/bugreport", views_admin.bugreport),

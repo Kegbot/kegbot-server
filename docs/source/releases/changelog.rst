@@ -32,6 +32,14 @@ brought up to date.
   activation); admin user management and site settings; backups, logs,
   test e-mail, and bugreport endpoints; an API-driven setup wizard; and
   plugin settings.
+* **Kegboard v4 boards are supported natively** via the new kegboard event
+  protocol endpoint at ``/api/kegboard-event``. Boards pair from the admin
+  Controllers page — an unprovisioned board announces itself and appears
+  there automatically; approving it creates a controller and provisions its
+  bearer token, with no key entry. Pours (device-authoritative volumes),
+  temperature readings, and heartbeats flow in over HTTP with outage-proof
+  queueing, and token presentments are authorized or denied by the server
+  in a single round trip.
 * Python 3.14 is now required (was 3.10).
 * Django 5.2 LTS (was 3.2).
 * Web server switched from gunicorn/gevent to waitress.

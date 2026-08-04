@@ -1,5 +1,7 @@
+import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import MuiLink from "@mui/material/Link";
+import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Link } from "react-router";
@@ -13,6 +15,7 @@ import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
 import { asStats } from "@/lib/stats";
 import { useAsyncData } from "@/lib/use-async-data";
+import { MONO_FONT } from "@/theme/typography";
 
 export function StatsView() {
   const { volume } = useFormatters();
@@ -24,6 +27,41 @@ export function StatsView() {
       {stats && (
         <Stack spacing={4}>
           <StatBadges stats={stats} />
+          {stats.largest_session?.session_id != null && (
+            <Paper
+              variant="outlined"
+              sx={{
+                borderLeft: 3,
+                borderLeftColor: "primary.main",
+                px: 3,
+                py: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 2,
+              }}
+            >
+              <Box>
+                <Typography variant="overline" color="text.secondary" component="div">
+                  Largest session
+                </Typography>
+                <Typography variant="h5">
+                  <MuiLink
+                    component={Link}
+                    to={`/sessions/id/${stats.largest_session.session_id}`}
+                    underline="hover"
+                    color="inherit"
+                  >
+                    Session #{stats.largest_session.session_id}
+                  </MuiLink>
+                </Typography>
+              </Box>
+              <Typography sx={{ fontFamily: MONO_FONT, fontWeight: 600, fontSize: "2rem" }}>
+                {volume(stats.largest_session.volume_ml ?? 0)}
+              </Typography>
+            </Paper>
+          )}
           <Grid container spacing={4}>
             {stats.volume_by_drinker && Object.keys(stats.volume_by_drinker).length > 0 && (
               <Grid size={{ xs: 12, md: 6 }}>
@@ -40,19 +78,6 @@ export function StatsView() {
               </Grid>
             )}
           </Grid>
-          {stats.largest_session?.session_id != null && (
-            <Typography>
-              Largest session:{" "}
-              <MuiLink
-                component={Link}
-                to={`/sessions/id/${stats.largest_session.session_id}`}
-                underline="hover"
-              >
-                Session #{stats.largest_session.session_id}
-              </MuiLink>{" "}
-              ({volume(stats.largest_session.volume_ml ?? 0)})
-            </Typography>
-          )}
         </Stack>
       )}
     </Page>

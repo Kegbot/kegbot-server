@@ -6466,6 +6466,9 @@ components:
         controller_id:
           type: integer
           nullable: true
+        last_error:
+          type: string
+          nullable: true
       required:
       - device
       - state

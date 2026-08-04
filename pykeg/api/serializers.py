@@ -628,6 +628,8 @@ class KegboardDeviceSerializer(serializers.Serializer):
     events_dropped = serializers.IntegerField(required=False, allow_null=True)
     config = serializers.DictField(required=False, allow_null=True)
     controller_id = serializers.IntegerField(required=False, allow_null=True)
+    # Why the device's most recent batch was rejected, if it was.
+    last_error = serializers.CharField(required=False, allow_null=True)
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):

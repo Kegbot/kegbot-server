@@ -1437,6 +1437,7 @@ export type KegboardDevice = {
         [key: string]: unknown;
     } | null;
     controller_id?: number | null;
+    last_error?: string | null;
 };
 
 export type KegbotSite = {

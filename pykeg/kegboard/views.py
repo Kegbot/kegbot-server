@@ -123,16 +123,33 @@ def _pairing_response(device_name, request):
     """The 401 pairing flow for any request we can't authenticate."""
     staged = state.take_staged_token(device_name)
     if staged is not None:
-        state.set_device_state(device_name, state.STATE_PAIRED)
+        state.update_device(device_name, state=state.STATE_PAIRED, last_error=None)
         return JsonResponse({"pairing": {"state": "allowed", "token": staged}}, status=401)
 
     entry = state.get_device(device_name)
     if entry and entry.get("state") == state.STATE_DENIED:
-        state.update_device(device_name, ip=_client_ip(request))
+        state.update_device(device_name, ip=_client_ip(request), last_error=None)
         return JsonResponse({"pairing": {"state": "denied"}}, status=401)
 
-    state.update_device(device_name, state=state.STATE_PENDING, ip=_client_ip(request))
+    state.update_device(
+        device_name, state=state.STATE_PENDING, ip=_client_ip(request), last_error=None
+    )
     return JsonResponse({"pairing": {"state": "pending"}}, status=401)
+
+
+def _note_rejected_batch(request, error):
+    """Pins a rejected batch to its device's roster entry, best effort.
+
+    A board whose batches all 400 would otherwise be invisible on the
+    dashboard while plainly "reporting" in the server logs.
+    """
+    data = request.data
+    device_name = data.get("device") if isinstance(data, dict) else None
+    if not isinstance(device_name, str) or not device_name or len(device_name) > 64:
+        logger.warning(f"kegboard: rejected batch from unidentifiable device: {error}")
+        return
+    logger.warning(f"kegboard {device_name}: rejected batch: {error}")
+    state.update_device(device_name, ip=_client_ip(request), last_error=str(error)[:300])
 
 
 def _meter_number(port_name):
@@ -301,9 +318,11 @@ def kegboard_event(request):
 
     envelope = EnvelopeSerializer(data=request.data)
     if not envelope.is_valid():
+        _note_rejected_batch(request, f"invalid batch: {envelope.errors}")
         return JsonResponse({"error": "invalid", "detail": envelope.errors}, status=400)
     batch = envelope.validated_data
     if batch["v"] != PROTOCOL_VERSION:
+        _note_rejected_batch(request, f"unsupported protocol version {batch['v']}")
         return JsonResponse({"error": "unsupported_version"}, status=400)
 
     device_name = batch["device"]
@@ -314,7 +333,9 @@ def kegboard_event(request):
     if controller is None:
         return _pairing_response(device_name, request)
 
-    state.update_device(controller.name, state=state.STATE_PAIRED, ip=_client_ip(request))
+    state.update_device(
+        controller.name, state=state.STATE_PAIRED, ip=_client_ip(request), last_error=None
+    )
 
     # Dedup: ids are monotonic per boot and the device queue does not
     # survive reboot, so one (boot_id, last_id) cursor is complete.

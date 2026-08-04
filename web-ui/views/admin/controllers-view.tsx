@@ -499,8 +499,19 @@ export function ControllersView() {
   const otherControllers = (controllers.data ?? []).filter((c) => !kegboardControllerIds.has(c.id));
 
   const stateChip = (device: KegboardDevice) => {
+    // A rejected batch trumps the pairing state: the board is talking,
+    // but the server can't understand it.
+    const errorChip = device.last_error ? (
+      <Chip
+        label="rejected requests"
+        color="error"
+        size="small"
+        variant="outlined"
+        title={device.last_error}
+      />
+    ) : null;
     if (device.state === "paired") {
-      return device.last_seen ? relative(device.last_seen) : "—";
+      return errorChip ?? (device.last_seen ? relative(device.last_seen) : "—");
     }
     const label =
       device.state === "pending"
@@ -509,7 +520,12 @@ export function ControllersView() {
           ? "pairing…"
           : "denied";
     const color = device.state === "pending" ? "warning" : "default";
-    return <Chip label={label} color={color} size="small" variant="outlined" />;
+    return (
+      <Stack direction="row" spacing={1} sx={{ display: "inline-flex" }}>
+        <Chip label={label} color={color} size="small" variant="outlined" />
+        {errorChip}
+      </Stack>
+    );
   };
 
   return (

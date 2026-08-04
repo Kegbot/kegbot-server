@@ -183,7 +183,10 @@ def plugin_settings(request, short_name):
         else:
             plugin.save_form(form, "settings")
 
-    return Response(plugin.get_site_settings_form().initial)
+    # Every declared field, not just form.initial: unconfigured fields
+    # are absent there, and the settings page renders one input per key.
+    form = plugin.get_site_settings_form()
+    return Response({name: form.initial.get(name) for name in form.fields})
 
 
 @extend_schema(responses=OpenApiTypes.OBJECT)

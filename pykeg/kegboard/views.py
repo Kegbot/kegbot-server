@@ -47,7 +47,7 @@ class EnvelopeSerializer(serializers.Serializer):
 
 
 class PourSerializer(serializers.Serializer):
-    meter = serializers.IntegerField(min_value=0)
+    meter_number = serializers.IntegerField(min_value=0)
     pour_id = serializers.CharField(max_length=64)
     volume_ml = serializers.FloatField(min_value=0)
     duration_ms = serializers.IntegerField(min_value=0)
@@ -60,7 +60,7 @@ class PourSerializer(serializers.Serializer):
 
 
 class PourUpdateSerializer(serializers.Serializer):
-    meter = serializers.IntegerField(min_value=0)
+    meter_number = serializers.IntegerField(min_value=0)
     pour_id = serializers.CharField(max_length=64)
     volume_ml = serializers.FloatField(min_value=0)
     duration_ms = serializers.IntegerField(min_value=0)
@@ -166,10 +166,10 @@ def _find_meter(controller, number):
 
 
 def _handle_pour(controller, data, event_time):
-    meter = _find_meter(controller, data["meter"])
+    meter = _find_meter(controller, data["meter_number"])
     if not meter or not meter.tap:
         logger.warning(
-            f"kegboard {controller.name}: pour on unbound meter {data['meter']}, dropped"
+            f"kegboard {controller.name}: pour on unbound meter {data['meter_number']}, dropped"
         )
         return
     if models.Drink.objects.filter(pour_id=data["pour_id"]).exists():
@@ -194,7 +194,7 @@ def _handle_pour(controller, data, event_time):
 
 
 def _handle_pour_update(controller, data, event_time):
-    meter = _find_meter(controller, data["meter"])
+    meter = _find_meter(controller, data["meter_number"])
     if not meter or not meter.tap:
         return
     state.stash_pour_update(
@@ -241,7 +241,7 @@ def _handle_token(controller, data, event_time):
             controller.name,
             "authorize",
             {
-                "meters": meters,
+                "meter_numbers": meters,
                 "user": token.user.username,
                 "duration_ms": AUTHORIZE_DURATION_MS,
                 "auth_device": data["auth_device"],
@@ -274,7 +274,7 @@ def _handle_status(controller, data, event_time):
         meters=data.get("meters"),
     )
     for entry in data.get("meters") or []:
-        number = entry.get("meter")
+        number = entry.get("meter_number")
         ml_per_tick = entry.get("ml_per_tick")
         if not isinstance(number, int) or not ml_per_tick:
             continue

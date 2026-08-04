@@ -210,7 +210,7 @@ function ControllerConfig({
           tapsConnectToggleCreate({ path: { id: toggle.tap_id }, body: { toggle_id: null } }),
         );
       }
-    }, "Toggle assignment saved.");
+    }, "Relay assignment saved.");
 
   return (
     <Stack spacing={3} sx={{ py: 2 }}>
@@ -291,11 +291,11 @@ function ControllerConfig({
 
       <Stack spacing={1.5}>
         <Typography variant="overline" color="text.secondary" component="div">
-          Toggles
+          Relays
         </Typography>
         {toggles.length === 0 && (
           <Typography variant="body2" color="text.secondary">
-            No toggles.
+            No relays.
           </Typography>
         )}
         {toggles.map((toggle) => (
@@ -308,7 +308,7 @@ function ControllerConfig({
                 : () =>
                     void act(
                       () => unwrap(flowTogglesDestroy({ path: { id: toggle.id } })),
-                      "Toggle deleted.",
+                      "Relay deleted.",
                     )
             }
           >
@@ -333,13 +333,13 @@ function ControllerConfig({
                       } as never,
                     }),
                   ),
-                "Toggle created.",
+                "Relay created.",
               ).then(() => setTogglePort(""));
             }}
           >
             <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
               <TextField
-                label="New toggle port"
+                label="New relay port"
                 value={togglePort}
                 onChange={(e) => setTogglePort(e.target.value)}
                 size="small"
@@ -347,7 +347,7 @@ function ControllerConfig({
                 required
               />
               <Button type="submit" size="small" variant="outlined">
-                Add toggle
+                Add relay
               </Button>
             </Stack>
           </form>
@@ -710,7 +710,7 @@ export function ControllersView() {
                               </TableCell>
                               <TableCell sx={{ color: "text.secondary" }}>
                                 {meterCount} {meterCount === 1 ? "meter" : "meters"} · {toggleCount}{" "}
-                                {toggleCount === 1 ? "toggle" : "toggles"}
+                                {toggleCount === 1 ? "relay" : "relays"}
                               </TableCell>
                             </Fragment>
                           }

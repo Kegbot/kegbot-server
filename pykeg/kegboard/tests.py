@@ -63,7 +63,7 @@ class KegboardTestCase(TestCase):
 
     def pour_event(self, event_id=1, **overrides):
         data = {
-            "meter": 0,
+            "meter_number": 0,
             "pour_id": "pour-1",
             "volume_ml": 355.0,
             "duration_ms": 7100,
@@ -228,7 +228,7 @@ class PourTest(KegboardTestCase):
 
     def test_pour_on_unbound_meter_is_dropped(self):
         token = self.pair()
-        response = self.post([self.pour_event(meter=9)], token=token)
+        response = self.post([self.pour_event(meter_number=9)], token=token)
         self.assertEqual(200, response.status_code)
         self.assertFalse(models.Drink.objects.filter(pour_id="pour-1").exists())
 
@@ -238,7 +238,12 @@ class PourTest(KegboardTestCase):
             "id": 1,
             "type": "pour_update",
             "age_ms": 0,
-            "data": {"meter": 0, "pour_id": "pour-1", "volume_ml": 120.4, "duration_ms": 2400},
+            "data": {
+                "meter_number": 0,
+                "pour_id": "pour-1",
+                "volume_ml": 120.4,
+                "duration_ms": 2400,
+            },
         }
         self.assertEqual(200, self.post([event], token=token).status_code)
         meter = models.FlowMeter.objects.get(controller=self.controller, port_name="flow0")
@@ -279,7 +284,7 @@ class TokenAuthTest(KegboardTestCase):
         commands = response.json()["commands"]
         self.assertEqual(1, len(commands))
         self.assertEqual("authorize", commands[0]["type"])
-        self.assertEqual([0, 1], commands[0]["data"]["meters"])
+        self.assertEqual([0, 1], commands[0]["data"]["meter_numbers"])
         self.assertEqual(self.user.username, commands[0]["data"]["user"])
 
     def test_unknown_token_is_denied(self):
@@ -324,8 +329,8 @@ class StatusTest(KegboardTestCase):
         event = self.status_event(
             wifi_rssi_dbm=-61,
             meters=[
-                {"meter": 0, "total_ticks": 1000, "ml_per_tick": 0.5},
-                {"meter": 2, "total_ticks": 0, "ml_per_tick": 0.25},
+                {"meter_number": 0, "total_ticks": 1000, "ml_per_tick": 0.5},
+                {"meter_number": 2, "total_ticks": 0, "ml_per_tick": 0.25},
             ],
         )
         self.assertEqual(200, self.post([event], token=token).status_code)

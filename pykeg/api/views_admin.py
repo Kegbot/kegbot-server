@@ -24,6 +24,8 @@ from rest_framework.response import Response
 
 from pykeg.backup import backup as backup_lib
 from pykeg.core import models, tasks
+from pykeg.kegboard import pairing as kegboard_pairing
+from pykeg.kegboard import state as kegboard_state
 from pykeg.logging.handlers import RedisListHandler
 from pykeg.util import bugreport as bugreport_util
 from pykeg.util.email import build_message
@@ -202,3 +204,55 @@ def bugreport(request):
         logger.exception("Error generating bugreport")
         error = str(e)
     return Response({"output": out.getvalue(), "error": error})
+
+
+@extend_schema(responses=serializers.KegboardDeviceSerializer(many=True))
+@api_view(["GET"])
+@permission_classes([permissions.IsAdminUser])
+def kegboards(request):
+    """Lists kegboard devices: unpaired boards streaming in, and paired boards."""
+    devices = kegboard_pairing.list_devices()
+    controller_ids = dict(
+        models.Controller.objects.filter(auth_token__isnull=False).values_list("name", "id")
+    )
+    for device in devices:
+        device["controller_id"] = controller_ids.get(device["device"])
+    return Response(serializers.KegboardDeviceSerializer(devices, many=True).data)
+
+
+@extend_schema(request=None, responses=serializers.KegboardDeviceSerializer)
+@api_view(["POST"])
+@permission_classes([permissions.IsAdminUser])
+def kegboard_allow(request, device):
+    """Approves a kegboard: mints its token and creates its controller."""
+    controller = kegboard_pairing.allow_device(device)
+    entry = kegboard_state.get_device(device) or {"device": device, "state": "allowed"}
+    entry["controller_id"] = controller.id
+    return Response(serializers.KegboardDeviceSerializer(entry).data)
+
+
+@extend_schema(request=None, responses=serializers.KegboardDeviceSerializer)
+@api_view(["POST"])
+@permission_classes([permissions.IsAdminUser])
+def kegboard_deny(request, device):
+    """Refuses a kegboard; it stays listed so the decision can be reversed."""
+    kegboard_pairing.deny_device(device)
+    return Response(serializers.KegboardDeviceSerializer(kegboard_state.get_device(device)).data)
+
+
+@extend_schema(request=None, responses=None)
+@api_view(["POST"])
+@permission_classes([permissions.IsAdminUser])
+def kegboard_revoke(request, device):
+    """Revokes a kegboard's token; its next request re-enters pairing."""
+    kegboard_pairing.revoke_device(device)
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(responses=None)
+@api_view(["DELETE"])
+@permission_classes([permissions.IsAdminUser])
+def kegboard_forget(request, device):
+    """Drops a pending or denied kegboard from the roster."""
+    kegboard_pairing.forget_device(device)
+    return Response(status=status.HTTP_204_NO_CONTENT)

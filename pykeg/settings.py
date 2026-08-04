@@ -341,6 +341,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Kegbot Server API",
     "DESCRIPTION": "The Kegbot Server REST API.",
     "VERSION": None,
+    # Pin the operation-id prefix stripping: auto-detection breaks as
+    # soon as any non-/api route (e.g. /kegboard-event) exists.
+    "SCHEMA_PATH_PREFIX": "/api",
     "SERVE_INCLUDE_SCHEMA": False,
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
     # Serve the docs UI assets locally (no CDN).

@@ -270,6 +270,105 @@ paths:
               schema:
                 type: boolean
           description: ''
+  /api/admin/kegboards:
+    get:
+      operationId: admin_kegboards_list
+      description: 'Lists kegboard devices: unpaired boards streaming in, and paired
+        boards.'
+      tags:
+      - admin
+      security:
+      - apiKeyBasicAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KegboardDevice'
+          description: ''
+  /api/admin/kegboards/{device}:
+    delete:
+      operationId: admin_kegboards_destroy
+      description: Drops a pending or denied kegboard from the roster.
+      parameters:
+      - in: path
+        name: device
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      security:
+      - apiKeyBasicAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin/kegboards/{device}/allow:
+    post:
+      operationId: admin_kegboards_allow_create
+      description: 'Approves a kegboard: mints its token and creates its controller.'
+      parameters:
+      - in: path
+        name: device
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      security:
+      - apiKeyBasicAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KegboardDevice'
+          description: ''
+  /api/admin/kegboards/{device}/deny:
+    post:
+      operationId: admin_kegboards_deny_create
+      description: Refuses a kegboard; it stays listed so the decision can be reversed.
+      parameters:
+      - in: path
+        name: device
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      security:
+      - apiKeyBasicAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KegboardDevice'
+          description: ''
+  /api/admin/kegboards/{device}/revoke:
+    post:
+      operationId: admin_kegboards_revoke_create
+      description: Revokes a kegboard's token; its next request re-enters pairing.
+      parameters:
+      - in: path
+        name: device
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      security:
+      - apiKeyBasicAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/admin/logs:
     get:
       operationId: admin_logs_retrieve
@@ -6331,6 +6430,45 @@ components:
         * `euro` - European Full Barrel (100 L)
         * `half-barrel` - Half Barrel (15.5 gal)
         * `other` - Other
+    KegboardDevice:
+      type: object
+      description: 'A kegboard on the pairing dashboard: roster entry + health.'
+      properties:
+        device:
+          type: string
+        state:
+          type: string
+        first_seen:
+          type: string
+          format: date-time
+        last_seen:
+          type: string
+          format: date-time
+        ip:
+          type: string
+          nullable: true
+        fw_version:
+          type: string
+          nullable: true
+        uptime_ms:
+          type: integer
+          nullable: true
+        wifi_rssi_dbm:
+          type: integer
+          nullable: true
+        events_dropped:
+          type: integer
+          nullable: true
+        config:
+          type: object
+          additionalProperties: {}
+          nullable: true
+        controller_id:
+          type: integer
+          nullable: true
+      required:
+      - device
+      - state
     KegbotSite:
       type: object
       properties:

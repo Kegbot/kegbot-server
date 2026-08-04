@@ -1170,6 +1170,112 @@ class AdminOpsTestCase(TestCase):
         self.assertEqual(404, response.status_code)
 
 
+class KegboardAdminTestCase(TestCase):
+    fixtures = ["testdata/demo-site.json"]
+
+    def setUp(self):
+        cache.clear()
+        self.client = ApiClient()
+        self.site = models.KegbotSite.objects.all().first()
+        self.site.server_version = get_version()
+        self.site.save()
+        self.admin = models.User.objects.get(username="admin")
+        self.admin.is_staff = True
+        self.admin.save()
+        self.admin_key = models.ApiKey.objects.get_or_create(user=self.admin)[0]
+        self.alice = models.User.objects.get(username="alice")
+        self.alice_key = models.ApiKey.objects.get_or_create(user=self.alice)[0]
+
+    def as_admin(self):
+        self.client.api_key = self.admin_key.key
+        self.client.add_auth()
+        return self.client.client
+
+    def announce(self, device="kegboard-new"):
+        """Simulates an unpaired board posting a batch."""
+        return self.client.client.post(
+            "/api/kegboard-event",
+            {
+                "v": 1,
+                "device": device,
+                "boot_id": "boot-1",
+                "sent_uptime_ms": 0,
+                "events": [
+                    {
+                        "id": 1,
+                        "type": "status",
+                        "age_ms": 0,
+                        "data": {
+                            "state": "boot",
+                            "fw_version": "4.0.0",
+                            "uptime_ms": 0,
+                            "events_dropped": 0,
+                            "config": {
+                                "heartbeat_ms": 60000,
+                                "pour_update_ms": 1000,
+                                "queue_capacity": 16,
+                            },
+                        },
+                    }
+                ],
+            },
+            format="json",
+        )
+
+    def test_requires_admin(self):
+        self.client.api_key = self.alice_key.key
+        status_code, _ = self.client.get("/api/admin/kegboards")
+        self.assertEqual(403, status_code)
+
+    def test_pairing_lifecycle(self):
+        self.assertEqual(401, self.announce().status_code)
+
+        # The board shows up pending, with pairing metadata.
+        response = self.as_admin().get("/api/admin/kegboards")
+        devices = {d["device"]: d for d in response.json()}
+        self.assertEqual("pending", devices["kegboard-new"]["state"])
+        self.assertTrue(devices["kegboard-new"]["first_seen"])
+
+        # Allow: controller created, board picks up its token once.
+        response = self.as_admin().post("/api/admin/kegboards/kegboard-new/allow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("allowed", response.json()["state"])
+        controller = models.Controller.objects.get(name="kegboard-new")
+        self.assertTrue(controller.auth_token.startswith("kbe_"))
+
+        pickup = self.announce().json()
+        self.assertEqual("allowed", pickup["pairing"]["state"])
+        self.assertEqual(controller.auth_token, pickup["pairing"]["token"])
+
+        # Revoke: token cleared; board re-enters pairing.
+        response = self.as_admin().post("/api/admin/kegboards/kegboard-new/revoke")
+        self.assertEqual(204, response.status_code)
+        controller.refresh_from_db()
+        self.assertIsNone(controller.auth_token)
+        self.assertEqual("pending", self.announce().json()["pairing"]["state"])
+
+    def test_deny_and_forget(self):
+        self.announce()
+        response = self.as_admin().post("/api/admin/kegboards/kegboard-new/deny")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("denied", self.announce().json()["pairing"]["state"])
+
+        response = self.as_admin().delete("/api/admin/kegboards/kegboard-new")
+        self.assertEqual(204, response.status_code)
+        response = self.as_admin().get("/api/admin/kegboards")
+        self.assertEqual([], [d for d in response.json() if d["device"] == "kegboard-new"])
+
+    def test_paired_board_listed_without_roster_entry(self):
+        # Redis lost the roster (restart): a paired controller still shows.
+        controller = models.Controller.objects.get(name="kegboard")
+        controller.auth_token = "kbe_x"
+        controller.save()
+        response = self.as_admin().get("/api/admin/kegboards")
+        devices = {d["device"]: d for d in response.json()}
+        self.assertEqual("paired", devices["kegboard"]["state"])
+        self.assertEqual(controller.id, devices["kegboard"]["controller_id"])
+
+
 class MeEndpointTestCase(TestCase):
     fixtures = ["testdata/demo-site.json"]
 

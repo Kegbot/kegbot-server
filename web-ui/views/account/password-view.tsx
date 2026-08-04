@@ -1,14 +1,14 @@
-import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { type FormEvent, useState } from "react";
 import { accountPasswordCreate } from "@/api-client";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";
 import type { FormErrors } from "@/lib/api";
 import { unwrap } from "@/lib/api";
-import { fieldError, formErrorsFromException, nonFieldErrors } from "@/lib/forms";
+import { fieldError, formErrorsFromException } from "@/lib/forms";
 
 const FIELDS = ["current_password", "new_password"];
 
@@ -49,11 +49,7 @@ export function PasswordView() {
     <Page title="Change Password" hideHeading>
       <form onSubmit={onSubmit}>
         <Stack spacing={2} sx={{ maxWidth: 480 }}>
-          {nonFieldErrors(errors, FIELDS).map((message) => (
-            <Alert key={message} severity="error">
-              {message}
-            </Alert>
-          ))}
+          <FormErrorAlert errors={errors} fields={FIELDS} />
           <TextField
             label="Current password"
             type="password"

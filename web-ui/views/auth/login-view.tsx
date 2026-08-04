@@ -1,4 +1,3 @@
-import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
@@ -8,8 +7,9 @@ import { type FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { useConfig } from "@/components/config-context";
 import { useCurrentUser } from "@/components/current-user-context";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import type { FormErrors } from "@/lib/api";
-import { fieldError, formErrorsFromException, nonFieldErrors } from "@/lib/forms";
+import { fieldError, formErrorsFromException } from "@/lib/forms";
 
 export function LoginView() {
   const { me } = useConfig();
@@ -61,11 +61,7 @@ export function LoginView() {
       <form onSubmit={onSubmit}>
         <Stack spacing={2}>
           <Typography variant="h5">Log in</Typography>
-          {nonFieldErrors(errors, ["username", "password"]).map((message) => (
-            <Alert key={message} severity="error">
-              {message}
-            </Alert>
-          ))}
+          <FormErrorAlert errors={errors} fields={["username", "password"]} />
           <TextField
             label="Username"
             value={username}

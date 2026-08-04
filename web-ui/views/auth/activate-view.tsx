@@ -8,9 +8,10 @@ import { type FormEvent, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { accountActivateCreate } from "@/api-client";
 import { useConfig } from "@/components/config-context";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import type { FormErrors } from "@/lib/api";
 import { unwrap } from "@/lib/api";
-import { fieldError, formErrorsFromException, nonFieldErrors } from "@/lib/forms";
+import { fieldError, formErrorsFromException } from "@/lib/forms";
 
 export function ActivateView() {
   const { key = "" } = useParams();
@@ -49,11 +50,7 @@ export function ActivateView() {
           <Typography color="text.secondary">
             Choose a password to finish setting up your account.
           </Typography>
-          {nonFieldErrors(errors, ["password", "activation_key"]).map((message) => (
-            <Alert key={message} severity="error">
-              {message}
-            </Alert>
-          ))}
+          <FormErrorAlert errors={errors} fields={["password", "activation_key"]} />
           {fieldError(errors, "activation_key") && (
             <Alert severity="error">{fieldError(errors, "activation_key")}</Alert>
           )}

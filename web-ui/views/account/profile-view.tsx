@@ -5,6 +5,7 @@ import TextField from "@mui/material/TextField";
 import { type FormEvent, useState } from "react";
 import { accountMugshotCreate, usersMePartialUpdate } from "@/api-client";
 import { useCurrentUser } from "@/components/current-user-context";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";
 import type { FormErrors } from "@/lib/api";
@@ -68,6 +69,7 @@ export function ProfileView() {
         </Stack>
         <form onSubmit={onSubmit}>
           <Stack spacing={2}>
+            <FormErrorAlert errors={errors} fields={["display_name"]} />
             <TextField
               label="Display name"
               value={displayName}

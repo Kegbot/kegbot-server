@@ -11,6 +11,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { type FormEvent, useState } from "react";
 import { invitationsCreate, invitationsDestroy, invitationsList } from "@/api-client";
+import { FormErrorAlert } from "@/components/form-error-alert";
 import { Page } from "@/components/page";
 import { useSnackbar } from "@/components/snackbar-context";
 import type { FormErrors } from "@/lib/api";
@@ -58,20 +59,23 @@ export function InviteView() {
     <Page title="Invite a New Drinker" hideHeading>
       <Stack spacing={3} sx={{ maxWidth: 640 }}>
         <form onSubmit={onSubmit}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-            <TextField
-              label="E-mail address"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={Boolean(fieldError(errors, "for_email"))}
-              helperText={fieldError(errors, "for_email")}
-              required
-              sx={{ flexGrow: 1 }}
-            />
-            <Button type="submit" variant="contained" disabled={busy} sx={{ mt: 1 }}>
-              Send invitation
-            </Button>
+          <Stack spacing={2}>
+            <FormErrorAlert errors={errors} fields={["for_email"]} />
+            <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
+              <TextField
+                label="E-mail address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                error={Boolean(fieldError(errors, "for_email"))}
+                helperText={fieldError(errors, "for_email")}
+                required
+                sx={{ flexGrow: 1 }}
+              />
+              <Button type="submit" variant="contained" disabled={busy} sx={{ mt: 1 }}>
+                Send invitation
+              </Button>
+            </Stack>
           </Stack>
         </form>
         {(invitations.data?.length ?? 0) > 0 && (

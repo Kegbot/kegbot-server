@@ -23,7 +23,12 @@ export function UserLink({ user, avatarSize = 24, muted }: UserLinkProps) {
   }
   const name = user.display_name || user.username;
   return (
-    <Stack direction="row" spacing={1} sx={{ alignItems: "center", display: "inline-flex" }}>
+    <Stack
+      component="span"
+      direction="row"
+      spacing={1}
+      sx={{ alignItems: "center", display: "inline-flex" }}
+    >
       {avatarSize > 0 && (
         <Avatar
           src={user.picture?.thumbnail_url ?? undefined}

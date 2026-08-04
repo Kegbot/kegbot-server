@@ -13,7 +13,7 @@ import { formatDateTime } from "@/lib/format";
 import { asStats } from "@/lib/stats";
 import { useAsyncData } from "@/lib/use-async-data";
 import { useCursorList } from "@/lib/use-cursor-list";
-import { sessionTitle } from "@/views/sessions/session-list-view";
+import { sessionArchiveCrumbs, sessionTitle } from "@/views/sessions/session-list-view";
 
 export function SessionDetailView() {
   const params = useParams();
@@ -29,10 +29,21 @@ export function SessionDetailView() {
   );
 
   const stats = session.data ? asStats(session.data.stats) : null;
+  const started = session.data ? new Date(session.data.start_time) : null;
 
   return (
     <Page
       title={session.data ? sessionTitle(session.data) : `Session #${sessionId}`}
+      breadcrumbs={
+        started
+          ? sessionArchiveCrumbs(
+              started.getFullYear(),
+              started.getMonth() + 1,
+              started.getDate(),
+              `Session #${sessionId}`,
+            )
+          : undefined
+      }
       eyebrow={`Session #${sessionId}`}
       meta={
         session.data && (

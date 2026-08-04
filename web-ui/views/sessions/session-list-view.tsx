@@ -24,6 +24,7 @@ import { Page } from "@/components/page";
 import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
 import { datePartsInZone, formatDateTime, formatTime, monthName } from "@/lib/format";
+import { intParam } from "@/lib/params";
 import { asStats } from "@/lib/stats";
 import { useAsyncData } from "@/lib/use-async-data";
 import { useCursorList } from "@/lib/use-cursor-list";
@@ -172,9 +173,9 @@ export function SessionListView() {
   const params = useParams();
   const { me } = useConfig();
   const directory = useAsyncData(() => unwrap(sessionsDirectoryRetrieve()));
-  const year = params.year ? Number(params.year) : undefined;
-  const month = params.month ? Number(params.month) : undefined;
-  const day = params.day ? Number(params.day) : undefined;
+  const year = intParam(params.year);
+  const month = intParam(params.month);
+  const day = intParam(params.day);
 
   const list = useCursorList(
     (cursor) => unwrap(sessionsList({ query: { cursor, year, month, day } })),
@@ -191,7 +192,9 @@ export function SessionListView() {
           : `${monthName(month)} ${day}, ${year}`;
 
   const today = datePartsInZone(new Date().toISOString(), me.site.timezone);
-  const years = directory.data?.years ?? [];
+  // Belt and braces: a buggy server (e.g. one whose SQL date extraction
+  // returns NULL) must not become "null" year tiles and /sessions/null.
+  const years = (directory.data?.years ?? []).filter((entry) => Number.isInteger(entry.year));
 
   const emptyState =
     list.items.length === 0 && !list.loading ? (

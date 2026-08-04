@@ -1,8 +1,9 @@
+from collections import defaultdict
+
 from django.conf import settings
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
-from django.db.models import Count
-from django.db.models.functions import ExtractDay, ExtractMonth, ExtractYear
+from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
@@ -605,29 +606,27 @@ class DrinkingSessionViewSet(viewsets.ReadOnlyModelViewSet):
         year/month/day list filters apply — so a directory entry always
         matches the corresponding filtered listing.
         """
-        rows = (
-            models.DrinkingSession.objects.annotate(
-                year=ExtractYear("start_time"),
-                month=ExtractMonth("start_time"),
-                day=ExtractDay("start_time"),
-            )
-            .values("year", "month", "day")
-            .annotate(count=Count("id"))
-            .order_by("-year", "-month", "-day")
-        )
+        # Bucketing happens in Python: SQL date extraction under USE_TZ
+        # compiles to CONVERT_TZ on MySQL, which silently yields NULL
+        # when the server's timezone tables aren't loaded.
+        tz = timezone.get_current_timezone()
+        counts: dict[tuple[int, int, int], int] = defaultdict(int)
+        for start_time in models.DrinkingSession.objects.values_list("start_time", flat=True):
+            local = start_time.astimezone(tz)
+            counts[(local.year, local.month, local.day)] += 1
 
         years: list[dict] = []
-        for row in rows:
-            if not years or years[-1]["year"] != row["year"]:
-                years.append({"year": row["year"], "months": [], "count": 0})
+        for (year, month, day), count in sorted(counts.items(), reverse=True):
+            if not years or years[-1]["year"] != year:
+                years.append({"year": year, "months": [], "count": 0})
             year_entry = years[-1]
             months = year_entry["months"]
-            if not months or months[-1]["month"] != row["month"]:
-                months.append({"month": row["month"], "days": [], "count": 0})
+            if not months or months[-1]["month"] != month:
+                months.append({"month": month, "days": [], "count": 0})
             month_entry = months[-1]
-            month_entry["days"].append(row["day"])
-            month_entry["count"] += row["count"]
-            year_entry["count"] += row["count"]
+            month_entry["days"].append(day)
+            month_entry["count"] += count
+            year_entry["count"] += count
 
         return Response(serializers.SessionDirectorySerializer(instance={"years": years}).data)
 

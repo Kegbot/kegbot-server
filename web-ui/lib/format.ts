@@ -38,6 +38,10 @@ export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { dateStyle: "medium" });
 }
 
+export function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString(undefined, { timeStyle: "short" });
+}
+
 const RELATIVE_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
   ["year", 365 * 24 * 3600],
   ["month", 30 * 24 * 3600],

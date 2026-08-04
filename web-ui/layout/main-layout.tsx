@@ -13,6 +13,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import { ColorModeToggle } from "@/components/color-mode-toggle";
 import { useConfig } from "@/components/config-context";
 import { useCurrentUser } from "@/components/current-user-context";
+import { Footer } from "@/components/footer";
 import { Wordmark } from "@/components/wordmark";
 
 function UserMenu() {
@@ -141,6 +142,7 @@ export function MainLayout() {
       <Container maxWidth="lg" sx={{ py: { xs: 2.5, md: 4 }, flexGrow: 1 }}>
         <Outlet />
       </Container>
+      <Footer />
     </Box>
   );
 }

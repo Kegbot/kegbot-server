@@ -9,15 +9,17 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { Link, useParams } from "react-router";
-import type { DrinkingSession } from "@/api-client";
-import { sessionsList } from "@/api-client";
+import type { DrinkingSession, SessionDirectory } from "@/api-client";
+import { sessionsDirectoryRetrieve, sessionsList } from "@/api-client";
 import type { Crumb } from "@/components/breadcrumbs";
+import { useConfig } from "@/components/config-context";
 import { EmptyState } from "@/components/empty-state";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
 import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
+import { datePartsInZone, formatDateTime } from "@/lib/format";
+import { useAsyncData } from "@/lib/use-async-data";
 import { useCursorList } from "@/lib/use-cursor-list";
 import { MONO_FONT } from "@/theme/typography";
 
@@ -63,36 +65,40 @@ interface DrillTarget {
   to: string;
 }
 
-/** Next-level drilldown targets derived from the loaded sessions. */
+/** Next-level drilldown targets from the server's archive directory. */
 function drillTargets(
-  sessions: DrinkingSession[],
+  directory: SessionDirectory | null,
   year?: number,
   month?: number,
   day?: number,
 ): DrillTarget[] {
-  if (day !== undefined) {
+  if (!directory || day !== undefined) {
     return [];
   }
-  const seen = new Map<string, DrillTarget>();
-  for (const session of sessions) {
-    const started = new Date(session.start_time);
-    if (year === undefined) {
-      const y = started.getFullYear();
-      seen.set(String(y), { label: String(y), to: `/sessions/${y}` });
-    } else if (month === undefined) {
-      if (started.getFullYear() === year) {
-        const m = started.getMonth() + 1;
-        seen.set(String(m), { label: monthName(m, "short"), to: `/sessions/${year}/${m}` });
-      }
-    } else if (started.getFullYear() === year && started.getMonth() + 1 === month) {
-      const d = started.getDate();
-      seen.set(String(d), {
-        label: `${monthName(month, "short")} ${d}`,
-        to: `/sessions/${year}/${month}/${d}`,
-      });
-    }
+  if (year === undefined) {
+    return directory.years.map((entry) => ({
+      label: String(entry.year),
+      to: `/sessions/${entry.year}`,
+    }));
   }
-  return Array.from(seen.values());
+  const yearEntry = directory.years.find((entry) => entry.year === year);
+  if (!yearEntry) {
+    return [];
+  }
+  if (month === undefined) {
+    return yearEntry.months.map((entry) => ({
+      label: monthName(entry.month, "short"),
+      to: `/sessions/${year}/${entry.month}`,
+    }));
+  }
+  const monthEntry = yearEntry.months.find((entry) => entry.month === month);
+  if (!monthEntry) {
+    return [];
+  }
+  return monthEntry.days.map((d) => ({
+    label: `${monthName(month, "short")} ${d}`,
+    to: `/sessions/${year}/${month}/${d}`,
+  }));
 }
 
 /**
@@ -103,6 +109,8 @@ function drillTargets(
 export function SessionListView() {
   const params = useParams();
   const { volume } = useFormatters();
+  const { me } = useConfig();
+  const directory = useAsyncData(() => unwrap(sessionsDirectoryRetrieve()));
   const year = params.year ? Number(params.year) : undefined;
   const month = params.month ? Number(params.month) : undefined;
   const day = params.day ? Number(params.day) : undefined;
@@ -121,7 +129,7 @@ export function SessionListView() {
           ? `${monthName(month)} ${year}`
           : `${monthName(month)} ${day}, ${year}`;
 
-  const drills = drillTargets(list.items, year, month, day);
+  const drills = drillTargets(directory.data, year, month, day);
   const drillLabel =
     year === undefined ? "Browse by year" : month === undefined ? "Months" : "Days";
 
@@ -166,8 +174,8 @@ export function SessionListView() {
               </TableHead>
               <TableBody>
                 {list.items.map((session) => {
-                  const started = new Date(session.start_time);
-                  const dayPath = `/sessions/${started.getFullYear()}/${started.getMonth() + 1}/${started.getDate()}`;
+                  const started = datePartsInZone(session.start_time, me.site.timezone);
+                  const dayPath = `/sessions/${started.year}/${started.month}/${started.day}`;
                   return (
                     <TableRow key={session.id} hover>
                       <TableCell>

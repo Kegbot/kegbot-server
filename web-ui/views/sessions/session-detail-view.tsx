@@ -3,13 +3,14 @@ import Stack from "@mui/material/Stack";
 import { useParams } from "react-router";
 import { drinksList, sessionsRetrieve } from "@/api-client";
 import { VolumeByDrinkerChart } from "@/components/charts/volume-by-drinker-chart";
+import { useConfig } from "@/components/config-context";
 import { DrinkList } from "@/components/drink-list";
 import { LoadMoreButton } from "@/components/load-more-button";
 import { Page } from "@/components/page";
 import { Section } from "@/components/section";
 import { useFormatters } from "@/components/use-formatters";
 import { unwrap } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
+import { datePartsInZone, formatDateTime } from "@/lib/format";
 import { asStats } from "@/lib/stats";
 import { useAsyncData } from "@/lib/use-async-data";
 import { useCursorList } from "@/lib/use-cursor-list";
@@ -28,20 +29,16 @@ export function SessionDetailView() {
     [sessionId],
   );
 
+  const { me } = useConfig();
   const stats = session.data ? asStats(session.data.stats) : null;
-  const started = session.data ? new Date(session.data.start_time) : null;
+  const started = session.data ? datePartsInZone(session.data.start_time, me.site.timezone) : null;
 
   return (
     <Page
       title={session.data ? sessionTitle(session.data) : `Session #${sessionId}`}
       breadcrumbs={
         started
-          ? sessionArchiveCrumbs(
-              started.getFullYear(),
-              started.getMonth() + 1,
-              started.getDate(),
-              `Session #${sessionId}`,
-            )
+          ? sessionArchiveCrumbs(started.year, started.month, started.day, `Session #${sessionId}`)
           : undefined
       }
       eyebrow={`Session #${sessionId}`}

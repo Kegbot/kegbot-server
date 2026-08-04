@@ -9,13 +9,20 @@ const LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /** Bar chart of poured volume by day of week. */
 export function VolumeByWeekdayChart({ data }: { data: Record<string, number> }) {
-  const { volume } = useFormatters();
+  const { volume, volumeTick } = useFormatters();
   const colors = useChartColors();
   const values = DAY_KEYS.map((key) => data[key] ?? 0);
   return (
     <BarChart
       xAxis={[{ data: LABELS, scaleType: "band", disableLine: true, disableTicks: true }]}
-      yAxis={[{ disableLine: true, disableTicks: true, width: 40 }]}
+      yAxis={[
+        {
+          disableLine: true,
+          disableTicks: true,
+          width: 56,
+          valueFormatter: (value: number) => volumeTick(value),
+        },
+      ]}
       series={[{ data: values, valueFormatter: (v) => (v == null ? "" : volume(v)) }]}
       colors={colors}
       borderRadius={4}

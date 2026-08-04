@@ -10,7 +10,7 @@ export interface VolumeByDrinkerChartProps {
 
 /** Horizontal bar chart of poured volume by drinker. */
 export function VolumeByDrinkerChart({ data, limit = 10 }: VolumeByDrinkerChartProps) {
-  const { volume } = useFormatters();
+  const { volume, volumeTick } = useFormatters();
   const colors = useChartColors();
   const entries = Object.entries(data)
     .sort(([, a], [, b]) => b - a)
@@ -27,7 +27,13 @@ export function VolumeByDrinkerChart({ data, limit = 10 }: VolumeByDrinkerChartP
           disableTicks: true,
         },
       ]}
-      xAxis={[{ disableLine: true, disableTicks: true }]}
+      xAxis={[
+        {
+          disableLine: true,
+          disableTicks: true,
+          valueFormatter: (value: number) => volumeTick(value),
+        },
+      ]}
       series={[
         {
           data: entries.map(([, value]) => value),

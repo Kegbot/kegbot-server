@@ -5,12 +5,15 @@ import {
   formatRelativeTime,
   formatTemperature,
   formatVolume,
+  formatVolumeTick,
   type TemperatureUnits,
   type VolumeUnits,
 } from "@/lib/format";
 
 export interface Formatters {
   volume: (volumeMl: number) => string;
+  /** Terse volume for chart axis ticks: "12 oz", "3 pt", "1.5 L". */
+  volumeTick: (volumeMl: number) => string;
   temperature: (tempC: number) => string;
   relative: (iso: string) => string;
   /** Tight-gutter relative time: "now", "4m", "2h". */
@@ -25,6 +28,7 @@ export function useFormatters(): Formatters {
   return useMemo(
     () => ({
       volume: (volumeMl) => formatVolume(volumeMl, volumeUnits),
+      volumeTick: (volumeMl) => formatVolumeTick(volumeMl, volumeUnits),
       temperature: (tempC) => formatTemperature(tempC, temperatureUnits),
       relative: (iso) => formatRelativeTime(iso),
       compactRelative: (iso) => formatCompactRelative(iso),

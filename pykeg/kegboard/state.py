@@ -21,6 +21,7 @@ TOKEN_SLOT_KEY = "kegboard:token-delivery:{name}"
 CURSOR_KEY = "kegboard:cursor:{name}"
 COMMANDS_KEY = "kegboard:commands:{name}"
 POUR_UPDATE_KEY = "kegboard:pour-update:{tap_id}"
+GRANT_KEY = "kegboard:grant:{grant_id}"
 
 # Devices are dropped from the roster when silent this long. Matches
 # the protocol's 7-day dedup retention guidance.
@@ -32,6 +33,10 @@ TOKEN_SLOT_TTL = int(timedelta(hours=1).total_seconds())
 # minutes regardless (the drinker is standing at the tap).
 COMMANDS_TTL = int(timedelta(hours=1).total_seconds())
 POUR_UPDATE_TTL = 10
+# Pours echo their grant_id and can deliver long after the grant ended
+# (queued through an outage); keep the attribution record as long as
+# the dedup retention window. Lost redis -> late pours become guest.
+GRANT_TTL = ROSTER_TTL
 
 STATE_PENDING = "pending"
 STATE_DENIED = "denied"
@@ -46,6 +51,10 @@ def mint_token():
 
 def mint_command_id():
     return f"cmd_{secrets.token_hex(4)}"
+
+
+def mint_grant_id():
+    return f"g_{secrets.token_hex(4)}"
 
 
 # Device roster: pairing candidates and paired-device health.
@@ -139,6 +148,18 @@ def ack_command(name, command_id):
     key = COMMANDS_KEY.format(name=name)
     commands = [c for c in (cache.get(key) or []) if c["id"] != command_id]
     cache.set(key, commands, COMMANDS_TTL)
+
+
+# Grant records: the server-side meaning of a grant_id. The device only
+# echoes the id; attribution happens here.
+
+
+def store_grant(grant_id, username):
+    cache.set(GRANT_KEY.format(grant_id=grant_id), {"user": username}, GRANT_TTL)
+
+
+def get_grant(grant_id):
+    return cache.get(GRANT_KEY.format(grant_id=grant_id))
 
 
 # Live pour state, for the (future) realtime UI.

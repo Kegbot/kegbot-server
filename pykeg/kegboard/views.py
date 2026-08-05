@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 
 PROTOCOL_VERSION = 1
 MAX_BODY_BYTES = 16 * 1024
-# Grant lifetime for a token-authorized pour; the device extends it
-# while beer is actively flowing and clamps it to its own maximum.
-AUTHORIZE_DURATION_MS = 30 * 1000
+# Idle limit for a token-created grant: flow resets it, so a slow glass
+# stays alive; total lifetime is bounded by the device's own clamp.
+AUTHORIZE_IDLE_MS = 30 * 1000
 
 
 class EventSerializer(serializers.Serializer):
@@ -51,9 +51,9 @@ class PourSerializer(serializers.Serializer):
     pour_id = serializers.CharField(max_length=64)
     volume_ml = serializers.FloatField(min_value=0)
     duration_ms = serializers.IntegerField(min_value=0)
-    user = serializers.CharField(required=False)
     auth_device = serializers.CharField(required=False)
     auth_token = serializers.CharField(required=False)
+    grant_id = serializers.CharField(max_length=64, required=False)
     ticks = serializers.IntegerField(min_value=0, required=False)
     ml_per_tick = serializers.FloatField(required=False)
     tick_series = serializers.CharField(required=False)
@@ -75,8 +75,18 @@ class TokenSerializer(serializers.Serializer):
     auth_device = serializers.CharField()
     token = serializers.CharField()
     action = serializers.ChoiceField(choices=["attached", "detached"])
-    status = serializers.ChoiceField(choices=["accepted", "denied"], required=False)
-    user = serializers.CharField(required=False)
+
+
+class GrantEndSerializer(serializers.Serializer):
+    meter_numbers = serializers.ListField(child=serializers.IntegerField(min_value=0))
+    reason = serializers.ChoiceField(
+        choices=["max_volume", "max_duration", "max_idle", "detach", "command", "replaced"]
+    )
+    grant_id = serializers.CharField(max_length=64)
+    volume_ml = serializers.FloatField(min_value=0)
+    duration_ms = serializers.IntegerField(min_value=0)
+    auth_device = serializers.CharField(required=False)
+    auth_token = serializers.CharField(required=False)
 
 
 class StatusSerializer(serializers.Serializer):
@@ -102,6 +112,7 @@ DATA_SERIALIZERS = {
     "token": TokenSerializer,
     "status": StatusSerializer,
     "command_result": CommandResultSerializer,
+    "grant_end": GrantEndSerializer,
 }
 
 
@@ -152,10 +163,10 @@ def _note_rejected_batch(request, error):
     state.update_device(device_name, ip=_client_ip(request), last_error=str(error)[:300])
 
 
-def _meter_number(port_name):
-    if port_name.startswith("flow"):
+def _port_number(port_name, prefix):
+    if port_name.startswith(prefix):
         try:
-            return int(port_name[len("flow") :])
+            return int(port_name[len(prefix) :])
         except ValueError:
             pass
     return None
@@ -174,7 +185,18 @@ def _handle_pour(controller, data, event_time):
         return
     if models.Drink.objects.filter(pour_id=data["pour_id"]).exists():
         return
-    username = data.get("user")
+    # Identity never travels down: the pour echoes our grant_id and we
+    # resolve the user from the grant record. No grant -> guest pour.
+    username = None
+    grant_id = data.get("grant_id")
+    if grant_id:
+        grant = state.get_grant(grant_id)
+        if grant:
+            username = grant.get("user")
+        else:
+            logger.warning(
+                f"kegboard {controller.name}: unknown grant {grant_id!r}, recording as guest"
+            )
     if username and not models.User.objects.filter(username=username).exists():
         logger.warning(f"kegboard {controller.name}: unknown user {username!r}, recording as guest")
         username = None
@@ -220,8 +242,9 @@ def _handle_temperature(controller, data, event_time):
 
 
 def _handle_token(controller, data, event_time):
-    if data["action"] != "attached" or data.get("status"):
-        # Detaches and locally-decided presentments are audit-only.
+    if data["action"] != "attached":
+        # Detaches are audit-only; the grant lifecycle arrives via
+        # grant_end events.
         logger.info(f"kegboard {controller.name}: token event: {data}")
         return
 
@@ -229,21 +252,37 @@ def _handle_token(controller, data, event_time):
         auth_device=data["auth_device"], token_value=data["token"]
     ).first()
     if token and token.IsActive() and token.user:
-        meters = sorted(
+        # v1 policy: the grant covers every meter on the board. The
+        # meter<->relay association is ours: energize the relays bound
+        # to the granted meters' taps.
+        meters = []
+        tap_ids = set()
+        for meter in controller.meters.all():
+            number = _port_number(meter.port_name, "flow")
+            if number is None:
+                continue
+            meters.append(number)
+            if meter.tap_id is not None:
+                tap_ids.add(meter.tap_id)
+        relays = sorted(
             number
             for number in (
-                _meter_number(port)
-                for port in controller.meters.values_list("port_name", flat=True)
+                _port_number(toggle.port_name, "relay")
+                for toggle in controller.toggles.all()
+                if toggle.tap_id in tap_ids
             )
             if number is not None
         )
+        grant_id = state.mint_grant_id()
+        state.store_grant(grant_id, token.user.username)
         state.queue_command(
             controller.name,
             "authorize",
             {
-                "meter_numbers": meters,
-                "user": token.user.username,
-                "duration_ms": AUTHORIZE_DURATION_MS,
+                "grant_id": grant_id,
+                "meter_numbers": sorted(meters),
+                "relay_numbers": relays,
+                "max_idle_ms": AUTHORIZE_IDLE_MS,
                 "auth_device": data["auth_device"],
                 "token": data["token"],
             },
@@ -287,6 +326,20 @@ def _handle_status(controller, data, event_time):
             meter.save(update_fields=["ticks_per_ml"])
 
 
+def _handle_grant_end(controller, data, event_time):
+    """Grant lifecycle bookkeeping.
+
+    The pour events are the volume record; the grant totals here are
+    snapshots for cross-checking. The grant record itself is kept until
+    its TTL so queued pours delivered late still attribute.
+    """
+    logger.info(
+        f"kegboard {controller.name}: grant {data['grant_id']} ended "
+        f"({data['reason']}): {data['volume_ml']} mL over {data['duration_ms']} ms "
+        f"on meters {data['meter_numbers']}"
+    )
+
+
 def _handle_command_result(controller, data, event_time):
     if data["result"] != "ok":
         logger.warning(f"kegboard {controller.name}: command {data['command']}: {data}")
@@ -300,6 +353,7 @@ EVENT_HANDLERS = {
     "token": _handle_token,
     "status": _handle_status,
     "command_result": _handle_command_result,
+    "grant_end": _handle_grant_end,
 }
 
 

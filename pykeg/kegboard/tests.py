@@ -201,28 +201,45 @@ class DedupTest(KegboardTestCase):
 class PourTest(KegboardTestCase):
     def test_pour_records_drink(self):
         token = self.pair()
-        response = self.post(
-            [self.pour_event(user=self.user.username, tick_series="0:3 100:14")], token=token
-        )
+        response = self.post([self.pour_event(tick_series="0:3 100:14")], token=token)
         self.assertEqual(200, response.status_code)
 
         drink = models.Drink.objects.get(pour_id="pour-1")
         self.assertEqual(355.0, drink.volume_ml)
-        self.assertEqual(self.user, drink.user)
         self.assertEqual(7, drink.duration)
         # age_ms anchors the pour five seconds in the past.
         age = timezone.now() - drink.time
         self.assertTrue(timedelta(seconds=4) < age < timedelta(seconds=30))
 
-    def test_pour_without_user_is_guest(self):
+    def test_pour_without_grant_is_guest(self):
         token = self.pair()
         self.post([self.pour_event()], token=token)
         drink = models.Drink.objects.get(pour_id="pour-1")
         self.assertTrue(drink.is_guest_pour())
 
-    def test_pour_with_unknown_user_is_guest(self):
+    def test_pour_with_grant_is_attributed(self):
+        # Identity never travels down: the pour carries only our
+        # grant_id, and attribution comes from the grant record.
         token = self.pair()
-        self.post([self.pour_event(user="who-is-this")], token=token)
+        models.AuthenticationToken.objects.create(
+            auth_device="core.rfid", token_value="0089f2c4", user=self.user
+        )
+        event = {
+            "id": 1,
+            "type": "token",
+            "age_ms": 0,
+            "data": {"auth_device": "core.rfid", "token": "0089f2c4", "action": "attached"},
+        }
+        response = self.post([event], token=token)
+        grant_id = response.json()["commands"][0]["data"]["grant_id"]
+
+        self.post([self.pour_event(event_id=2, grant_id=grant_id)], token=token)
+        drink = models.Drink.objects.get(pour_id="pour-1")
+        self.assertEqual(self.user, drink.user)
+
+    def test_pour_with_unknown_grant_is_guest(self):
+        token = self.pair()
+        self.post([self.pour_event(grant_id="g_gone")], token=token)
         drink = models.Drink.objects.get(pour_id="pour-1")
         self.assertTrue(drink.is_guest_pour())
 
@@ -275,7 +292,7 @@ class TokenAuthTest(KegboardTestCase):
             "data": {"auth_device": "core.rfid", "token": value, "action": "attached"},
         }
 
-    def test_assigned_token_authorizes_all_meters(self):
+    def test_assigned_token_creates_a_grant(self):
         token = self.pair()
         models.AuthenticationToken.objects.create(
             auth_device="core.rfid", token_value="0089f2c4", user=self.user
@@ -284,8 +301,31 @@ class TokenAuthTest(KegboardTestCase):
         commands = response.json()["commands"]
         self.assertEqual(1, len(commands))
         self.assertEqual("authorize", commands[0]["type"])
-        self.assertEqual([0, 1], commands[0]["data"]["meter_numbers"])
-        self.assertEqual(self.user.username, commands[0]["data"]["user"])
+        grant = commands[0]["data"]
+        # All meters; the relays bound to their taps; no identity on the wire.
+        self.assertEqual([0, 1], grant["meter_numbers"])
+        self.assertEqual([0, 1], grant["relay_numbers"])
+        self.assertTrue(grant["grant_id"].startswith("g_"))
+        self.assertEqual(30000, grant["max_idle_ms"])
+        self.assertNotIn("user", grant)
+        # The grant record resolves to the token's user server-side.
+        self.assertEqual(self.user.username, state.get_grant(grant["grant_id"])["user"])
+
+    def test_grant_end_is_accepted(self):
+        token = self.pair()
+        event = {
+            "id": 1,
+            "type": "grant_end",
+            "age_ms": 0,
+            "data": {
+                "meter_numbers": [0],
+                "reason": "max_idle",
+                "grant_id": "g_5501",
+                "volume_ml": 355.0,
+                "duration_ms": 42000,
+            },
+        }
+        self.assertEqual(200, self.post([event], token=token).status_code)
 
     def test_unknown_token_is_denied(self):
         token = self.pair()

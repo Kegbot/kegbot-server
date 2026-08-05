@@ -48,7 +48,10 @@ What gets recorded
 * **Temperature readings** are logged against auto-created sensors named
   ``<controller>.<sensor>``.
 * **Token presentments** are checked against the token database
-  (**Admin → Tokens**): an active, assigned token authorizes pouring on
-  the board's meters for 30 seconds; anything else is refused.
+  (**Admin → Tokens**): an active, assigned token receives a pouring
+  grant covering the board's meters and the relays bound to their taps
+  (30-second idle limit; the board's own safety clamp bounds total
+  time); anything else is refused. Pours are attributed from the grant,
+  so identity never travels to the board.
 * **Heartbeats** drive the liveness, firmware, signal, and dropped-event
   columns in the Kegboards section.

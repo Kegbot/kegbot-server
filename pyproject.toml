@@ -14,7 +14,7 @@ dependencies = [
     "django-imagekit",
     "django-redis>=5.4",
     "django-rq>=3,<5",
-    "djangorestframework>=3.16,<4",
+    "djangorestframework>=3.17.2,<4",
     "drf-spectacular>=0.28",
     "drf-spectacular-sidecar",
     "Django>=5.2,<5.3",
